@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 
@@ -6,7 +5,6 @@ namespace Jolt.Workspace;
 
 internal sealed class JazorRelatedDocumentResolver
 {
-    private static readonly Regex ComponentTagPattern = new(@"<(?<name>[A-Z][A-Za-z0-9_]*)\b", RegexOptions.Compiled);
     private readonly IJoltWorkspaceStore _workspaceStore;
     private readonly JazorVueParser _parser = new();
 
@@ -122,7 +120,7 @@ internal sealed class JazorRelatedDocumentResolver
             or DocumentKind.Css;
 
     private static string[] GetReferencedVueComponents(string text)
-        => ComponentTagPattern.Matches(text)
+        => JazorMarkupPatterns.ComponentTagPattern.Matches(text)
             .Select(static match => match.Groups["name"].Value)
             .Where(static value => !string.IsNullOrWhiteSpace(value))
             .Distinct(StringComparer.Ordinal)

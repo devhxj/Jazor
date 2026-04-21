@@ -110,11 +110,17 @@ internal sealed partial class InProcRoslynCodeService
             return;
         }
 
+        if (TryCreateRazorProjectedDocument(document, out projectedDocument))
+        {
+            projectedDocuments.Add(projectedDocument);
+            return;
+        }
+
         var parsed = _parser.Parse(document.DocumentPath, document.Text);
         if (string.IsNullOrWhiteSpace(parsed.Code) || parsed.CodeStartIndex < 0)
             return;
 
-        var projection = CreateProjection(document, parsed);
+        var projection = CreateFallbackProjection(document, parsed);
         var syntaxTree = CSharpSyntaxTree.ParseText(
             projection.SourceText,
             ParseOptions,
@@ -127,6 +133,30 @@ internal sealed partial class InProcRoslynCodeService
             syntaxTree,
             SemanticModel: CreatePlaceholderSemanticModel(syntaxTree));
         projectedDocuments.Add(projectedDocument);
+    }
+
+    private bool TryCreateRazorProjectedDocument(
+        DocumentSnapshot document,
+        [NotNullWhen(true)] out ProjectedDocumentContext? projectedDocument)
+    {
+        if (!_razorProjectionService.TryCreateProjection(document, out var razorProjection))
+        {
+            projectedDocument = null;
+            return false;
+        }
+
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            razorProjection.SourceText,
+            ParseOptions,
+            path: razorProjection.ProjectedDocumentPath,
+            encoding: Encoding.UTF8);
+        projectedDocument = new ProjectedDocumentContext(
+            document,
+            razorProjection.SourceText,
+            razorProjection.ProjectionMap,
+            syntaxTree,
+            SemanticModel: CreatePlaceholderSemanticModel(syntaxTree));
+        return true;
     }
 
     private bool TryCreateFallbackProjectedDocument(

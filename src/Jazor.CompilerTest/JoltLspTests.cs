@@ -457,6 +457,57 @@ public sealed class JoltLspTests
     }
 
     [TestMethod]
+    public async Task Jolt_Lsp_DocumentLink_IgnoresFakeModuleDirectivesInsideCodeBlocks()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var importedScriptPath = Path.Combine(tempDirectory, "useMath.ts");
+            var fakeScriptPath = Path.Combine(tempDirectory, "fakeMath.ts");
+            await File.WriteAllTextAsync(importedScriptPath, "export const useMath = () => 1;");
+            await File.WriteAllTextAsync(fakeScriptPath, "export const fakeMath = () => 0;");
+
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @module useMath from "./useMath.ts"
+
+                @code {
+                    @module fakeMath from "./fakeMath.ts"
+                }
+
+                <template>
+                  <div></div>
+                </template>
+                """;
+
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+            var links = await client.RequestDocumentLinksAsync(requestId: 9051, uri: documentUri);
+
+            var targets = links.EnumerateArray()
+                .Select(static item => item.TryGetProperty("target", out var target) ? target.GetString() : null)
+                .Where(static target => !string.IsNullOrWhiteSpace(target))
+                .ToArray();
+
+            CollectionAssert.Contains(targets, new Uri(importedScriptPath).AbsoluteUri);
+            CollectionAssert.DoesNotContain(targets, new Uri(fakeScriptPath).AbsoluteUri);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
     public async Task Jolt_Lsp_Implementation_ReturnsInterfaceMethodImplementation()
     {
         await using var client = await LspTestClient.StartAsync("--no-deno-worker");
@@ -1389,6 +1440,40 @@ public sealed class JoltLspTests
             var updatedModule = await httpClient.GetStringAsync("/Counter.vue?t=2");
             Assert.AreNotEqual(initialModule, updatedModule);
             await AssertNoWebSocketJsonAsync(socket, NoDuplicateHmrMessageTimeout);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetries(tempDirectory);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
+    [TestMethod]
+    public async Task Jolt_Lsp_WithDevMode_AfterServingHttpRequest_ShutdownKeepsLspStreamClean()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        var port = GetFreePort();
+        await File.WriteAllTextAsync(Path.Combine(tempDirectory, "index.html"), "<html><body>dev-root</body></html>");
+        await using var client = await LspTestClient.StartAsync(
+            "--dev",
+            $"--dev-root={tempDirectory}",
+            $"--dev-port={port}",
+            "--dev-host=127.0.0.1",
+            "--dev-frontend=stub");
+        await client.InitializeAsync();
+
+        try
+        {
+            using var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri($"http://127.0.0.1:{port}")
+            };
+            var html = await httpClient.GetStringAsync("/");
+            StringAssert.Contains(html, "dev-root", StringComparison.Ordinal);
         }
         finally
         {
@@ -4854,6 +4939,48 @@ public sealed class JoltLspTests
     }
 
     [TestMethod]
+    public async Task Jolt_Lsp_StandardRazorDirectiveCompletion_UsesRoslynWithoutCodeBlock()
+    {
+        await using var client = await LspTestClient.StartAsync("--no-deno-worker");
+        await client.InitializeAsync();
+
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+            var documentUri = new Uri(documentPath).AbsoluteUri;
+            var text =
+                """
+                @using Sys
+
+                <template>
+                  <div>Hello</div>
+                </template>
+                """;
+            await File.WriteAllTextAsync(documentPath, text);
+            await client.OpenDocumentAsync(documentUri, text, version: 1);
+
+            var completionPosition = GetPosition(text, "Sys", advance: "Sys".Length);
+            var completionLabels = await client.RequestCompletionLabelsAsync(
+                requestId: 35,
+                documentUri,
+                completionPosition.Line,
+                completionPosition.Character);
+
+            CollectionAssert.Contains(completionLabels, "System");
+            CollectionAssert.DoesNotContain(completionLabels, "@module");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+
+        await client.ShutdownAsync();
+    }
+
     public async Task Jolt_Lsp_Completion_FiltersTemplateItemsByTypedPrefix()
     {
         await using var client = await LspTestClient.StartAsync();

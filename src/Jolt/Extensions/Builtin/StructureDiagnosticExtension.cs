@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Jazor.VueContracts.Protocol;
+using Jazor.Vue;
 using Jolt.Lsp;
 
 namespace Jolt.Extensions.Builtin;
@@ -12,6 +13,7 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
     private const string MissingCodeBlockStartDiagnosticCode = "JAZORVUEEXTSTR003";
     private const string UnbalancedCodeBlockDiagnosticCode = "JAZORVUEEXTSTR004";
     private const string MissingTemplateWrapperDiagnosticCode = "JAZORVUEEXTSTR005";
+    private const string MultipleCodeBlockDiagnosticCode = "JAZORVUEEXTSTR006";
 
     private static readonly Regex TemplateOpenPattern = new(
         @"<template\b",
@@ -24,10 +26,6 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
     private static readonly Regex MarkupTagPattern = new(
         @"<\s*[A-Za-z][A-Za-z0-9:_-]*\b",
         RegexOptions.Compiled);
-
-    private static readonly Regex CodeDirectivePattern = new(
-        @"@code\b",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public ExtensionMetadata Metadata { get; } = new(
         Id: "builtin.structure-diagnostic",
@@ -121,15 +119,15 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
         IReadOnlySet<string> existingCodes,
         List<LspDiagnostic> diagnostics)
     {
-        var codeDirective = CodeDirectivePattern.Match(text);
-        if (!codeDirective.Success)
+        var codeDirectives = JazorCodeDirectiveLocator.EnumerateCodeDirectives(text).ToArray();
+        if (codeDirectives.Length == 0)
         {
             return;
         }
 
-        var codeStartIndex = codeDirective.Index;
-        var openingBraceIndex = text.IndexOf('{', codeDirective.Index + codeDirective.Length);
-        if (openingBraceIndex < 0)
+        var codeDirective = codeDirectives[0];
+        var codeStartIndex = codeDirective.DirectiveIndex;
+        if (!codeDirective.HasBlockBody)
         {
             TryAddDiagnostic(
                 diagnostics,
@@ -137,37 +135,11 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
                 MissingCodeBlockStartDiagnosticCode,
                 severity: 1,
                 message: "@code directive requires a '{' block body.",
-                range: LspProtocolHelpers.ToRange(text, codeStartIndex, "@code".Length));
+                range: LspProtocolHelpers.ToRange(text, codeStartIndex, codeDirective.DirectiveLength));
             return;
         }
 
-        var depth = 0;
-        var closed = false;
-        for (var index = openingBraceIndex; index < text.Length; index++)
-        {
-            switch (text[index])
-            {
-                case '{':
-                    depth++;
-                    break;
-                case '}':
-                    depth--;
-                    if (depth == 0)
-                    {
-                        closed = true;
-                        break;
-                    }
-
-                    break;
-            }
-
-            if (closed)
-            {
-                break;
-            }
-        }
-
-        if (!closed)
+        if (!codeDirective.IsClosed)
         {
             TryAddDiagnostic(
                 diagnostics,
@@ -175,7 +147,21 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
                 UnbalancedCodeBlockDiagnosticCode,
                 severity: 1,
                 message: "@code block has unbalanced braces.",
-                range: LspProtocolHelpers.ToRange(text, openingBraceIndex, length: 1));
+                range: LspProtocolHelpers.ToRange(text, codeDirective.OpeningBraceIndex, length: 1));
+        }
+
+        var additionalCodeBlock = codeDirectives
+            .Skip(1)
+            .FirstOrDefault(static match => match.HasBlockBody);
+        if (!additionalCodeBlock.Equals(default(JazorCodeDirectiveMatch)))
+        {
+            TryAddDiagnostic(
+                diagnostics,
+                existingCodes,
+                MultipleCodeBlockDiagnosticCode,
+                severity: 1,
+                message: "Only one @code block is supported.",
+                range: LspProtocolHelpers.ToRange(text, additionalCodeBlock.DirectiveIndex, additionalCodeBlock.DirectiveLength));
         }
     }
 
@@ -189,15 +175,12 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
             return;
         }
 
-        var codeDirectiveMatch = CodeDirectivePattern.Match(text);
-        if (!codeDirectiveMatch.Success)
+        if (!JazorCodeDirectiveLocator.TryFindCodeDirective(text, out var codeDirectiveMatch))
         {
             return;
         }
 
-        var markupSegment = codeDirectiveMatch.Success
-            ? text[..codeDirectiveMatch.Index]
-            : text;
+        var markupSegment = text[..codeDirectiveMatch.DirectiveIndex];
         if (string.IsNullOrWhiteSpace(markupSegment))
         {
             return;

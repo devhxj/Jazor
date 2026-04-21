@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jolt.Workspace;
 
@@ -6,9 +7,6 @@ namespace Jolt.Lsp.Coordination;
 
 internal sealed class MarkupComponentBridgeService
 {
-    private static readonly Regex ComponentTagPattern = new(
-        @"<(?<name>[A-Z][A-Za-z0-9_]*)\b",
-        RegexOptions.Compiled);
     private static readonly Regex ScriptImportPattern = new(
         @"^\s*import\s+(?<clause>.+?)\s+from\s+[""'](?<path>[^""']+)[""']",
         RegexOptions.Compiled | RegexOptions.Multiline);
@@ -23,7 +21,7 @@ internal sealed class MarkupComponentBridgeService
     public bool TryFindComponentTagSymbol(string text, LspPosition position, out MarkupComponentSymbol symbol)
     {
         var offset = LspProtocolHelpers.GetOffset(text, position);
-        foreach (Match match in ComponentTagPattern.Matches(text))
+        foreach (Match match in JazorMarkupPatterns.ComponentTagPattern.Matches(text))
         {
             var group = match.Groups["name"];
             if (offset < group.Index || offset > group.Index + group.Length)
@@ -428,7 +426,7 @@ internal sealed class MarkupComponentBridgeService
         string componentName)
     {
         var locations = new List<LspLocation>();
-        foreach (Match match in ComponentTagPattern.Matches(document.Text))
+        foreach (Match match in JazorMarkupPatterns.ComponentTagPattern.Matches(document.Text))
         {
             var group = match.Groups["name"];
             if (!string.Equals(group.Value, componentName, StringComparison.Ordinal))
@@ -450,20 +448,21 @@ internal sealed class MarkupComponentBridgeService
         return locations;
     }
 
-    private static bool RangesEqual(LspRange left, LspRange right)
-        => left.Start.Line == right.Start.Line
-            && left.Start.Character == right.Start.Character
-            && left.End.Line == right.End.Line
-            && left.End.Character == right.End.Character;
-
     private static bool TryFindImportedComponentSymbol(
         string text,
         LspPosition position,
         out ImportedComponentSymbol symbol)
     {
         var offset = LspProtocolHelpers.GetOffset(text, position);
+        if (!text.Contains("import", StringComparison.Ordinal))
+        {
+            symbol = default;
+            return false;
+        }
+
+        var maskedText = MaskJavaScriptTrivia(text);
         var fallbackMatches = new List<ImportedComponentSymbol>();
-        foreach (Match match in ScriptImportPattern.Matches(text))
+        foreach (Match match in ScriptImportPattern.Matches(maskedText))
         {
             var clauseGroup = match.Groups["clause"];
             var pathGroup = match.Groups["path"];
@@ -472,15 +471,16 @@ internal sealed class MarkupComponentBridgeService
                 continue;
             }
 
+            var importPath = text[pathGroup.Index..(pathGroup.Index + pathGroup.Length)];
             foreach (var candidate in EnumerateImportBindings(clauseGroup))
             {
-                fallbackMatches.Add(new ImportedComponentSymbol(candidate.Name, pathGroup.Value));
+                fallbackMatches.Add(new ImportedComponentSymbol(candidate.Name, importPath));
                 if (offset < candidate.StartOffset || offset > candidate.EndOffset)
                 {
                     continue;
                 }
 
-                symbol = new ImportedComponentSymbol(candidate.Name, pathGroup.Value);
+                symbol = new ImportedComponentSymbol(candidate.Name, importPath);
                 return true;
             }
         }
@@ -546,10 +546,148 @@ internal sealed class MarkupComponentBridgeService
     private static bool IsIdentifierChar(char value)
         => char.IsLetterOrDigit(value) || value == '_' || value == '$';
 
+    private static string MaskJavaScriptTrivia(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return string.Empty;
+        }
+
+        var buffer = text.ToCharArray();
+        for (var index = 0; index < text.Length; index++)
+        {
+            if (text[index] == '/' && index + 1 < text.Length)
+            {
+                if (text[index + 1] == '/')
+                {
+                    index = MaskLineComment(text, buffer, index);
+                    continue;
+                }
+
+                if (text[index + 1] == '*')
+                {
+                    index = MaskBlockComment(text, buffer, index);
+                    continue;
+                }
+            }
+
+            if (text[index] is '\'' or '"')
+            {
+                index = MaskQuotedLiteral(text, buffer, index, text[index], preserveDelimiters: true);
+                continue;
+            }
+
+            if (text[index] == '`')
+            {
+                index = MaskQuotedLiteral(text, buffer, index, '`', preserveDelimiters: false);
+            }
+        }
+
+        return new string(buffer);
+    }
+
+    private static int MaskLineComment(string text, char[] buffer, int startIndex)
+    {
+        MaskNonNewlineChar(buffer, startIndex);
+        if (startIndex + 1 < buffer.Length)
+        {
+            MaskNonNewlineChar(buffer, startIndex + 1);
+        }
+
+        var index = startIndex + 2;
+        while (index < text.Length && text[index] is not ('\r' or '\n'))
+        {
+            MaskNonNewlineChar(buffer, index);
+            index++;
+        }
+
+        return index - 1;
+    }
+
+    private static int MaskBlockComment(string text, char[] buffer, int startIndex)
+    {
+        MaskNonNewlineChar(buffer, startIndex);
+        if (startIndex + 1 < buffer.Length)
+        {
+            MaskNonNewlineChar(buffer, startIndex + 1);
+        }
+
+        var index = startIndex + 2;
+        while (index < text.Length)
+        {
+            if (text[index] == '*' && index + 1 < text.Length && text[index + 1] == '/')
+            {
+                MaskNonNewlineChar(buffer, index);
+                MaskNonNewlineChar(buffer, index + 1);
+                return index + 1;
+            }
+
+            MaskNonNewlineChar(buffer, index);
+            index++;
+        }
+
+        return text.Length - 1;
+    }
+
+    private static int MaskQuotedLiteral(
+        string text,
+        char[] buffer,
+        int startIndex,
+        char delimiter,
+        bool preserveDelimiters)
+    {
+        if (!preserveDelimiters)
+        {
+            MaskNonNewlineChar(buffer, startIndex);
+        }
+
+        var index = startIndex + 1;
+        while (index < text.Length)
+        {
+            if (text[index] == '\\')
+            {
+                MaskNonNewlineChar(buffer, index);
+                if (index + 1 < text.Length)
+                {
+                    MaskNonNewlineChar(buffer, index + 1);
+                    index += 2;
+                    continue;
+                }
+
+                return text.Length - 1;
+            }
+
+            if (text[index] == delimiter)
+            {
+                if (!preserveDelimiters)
+                {
+                    MaskNonNewlineChar(buffer, index);
+                }
+
+                return index;
+            }
+
+            MaskNonNewlineChar(buffer, index);
+            index++;
+        }
+
+        return text.Length - 1;
+    }
+
+    private static void MaskNonNewlineChar(char[] buffer, int index)
+    {
+        if (buffer[index] is '\r' or '\n')
+        {
+            return;
+        }
+
+        buffer[index] = ' ';
+    }
+
     private static IEnumerable<ImportBindingCandidate> EnumerateImportBindings(Group clauseGroup)
     {
         var clause = clauseGroup.Value;
-        var defaultMatch = Regex.Match(clause, @"^(?<name>[A-Za-z_$][A-Za-z0-9_$]*)");
+        var defaultMatch = Regex.Match(clause, @"^\s*(?<name>[A-Za-z_$][A-Za-z0-9_$]*)");
         if (defaultMatch.Success && defaultMatch.Groups["name"] is { Success: true } defaultGroup)
         {
             yield return new ImportBindingCandidate(
@@ -587,8 +725,8 @@ internal sealed class MarkupComponentBridgeService
 
             yield return new ImportBindingCandidate(
                 effectiveGroup.Value,
-                namesGroup.Index + effectiveGroup.Index,
-                namesGroup.Index + effectiveGroup.Index + effectiveGroup.Length);
+                clauseGroup.Index + namesGroup.Index + effectiveGroup.Index,
+                clauseGroup.Index + namesGroup.Index + effectiveGroup.Index + effectiveGroup.Length);
         }
     }
 

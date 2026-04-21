@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Channels;
@@ -70,6 +71,9 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         }
 
         var builder = WebApplication.CreateSlimBuilder();
+        // When the dev server is hosted under `jolt --lsp --dev`, stdout is reserved for
+        // framed LSP traffic. Suppress ASP.NET hosting logs so they cannot corrupt the stream.
+        builder.Logging.ClearProviders();
         builder.WebHost.UseUrls($"http://{_options.Host}:{_options.Port}");
 
         var application = builder.Build();

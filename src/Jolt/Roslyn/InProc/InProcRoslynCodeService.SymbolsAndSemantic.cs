@@ -150,7 +150,9 @@ internal sealed partial class InProcRoslynCodeService
     }
 
     private static bool IsCompletionSymbolSupported(ISymbol symbol)
-        => symbol.Kind is SymbolKind.Local
+        => symbol.Kind is SymbolKind.Namespace
+            or SymbolKind.NamedType
+            or SymbolKind.Local
             or SymbolKind.Field
             or SymbolKind.Property
             or SymbolKind.Method
@@ -162,6 +164,8 @@ internal sealed partial class InProcRoslynCodeService
             Label = symbol.Name,
             Kind = symbol.Kind switch
             {
+                SymbolKind.Namespace => 9,
+                SymbolKind.NamedType => 7,
                 SymbolKind.Method => 2,
                 SymbolKind.Property => 10,
                 SymbolKind.Field => 5,

@@ -666,7 +666,7 @@ internal sealed partial class BuildOrchestrator
             }
 
             var originalContent = await File.ReadAllTextAsync(chunkAbsolutePath, cancellationToken);
-            var currentChunkDirectory = Path.GetDirectoryName(chunkAbsolutePath)!;
+            var currentChunkDirectory = GetContainingDirectoryPath(chunkAbsolutePath);
             var rewrittenContent = BuiltChunkDynamicImportPattern.Replace(
                 originalContent,
                 match =>
@@ -716,7 +716,7 @@ internal sealed partial class BuildOrchestrator
             }
 
             var chunkContent = await File.ReadAllTextAsync(chunkAbsolutePath, cancellationToken);
-            var currentChunkDirectory = Path.GetDirectoryName(chunkAbsolutePath)!;
+            var currentChunkDirectory = GetContainingDirectoryPath(chunkAbsolutePath);
             var dynamicImports = new HashSet<string>(FilePathComparer);
 
             foreach (Match match in BuiltChunkDynamicImportPattern.Matches(chunkContent))
@@ -811,6 +811,11 @@ internal sealed partial class BuildOrchestrator
             originalImportExpression,
             ";}))");
     }
+
+    private static string GetContainingDirectoryPath(string path)
+        => Path.GetDirectoryName(path)
+            ?? Path.GetPathRoot(path)
+            ?? string.Empty;
 
     private static async Task<string> WriteManifestAsync(
         BuildContext context,

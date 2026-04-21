@@ -4,20 +4,8 @@ namespace Jazor.Vue;
 
 public sealed partial class JazorVueParser
 {
-    private static readonly Regex ModuleDirectivePattern = new Regex(
-        @"^\s*@module\s+(?<clause>.+?)\s+from\s+[""'](?<source>[^""']+)[""']\s*$",
-        RegexOptions.Multiline | RegexOptions.Compiled);
-    private static readonly Regex LegacyDirectiveLinePattern = new Regex(
-        @"^\s*@(?:import|jsimport|vueimport)\b.*$",
-        RegexOptions.Multiline | RegexOptions.Compiled);
-    private static readonly Regex ComponentTagPattern = new Regex(
-        @"<(?<name>[A-Z][A-Za-z0-9_]*)\b",
-        RegexOptions.Compiled);
     private static readonly Regex TemplatePattern = new Regex(
         @"<template>(?<content>[\s\S]*?)</template>",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-    private static readonly Regex CodeStartPattern = new Regex(
-        @"@code\s*\{",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public JazorVueDocument Parse(string filePath, string sourceText)
@@ -71,13 +59,15 @@ public sealed partial class JazorVueParser
     private static IReadOnlyList<JazorImportDirective> ParseImportDirectives(string sourceText)
     {
         var imports = new List<JazorImportDirective>();
-        foreach (Match match in ModuleDirectivePattern.Matches(sourceText))
+        foreach (var match in JazorImportDirectiveLocator.EnumerateModuleDirectives(sourceText))
         {
-            var clause = match.Groups["clause"].Value.Trim();
-            var source = match.Groups["source"].Value.Trim();
-            var kind = ResolveImportKind(source);
+            var kind = ResolveImportKind(match.Source);
 
-            imports.Add(new JazorImportDirective(kind, source, ParseBindings(clause), match.Value));
+            imports.Add(new JazorImportDirective(
+                kind,
+                match.Source,
+                JazorImportDirectiveLocator.ParseBindings(match.Clause),
+                match.RawText));
         }
 
         return imports;
@@ -93,7 +83,7 @@ public sealed partial class JazorVueParser
         }
 
         var imports = new List<JazorImportDirective>();
-        foreach (var componentName in ComponentTagPattern.Matches(template)
+        foreach (var componentName in JazorMarkupPatterns.ComponentTagPattern.Matches(template)
                      .Select(static match => match.Groups["name"].Value)
                      .Distinct(StringComparer.Ordinal))
         {
@@ -107,85 +97,6 @@ public sealed partial class JazorVueParser
         }
 
         return imports;
-    }
-
-    private static IReadOnlyList<JazorImportBinding> ParseBindings(string clause)
-    {
-        var clauseParts = SplitTopLevelCommaSeparatedClause(clause);
-        if (clauseParts.Count > 1)
-        {
-            var bindings = new List<JazorImportBinding>();
-            var defaultBinding = clauseParts[0].Trim();
-            if (!string.IsNullOrWhiteSpace(defaultBinding))
-                bindings.Add(new JazorImportBinding(defaultBinding, null, JazorImportBindingKind.Default));
-
-            var trailingClause = clauseParts[1].Trim();
-            bindings.AddRange(ParseBindings(trailingClause));
-            return bindings;
-        }
-
-        if (clause.StartsWith("{", StringComparison.Ordinal) && clause.EndsWith("}", StringComparison.Ordinal))
-        {
-            var content = clause.Substring(1, clause.Length - 2);
-            var bindings = new List<JazorImportBinding>();
-            foreach (var rawPart in content.Split(','))
-            {
-                var part = rawPart.Trim();
-                if (string.IsNullOrWhiteSpace(part))
-                    continue;
-
-                var aliasParts = part.Split(new[] { " as " }, StringSplitOptions.None);
-                if (aliasParts.Length == 2)
-                    bindings.Add(new JazorImportBinding(aliasParts[1].Trim(), aliasParts[0].Trim(), JazorImportBindingKind.Named));
-                else
-                    bindings.Add(new JazorImportBinding(part, part, JazorImportBindingKind.Named));
-            }
-
-            return bindings;
-        }
-
-        if (clause.StartsWith("* as ", StringComparison.Ordinal))
-        {
-            var name = clause.Substring("* as ".Length).Trim();
-            return new[] { new JazorImportBinding(name, null, JazorImportBindingKind.Namespace) };
-        }
-
-        return new[] { new JazorImportBinding(clause.Trim(), null, JazorImportBindingKind.Default) };
-    }
-
-    private static IReadOnlyList<string> SplitTopLevelCommaSeparatedClause(string clause)
-    {
-        var parts = new List<string>();
-        var builder = new System.Text.StringBuilder(clause.Length);
-        var braceDepth = 0;
-        for (var index = 0; index < clause.Length; index++)
-        {
-            var character = clause[index];
-            switch (character)
-            {
-                case '{':
-                    braceDepth++;
-                    builder.Append(character);
-                    break;
-                case '}':
-                    if (braceDepth > 0)
-                        braceDepth--;
-                    builder.Append(character);
-                    break;
-                case ',' when braceDepth == 0:
-                    parts.Add(builder.ToString());
-                    builder.Clear();
-                    break;
-                default:
-                    builder.Append(character);
-                    break;
-            }
-        }
-
-        if (builder.Length > 0)
-            parts.Add(builder.ToString());
-
-        return parts;
     }
 
     private static TemplateParseResult ParseTemplate(string sourceText, CodeParseResult codeParseResult)
@@ -202,8 +113,7 @@ public sealed partial class JazorVueParser
             ? codeParseResult.DirectiveIndex
             : sourceText.Length;
         var markup = sourceText[..markupEnd];
-        var sanitizedMarkup = ModuleDirectivePattern.Replace(markup, string.Empty);
-        sanitizedMarkup = LegacyDirectiveLinePattern.Replace(sanitizedMarkup, string.Empty);
+        var sanitizedMarkup = RemoveTopLevelImportDirectiveLines(markup);
         var trimmedMarkup = sanitizedMarkup.Trim();
         if (trimmedMarkup.Length == 0)
         {
@@ -228,6 +138,36 @@ public sealed partial class JazorVueParser
         return relativeStartIndex < 0
             ? new TemplateParseResult(trimmedTemplate, -1, trimmedTemplate.Length)
             : new TemplateParseResult(trimmedTemplate, rawStartIndex + relativeStartIndex, trimmedTemplate.Length);
+    }
+
+    private static string RemoveTopLevelImportDirectiveLines(string text)
+    {
+        var directiveLines = JazorImportDirectiveLocator.EnumerateDirectiveLines(text)
+            .Select(static match => (match.LineStartIndex, match.LineLength))
+            .ToArray();
+        if (directiveLines.Length == 0)
+        {
+            return text;
+        }
+
+        var builder = new System.Text.StringBuilder(text.Length);
+        var cursor = 0;
+        foreach (var directiveLine in directiveLines)
+        {
+            if (directiveLine.LineStartIndex > cursor)
+            {
+                builder.Append(text, cursor, directiveLine.LineStartIndex - cursor);
+            }
+
+            cursor = directiveLine.LineStartIndex + directiveLine.LineLength;
+        }
+
+        if (cursor < text.Length)
+        {
+            builder.Append(text, cursor, text.Length - cursor);
+        }
+
+        return builder.ToString();
     }
 
     private static string ResolveVueComponentImportPath(
@@ -311,36 +251,26 @@ public sealed partial class JazorVueParser
 
     private static CodeParseResult ParseCode(string sourceText)
     {
-        var codeStart = CodeStartPattern.Match(sourceText);
-        if (!codeStart.Success)
-            return new CodeParseResult(string.Empty, -1, -1);
-
-        var startIndex = codeStart.Index + codeStart.Length;
-        var depth = 1;
-        for (var i = startIndex; i < sourceText.Length; i++)
+        if (!JazorCodeDirectiveLocator.TryFindCodeDirectiveWithBlockBody(sourceText, out var codeDirective))
         {
-            switch (sourceText[i])
-            {
-                case '{':
-                    depth++;
-                    break;
-                case '}':
-                    depth--;
-                    if (depth == 0)
-                    {
-                        var codeText = sourceText.Substring(startIndex, i - startIndex);
-                        var trimmedCodeText = codeText.Trim();
-                        if (trimmedCodeText.Length == 0)
-                            return new CodeParseResult(string.Empty, startIndex, codeStart.Index);
-
-                        var relativeStart = codeText.IndexOf(trimmedCodeText, StringComparison.Ordinal);
-                        return new CodeParseResult(trimmedCodeText, startIndex + relativeStart, codeStart.Index);
-                    }
-                    break;
-            }
+            return new CodeParseResult(string.Empty, -1, -1);
         }
 
-        throw new FormatException("The .jazor document contains an unterminated @code block.");
+        if (!codeDirective.IsClosed)
+        {
+            throw new FormatException("The .jazor document contains an unterminated @code block.");
+        }
+
+        var codeStartIndex = codeDirective.OpeningBraceIndex + 1;
+        var codeText = sourceText.Substring(codeStartIndex, codeDirective.ClosingBraceIndex - codeStartIndex);
+        var trimmedCodeText = codeText.Trim();
+        if (trimmedCodeText.Length == 0)
+        {
+            return new CodeParseResult(string.Empty, codeStartIndex, codeDirective.DirectiveIndex);
+        }
+
+        var relativeStart = codeText.IndexOf(trimmedCodeText, StringComparison.Ordinal);
+        return new CodeParseResult(trimmedCodeText, codeStartIndex + relativeStart, codeDirective.DirectiveIndex);
     }
 
     private sealed class CodeParseResult

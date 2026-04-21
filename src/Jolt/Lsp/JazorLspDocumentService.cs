@@ -11,9 +11,6 @@ internal sealed class JazorLspDocumentService
 {
     private static readonly Regex TagPattern = new(@"<(?<name>[A-Z][A-Za-z0-9_]*)\b", RegexOptions.Compiled);
     private static readonly Regex TagCompletionPrefixPattern = new(@"</?(?<name>[A-Za-z0-9_]*)$", RegexOptions.Compiled);
-    private static readonly Regex ImportDirectiveSourcePattern = new(
-        @"^\s*@module\s+.+?\s+from\s+(?<quote>[""'])(?<source>[^""']+)\k<quote>\s*$",
-        RegexOptions.Multiline | RegexOptions.Compiled);
     private static readonly Regex PrivateMethodPattern = new(@"(?<modifier>\bprivate\b)\s+(?<signature>(?:async\s+)?[\w<>\.\?]+\s+\w+\s*\()", RegexOptions.Compiled);
     private readonly IVueAnalysisClient _analysisClient;
     private readonly MarkupComponentBridgeService _markupComponentBridge;
@@ -160,20 +157,20 @@ internal sealed class JazorLspDocumentService
         }
 
         var links = new List<LspDocumentLink>();
-        foreach (Match match in ImportDirectiveSourcePattern.Matches(document.Text))
+        foreach (var match in JazorImportDirectiveLocator.EnumerateModuleDirectives(document.Text))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var sourceGroup = match.Groups["source"];
-            if (!sourceGroup.Success
-                || !TryResolveImportLinkTargetPath(document.DocumentPath, sourceGroup.Value, out var targetPath))
+            if (match.SourceIndex < 0
+                || match.SourceLength <= 0
+                || !TryResolveImportLinkTargetPath(document.DocumentPath, match.Source, out var targetPath))
             {
                 continue;
             }
 
             links.Add(new LspDocumentLink
             {
-                Range = LspProtocolHelpers.ToRange(document.Text, sourceGroup.Index, sourceGroup.Length),
+                Range = LspProtocolHelpers.ToRange(document.Text, match.SourceIndex, match.SourceLength),
                 Target = LspProtocolHelpers.ToDocumentUri(targetPath),
                 Tooltip = "Open import target"
             });
@@ -253,7 +250,7 @@ internal sealed class JazorLspDocumentService
         AddTemplateWrapperTokens(document.Text, tokens);
 
         // @code directive keyword
-        AddCodeDirectiveToken(document.Text, tokens);
+        AddCodeDirectiveTokens(document.Text, tokens);
 
         // Import directives: canonical @module plus unsupported legacy forms for highlighting.
         AddImportDirectiveTokens(document.Text, tokens);
@@ -296,44 +293,36 @@ internal sealed class JazorLspDocumentService
         }
     }
 
-    private static void AddCodeDirectiveToken(string text, List<LspSemanticToken> tokens)
+    private static void AddCodeDirectiveTokens(string text, List<LspSemanticToken> tokens)
     {
-        var match = Regex.Match(text, @"@code\s*\{", RegexOptions.IgnoreCase);
-        if (!match.Success)
+        foreach (var match in JazorCodeDirectiveLocator.EnumerateCodeDirectives(text))
         {
-            return;
-        }
-
-        var pos = LspProtocolHelpers.GetPosition(text, match.Index);
-        tokens.Add(new LspSemanticToken
-        {
-            Line = pos.Line,
-            Character = pos.Character,
-            Length = "@code".Length,
-            TokenType = "keyword"
-        });
-    }
-
-    private static readonly Regex ImportDirectivePattern = new(
-        @"^\s*@(?<kind>module|import|jsimport|vueimport)\b",
-        RegexOptions.Multiline | RegexOptions.Compiled);
-
-    private static void AddImportDirectiveTokens(string text, List<LspSemanticToken> tokens)
-    {
-        foreach (Match match in ImportDirectivePattern.Matches(text))
-        {
-            var kindGroup = match.Groups["kind"];
-            if (!kindGroup.Success)
+            if (!match.HasBlockBody)
             {
                 continue;
             }
 
-            var atPos = LspProtocolHelpers.GetPosition(text, match.Index);
+            var pos = LspProtocolHelpers.GetPosition(text, match.DirectiveIndex);
+            tokens.Add(new LspSemanticToken
+            {
+                Line = pos.Line,
+                Character = pos.Character,
+                Length = match.DirectiveLength,
+                TokenType = "keyword"
+            });
+        }
+    }
+
+    private static void AddImportDirectiveTokens(string text, List<LspSemanticToken> tokens)
+    {
+        foreach (var match in JazorImportDirectiveLocator.EnumerateDirectiveLines(text))
+        {
+            var atPos = LspProtocolHelpers.GetPosition(text, match.DirectiveIndex);
             tokens.Add(new LspSemanticToken
             {
                 Line = atPos.Line,
                 Character = atPos.Character,
-                Length = 1 + kindGroup.Length,
+                Length = match.DirectiveLength,
                 TokenType = "keyword"
             });
         }

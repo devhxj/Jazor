@@ -1981,6 +1981,117 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task BuiltinStructureDiagnosticProvider_IgnoresCommentedFakeCodeDirectiveMarkersWithoutBlockBody()
+    {
+        var provider = new StructureDiagnosticExtension();
+
+        foreach (var (name, text) in new (string Name, string Text)[]
+                 {
+                     (
+                         "line-comment",
+                         """
+                         <div>hello</div>
+                         // @code
+                         """),
+                     (
+                         "razor-comment",
+                         """
+                         <div>hello</div>
+                         @*
+                         @code
+                         *@
+                         """)
+                 })
+        {
+            var document = new DocumentSnapshot(
+                documentPath: Path.Combine(Path.GetTempPath(), $"phase7-structure-comment-no-block-{name}-{Guid.NewGuid():N}.jazor"),
+                documentKind: DocumentKind.Jazor,
+                text: text,
+                version: "1");
+            var diagnostics = await provider.ProvideDiagnosticsAsync(
+                new LspDiagnosticProviderContext(document, Array.Empty<LspDiagnostic>()),
+                CancellationToken.None);
+            var diagnosticCodes = diagnostics.Select(static item => item.Code).ToArray();
+
+            CollectionAssert.DoesNotContain(diagnosticCodes, "JAZORVUEEXTSTR003", $"{name}: fake @code should not trigger missing block-body diagnostics.");
+            CollectionAssert.DoesNotContain(diagnosticCodes, "JAZORVUEEXTSTR005", $"{name}: fake @code should not trigger missing template wrapper diagnostics.");
+        }
+    }
+
+    [TestMethod]
+    public async Task BuiltinStructureDiagnosticProvider_IgnoresCommentedFakeCodeDirectiveMarkersWithOpenBrace()
+    {
+        var provider = new StructureDiagnosticExtension();
+
+        foreach (var (name, text) in new (string Name, string Text)[]
+                 {
+                     (
+                         "line-comment",
+                         """
+                         <div>hello</div>
+                         // @code {
+                         """),
+                     (
+                         "block-comment",
+                         """
+                         <div>hello</div>
+                         /*
+                         @code {
+                         */
+                         """),
+                     (
+                         "razor-comment",
+                         """
+                         <div>hello</div>
+                         @*
+                         @code {
+                         *@
+                         """)
+                 })
+        {
+            var document = new DocumentSnapshot(
+                documentPath: Path.Combine(Path.GetTempPath(), $"phase7-structure-comment-open-brace-{name}-{Guid.NewGuid():N}.jazor"),
+                documentKind: DocumentKind.Jazor,
+                text: text,
+                version: "1");
+            var diagnostics = await provider.ProvideDiagnosticsAsync(
+                new LspDiagnosticProviderContext(document, Array.Empty<LspDiagnostic>()),
+                CancellationToken.None);
+            var diagnosticCodes = diagnostics.Select(static item => item.Code).ToArray();
+
+            CollectionAssert.DoesNotContain(diagnosticCodes, "JAZORVUEEXTSTR004", $"{name}: fake @code should not trigger unbalanced brace diagnostics.");
+            CollectionAssert.DoesNotContain(diagnosticCodes, "JAZORVUEEXTSTR005", $"{name}: fake @code should not trigger missing template wrapper diagnostics.");
+        }
+    }
+
+    [TestMethod]
+    public async Task BuiltinStructureDiagnosticProvider_ReportsMultipleRealCodeBlocks()
+    {
+        var provider = new StructureDiagnosticExtension();
+        var document = new DocumentSnapshot(
+            documentPath: Path.Combine(Path.GetTempPath(), $"phase7-structure-multi-code-{Guid.NewGuid():N}.jazor"),
+            documentKind: DocumentKind.Jazor,
+            text: """
+                  @code {
+                    private int first = 1;
+                  }
+
+                  @code {
+                    private int second = 2;
+                  }
+                  """,
+            version: "1");
+        var diagnostics = await provider.ProvideDiagnosticsAsync(
+            new LspDiagnosticProviderContext(document, Array.Empty<LspDiagnostic>()),
+            CancellationToken.None);
+        var duplicateCodeDiagnostic = diagnostics.Single(static item =>
+            string.Equals(item.Code, "JAZORVUEEXTSTR006", StringComparison.Ordinal));
+
+        Assert.AreEqual(4, duplicateCodeDiagnostic.Range.Start.Line);
+        Assert.AreEqual(0, duplicateCodeDiagnostic.Range.Start.Character);
+    }
+
+    [TestMethod]
     public async Task BuiltinDirectiveCompletionProvider_ServesDirectiveCompletionsThroughLspSession()
     {
         var workspaceStore = new InMemoryWorkspaceStore();
@@ -2078,6 +2189,231 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task BuiltinDirectiveCompletionProvider_DoesNotServeModuleDirectiveInsideTemplateExpression()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        var loader = new ExtensionLoader(registry);
+        await loader.LoadBuiltinExtensionsAsync(
+            BuiltinExtensionCatalog.Create(),
+            rootDirectory: Path.GetFullPath(Path.GetTempPath()),
+            cancellationToken: CancellationToken.None);
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-completion-{Guid.NewGuid():N}.jazor");
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                """
+                <template>
+                  @mod
+                </template>
+                """,
+                version: "1"),
+            CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3103,
+                Method = "textDocument/completion",
+                Params = new LspCompletionParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Position = new LspPosition { Line = 1, Character = 6 }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var items = response.Result as IReadOnlyList<LspCompletionItem>;
+        Assert.IsNotNull(items);
+        Assert.IsFalse(items.Any(static item => string.Equals(item.Label, "@module", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task BuiltinDirectiveCompletionProvider_ServesDirectiveCompletionsAfterCommentedCodeDirectiveMarker()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        var loader = new ExtensionLoader(registry);
+        await loader.LoadBuiltinExtensionsAsync(
+            BuiltinExtensionCatalog.Create(),
+            rootDirectory: Path.GetFullPath(Path.GetTempPath()),
+            cancellationToken: CancellationToken.None);
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-completion-{Guid.NewGuid():N}.jazor");
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                """
+                // @code {
+                @m
+                """,
+                version: "1"),
+            CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3104,
+                Method = "textDocument/completion",
+                Params = new LspCompletionParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Position = new LspPosition { Line = 1, Character = 2 }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var items = response.Result as IReadOnlyList<LspCompletionItem>;
+        Assert.IsNotNull(items);
+        Assert.IsTrue(items.Any(static item => string.Equals(item.Label, "@module", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task BuiltinDirectiveCompletionProvider_ServesDirectiveCompletionsAfterBlockCommentedCodeDirectiveMarker()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        var loader = new ExtensionLoader(registry);
+        await loader.LoadBuiltinExtensionsAsync(
+            BuiltinExtensionCatalog.Create(),
+            rootDirectory: Path.GetFullPath(Path.GetTempPath()),
+            cancellationToken: CancellationToken.None);
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-completion-{Guid.NewGuid():N}.jazor");
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                """
+                /*
+                @code {
+                */
+                @m
+                """,
+                version: "1"),
+            CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3105,
+                Method = "textDocument/completion",
+                Params = new LspCompletionParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Position = new LspPosition { Line = 3, Character = 2 }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var items = response.Result as IReadOnlyList<LspCompletionItem>;
+        Assert.IsNotNull(items);
+        Assert.IsTrue(items.Any(static item => string.Equals(item.Label, "@module", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task BuiltinDirectiveCompletionProvider_ServesDirectiveCompletionsAfterRazorCommentedCodeDirectiveMarker()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
+        var registry = new ExtensionRegistry();
+        var loader = new ExtensionLoader(registry);
+        await loader.LoadBuiltinExtensionsAsync(
+            BuiltinExtensionCatalog.Create(),
+            rootDirectory: Path.GetFullPath(Path.GetTempPath()),
+            cancellationToken: CancellationToken.None);
+
+        var documentPath = Path.Combine(Path.GetTempPath(), $"phase7-completion-{Guid.NewGuid():N}.jazor");
+        await workspaceStore.UpsertDocumentAsync(
+            new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                """
+                @*
+                @code {
+                *@
+                @m
+                """,
+                version: "1"),
+            CancellationToken.None);
+
+        using var outputStream = new MemoryStream();
+        var session = CreateSession(
+            workspaceStore,
+            virtualDocumentRegistry,
+            [new EmptyJazorLane()],
+            outputStream,
+            registry);
+
+        var response = await session.HandleRequestAsync(
+            new LspRequestMessage
+            {
+                Id = 3106,
+                Method = "textDocument/completion",
+                Params = new LspCompletionParams
+                {
+                    TextDocument = new LspTextDocumentIdentifier
+                    {
+                        Uri = LspProtocolHelpers.ToDocumentUri(documentPath)
+                    },
+                    Position = new LspPosition { Line = 3, Character = 2 }
+                }
+            },
+            CancellationToken.None);
+
+        Assert.IsNotNull(response);
+        Assert.IsNull(response!.Error);
+        var items = response.Result as IReadOnlyList<LspCompletionItem>;
+        Assert.IsNotNull(items);
+        Assert.IsTrue(items.Any(static item => string.Equals(item.Label, "@module", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
     public async Task BuiltinComponentCodeActionProvider_OffersImportQuickFixThroughLspSession()
     {
         var workspaceStore = new InMemoryWorkspaceStore();
@@ -2168,6 +2504,105 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
             Assert.IsTrue(importAction.Edit.Changes.ContainsKey(uri));
             var inserted = importAction.Edit.Changes[uri].Single();
             StringAssert.Contains(inserted.NewText, "@module CounterWidget from \"./CounterWidget.vue\"", StringComparison.Ordinal);
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task BuiltinComponentCodeActionProvider_OffersImportQuickFix_WhenExistingImportOnlyMatchesSourcePath()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-code-action-source-path-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "CounterWidget.vue"),
+                "<template><div /></template>");
+
+            var actions = await GetBuiltinComponentCodeActionsAsync(
+                rootDirectory,
+                """
+                @module OtherWidget from "./CounterWidget.vue"
+                <template>
+                  <CounterWidget />
+                </template>
+                """,
+                "CounterWidget");
+
+            Assert.IsTrue(actions.Any(static action =>
+                string.Equals(action.Title, "Add @module for CounterWidget", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task BuiltinComponentCodeActionProvider_OffersImportQuickFix_WhenExistingImportOnlyMatchesImportedNameBeforeAlias()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-code-action-imported-alias-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "CounterWidget.vue"),
+                "<template><div /></template>");
+
+            var actions = await GetBuiltinComponentCodeActionsAsync(
+                rootDirectory,
+                """
+                @module { CounterWidget as RenamedWidget } from "./components"
+                <template>
+                  <CounterWidget />
+                </template>
+                """,
+                "CounterWidget");
+
+            Assert.IsTrue(actions.Any(static action =>
+                string.Equals(action.Title, "Add @module for CounterWidget", StringComparison.Ordinal)));
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task BuiltinComponentCodeActionProvider_DoesNotOfferImportQuickFix_WhenComponentAlreadyImportedByLocalBinding()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), $"phase7-code-action-local-binding-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(rootDirectory, "CounterWidget.vue"),
+                "<template><div /></template>");
+
+            var actions = await GetBuiltinComponentCodeActionsAsync(
+                rootDirectory,
+                """
+                @module CounterWidget from "./shared/widgets"
+                <template>
+                  <CounterWidget />
+                </template>
+                """,
+                "CounterWidget");
+
+            Assert.IsFalse(actions.Any(static action =>
+                string.Equals(action.Title, "Add @module for CounterWidget", StringComparison.Ordinal)));
         }
         finally
         {
@@ -2593,6 +3028,62 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
 
     private static string ComputeSha256Hex(string filePath)
         => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(filePath)));
+
+    private static async Task<IReadOnlyList<LspCodeAction>> GetBuiltinComponentCodeActionsAsync(
+        string rootDirectory,
+        string documentText,
+        string componentName)
+    {
+        var documentPath = Path.Combine(rootDirectory, "Counter.jazor");
+        var document = new DocumentSnapshot(
+            documentPath,
+            DocumentKind.Jazor,
+            documentText,
+            version: "1");
+        var diagnostic = CreateMissingComponentDiagnostic(documentText, componentName);
+
+        var provider = new ComponentCodeActionExtension();
+        return await provider.ProvideCodeActionsAsync(
+            new LspCodeActionProviderContext(
+                document,
+                diagnostic.Range,
+                [diagnostic],
+                new ProjectionTarget(
+                    LaneKind.Jazor,
+                    DocumentRegionKind.Template,
+                    documentPath,
+                    documentPath,
+                    IsProjected: false),
+                Array.Empty<LspCodeAction>()),
+            CancellationToken.None);
+    }
+
+    private static LspDiagnostic CreateMissingComponentDiagnostic(string text, string componentName)
+    {
+        var componentOffset = text.IndexOf($"<{componentName}", StringComparison.Ordinal);
+        if (componentOffset >= 0)
+        {
+            componentOffset++;
+        }
+        else
+        {
+            componentOffset = text.IndexOf(componentName, StringComparison.Ordinal);
+        }
+
+        if (componentOffset < 0)
+        {
+            throw new InvalidOperationException($"Unable to locate component '{componentName}' in test document.");
+        }
+
+        return new LspDiagnostic
+        {
+            Range = LspProtocolHelpers.ToRange(text, componentOffset, componentName.Length),
+            Severity = 1,
+            Code = "JAZORVUEFRONTEND001",
+            Source = "Jolt.Frontend",
+            Message = $"Unable to resolve component {componentName}."
+        };
+    }
 
     private static LspSession CreateSession(
         IJoltWorkspaceStore workspaceStore,

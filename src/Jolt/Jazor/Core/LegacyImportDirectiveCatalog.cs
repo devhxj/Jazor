@@ -1,15 +1,9 @@
-using System.Text.RegularExpressions;
-
 namespace Jazor.Vue;
 
 public static class LegacyImportDirectiveCatalog
 {
     public const string DiagnosticCode = "JAZORVUE020";
     public const string DiagnosticSource = "Jolt";
-
-    private static readonly Regex LegacyImportDirectivePattern = new(
-        @"^\s*@(?<kind>import|jsimport|vueimport)\b",
-        RegexOptions.Multiline | RegexOptions.Compiled);
 
     public static IReadOnlyList<LegacyImportDirectiveOccurrence> FindOccurrences(string sourceText)
     {
@@ -19,20 +13,12 @@ public static class LegacyImportDirectiveCatalog
         }
 
         var occurrences = new List<LegacyImportDirectiveOccurrence>();
-        foreach (Match match in LegacyImportDirectivePattern.Matches(sourceText))
+        foreach (var match in JazorImportDirectiveLocator.EnumerateLegacyDirectives(sourceText))
         {
-            var kindGroup = match.Groups["kind"];
-            if (!kindGroup.Success)
-            {
-                continue;
-            }
-
-            var directiveStart = Math.Max(0, kindGroup.Index - 1);
-            var directiveLength = kindGroup.Length + 1;
             occurrences.Add(new LegacyImportDirectiveOccurrence(
-                kindGroup.Value,
-                directiveStart,
-                directiveLength));
+                match.LegacyKind,
+                match.DirectiveIndex,
+                match.DirectiveLength));
         }
 
         return occurrences;

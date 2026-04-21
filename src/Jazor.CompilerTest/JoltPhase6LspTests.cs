@@ -240,6 +240,36 @@ public sealed class JoltPhase6LspTests
     }
 
     [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_RoutesStandardRazorDirectiveToRoslynWithoutProjectionMap()
+    {
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            """
+            @using Demo
+
+            <template>
+              <div>Hello</div>
+            </template>
+            """,
+            "1");
+
+        var resolver = new DocumentProjectionResolver(
+            new DocumentRegionClassifier(),
+            new InMemoryVirtualDocumentRegistry());
+        var target = await resolver.ResolveAsync(
+            document,
+            ToPosition(document.Text, "Demo", advance: 1),
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Roslyn, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Directive, target.RegionKind);
+        Assert.IsFalse(target.IsProjected);
+        Assert.AreEqual(document.DocumentPath, target.ProjectedDocumentPath);
+        Assert.AreEqual(document.DocumentPath, target.MappingId);
+    }
+
+    [TestMethod]
     public async Task DocumentProjectionResolver_ResolveAsync_LeavesModuleDirectiveOnJazorLane()
     {
         var document = new DocumentSnapshot(
@@ -273,6 +303,37 @@ public sealed class JoltPhase6LspTests
     }
 
     [TestMethod]
+    public async Task DocumentProjectionResolver_ResolveAsync_LeavesModuleDirectiveOnJazorLane_WhenNoBlockCodeDirectivePrecedesRealCodeBlock()
+    {
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"projection-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            """
+            @code
+            @module CounterState from "./counter-state.ts"
+
+            @code {
+              private int Count = 1;
+            }
+            """,
+            "1");
+
+        var resolver = new DocumentProjectionResolver(
+            new DocumentRegionClassifier(),
+            new InMemoryVirtualDocumentRegistry());
+        var target = await resolver.ResolveAsync(
+            document,
+            ToPosition(document.Text, "CounterState", advance: 1),
+            CancellationToken.None);
+
+        Assert.AreEqual(LaneKind.Jazor, target.LaneKind);
+        Assert.AreEqual(DocumentRegionKind.Directive, target.RegionKind);
+        Assert.IsFalse(target.IsProjected);
+        Assert.AreEqual(document.DocumentPath, target.ProjectedDocumentPath);
+        Assert.AreEqual(document.DocumentPath, target.MappingId);
+    }
+
+    [TestMethod]
     public void DocumentRegionClassifier_Classify_CrLfBlankLineAfterDirective_RemainsDirective()
     {
         const string sourceText = "@page \"/\"\r\n\r\n<div>Hello</div>";
@@ -287,6 +348,103 @@ public sealed class JoltPhase6LspTests
 
         Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, directiveGapOffset));
         Assert.AreEqual(DocumentRegionKind.Template, classifier.Classify(sourceText, templateOffset));
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_DirectiveOnlyDocumentAtEndOfFile_RemainsDirective()
+    {
+        const string sourceText = "@m";
+        var classifier = new DocumentRegionClassifier();
+
+        var endOfFileOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 0, Character = sourceText.Length });
+
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, endOfFileOffset));
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_CommentedCodeDirectiveMarker_DoesNotCaptureFollowingDirective()
+    {
+        const string sourceText =
+            """
+            // @code {
+            @module CounterState from "./counter-state.ts"
+            """;
+        var classifier = new DocumentRegionClassifier();
+
+        var directiveOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 1, Character = 2 });
+
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, directiveOffset));
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_BlockCommentedCodeDirectiveMarker_DoesNotCaptureFollowingDirective()
+    {
+        const string sourceText =
+            """
+            /*
+            @code {
+            */
+            @module CounterState from "./counter-state.ts"
+            """;
+        var classifier = new DocumentRegionClassifier();
+
+        var directiveOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 3, Character = 2 });
+
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, directiveOffset));
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_RazorCommentedCodeDirectiveMarker_DoesNotCaptureFollowingDirective()
+    {
+        const string sourceText =
+            """
+            @*
+            @code {
+            *@
+            @module CounterState from "./counter-state.ts"
+            """;
+        var classifier = new DocumentRegionClassifier();
+
+        var directiveOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 3, Character = 2 });
+
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, directiveOffset));
+    }
+
+    [TestMethod]
+    public void DocumentRegionClassifier_Classify_NoBlockCodeDirectiveBeforeRealCodeBlock_DoesNotCaptureDirectiveGap()
+    {
+        const string sourceText =
+            """
+            @code
+            @module CounterState from "./counter-state.ts"
+
+            @code {
+                private int Count = 1;
+            }
+            """;
+        var classifier = new DocumentRegionClassifier();
+
+        var danglingCodeDirectiveOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 0, Character = 2 });
+        var moduleDirectiveOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 1, Character = 2 });
+        var realCodeOffset = LspProtocolHelpers.GetOffset(
+            sourceText,
+            new LspPosition { Line = 4, Character = 20 });
+
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, danglingCodeDirectiveOffset));
+        Assert.AreEqual(DocumentRegionKind.Directive, classifier.Classify(sourceText, moduleDirectiveOffset));
+        Assert.AreEqual(DocumentRegionKind.Code, classifier.Classify(sourceText, realCodeOffset));
     }
 
     [TestMethod]
@@ -700,6 +858,102 @@ public sealed class JoltPhase6LspTests
     }
 
     [TestMethod]
+    public async Task JazorLaneService_GetSemanticTokens_IgnoresCommentedFakeCodeDirectiveMarkers()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var documentService = CreateDocumentService(workspaceStore);
+        var lane = new JazorLaneService(documentService);
+
+        foreach (var (name, jazorText) in new (string Name, string Text)[]
+                 {
+                     (
+                         "line-comment",
+                         """
+                         // @code {
+
+                         @code {
+                           public string Name { get; set; }
+                         }
+                         """),
+                     (
+                         "block-comment",
+                         """
+                         /*
+                         @code {
+                         */
+
+                         @code {
+                           public string Name { get; set; }
+                         }
+                         """),
+                     (
+                         "razor-comment",
+                         """
+                         @*
+                         @code {
+                         *@
+
+                         @code {
+                           public string Name { get; set; }
+                         }
+                         """)
+                 })
+        {
+            var document = new DocumentSnapshot(
+                Path.Combine(Path.GetTempPath(), $"test-commented-code-token-{name}-{Guid.NewGuid():N}.jazor"),
+                DocumentKind.Jazor,
+                jazorText,
+                "1");
+
+            var tokens = await lane.GetSemanticTokensAsync(document, CancellationToken.None);
+            var keywordTokens = tokens.Where(static token => token.TokenType == "keyword").ToList();
+            var expectedDirectiveIndex = jazorText.LastIndexOf("@code", StringComparison.Ordinal);
+            var expectedPosition = LspProtocolHelpers.GetPosition(jazorText, expectedDirectiveIndex);
+
+            Assert.AreEqual(1, keywordTokens.Count, $"{name}: expected exactly one @code keyword token.");
+            Assert.AreEqual(expectedPosition.Line, keywordTokens[0].Line, $"{name}: keyword token should map to the real @code line.");
+            Assert.AreEqual(expectedPosition.Character, keywordTokens[0].Character, $"{name}: keyword token should map to the real @code column.");
+            Assert.AreEqual("@code".Length, keywordTokens[0].Length, $"{name}: keyword token length should stay aligned with @code.");
+        }
+    }
+
+    [TestMethod]
+    public async Task JazorLaneService_GetSemanticTokens_ReturnsCodeDirectiveTokenForEachRealCodeBlock()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var documentService = CreateDocumentService(workspaceStore);
+        var lane = new JazorLaneService(documentService);
+
+        var jazorText =
+            """
+            @code {
+              private int First = 1;
+            }
+
+            @code {
+              private int Second = 2;
+            }
+            """;
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"test-multi-code-tokens-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            jazorText,
+            "1");
+
+        var tokens = await lane.GetSemanticTokensAsync(document, CancellationToken.None);
+        var keywordTokens = tokens.Where(static token => token.TokenType == "keyword").ToArray();
+        var directivePositions = JazorCodeDirectiveLocator.EnumerateCodeDirectives(jazorText)
+            .Where(static match => match.HasBlockBody)
+            .Select(match => LspProtocolHelpers.GetPosition(jazorText, match.DirectiveIndex))
+            .ToArray();
+
+        Assert.AreEqual(2, keywordTokens.Length, "Expected one semantic token per real @code block.");
+        CollectionAssert.AreEquivalent(
+            directivePositions.Select(static position => $"{position.Line}:{position.Character}").ToArray(),
+            keywordTokens.Select(static token => $"{token.Line}:{token.Character}").ToArray());
+    }
+
+    [TestMethod]
     public async Task JazorLaneService_GetSemanticTokens_ReturnsComponentTagTokens()
     {
         var workspaceStore = new InMemoryWorkspaceStore();
@@ -768,6 +1022,49 @@ public sealed class JoltPhase6LspTests
             .ToList();
 
         Assert.IsTrue(importKeywords.Count >= 2, $"Expected at least 2 import keyword tokens, got {importKeywords.Count}");
+    }
+
+    [TestMethod]
+    public async Task JazorLaneService_GetSemanticTokens_IgnoresFakeModuleDirectivesInsideCommentsAndCodeBlocks()
+    {
+        var workspaceStore = new InMemoryWorkspaceStore();
+        var documentService = CreateDocumentService(workspaceStore);
+        var lane = new JazorLaneService(documentService);
+
+        var jazorText =
+            """
+            @*
+            @module FakeComment from "./fake-comment.vue"
+            *@
+            @module RealComponent from "./RealComponent.vue"
+
+            @code {
+                @module FakeCode from "./fake-code.ts"
+            }
+            """;
+        var document = new DocumentSnapshot(
+            Path.Combine(Path.GetTempPath(), $"test-import-tokens-{Guid.NewGuid():N}.jazor"),
+            DocumentKind.Jazor,
+            jazorText,
+            "1");
+
+        var tokens = await lane.GetSemanticTokensAsync(document, CancellationToken.None);
+        var moduleTokens = tokens
+            .Where(static token => token.TokenType == "keyword")
+            .Where(token =>
+            {
+                var offset = LspProtocolHelpers.GetOffset(
+                    jazorText,
+                    new LspPosition { Line = token.Line, Character = token.Character });
+                return offset + token.Length <= jazorText.Length
+                    && string.Equals(jazorText.Substring(offset, token.Length), "@module", StringComparison.Ordinal);
+            })
+            .ToArray();
+        var expectedPosition = ToPosition(jazorText, "RealComponent", advance: -8);
+
+        Assert.AreEqual(1, moduleTokens.Length);
+        Assert.AreEqual(expectedPosition.Line, moduleTokens[0].Line);
+        Assert.AreEqual(expectedPosition.Character, moduleTokens[0].Character);
     }
 
     #endregion

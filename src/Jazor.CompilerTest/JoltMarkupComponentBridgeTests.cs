@@ -217,6 +217,169 @@ public sealed class JoltMarkupComponentBridgeTests
     }
 
     [TestMethod]
+    public async Task MarkupComponentBridgeService_ResolveBridgeSymbolAsync_IgnoresFakeImportInLineComment()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "consumer.ts"),
+                DocumentKind.TypeScript,
+                """
+                // import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """,
+                "1");
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+            var service = new MarkupComponentBridgeService(workspaceStore);
+
+            var resolved = await service.ResolveBridgeSymbolAsync(
+                scriptDocument,
+                FindPosition(scriptDocument.Text, "UserBadge", useLastOccurrence: true),
+                locationHints: null,
+                allowWorkspaceScan: true,
+                CancellationToken.None);
+
+            Assert.IsFalse(resolved.HasValue);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task MarkupComponentBridgeService_ResolveBridgeSymbolAsync_IgnoresFakeImportInBlockComment()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "consumer.ts"),
+                DocumentKind.TypeScript,
+                """
+                /*
+                 import UserBadge from "./UserBadge.vue";
+                */
+                export const current = UserBadge;
+                """,
+                "1");
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+            var service = new MarkupComponentBridgeService(workspaceStore);
+
+            var resolved = await service.ResolveBridgeSymbolAsync(
+                scriptDocument,
+                FindPosition(scriptDocument.Text, "UserBadge", useLastOccurrence: true),
+                locationHints: null,
+                allowWorkspaceScan: true,
+                CancellationToken.None);
+
+            Assert.IsFalse(resolved.HasValue);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task MarkupComponentBridgeService_ResolveBridgeSymbolAsync_IgnoresFakeImportInTemplateString()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "consumer.ts"),
+                DocumentKind.TypeScript,
+                """
+                const sample = `
+                import UserBadge from "./UserBadge.vue";
+                `;
+                export const current = UserBadge;
+                """,
+                "1");
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+            var service = new MarkupComponentBridgeService(workspaceStore);
+
+            var resolved = await service.ResolveBridgeSymbolAsync(
+                scriptDocument,
+                FindPosition(scriptDocument.Text, "UserBadge", useLastOccurrence: true),
+                locationHints: null,
+                allowWorkspaceScan: true,
+                CancellationToken.None);
+
+            Assert.IsFalse(resolved.HasValue);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task MarkupComponentBridgeService_ResolveBridgeSymbolAsync_PrefersRealImportOverCommentText()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var declarationPath = Path.Combine(tempDirectory, "UserBadge.vue");
+            await File.WriteAllTextAsync(declarationPath, "<template><div>UserBadge</div></template>");
+
+            var scriptDocument = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "consumer.ts"),
+                DocumentKind.TypeScript,
+                """
+                // import FakeBadge from "./FakeBadge.vue";
+                import UserBadge from "./UserBadge.vue";
+                export const current = UserBadge;
+                """,
+                "1");
+            var workspaceStore = new InMemoryWorkspaceStore();
+            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+            var service = new MarkupComponentBridgeService(workspaceStore);
+
+            var resolved = await service.ResolveBridgeSymbolAsync(
+                scriptDocument,
+                FindPosition(scriptDocument.Text, "UserBadge", useLastOccurrence: true),
+                locationHints: null,
+                allowWorkspaceScan: true,
+                CancellationToken.None);
+
+            Assert.IsTrue(resolved.HasValue);
+            Assert.AreEqual("UserBadge", resolved.Value.ComponentName);
+            Assert.AreEqual(JoltWorkspaceResolver.NormalizePath(declarationPath), resolved.Value.AbsolutePath);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task MarkupComponentBridgeService_FindJazorReferencesAndRenameChanges_IncludeOpenUnsavedAndDiskJazorForTypeScriptImport()
     {
         var tempDirectory = CreateTemporaryDirectory();
@@ -321,5 +484,14 @@ public sealed class JoltMarkupComponentBridgeTests
         var path = Path.Combine(Path.GetTempPath(), "JoltMarkupComponentBridgeTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static LspPosition FindPosition(string text, string marker, bool useLastOccurrence = false)
+    {
+        var offset = useLastOccurrence
+            ? text.LastIndexOf(marker, StringComparison.Ordinal)
+            : text.IndexOf(marker, StringComparison.Ordinal);
+        Assert.IsTrue(offset >= 0, $"Marker '{marker}' was not found.");
+        return LspProtocolHelpers.GetPosition(text, offset);
     }
 }

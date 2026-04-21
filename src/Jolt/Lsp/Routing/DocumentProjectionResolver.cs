@@ -116,10 +116,11 @@ internal sealed class DocumentProjectionResolver
                 IsProjected: false);
         }
 
-        if (regionKind == DocumentRegionKind.Code)
+        if (regionKind is DocumentRegionKind.Code or DocumentRegionKind.Directive)
         {
-            // Code-lane requests already execute against the source snapshot. Keep routing
-            // them into Roslyn even if the virtual C# document has not been materialized yet.
+            // Standard Razor directives and code-lane requests should stay on Roslyn even when
+            // the registry does not have an exact projection mapping yet. The Roslyn lane can
+            // still build or fall back to its own projection from the source snapshot.
             return new ProjectionTarget(
                 LaneKind.Roslyn,
                 regionKind,

@@ -147,6 +147,15 @@ internal sealed class StdioLspServer
                 await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
                 return;
             }
+
+            // Give the reader loop a turn so a just-arrived `$/cancelRequest`
+            // can cancel queued work before the handler starts executing.
+            await Task.Yield();
+            if (requestCancellationSource.IsCancellationRequested)
+            {
+                await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
+                return;
+            }
         }
 
         LspResponseMessage? response;

@@ -81,6 +81,95 @@ public sealed class JazorVueCompilerTests
     }
 
     [TestMethod]
+    public void JazorVue_Parser_SkipsDirectiveWithoutBlockBodyBeforeRealCodeBlock()
+    {
+        var source = """
+            @code
+
+            @code {
+                private int Count = 1;
+            }
+            """;
+
+        var parser = new JazorVueParser();
+        var document = parser.Parse("Counter.jazor", source);
+
+        StringAssert.Contains(document.Code, "private int Count = 1;");
+        Assert.IsTrue(document.CodeStartIndex > source.IndexOf("@code", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void JazorVue_Parser_IgnoresCommentedCodeDirectiveMarkersInRazorComments()
+    {
+        var source = """
+            @*
+            @code {
+            *@
+            @using System
+
+            <template>
+              <div>Hello</div>
+            </template>
+            """;
+
+        var parser = new JazorVueParser();
+        var document = parser.Parse("Counter.jazor", source);
+
+        Assert.AreEqual(string.Empty, document.Code);
+        Assert.AreEqual(-1, document.CodeStartIndex);
+        StringAssert.Contains(document.Template, "<div>Hello</div>");
+    }
+
+    [TestMethod]
+    public void JazorVue_Parser_IgnoresBracesInsideStringsAndCommentsWithinCodeBlock()
+    {
+        var source = """"
+            @code {
+                private string Json => "}";
+                /* } */
+                private string Raw => """
+                {
+                }
+                """;
+                private int Count => 1;
+            }
+            """";
+
+        var parser = new JazorVueParser();
+        var document = parser.Parse("Counter.jazor", source);
+
+        StringAssert.Contains(document.Code, "private string Json => \"}\";");
+        StringAssert.Contains(document.Code, "private string Raw =>");
+        StringAssert.Contains(document.Code, "private int Count => 1;");
+    }
+
+    [TestMethod]
+    public void JazorVue_Parser_IgnoresModuleDirectivesInsideCommentsAndCodeBlocks()
+    {
+        var source = """
+            @module dayjs from "dayjs"
+            @*
+            @module FakeComment from "./FakeComment.vue"
+            *@
+
+            @code {
+                @module FakeCode from "./fake-code.ts"
+            }
+
+            <template>
+              <div />
+            </template>
+            """;
+
+        var parser = new JazorVueParser();
+        var document = parser.Parse("Counter.jazor", source);
+
+        Assert.AreEqual(1, document.Imports.Count);
+        Assert.AreEqual("dayjs", document.Imports[0].Source);
+        Assert.AreEqual("dayjs", document.Imports[0].Bindings[0].LocalName);
+    }
+
+    [TestMethod]
     public void JazorVue_Compiler_EmitsBridgeVueArtifactFromDocument()
     {
         var source = """

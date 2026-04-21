@@ -287,6 +287,30 @@ public sealed class JoltInProcRoslynTests
     }
 
     [TestMethod]
+    public async Task InProcRoslynCodeService_GetCompletionItemsAsync_FromDirectiveAfterRazorCommentedCodeMarker_ReturnsNamespaceCompletions()
+    {
+        var document = CreateDocument(
+            Path.Combine(Path.GetTempPath(), $"jolt-roslyn-{Guid.NewGuid():N}.jazor"),
+            """
+            @*
+            @code {
+            *@
+            @using Sys
+
+            <template>
+              <div>Hello</div>
+            </template>
+            """);
+
+        var items = await _service.GetCompletionItemsAsync(
+            document,
+            GetPosition(document.Text, "Sys", advance: "Sys".Length),
+            CancellationToken.None);
+
+        CollectionAssert.Contains(items.Select(static item => item.Label).ToArray(), "System");
+    }
+
+    [TestMethod]
     public async Task InProcRoslynCodeService_GetDiagnosticsAsync_FromJazorCode_UseUnopenedDiskBackedCSharpDeclaration()
     {
         var tempDirectory = Path.Combine(Path.GetTempPath(), "jolt-roslyn-tests", Guid.NewGuid().ToString("N"));

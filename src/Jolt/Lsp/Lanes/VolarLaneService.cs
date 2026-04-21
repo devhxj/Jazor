@@ -1,3 +1,4 @@
+using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jolt.Frontend;
 using Jolt.Frontend.Deno.Hosting;
@@ -16,9 +17,6 @@ namespace Jolt.Lsp.Lanes;
 internal sealed class VolarLaneService : ILspLane
 {
     private const string MissingTemplateImportDiagnosticCode = "JAZORVUEFRONTEND001";
-    private static readonly Regex ComponentTagPattern = new(
-        @"<(?<name>[A-Z][A-Za-z0-9_]*)\b",
-        RegexOptions.Compiled);
     private static readonly Regex TagCompletionPrefixPattern = new(
         @"</?(?<name>[A-Za-z0-9_]*)$",
         RegexOptions.Compiled);
@@ -508,7 +506,7 @@ internal sealed class VolarLaneService : ILspLane
     private static bool TryGetComponentTagNameAtPosition(string text, LspPosition position, out string componentName)
     {
         var offset = LspProtocolHelpers.GetOffset(text, position);
-        foreach (Match match in ComponentTagPattern.Matches(text))
+        foreach (Match match in JazorMarkupPatterns.ComponentTagPattern.Matches(text))
         {
             var group = match.Groups["name"];
             if (!group.Success)
@@ -1240,7 +1238,7 @@ internal sealed class VolarLaneService : ILspLane
         CancellationToken cancellationToken)
     {
         var diagnostics = new List<LspDiagnostic>();
-        foreach (Match match in ComponentTagPattern.Matches(document.Text))
+        foreach (Match match in JazorMarkupPatterns.ComponentTagPattern.Matches(document.Text))
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -1364,7 +1362,7 @@ internal sealed class VolarLaneService : ILspLane
         DocumentSnapshot document)
     {
         var tokens = new List<LspSemanticToken>();
-        foreach (Match match in ComponentTagPattern.Matches(document.Text))
+        foreach (Match match in JazorMarkupPatterns.ComponentTagPattern.Matches(document.Text))
         {
             var group = match.Groups["name"];
             if (!group.Success)

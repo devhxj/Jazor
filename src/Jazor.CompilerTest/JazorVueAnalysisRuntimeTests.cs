@@ -161,6 +161,42 @@ public sealed class JazorVueAnalysisRuntimeTests
     }
 
     [TestMethod]
+    public async Task JazorVueAnalysisService_AnalyzeJazor_IgnoresLegacyImportDirectivesInsideCommentsAndCodeStrings()
+    {
+        var service = new JazorVueAnalysisService();
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                """"
+                @module dayjs from "dayjs"
+                @*
+                @jsimport fakeComment from "./fake-comment.ts"
+                *@
+
+                <template>
+                  <div />
+                </template>
+
+                @code {
+                    private string LegacyMarker => """
+                    @import fakeRaw from "./fake-raw.ts"
+                    """;
+                }
+                """",
+                "legacy-ignore"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            frontendContext: null);
+
+        var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
+        var diagnostics = response.Diagnostics
+            .Where(static record => string.Equals(record.Id, LegacyImportDirectiveCatalog.DiagnosticCode, StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length);
+    }
+
+    [TestMethod]
     public async Task JazorVueAnalysisRpcProcessor_AnalyzeJazor_ReturnsResponseEnvelope()
     {
         var service = new JazorVueAnalysisService();

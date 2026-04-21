@@ -766,7 +766,7 @@ internal sealed partial class BuildOrchestrator
 
                 var normalizedSourcePath = NormalizeSourceMapSourcePath(
                     rootDirectory,
-                    Path.GetDirectoryName(sourceMapAbsolutePath)!,
+                    GetContainingDirectoryPath(sourceMapAbsolutePath),
                     sourceElement.GetString(),
                     moduleResolver);
                 if (!string.IsNullOrWhiteSpace(normalizedSourcePath))

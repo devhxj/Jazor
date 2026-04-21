@@ -1,5 +1,6 @@
 using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
+using Jolt.Lsp.Routing;
 
 namespace Jolt.Extensions.Builtin;
 
@@ -36,6 +37,11 @@ internal sealed class DirectiveCompletionExtension : IExtension, ILspCompletionP
         cancellationToken.ThrowIfCancellationRequested();
 
         if (context.Document.DocumentKind != DocumentKind.Jazor)
+        {
+            return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
+        }
+
+        if (context.ProjectionTarget.RegionKind != DocumentRegionKind.Directive)
         {
             return ValueTask.FromResult<IReadOnlyList<LspCompletionItem>>(Array.Empty<LspCompletionItem>());
         }

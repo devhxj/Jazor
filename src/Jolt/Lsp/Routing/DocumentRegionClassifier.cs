@@ -1,3 +1,5 @@
+using Jazor.Vue;
+
 namespace Jolt.Lsp.Routing;
 
 internal sealed class DocumentRegionClassifier
@@ -20,6 +22,7 @@ internal sealed class DocumentRegionClassifier
         "@using",
         "@code"
     ];
+
     private static readonly string[] CodeBlockDirectives =
     [
         "@code",
@@ -41,7 +44,9 @@ internal sealed class DocumentRegionClassifier
             return DocumentRegionKind.Code;
         }
 
-        return clampedOffset < GetMarkupBoundary(text)
+        var markupBoundary = GetMarkupBoundary(text);
+        return clampedOffset < markupBoundary
+            || (markupBoundary == text.Length && clampedOffset == text.Length)
             ? DocumentRegionKind.Directive
             : DocumentRegionKind.Template;
     }
@@ -65,306 +70,43 @@ internal sealed class DocumentRegionClassifier
 
     private static (int Start, int End) FindCodeBlock(string text, int offset)
     {
-        foreach (var directive in CodeBlockDirectives)
+        foreach (var match in RazorBlockDirectiveLocator.EnumerateDirectiveBlocks(text, CodeBlockDirectives))
         {
-            var searchStart = 0;
-            while (searchStart < text.Length)
+            if (match.DirectiveIndex > offset)
             {
-                var directiveIndex = text.IndexOf(directive, searchStart, StringComparison.OrdinalIgnoreCase);
-                if (directiveIndex < 0)
-                {
-                    break;
-                }
+                break;
+            }
 
-                if (directiveIndex > offset)
-                {
-                    break;
-                }
+            if (!match.HasBlockBody)
+            {
+                continue;
+            }
 
-                var range = FindBraceDelimitedDirectiveBlock(text, directiveIndex);
-                if (InRange(range, offset))
-                {
-                    return range;
-                }
-
-                searchStart = directiveIndex + directive.Length;
+            var range = GetBlockRange(match, text.Length);
+            if (InRange(range, offset))
+            {
+                return range;
             }
         }
 
         return (-1, -1);
     }
 
-    private static (int Start, int End) FindBraceDelimitedDirectiveBlock(string text, int directiveIndex)
-    {
-        var braceIndex = text.IndexOf('{', directiveIndex);
-        if (braceIndex < 0)
-        {
-            return (directiveIndex, text.Length);
-        }
-
-        var depth = 1;
-        for (var index = braceIndex + 1; index < text.Length; index++)
-        {
-            if (TrySkipQuotedLiteral(text, ref index)
-                || TrySkipComment(text, ref index))
-            {
-                continue;
-            }
-
-            switch (text[index])
-            {
-                case '{':
-                    depth++;
-                    break;
-                case '}':
-                    depth--;
-                    if (depth == 0)
-                    {
-                        return (directiveIndex, index + 1);
-                    }
-
-                    break;
-            }
-        }
-
-        return (directiveIndex, text.Length);
-    }
-
-    private static bool TrySkipComment(string text, ref int index)
-    {
-        if (text[index] != '/' || index + 1 >= text.Length)
-        {
-            return false;
-        }
-
-        if (text[index + 1] == '/')
-        {
-            index = SkipLineComment(text, index + 2);
-            return true;
-        }
-
-        if (text[index + 1] == '*')
-        {
-            index = SkipBlockComment(text, index + 2);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool TrySkipQuotedLiteral(string text, ref int index)
-    {
-        if (text[index] == '\'')
-        {
-            index = SkipRegularQuotedLiteral(text, index, '\'');
-            return true;
-        }
-
-        if (TryGetRawStringDelimiterLength(text, index, out var rawStringStartIndex, out var rawStringDelimiterLength))
-        {
-            index = SkipRawStringLiteral(text, rawStringStartIndex, rawStringDelimiterLength);
-            return true;
-        }
-
-        if (TryGetVerbatimStringStart(text, index, out var verbatimStringStartIndex))
-        {
-            index = SkipVerbatimStringLiteral(text, verbatimStringStartIndex);
-            return true;
-        }
-
-        if (TryGetRegularStringStart(text, index, out var regularStringStartIndex))
-        {
-            index = SkipRegularQuotedLiteral(text, regularStringStartIndex, '"');
-            return true;
-        }
-
-        return false;
-    }
-
-    private static int SkipLineComment(string text, int index)
-    {
-        while (index < text.Length
-               && text[index] != '\r'
-               && text[index] != '\n')
-        {
-            index++;
-        }
-
-        return Math.Max(0, index - 1);
-    }
-
-    private static int SkipBlockComment(string text, int index)
-    {
-        while (index + 1 < text.Length)
-        {
-            if (text[index] == '*' && text[index + 1] == '/')
-            {
-                return index + 1;
-            }
-
-            index++;
-        }
-
-        return text.Length - 1;
-    }
-
-    private static bool TryGetRegularStringStart(string text, int index, out int stringStartIndex)
-    {
-        if (text[index] == '"')
-        {
-            stringStartIndex = index;
-            return true;
-        }
-
-        if (text[index] == '$'
-            && index + 1 < text.Length
-            && text[index + 1] == '"')
-        {
-            stringStartIndex = index + 1;
-            return true;
-        }
-
-        stringStartIndex = -1;
-        return false;
-    }
-
-    private static bool TryGetVerbatimStringStart(string text, int index, out int stringStartIndex)
-    {
-        if (text[index] == '@'
-            && index + 1 < text.Length
-            && text[index + 1] == '"')
-        {
-            stringStartIndex = index + 1;
-            return true;
-        }
-
-        if (text[index] == '$'
-            && index + 2 < text.Length
-            && text[index + 1] == '@'
-            && text[index + 2] == '"')
-        {
-            stringStartIndex = index + 2;
-            return true;
-        }
-
-        if (text[index] == '@'
-            && index + 2 < text.Length
-            && text[index + 1] == '$'
-            && text[index + 2] == '"')
-        {
-            stringStartIndex = index + 2;
-            return true;
-        }
-
-        stringStartIndex = -1;
-        return false;
-    }
-
-    private static bool TryGetRawStringDelimiterLength(
-        string text,
-        int index,
-        out int rawStringStartIndex,
-        out int delimiterLength)
-    {
-        var current = index;
-        while (current < text.Length && text[current] == '$')
-        {
-            current++;
-        }
-
-        var quoteRunLength = CountConsecutiveQuotes(text, current);
-        if (quoteRunLength < 3)
-        {
-            rawStringStartIndex = -1;
-            delimiterLength = 0;
-            return false;
-        }
-
-        rawStringStartIndex = current;
-        delimiterLength = quoteRunLength;
-        return true;
-    }
-
-    private static int SkipRegularQuotedLiteral(string text, int stringStartIndex, char quote)
-    {
-        var escaped = false;
-        for (var index = stringStartIndex + 1; index < text.Length; index++)
-        {
-            var character = text[index];
-            if (escaped)
-            {
-                escaped = false;
-                continue;
-            }
-
-            if (character == '\\')
-            {
-                escaped = true;
-                continue;
-            }
-
-            if (character == quote)
-            {
-                return index;
-            }
-        }
-
-        return text.Length - 1;
-    }
-
-    private static int SkipVerbatimStringLiteral(string text, int stringStartIndex)
-    {
-        for (var index = stringStartIndex + 1; index < text.Length; index++)
-        {
-            if (text[index] != '"')
-            {
-                continue;
-            }
-
-            if (index + 1 < text.Length && text[index + 1] == '"')
-            {
-                index++;
-                continue;
-            }
-
-            return index;
-        }
-
-        return text.Length - 1;
-    }
-
-    private static int SkipRawStringLiteral(string text, int stringStartIndex, int delimiterLength)
-    {
-        for (var index = stringStartIndex + delimiterLength; index < text.Length; index++)
-        {
-            var quoteRunLength = CountConsecutiveQuotes(text, index);
-            if (quoteRunLength < delimiterLength)
-            {
-                continue;
-            }
-
-            return index + delimiterLength - 1;
-        }
-
-        return text.Length - 1;
-    }
-
-    private static int CountConsecutiveQuotes(string text, int index)
-    {
-        var count = 0;
-        while (index + count < text.Length && text[index + count] == '"')
-        {
-            count++;
-        }
-
-        return count;
-    }
+    private static (int Start, int End) GetBlockRange(RazorBlockDirectiveMatch match, int textLength)
+        => (match.DirectiveIndex, match.IsClosed ? match.ClosingBraceIndex + 1 : textLength);
 
     private static int GetMarkupBoundary(string text)
     {
         var lineStart = 0;
         while (lineStart < text.Length)
         {
+            if (TrySkipPreambleDelimitedComment(text, lineStart, "/*", "*/", out var nextLineStart)
+                || TrySkipPreambleDelimitedComment(text, lineStart, "@*", "*@", out nextLineStart))
+            {
+                lineStart = nextLineStart;
+                continue;
+            }
+
             var lineEnd = lineStart;
             while (lineEnd < text.Length
                    && text[lineEnd] != '\r'
@@ -374,7 +116,7 @@ internal sealed class DocumentRegionClassifier
             }
 
             var line = text.AsSpan(lineStart, lineEnd - lineStart);
-            if (IsWhitespace(line) || IsTopLevelDirective(line))
+            if (IsIgnorablePreambleLine(line))
             {
                 lineStart = GetNextLineStart(text, lineEnd);
                 continue;
@@ -384,6 +126,45 @@ internal sealed class DocumentRegionClassifier
         }
 
         return text.Length;
+    }
+
+    private static bool TrySkipPreambleDelimitedComment(
+        string text,
+        int lineStart,
+        string startToken,
+        string endToken,
+        out int nextLineStart)
+    {
+        var contentStart = GetLineContentStart(text, lineStart);
+        if (!StartsWith(text, contentStart, startToken))
+        {
+            nextLineStart = -1;
+            return false;
+        }
+
+        var commentEnd = text.IndexOf(endToken, contentStart + startToken.Length, StringComparison.Ordinal);
+        if (commentEnd < 0)
+        {
+            nextLineStart = text.Length;
+            return true;
+        }
+
+        var lineEnd = commentEnd + endToken.Length;
+        while (lineEnd < text.Length
+               && text[lineEnd] != '\r'
+               && text[lineEnd] != '\n')
+        {
+            if (!char.IsWhiteSpace(text[lineEnd]))
+            {
+                nextLineStart = -1;
+                return false;
+            }
+
+            lineEnd++;
+        }
+
+        nextLineStart = GetNextLineStart(text, lineEnd);
+        return true;
     }
 
     private static int GetNextLineStart(string text, int lineEnd)
@@ -403,6 +184,20 @@ internal sealed class DocumentRegionClassifier
         return lineEnd + 1;
     }
 
+    private static int GetLineContentStart(string text, int lineStart)
+    {
+        var index = lineStart;
+        while (index < text.Length
+               && text[index] != '\r'
+               && text[index] != '\n'
+               && char.IsWhiteSpace(text[index]))
+        {
+            index++;
+        }
+
+        return index;
+    }
+
     private static bool IsWhitespace(ReadOnlySpan<char> line)
     {
         foreach (var character in line)
@@ -414,6 +209,17 @@ internal sealed class DocumentRegionClassifier
         }
 
         return true;
+    }
+
+    private static bool IsIgnorablePreambleLine(ReadOnlySpan<char> line)
+        => IsWhitespace(line)
+            || IsTopLevelDirective(line)
+            || IsSingleLineComment(line);
+
+    private static bool IsSingleLineComment(ReadOnlySpan<char> line)
+    {
+        var trimmed = line.TrimStart();
+        return trimmed.StartsWith("//", StringComparison.Ordinal);
     }
 
     private static bool IsTopLevelDirective(ReadOnlySpan<char> line)
@@ -441,6 +247,15 @@ internal sealed class DocumentRegionClassifier
 
         return false;
     }
+
+    private static bool StartsWith(
+        string text,
+        int index,
+        string value,
+        StringComparison comparison = StringComparison.Ordinal)
+        => index >= 0
+            && index + value.Length <= text.Length
+            && text.AsSpan(index, value.Length).Equals(value.AsSpan(), comparison);
 
     private static bool InRange((int Start, int End) range, int offset)
         => range.Start >= 0

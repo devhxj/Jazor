@@ -369,7 +369,7 @@ internal sealed class DenoBundleRunner
         {
             var jsContent = await File.ReadAllTextAsync(provisionalOutputPath, cancellationToken);
             var hashedFileName = CreateHashedFileName(provisionalOutputPath, jsContent);
-            var hashedOutputPath = Path.Combine(Path.GetDirectoryName(provisionalOutputPath)!, hashedFileName);
+            var hashedOutputPath = Path.Combine(GetContainingDirectoryPath(provisionalOutputPath), hashedFileName);
             var sourceMapPath = provisionalOutputPath + ".map";
             var hashedSourceMapPath = File.Exists(sourceMapPath)
                 ? hashedOutputPath + ".map"
@@ -441,7 +441,7 @@ internal sealed class DenoBundleRunner
         out IReadOnlyList<string> imports)
     {
         var importedChunks = new HashSet<string>(StringComparer.Ordinal);
-        var currentDirectory = Path.GetDirectoryName(bundleFile.OriginalPath)!;
+        var currentDirectory = GetContainingDirectoryPath(bundleFile.OriginalPath);
 
         var rewrittenContent = RelativeJavaScriptSpecifierPattern.Replace(
             bundleFile.OriginalContent,
@@ -526,6 +526,11 @@ internal sealed class DenoBundleRunner
         return $"{Path.GetFileNameWithoutExtension(provisionalOutputPath)}-{hash}{Path.GetExtension(provisionalOutputPath)}";
     }
 
+    private static string GetContainingDirectoryPath(string path)
+        => Path.GetDirectoryName(path)
+            ?? Path.GetPathRoot(path)
+            ?? string.Empty;
+
     private static string ResolveProvisionalEntryOutputPath(
         IReadOnlyList<string> provisionalOutputPaths,
         Uri entryUri)
@@ -597,7 +602,7 @@ internal sealed class DenoBundleRunner
         {
             var cssContent = await File.ReadAllTextAsync(provisionalOutputPath, cancellationToken);
             var hashedFileName = CreateHashedFileName(provisionalOutputPath, cssContent);
-            var hashedOutputPath = Path.Combine(Path.GetDirectoryName(provisionalOutputPath)!, hashedFileName);
+            var hashedOutputPath = Path.Combine(GetContainingDirectoryPath(provisionalOutputPath), hashedFileName);
             var sourceMapPath = provisionalOutputPath + ".map";
             var hashedSourceMapPath = File.Exists(sourceMapPath)
                 ? hashedOutputPath + ".map"

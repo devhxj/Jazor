@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Workspace;
@@ -8,14 +9,6 @@ namespace Jolt.Extensions.Builtin;
 internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionProvider
 {
     private const string MissingComponentDiagnosticCode = "JAZORVUEFRONTEND001";
-
-    private static readonly Regex ComponentTagPattern = new(
-        @"<(?<name>[A-Z][A-Za-z0-9_]*)\b",
-        RegexOptions.Compiled);
-
-    private static readonly Regex ImportDirectivePattern = new(
-        @"^\s*@(?:module|import|jsimport|vueimport)\b.*$",
-        RegexOptions.Compiled | RegexOptions.Multiline);
 
     private static readonly Regex QuotedComponentNamePattern = new(
         @"['""](?<name>[A-Z][A-Za-z0-9_]*)['""]",
@@ -107,7 +100,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
         var diagnosticStartOffset = LspProtocolHelpers.GetOffset(text, diagnostic.Range.Start);
         var diagnosticEndOffset = LspProtocolHelpers.GetOffset(text, diagnostic.Range.End);
 
-        foreach (Match match in ComponentTagPattern.Matches(text))
+        foreach (Match match in JazorMarkupPatterns.ComponentTagPattern.Matches(text))
         {
             var nameGroup = match.Groups["name"];
             if (!nameGroup.Success)
@@ -135,7 +128,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
             return true;
         }
 
-        var fallbackComponentMatch = ComponentTagPattern.Match(text);
+        var fallbackComponentMatch = JazorMarkupPatterns.ComponentTagPattern.Match(text);
         if (fallbackComponentMatch.Success)
         {
             componentName = fallbackComponentMatch.Groups["name"].Value;
@@ -147,13 +140,8 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
     }
 
     private static bool HasImportDirective(string text, string componentName)
-    {
-        var escapedComponentName = Regex.Escape(componentName);
-        return Regex.IsMatch(
-            text,
-            $@"^\s*@module\s+.*\b{escapedComponentName}\b.*$",
-            RegexOptions.Multiline);
-    }
+        => JazorImportDirectiveLocator.EnumerateModuleDirectives(text)
+            .Any(match => JazorImportDirectiveLocator.HasLocalBinding(match.Clause, componentName));
 
     private static bool TryResolveImportPath(
         string documentPath,
@@ -212,7 +200,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
         string importLine,
         string newline)
     {
-        var importMatches = ImportDirectivePattern.Matches(text).Cast<Match>().ToArray();
+        var importMatches = JazorImportDirectiveLocator.EnumerateDirectiveLines(text).ToArray();
         if (importMatches.Length == 0)
         {
             return (0, importLine + newline);
@@ -220,7 +208,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
 
         var lastImportDirective = importMatches[^1];
         return (
-            lastImportDirective.Index + lastImportDirective.Length,
+            lastImportDirective.LineStartIndex + lastImportDirective.LineLength,
             newline + importLine);
     }
 
