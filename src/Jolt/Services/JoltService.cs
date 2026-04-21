@@ -36,6 +36,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
     private readonly InProcRoslynCodeService _roslynCodeService = new();
     private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
     private readonly JazorVueParser _parser = new();
+    private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
     private int _started;
 
     public JoltService(
@@ -58,16 +59,48 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        await _denoVolarHost.StartAsync(cancellationToken);
-        Interlocked.Exchange(ref _started, 1);
+        await _lifecycleGate.WaitAsync(cancellationToken);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (Volatile.Read(ref _started) == 1)
+            {
+                return;
+            }
+
+            await _denoVolarHost.StartAsync(cancellationToken);
+            Volatile.Write(ref _started, 1);
+        }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
     }
 
     public async ValueTask StopAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        Interlocked.Exchange(ref _started, 0);
-        await _denoVolarHost.StopAsync(cancellationToken);
+        await _lifecycleGate.WaitAsync(cancellationToken);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (Volatile.Read(ref _started) == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                await _denoVolarHost.StopAsync(cancellationToken);
+            }
+            finally
+            {
+                Volatile.Write(ref _started, 0);
+            }
+        }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
     }
 
     public Task<PingResponse> PingAsync(CancellationToken cancellationToken)

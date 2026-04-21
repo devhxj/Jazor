@@ -551,13 +551,20 @@ internal sealed partial class LspSession
             GetRequiredTextDocumentUri(parameters.TextDocument),
             cancellationToken);
         var projectionTarget = await _projectionResolver.ResolveAsync(document, parameters.Position, cancellationToken);
+        var probeOffset = GetRenameProbeOffset(document.Text, LspProtocolHelpers.GetOffset(document.Text, parameters.Position));
+        var probePosition = LspProtocolHelpers.GetPosition(document.Text, probeOffset);
+        var (rangeStart, rangeLength) = GetRenameTokenBounds(document.Text, probeOffset);
+        if (rangeLength == 0)
+        {
+            return CreateSuccessResponse(request.Id, result: null);
+        }
 
         // Try each lane to see if the position is renamable
         foreach (var lane in GetOrderedLanes(projectionTarget))
         {
             var renameEdit = await lane.GetRenameAsync(
                 document,
-                parameters.Position,
+                probePosition,
                 "__prepare__",
                 projectionTarget,
                 cancellationToken);
@@ -565,12 +572,10 @@ internal sealed partial class LspSession
             if (renameEdit is not null)
             {
                 // A lane confirmed the position is renamable — return the placeholder range
-                var offset = LspProtocolHelpers.GetOffset(document.Text, parameters.Position);
-                var wordRange = GetWordRangeAtPosition(document.Text, offset);
                 return CreateSuccessResponse(request.Id, new LspPrepareRenameResult
                 {
-                    Range = wordRange,
-                    Placeholder = ExtractWord(document.Text, offset)
+                    Range = LspProtocolHelpers.ToRange(document.Text, rangeStart, rangeLength),
+                    Placeholder = document.Text.Substring(rangeStart, rangeLength)
                 });
             }
         }

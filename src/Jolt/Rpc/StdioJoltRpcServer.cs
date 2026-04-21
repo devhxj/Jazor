@@ -17,18 +17,28 @@ public sealed class StdioJoltRpcServer
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(output);
 
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            var requestLine = await input.ReadLineAsync(cancellationToken);
-            if (requestLine is null)
-                break;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var requestLine = await input.ReadLineAsync(cancellationToken);
+                if (requestLine is null)
+                {
+                    break;
+                }
 
-            if (string.IsNullOrWhiteSpace(requestLine))
-                continue;
+                if (string.IsNullOrWhiteSpace(requestLine))
+                {
+                    continue;
+                }
 
-            var responseLine = await _rpcProcessor.ProcessAsync(requestLine, cancellationToken);
-            await output.WriteLineAsync(responseLine);
-            await output.FlushAsync(cancellationToken);
+                var responseLine = await _rpcProcessor.ProcessAsync(requestLine, cancellationToken);
+                await output.WriteLineAsync(responseLine.AsMemory(), cancellationToken);
+                await output.FlushAsync(cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
     }
 }

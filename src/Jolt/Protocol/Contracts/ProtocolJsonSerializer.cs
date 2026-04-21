@@ -11,7 +11,14 @@ public static class ProtocolJsonSerializer
         => JsonSerializer.Serialize(value, DefaultOptions);
 
     public static T? Deserialize<T>(string json)
-        => JsonSerializer.Deserialize<T>(json, DefaultOptions);
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ArgumentException("JSON payload cannot be null, empty, or whitespace.", nameof(json));
+        }
+
+        return JsonSerializer.Deserialize<T>(json, DefaultOptions);
+    }
 
     private static JsonSerializerOptions CreateDefaultOptions()
     {

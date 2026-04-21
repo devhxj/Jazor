@@ -49,48 +49,67 @@ internal sealed class StaticAssetHandler
         {
             ct.ThrowIfCancellationRequested();
 
-            var relativePath = Path.GetRelativePath(publicDir, assetPath);
-            var fileName = Path.GetFileName(assetPath);
-            var extension = Path.GetExtension(assetPath);
-            var fileNameWithoutExt = Path.GetFileNameWithoutExtension(assetPath);
-
-            // Determine if we should hash this file
-            var fileInfo = new FileInfo(assetPath);
-            var shouldHash = ShouldHash(assetPath) && fileInfo.Length < HashSizeThreshold;
-
-            var destFileName = fileName;
-            if (shouldHash)
+            try
             {
-                var hash = await ComputeFileHashAsync(assetPath, _context.Options.AssetHashLength, ct);
-                destFileName = $"{fileNameWithoutExt}-{hash}{extension}";
+                var relativePath = Path.GetRelativePath(publicDir, assetPath);
+                var fileName = Path.GetFileName(assetPath);
+                var extension = Path.GetExtension(assetPath);
+                var fileNameWithoutExt = Path.GetFileNameWithoutExtension(assetPath);
+
+                // Determine if we should hash this file
+                var fileInfo = new FileInfo(assetPath);
+                var shouldHash = ShouldHash(assetPath) && fileInfo.Length < HashSizeThreshold;
+
+                var destFileName = fileName;
+                if (shouldHash)
+                {
+                    var hash = await ComputeFileHashAsync(assetPath, _context.Options.AssetHashLength, ct);
+                    destFileName = $"{fileNameWithoutExt}-{hash}{extension}";
+                }
+
+                var destPath = Path.Combine(distDir, relativePath);
+                var destDir = Path.GetDirectoryName(destPath);
+
+                if (!string.IsNullOrEmpty(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                }
+
+                // Update destination path with hashed filename
+                if (shouldHash)
+                {
+                    destPath = Path.Combine(destDir!, destFileName);
+                }
+
+                // Copy file
+                await CopyFileAsync(assetPath, destPath, ct);
+
+                var assetInfo = new AssetInfo
+                {
+                    FileName = destFileName,
+                    FilePath = Path.GetRelativePath(_context.RootDirectory, destPath).Replace('\\', '/'),
+                    Size = new FileInfo(destPath).Length,
+                    OriginalPath = NormalizePublicAssetPath(relativePath)
+                };
+
+                assets.Add(assetInfo);
             }
-
-            var destPath = Path.Combine(distDir, relativePath);
-            var destDir = Path.GetDirectoryName(destPath);
-
-            if (!string.IsNullOrEmpty(destDir))
+            catch (DirectoryNotFoundException)
             {
-                Directory.CreateDirectory(destDir);
+                AddSkippedAssetDiagnostic(assetPath);
             }
-
-            // Update destination path with hashed filename
-            if (shouldHash)
+            catch (FileNotFoundException)
             {
-                destPath = Path.Combine(destDir!, destFileName);
+                AddSkippedAssetDiagnostic(assetPath);
             }
-
-            // Copy file
-            await CopyFileAsync(assetPath, destPath, ct);
-
-            var assetInfo = new AssetInfo
+            catch (IOException)
             {
-                FileName = destFileName,
-                FilePath = Path.GetRelativePath(_context.RootDirectory, destPath).Replace('\\', '/'),
-                Size = new FileInfo(destPath).Length,
-                OriginalPath = NormalizePublicAssetPath(relativePath)
-            };
-
-            assets.Add(assetInfo);
+                AddSkippedAssetDiagnostic(assetPath);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                AddSkippedAssetDiagnostic(assetPath);
+            }
         }
 
         return assets;
@@ -223,19 +242,80 @@ internal sealed class StaticAssetHandler
 
             var currentDir = stack.Pop();
 
-            foreach (var file in Directory.GetFiles(currentDir))
+            foreach (var file in SafeEnumerate(() => Directory.EnumerateFiles(currentDir)))
             {
                 yield return file;
             }
 
             // Add subdirectories to stack
-            foreach (var subDir in Directory.GetDirectories(currentDir))
+            foreach (var subDir in SafeEnumerate(() => Directory.EnumerateDirectories(currentDir)))
             {
                 stack.Push(subDir);
             }
 
             // Small delay to prevent blocking
             await Task.Yield();
+        }
+    }
+
+    private void AddSkippedAssetDiagnostic(string assetPath)
+    {
+        _context.Diagnostics.Add(new BuildDiagnostic
+        {
+            Severity = DiagnosticSeverity.Warning,
+            Message = $"Skipped static asset '{assetPath}' because it became unavailable during traversal."
+        });
+    }
+
+    private static IEnumerable<string> SafeEnumerate(Func<IEnumerable<string>> factory)
+    {
+        IEnumerator<string>? enumerator = null;
+        try
+        {
+            enumerator = factory().GetEnumerator();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            yield break;
+        }
+        catch (IOException)
+        {
+            yield break;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            yield break;
+        }
+
+        using (enumerator)
+        {
+            while (true)
+            {
+                string current;
+                try
+                {
+                    if (!enumerator.MoveNext())
+                    {
+                        yield break;
+                    }
+
+                    current = enumerator.Current;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    yield break;
+                }
+                catch (IOException)
+                {
+                    yield break;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    yield break;
+                }
+
+                yield return current;
+            }
         }
     }
 

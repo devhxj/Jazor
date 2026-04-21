@@ -208,6 +208,10 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         {
             return Results.NotFound(resolved.Error);
         }
+        if (!IsInsideRoot(resolved.AbsolutePath))
+        {
+            return Results.NotFound("Resolved path escapes the dev-server root.");
+        }
 
         ApplyNoCacheHeaders(context.Response);
 
@@ -234,6 +238,10 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
         if (!resolved.Found)
         {
             return Results.NotFound(resolved.Error);
+        }
+        if (!IsInsideRoot(resolved.AbsolutePath))
+        {
+            return Results.NotFound("Resolved path escapes the dev-server root.");
         }
 
         var result = await CompileResolvedRequestAsync(resolved.AbsolutePath, cancellationToken);
@@ -369,7 +377,8 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
 
         try
         {
-            _fileChangeDebouncer?.Record(path);
+            var debouncer = _fileChangeDebouncer;
+            debouncer?.Record(path);
         }
         catch (ObjectDisposedException)
         {
@@ -384,7 +393,20 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
     {
         await foreach (var changedPaths in _fileChangeChannel.Reader.ReadAllAsync(cancellationToken))
         {
-            await ProcessAndBroadcastChangesAsync(changedPaths, cancellationToken);
+            try
+            {
+                await ProcessAndBroadcastChangesAsync(changedPaths, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                await _reloadHub.BroadcastErrorAsync(
+                    $"Hot update failed while processing file changes: {ex.Message}",
+                    cancellationToken);
+            }
         }
     }
 
@@ -691,6 +713,22 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
 
         sourceRequestPath = string.Empty;
         return false;
+    }
+
+    private bool IsInsideRoot(string absolutePath)
+    {
+        if (string.IsNullOrWhiteSpace(absolutePath))
+        {
+            return false;
+        }
+
+        var fullPath = Path.GetFullPath(absolutePath);
+        var relativePath = Path.GetRelativePath(Path.GetFullPath(_options.RootDirectory), fullPath);
+        return string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
     }
 
     private static void ApplyNoCacheHeaders(HttpResponse response)

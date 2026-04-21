@@ -3,7 +3,18 @@ using System.Text;
 
 namespace Jolt.Debug;
 
-internal sealed class CdpConnection : IAsyncDisposable
+internal interface ICdpConnection : IAsyncDisposable
+{
+    bool IsConnected { get; }
+
+    Task ConnectAsync(Uri endpoint, CancellationToken cancellationToken);
+
+    Task SendAsync(string payloadJson, CancellationToken cancellationToken);
+
+    Task<string?> ReceiveAsync(CancellationToken cancellationToken);
+}
+
+internal sealed class CdpConnection : ICdpConnection
 {
     private readonly ClientWebSocket _webSocket = new();
     private readonly SemaphoreSlim _sendLock = new(1, 1);

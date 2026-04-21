@@ -74,6 +74,12 @@ internal sealed class DevServerFileSnapshotPoller : IAsyncDisposable
                 var fileInfo = new FileInfo(filePath);
                 snapshot[filePath] = new FileSnapshotEntry(fileInfo.Length, fileInfo.LastWriteTimeUtc.Ticks);
             }
+            catch (DirectoryNotFoundException)
+            {
+            }
+            catch (FileNotFoundException)
+            {
+            }
             catch (IOException)
             {
             }
@@ -134,28 +140,21 @@ internal sealed class DevServerFileSnapshotPoller : IAsyncDisposable
     private static IEnumerable<string> EnumerateObservedFiles(string rootDirectory)
     {
         var pendingDirectories = new Stack<string>();
+        var visitedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         pendingDirectories.Push(rootDirectory);
 
         while (pendingDirectories.Count > 0)
         {
-            var currentDirectory = pendingDirectories.Pop();
-            IEnumerable<string> childDirectories;
-            try
-            {
-                childDirectories = Directory.EnumerateDirectories(currentDirectory);
-            }
-            catch (IOException)
-            {
-                continue;
-            }
-            catch (UnauthorizedAccessException)
+            var currentDirectory = Path.GetFullPath(pendingDirectories.Pop());
+            if (!visitedDirectories.Add(currentDirectory))
             {
                 continue;
             }
 
-            foreach (var childDirectory in childDirectories)
+            // Directory.Enumerate* is lazy and can start failing after enumeration begins if files disappear.
+            foreach (var childDirectory in SafeEnumerate(() => Directory.EnumerateDirectories(currentDirectory)))
             {
-                if (DevServerFileWatchFilter.IsIgnoredDirectoryName(Path.GetFileName(childDirectory)))
+                if (!ShouldDescendIntoDirectory(rootDirectory, childDirectory))
                 {
                     continue;
                 }
@@ -163,27 +162,101 @@ internal sealed class DevServerFileSnapshotPoller : IAsyncDisposable
                 pendingDirectories.Push(childDirectory);
             }
 
-            IEnumerable<string> files;
-            try
-            {
-                files = Directory.EnumerateFiles(currentDirectory);
-            }
-            catch (IOException)
-            {
-                continue;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                continue;
-            }
-
-            foreach (var filePath in files)
+            foreach (var filePath in SafeEnumerate(() => Directory.EnumerateFiles(currentDirectory)))
             {
                 if (DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath))
                 {
                     yield return filePath;
                 }
             }
+        }
+    }
+
+    private static IEnumerable<string> SafeEnumerate(Func<IEnumerable<string>> factory)
+    {
+        IEnumerator<string>? enumerator = null;
+        try
+        {
+            enumerator = factory().GetEnumerator();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            yield break;
+        }
+        catch (IOException)
+        {
+            yield break;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            yield break;
+        }
+
+        using (enumerator)
+        {
+            while (true)
+            {
+                string current;
+                try
+                {
+                    if (!enumerator.MoveNext())
+                    {
+                        yield break;
+                    }
+
+                    current = enumerator.Current;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    yield break;
+                }
+                catch (IOException)
+                {
+                    yield break;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    yield break;
+                }
+
+                yield return current;
+            }
+        }
+    }
+
+    private static bool ShouldDescendIntoDirectory(string rootDirectory, string directoryPath)
+    {
+        if (DevServerFileWatchFilter.IsIgnoredDirectoryName(Path.GetFileName(directoryPath)))
+        {
+            return false;
+        }
+
+        try
+        {
+            var fullPath = Path.GetFullPath(directoryPath);
+            var relativePath = Path.GetRelativePath(rootDirectory, fullPath);
+            if (string.Equals(relativePath, "..", StringComparison.Ordinal)
+                || relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                || relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                || Path.IsPathRooted(relativePath))
+            {
+                return false;
+            }
+
+            var attributes = File.GetAttributes(fullPath);
+            return (attributes & FileAttributes.ReparsePoint) == 0;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
         }
     }
 

@@ -16,21 +16,22 @@ internal sealed class DependencyGraph
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(modulePath);
         ArgumentNullException.ThrowIfNull(dependencies);
+        var normalizedModulePath = NormalizeModulePath(modulePath);
 
         lock (_gate)
         {
-            RemoveCore(modulePath);
+            RemoveCore(normalizedModulePath);
 
             var normalizedDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var dependency in dependencies)
             {
-                if (TryNormalizeDependency(modulePath, dependency, out var normalizedDependency))
+                if (TryNormalizeDependency(normalizedModulePath, dependency, out var normalizedDependency))
                 {
                     normalizedDependencies.Add(normalizedDependency);
                 }
             }
 
-            _dependenciesByModule[modulePath] = normalizedDependencies;
+            _dependenciesByModule[normalizedModulePath] = normalizedDependencies;
             foreach (var dependency in normalizedDependencies)
             {
                 if (!_dependentsByDependency.TryGetValue(dependency, out var dependents))
@@ -39,7 +40,7 @@ internal sealed class DependencyGraph
                     _dependentsByDependency[dependency] = dependents;
                 }
 
-                dependents.Add(modulePath);
+                dependents.Add(normalizedModulePath);
             }
         }
     }
@@ -47,10 +48,11 @@ internal sealed class DependencyGraph
     public IReadOnlyList<string> GetDependencies(string modulePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(modulePath);
+        var normalizedModulePath = NormalizeModulePath(modulePath);
 
         lock (_gate)
         {
-            return _dependenciesByModule.TryGetValue(modulePath, out var dependencies)
+            return _dependenciesByModule.TryGetValue(normalizedModulePath, out var dependencies)
                 ? dependencies.Order(StringComparer.OrdinalIgnoreCase).ToArray()
                 : [];
         }
@@ -59,10 +61,11 @@ internal sealed class DependencyGraph
     public IReadOnlyList<string> GetDependents(string modulePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(modulePath);
+        var normalizedModulePath = NormalizeModulePath(modulePath);
 
         lock (_gate)
         {
-            return _dependentsByDependency.TryGetValue(modulePath, out var dependents)
+            return _dependentsByDependency.TryGetValue(normalizedModulePath, out var dependents)
                 ? dependents.Order(StringComparer.OrdinalIgnoreCase).ToArray()
                 : [];
         }
@@ -71,12 +74,13 @@ internal sealed class DependencyGraph
     public IReadOnlyList<string> GetAllAffectedModules(string changedModulePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(changedModulePath);
+        var normalizedChangedModulePath = NormalizeModulePath(changedModulePath);
 
         lock (_gate)
         {
             var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var queue = new Queue<string>();
-            queue.Enqueue(changedModulePath);
+            queue.Enqueue(normalizedChangedModulePath);
 
             while (queue.Count > 0)
             {
@@ -104,10 +108,11 @@ internal sealed class DependencyGraph
     public void Remove(string modulePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(modulePath);
+        var normalizedModulePath = NormalizeModulePath(modulePath);
 
         lock (_gate)
         {
-            RemoveCore(modulePath);
+            RemoveCore(normalizedModulePath);
         }
     }
 
@@ -155,13 +160,13 @@ internal sealed class DependencyGraph
 
         if (_moduleResolver is null)
         {
-            normalizedDependency = dependency;
+            normalizedDependency = NormalizeModulePath(dependency);
             return true;
         }
 
         if (Path.IsPathFullyQualified(dependency) && File.Exists(dependency))
         {
-            normalizedDependency = Path.GetFullPath(dependency);
+            normalizedDependency = NormalizeModulePath(dependency);
             return true;
         }
 
@@ -174,6 +179,11 @@ internal sealed class DependencyGraph
         normalizedDependency = resolved.AbsolutePath;
         return true;
     }
+
+    private static string NormalizeModulePath(string modulePath)
+        => Path.IsPathRooted(modulePath)
+            ? Path.GetFullPath(modulePath).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+            : modulePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
     private static bool IsExternalSpecifier(string dependency)
         => dependency.StartsWith("http://", StringComparison.OrdinalIgnoreCase)

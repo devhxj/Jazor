@@ -15,11 +15,18 @@ internal sealed class FallbackJazorAnalysisService
     {
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
-        FallbackTelemetry.ReportActivation(
-            component: "analysisService",
-            mode: "inProcFallback",
-            reason: "analysis-rpc-unavailable",
-            documentPath: request.JazorDocument.DocumentPath);
+        try
+        {
+            FallbackTelemetry.ReportActivation(
+                component: "analysisService",
+                mode: "inProcFallback",
+                reason: "analysis-rpc-unavailable",
+                documentPath: request.JazorDocument.DocumentPath);
+        }
+        catch (Exception)
+        {
+            // Telemetry must not break the fallback analysis path.
+        }
 
         var document = _parser.Parse(
             request.JazorDocument.DocumentPath,
@@ -67,22 +74,29 @@ internal sealed class FallbackJazorAnalysisService
                 content: compilation.GeneratedExternalDeclarationsText,
                 contentHash: null)
         };
+        var vueArtifact = artifacts.FirstOrDefault(static artifact => artifact.ArtifactKind == "vue-sfc");
+        var externalsArtifact = artifacts.FirstOrDefault(static artifact => artifact.ArtifactKind == "csharp-externals");
+        if (vueArtifact is null || externalsArtifact is null)
+        {
+            throw new InvalidOperationException("Fallback analysis did not produce the expected virtual artifacts.");
+        }
+
         var sourceMaps = new[]
         {
             new SourceMapDescriptor(
                 sourcePath: request.JazorDocument.DocumentPath,
-                generatedPath: artifacts[0].ArtifactName,
+                generatedPath: vueArtifact.ArtifactName,
                 sourceStart: 0,
                 sourceLength: request.JazorDocument.Text.Length,
                 generatedStart: 0,
-                generatedLength: artifacts[0].Content.Length),
+                generatedLength: vueArtifact.Content.Length),
             new SourceMapDescriptor(
                 sourcePath: request.JazorDocument.DocumentPath,
-                generatedPath: artifacts[1].ArtifactName,
+                generatedPath: externalsArtifact.ArtifactName,
                 sourceStart: 0,
                 sourceLength: request.JazorDocument.Text.Length,
                 generatedStart: 0,
-                generatedLength: artifacts[1].Content.Length)
+                generatedLength: externalsArtifact.Content.Length)
         };
 
         return ValueTask.FromResult(new AnalyzeJazorResponse(

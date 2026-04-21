@@ -1752,6 +1752,115 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerBootstrapTimeout_RejectsExtension()
+    {
+        var sandbox = CreateExtensionSandbox();
+        using var timeoutScope = new EnvironmentVariableScope("JOLT_EXTENSION_BOOTSTRAP_TIMEOUT_MS", "100");
+        try
+        {
+            using var signer = new ManifestSigner("phase7-worker-bootstrap-timeout-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: SlowProcessIsolatedHoverTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(SlowProcessIsolatedHoverTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover"],
+                processIsolation: true,
+                signer: signer,
+                settings: new Dictionary<string, string>
+                {
+                    ["bootstrapDelayMs"] = "250"
+                });
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            Assert.AreEqual(0, registry.GetLspHoverProviders().Count);
+
+            var loadHealth = registry.GetExtensionLoadHealth()
+                .Single(static item =>
+                    string.Equals(item.ExtensionId, SlowProcessIsolatedHoverTestExtension.ExtensionId, StringComparison.Ordinal)
+                    && string.Equals(item.Source, "user", StringComparison.Ordinal));
+            Assert.AreEqual(1, loadHealth.RejectedCount);
+            StringAssert.Contains(
+                loadHealth.LastReason ?? string.Empty,
+                "timed out",
+                StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task ExtensionWorkerServer_Invoke_WithSlowProvider_ReturnsTimeoutError()
+    {
+        var sandbox = CreateExtensionSandbox();
+        using var timeoutScope = new EnvironmentVariableScope("JOLT_EXTENSION_INVOKE_TIMEOUT_MS", "100");
+        try
+        {
+            using var signer = new ManifestSigner("phase7-worker-invoke-timeout-key");
+            WriteManifest(
+                sandbox.ExtensionDirectory,
+                id: SlowProcessIsolatedHoverTestExtension.ExtensionId,
+                assembly: sandbox.AssemblyFileName,
+                type: typeof(SlowProcessIsolatedHoverTestExtension).FullName!,
+                assemblySha256: sandbox.AssemblySha256,
+                providers: ["hover"],
+                processIsolation: true,
+                signer: signer,
+                settings: new Dictionary<string, string>
+                {
+                    ["hoverDelayMs"] = "250"
+                });
+
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(registry);
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(
+                    sandbox.RootDirectory,
+                    sandbox.ExtensionsDirectory,
+                    trustedPublicKeys: signer.TrustedPublicKeys),
+                CancellationToken.None);
+
+            var provider = registry.GetLspHoverProviders().Single();
+            var documentPath = Path.Combine(sandbox.RootDirectory, "Timeout.jazor");
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await provider.ProvideHoverAsync(
+                    new LspHoverProviderContext(
+                        new DocumentSnapshot(
+                            documentPath,
+                            DocumentKind.Jazor,
+                            "<template><div /></template>",
+                            "1"),
+                        new LspPosition { Line = 0, Character = 1 },
+                        new ProjectionTarget(
+                            LaneKind.Jazor,
+                            DocumentRegionKind.Template,
+                            documentPath,
+                            documentPath,
+                            IsProjected: false),
+                        ExistingHover: null),
+                    CancellationToken.None));
+
+            StringAssert.Contains(exception.Message, "timed out", StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            sandbox.Dispose();
+        }
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithIoCapabilityExceedingHostPolicy_RejectsExtension()
     {
         var sandbox = CreateExtensionSandbox();
@@ -2940,20 +3049,23 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
         ExtensionNetworkPermissionManifest? networkPermission = null,
         bool? processIsolation = null,
         ManifestSigner? signer = null,
-        ExtensionSignatureManifest? explicitSignature = null)
+        ExtensionSignatureManifest? explicitSignature = null,
+        IReadOnlyDictionary<string, string>? settings = null)
     {
         var permissions = CreatePermissionsManifest(
             providers,
             ioPermission,
             networkPermission,
             processIsolation);
+        var manifestSettings = CreateSettingsManifest(settings);
         var unsignedManifest = new ExtensionManifest
         {
             Id = id,
             Assembly = assembly,
             AssemblySha256 = assemblySha256,
             Type = type,
-            Permissions = permissions
+            Permissions = permissions,
+            Settings = manifestSettings
         };
 
         var finalSignature = explicitSignature;
@@ -2973,13 +3085,31 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
                 ioPermission,
                 networkPermission,
                 processIsolation),
-            Signature = finalSignature
+            Signature = finalSignature,
+            Settings = manifestSettings
         };
 
         var manifestPath = Path.Combine(extensionDirectory, "extension.json");
         File.WriteAllText(
             manifestPath,
             JsonSerializer.Serialize(manifest));
+    }
+
+    private static Dictionary<string, JsonElement>? CreateSettingsManifest(
+        IReadOnlyDictionary<string, string>? settings)
+    {
+        if (settings is null || settings.Count == 0)
+        {
+            return null;
+        }
+
+        var manifestSettings = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        foreach (var item in settings)
+        {
+            manifestSettings[item.Key] = JsonSerializer.SerializeToElement(item.Value);
+        }
+
+        return manifestSettings;
     }
 
     private static ExtensionPermissionManifest CreatePermissionsManifest(
@@ -3183,6 +3313,24 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
             {
                 Directory.Delete(RootDirectory, recursive: true);
             }
+        }
+    }
+
+    private sealed class EnvironmentVariableScope : IDisposable
+    {
+        private readonly string _name;
+        private readonly string? _previousValue;
+
+        public EnvironmentVariableScope(string name, string value)
+        {
+            _name = name;
+            _previousValue = Environment.GetEnvironmentVariable(name);
+            Environment.SetEnvironmentVariable(name, value);
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable(_name, _previousValue);
         }
     }
 
@@ -3503,4 +3651,63 @@ public sealed class WorkerBootstrapSensitiveTestExtension : IExtension, ILspHove
             Range = null
         });
     }
+}
+
+public sealed class SlowProcessIsolatedHoverTestExtension : IExtension, ILspHoverProvider
+{
+    public const string ExtensionId = "phase7.slow-process-isolated-hover";
+
+    private static readonly ExtensionMetadata MetadataValue = new(
+        Id: ExtensionId,
+        Name: "Slow Process Isolated Hover Test Extension",
+        Version: "1.0.0");
+
+    private int _hoverDelayMs;
+
+    ExtensionMetadata IExtension.Metadata => MetadataValue;
+
+    string ILspHoverProvider.Name => "SlowProcessIsolatedHoverProvider";
+
+    int ILspHoverProvider.Priority => 10;
+
+    async ValueTask IExtension.InitializeAsync(ExtensionContext context, CancellationToken cancellationToken)
+    {
+        _hoverDelayMs = GetDelay(context.Settings, "hoverDelayMs");
+        var bootstrapDelayMs = GetDelay(context.Settings, "bootstrapDelayMs");
+        if (bootstrapDelayMs > 0)
+        {
+            await Task.Delay(bootstrapDelayMs, cancellationToken);
+        }
+    }
+
+    ValueTask IExtension.ActivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    ValueTask IExtension.DeactivateAsync(CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    async ValueTask<LspHoverResult?> ILspHoverProvider.ProvideHoverAsync(
+        LspHoverProviderContext context,
+        CancellationToken cancellationToken)
+    {
+        if (_hoverDelayMs > 0)
+        {
+            await Task.Delay(_hoverDelayMs, cancellationToken);
+        }
+
+        return new LspHoverResult
+        {
+            Contents = new LspMarkupContent
+            {
+                Kind = "plaintext",
+                Value = "slow-process-isolated-hover"
+            },
+            Range = null
+        };
+    }
+
+    private static int GetDelay(IReadOnlyDictionary<string, string> settings, string key)
+        => settings.TryGetValue(key, out var value) && int.TryParse(value, out var delayMs)
+            ? delayMs
+            : 0;
 }

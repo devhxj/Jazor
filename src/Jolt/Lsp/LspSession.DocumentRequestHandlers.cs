@@ -160,19 +160,9 @@ internal sealed partial class LspSession
                 _resultAggregator.AggregateLocations(typeLocations));
         }
 
-        var locations = new List<LspLocation>();
-        foreach (var lane in GetOrderedLanes(projectionTarget))
-        {
-            var laneLocations = await lane.GetDefinitionAsync(document, parameters.Position, projectionTarget, cancellationToken);
-            if (laneLocations.Count > 0)
-            {
-                locations.AddRange(laneLocations);
-            }
-        }
-
         return CreateSuccessResponse(
             request.Id,
-            _resultAggregator.AggregateLocations(locations));
+            Array.Empty<LspLocation>());
     }
 
     private async ValueTask<LspResponseMessage> HandleImplementationAsync(

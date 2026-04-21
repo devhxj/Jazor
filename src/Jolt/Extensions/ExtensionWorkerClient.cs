@@ -7,6 +7,9 @@ namespace Jolt.Extensions;
 
 internal sealed class ExtensionWorkerClient : IAsyncDisposable
 {
+    private const int MaxCapturedStandardErrorCharacters = 8_192;
+    private static readonly TimeSpan ShutdownRequestTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan TerminateWaitTimeout = TimeSpan.FromSeconds(5);
     private readonly Process _process;
     private readonly LspMessageReader _reader;
     private readonly LspMessageWriter _writer;
@@ -17,6 +20,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
 
     private int _nextRequestId;
     private int _shutdownRequested;
+    private int _disposing;
     private bool _disposed;
 
     private ExtensionWorkerClient(Process process)
@@ -102,7 +106,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
 
         try
         {
-            using var shutdownTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            using var shutdownTimeout = new CancellationTokenSource(ShutdownRequestTimeout);
             await SendRequestAsync(
                 ExtensionWorkerMethodNames.Shutdown,
                 parameters: null,
@@ -141,6 +145,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
             return;
         }
 
+        Interlocked.Exchange(ref _disposing, 1);
         await ShutdownAsync();
         _disposed = true;
         _requestGate.Dispose();
@@ -195,7 +200,7 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
             {
                 await _writer.WriteMessageAsync(
                     LspJsonSerializer.Serialize(request),
-                    CancellationToken.None);
+                    cancellationToken);
 
                 response = await ReadResponseAsync(requestId, cancellationToken);
             }
@@ -341,12 +346,11 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
 
                 lock (_stderrBuffer)
                 {
-                    if (_stderrBuffer.Length > 8_192)
-                    {
-                        _stderrBuffer.Remove(0, _stderrBuffer.Length - 8_192);
-                    }
-
                     _stderrBuffer.AppendLine(line);
+                    if (_stderrBuffer.Length > MaxCapturedStandardErrorCharacters)
+                    {
+                        _stderrBuffer.Remove(0, _stderrBuffer.Length - MaxCapturedStandardErrorCharacters);
+                    }
                 }
             }
         }
@@ -400,7 +404,13 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
 
         try
         {
-            await _process.WaitForExitAsync(CancellationToken.None);
+            using var waitForExitTimeout = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken.None);
+            waitForExitTimeout.CancelAfter(TerminateWaitTimeout);
+            await _process.WaitForExitAsync(waitForExitTimeout.Token);
+        }
+        catch (OperationCanceledException) when (Volatile.Read(ref _disposing) != 0 || _shutdownRequested != 0)
+        {
+            // Bound worker teardown so dispose does not wait forever after a failed kill.
         }
         catch (ObjectDisposedException)
         {

@@ -24,7 +24,7 @@ internal sealed class FileChangeDebouncer : IDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
-        CancellationTokenSource flushCancellationSource;
+        Task flushTask;
         lock (_gate)
         {
             if (_disposed)
@@ -36,10 +36,10 @@ internal sealed class FileChangeDebouncer : IDisposable
             _flushCancellationSource?.Cancel();
             _flushCancellationSource?.Dispose();
             _flushCancellationSource = new CancellationTokenSource();
-            flushCancellationSource = _flushCancellationSource;
+            flushTask = ScheduleFlushAsync(_flushCancellationSource);
         }
 
-        _ = ScheduleFlushAsync(flushCancellationSource);
+        _ = flushTask;
     }
 
     public void Dispose()
@@ -69,6 +69,10 @@ internal sealed class FileChangeDebouncer : IDisposable
             await Task.Delay(_debounceInterval, flushCancellationSource.Token);
         }
         catch (OperationCanceledException)
+        {
+            return;
+        }
+        catch (ObjectDisposedException)
         {
             return;
         }

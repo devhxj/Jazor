@@ -364,12 +364,33 @@ internal sealed class RazorDesignTimeCodeProjectionService
 
     private static IReadOnlyList<SourceMapping> GetSourceMappings(RazorCSharpDocument csharpDocument)
     {
-        var property = typeof(RazorCSharpDocument).GetProperty(
-            "SourceMappings",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        if (property?.GetValue(csharpDocument) is IEnumerable<SourceMapping> sourceMappings)
+        try
         {
-            return sourceMappings.ToArray();
+            var property = typeof(RazorCSharpDocument).GetProperty(
+                "SourceMappings",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (property?.GetValue(csharpDocument) is IEnumerable<SourceMapping> sourceMappings)
+            {
+                return sourceMappings.ToArray();
+            }
+        }
+        catch (ArgumentException)
+        {
+        }
+        catch (TargetException)
+        {
+        }
+        catch (TargetInvocationException)
+        {
+        }
+        catch (MemberAccessException)
+        {
+        }
+        catch (NotSupportedException)
+        {
+        }
+        catch (SystemException)
+        {
         }
 
         return [];

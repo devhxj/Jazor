@@ -1,13 +1,13 @@
-using System.Collections.Concurrent;
 using Jolt.VirtualDocuments.Models;
 
 namespace Jolt.VirtualDocuments.Registry;
 
 public sealed class InMemoryVirtualDocumentRegistry : IVirtualDocumentRegistry
 {
-    private readonly ConcurrentDictionary<string, VirtualDocument> _byProjectedPath =
+    private readonly Lock _gate = new();
+    private readonly Dictionary<string, VirtualDocument> _byProjectedPath =
         new(StringComparer.OrdinalIgnoreCase);
-    private readonly ConcurrentDictionary<string, string[]> _projectedPathsBySource =
+    private readonly Dictionary<string, string[]> _projectedPathsBySource =
         new(StringComparer.OrdinalIgnoreCase);
 
     public ValueTask<IReadOnlyList<VirtualDocument>> GetBySourceDocumentAsync(
@@ -17,16 +17,27 @@ public sealed class InMemoryVirtualDocumentRegistry : IVirtualDocumentRegistry
         ArgumentNullException.ThrowIfNull(sourceDocumentPath);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (!_projectedPathsBySource.TryGetValue(NormalizePath(sourceDocumentPath), out var projectedPaths))
+        string[]? projectedPaths;
+        lock (_gate)
         {
-            return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(Array.Empty<VirtualDocument>());
+            if (!_projectedPathsBySource.TryGetValue(NormalizePath(sourceDocumentPath), out projectedPaths))
+            {
+                return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(Array.Empty<VirtualDocument>());
+            }
         }
 
-        var documents = projectedPaths
-            .Select(path => _byProjectedPath.TryGetValue(path, out var document) ? document : null)
-            .Where(static document => document is not null)
-            .Cast<VirtualDocument>()
-            .ToArray();
+        var documents = new List<VirtualDocument>(projectedPaths.Length);
+        lock (_gate)
+        {
+            foreach (var projectedPath in projectedPaths)
+            {
+                if (_byProjectedPath.TryGetValue(projectedPath, out var document))
+                {
+                    documents.Add(document);
+                }
+            }
+        }
+
         return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(documents);
     }
 
@@ -37,7 +48,12 @@ public sealed class InMemoryVirtualDocumentRegistry : IVirtualDocumentRegistry
         ArgumentNullException.ThrowIfNull(projectedDocumentPath);
         cancellationToken.ThrowIfCancellationRequested();
 
-        _byProjectedPath.TryGetValue(NormalizePath(projectedDocumentPath), out var document);
+        VirtualDocument? document;
+        lock (_gate)
+        {
+            _byProjectedPath.TryGetValue(NormalizePath(projectedDocumentPath), out document);
+        }
+
         return ValueTask.FromResult(document);
     }
 
@@ -54,17 +70,42 @@ public sealed class InMemoryVirtualDocumentRegistry : IVirtualDocumentRegistry
         }
 
         var sourceDocumentPath = NormalizePath(virtualDocuments[0].Identity.SourceDocumentPath);
-        var projectedPaths = new List<string>(virtualDocuments.Count);
-
-        foreach (var virtualDocument in virtualDocuments)
+        var projectedPaths = new string[virtualDocuments.Count];
+        for (var index = 0; index < virtualDocuments.Count; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var normalizedProjectedPath = NormalizePath(virtualDocument.Identity.ProjectedDocumentPath);
-            _byProjectedPath[normalizedProjectedPath] = virtualDocument;
-            projectedPaths.Add(normalizedProjectedPath);
+            var virtualDocument = virtualDocuments[index];
+            var currentSourceDocumentPath = NormalizePath(virtualDocument.Identity.SourceDocumentPath);
+            if (!string.Equals(sourceDocumentPath, currentSourceDocumentPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("All virtual documents in a single upsert must share the same source document path.", nameof(virtualDocuments));
+            }
+
+            projectedPaths[index] = NormalizePath(virtualDocument.Identity.ProjectedDocumentPath);
         }
 
-        _projectedPathsBySource[sourceDocumentPath] = projectedPaths.ToArray();
+        lock (_gate)
+        {
+            if (_projectedPathsBySource.TryGetValue(sourceDocumentPath, out var previousProjectedPaths))
+            {
+                var currentProjectedPathSet = projectedPaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                foreach (var previousProjectedPath in previousProjectedPaths)
+                {
+                    if (!currentProjectedPathSet.Contains(previousProjectedPath))
+                    {
+                        _byProjectedPath.Remove(previousProjectedPath);
+                    }
+                }
+            }
+
+            for (var index = 0; index < virtualDocuments.Count; index++)
+            {
+                _byProjectedPath[projectedPaths[index]] = virtualDocuments[index];
+            }
+
+            _projectedPathsBySource[sourceDocumentPath] = projectedPaths;
+        }
+
         return ValueTask.CompletedTask;
     }
 
@@ -75,11 +116,14 @@ public sealed class InMemoryVirtualDocumentRegistry : IVirtualDocumentRegistry
         ArgumentNullException.ThrowIfNull(sourceDocumentPath);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (_projectedPathsBySource.TryRemove(NormalizePath(sourceDocumentPath), out var projectedPaths))
+        lock (_gate)
         {
-            foreach (var projectedPath in projectedPaths)
+            if (_projectedPathsBySource.Remove(NormalizePath(sourceDocumentPath), out var projectedPaths))
             {
-                _byProjectedPath.TryRemove(projectedPath, out _);
+                foreach (var projectedPath in projectedPaths)
+                {
+                    _byProjectedPath.Remove(projectedPath);
+                }
             }
         }
 

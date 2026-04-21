@@ -22,11 +22,11 @@ public static class VueAnalysisClientFactory
         {
             if (arg.StartsWith("--analysis-command=", StringComparison.OrdinalIgnoreCase))
             {
-                command = arg["--analysis-command=".Length..];
+                command = TryReadOptionValue(arg, "--analysis-command");
             }
             else if (arg.StartsWith("--analysis-args=", StringComparison.OrdinalIgnoreCase))
             {
-                arguments = arg["--analysis-args=".Length..];
+                arguments = TryReadOptionValue(arg, "--analysis-args");
             }
         }
 
@@ -39,4 +39,16 @@ public static class VueAnalysisClientFactory
         => transport is null
             ? CreateDefault()
             : new RpcVueAnalysisClient(transport);
+
+    private static string? TryReadOptionValue(string argument, string optionName)
+    {
+        var prefix = optionName + "=";
+        if (!argument.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            || argument.Length <= prefix.Length)
+        {
+            return null;
+        }
+
+        return argument[prefix.Length..];
+    }
 }

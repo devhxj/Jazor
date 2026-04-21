@@ -4,6 +4,7 @@ namespace Jolt.SourceMap;
 
 internal sealed class InMemorySourceMapService : ISourceMapService
 {
+    private const int MaxVlqDigitsPerValue = 7;
     private readonly Dictionary<string, RegisteredSourceMap> _maps = new(StringComparer.OrdinalIgnoreCase);
     private readonly Lock _gate = new();
 
@@ -233,6 +234,7 @@ internal sealed class InMemorySourceMapService : ISourceMapService
         var result = 0;
         var shift = 0;
         var continuation = true;
+        var digitCount = 0;
         while (continuation)
         {
             if (position >= mappings.Length)
@@ -240,9 +242,20 @@ internal sealed class InMemorySourceMapService : ISourceMapService
                 throw new InvalidOperationException("Unexpected end of VLQ mapping.");
             }
 
+            digitCount++;
+            if (digitCount > MaxVlqDigitsPerValue)
+            {
+                throw new InvalidOperationException("VLQ mapping value exceeds the supported digit length.");
+            }
+
             var digit = DecodeBase64(mappings[position++]);
             continuation = (digit & 32) != 0;
             digit &= 31;
+            if (shift >= 31 || digit > (int.MaxValue >> shift))
+            {
+                throw new InvalidOperationException("VLQ mapping value exceeds the supported integer range.");
+            }
+
             result += digit << shift;
             shift += 5;
         }

@@ -171,4 +171,58 @@ internal sealed partial class LspSession
 
     private static bool IsWordCharacter(char c)
         => char.IsLetterOrDigit(c) || c == '_';
+
+    private static int GetRenameProbeOffset(string text, int offset)
+    {
+        var boundedOffset = Math.Clamp(offset, 0, text.Length);
+        if (text.Length == 0)
+        {
+            return 0;
+        }
+
+        if (boundedOffset == text.Length || !IsRenameCharacter(text[boundedOffset]))
+        {
+            if (boundedOffset == 0 || !IsRenameCharacter(text[boundedOffset - 1]))
+            {
+                return boundedOffset;
+            }
+
+            return boundedOffset - 1;
+        }
+
+        return boundedOffset;
+    }
+
+    private static (int start, int length) GetRenameTokenBounds(string text, int offset)
+    {
+        if (text.Length == 0)
+        {
+            return (0, 0);
+        }
+
+        var probeOffset = GetRenameProbeOffset(text, offset);
+        if (probeOffset < 0
+            || probeOffset >= text.Length
+            || !IsRenameCharacter(text[probeOffset]))
+        {
+            return (Math.Clamp(offset, 0, text.Length), 0);
+        }
+
+        var start = probeOffset;
+        while (start > 0 && IsRenameCharacter(text[start - 1]))
+        {
+            start--;
+        }
+
+        var end = probeOffset + 1;
+        while (end < text.Length && IsRenameCharacter(text[end]))
+        {
+            end++;
+        }
+
+        return (start, end - start);
+    }
+
+    private static bool IsRenameCharacter(char c)
+        => char.IsLetterOrDigit(c) || c is '_' or '-' or ':';
 }

@@ -9,6 +9,7 @@ namespace Jolt.DevServer;
 
 internal sealed class DevServerProxy : IDisposable
 {
+    private static readonly TimeSpan DefaultHttpTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan WebSocketRelayShutdownGracePeriod = TimeSpan.FromMilliseconds(500);
 
     private readonly IReadOnlyList<KeyValuePair<string, ProxyTarget>> _proxyRules;
@@ -36,7 +37,10 @@ internal sealed class DevServerProxy : IDisposable
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         _httpClient = messageHandler is null
             ? CreateHttpClient()
-            : new HttpClient(messageHandler, disposeHandler: false);
+            : new HttpClient(messageHandler, disposeHandler: false)
+            {
+                Timeout = DefaultHttpTimeout
+            };
     }
 
     public async Task<bool> TryProxyAsync(HttpContext context)
@@ -210,14 +214,20 @@ internal sealed class DevServerProxy : IDisposable
     {
         if (_insecureAuthorities.Count == 0)
         {
-            return new HttpClient();
+            return new HttpClient
+            {
+                Timeout = DefaultHttpTimeout
+            };
         }
 
         return new HttpClient(
             new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = ValidateServerCertificate
-            });
+            })
+        {
+            Timeout = DefaultHttpTimeout
+        };
     }
 
     private bool ValidateServerCertificate(

@@ -4,6 +4,10 @@ namespace Jolt.Lsp;
 
 internal sealed class LspMessageReader
 {
+    private const int MaxHeaderBytes = 64 * 1024;
+    private const int MaxHeaderLineBytes = 8 * 1024;
+    private const int MaxContentBytes = 16 * 1024 * 1024;
+
     private readonly Stream _input;
 
     public LspMessageReader(Stream input)
@@ -17,6 +21,11 @@ internal sealed class LspMessageReader
         if (contentLength is null)
         {
             return null;
+        }
+
+        if (contentLength.Value > MaxContentBytes)
+        {
+            throw new InvalidDataException($"LSP message body exceeds the {MaxContentBytes} byte safety limit.");
         }
 
         var buffer = new byte[contentLength.Value];
@@ -40,21 +49,41 @@ internal sealed class LspMessageReader
         string? line;
         var contentLength = default(int?);
         var sawHeader = false;
+        var headerBytes = 0;
         while ((line = await ReadHeaderLineAsync(cancellationToken)) is not null)
         {
+            headerBytes += line.Length + 2;
+            if (headerBytes > MaxHeaderBytes)
+            {
+                throw new InvalidDataException("LSP headers exceed the safety limit.");
+            }
+
             if (line.Length == 0)
             {
-                return sawHeader ? contentLength : null;
+                if (!sawHeader)
+                {
+                    return null;
+                }
+
+                return contentLength
+                    ?? throw new InvalidDataException("LSP message is missing the Content-Length header.");
             }
 
             sawHeader = true;
             if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
             {
                 var rawValue = line["Content-Length:".Length..].Trim();
-                if (int.TryParse(rawValue, out var parsed))
+                if (!int.TryParse(rawValue, out var parsed))
                 {
-                    contentLength = parsed;
+                    throw new InvalidDataException("LSP message Content-Length header is invalid.");
                 }
+
+                if (parsed < 0)
+                {
+                    throw new InvalidDataException("LSP message Content-Length must be non-negative.");
+                }
+
+                contentLength = parsed;
             }
         }
 
@@ -63,22 +92,31 @@ internal sealed class LspMessageReader
 
     private async ValueTask<string?> ReadHeaderLineAsync(CancellationToken cancellationToken)
     {
-        var bytes = new List<byte>();
+        var bytes = new List<byte>(64);
+        var singleByte = new byte[1];
         while (true)
         {
-            var buffer = new byte[1];
-            var read = await _input.ReadAsync(buffer.AsMemory(0, 1), cancellationToken);
+            var read = await _input.ReadAsync(singleByte.AsMemory(0, 1), cancellationToken);
             if (read == 0)
             {
-                return bytes.Count == 0 ? null : Encoding.ASCII.GetString(bytes.ToArray()).TrimEnd('\r');
+                if (bytes.Count == 0)
+                {
+                    return null;
+                }
+
+                throw new InvalidDataException("Unexpected EOF while reading LSP message headers.");
             }
 
-            if (buffer[0] == '\n')
+            if (singleByte[0] == '\n')
             {
                 return Encoding.ASCII.GetString(bytes.ToArray()).TrimEnd('\r');
             }
 
-            bytes.Add(buffer[0]);
+            bytes.Add(singleByte[0]);
+            if (bytes.Count > MaxHeaderLineBytes)
+            {
+                throw new InvalidDataException("LSP header line exceeds the safety limit.");
+            }
         }
     }
 }

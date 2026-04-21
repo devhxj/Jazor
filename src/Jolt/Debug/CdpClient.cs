@@ -30,14 +30,15 @@ internal interface ICdpClient : IAsyncDisposable
         CancellationToken cancellationToken);
 }
 
-internal sealed class CdpClient(CdpConnection connection) : ICdpClient
+internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
 {
-    private readonly CdpConnection _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+    private readonly ICdpConnection _connection = connection ?? throw new ArgumentNullException(nameof(connection));
     private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonElement>> _pendingById = [];
     private readonly ConcurrentDictionary<string, string> _scriptUrlById = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _readLoopCancellation = new();
     private Task? _readLoopTask;
     private int _nextRequestId = 1;
+    private int _disposing;
     private IReadOnlyList<CdpCallFrame> _latestCallFrames = [];
 
     public IReadOnlyList<CdpCallFrame> LatestCallFrames => _latestCallFrames;
@@ -192,26 +193,25 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
             @params = parameters
         });
 
-        await _connection.SendAsync(requestJson, cancellationToken);
-
-        using var registration = cancellationToken.Register(() => completion.TrySetCanceled(cancellationToken));
-        JsonElement response;
         try
         {
-            response = await completion.Task;
+            await _connection.SendAsync(requestJson, cancellationToken);
+
+            using var registration = cancellationToken.Register(() => completion.TrySetCanceled(cancellationToken));
+            JsonElement response = await completion.Task;
+
+            if (TryGetProperty(response, "error", out var errorElement))
+            {
+                throw new InvalidOperationException(
+                    $"CDP request '{method}' failed: {errorElement.GetRawText()}");
+            }
+
+            return response;
         }
         finally
         {
             _pendingById.TryRemove(requestId, out _);
         }
-
-        if (TryGetProperty(response, "error", out var errorElement))
-        {
-            throw new InvalidOperationException(
-                $"CDP request '{method}' failed: {errorElement.GetRawText()}");
-        }
-
-        return response;
     }
 
     private async Task ReadLoopAsync(CancellationToken cancellationToken)
@@ -223,6 +223,8 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
                 var payloadJson = await _connection.ReceiveAsync(cancellationToken);
                 if (payloadJson is null)
                 {
+                    CompletePendingRequests(
+                        new IOException("CDP connection closed unexpectedly."));
                     break;
                 }
 
@@ -247,42 +249,49 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
         }
         catch (OperationCanceledException)
         {
-            // Shutdown.
+            CancelPendingRequests();
         }
         catch (System.Net.WebSockets.WebSocketException exception)
         {
-            foreach (var pending in _pendingById.Values)
-            {
-                pending.TrySetException(exception);
-            }
+            CompletePendingRequests(exception);
         }
         catch (JsonException exception)
         {
-            foreach (var pending in _pendingById.Values)
-            {
-                pending.TrySetException(exception);
-            }
+            CompletePendingRequests(exception);
         }
         catch (IOException exception)
         {
-            foreach (var pending in _pendingById.Values)
-            {
-                pending.TrySetException(exception);
-            }
+            CompletePendingRequests(exception);
         }
         catch (ObjectDisposedException exception)
         {
-            foreach (var pending in _pendingById.Values)
-            {
-                pending.TrySetException(exception);
-            }
+            CompletePendingRequests(exception);
         }
         catch (InvalidOperationException exception)
         {
-            foreach (var pending in _pendingById.Values)
-            {
-                pending.TrySetException(exception);
-            }
+            CompletePendingRequests(exception);
+        }
+    }
+
+    private void CancelPendingRequests()
+    {
+        foreach (var pending in _pendingById.Values)
+        {
+            pending.TrySetCanceled();
+        }
+    }
+
+    private void CompletePendingRequests(Exception exception)
+    {
+        if (Volatile.Read(ref _disposing) != 0)
+        {
+            CancelPendingRequests();
+            return;
+        }
+
+        foreach (var pending in _pendingById.Values)
+        {
+            pending.TrySetException(exception);
         }
     }
 
@@ -628,11 +637,9 @@ internal sealed class CdpClient(CdpConnection connection) : ICdpClient
 
     public async ValueTask DisposeAsync()
     {
+        Interlocked.Exchange(ref _disposing, 1);
         _readLoopCancellation.Cancel();
-        foreach (var pending in _pendingById.Values)
-        {
-            pending.TrySetCanceled();
-        }
+        CancelPendingRequests();
 
         if (_readLoopTask is not null)
         {

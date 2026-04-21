@@ -11,6 +11,8 @@ namespace Jolt.Build;
 
 internal sealed class BundlerModuleProxyServer : IAsyncDisposable
 {
+    private static readonly TimeSpan DefaultProxyTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan DefaultPooledConnectionLifetime = TimeSpan.FromMinutes(2);
     private static readonly Regex JavaScriptImportSpecifierPattern = new(
         @"\bimport\s+(?:[^'"";]*?\s+from\s*)?[""'](?<specifier>[^""']+)[""']|\bexport\s+[^'"";]*?\s+from\s*[""'](?<specifier>[^""']+)[""']|\bimport\s*\(\s*[""'](?<specifier>[^""']+)[""']\s*\)",
         RegexOptions.Compiled | RegexOptions.Singleline);
@@ -33,8 +35,12 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         _httpClient = new HttpClient(new SocketsHttpHandler
         {
             AutomaticDecompression = DecompressionMethods.All,
-            UseProxy = false
-        });
+            UseProxy = false,
+            PooledConnectionLifetime = DefaultPooledConnectionLifetime
+        })
+        {
+            Timeout = DefaultProxyTimeout
+        };
     }
 
     public Uri ListeningUri
@@ -113,6 +119,12 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
 
         context.Response.StatusCode = (int)response.StatusCode;
+        if (!response.IsSuccessStatusCode)
+        {
+            await WriteSanitizedErrorResponseAsync(context, response.StatusCode, context.RequestAborted);
+            return;
+        }
+
         if (response.Content.Headers.ContentType is MediaTypeHeaderValue contentType)
         {
             context.Response.ContentType = contentType.ToString();
@@ -134,6 +146,23 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
 
         var bytes = await response.Content.ReadAsByteArrayAsync(context.RequestAborted);
         await context.Response.Body.WriteAsync(bytes, context.RequestAborted);
+    }
+
+    private static async Task WriteSanitizedErrorResponseAsync(
+        HttpContext context,
+        HttpStatusCode statusCode,
+        CancellationToken cancellationToken)
+    {
+        if (HttpMethods.IsHead(context.Request.Method))
+        {
+            return;
+        }
+
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        await context.Response.WriteAsync(
+            $"Bundler upstream request failed with status {(int)statusCode} ({statusCode}).",
+            Encoding.UTF8,
+            cancellationToken);
     }
 
     private static bool IsJavaScriptMediaType(string? mediaType)

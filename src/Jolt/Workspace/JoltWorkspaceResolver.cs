@@ -6,7 +6,11 @@ namespace Jolt.Workspace;
 
 internal static class JoltWorkspaceResolver
 {
+    private const int MaxWorkspaceCacheEntries = 1000;
+    private const int MaxPathSegmentDepth = 256;
     private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly object WorkspaceFileCacheSync = new();
+    private static readonly Dictionary<string, long> WorkspaceFileCacheAges = new(StringComparer.OrdinalIgnoreCase);
     private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
     private static readonly string[] WorkspaceBoundaryDirectories =
     [
@@ -51,7 +55,7 @@ internal static class JoltWorkspaceResolver
     {
         if (string.IsNullOrWhiteSpace(documentPath))
         {
-            WorkspaceFileCache.Clear();
+            ClearWorkspaceCache();
             return;
         }
 
@@ -70,7 +74,7 @@ internal static class JoltWorkspaceResolver
                 || PathMatchesOrContains(normalizedPath, normalizedRoot)
                 || PathMatchesOrContains(normalizedDirectory, normalizedRoot))
             {
-                WorkspaceFileCache.TryRemove(cacheKey, out _);
+                RemoveWorkspaceCacheEntry(cacheKey);
             }
         }
     }
@@ -123,6 +127,11 @@ internal static class JoltWorkspaceResolver
             }
 
             segments.Push(segment);
+            if (segments.Count > MaxPathSegmentDepth)
+            {
+                throw new InvalidOperationException(
+                    $"Path normalization exceeded the safety limit of {MaxPathSegmentDepth} segments for '{documentPath}'.");
+            }
         }
 
         var normalized = string.Join("/", segments.Reverse());
@@ -490,7 +499,8 @@ internal static class JoltWorkspaceResolver
                 continue;
             }
 
-            foreach (var filePath in Directory.EnumerateFiles(directory, "*.vue", SearchOption.TopDirectoryOnly))
+            foreach (var filePath in SafeEnumerate(
+                         Directory.EnumerateFiles(directory, "*.vue", SearchOption.TopDirectoryOnly)))
             {
                 var normalizedPath = NormalizePath(filePath);
                 if (!seen.Add(normalizedPath))
@@ -777,18 +787,18 @@ internal static class JoltWorkspaceResolver
             }
 
             var cacheKey = CreateCacheKey(normalizedRoot, searchPattern);
-            if (!WorkspaceFileCache.TryGetValue(cacheKey, out var files))
+            if (!TryGetWorkspaceCacheEntry(cacheKey, out var files))
             {
                 files = ScanWorkspaceFiles(searchRoot, searchPattern, cancellationToken);
-                WorkspaceFileCache[cacheKey] = files;
+                SetWorkspaceCacheEntry(cacheKey, files);
             }
 
             foreach (var filePath in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!File.Exists(filePath))
+                if (!SafeFileExists(filePath))
                 {
-                    WorkspaceFileCache.TryRemove(cacheKey, out _);
+                    RemoveWorkspaceCacheEntry(cacheKey);
                     continue;
                 }
 
@@ -906,7 +916,7 @@ internal static class JoltWorkspaceResolver
                 continue;
             }
 
-            foreach (var filePath in files)
+            foreach (var filePath in SafeEnumerate(files))
             {
                 var normalizedPath = NormalizePath(filePath);
                 if (visitedFiles.Add(normalizedPath))
@@ -929,7 +939,7 @@ internal static class JoltWorkspaceResolver
                 continue;
             }
 
-            foreach (var childDirectory in directories)
+            foreach (var childDirectory in SafeEnumerate(directories))
             {
                 if (!ShouldSkipWorkspaceDirectory(childDirectory))
                 {
@@ -1173,6 +1183,74 @@ internal static class JoltWorkspaceResolver
     private static string CreateCacheKey(string searchRoot, string searchPattern)
         => NormalizePath(searchRoot) + "|" + searchPattern;
 
+    private static bool TryGetWorkspaceCacheEntry(string cacheKey, out string[] files)
+    {
+        if (!WorkspaceFileCache.TryGetValue(cacheKey, out files!))
+        {
+            return false;
+        }
+
+        TouchWorkspaceCacheEntry(cacheKey);
+        return true;
+    }
+
+    private static void SetWorkspaceCacheEntry(string cacheKey, string[] files)
+    {
+        WorkspaceFileCache[cacheKey] = files;
+        TouchWorkspaceCacheEntry(cacheKey);
+
+        string[] keysToTrim;
+        lock (WorkspaceFileCacheSync)
+        {
+            if (WorkspaceFileCacheAges.Count <= MaxWorkspaceCacheEntries)
+            {
+                return;
+            }
+
+            keysToTrim = WorkspaceFileCacheAges
+                .OrderBy(static pair => pair.Value)
+                .Take(WorkspaceFileCacheAges.Count - MaxWorkspaceCacheEntries)
+                .Select(static pair => pair.Key)
+                .ToArray();
+
+            foreach (var key in keysToTrim)
+            {
+                WorkspaceFileCacheAges.Remove(key);
+            }
+        }
+
+        foreach (var key in keysToTrim)
+        {
+            WorkspaceFileCache.TryRemove(key, out _);
+        }
+    }
+
+    private static void TouchWorkspaceCacheEntry(string cacheKey)
+    {
+        lock (WorkspaceFileCacheSync)
+        {
+            WorkspaceFileCacheAges[cacheKey] = Environment.TickCount64;
+        }
+    }
+
+    private static void RemoveWorkspaceCacheEntry(string cacheKey)
+    {
+        WorkspaceFileCache.TryRemove(cacheKey, out _);
+        lock (WorkspaceFileCacheSync)
+        {
+            WorkspaceFileCacheAges.Remove(cacheKey);
+        }
+    }
+
+    private static void ClearWorkspaceCache()
+    {
+        WorkspaceFileCache.Clear();
+        lock (WorkspaceFileCacheSync)
+        {
+            WorkspaceFileCacheAges.Clear();
+        }
+    }
+
     private static bool IsSystemTempRoot(string normalizedRoot)
     {
         var normalizedSystemTemp = NormalizePath(Path.GetTempPath())
@@ -1185,6 +1263,22 @@ internal static class JoltWorkspaceResolver
                || normalizedSystemTemp.StartsWith(
                    comparableRoot + "/",
                    StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool SafeFileExists(string filePath)
+    {
+        try
+        {
+            return File.Exists(filePath);
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private static bool IsTooBroadTempAncestor(string directoryPath)
@@ -1210,6 +1304,58 @@ internal static class JoltWorkspaceResolver
     private static bool PathMatchesOrContains(string left, string right)
         => string.Equals(left, right, StringComparison.OrdinalIgnoreCase)
             || left.StartsWith(right + "/", StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> SafeEnumerate(IEnumerable<string> values)
+    {
+        IEnumerator<string>? enumerator = null;
+        try
+        {
+            enumerator = values.GetEnumerator();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            yield break;
+        }
+        catch (IOException)
+        {
+            yield break;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            yield break;
+        }
+
+        using (enumerator)
+        {
+            while (true)
+            {
+                string current;
+                try
+                {
+                    if (!enumerator.MoveNext())
+                    {
+                        yield break;
+                    }
+
+                    current = enumerator.Current;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    yield break;
+                }
+                catch (IOException)
+                {
+                    yield break;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    yield break;
+                }
+
+                yield return current;
+            }
+        }
+    }
 
     private static string NormalizeComparablePath(string path)
         => NormalizePath(path).TrimEnd('/', '\\');

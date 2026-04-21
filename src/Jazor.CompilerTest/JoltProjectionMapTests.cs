@@ -125,6 +125,80 @@ public sealed class JoltProjectionMapTests
     }
 
     [TestMethod]
+    public void ProjectionMap_TryMapToProjectedRange_PrefersSegmentEndAtBoundary()
+    {
+        const string sourceText = "abcdef";
+        const string projectedText = "0123456789abcUVWXYZdef";
+        var map = new ProjectionMap(
+            "source.jazor",
+            "virtual:source.jazor.g.vue",
+            [
+                new ProjectionSegment(0, 3, 10, 3),
+                new ProjectionSegment(3, 3, 19, 3)
+            ]);
+
+        var mapped = map.TryMapToProjectedRange(
+            sourceText,
+            new LspRange
+            {
+                Start = new LspPosition { Line = 0, Character = 0 },
+                End = new LspPosition { Line = 0, Character = 3 }
+            },
+            projectedText,
+            out var projectedRange);
+
+        Assert.IsTrue(mapped);
+        Assert.IsNotNull(projectedRange);
+        Assert.AreEqual(10, LspProtocolHelpers.GetOffset(projectedText, projectedRange.Start));
+        Assert.AreEqual(13, LspProtocolHelpers.GetOffset(projectedText, projectedRange.End));
+    }
+
+    [TestMethod]
+    public void ProjectionMap_TryMapToProjectedPosition_MapsEndOfFileToProjectedEnd()
+    {
+        const string sourceText = "abc";
+        const string projectedText = "__abc";
+        var map = new ProjectionMap(
+            "source.jazor",
+            "virtual:source.jazor.g.vue",
+            [
+                new ProjectionSegment(0, 3, 2, 3)
+            ]);
+
+        var mapped = map.TryMapToProjectedPosition(
+            sourceText,
+            new LspPosition { Line = 0, Character = 3 },
+            projectedText,
+            out var projectedPosition);
+
+        Assert.IsTrue(mapped);
+        Assert.AreEqual(0, projectedPosition.Line);
+        Assert.AreEqual(5, projectedPosition.Character);
+    }
+
+    [TestMethod]
+    public void ProjectionSegment_Constructor_RejectsNegativeLengths()
+    {
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => new ProjectionSegment(0, -1, 0, 0));
+        AssertThrows<ArgumentOutOfRangeException>(
+            () => new ProjectionSegment(0, 0, 0, -1));
+    }
+
+    [TestMethod]
+    public void ProjectionMap_Constructor_RejectsOverlappingSegments()
+    {
+        AssertThrows<ArgumentException>(
+            () => new ProjectionMap(
+                "source.jazor",
+                "virtual:source.jazor.g.vue",
+                [
+                    new ProjectionSegment(0, 4, 0, 4),
+                    new ProjectionSegment(3, 2, 4, 2)
+                ]));
+    }
+
+    [TestMethod]
     public async Task JazorProjectionService_ProjectAsync_BuildsSegmentAwareVueProjectionMap()
     {
         var document = new DocumentSnapshot(
@@ -189,5 +263,20 @@ public sealed class JoltProjectionMapTests
         Assert.AreEqual(document.DocumentPath, target.MappingId);
         Assert.AreEqual(1, target.ProjectedPosition!.Line);
         Assert.AreEqual(5, target.ProjectedPosition.Character);
+    }
+
+    private static TException AssertThrows<TException>(Action action)
+        where TException : Exception
+    {
+        try
+        {
+            action();
+        }
+        catch (TException exception)
+        {
+            return exception;
+        }
+
+        throw new AssertFailedException($"Expected exception of type {typeof(TException).Name}.");
     }
 }

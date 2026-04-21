@@ -1,5 +1,7 @@
 using Jazor.VueContracts.Protocol;
 using Jolt.Workspace;
+using System.Collections.Concurrent;
+using System.Reflection;
 using System.Threading;
 
 namespace Jazor.CompilerTest;
@@ -443,6 +445,43 @@ public sealed class JoltWorkspaceResolverTests
         }
         finally
         {
+            DeleteDirectory(baseDirectory);
+        }
+    }
+
+    [TestMethod]
+    public void Jolt_WorkspaceResolver_EnumerateWorkspaceFiles_BoundsCacheGrowth()
+    {
+        var baseDirectory = CreateTemporaryDirectory();
+        try
+        {
+            JoltWorkspaceResolver.InvalidatePath(string.Empty);
+
+            for (var index = 0; index < 1025; index++)
+            {
+                var workspaceRoot = Path.Combine(baseDirectory, "workspace-" + index.ToString("D4"));
+                Directory.CreateDirectory(workspaceRoot);
+                File.WriteAllText(Path.Combine(workspaceRoot, "Component.vue"), "<template />");
+
+                _ = JoltWorkspaceResolver
+                    .EnumerateWorkspaceFiles([workspaceRoot], "*.vue", CancellationToken.None)
+                    .ToArray();
+            }
+
+            var cacheField = typeof(JoltWorkspaceResolver).GetField(
+                "WorkspaceFileCache",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(cacheField);
+
+            var cache = cacheField.GetValue(null) as ConcurrentDictionary<string, string[]>;
+            Assert.IsNotNull(cache);
+            Assert.IsTrue(
+                cache.Count <= 1000,
+                $"Expected workspace file cache to remain bounded, but found {cache.Count} entries.");
+        }
+        finally
+        {
+            JoltWorkspaceResolver.InvalidatePath(string.Empty);
             DeleteDirectory(baseDirectory);
         }
     }

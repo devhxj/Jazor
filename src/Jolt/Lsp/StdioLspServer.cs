@@ -64,6 +64,10 @@ internal sealed class StdioLspServer
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
         }
+        catch (InvalidDataException)
+        {
+            // Malformed framing cannot be recovered safely, but it should not crash the host process.
+        }
         finally
         {
             queue.Writer.TryComplete();

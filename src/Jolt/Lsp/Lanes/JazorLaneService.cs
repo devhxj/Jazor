@@ -74,7 +74,7 @@ internal sealed class JazorLaneService : ILspLane
         LspPosition position,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => _documentService.GetDefinitionAsync(document, position, cancellationToken);
+        => ValueTask.FromResult<IReadOnlyList<LspLocation>>(Array.Empty<LspLocation>());
 
     public ValueTask<IReadOnlyList<LspLocation>> GetReferencesAsync(
         DocumentSnapshot document,

@@ -8,6 +8,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
 {
     private readonly DenoVolarHostOptions _options;
     private readonly IDenoWorkerProcess _workerProcess;
+    private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
 
     public DenoVolarHost(DenoVolarHostOptions options)
         : this(options, workerProcess: null)
@@ -26,38 +27,51 @@ internal sealed class DenoVolarHost : IDenoVolarHost
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
-        if (!_options.Enabled || IsRunning)
+        if (!_options.Enabled)
         {
             return;
         }
 
+        await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
-            await _workerProcess.StartAsync(cancellationToken);
+            if (IsRunning)
+            {
+                return;
+            }
+
+            try
+            {
+                await _workerProcess.StartAsync(cancellationToken);
+            }
+            catch (System.ComponentModel.Win32Exception) when (_options.IgnoreStartupFailure)
+            {
+                await ResetWorkerStateCoreAsync();
+            }
+            catch (UnauthorizedAccessException) when (_options.IgnoreStartupFailure)
+            {
+                await ResetWorkerStateCoreAsync();
+            }
+            catch (IOException) when (_options.IgnoreStartupFailure)
+            {
+                await ResetWorkerStateCoreAsync();
+            }
+            catch (InvalidOperationException) when (_options.IgnoreStartupFailure)
+            {
+                await ResetWorkerStateCoreAsync();
+            }
+            catch (ArgumentException) when (_options.IgnoreStartupFailure)
+            {
+                await ResetWorkerStateCoreAsync();
+            }
+            catch (NotSupportedException) when (_options.IgnoreStartupFailure)
+            {
+                await ResetWorkerStateCoreAsync();
+            }
         }
-        catch (System.ComponentModel.Win32Exception) when (_options.IgnoreStartupFailure)
+        finally
         {
-            await TryResetWorkerStateAsync();
-        }
-        catch (UnauthorizedAccessException) when (_options.IgnoreStartupFailure)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (IOException) when (_options.IgnoreStartupFailure)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (InvalidOperationException) when (_options.IgnoreStartupFailure)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (ArgumentException) when (_options.IgnoreStartupFailure)
-        {
-            await TryResetWorkerStateAsync();
-        }
-        catch (NotSupportedException) when (_options.IgnoreStartupFailure)
-        {
-            await TryResetWorkerStateAsync();
+            _lifecycleGate.Release();
         }
     }
 
@@ -68,12 +82,27 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             return;
         }
 
-        await _workerProcess.StopAsync(cancellationToken);
+        await _lifecycleGate.WaitAsync(cancellationToken);
+        try
+        {
+            await _workerProcess.StopAsync(cancellationToken);
+        }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
-        await StopAsync(CancellationToken.None);
+        try
+        {
+            await StopAsync(CancellationToken.None);
+        }
+        finally
+        {
+            _lifecycleGate.Dispose();
+        }
     }
 
     public async ValueTask<DenoSfcCompileResult?> CompileSfcAsync(
@@ -414,6 +443,19 @@ internal sealed class DenoVolarHost : IDenoVolarHost
     }
 
     private async ValueTask TryResetWorkerStateAsync()
+    {
+        await _lifecycleGate.WaitAsync(CancellationToken.None);
+        try
+        {
+            await ResetWorkerStateCoreAsync();
+        }
+        finally
+        {
+            _lifecycleGate.Release();
+        }
+    }
+
+    private async ValueTask ResetWorkerStateCoreAsync()
     {
         try
         {

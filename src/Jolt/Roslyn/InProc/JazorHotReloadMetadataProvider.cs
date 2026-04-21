@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jolt.Roslyn.InProc;
 
@@ -185,16 +186,25 @@ internal sealed class JazorHotReloadMetadataProvider
                 continue;
             }
 
-            if (!File.Exists(candidatePath))
+            if (!SafeFileExists(candidatePath))
             {
                 continue;
             }
 
-            documents.Add(new DocumentSnapshot(
-                normalizedPath,
-                DocumentKind.CSharp,
-                File.ReadAllText(candidatePath),
-                version: null));
+            try
+            {
+                documents.Add(new DocumentSnapshot(
+                    normalizedPath,
+                    DocumentKind.CSharp,
+                    File.ReadAllText(candidatePath),
+                    version: null));
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
         }
 
         return documents;
@@ -638,7 +648,10 @@ internal sealed class JazorHotReloadMetadataProvider
                          .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
                          .Distinct(StringComparer.OrdinalIgnoreCase))
             {
-                references.Add(MetadataReference.CreateFromFile(path));
+                if (TryCreateMetadataReference(path, out var reference))
+                {
+                    references.Add(reference);
+                }
             }
         }
 
@@ -660,7 +673,55 @@ internal sealed class JazorHotReloadMetadataProvider
             return;
         }
 
-        references.Add(MetadataReference.CreateFromFile(assemblyPath));
+        if (TryCreateMetadataReference(assemblyPath, out var reference))
+        {
+            references.Add(reference);
+        }
+    }
+
+    private static bool SafeFileExists(string filePath)
+    {
+        try
+        {
+            return File.Exists(filePath);
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    private static bool TryCreateMetadataReference(
+        string? assemblyPath,
+        [NotNullWhen(true)] out MetadataReference? reference)
+    {
+        reference = null;
+        if (string.IsNullOrWhiteSpace(assemblyPath) || !SafeFileExists(assemblyPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            reference = MetadataReference.CreateFromFile(assemblyPath);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private sealed record SemanticPropDescriptor(

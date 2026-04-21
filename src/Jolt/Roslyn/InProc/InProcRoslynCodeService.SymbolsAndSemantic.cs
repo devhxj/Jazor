@@ -1399,11 +1399,46 @@ internal sealed partial class InProcRoslynCodeService
         if (string.IsNullOrWhiteSpace(trustedPlatformAssemblies))
             return ImmutableArray<MetadataReference>.Empty;
 
-        return trustedPlatformAssemblies
-            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Select(static path => MetadataReference.CreateFromFile(path))
-            .Cast<MetadataReference>()
-            .ToImmutableArray();
+        var references = ImmutableArray.CreateBuilder<MetadataReference>();
+        foreach (var path in trustedPlatformAssemblies
+                     .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            if (TryCreateMetadataReference(path, out var reference))
+            {
+                references.Add(reference);
+            }
+        }
+
+        return references.ToImmutable();
+    }
+
+    private static bool TryCreateMetadataReference(
+        string path,
+        [NotNullWhen(true)] out MetadataReference? reference)
+    {
+        reference = null;
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            reference = MetadataReference.CreateFromFile(path);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 }

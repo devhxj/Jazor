@@ -17,6 +17,8 @@ internal sealed class OutOfProcessExtensionProxy :
     ILspReferenceProvider,
     ILspRenameProvider
 {
+    private const string BootstrapTimeoutEnvironmentVariable = "JOLT_EXTENSION_BOOTSTRAP_TIMEOUT_MS";
+    private static readonly TimeSpan DefaultBootstrapTimeout = TimeSpan.FromSeconds(30);
     private readonly ExtensionWorkerBootstrapRequest _bootstrapRequest;
     private readonly IReadOnlyDictionary<string, ExtensionWorkerProviderDescriptor> _providerByCapability;
     private readonly IReadOnlySet<string> _providedCapabilities;
@@ -393,7 +395,25 @@ internal sealed class OutOfProcessExtensionProxy :
         var bootstrapSucceeded = false;
         try
         {
-            var bootstrap = await workerClient.BootstrapAsync(bootstrapRequest, cancellationToken);
+            var timeout = ResolveBootstrapTimeout(
+                BootstrapTimeoutEnvironmentVariable,
+                DefaultBootstrapTimeout);
+            using var bootstrapTimeout = CreateOperationTimeoutTokenSource(
+                cancellationToken,
+                timeout);
+            ExtensionWorkerBootstrapResponse bootstrap;
+            try
+            {
+                bootstrap = await workerClient.BootstrapAsync(bootstrapRequest, bootstrapTimeout.Token);
+            }
+            catch (OperationCanceledException exception)
+                when (!cancellationToken.IsCancellationRequested && bootstrapTimeout.IsCancellationRequested)
+            {
+                throw new TimeoutException(
+                    $"extension worker bootstrap timed out after {timeout.TotalSeconds:0.###} seconds.",
+                    exception);
+            }
+
             bootstrapSucceeded = true;
             return (workerClient, bootstrap);
         }
@@ -424,6 +444,23 @@ internal sealed class OutOfProcessExtensionProxy :
         {
             // Ignore disposal failures while recovering from worker crashes.
         }
+    }
+
+    private static CancellationTokenSource CreateOperationTimeoutTokenSource(
+        CancellationToken cancellationToken,
+        TimeSpan timeout)
+    {
+        var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        linkedSource.CancelAfter(timeout);
+        return linkedSource;
+    }
+
+    private static TimeSpan ResolveBootstrapTimeout(string environmentVariableName, TimeSpan defaultTimeout)
+    {
+        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
+        return int.TryParse(configuredValue, out var milliseconds) && milliseconds > 0
+            ? TimeSpan.FromMilliseconds(milliseconds)
+            : defaultTimeout;
     }
 
     private string GetProviderName(string capability, string fallback)

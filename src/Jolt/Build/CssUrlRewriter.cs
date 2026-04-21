@@ -107,13 +107,21 @@ internal static class CssUrlRewriter
             return null;
         }
 
-        if (normalized.StartsWith("/", StringComparison.Ordinal))
+        try
         {
-            return normalized;
+            normalized = Uri.UnescapeDataString(normalized);
+        }
+        catch (UriFormatException)
+        {
+            return null;
         }
 
-        var cssUri = new Uri(RootUri, NormalizeOutputPath(cssPublicPath));
-        return new Uri(cssUri, normalized).AbsolutePath;
+        if (normalized.StartsWith("/", StringComparison.Ordinal))
+        {
+            return NormalizeAbsoluteLookupPath(normalized);
+        }
+
+        return NormalizeRelativeLookupPath(cssPublicPath, normalized);
     }
 
     private static string NormalizeOutputPath(string value)
@@ -166,5 +174,46 @@ internal static class CssUrlRewriter
         return string.IsNullOrEmpty(normalized)
             ? string.Empty
             : normalized.TrimEnd('/') + "/";
+    }
+
+    private static string? NormalizeAbsoluteLookupPath(string path)
+        => NormalizeSegments(path.Split('/', StringSplitOptions.RemoveEmptyEntries));
+
+    private static string? NormalizeRelativeLookupPath(string cssPublicPath, string relativePath)
+    {
+        var baseDirectory = GetDirectoryPath(cssPublicPath);
+        var baseSegments = string.IsNullOrWhiteSpace(baseDirectory)
+            ? []
+            : NormalizeOutputPath(baseDirectory)
+                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var relativeSegments = relativePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return NormalizeSegments(baseSegments.Concat(relativeSegments));
+    }
+
+    private static string? NormalizeSegments(IEnumerable<string> segments)
+    {
+        var normalizedSegments = new List<string>();
+        foreach (var segment in segments)
+        {
+            if (segment.Length == 0 || string.Equals(segment, ".", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (string.Equals(segment, "..", StringComparison.Ordinal))
+            {
+                if (normalizedSegments.Count == 0)
+                {
+                    return null;
+                }
+
+                normalizedSegments.RemoveAt(normalizedSegments.Count - 1);
+                continue;
+            }
+
+            normalizedSegments.Add(segment);
+        }
+
+        return "/" + string.Join('/', normalizedSegments);
     }
 }

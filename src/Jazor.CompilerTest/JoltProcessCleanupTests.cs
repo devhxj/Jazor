@@ -55,6 +55,76 @@ public sealed class JoltProcessCleanupTests
         }
     }
 
+    [TestMethod]
+    public async Task ProcessAnalysisRpcTransport_SendAsync_LargeStandardError_DoesNotBlockResponse()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var scriptPath = Path.Combine(tempDirectory, "chatty-analysis-worker.ps1");
+            await File.WriteAllTextAsync(
+                scriptPath,
+                """
+                for ($i = 0; $i -lt 5000; $i++) {
+                    [Console]::Error.WriteLine(("stderr-" + $i.ToString("D4") + " " + ("x" * 120)))
+                }
+
+                '{"id":"analysis-stdio","success":true,"payloadJson":"{\"value\":42}","error":null}'
+                """);
+
+            var transport = new ProcessAnalysisRpcTransport(
+                ResolvePowerShellPath(),
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"");
+            using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+
+            var response = await transport.SendAsync(
+                new RpcRequestEnvelope("analysis-stdio", "analysis/test", payloadJson: "{}"),
+                cancellationSource.Token);
+
+            Assert.IsTrue(response.Success);
+            Assert.AreEqual("analysis-stdio", response.Id);
+            Assert.AreEqual("{\"value\":42}", response.PayloadJson);
+        }
+        finally
+        {
+            DeleteDirectory(tempDirectory);
+        }
+    }
+
+    [TestMethod]
+    public async Task ProcessAnalysisRpcTransport_SendAsync_TooManyNonJsonLines_ThrowsBoundedFailure()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var scriptPath = Path.Combine(tempDirectory, "noisy-stdout-analysis-worker.ps1");
+            await File.WriteAllTextAsync(
+                scriptPath,
+                """
+                for ($i = 0; $i -lt 1005; $i++) {
+                    "noise-$i"
+                }
+
+                '{"id":"analysis-noise","success":true,"payloadJson":null,"error":null}'
+                """);
+
+            var transport = new ProcessAnalysisRpcTransport(
+                ResolvePowerShellPath(),
+                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"");
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await transport.SendAsync(
+                    new RpcRequestEnvelope("analysis-noise", "analysis/test", payloadJson: "{}"),
+                    CancellationToken.None));
+
+            StringAssert.Contains(exception.Message, "more than 1000 non-JSON stdout lines");
+        }
+        finally
+        {
+            DeleteDirectory(tempDirectory);
+        }
+    }
+
     private static string ResolvePowerShellPath()
     {
         var systemPowerShell = Path.Combine(

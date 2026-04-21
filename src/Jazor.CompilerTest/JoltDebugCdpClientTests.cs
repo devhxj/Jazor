@@ -240,4 +240,59 @@ public sealed class JoltDebugCdpClientTests
         Assert.AreEqual(8, rewrittenFrames[0].Location.LineNumber);
         Assert.AreEqual(18, rewrittenFrames[0].Location.ColumnNumber);
     }
+
+    [TestMethod]
+    public async Task CdpClient_ContinueAsync_WhenConnectionCloses_FailsPendingRequest()
+    {
+        var connection = new FakeCdpConnection();
+        await using var client = new CdpClient(connection);
+        await client.ConnectAsync(new Uri("ws://localhost:9222/devtools/page/1"), CancellationToken.None);
+
+        var continueTask = client.ContinueAsync(CancellationToken.None);
+        await connection.WaitForSendAsync();
+        connection.CompleteReceive(messageJson: null);
+
+        var exception = await Assert.ThrowsAsync<IOException>(
+            async () => await continueTask.WaitAsync(TimeSpan.FromSeconds(1)));
+
+        StringAssert.Contains(exception.Message, "closed", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class FakeCdpConnection : ICdpConnection
+    {
+        private readonly TaskCompletionSource<bool> _sendObserved = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<string?> _nextReceive = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public bool IsConnected { get; private set; }
+
+        public Task ConnectAsync(Uri endpoint, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            IsConnected = true;
+            return Task.CompletedTask;
+        }
+
+        public Task SendAsync(string payloadJson, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _sendObserved.TrySetResult(true);
+            return Task.CompletedTask;
+        }
+
+        public Task<string?> ReceiveAsync(CancellationToken cancellationToken)
+            => _nextReceive.Task.WaitAsync(cancellationToken);
+
+        public async Task WaitForSendAsync()
+            => await _sendObserved.Task.WaitAsync(TimeSpan.FromSeconds(1));
+
+        public void CompleteReceive(string? messageJson)
+            => _nextReceive.TrySetResult(messageJson);
+
+        public ValueTask DisposeAsync()
+        {
+            IsConnected = false;
+            _nextReceive.TrySetCanceled();
+            return ValueTask.CompletedTask;
+        }
+    }
 }

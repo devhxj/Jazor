@@ -119,11 +119,12 @@ if (usePreview)
     app.MapFallbackToFile("index.html");
 
     using var shutdownSource = new CancellationTokenSource();
-    Console.CancelKeyPress += (_, eventArgs) =>
+    ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
     {
         eventArgs.Cancel = true;
         shutdownSource.Cancel();
     };
+    Console.CancelKeyPress += cancelHandler;
 
     try
     {
@@ -137,6 +138,7 @@ if (usePreview)
     }
     finally
     {
+        Console.CancelKeyPress -= cancelHandler;
         await app.DisposeAsync();
     }
 
@@ -190,22 +192,26 @@ if (useDev && !useLsp)
     await using var devRuntime = CreateDevServerRuntime(devOptions, denoFrontendHost);
     var devServer = devRuntime.Server;
     using var shutdownSource = new CancellationTokenSource();
-    Console.CancelKeyPress += (_, eventArgs) =>
+    ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
     {
         eventArgs.Cancel = true;
         shutdownSource.Cancel();
     };
-
-    await devServer.StartAsync(shutdownSource.Token);
-    Console.WriteLine($"Jolt dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
+    Console.CancelKeyPress += cancelHandler;
 
     try
     {
+        await devServer.StartAsync(shutdownSource.Token);
+        Console.WriteLine($"Jolt dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
         await Task.Delay(Timeout.InfiniteTimeSpan, shutdownSource.Token);
     }
     catch (OperationCanceledException)
     {
         // Ctrl+C shutdown.
+    }
+    finally
+    {
+        Console.CancelKeyPress -= cancelHandler;
     }
 
     return;
@@ -279,42 +285,44 @@ try
             cancellationToken);
         await extensionLoader.LoadUserExtensionsAsync(extensionHostOptions, cancellationToken);
 
+        DevServerRuntime? devRuntime = null;
         DevHttpServer? devServer = null;
         if (useDev)
         {
             var devOptions = DevServerOptionsParser.Parse(args);
-            var devRuntime = CreateDevServerRuntime(devOptions, denoVolarHost, workspaceStore);
+            devRuntime = CreateDevServerRuntime(devOptions, denoVolarHost, workspaceStore);
             devServer = devRuntime.Server;
             await devServer.StartAsync(cancellationToken);
             Console.Error.WriteLine($"Jolt dev server listening on {devServer.ListeningUri ?? new Uri($"http://{devOptions.Host}:{devOptions.Port}")}");
         }
 
-        var jazorDocumentService = new JazorLspDocumentService(workspaceStore, analysisClient, markupComponentBridge);
-        ILspLane[] lanes =
-        [
-            new JazorLaneService(jazorDocumentService),
-            new RoslynLaneService(workspaceStore, inProcRoslynCodeService),
-            new VolarLaneService(workspaceStore, hostService, virtualDocumentRegistry, denoVolarHost, markupComponentBridge)
-        ];
-        var laneMap = lanes.ToDictionary(static lane => lane.LaneKind);
-        var lspServer = new StdioLspServer(
-            new LspSession(
-                workspaceStore,
-                lanes,
-                laneRouter,
-                new LspMessageWriter(Console.OpenStandardOutput()),
-                projectionService,
-                virtualDocumentRegistry,
-                projectionResolver,
-                resultAggregator,
-                markupBridgeFanoutCoordinator,
-                new ReferenceCoordinator(laneMap, laneRouter, markupBridgeFanoutCoordinator),
-                new RenameCoordinator(laneMap, laneRouter, resultAggregator, markupBridgeFanoutCoordinator),
-                new CodeActionCoordinator(laneMap, laneRouter, resultAggregator),
-                devServer,
-                extensionRegistry));
         try
         {
+            var jazorDocumentService = new JazorLspDocumentService(workspaceStore, analysisClient, markupComponentBridge);
+            ILspLane[] lanes =
+            [
+                new JazorLaneService(jazorDocumentService),
+                new RoslynLaneService(workspaceStore, inProcRoslynCodeService),
+                new VolarLaneService(workspaceStore, hostService, virtualDocumentRegistry, denoVolarHost, markupComponentBridge)
+            ];
+            var laneMap = lanes.ToDictionary(static lane => lane.LaneKind);
+            var lspServer = new StdioLspServer(
+                new LspSession(
+                    workspaceStore,
+                    lanes,
+                    laneRouter,
+                    new LspMessageWriter(Console.OpenStandardOutput()),
+                    projectionService,
+                    virtualDocumentRegistry,
+                    projectionResolver,
+                    resultAggregator,
+                    markupBridgeFanoutCoordinator,
+                    new ReferenceCoordinator(laneMap, laneRouter, markupBridgeFanoutCoordinator),
+                    new RenameCoordinator(laneMap, laneRouter, resultAggregator, markupBridgeFanoutCoordinator),
+                    new CodeActionCoordinator(laneMap, laneRouter, resultAggregator),
+                    devServer,
+                    extensionRegistry));
+
             await lspServer.RunAsync(
                 Console.OpenStandardInput(),
                 Console.OpenStandardOutput(),
@@ -322,9 +330,9 @@ try
         }
         finally
         {
-            if (devServer is not null)
+            if (devRuntime is not null)
             {
-                await devServer.DisposeAsync();
+                await devRuntime.DisposeAsync();
             }
         }
 

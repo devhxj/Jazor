@@ -8,6 +8,8 @@ namespace Jolt.Extensions;
 
 internal sealed class ExtensionWorkerServer
 {
+    private const string InvokeTimeoutEnvironmentVariable = "JOLT_EXTENSION_INVOKE_TIMEOUT_MS";
+    private static readonly TimeSpan DefaultInvokeTimeout = TimeSpan.FromSeconds(30);
     private static readonly string[] NetworkUriSchemes =
     [
         "http",
@@ -133,7 +135,24 @@ internal sealed class ExtensionWorkerServer
                 var invokeRequest = DeserializeRequired<ExtensionWorkerInvokeRequest>(
                     request.Params,
                     "invoke params");
-                var invokeResult = await HandleInvokeAsync(invokeRequest, cancellationToken);
+                var invokeTimeout = ResolveOperationTimeout(
+                    InvokeTimeoutEnvironmentVariable,
+                    DefaultInvokeTimeout);
+                using var invokeTimeoutSource = CreateOperationTimeoutTokenSource(cancellationToken, invokeTimeout);
+                object? invokeResult;
+                try
+                {
+                    invokeResult = await HandleInvokeAsync(invokeRequest, invokeTimeoutSource.Token);
+                }
+                catch (OperationCanceledException exception)
+                    when (!cancellationToken.IsCancellationRequested && invokeTimeoutSource.IsCancellationRequested)
+                {
+                    throw new ExtensionWorkerProtocolException(
+                        ExtensionWorkerErrorCodes.InternalError,
+                        $"extension capability '{invokeRequest.Capability}' timed out after {invokeTimeout.TotalSeconds:0.###} seconds.",
+                        exception);
+                }
+
                 return (new ExtensionWorkerResponseEnvelope(request.Id, invokeResult, null), false);
             }
 
@@ -1115,9 +1134,27 @@ internal sealed class ExtensionWorkerServer
                 $"{name} payload is invalid.");
     }
 
+    private static CancellationTokenSource CreateOperationTimeoutTokenSource(
+        CancellationToken cancellationToken,
+        TimeSpan timeout)
+    {
+        var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        linkedSource.CancelAfter(timeout);
+        return linkedSource;
+    }
+
+    private static TimeSpan ResolveOperationTimeout(string environmentVariableName, TimeSpan defaultTimeout)
+    {
+        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
+        return int.TryParse(configuredValue, out var milliseconds) && milliseconds > 0
+            ? TimeSpan.FromMilliseconds(milliseconds)
+            : defaultTimeout;
+    }
+
     private sealed class ExtensionWorkerProtocolException(
         string code,
-        string message) : Exception(message)
+        string message,
+        Exception? innerException = null) : Exception(message, innerException)
     {
         public string Code { get; } = code;
     }

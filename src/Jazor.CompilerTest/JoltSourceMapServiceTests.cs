@@ -127,4 +127,31 @@ public sealed class JoltSourceMapServiceTests
         Assert.AreEqual(0, original.Line);
         Assert.AreEqual(0, original.Column);
     }
+
+    [TestMethod]
+    public void SourceMapService_Register_RejectsVlqValuesThatOverflow()
+    {
+        var service = new InMemorySourceMapService();
+        const string sourceMapJson = """
+            {"version":3,"sources":["Counter.jazor"],"sourcesContent":["line0"],"names":[],"mappings":"ggggggggA","file":"Counter.js"}
+            """;
+
+        AssertThrows<InvalidOperationException>(
+            () => service.Register("/Counter.jazor", sourceMapJson));
+    }
+
+    private static TException AssertThrows<TException>(Action action)
+        where TException : Exception
+    {
+        try
+        {
+            action();
+        }
+        catch (TException exception)
+        {
+            return exception;
+        }
+
+        throw new AssertFailedException($"Expected exception of type {typeof(TException).Name}.");
+    }
 }

@@ -396,8 +396,9 @@ internal static class ExtensionSecurityPolicy
 
     private static string ComputeSha256Hex(string filePath)
     {
-        var bytes = File.ReadAllBytes(filePath);
-        return Convert.ToHexString(SHA256.HashData(bytes));
+        using var stream = File.OpenRead(filePath);
+        using var sha256 = SHA256.Create();
+        return Convert.ToHexString(sha256.ComputeHash(stream));
     }
 
     private static object NormalizeSettingsForPayload(Dictionary<string, JsonElement>? settings)

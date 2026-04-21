@@ -4,8 +4,8 @@ namespace Jolt.DevServer;
 
 internal static class DevServerFileWatchFilter
 {
-    private static readonly HashSet<string> SupportedExtensions =
-    [
+    private static readonly HashSet<string> SupportedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
         ".jazor",
         ".vue",
         ".ts",
@@ -13,7 +13,7 @@ internal static class DevServerFileWatchFilter
         ".css",
         ".html",
         ".json"
-    ];
+    };
 
     private static readonly HashSet<string> IgnoredDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -35,8 +35,7 @@ internal static class DevServerFileWatchFilter
         var fullRootDirectory = Path.GetFullPath(rootDirectory);
         var fullPath = Path.GetFullPath(path);
         var relativePath = Path.GetRelativePath(fullRootDirectory, fullPath);
-        if (relativePath.StartsWith("..", StringComparison.Ordinal)
-            || Path.IsPathRooted(relativePath))
+        if (!IsInsideRoot(relativePath))
         {
             return false;
         }
@@ -62,4 +61,11 @@ internal static class DevServerFileWatchFilter
     internal static bool IsIgnoredDirectoryName(string? directoryName)
         => !string.IsNullOrWhiteSpace(directoryName)
             && IgnoredDirectories.Contains(directoryName);
+
+    private static bool IsInsideRoot(string relativePath)
+        => string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
 }

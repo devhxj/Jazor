@@ -30,6 +30,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     private Task? _standardErrorPumpTask;
     private CancellationTokenSource? _standardErrorPumpCancellationSource;
     private string? _launchWorkingDirectory;
+    private int _droppedStandardErrorLineCount;
 
     public DenoWorkerProcess(DenoVolarHostOptions options)
     {
@@ -104,9 +105,15 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         }
         catch (Win32Exception ex) when (!_options.HasExplicitExecutableOverride)
         {
+            CleanupLaunchWorkingDirectory();
             throw new InvalidOperationException(
                 DenoRuntimeAssetResolver.CreateMissingRuntimeMessage(_options.ExecutablePath),
                 ex);
+        }
+        catch
+        {
+            CleanupLaunchWorkingDirectory();
+            throw;
         }
 
         _writer = new StreamWriter(_process.StandardInput.BaseStream, new UTF8Encoding(false))
@@ -227,6 +234,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             _reader = null;
             _process.Dispose();
             _process = null;
+            CleanupLaunchWorkingDirectory();
         }
     }
 
@@ -300,11 +308,13 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     {
         lock (_standardErrorGate)
         {
-            _standardErrorLines.Enqueue(line);
-            while (_standardErrorLines.Count > MaxCapturedStandardErrorLines)
+            while (_standardErrorLines.Count >= MaxCapturedStandardErrorLines)
             {
                 _standardErrorLines.Dequeue();
+                _droppedStandardErrorLineCount++;
             }
+
+            _standardErrorLines.Enqueue(line);
         }
     }
 
@@ -313,6 +323,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         lock (_standardErrorGate)
         {
             _standardErrorLines.Clear();
+            _droppedStandardErrorLineCount = 0;
         }
     }
 
@@ -325,7 +336,20 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                 return string.Empty;
             }
 
-            return " stderr: " + string.Join(Environment.NewLine, _standardErrorLines);
+            var builder = new StringBuilder(" stderr: ");
+            if (_droppedStandardErrorLineCount > 0)
+            {
+                builder.Append('(');
+                builder.Append(_droppedStandardErrorLineCount);
+                builder.Append(" earlier stderr lines omitted)");
+                if (_standardErrorLines.Count > 0)
+                {
+                    builder.Append(Environment.NewLine);
+                }
+            }
+
+            builder.Append(string.Join(Environment.NewLine, _standardErrorLines));
+            return builder.ToString();
         }
     }
 
@@ -427,6 +451,41 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             catch (UnauthorizedAccessException)
             {
             }
+        }
+    }
+
+    private void CleanupLaunchWorkingDirectory()
+    {
+        string? launchWorkingDirectory;
+        lock (LaunchWorkspaceCleanupGate)
+        {
+            launchWorkingDirectory = _launchWorkingDirectory;
+            _launchWorkingDirectory = null;
+            if (string.IsNullOrWhiteSpace(launchWorkingDirectory))
+            {
+                return;
+            }
+
+            LaunchWorkspaces.Remove(launchWorkingDirectory);
+        }
+
+        TryDeleteLaunchWorkspace(launchWorkingDirectory);
+    }
+
+    private static void TryDeleteLaunchWorkspace(string launchWorkspaceDirectory)
+    {
+        try
+        {
+            if (Directory.Exists(launchWorkspaceDirectory))
+            {
+                Directory.Delete(launchWorkspaceDirectory, recursive: true);
+            }
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
     }
 }

@@ -275,6 +275,39 @@ public sealed class JoltStdioLspServerTests
     }
 
     [TestMethod]
+    public async Task Jolt_StdioLspServer_InvalidHeader_ShutsDownGracefully()
+    {
+        var session = CreateSession(new NoOpWorkspaceSymbolProvider());
+        var server = new StdioLspServer(session);
+
+        var clientToServerPipe = new Pipe();
+        var serverToClientPipe = new Pipe();
+        await using var serverInput = clientToServerPipe.Reader.AsStream(leaveOpen: true);
+        await using var serverOutput = serverToClientPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientInput = clientToServerPipe.Writer.AsStream(leaveOpen: true);
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        var serverTask = server.RunAsync(serverInput, serverOutput, cancellationSource.Token).AsTask();
+
+        var malformedHeader = Encoding.ASCII.GetBytes("Content-Length: -1\r\n\r\n");
+        await clientInput.WriteAsync(malformedHeader, cancellationSource.Token);
+        await clientInput.DisposeAsync();
+
+        await serverTask.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.IsTrue(serverTask.IsCompletedSuccessfully);
+    }
+
+    [TestMethod]
+    public async Task LspMessageReader_ReadMessageAsync_RejectsNegativeContentLength()
+    {
+        await using var input = new MemoryStream(Encoding.ASCII.GetBytes("Content-Length: -1\r\n\r\n"));
+        var reader = new LspMessageReader(input);
+
+        await Assert.ThrowsAsync<InvalidDataException>(
+            async () => await reader.ReadMessageAsync(CancellationToken.None).AsTask());
+    }
+
+    [TestMethod]
     public async Task Jolt_StdioLspServer_InvalidParams_ReturnsInvalidParamsErrorAndKeepsServingRequests()
     {
         var session = CreateSession(new NoOpWorkspaceSymbolProvider());

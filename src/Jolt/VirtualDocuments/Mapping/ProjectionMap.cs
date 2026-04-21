@@ -12,7 +12,7 @@ public sealed class ProjectionMap
     {
         SourceDocumentPath = sourceDocumentPath ?? throw new ArgumentNullException(nameof(sourceDocumentPath));
         ProjectedDocumentPath = projectedDocumentPath ?? throw new ArgumentNullException(nameof(projectedDocumentPath));
-        Segments = segments ?? throw new ArgumentNullException(nameof(segments));
+        Segments = ValidateSegments(segments);
     }
 
     public string SourceDocumentPath { get; }
@@ -24,7 +24,7 @@ public sealed class ProjectionMap
     internal bool TryMapToProjectedPosition(string sourceText, LspPosition sourcePosition, string projectedText, out LspPosition projectedPosition)
     {
         var sourceOffset = LspProtocolHelpers.GetOffset(sourceText, sourcePosition);
-        if (!TryMapToProjectedOffset(sourceOffset, out var projectedOffset))
+        if (!TryMapToProjectedOffsetCore(sourceOffset, preferSegmentEnd: sourceOffset == sourceText.Length, out var projectedOffset))
         {
             projectedPosition = new LspPosition();
             return false;
@@ -40,8 +40,10 @@ public sealed class ProjectionMap
         string projectedText,
         [NotNullWhen(true)] out LspRange? projectedRange)
     {
-        if (!TryMapToProjectedPosition(sourceText, sourceRange.Start, projectedText, out var projectedStart)
-            || !TryMapToProjectedPosition(sourceText, sourceRange.End, projectedText, out var projectedEnd))
+        var sourceStartOffset = LspProtocolHelpers.GetOffset(sourceText, sourceRange.Start);
+        var sourceEndOffset = LspProtocolHelpers.GetOffset(sourceText, sourceRange.End);
+        if (!TryMapToProjectedOffsetCore(sourceStartOffset, preferSegmentEnd: false, out var projectedStartOffset)
+            || !TryMapToProjectedOffsetCore(sourceEndOffset, preferSegmentEnd: true, out var projectedEndOffset))
         {
             projectedRange = null;
             return false;
@@ -49,8 +51,8 @@ public sealed class ProjectionMap
 
         projectedRange = new LspRange
         {
-            Start = projectedStart,
-            End = projectedEnd
+            Start = LspProtocolHelpers.GetPosition(projectedText, projectedStartOffset),
+            End = LspProtocolHelpers.GetPosition(projectedText, projectedEndOffset)
         };
         return true;
     }
@@ -58,7 +60,7 @@ public sealed class ProjectionMap
     internal bool TryMapToOriginalPosition(string projectedText, LspPosition projectedPosition, string sourceText, out LspPosition originalPosition)
     {
         var projectedOffset = LspProtocolHelpers.GetOffset(projectedText, projectedPosition);
-        if (!TryMapToOriginalOffset(projectedOffset, out var originalOffset))
+        if (!TryMapToOriginalOffsetCore(projectedOffset, preferSegmentEnd: projectedOffset == projectedText.Length, out var originalOffset))
         {
             originalPosition = new LspPosition();
             return false;
@@ -74,8 +76,10 @@ public sealed class ProjectionMap
         string sourceText,
         [NotNullWhen(true)] out LspRange? originalRange)
     {
-        if (!TryMapToOriginalPosition(projectedText, projectedRange.Start, sourceText, out var originalStart)
-            || !TryMapToOriginalPosition(projectedText, projectedRange.End, sourceText, out var originalEnd))
+        var projectedStartOffset = LspProtocolHelpers.GetOffset(projectedText, projectedRange.Start);
+        var projectedEndOffset = LspProtocolHelpers.GetOffset(projectedText, projectedRange.End);
+        if (!TryMapToOriginalOffsetCore(projectedStartOffset, preferSegmentEnd: false, out var originalStartOffset)
+            || !TryMapToOriginalOffsetCore(projectedEndOffset, preferSegmentEnd: true, out var originalEndOffset))
         {
             originalRange = null;
             return false;
@@ -83,14 +87,31 @@ public sealed class ProjectionMap
 
         originalRange = new LspRange
         {
-            Start = originalStart,
-            End = originalEnd
+            Start = LspProtocolHelpers.GetPosition(sourceText, originalStartOffset),
+            End = LspProtocolHelpers.GetPosition(sourceText, originalEndOffset)
         };
         return true;
     }
 
     public bool TryMapToProjectedOffset(int sourceOffset, out int projectedOffset)
+        => TryMapToProjectedOffsetCore(sourceOffset, preferSegmentEnd: false, out projectedOffset);
+
+    public bool TryMapToOriginalOffset(int projectedOffset, out int originalOffset)
+        => TryMapToOriginalOffsetCore(projectedOffset, preferSegmentEnd: false, out originalOffset);
+
+    private bool TryMapToProjectedOffsetCore(int sourceOffset, bool preferSegmentEnd, out int projectedOffset)
     {
+        if (sourceOffset < 0)
+        {
+            projectedOffset = default;
+            return false;
+        }
+
+        if (preferSegmentEnd && TryMapBoundaryToProjectedOffset(sourceOffset, preferSegmentEnd: true, out projectedOffset))
+        {
+            return true;
+        }
+
         foreach (var segment in Segments)
         {
             if (!segment.IsBidirectional || !segment.ContainsOriginalOffset(sourceOffset))
@@ -102,12 +123,28 @@ public sealed class ProjectionMap
             return true;
         }
 
+        if (!preferSegmentEnd && TryMapBoundaryToProjectedOffset(sourceOffset, preferSegmentEnd: false, out projectedOffset))
+        {
+            return true;
+        }
+
         projectedOffset = default;
         return false;
     }
 
-    public bool TryMapToOriginalOffset(int projectedOffset, out int originalOffset)
+    private bool TryMapToOriginalOffsetCore(int projectedOffset, bool preferSegmentEnd, out int originalOffset)
     {
+        if (projectedOffset < 0)
+        {
+            originalOffset = default;
+            return false;
+        }
+
+        if (preferSegmentEnd && TryMapBoundaryToOriginalOffset(projectedOffset, preferSegmentEnd: true, out originalOffset))
+        {
+            return true;
+        }
+
         foreach (var segment in Segments)
         {
             if (!segment.IsBidirectional || !segment.ContainsProjectedOffset(projectedOffset))
@@ -116,6 +153,11 @@ public sealed class ProjectionMap
             }
 
             originalOffset = segment.OriginalStart + Math.Min(projectedOffset - segment.ProjectedStart, segment.OriginalLength);
+            return true;
+        }
+
+        if (!preferSegmentEnd && TryMapBoundaryToOriginalOffset(projectedOffset, preferSegmentEnd: false, out originalOffset))
+        {
             return true;
         }
 
@@ -134,5 +176,176 @@ public sealed class ProjectionMap
             [
                 new ProjectionSegment(0, sourceLength, 0, projectedLength)
             ]);
+
+    private bool TryMapBoundaryToProjectedOffset(int sourceOffset, bool preferSegmentEnd, out int projectedOffset)
+    {
+        if (preferSegmentEnd)
+        {
+            if (TryMapProjectedSegmentEnd(sourceOffset, out projectedOffset))
+            {
+                return true;
+            }
+
+            if (TryMapProjectedSegmentStart(sourceOffset, out projectedOffset))
+            {
+                return true;
+            }
+
+            projectedOffset = default;
+            return false;
+        }
+
+        if (TryMapProjectedSegmentStart(sourceOffset, out projectedOffset))
+        {
+            return true;
+        }
+
+        if (TryMapProjectedSegmentEnd(sourceOffset, out projectedOffset))
+        {
+            return true;
+        }
+
+        projectedOffset = default;
+        return false;
+    }
+
+    private bool TryMapBoundaryToOriginalOffset(int projectedOffset, bool preferSegmentEnd, out int originalOffset)
+    {
+        if (preferSegmentEnd)
+        {
+            if (TryMapOriginalSegmentEnd(projectedOffset, out originalOffset))
+            {
+                return true;
+            }
+
+            if (TryMapOriginalSegmentStart(projectedOffset, out originalOffset))
+            {
+                return true;
+            }
+
+            originalOffset = default;
+            return false;
+        }
+
+        if (TryMapOriginalSegmentStart(projectedOffset, out originalOffset))
+        {
+            return true;
+        }
+
+        if (TryMapOriginalSegmentEnd(projectedOffset, out originalOffset))
+        {
+            return true;
+        }
+
+        originalOffset = default;
+        return false;
+    }
+
+    private bool TryMapProjectedSegmentStart(int sourceOffset, out int projectedOffset)
+    {
+        foreach (var segment in Segments)
+        {
+            if (!segment.IsBidirectional)
+            {
+                continue;
+            }
+
+            if (segment.OriginalStart == sourceOffset)
+            {
+                projectedOffset = segment.ProjectedStart;
+                return true;
+            }
+        }
+
+        projectedOffset = default;
+        return false;
+    }
+
+    private bool TryMapProjectedSegmentEnd(int sourceOffset, out int projectedOffset)
+    {
+        for (var index = Segments.Count - 1; index >= 0; index--)
+        {
+            var segment = Segments[index];
+            if (!segment.IsBidirectional)
+            {
+                continue;
+            }
+
+            if (segment.OriginalEnd == sourceOffset)
+            {
+                projectedOffset = segment.ProjectedEnd;
+                return true;
+            }
+        }
+
+        projectedOffset = default;
+        return false;
+    }
+
+    private bool TryMapOriginalSegmentStart(int projectedOffset, out int originalOffset)
+    {
+        foreach (var segment in Segments)
+        {
+            if (!segment.IsBidirectional)
+            {
+                continue;
+            }
+
+            if (segment.ProjectedStart == projectedOffset)
+            {
+                originalOffset = segment.OriginalStart;
+                return true;
+            }
+        }
+
+        originalOffset = default;
+        return false;
+    }
+
+    private bool TryMapOriginalSegmentEnd(int projectedOffset, out int originalOffset)
+    {
+        for (var index = Segments.Count - 1; index >= 0; index--)
+        {
+            var segment = Segments[index];
+            if (!segment.IsBidirectional)
+            {
+                continue;
+            }
+
+            if (segment.ProjectedEnd == projectedOffset)
+            {
+                originalOffset = segment.OriginalEnd;
+                return true;
+            }
+        }
+
+        originalOffset = default;
+        return false;
+    }
+
+    private static IReadOnlyList<ProjectionSegment> ValidateSegments(IReadOnlyList<ProjectionSegment> segments)
+    {
+        ArgumentNullException.ThrowIfNull(segments);
+
+        var copiedSegments = new ProjectionSegment[segments.Count];
+        ProjectionSegment? previousSegment = null;
+        for (var index = 0; index < segments.Count; index++)
+        {
+            var segment = segments[index] ?? throw new ArgumentException("Projection segments cannot contain null items.", nameof(segments));
+            if (previousSegment is not null)
+            {
+                if (segment.OriginalStart < previousSegment.OriginalStart
+                    || segment.OriginalStart < previousSegment.OriginalEnd)
+                {
+                    throw new ArgumentException("Projection segments must be sorted and non-overlapping in source order.", nameof(segments));
+                }
+            }
+
+            copiedSegments[index] = segment;
+            previousSegment = segment;
+        }
+
+        return copiedSegments;
+    }
 
 }

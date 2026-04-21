@@ -172,6 +172,7 @@ internal sealed class ModuleResolver
             ".vue" => DocumentKind.Vue,
             ".ts" => DocumentKind.TypeScript,
             ".js" => DocumentKind.JavaScript,
+            ".css" => DocumentKind.Css,
             _ => DocumentKind.Unknown
         };
 

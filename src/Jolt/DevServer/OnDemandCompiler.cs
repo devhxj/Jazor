@@ -37,6 +37,7 @@ internal sealed class OnDemandCompiler
     private readonly JazorHotReloadMetadataProvider _hotReloadMetadataProvider;
     private readonly ISourceMapService? _sourceMapService;
     private readonly bool _buildMode;
+    private readonly Lock _stateGate = new();
 
     public DependencyGraph? DependencyGraph => _dependencyGraph;
 
@@ -73,16 +74,14 @@ internal sealed class OnDemandCompiler
         cancellationToken.ThrowIfCancellationRequested();
 
         var text = await File.ReadAllTextAsync(absolutePath, cancellationToken);
-        var contentHash = ComputeContentHash(text);
-        if (_cache.TryGet(absolutePath, contentHash, out var cached))
+        var contentHash = ComputeCacheHash(text, companionDocuments: null);
+        if (TryGetCachedResultCore(absolutePath, contentHash, out var cached))
         {
             return cached;
         }
 
         var result = await CompileCoreAsync(absolutePath, text, companionDocuments: null, cancellationToken);
-        SynchronizeSourceMapRegistration(absolutePath, result);
-        _dependencyGraph?.Record(absolutePath, result.Dependencies);
-        _cache.Set(absolutePath, contentHash, result);
+        PublishCompilationResult(absolutePath, contentHash, result);
         return result;
     }
 
@@ -102,21 +101,24 @@ internal sealed class OnDemandCompiler
         ArgumentNullException.ThrowIfNull(text);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var contentHash = ComputeContentHash(text);
-        if (_cache.TryGet(absolutePath, contentHash, out var cached))
+        var contentHash = ComputeCacheHash(text, companionDocuments);
+        if (TryGetCachedResultCore(absolutePath, contentHash, out var cached))
         {
             return cached;
         }
 
         var result = await CompileCoreAsync(absolutePath, text, companionDocuments, cancellationToken);
-        SynchronizeSourceMapRegistration(absolutePath, result);
-        _dependencyGraph?.Record(absolutePath, result.Dependencies);
-        _cache.Set(absolutePath, contentHash, result);
+        PublishCompilationResult(absolutePath, contentHash, result);
         return result;
     }
 
     public bool TryGetCachedResult(string absolutePath, out CompilationResult? result)
-        => _cache.TryPeek(absolutePath, out result);
+    {
+        lock (_stateGate)
+        {
+            return _cache.TryPeek(absolutePath, out result);
+        }
+    }
 
     public async ValueTask<CompilationResult> RecompileAsync(
         string absolutePath,
@@ -157,30 +159,35 @@ internal sealed class OnDemandCompiler
         ArgumentNullException.ThrowIfNull(text);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var contentHash = ComputeContentHash(text);
+        var contentHash = ComputeCacheHash(text, companionDocuments);
         var result = await CompileCoreAsync(absolutePath, text, companionDocuments, cancellationToken);
-        SynchronizeSourceMapRegistration(absolutePath, result);
-        _dependencyGraph?.Record(absolutePath, result.Dependencies);
-        _cache.Set(absolutePath, contentHash, result);
+        PublishCompilationResult(absolutePath, contentHash, result);
         return result;
     }
 
     public void Invalidate(string absolutePath)
     {
-        _cache.Invalidate(absolutePath);
-        _dependencyGraph?.Remove(absolutePath);
-        UnregisterSourceMap(absolutePath);
+        lock (_stateGate)
+        {
+            if (_cache.Invalidate(absolutePath))
+            {
+                _dependencyGraph?.Remove(absolutePath);
+                UnregisterSourceMap(absolutePath);
+            }
+        }
     }
 
     public void InvalidateAll()
     {
-        foreach (var absolutePath in _cache.GetPaths())
+        lock (_stateGate)
         {
-            UnregisterSourceMap(absolutePath);
-        }
+            foreach (var absolutePath in _cache.InvalidateAll())
+            {
+                UnregisterSourceMap(absolutePath);
+            }
 
-        _cache.InvalidateAll();
-        _dependencyGraph?.Clear();
+            _dependencyGraph?.Clear();
+        }
     }
 
     private async ValueTask<CompilationResult> CompileCoreAsync(
@@ -349,7 +356,12 @@ internal sealed class OnDemandCompiler
         string content,
         CancellationToken cancellationToken)
         => !_buildMode
-            ? CreatePassThrough("text/javascript", content)
+            ? new CompilationResult
+            {
+                ContentType = "text/javascript",
+                Content = content,
+                Dependencies = DenoFrontendModuleCompiler.ExtractJavaScriptDependencies(content)
+            }
             : new CompilationResult
             {
                 ContentType = "text/javascript",
@@ -496,6 +508,56 @@ internal sealed class OnDemandCompiler
     {
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(text));
         return Convert.ToHexString(hash);
+    }
+
+    private static string ComputeCacheHash(
+        string text,
+        IReadOnlyList<DocumentSnapshot>? companionDocuments)
+    {
+        if (companionDocuments is null || companionDocuments.Count == 0)
+        {
+            return ComputeContentHash(text);
+        }
+
+        var builder = new StringBuilder(text.Length + (companionDocuments.Count * 64));
+        builder.Append(text);
+        foreach (var companion in companionDocuments
+                     .Where(static document => document.DocumentKind == DocumentKind.CSharp)
+                     .OrderBy(static document => document.DocumentPath, StringComparer.OrdinalIgnoreCase))
+        {
+            builder
+                .Append("\n// companion:")
+                .Append(Path.GetFullPath(companion.DocumentPath))
+                .Append('|')
+                .Append(companion.Version)
+                .Append('\n')
+                .Append(companion.Text);
+        }
+
+        return ComputeContentHash(builder.ToString());
+    }
+
+    private bool TryGetCachedResultCore(string absolutePath, string contentHash, out CompilationResult? result)
+    {
+        lock (_stateGate)
+        {
+            return _cache.TryGet(absolutePath, contentHash, out result);
+        }
+    }
+
+    private void PublishCompilationResult(string absolutePath, string contentHash, CompilationResult result)
+    {
+        lock (_stateGate)
+        {
+            SynchronizeSourceMapRegistration(absolutePath, result);
+            _dependencyGraph?.Record(absolutePath, result.Dependencies);
+            var evictedPaths = _cache.Set(absolutePath, contentHash, result);
+            foreach (var evictedPath in evictedPaths)
+            {
+                _dependencyGraph?.Remove(evictedPath);
+                UnregisterSourceMap(evictedPath);
+            }
+        }
     }
 
     private static string StripBuildCssImports(string javaScript)

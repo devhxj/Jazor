@@ -299,7 +299,7 @@ internal sealed partial class BuildOrchestrator
             }
 
             line = Regex.Replace(line, @"\s+", " ");
-            line = Regex.Replace(line, @"\s*([{}:;,>+~])\s*", "$1");
+            line = Regex.Replace(line, @"\s*([{}:;,>~])\s*", "$1");
             line = line.Replace(";}", "}", StringComparison.Ordinal);
             lines[index] = line;
         }
@@ -316,7 +316,7 @@ internal sealed partial class BuildOrchestrator
 
         var linePreserved = MinifyCssPreservingLines(css);
         var compact = Regex.Replace(linePreserved, @"\s+", " ");
-        compact = Regex.Replace(compact, @"\s*([{}:;,>+~])\s*", "$1");
+        compact = Regex.Replace(compact, @"\s*([{}:;,>~])\s*", "$1");
         compact = compact.Replace(";}", "}", StringComparison.Ordinal);
         return compact.Trim();
     }

@@ -17,19 +17,29 @@ public sealed class StdioVueAnalysisRpcServer
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(output);
 
-        while (!cancellationToken.IsCancellationRequested)
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var requestLine = await input.ReadLineAsync();
-            if (requestLine is null)
-                break;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var requestLine = await input.ReadLineAsync(cancellationToken);
+                if (requestLine is null)
+                {
+                    break;
+                }
 
-            if (string.IsNullOrWhiteSpace(requestLine))
-                continue;
+                if (string.IsNullOrWhiteSpace(requestLine))
+                {
+                    continue;
+                }
 
-            var responseLine = await _processor.ProcessAsync(requestLine, cancellationToken);
-            await output.WriteLineAsync(responseLine);
-            await output.FlushAsync();
+                var responseLine = await _processor.ProcessAsync(requestLine, cancellationToken);
+                await output.WriteLineAsync(responseLine.AsMemory(), cancellationToken);
+                await output.FlushAsync(cancellationToken);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
     }
 }

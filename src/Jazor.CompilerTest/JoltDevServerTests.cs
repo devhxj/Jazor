@@ -147,6 +147,27 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
+    public void ModuleResolver_Resolve_StyleSheet_ReturnsCssDocumentKind()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var documentPath = Path.Combine(rootDirectory, "site.css");
+            File.WriteAllText(documentPath, "body { color: red; }");
+            var resolver = new ModuleResolver(rootDirectory);
+
+            var result = resolver.Resolve("/site.css");
+
+            Assert.IsTrue(result.Found);
+            Assert.AreEqual(DocumentKind.Css, result.DocumentKind);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ModuleResolver_Resolve_VirtualClientPath_ReturnsVirtualResult()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -797,6 +818,25 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
+    public void DevServerFileWatchFilter_ShouldObserve_InRootFileStartingWithDotDot()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var trickyPath = Path.Combine(rootDirectory, "..component.css");
+            File.WriteAllText(trickyPath, "body { color: red; }");
+
+            Assert.IsTrue(
+                DevServerFileWatchFilter.ShouldObserve(rootDirectory, trickyPath),
+                "A file inside the root should not be rejected just because its name starts with '..'.");
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void DevServerFileSnapshotPoller_GetChangedPaths_DetectsCreateModifyDeleteAndIgnoresFilteredFiles()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -835,6 +875,43 @@ public sealed class JoltDevServerTests
         {
             Directory.Delete(rootDirectory, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void CompilationCache_NormalizesEquivalentAbsolutePaths()
+    {
+        var cache = new CompilationCache();
+        var documentPath = Path.Combine(Path.GetTempPath(), "jolt-cache", "App.vue");
+        var normalizedPath = Path.GetFullPath(documentPath);
+        var alternatePath = normalizedPath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var result = new CompilationResult
+        {
+            ContentType = "text/javascript",
+            Content = "export default {};",
+            Dependencies = []
+        };
+
+        cache.Set(normalizedPath, "hash", result);
+
+        Assert.IsTrue(cache.TryGet(alternatePath, "hash", out var cached));
+        Assert.AreSame(result, cached);
+        Assert.AreEqual(1, cache.GetPaths().Count);
+    }
+
+    [TestMethod]
+    public void DependencyGraph_NormalizesEquivalentAbsolutePaths()
+    {
+        var graph = new DependencyGraph();
+        var modulePath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "jolt-graph", "main.ts"));
+        var dependencyPath = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "jolt-graph", "Counter.vue"));
+
+        graph.Record(
+            modulePath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+            [dependencyPath.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)]);
+
+        CollectionAssert.AreEqual(
+            new[] { modulePath },
+            graph.GetDependents(dependencyPath).ToArray());
     }
 
     [TestMethod]

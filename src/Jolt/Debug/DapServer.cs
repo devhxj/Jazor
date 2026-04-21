@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Jolt.Lsp;
 
 namespace Jolt.Debug;
@@ -25,13 +26,39 @@ internal sealed class DapServer(DapRequestHandler requestHandler)
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var messageJson = await reader.ReadMessageAsync(cancellationToken);
+            string? messageJson;
+            try
+            {
+                messageJson = await reader.ReadMessageAsync(cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (InvalidDataException)
+            {
+                continue;
+            }
+
             if (messageJson is null)
             {
                 break;
             }
 
-            var request = DapProtocolSerializer.Deserialize<DapRequest>(messageJson);
+            DapRequest? request;
+            try
+            {
+                request = DapProtocolSerializer.Deserialize<DapRequest>(messageJson);
+            }
+            catch (JsonException)
+            {
+                continue;
+            }
+            catch (NotSupportedException)
+            {
+                continue;
+            }
+
             if (request is null || !string.Equals(request.Type, "request", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
