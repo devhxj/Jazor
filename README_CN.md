@@ -8,60 +8,81 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 
-> ⚠️ **实验性演示** ⚠️\
+> ⚠️ **实验性项目** ⚠️\
 > Jazor 仍在演进中。随着仓库持续稳定，公共 API、生成的输出形态以及相关工具链可能会发生变化。
 
-Jazor 是一个基于 Roslyn 的实验性 C# 到 JavaScript 编译器项目。它专注于语义保持的 JavaScript AST 降低，目前将编译器主线视为仓库最稳定的参考领域。当前的 Vue 侧开发边界是 `Jolt`；`Jazor.Vite`、Bun 以及旧的 split-host / analysis-host 路线都只是迁移残留。
+Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是将 C# 操作树（IOperation）语义保持地降低为 JavaScript AST。当前以编译器主线和 `Jolt`（`.jazor` 全功能开发时宿主）为活跃开发边界。
+
+## 两条技术线路
+
+| 线路 | 模式 | 核心项目 | 说明 |
+|------|------|---------|------|
+| **RazorVue** | 库模式 | `Jazor.RazorVue` + Analysis + Vuetify | Source Generator 驱动，不使用 .vue SFC，编译时直接输出 JS/TS 模块 |
+| **Jolt** | 全功能模式 | `Jolt` | 类似 Vite，支持 .jazor + .vue SFC，LSP + DevServer/HMR + Debug + Build |
+
+两条线路共享同一套编译器基础设施（SemanticWalker、WhiteList、AstConverter）。
 
 ## 文档入口
 
-- **新访客**：查看 [文档中心](docs/README.md) 了解项目全貌
-- **维护者**：查看 [工作流总览](docs/workstream-dashboard.md) 快速恢复工作
-- **架构设计**：查看 [架构文档](docs/architecture/README.md) 深入了解设计
+| 角色 | 入口 |
+|------|------|
+| **新访客** | [文档中心](docs/README.md) — 项目全貌与导航 |
+| **维护者** | [工作流总览](docs/02-计划/workstream-dashboard.md) — 恢复工作唯一入口 |
+| **架构设计** | [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [Jolt 设计](docs/01-目标/jolt/README.md) · [RazorVue 设计](docs/01-目标/razorvue/README.md) |
+
+文档按五类组织：[目标](docs/01-目标/README.md) · [计划](docs/02-计划/README.md) · [完成](docs/03-完成/README.md) · [补充](docs/04-补充/README.md) · [遗弃](docs/05-遗弃/README.md)
 
 ## 项目状态
 
-Jazor 当前以编译器主线和 `Jolt` 为核心，Deno 是唯一的前端/运行时宿主路径。`Jazor.Vite`、Bun 以及旧的 split-host / analysis-host 路线都只是迁移残留。详见 [工作流总览](docs/workstream-dashboard.md)。
+详见 [工作流总览](docs/02-计划/workstream-dashboard.md)。
 
-- ✅ **Compiler 主线**：接近稳定，是仓库最成熟的部分
-- ✅ **Jolt**：当前的开发时边界，负责 `.jazor` 和前端智能感知
-- 🔄 **Emit / Materialisation**：持续承接，产物输出和打包管道
-- 🔄 **SourceMap**：局部活跃，支撑当前的 Jolt / Deno 物化链路
+- ✅ **Compiler 主线** — 接近稳定，是仓库最成熟的部分
+- 🔄 **Jolt** — Phase 1–6 收口中，Phase 7 扩展系统规划中
+- 🔄 **Emit / Materialisation** — 持续承接，产物输出和打包管道
+- 🔄 **SourceMap** — 局部活跃（narrow lane），支撑 Jolt / Deno 物化链路
 
 ## 项目结构
 
 ```
 Jazor/
 ├── src/
-│   ├── Jazor.Compiler/              # C# 到 JavaScript 编译器核心
-│   ├── Jazor.Analyzer/              # 静态分析和白名单验证
-│   ├── Jazor.CLR/                   # CLR 运行时支持模块
-│   ├── Jazor.Emit/                  # Emit 和打包管道
-│   ├── Jazor.RazorVue/              # RazorVue 集成层
-│   ├── Jazor.RazorVue.Analysis/     # RazorVue 分析和 lowering
-│   ├── Jazor.RazorVue.Vuetify/      # Vuetify 组件桩
-│   ├── Jolt/               # `.jazor` 的活跃开发时宿主
-│   ├── Jazor.Razor/                 # Razor 模板支持
-│   ├── Jazor.Common/                # 共享工具和类型
-│   ├── ECMAScript/                  # ECMAScript 核心类型和特性
-│   ├── ECMAScript.WebIDL/           # WebIDL 绑定生成器
-│   ├── Jazor.CompilerTest/          # 编译器测试 (MSTest)
-│   └── Jazor.EmitTest/              # Emit 管道测试 (MSTest)
-├── docs/                            # 仓库级文档中心
-└── README.md                        # 本文件
+│   ├── ECMAScript/                    # ECMAScript AST 核心类型与特性
+│   ├── ECMAScript.WebIDL.Generator/   # WebIDL 绑定生成器（.NET）
+│   ├── Jazor.Compiler/                # C# → JS 编译器核心（SemanticWalker 分文件组织）
+│   ├── Jazor.Compiler.Generator/      # 白名单 Source Generator
+│   ├── Jazor.Compiler.Razor/          # 编译器 Razor 集成层
+│   ├── Jazor.CLR/                     # CLR 运行时支持（白名单声明 + JS 实现）
+│   ├── Jazor.CLR.Generator/           # CLR 类型映射与绑定代码生成器
+│   ├── Jazor.Common/                  # 跨项目共享契约
+│   ├── Jazor.Name/                    # 符号格式化与哈希命名工具
+│   ├── Jazor.Emit/                    # 发射管线、打包物化、SourceMap 输出
+│   ├── Jazor.Analyzer/                # 静态代码分析器（白名单编译时验证）
+│   ├── Jazor.Razor/                   # Razor 基础层（桥接 ASP.NET Core）
+│   ├── Jazor.RazorVue/                # 【RazorVue 线路】核心语义
+│   ├── Jazor.RazorVue.Analysis/       # 【RazorVue 线路】编译时分析
+│   ├── Jazor.RazorVue.Vuetify/        # 【RazorVue 线路】Vuetify 3 组件库
+│   ├── Jolt/                          # 【Jolt 线路】LSP + DevServer + HMR + Debug + Build
+│   ├── Jolt.VSCodeExtension/          # VS Code Language Client 扩展
+│   ├── Jazor/                         # NuGet 包（运行时 + 分析器 + 生成器 + MSBuild）
+│   ├── Jazor.CompilerTest/            # 编译器 + Jolt + LSP 测试（MSTest）
+│   └── Jazor.EmitTest/                # 发射测试（MSTest）
+├── docs/                              # 文档中心（01-目标/02-计划/03-完成/04-补充/05-遗弃）
+├── scripts/                           # 构建与工具脚本
+└── README.md
 ```
+
+> **注**：`ECMAScript.WebIDL`（TypeScript 版）、`Jazor.Vite`、`Jazor.Vue.*`、`Jazor.VueContracts` 等为历史迁移残留，非当前活跃方向。
 
 ## 核心组件
 
-- **Jazor.Compiler** - C# 到 JavaScript 的编译器核心 [→ 详细文档](src/Jazor.Compiler/README.md)
-- **Jazor.Analyzer** - 静态分析和白名单验证，确保编译时类型安全
-- **Jazor.CLR** - .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
-- **Jazor.Emit** - 产物输出和打包管道，处理 host-facing 输出
-- **Jazor.RazorVue** - Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写
-- **Jolt** - `.jazor` 开发时边界和前端智能感知宿主
-`.jazor` 以 Razor 作为源码语法，Vue 相关产物仅作为内部投影或桥接工件。`Jazor.Vite`、Bun 和旧的分析宿主路径都不再是当前架构方向；若迁移期间仍需独立分析进程，兼容入口是 `Jolt --analysis-stdio`。
+- **Jazor.Compiler** — C# 到 JavaScript 的编译器核心 [→ 文档](src/Jazor.Compiler/README.md)
+- **Jazor.Analyzer** — 静态分析和白名单验证，确保编译时类型安全
+- **Jazor.CLR** — .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
+- **Jazor.Emit** — 产物输出和打包管道，处理 host-facing 输出 [→ 文档](src/Jazor.Emit/README.md)
+- **Jazor.RazorVue** — Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写 [→ 设计](docs/01-目标/razorvue/README.md)
+- **Jolt** — `.jazor` 全功能开发时边界：LSP + DevServer + HMR + Debug + Build [→ 设计](docs/01-目标/jolt/README.md) [→ 状态](docs/03-完成/jolt/status.md)
 
-详见 [模块索引](docs/architecture/modules/README.md) 了解所有模块。
+`.jazor` 以 Razor 作为源码语法，Vue 相关产物仅作为内部投影或桥接工件。
 
 ## 核心能力
 
@@ -71,10 +92,13 @@ Jazor 支持将 C# 代码转换为 JavaScript，包括：
 - 模式匹配和条件表达式
 - 可空类型处理
 - 异步编程（async/await）
-- 字符串插值
+- 字符串插值（模板字符串）
 - 对象和集合初始化
+- 元组与解构
+- switch 语句和表达式
+- 循环（for / foreach / while / do-while）
 
-详见 [编译器文档](src/Jazor.Compiler/doc/README.md) 了解支持的完整特性。
+详见 [编译器文档](src/Jazor.Compiler/README.md) 了解支持的完整特性。
 
 ### 转换示例
 
