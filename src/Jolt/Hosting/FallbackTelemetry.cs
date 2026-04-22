@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Threading;
 
 namespace Jolt.Hosting;
 
 internal static class FallbackTelemetry
 {
     private static readonly ConcurrentDictionary<string, byte> ReportedKeys = new(StringComparer.Ordinal);
-    private static Action<string>? TestSink;
+    private static readonly AsyncLocal<FallbackTelemetryTestState?> TestState = new();
 
     public static void ReportActivation(
         string component,
@@ -19,8 +20,10 @@ internal static class FallbackTelemetry
         ArgumentException.ThrowIfNullOrWhiteSpace(mode);
         ArgumentException.ThrowIfNullOrWhiteSpace(reason);
 
+        var testState = TestState.Value;
+        var reportedKeys = testState?.ReportedKeys ?? ReportedKeys;
         var key = string.Concat(component, "|", mode, "|", reason, "|", documentPath ?? string.Empty);
-        if (oncePerKey && !ReportedKeys.TryAdd(key, 0))
+        if (oncePerKey && !reportedKeys.TryAdd(key, 0))
         {
             return;
         }
@@ -35,7 +38,7 @@ internal static class FallbackTelemetry
             timestamp = DateTimeOffset.UtcNow
         };
         var message = JsonSerializer.Serialize(payload);
-        var sink = TestSink;
+        var sink = testState?.Sink;
         if (sink is not null)
         {
             sink(message);
@@ -47,10 +50,31 @@ internal static class FallbackTelemetry
 
     internal static void ResetForTests()
     {
-        ReportedKeys.Clear();
-        TestSink = null;
+        TestState.Value = null;
     }
 
     internal static void SetTestSinkForTests(Action<string>? sink)
-        => TestSink = sink;
+    {
+        var state = TestState.Value;
+        if (sink is null)
+        {
+            if (state is not null)
+            {
+                state.Sink = null;
+            }
+
+            return;
+        }
+
+        state ??= new FallbackTelemetryTestState();
+        state.Sink = sink;
+        TestState.Value = state;
+    }
+
+    private sealed class FallbackTelemetryTestState
+    {
+        public ConcurrentDictionary<string, byte> ReportedKeys { get; } = new(StringComparer.Ordinal);
+
+        public Action<string>? Sink { get; set; }
+    }
 }

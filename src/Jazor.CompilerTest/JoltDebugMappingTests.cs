@@ -44,25 +44,18 @@ public sealed class JoltDebugMappingTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public void BreakpointManager_MapBreakpoint_WhenRootedSourcePathMissing_ReportsWarning()
     {
-        var manager = new BreakpointManager(new InMemorySourceMapService());
-        var originalError = Console.Error;
-        using var errorWriter = new StringWriter();
-        Console.SetError(errorWriter);
+        string? warning = null;
+        var manager = new BreakpointManager(
+            new InMemorySourceMapService(),
+            payload => warning = payload);
 
-        try
-        {
-            var mapped = manager.MapBreakpoint(@"Z:\missing\Counter.jazor", 0, 0);
+        var mapped = manager.MapBreakpoint(@"Z:\missing\Counter.jazor", 0, 0);
 
-            Assert.IsNull(mapped);
-            StringAssert.Contains(errorWriter.ToString(), "dapBreakpointSourcePathUnavailable");
-        }
-        finally
-        {
-            Console.SetError(originalError);
-        }
+        Assert.IsNull(mapped);
+        Assert.IsNotNull(warning);
+        StringAssert.Contains(warning, "dapBreakpointSourcePathUnavailable");
     }
 
     [TestMethod]

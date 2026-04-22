@@ -491,27 +491,6 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
         var appContextCandidate = Path.Combine(AppContext.BaseDirectory, "Jolt.dll");
         candidates.Add(appContextCandidate);
 
-        var repositoryRoot = FindRepositoryRoot();
-        if (!string.IsNullOrWhiteSpace(repositoryRoot)
-            && !string.IsNullOrWhiteSpace(localAssemblyPath))
-        {
-            var (configuration, targetFramework) = InferBuildLayout(localAssemblyPath);
-            if (!string.IsNullOrWhiteSpace(configuration)
-                && !string.IsNullOrWhiteSpace(targetFramework))
-            {
-                candidates.Insert(
-                    0,
-                    Path.Combine(
-                        repositoryRoot,
-                        "src",
-                        "Jolt",
-                        "bin",
-                        configuration,
-                        targetFramework,
-                        "Jolt.dll"));
-            }
-        }
-
         foreach (var candidate in candidates
                      .Where(static path => !string.IsNullOrWhiteSpace(path))
                      .Distinct(StringComparer.OrdinalIgnoreCase))
@@ -528,60 +507,6 @@ internal sealed class ExtensionWorkerClient : IAsyncDisposable
             {
                 return Path.GetFullPath(candidate);
             }
-        }
-
-        return null;
-    }
-
-    private static (string? Configuration, string? TargetFramework) InferBuildLayout(string assemblyPath)
-    {
-        var assemblyDirectory = Path.GetDirectoryName(assemblyPath);
-        if (string.IsNullOrWhiteSpace(assemblyDirectory))
-        {
-            return (null, null);
-        }
-
-        var tfmDirectory = new DirectoryInfo(assemblyDirectory);
-        var configurationDirectory = tfmDirectory.Parent;
-        var binDirectory = configurationDirectory?.Parent;
-        if (configurationDirectory is null
-            || binDirectory is null
-            || !string.Equals(binDirectory.Name, "bin", StringComparison.OrdinalIgnoreCase))
-        {
-            return (null, null);
-        }
-
-        return (configurationDirectory.Name, tfmDirectory.Name);
-    }
-
-    private static string? FindRepositoryRoot()
-    {
-        var currentDirectoryRoot = FindRepositoryRootFrom(Directory.GetCurrentDirectory());
-        if (!string.IsNullOrWhiteSpace(currentDirectoryRoot))
-        {
-            return currentDirectoryRoot;
-        }
-
-        return FindRepositoryRootFrom(AppContext.BaseDirectory);
-    }
-
-    private static string? FindRepositoryRootFrom(string startPath)
-    {
-        if (string.IsNullOrWhiteSpace(startPath))
-        {
-            return null;
-        }
-
-        var directory = new DirectoryInfo(Path.GetFullPath(startPath));
-        while (directory is not null)
-        {
-            var solutionPath = Path.Combine(directory.FullName, "Jazor.slnx");
-            if (File.Exists(solutionPath))
-            {
-                return directory.FullName;
-            }
-
-            directory = directory.Parent;
         }
 
         return null;

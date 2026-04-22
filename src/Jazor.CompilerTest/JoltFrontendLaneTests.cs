@@ -20,6 +20,8 @@ namespace Jazor.CompilerTest;
 [TestClass]
 public sealed class JoltFrontendLaneTests
 {
+    private static readonly object DenoCacheCopyGate = new();
+
     [TestMethod]
     public async Task Jolt_DenoFrontendHost_CompileSfc_StartsWorkerAndReturnsTypedResult()
     {
@@ -1058,7 +1060,6 @@ public sealed class JoltFrontendLaneTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public async Task Jolt_FrontendLaneService_RecordsDenoFailureSnapshot_WhenCompletionThrows()
     {
         VolarLaneService.ResetDenoFailureSnapshotsForTests();
@@ -1090,7 +1091,6 @@ public sealed class JoltFrontendLaneTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public async Task Jolt_FrontendLaneService_Cancellation_DoesNotRecordDenoFailureSnapshot()
     {
         VolarLaneService.ResetDenoFailureSnapshotsForTests();
@@ -2107,12 +2107,71 @@ public sealed class JoltFrontendLaneTests
 
         Assert.IsTrue(File.Exists(options.ExecutablePath), $"Expected bundled Deno runtime '{options.ExecutablePath}' to exist.");
         Assert.IsTrue(File.Exists(options.WorkerScriptPath), $"Expected frontend worker script '{options.WorkerScriptPath}' to exist.");
+        EnsureDenoCacheDirectory(options.CacheDirectory);
         Assert.IsTrue(Directory.Exists(options.CacheDirectory), $"Expected frontend worker cache directory '{options.CacheDirectory}' to exist.");
         return new DenoVolarHost(options);
     }
 
+    private static void EnsureDenoCacheDirectory(string cacheDirectory)
+    {
+        lock (DenoCacheCopyGate)
+        {
+            if (Directory.Exists(cacheDirectory)
+                && Directory.EnumerateFileSystemEntries(cacheDirectory).Any())
+            {
+                return;
+            }
+
+            var fallbackCacheDirectory = Path.Combine(
+                GetRepositoryRoot(),
+                "src",
+                "Jolt",
+                "bin",
+                "Debug",
+                "net10.0",
+                "Frontend",
+                "Deno",
+                "Cache");
+            Assert.IsTrue(
+                Directory.Exists(fallbackCacheDirectory),
+                $"Expected frontend worker cache seed '{fallbackCacheDirectory}' to exist.");
+
+            if (Directory.Exists(cacheDirectory))
+            {
+                Directory.Delete(cacheDirectory, recursive: true);
+            }
+
+            CopyDirectory(fallbackCacheDirectory, cacheDirectory);
+        }
+    }
+
+    private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
+    {
+        Directory.CreateDirectory(destinationDirectory);
+        foreach (var directory in Directory.EnumerateDirectories(sourceDirectory, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDirectory, directory);
+            Directory.CreateDirectory(Path.Combine(destinationDirectory, relativePath));
+        }
+
+        foreach (var file in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDirectory, file);
+            var destinationPath = Path.Combine(destinationDirectory, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+            File.Copy(file, destinationPath, overwrite: true);
+        }
+    }
+
     private static string GetJoltBuildBaseDirectory()
     {
+        var testOutputPath = Path.GetFullPath(AppContext.BaseDirectory);
+        if (Directory.Exists(testOutputPath)
+            && File.Exists(Path.Combine(testOutputPath, "Jolt.dll")))
+        {
+            return testOutputPath;
+        }
+
         var path = Path.Combine(
             GetRepositoryRoot(),
             "src",
@@ -2125,13 +2184,33 @@ public sealed class JoltFrontendLaneTests
     }
 
     private static string GetRepositoryRoot()
-        => Path.GetFullPath(Path.Combine(
-            AppContext.BaseDirectory,
-            "..",
-            "..",
-            "..",
-            "..",
-            ".."));
+    {
+        var root = FindRepositoryRootFrom(AppContext.BaseDirectory)
+            ?? FindRepositoryRootFrom(Directory.GetCurrentDirectory());
+        Assert.IsNotNull(root, "Expected to locate repository root containing Jazor.slnx.");
+        return root;
+    }
+
+    private static string? FindRepositoryRootFrom(string startPath)
+    {
+        if (string.IsNullOrWhiteSpace(startPath))
+        {
+            return null;
+        }
+
+        var directory = new DirectoryInfo(Path.GetFullPath(startPath));
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return null;
+    }
 
     private static DocumentSnapshot CreateDocument(string text)
         => new(

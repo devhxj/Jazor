@@ -47,7 +47,7 @@ internal sealed class OutOfProcessExtensionProxy :
         _workerClient = workerClient ?? throw new ArgumentNullException(nameof(workerClient));
         Metadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
         _bootstrapRequest = bootstrapRequest ?? throw new ArgumentNullException(nameof(bootstrapRequest));
-        _workerRestartPolicy = ResolveWorkerRestartPolicy();
+        _workerRestartPolicy = ResolveWorkerRestartPolicy(_bootstrapRequest.Settings);
 
         var providerByCapability = new Dictionary<string, ExtensionWorkerProviderDescriptor>(StringComparer.OrdinalIgnoreCase);
         foreach (var provider in providers)
@@ -389,7 +389,7 @@ internal sealed class OutOfProcessExtensionProxy :
 
             if (replacementAdopted)
             {
-                await DisposeWorkerSilentlyAsync(failedWorker);
+                _ = DisposeWorkerAfterRestartAsync(failedWorker);
                 return replacementWorker;
             }
 
@@ -419,7 +419,9 @@ internal sealed class OutOfProcessExtensionProxy :
         var bootstrapSucceeded = false;
         try
         {
-            var timeout = ResolveBootstrapTimeout(
+            var timeout = ExtensionWorkerHostSettingResolver.ResolvePositiveDurationFromMilliseconds(
+                bootstrapRequest.Settings,
+                ExtensionWorkerHostSettingNames.BootstrapTimeoutMilliseconds,
                 BootstrapTimeoutEnvironmentVariable,
                 DefaultBootstrapTimeout);
             using var bootstrapTimeout = CreateOperationTimeoutTokenSource(
@@ -470,6 +472,18 @@ internal sealed class OutOfProcessExtensionProxy :
         }
     }
 
+    private static async Task DisposeWorkerAfterRestartAsync(ExtensionWorkerClient workerClient)
+    {
+        try
+        {
+            await DisposeWorkerSilentlyAsync(workerClient);
+        }
+        catch
+        {
+            // Cleanup already ignores expected worker-crash failures; drop anything else off the recovery fast path.
+        }
+    }
+
     private static CancellationTokenSource CreateOperationTimeoutTokenSource(
         CancellationToken cancellationToken,
         TimeSpan timeout)
@@ -477,14 +491,6 @@ internal sealed class OutOfProcessExtensionProxy :
         var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         linkedSource.CancelAfter(timeout);
         return linkedSource;
-    }
-
-    private static TimeSpan ResolveBootstrapTimeout(string environmentVariableName, TimeSpan defaultTimeout)
-    {
-        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
-        return int.TryParse(configuredValue, out var milliseconds) && milliseconds > 0
-            ? TimeSpan.FromMilliseconds(milliseconds)
-            : defaultTimeout;
     }
 
     private WorkerRestartDecision RegisterWorkerRestartFailure()
@@ -533,36 +539,25 @@ internal sealed class OutOfProcessExtensionProxy :
         }
     }
 
-    private static WorkerRestartPolicy ResolveWorkerRestartPolicy()
+    private static WorkerRestartPolicy ResolveWorkerRestartPolicy(
+        IReadOnlyDictionary<string, string>? settings)
     {
-        var window = ResolvePositiveDurationFromMilliseconds(
+        var window = ExtensionWorkerHostSettingResolver.ResolvePositiveDurationFromMilliseconds(
+            settings,
+            ExtensionWorkerHostSettingNames.WorkerRestartWindowMilliseconds,
             WorkerRestartWindowEnvironmentVariable,
             DefaultWorkerRestartWindow);
-        var baseDelay = ResolvePositiveDurationFromMilliseconds(
+        var baseDelay = ExtensionWorkerHostSettingResolver.ResolvePositiveDurationFromMilliseconds(
+            settings,
+            ExtensionWorkerHostSettingNames.WorkerRestartBaseDelayMilliseconds,
             WorkerRestartBaseDelayEnvironmentVariable,
             DefaultWorkerRestartBaseDelay);
-        var maxRestarts = ResolvePositiveInt32(
+        var maxRestarts = ExtensionWorkerHostSettingResolver.ResolvePositiveInt32(
+            settings,
+            ExtensionWorkerHostSettingNames.WorkerMaxRestarts,
             WorkerMaxRestartsEnvironmentVariable,
             DefaultWorkerMaxRestarts);
         return new WorkerRestartPolicy(window, maxRestarts, baseDelay);
-    }
-
-    private static TimeSpan ResolvePositiveDurationFromMilliseconds(
-        string environmentVariableName,
-        TimeSpan defaultValue)
-    {
-        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
-        return int.TryParse(configuredValue, out var milliseconds) && milliseconds > 0
-            ? TimeSpan.FromMilliseconds(milliseconds)
-            : defaultValue;
-    }
-
-    private static int ResolvePositiveInt32(string environmentVariableName, int defaultValue)
-    {
-        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
-        return int.TryParse(configuredValue, out var parsed) && parsed > 0
-            ? parsed
-            : defaultValue;
     }
 
     private string GetProviderName(string capability, string fallback)

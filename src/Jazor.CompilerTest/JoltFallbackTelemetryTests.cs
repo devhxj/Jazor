@@ -7,7 +7,6 @@ using Jolt.Hosting;
 namespace Jazor.CompilerTest;
 
 [TestClass]
-[DoNotParallelize]
 public sealed class JoltFallbackTelemetryTests
 {
     [TestMethod]

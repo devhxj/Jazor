@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 namespace Jazor.Compiler;
 
@@ -39,6 +40,8 @@ public sealed class ESGenerator : IIncrementalGenerator
             includeSourcesContent: includeSourcesContent,
             sourceRootPath: sourceRootPath,
             readSourceContent: readSourceContent);
+
+    private static readonly AsyncLocal<Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact>?> SourceMapArtifactFactoryOverride = new();
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -129,7 +132,8 @@ public sealed class ESGenerator : IIncrementalGenerator
                 {
                     try
                     {
-                        artifact = SourceMapArtifactFactory(
+                        var sourceMapArtifactFactory = SourceMapArtifactFactoryOverride.Value ?? SourceMapArtifactFactory;
+                        artifact = sourceMapArtifactFactory(
                             module,
                             relativePath,
                             true,

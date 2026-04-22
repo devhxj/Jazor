@@ -11,6 +11,7 @@ using Jolt.Workspace;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Jolt.Lsp.Lanes;
 
@@ -20,6 +21,7 @@ internal sealed class VolarLaneService : ILspLane
     private const int DiagnosticSeverityWarning = 2;
     private const int MaxDenoFailureSnapshots = 64;
     private static readonly ConcurrentDictionary<string, DenoFailureSnapshot> DenoFailureSnapshots = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly AsyncLocal<ConcurrentDictionary<string, DenoFailureSnapshot>?> TestDenoFailureSnapshots = new();
     private readonly IFrontendContextProvider? _frontendContextProvider;
     private readonly IVirtualDocumentRegistry? _virtualDocumentRegistry;
     private readonly IDenoVolarHost? _denoVolarHost;
@@ -42,12 +44,12 @@ internal sealed class VolarLaneService : ILspLane
     public LaneKind LaneKind => LaneKind.Volar;
 
     internal static IReadOnlyList<DenoFailureSnapshot> GetDenoFailureSnapshots()
-        => DenoFailureSnapshots.Values
+        => GetDenoFailureSnapshotStore().Values
             .OrderBy(static snapshot => snapshot.Operation, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
     internal static void ResetDenoFailureSnapshotsForTests()
-        => DenoFailureSnapshots.Clear();
+        => TestDenoFailureSnapshots.Value = new ConcurrentDictionary<string, DenoFailureSnapshot>(StringComparer.OrdinalIgnoreCase);
 
     public async ValueTask<IReadOnlyList<LspDiagnostic>> GetDiagnosticsAsync(
         DocumentSnapshot document,
@@ -1396,7 +1398,8 @@ internal sealed class VolarLaneService : ILspLane
         Exception exception)
     {
         var timestamp = DateTimeOffset.UtcNow;
-        var snapshot = DenoFailureSnapshots.AddOrUpdate(
+        var snapshots = GetDenoFailureSnapshotStore();
+        var snapshot = snapshots.AddOrUpdate(
             operation,
             static (op, state) => new DenoFailureSnapshot(
                 Operation: op,
@@ -1429,18 +1432,22 @@ internal sealed class VolarLaneService : ILspLane
 
     private static void TrimDenoFailureSnapshots()
     {
-        while (DenoFailureSnapshots.Count > MaxDenoFailureSnapshots)
+        var snapshots = GetDenoFailureSnapshotStore();
+        while (snapshots.Count > MaxDenoFailureSnapshots)
         {
-            var oldest = DenoFailureSnapshots
+            var oldest = snapshots
                 .OrderBy(static entry => entry.Value.LastFailureAt)
                 .Select(static entry => entry.Key)
                 .FirstOrDefault();
-            if (oldest is null || !DenoFailureSnapshots.TryRemove(oldest, out _))
+            if (oldest is null || !snapshots.TryRemove(oldest, out _))
             {
                 return;
             }
         }
     }
+
+    private static ConcurrentDictionary<string, DenoFailureSnapshot> GetDenoFailureSnapshotStore()
+        => TestDenoFailureSnapshots.Value ?? DenoFailureSnapshots;
 
     private static string? TryGetComponentName(string text, LspRange range)
     {

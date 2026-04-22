@@ -56,6 +56,96 @@ internal sealed record ExtensionWorkerBootstrapRequest(
     IReadOnlyDictionary<string, string>? Settings,
     ExtensionSandboxProfile? SandboxProfile);
 
+internal static class ExtensionWorkerHostSettingNames
+{
+    public const string BootstrapTimeoutMilliseconds = "__joltHost.bootstrapTimeoutMs";
+    public const string InvokeTimeoutMilliseconds = "__joltHost.invokeTimeoutMs";
+    public const string WorkerRestartWindowMilliseconds = "__joltHost.workerRestartWindowMs";
+    public const string WorkerMaxRestarts = "__joltHost.workerMaxRestarts";
+    public const string WorkerRestartBaseDelayMilliseconds = "__joltHost.workerRestartBaseDelayMs";
+}
+
+internal static class ExtensionWorkerHostSettingResolver
+{
+    public static TimeSpan ResolvePositiveDurationFromMilliseconds(
+        IReadOnlyDictionary<string, string>? settings,
+        string settingName,
+        string environmentVariableName,
+        TimeSpan defaultValue)
+    {
+        if (TryGetPositiveInt32(settings, settingName, out var milliseconds))
+        {
+            return TimeSpan.FromMilliseconds(milliseconds);
+        }
+
+        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
+        return int.TryParse(configuredValue, out var environmentMilliseconds) && environmentMilliseconds > 0
+            ? TimeSpan.FromMilliseconds(environmentMilliseconds)
+            : defaultValue;
+    }
+
+    public static int ResolvePositiveInt32(
+        IReadOnlyDictionary<string, string>? settings,
+        string settingName,
+        string environmentVariableName,
+        int defaultValue)
+    {
+        if (TryGetPositiveInt32(settings, settingName, out var parsed))
+        {
+            return parsed;
+        }
+
+        var configuredValue = Environment.GetEnvironmentVariable(environmentVariableName);
+        return int.TryParse(configuredValue, out var environmentParsed) && environmentParsed > 0
+            ? environmentParsed
+            : defaultValue;
+    }
+
+    private static bool TryGetPositiveInt32(
+        IReadOnlyDictionary<string, string>? settings,
+        string settingName,
+        out int value)
+    {
+        value = 0;
+        if (!TryGetSettingValue(settings, settingName, out var rawValue))
+        {
+            return false;
+        }
+
+        return int.TryParse(rawValue, out value) && value > 0;
+    }
+
+    private static bool TryGetSettingValue(
+        IReadOnlyDictionary<string, string>? settings,
+        string settingName,
+        out string? value)
+    {
+        value = null;
+        if (settings is null || settings.Count == 0)
+        {
+            return false;
+        }
+
+        if (settings.TryGetValue(settingName, out value))
+        {
+            return !string.IsNullOrWhiteSpace(value);
+        }
+
+        foreach (var pair in settings)
+        {
+            if (!string.Equals(pair.Key, settingName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            value = pair.Value;
+            return !string.IsNullOrWhiteSpace(value);
+        }
+
+        return false;
+    }
+}
+
 internal sealed record ExtensionWorkerBootstrapResponse(
     ExtensionMetadata Metadata,
     IReadOnlyList<ExtensionWorkerProviderDescriptor> Providers);

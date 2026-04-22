@@ -1315,13 +1315,9 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerRepeatedExit_TripsRestartCircuit()
     {
         var sandbox = CreateExtensionSandbox();
-        using var maxRestartsScope = new EnvironmentVariableScope("JOLT_EXTENSION_WORKER_MAX_RESTARTS", "1");
-        using var restartWindowScope = new EnvironmentVariableScope("JOLT_EXTENSION_WORKER_RESTART_WINDOW_MS", "1000");
-        using var restartDelayScope = new EnvironmentVariableScope("JOLT_EXTENSION_WORKER_RESTART_BASE_DELAY_MS", "1");
         try
         {
             using var signer = new ManifestSigner("phase7-process-worker-circuit-key");
@@ -1340,7 +1336,10 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
                 signer: signer,
                 settings: new Dictionary<string, string>
                 {
-                    ["completionExitMode"] = "always"
+                    ["completionExitMode"] = "always",
+                    [ExtensionWorkerHostSettingNames.WorkerMaxRestarts] = "1",
+                    [ExtensionWorkerHostSettingNames.WorkerRestartWindowMilliseconds] = "1000",
+                    [ExtensionWorkerHostSettingNames.WorkerRestartBaseDelayMilliseconds] = "1"
                 });
 
             var registry = new ExtensionRegistry();
@@ -1847,11 +1846,9 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithProcessIsolatedWorkerBootstrapTimeout_RejectsExtension()
     {
         var sandbox = CreateExtensionSandbox();
-        using var timeoutScope = new EnvironmentVariableScope("JOLT_EXTENSION_BOOTSTRAP_TIMEOUT_MS", "100");
         try
         {
             using var signer = new ManifestSigner("phase7-worker-bootstrap-timeout-key");
@@ -1866,7 +1863,8 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
                 signer: signer,
                 settings: new Dictionary<string, string>
                 {
-                    ["bootstrapDelayMs"] = "250"
+                    ["bootstrapDelayMs"] = "250",
+                    [ExtensionWorkerHostSettingNames.BootstrapTimeoutMilliseconds] = "100"
                 });
 
             var registry = new ExtensionRegistry();
@@ -1898,11 +1896,9 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public async Task ExtensionWorkerServer_Invoke_WithSlowProvider_ReturnsTimeoutError()
     {
         var sandbox = CreateExtensionSandbox();
-        using var timeoutScope = new EnvironmentVariableScope("JOLT_EXTENSION_INVOKE_TIMEOUT_MS", "100");
         try
         {
             using var signer = new ManifestSigner("phase7-worker-invoke-timeout-key");
@@ -1921,7 +1917,8 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
                 signer: signer,
                 settings: new Dictionary<string, string>
                 {
-                    ["hoverDelayMs"] = "250"
+                    ["hoverDelayMs"] = "250",
+                    [ExtensionWorkerHostSettingNames.InvokeTimeoutMilliseconds] = "100"
                 });
 
             var registry = new ExtensionRegistry();
@@ -3480,24 +3477,6 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
             {
                 Directory.Delete(RootDirectory, recursive: true);
             }
-        }
-    }
-
-    private sealed class EnvironmentVariableScope : IDisposable
-    {
-        private readonly string _name;
-        private readonly string? _previousValue;
-
-        public EnvironmentVariableScope(string name, string value)
-        {
-            _name = name;
-            _previousValue = Environment.GetEnvironmentVariable(name);
-            Environment.SetEnvironmentVariable(name, value);
-        }
-
-        public void Dispose()
-        {
-            Environment.SetEnvironmentVariable(_name, _previousValue);
         }
     }
 

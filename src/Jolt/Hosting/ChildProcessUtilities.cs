@@ -28,6 +28,24 @@ internal static class ChildProcessUtilities
             return;
         }
 
+        try
+        {
+            if (process.HasExited)
+            {
+                return;
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            WriteTerminationDebug(process, ex);
+            return;
+        }
+        catch (InvalidOperationException ex)
+        {
+            WriteTerminationDebug(process, ex);
+            return;
+        }
+
         var processId = TryGetProcessIdValue(process);
         if (OperatingSystem.IsWindows() && processId is not null)
         {

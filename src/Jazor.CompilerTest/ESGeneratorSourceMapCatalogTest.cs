@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Linq;
+using System.Threading;
 using Acornima.Ast;
 using Basic.Reference.Assemblies;
 using Jazor.Compiler;
@@ -73,7 +74,6 @@ public sealed class ESGeneratorSourceMapCatalogTest
     }
 
     [TestMethod]
-    [DoNotParallelize]
     public void RunGenerator_StaticModule_WhenSourceMapGenerationFails_ReportsWarningAndFallsBackToJsOnlyCatalog()
     {
         var compilation = CreateCompilation(
@@ -169,21 +169,25 @@ public sealed class ESGeneratorSourceMapCatalogTest
     private static IDisposable OverrideSourceMapArtifactFactoryForTest(
         Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact> factory)
     {
-        var field = typeof(ESGenerator).GetField("SourceMapArtifactFactory", BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.IsNotNull(field, "Expected ESGenerator.SourceMapArtifactFactory field.");
-        var original = field.GetValue(null);
-        field.SetValue(null, factory);
-        return new RestoreStaticFieldScope(field, original);
+        var field = typeof(ESGenerator).GetField("SourceMapArtifactFactoryOverride", BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(field, "Expected ESGenerator.SourceMapArtifactFactoryOverride field.");
+        var asyncLocal = field.GetValue(null) as AsyncLocal<Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact>?>;
+        Assert.IsNotNull(asyncLocal, "Expected ESGenerator.SourceMapArtifactFactoryOverride to be AsyncLocal.");
+        var original = asyncLocal.Value;
+        asyncLocal.Value = factory;
+        return new RestoreAsyncLocalScope(asyncLocal, original);
     }
 
-    private sealed class RestoreStaticFieldScope(FieldInfo field, object? value) : IDisposable
+    private sealed class RestoreAsyncLocalScope(
+        AsyncLocal<Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact>?> asyncLocal,
+        Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact>? value) : IDisposable
     {
-        private readonly FieldInfo _field = field;
-        private readonly object? _value = value;
+        private readonly AsyncLocal<Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact>?> _asyncLocal = asyncLocal;
+        private readonly Func<Node, string, bool, string?, Func<string, string?>?, GeneratedJavaScriptArtifact>? _value = value;
 
         public void Dispose()
         {
-            _field.SetValue(null, _value);
+            _asyncLocal.Value = _value;
         }
     }
 }

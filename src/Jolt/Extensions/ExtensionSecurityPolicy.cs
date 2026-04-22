@@ -504,14 +504,14 @@ internal static class ExtensionSecurityPolicy
         if (RequiresCapabilityBoundSandbox(manifest)
             && manifest.Permissions?.ProcessIsolation != true)
         {
-            reason = "a separate worker process is required when io/network capabilities are declared";
+            reason = "process-level isolation via a separate worker process is required when io/network capabilities are declared";
             return false;
         }
 
         if (options.RequireProcessIsolation
             && manifest.Permissions?.ProcessIsolation != true)
         {
-            reason = "a separate worker process is required by host policy";
+            reason = "process-level isolation via a separate worker process is required by host policy";
             return false;
         }
 
