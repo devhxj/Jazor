@@ -10,16 +10,13 @@
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
-    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="$(CoverletVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="$(Net100AssembliesVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />

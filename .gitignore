@@ -416,6 +416,7 @@ CLAUDE.md
 .claude/
 .dotnet*/
 .artifacts/
+.artifacts*/
 .tmp/
 .vs/
 .tmp-webidl-out/

@@ -32,8 +32,13 @@ if (-not [string]::IsNullOrWhiteSpace($BrowserPath)) {
     $env:JOLT_REAL_BROWSER_PATH = $resolvedBrowserPath
 }
 
-$compilerTestProject = Join-Path $repoRoot "src\Jazor.CompilerTest\Jazor.CompilerTest.csproj"
-dotnet test $compilerTestProject -c $Configuration /m:1 /p:BuildInParallel=false --filter $testFilter -v minimal
+$joltTestProject = Join-Path $repoRoot "src\Jolt.Test\Jolt.Test.csproj"
+dotnet build $joltTestProject -c $Configuration /m:1 /p:BuildInParallel=false -v minimal
 if ($LASTEXITCODE -ne 0) {
-    throw "dotnet test failed for '$compilerTestProject' with exit code $LASTEXITCODE."
+    throw "dotnet build failed for '$joltTestProject' with exit code $LASTEXITCODE."
+}
+
+dotnet test $joltTestProject -c $Configuration --no-build --no-restore --filter $testFilter -v minimal
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet test failed for '$joltTestProject' with exit code $LASTEXITCODE."
 }

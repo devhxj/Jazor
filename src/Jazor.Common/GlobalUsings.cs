@@ -11,3 +11,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Jazor.EmitTest")]
 [assembly: InternalsVisibleTo("Jolt")]
 [assembly: InternalsVisibleTo("Jazor.CompilerTest")]
+[assembly: InternalsVisibleTo("Jolt.Test")]
