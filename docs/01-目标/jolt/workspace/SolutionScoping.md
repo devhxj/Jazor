@@ -88,19 +88,11 @@ Owning project 由 `.slnx` 中的 project entries 决定。
 
 ## 6. 测试拓扑约定
 
-Jolt 测试应收敛的是集成拓扑，而不是把整个测试框架收敛成 assembly 级全局单例。
+更完整的测试拓扑设计见 [TestTopology.md](../testing/TestTopology.md)。
 
-推荐分层如下：
+这里保留和 scoping 直接相关的收口：
 
-- 集成 / E2E 测试优先使用“单测试场景一个 Jolt 实例，多 workspace / solution / project”的拓扑。这个拓扑最接近生产，可以覆盖同一实例内的项目隔离、路由、诊断刷新和 HMR 影响面。
-- 生命周期、初始化 / 关闭、恢复、进程清理、缓存污染测试必须保留“每用例新实例”。这些测试关注状态边界，复用实例会掩盖问题或制造 flaky。
-- Resolver / routing 逻辑继续保持轻量单元测试，不需要为了验证纯函数或路径规则而启动真实 Jolt 进程。
-- 不要引入 assembly 级全局 Jolt 单例。全局单例会放大缓存泄漏、打开文档残留、端口 / pipe 抢占和并发顺序依赖。
-
-测试 helper 应表达真实拓扑：
-
-- `CreateSlnxSolution(...)` / `CreateSolution(...)`：创建 solution root 和 `.slnx`
-- `AddProject(...)`：向 `.slnx` 写入 project entry，并返回 project root
-- `StartJoltScenarioHost(...)` / LSP client：每个测试场景启动一个 Jolt 实例，再初始化多个 workspace folder
-
-这保证测试覆盖的是“一个实例服务多个清晰边界”，而不是“所有测试共享一个状态容器”。
+- 集成 / E2E 可以用单个 Jolt 实例覆盖多个 workspace / solution / project
+- 生命周期、初始化、关闭、恢复、缓存污染等强状态用例必须每用例新实例
+- Resolver / routing 继续保持轻量单元测试
+- 禁止 assembly 级全局 Jolt singleton

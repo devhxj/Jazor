@@ -103,54 +103,46 @@ public sealed class JoltTests
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
 
-        var scopedProject = CreateTemporaryScopedProject();
+        using var scopedProject = CreateTemporaryScopedProject();
         var tempDirectory = scopedProject.ProjectRoot;
-        try
-        {
-            var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
-            var componentPath = Path.Combine(tempDirectory, "Components", "UserCard.vue");
-            Directory.CreateDirectory(Path.GetDirectoryName(componentPath)!);
+        var documentPath = Path.Combine(tempDirectory, "Counter.jazor");
+        var componentPath = Path.Combine(tempDirectory, "Components", "UserCard.vue");
+        Directory.CreateDirectory(Path.GetDirectoryName(componentPath)!);
 
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    documentPath,
-                    DocumentKind.Jazor,
-                    """
-                    <UserCard />
-                    """,
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    componentPath,
-                    DocumentKind.Vue,
-                    "<template><div>UserCard</div></template>",
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    Path.Combine(tempDirectory, "Counter.ts"),
-                    DocumentKind.TypeScript,
-                    "export const counterStore = 1;",
-                    "1"),
-                CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                documentPath,
+                DocumentKind.Jazor,
+                """
+                <UserCard />
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                componentPath,
+                DocumentKind.Vue,
+                "<template><div>UserCard</div></template>",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                Path.Combine(tempDirectory, "Counter.ts"),
+                DocumentKind.TypeScript,
+                "export const counterStore = 1;",
+                "1"),
+            CancellationToken.None);
 
-            var response = await host.GetFrontendContextAsync(
-                new GetFrontendContextRequest(
-                    documentPath,
-                    Array.Empty<string>()),
-                CancellationToken.None);
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(
+                documentPath,
+                Array.Empty<string>()),
+            CancellationToken.None);
 
-            Assert.AreEqual(2, response.SemanticContext.RelatedDocuments.Count);
-            Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(document => document.DocumentPath.EndsWith("UserCard.vue", StringComparison.Ordinal)));
-            Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(document => document.DocumentPath.EndsWith("Counter.ts", StringComparison.Ordinal)));
-            Assert.AreEqual("2", response.SemanticContext.Properties["derivedDocumentCount"]);
-        }
-        finally
-        {
-            JoltWorkspaceResolver.InvalidatePath(scopedProject.SolutionPath);
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.AreEqual(2, response.SemanticContext.RelatedDocuments.Count);
+        Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(document => document.DocumentPath.EndsWith("UserCard.vue", StringComparison.Ordinal)));
+        Assert.IsTrue(response.SemanticContext.RelatedDocuments.Any(document => document.DocumentPath.EndsWith("Counter.ts", StringComparison.Ordinal)));
+        Assert.AreEqual("2", response.SemanticContext.Properties["derivedDocumentCount"]);
     }
 
     [TestMethod]
@@ -159,43 +151,35 @@ public sealed class JoltTests
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
 
-        var scopedProject = CreateTemporaryScopedProject();
+        using var scopedProject = CreateTemporaryScopedProject();
         var tempDirectory = scopedProject.ProjectRoot;
-        try
-        {
-            var jazorPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
-            var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
-            Directory.CreateDirectory(Path.GetDirectoryName(jazorPath)!);
-            Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
+        var jazorPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
+        var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
+        Directory.CreateDirectory(Path.GetDirectoryName(jazorPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
 
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    jazorPath,
-                    DocumentKind.Jazor,
-                    "<UserBadge />",
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    sharedVuePath,
-                    DocumentKind.Vue,
-                    "<template><div>UserBadge</div></template>",
-                    "1"),
-                CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                jazorPath,
+                DocumentKind.Jazor,
+                "<UserBadge />",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                sharedVuePath,
+                DocumentKind.Vue,
+                "<template><div>UserBadge</div></template>",
+                "1"),
+            CancellationToken.None);
 
-            var response = await host.GetFrontendContextAsync(
-                new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
-                CancellationToken.None);
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+            CancellationToken.None);
 
-            Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
-            Assert.AreEqual(sharedVuePath.Replace('\\', '/'), response.SemanticContext.RelatedDocuments[0].DocumentPath.Replace('\\', '/'));
-            Assert.AreEqual("1", response.SemanticContext.Properties["derivedDocumentCount"]);
-        }
-        finally
-        {
-            JoltWorkspaceResolver.InvalidatePath(scopedProject.SolutionPath);
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
+        Assert.AreEqual(sharedVuePath.Replace('\\', '/'), response.SemanticContext.RelatedDocuments[0].DocumentPath.Replace('\\', '/'));
+        Assert.AreEqual("1", response.SemanticContext.Properties["derivedDocumentCount"]);
     }
 
     [TestMethod]
@@ -204,30 +188,22 @@ public sealed class JoltTests
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
 
-        var scopedProject = CreateTemporaryScopedProject();
+        using var scopedProject = CreateTemporaryScopedProject();
         var tempDirectory = scopedProject.ProjectRoot;
-        try
-        {
-            var jazorPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
-            var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
-            Directory.CreateDirectory(Path.GetDirectoryName(jazorPath)!);
-            Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
-            await File.WriteAllTextAsync(jazorPath, "<UserBadge />");
-            await File.WriteAllTextAsync(sharedVuePath, "<template><div>UserBadge</div></template>");
+        var jazorPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
+        var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
+        Directory.CreateDirectory(Path.GetDirectoryName(jazorPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
+        await File.WriteAllTextAsync(jazorPath, "<UserBadge />");
+        await File.WriteAllTextAsync(sharedVuePath, "<template><div>UserBadge</div></template>");
 
-            var response = await host.GetFrontendContextAsync(
-                new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
-                CancellationToken.None);
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+            CancellationToken.None);
 
-            Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
-            Assert.AreEqual(sharedVuePath.Replace('\\', '/'), response.SemanticContext.RelatedDocuments[0].DocumentPath.Replace('\\', '/'));
-            Assert.AreEqual("1", response.SemanticContext.Properties["derivedDocumentCount"]);
-        }
-        finally
-        {
-            JoltWorkspaceResolver.InvalidatePath(scopedProject.SolutionPath);
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
+        Assert.AreEqual(sharedVuePath.Replace('\\', '/'), response.SemanticContext.RelatedDocuments[0].DocumentPath.Replace('\\', '/'));
+        Assert.AreEqual("1", response.SemanticContext.Properties["derivedDocumentCount"]);
     }
 
     [TestMethod]
@@ -308,58 +284,50 @@ public sealed class JoltTests
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
 
-        var scopedProject = CreateTemporaryScopedProject();
+        using var scopedProject = CreateTemporaryScopedProject();
         var tempDirectory = scopedProject.ProjectRoot;
-        try
-        {
-            var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
-            var counterPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
-            var dashboardPath = Path.Combine(tempDirectory, "Dashboard", "Index.jazor");
-            Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
-            Directory.CreateDirectory(Path.GetDirectoryName(counterPath)!);
-            Directory.CreateDirectory(Path.GetDirectoryName(dashboardPath)!);
+        var sharedVuePath = Path.Combine(tempDirectory, "Shared", "UserBadge.vue");
+        var counterPath = Path.Combine(tempDirectory, "Pages", "Counter.jazor");
+        var dashboardPath = Path.Combine(tempDirectory, "Dashboard", "Index.jazor");
+        Directory.CreateDirectory(Path.GetDirectoryName(sharedVuePath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(counterPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(dashboardPath)!);
 
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    counterPath,
-                    DocumentKind.Jazor,
-                    "<UserBadge />",
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    dashboardPath,
-                    DocumentKind.Jazor,
-                    "<UserBadge />",
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    sharedVuePath,
-                    DocumentKind.Vue,
-                    "<template><div>UserBadge</div></template>",
-                    "1"),
-                CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                counterPath,
+                DocumentKind.Jazor,
+                "<UserBadge />",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                dashboardPath,
+                DocumentKind.Jazor,
+                "<UserBadge />",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                sharedVuePath,
+                DocumentKind.Vue,
+                "<template><div>UserBadge</div></template>",
+                "1"),
+            CancellationToken.None);
 
-            var response = await host.GetHotUpdatePlanAsync(
-                new GetHotUpdatePlanRequest(sharedVuePath, DocumentKind.Vue, "2"),
-                CancellationToken.None);
+        var response = await host.GetHotUpdatePlanAsync(
+            new GetHotUpdatePlanRequest(sharedVuePath, DocumentKind.Vue, "2"),
+            CancellationToken.None);
 
-            Assert.IsFalse(response.RequiresFullReload);
-            Assert.AreEqual("frontend-change", response.Reason);
-            CollectionAssert.AreEquivalent(
-                new[]
-                {
-                    counterPath.Replace('\\', '/'),
-                    dashboardPath.Replace('\\', '/')
-                },
-                response.AffectedDocumentPaths.Select(static path => path.Replace('\\', '/')).ToArray());
-        }
-        finally
-        {
-            JoltWorkspaceResolver.InvalidatePath(scopedProject.SolutionPath);
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.IsFalse(response.RequiresFullReload);
+        Assert.AreEqual("frontend-change", response.Reason);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                counterPath.Replace('\\', '/'),
+                dashboardPath.Replace('\\', '/')
+            },
+            response.AffectedDocumentPaths.Select(static path => path.Replace('\\', '/')).ToArray());
     }
 
     [TestMethod]
@@ -368,43 +336,35 @@ public sealed class JoltTests
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
 
-        var scopedProject = CreateTemporaryScopedProject();
+        using var scopedProject = CreateTemporaryScopedProject();
         var tempDirectory = scopedProject.ProjectRoot;
-        try
-        {
-            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
-            var cssPath = Path.Combine(tempDirectory, "Counter.css");
+        var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+        var cssPath = Path.Combine(tempDirectory, "Counter.css");
 
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    jazorPath,
-                    DocumentKind.Jazor,
-                    "<template><div>Counter</div></template>",
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    cssPath,
-                    DocumentKind.Css,
-                    "body { color: red; }",
-                    "1"),
-                CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                jazorPath,
+                DocumentKind.Jazor,
+                "<template><div>Counter</div></template>",
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                cssPath,
+                DocumentKind.Css,
+                "body { color: red; }",
+                "1"),
+            CancellationToken.None);
 
-            var response = await host.GetHotUpdatePlanAsync(
-                new GetHotUpdatePlanRequest(cssPath, DocumentKind.Css, "2"),
-                CancellationToken.None);
+        var response = await host.GetHotUpdatePlanAsync(
+            new GetHotUpdatePlanRequest(cssPath, DocumentKind.Css, "2"),
+            CancellationToken.None);
 
-            Assert.IsFalse(response.RequiresFullReload);
-            Assert.AreEqual("frontend-change", response.Reason);
-            CollectionAssert.AreEquivalent(
-                new[] { jazorPath.Replace('\\', '/') },
-                response.AffectedDocumentPaths.Select(static path => path.Replace('\\', '/')).ToArray());
-        }
-        finally
-        {
-            JoltWorkspaceResolver.InvalidatePath(scopedProject.SolutionPath);
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.IsFalse(response.RequiresFullReload);
+        Assert.AreEqual("frontend-change", response.Reason);
+        CollectionAssert.AreEquivalent(
+            new[] { jazorPath.Replace('\\', '/') },
+            response.AffectedDocumentPaths.Select(static path => path.Replace('\\', '/')).ToArray());
     }
 
     [TestMethod]
@@ -630,64 +590,56 @@ public sealed class JoltTests
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
 
-        var scopedProject = CreateTemporaryScopedProject();
+        using var scopedProject = CreateTemporaryScopedProject();
         var tempDirectory = scopedProject.ProjectRoot;
-        try
-        {
-            var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
-            var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
+        var jazorPath = Path.Combine(tempDirectory, "Counter.jazor");
+        var codeBehindPath = Path.Combine(tempDirectory, "Counter.jazor.cs");
 
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    jazorPath,
-                    DocumentKind.Jazor,
-                    """
-                    <template>
-                      <button>@Count</button>
-                    </template>
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                jazorPath,
+                DocumentKind.Jazor,
+                """
+                <template>
+                  <button>@Count</button>
+                </template>
 
-                    @code {
-                        [Prop] public int Count { get; set; }
-                    }
-                    """,
-                    "1"),
-                CancellationToken.None);
-            await host.OpenDocumentAsync(
-                new DocumentSnapshot(
-                    codeBehindPath,
-                    DocumentKind.CSharp,
-                    """
-                    public partial class Counter
-                    {
-                        [State] private int count = 1;
-                    }
-                    """,
-                    "2"),
-                CancellationToken.None);
+                @code {
+                    [Prop] public int Count { get; set; }
+                }
+                """,
+                "1"),
+            CancellationToken.None);
+        await host.OpenDocumentAsync(
+            new DocumentSnapshot(
+                codeBehindPath,
+                DocumentKind.CSharp,
+                """
+                public partial class Counter
+                {
+                    [State] private int count = 1;
+                }
+                """,
+                "2"),
+            CancellationToken.None);
 
-            var response = await host.GetFrontendContextAsync(
-                new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
-                CancellationToken.None);
+        var response = await host.GetFrontendContextAsync(
+            new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+            CancellationToken.None);
 
-            CollectionAssert.Contains(
-                new[] { "razor-design-time", "fallback" },
-                response.SemanticContext.Properties["projectionKind"]);
-            Assert.AreEqual("2", response.SemanticContext.Properties["roslynSourceDocumentCount"]);
-            Assert.AreEqual("1", response.SemanticContext.Properties["codeBehindDocumentCount"]);
+        CollectionAssert.Contains(
+            new[] { "razor-design-time", "fallback" },
+            response.SemanticContext.Properties["projectionKind"]);
+        Assert.AreEqual("2", response.SemanticContext.Properties["roslynSourceDocumentCount"]);
+        Assert.AreEqual("1", response.SemanticContext.Properties["codeBehindDocumentCount"]);
 
-            var projectionArtifact = response.Artifacts.Single(static artifact => artifact.ArtifactKind == "razor-projection");
-            StringAssert.Contains(projectionArtifact.Content, "Counter.jazor.cs");
-            StringAssert.Contains(projectionArtifact.Content, "projectionKind");
+        var projectionArtifact = response.Artifacts.Single(static artifact => artifact.ArtifactKind == "razor-projection");
+        StringAssert.Contains(projectionArtifact.Content, "Counter.jazor.cs");
+        StringAssert.Contains(projectionArtifact.Content, "projectionKind");
 
-            var projectedCSharpArtifact = response.Artifacts.Single(static artifact => artifact.ArtifactKind == "razor-projected-csharp");
-            StringAssert.Contains(projectedCSharpArtifact.Content, "class");
-            StringAssert.Contains(projectedCSharpArtifact.Content, "Counter");
-        }
-        finally
-        {
-            JoltWorkspaceResolver.InvalidatePath(scopedProject.SolutionPath);
-            DeleteDirectory(tempDirectory);
-        }
+        var projectedCSharpArtifact = response.Artifacts.Single(static artifact => artifact.ArtifactKind == "razor-projected-csharp");
+        StringAssert.Contains(projectedCSharpArtifact.Content, "class");
+        StringAssert.Contains(projectedCSharpArtifact.Content, "Counter");
     }
 
     [TestMethod]
@@ -1800,47 +1752,34 @@ public sealed class JoltTests
         return path;
     }
 
-    private readonly record struct ScopedSolutionFixture(
-        string ProjectRoot,
-        string SolutionPath);
+    private sealed class ScopedSolutionFixture : IDisposable
+    {
+        private readonly JoltIntegrationTestTopology _topology;
+
+        public ScopedSolutionFixture(JoltIntegrationTestTopology topology, JoltIntegrationProject project)
+        {
+            _topology = topology;
+            ProjectRoot = project.RootPath;
+            SolutionPath = project.Solution.SolutionPath;
+        }
+
+        public string ProjectRoot { get; }
+
+        public string SolutionPath { get; }
+
+        public void Dispose()
+        {
+            // scoped project 测试统一通过共享拓扑回收目录，并同步失效 resolver 缓存。
+            JoltWorkspaceResolver.InvalidatePath(SolutionPath);
+            _topology.Dispose();
+        }
+    }
 
     private static ScopedSolutionFixture CreateTemporaryScopedProject(string projectName = "JoltTestProject")
     {
-        var projectRoot = CreateTemporaryDirectory();
-        WriteScopedProjectFile(projectRoot, projectName);
-        var solutionPath = WriteScopedSolutionFile(projectRoot, projectName + ".slnx", projectName + ".csproj");
-        return new ScopedSolutionFixture(projectRoot, solutionPath);
-    }
-
-    private static string WriteScopedProjectFile(string projectRoot, string projectName)
-    {
-        var projectPath = Path.Combine(projectRoot, projectName + ".csproj");
-        File.WriteAllText(
-            projectPath,
-            """
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
-              </PropertyGroup>
-            </Project>
-            """);
-        return projectPath;
-    }
-
-    private static string WriteScopedSolutionFile(string solutionRoot, string fileName, params string[] projectPaths)
-    {
-        var solutionPath = Path.Combine(solutionRoot, fileName);
-        var projectLines = string.Join(
-            Environment.NewLine,
-            projectPaths.Select(static projectPath => $"  <Project Path=\"{projectPath.Replace('\\', '/')}\" />"));
-        File.WriteAllText(
-            solutionPath,
-            $$"""
-            <Solution>
-            {{projectLines}}
-            </Solution>
-            """);
-        return solutionPath;
+        var topology = JoltIntegrationTestTopology.Create(nameof(JoltTests));
+        var project = topology.CreateSingleProjectSolution(projectName, projectName);
+        return new ScopedSolutionFixture(topology, project);
     }
 
     private static void DeleteDirectory(string path)

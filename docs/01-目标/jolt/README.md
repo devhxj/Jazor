@@ -104,6 +104,11 @@ CLI (Program.cs)
 | [Resolver.md](workspace/Resolver.md) | 路径解析：JoltWorkspaceResolver (4 种 Vue 组件策略), JazorRelatedDocumentResolver |
 | [SolutionScoping.md](workspace/SolutionScoping.md) | `.slnx` 作用域：解决方案边界、owning project、跨项目隐式发现限制 |
 
+### 测试拓扑 (`testing/`)
+| 文档 | 覆盖范围 |
+|------|---------|
+| [TestTopology.md](testing/TestTopology.md) | Jolt 测试拓扑：单场景单实例、多 workspace / solution / project、每用例新实例、`.slnx` 唯一边界、禁止 assembly 级 singleton |
+
 ### 虚拟文档 (`virtual-documents/`)
 | 文档 | 覆盖范围 |
 |------|---------|
@@ -193,4 +198,5 @@ CLI (Program.cs)
 - 状态快照：`docs/03-完成/jolt/status.md`
 - 修复清单：`docs/03-完成/jolt/jolt-fix-list.md`, `docs/03-完成/jolt/jolt-fix-list1.md`
 - 实施计划：`docs/02-计划/jolt/`（Phase 1–7）
+- 测试拓扑：`docs/01-目标/jolt/testing/TestTopology.md`
 - 模块桥接索引：[modules-bridge.md](modules-bridge.md)

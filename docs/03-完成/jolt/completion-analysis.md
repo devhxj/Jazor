@@ -1,7 +1,7 @@
 # Jolt 完成度复评报告
 
 > 分析日期：2026-04-21（第五轮）
-> 评审范围：`src/Jolt/`、`src/Jazor.CompilerTest/Jolt*.cs`、与 Jolt build/dev/frontend lane 相关的集成测试
+> 评审范围：`src/Jolt/`、`src/Jolt.Test/Jolt*.cs`、与 Jolt build/dev/frontend lane 相关的集成测试
 > 本轮重点：全面重新审核架构、代码质量、测试稳定性、构建管线能力矩阵
 > 结论：Jolt 当前定义范围完成度维持 **100%**；发现 2 个时序敏感的 flaky 测试（非阻塞），以及若干非阻塞的代码质量建议。
 
@@ -30,7 +30,7 @@
 |------|--------|--------|------|
 | `src/Jolt` C# 源文件 | 199 | 202 | +3 |
 | `src/Jolt` C# 代码行 | 38,657 | 44,548 | +5,891 |
-| `src/Jazor.CompilerTest/Jolt*.cs` 测试文件 | 33 | 33 | 不变 |
+| `src/Jolt.Test/Jolt*.cs` 测试文件 | 33 | 33 | 不变 |
 | `Jolt*.cs` 中 `[TestMethod]` | 614 | 614 | 不变 |
 
 说明：源文件数和代码行增长主要来自 LSP 路由增强、Jazor 核心定位器提取和扩展系统补强。

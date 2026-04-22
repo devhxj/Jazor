@@ -115,364 +115,318 @@ public sealed class JoltCoordinatorTests
     [TestMethod]
     public async Task Jolt_MarkupBridgeFanoutCoordinator_Definition_FallsBackToVueFileWhenNativeDefinitionIsEmpty()
     {
-        var tempDirectory = CreateTemporaryDirectory();
+        using var topology = CreateSingleProjectTopology(
+            nameof(Jolt_MarkupBridgeFanoutCoordinator_Definition_FallsBackToVueFileWhenNativeDefinitionIsEmpty),
+            out var project);
         var componentName = "UserBadge" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+        var vuePath = project.WriteFile(componentName + ".vue", $"<template><div>{componentName}</div></template>");
 
-        try
-        {
-            var vuePath = Path.Combine(tempDirectory, componentName + ".vue");
-            await File.WriteAllTextAsync(vuePath, $"<template><div>{componentName}</div></template>");
+        var scriptDocument = CreateDocumentSnapshot(
+            project,
+            "consumer.ts",
+            DocumentKind.TypeScript,
+            $"""
+            import {componentName} from "./{componentName}.vue";
+            export const current = {componentName};
+            """);
 
-            var scriptDocument = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "consumer.ts"),
-                DocumentKind.TypeScript,
-                $"""
-                import {componentName} from "./{componentName}.vue";
-                export const current = {componentName};
-                """,
-                "1");
-            await File.WriteAllTextAsync(scriptDocument.DocumentPath, scriptDocument.Text);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
 
-            var workspaceStore = new InMemoryWorkspaceStore();
-            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+        var coordinator = new MarkupBridgeFanoutCoordinator(
+            new MarkupComponentBridgeService(workspaceStore),
+            new LspResultAggregator());
 
-            var coordinator = new MarkupBridgeFanoutCoordinator(
-                new MarkupComponentBridgeService(workspaceStore),
-                new LspResultAggregator());
+        var locations = await coordinator.CoordinateDefinitionAsync(
+            scriptDocument,
+            new LspPosition { Line = 0, Character = 8 },
+            Array.Empty<LspLocation>(),
+            CancellationToken.None);
 
-            var locations = await coordinator.CoordinateDefinitionAsync(
-                scriptDocument,
-                new LspPosition { Line = 0, Character = 8 },
-                Array.Empty<LspLocation>(),
-                CancellationToken.None);
-
-            Assert.AreEqual(1, locations.Count);
-            Assert.AreEqual(LspProtocolHelpers.ToDocumentUri(vuePath), locations[0].Uri);
-        }
-        finally
-        {
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.AreEqual(1, locations.Count);
+        Assert.AreEqual(LspProtocolHelpers.ToDocumentUri(vuePath), locations[0].Uri);
     }
 
     [TestMethod]
     public async Task Jolt_ReferenceCoordinator_ForTypeScriptVueImport_FansOutIntoJazorWithoutDeclarationWhenExcluded()
     {
-        var tempDirectory = CreateTemporaryDirectory();
+        using var topology = CreateSingleProjectTopology(
+            nameof(Jolt_ReferenceCoordinator_ForTypeScriptVueImport_FansOutIntoJazorWithoutDeclarationWhenExcluded),
+            out var project);
         var componentName = "UserBadge" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+        var vuePath = project.WriteFile(componentName + ".vue", $"<template><div>{componentName}</div></template>");
 
-        try
-        {
-            var vuePath = Path.Combine(tempDirectory, componentName + ".vue");
-            await File.WriteAllTextAsync(vuePath, $"<template><div>{componentName}</div></template>");
+        var scriptDocument = CreateDocumentSnapshot(
+            project,
+            "consumer.ts",
+            DocumentKind.TypeScript,
+            $"""
+            import {componentName} from "./{componentName}.vue";
+            export const current = {componentName};
+            """);
 
-            var scriptDocument = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "consumer.ts"),
-                DocumentKind.TypeScript,
-                $"""
-                import {componentName} from "./{componentName}.vue";
-                export const current = {componentName};
-                """,
-                "1");
-            await File.WriteAllTextAsync(scriptDocument.DocumentPath, scriptDocument.Text);
+        var openJazorDocument = CreateDocumentSnapshot(
+            project,
+            "Counter.jazor",
+            DocumentKind.Jazor,
+            $"<{componentName} />");
 
-            var openJazorDocument = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                $"<{componentName} />",
-                "1");
-            await File.WriteAllTextAsync(openJazorDocument.DocumentPath, openJazorDocument.Text);
+        var diskJazorPath = project.WriteFile(
+            "Dashboard.jazor",
+            $"""
+            <section>
+              <{componentName} />
+            </section>
+            """);
 
-            var diskJazorPath = Path.Combine(tempDirectory, "Dashboard.jazor");
-            await File.WriteAllTextAsync(
-                diskJazorPath,
-                $"""
-                <section>
-                  <{componentName} />
-                </section>
-                """);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+        await workspaceStore.UpsertDocumentAsync(openJazorDocument, CancellationToken.None);
 
-            var workspaceStore = new InMemoryWorkspaceStore();
-            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
-            await workspaceStore.UpsertDocumentAsync(openJazorDocument, CancellationToken.None);
+        var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
+        var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
+        var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
+        var vueUri = LspProtocolHelpers.ToDocumentUri(vuePath);
 
-            var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
-            var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
-            var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
-            var vueUri = LspProtocolHelpers.ToDocumentUri(vuePath);
-
-            var importStart = "import ".Length;
-            var usageStart = "export const current = ".Length;
-            var coordinator = new ReferenceCoordinator(
-                new Dictionary<LaneKind, ILspLane>
+        var importStart = "import ".Length;
+        var usageStart = "export const current = ".Length;
+        var coordinator = new ReferenceCoordinator(
+            new Dictionary<LaneKind, ILspLane>
+            {
+                [LaneKind.Volar] = new FakeLane
                 {
-                    [LaneKind.Volar] = new FakeLane
-                    {
-                        References =
-                        [
-                            new LspLocation
+                    References =
+                    [
+                        new LspLocation
+                        {
+                            Uri = scriptUri,
+                            Range = new LspRange
                             {
-                                Uri = scriptUri,
-                                Range = new LspRange
-                                {
-                                    Start = new LspPosition { Line = 0, Character = importStart },
-                                    End = new LspPosition { Line = 0, Character = importStart + componentName.Length }
-                                }
-                            },
-                            new LspLocation
-                            {
-                                Uri = scriptUri,
-                                Range = new LspRange
-                                {
-                                    Start = new LspPosition { Line = 1, Character = usageStart },
-                                    End = new LspPosition { Line = 1, Character = usageStart + componentName.Length }
-                                }
+                                Start = new LspPosition { Line = 0, Character = importStart },
+                                End = new LspPosition { Line = 0, Character = importStart + componentName.Length }
                             }
-                        ]
-                    }
-                },
-                new LspLaneRouter(),
-                new MarkupBridgeFanoutCoordinator(
-                    new MarkupComponentBridgeService(workspaceStore),
-                    new LspResultAggregator()));
+                        },
+                        new LspLocation
+                        {
+                            Uri = scriptUri,
+                            Range = new LspRange
+                            {
+                                Start = new LspPosition { Line = 1, Character = usageStart },
+                                End = new LspPosition { Line = 1, Character = usageStart + componentName.Length }
+                            }
+                        }
+                    ]
+                }
+            },
+            new LspLaneRouter(),
+            new MarkupBridgeFanoutCoordinator(
+                new MarkupComponentBridgeService(workspaceStore),
+                new LspResultAggregator()));
 
-            var locations = await coordinator.CoordinateAsync(
-                scriptDocument,
-                new LspPosition { Line = 0, Character = 8 },
-                includeDeclaration: false,
-                CreateVolarTarget(scriptDocument),
-                CancellationToken.None);
+        var locations = await coordinator.CoordinateAsync(
+            scriptDocument,
+            new LspPosition { Line = 0, Character = 8 },
+            includeDeclaration: false,
+            CreateVolarTarget(scriptDocument),
+            CancellationToken.None);
 
-            Assert.AreEqual(4, locations.Count);
-            Assert.IsTrue(locations.Count(location => location.Uri == scriptUri) == 2);
-            Assert.IsTrue(locations.Any(location => location.Uri == openJazorUri));
-            Assert.IsTrue(locations.Any(location => location.Uri == diskJazorUri));
-            Assert.IsFalse(locations.Any(location => location.Uri == vueUri));
-        }
-        finally
-        {
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.AreEqual(4, locations.Count);
+        Assert.IsTrue(locations.Count(location => location.Uri == scriptUri) == 2);
+        Assert.IsTrue(locations.Any(location => location.Uri == openJazorUri));
+        Assert.IsTrue(locations.Any(location => location.Uri == diskJazorUri));
+        Assert.IsFalse(locations.Any(location => location.Uri == vueUri));
     }
 
     [TestMethod]
     public async Task Jolt_RenameCoordinator_ForTypeScriptVueImport_MergesNativeAndJazorEdits()
     {
-        var tempDirectory = CreateTemporaryDirectory();
+        using var topology = CreateSingleProjectTopology(
+            nameof(Jolt_RenameCoordinator_ForTypeScriptVueImport_MergesNativeAndJazorEdits),
+            out var project);
         var componentName = "UserBadge" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+        project.WriteFile(componentName + ".vue", $"<template><div>{componentName}</div></template>");
 
-        try
-        {
-            var vuePath = Path.Combine(tempDirectory, componentName + ".vue");
-            await File.WriteAllTextAsync(vuePath, $"<template><div>{componentName}</div></template>");
+        var scriptDocument = CreateDocumentSnapshot(
+            project,
+            "consumer.ts",
+            DocumentKind.TypeScript,
+            $"""
+            import {componentName} from "./{componentName}.vue";
+            export const current = {componentName};
+            """);
 
-            var scriptDocument = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "consumer.ts"),
-                DocumentKind.TypeScript,
-                $"""
-                import {componentName} from "./{componentName}.vue";
-                export const current = {componentName};
-                """,
-                "1");
-            await File.WriteAllTextAsync(scriptDocument.DocumentPath, scriptDocument.Text);
+        var openJazorDocument = CreateDocumentSnapshot(
+            project,
+            "Counter.jazor",
+            DocumentKind.Jazor,
+            $"<{componentName} />");
 
-            var openJazorDocument = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                $"<{componentName} />",
-                "1");
-            await File.WriteAllTextAsync(openJazorDocument.DocumentPath, openJazorDocument.Text);
+        var diskJazorPath = project.WriteFile(
+            "Dashboard.jazor",
+            $"""
+            <section>
+              <{componentName} />
+            </section>
+            """);
 
-            var diskJazorPath = Path.Combine(tempDirectory, "Dashboard.jazor");
-            await File.WriteAllTextAsync(
-                diskJazorPath,
-                $"""
-                <section>
-                  <{componentName} />
-                </section>
-                """);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
+        await workspaceStore.UpsertDocumentAsync(openJazorDocument, CancellationToken.None);
 
-            var workspaceStore = new InMemoryWorkspaceStore();
-            await workspaceStore.UpsertDocumentAsync(scriptDocument, CancellationToken.None);
-            await workspaceStore.UpsertDocumentAsync(openJazorDocument, CancellationToken.None);
+        var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
+        var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
+        var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
+        var importStart = "import ".Length;
+        var usageStart = "export const current = ".Length;
 
-            var scriptUri = LspProtocolHelpers.ToDocumentUri(scriptDocument.DocumentPath);
-            var openJazorUri = LspProtocolHelpers.ToDocumentUri(openJazorDocument.DocumentPath);
-            var diskJazorUri = LspProtocolHelpers.ToDocumentUri(diskJazorPath);
-            var importStart = "import ".Length;
-            var usageStart = "export const current = ".Length;
-
-            var coordinator = new RenameCoordinator(
-                new Dictionary<LaneKind, ILspLane>
+        var coordinator = new RenameCoordinator(
+            new Dictionary<LaneKind, ILspLane>
+            {
+                [LaneKind.Volar] = new FakeLane
                 {
-                    [LaneKind.Volar] = new FakeLane
+                    RenameEdit = new LspWorkspaceEdit
                     {
-                        RenameEdit = new LspWorkspaceEdit
+                        Changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal)
                         {
-                            Changes = new Dictionary<string, LspTextEdit[]>(StringComparer.Ordinal)
-                            {
-                                [scriptUri] =
-                                [
-                                    new LspTextEdit
+                            [scriptUri] =
+                            [
+                                new LspTextEdit
+                                {
+                                    Range = new LspRange
                                     {
-                                        Range = new LspRange
-                                        {
-                                            Start = new LspPosition { Line = 0, Character = importStart },
-                                            End = new LspPosition { Line = 0, Character = importStart + componentName.Length }
-                                        },
-                                        NewText = "ProfileBadge"
+                                        Start = new LspPosition { Line = 0, Character = importStart },
+                                        End = new LspPosition { Line = 0, Character = importStart + componentName.Length }
                                     },
-                                    new LspTextEdit
+                                    NewText = "ProfileBadge"
+                                },
+                                new LspTextEdit
+                                {
+                                    Range = new LspRange
                                     {
-                                        Range = new LspRange
-                                        {
-                                            Start = new LspPosition { Line = 1, Character = usageStart },
-                                            End = new LspPosition { Line = 1, Character = usageStart + componentName.Length }
-                                        },
-                                        NewText = "ProfileBadge"
-                                    }
-                                ]
-                            }
+                                        Start = new LspPosition { Line = 1, Character = usageStart },
+                                        End = new LspPosition { Line = 1, Character = usageStart + componentName.Length }
+                                    },
+                                    NewText = "ProfileBadge"
+                                }
+                            ]
                         }
                     }
-                },
-                new LspLaneRouter(),
-                new LspResultAggregator(),
-                new MarkupBridgeFanoutCoordinator(
-                    new MarkupComponentBridgeService(workspaceStore),
-                    new LspResultAggregator()));
+                }
+            },
+            new LspLaneRouter(),
+            new LspResultAggregator(),
+            new MarkupBridgeFanoutCoordinator(
+                new MarkupComponentBridgeService(workspaceStore),
+                new LspResultAggregator()));
 
-            var edit = await coordinator.CoordinateAsync(
-                scriptDocument,
-                new LspPosition { Line = 0, Character = 8 },
-                "ProfileBadge",
-                CreateVolarTarget(scriptDocument),
-                CancellationToken.None);
+        var edit = await coordinator.CoordinateAsync(
+            scriptDocument,
+            new LspPosition { Line = 0, Character = 8 },
+            "ProfileBadge",
+            CreateVolarTarget(scriptDocument),
+            CancellationToken.None);
 
-            Assert.IsNotNull(edit);
-            Assert.AreEqual(3, edit.Changes.Count);
-            Assert.IsTrue(edit.Changes.ContainsKey(scriptUri));
-            Assert.IsTrue(edit.Changes.ContainsKey(openJazorUri));
-            Assert.IsTrue(edit.Changes.ContainsKey(diskJazorUri));
-            Assert.IsTrue(edit.Changes.Values.SelectMany(static changes => changes).All(static change => change.NewText == "ProfileBadge"));
-        }
-        finally
-        {
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.IsNotNull(edit);
+        Assert.AreEqual(3, edit.Changes.Count);
+        Assert.IsTrue(edit.Changes.ContainsKey(scriptUri));
+        Assert.IsTrue(edit.Changes.ContainsKey(openJazorUri));
+        Assert.IsTrue(edit.Changes.ContainsKey(diskJazorUri));
+        Assert.IsTrue(edit.Changes.Values.SelectMany(static changes => changes).All(static change => change.NewText == "ProfileBadge"));
     }
 
     [TestMethod]
     public async Task Jolt_ReferenceCoordinator_ForJazorMarkupTag_FansOutWithoutLaneLocations()
     {
-        var tempDirectory = CreateTemporaryDirectory();
+        using var topology = CreateSingleProjectTopology(
+            nameof(Jolt_ReferenceCoordinator_ForJazorMarkupTag_FansOutWithoutLaneLocations),
+            out var project);
         var componentName = "UserBadge" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+        var vuePath = project.WriteFile(componentName + ".vue", $"<template><div>{componentName}</div></template>");
 
-        try
-        {
-            var vuePath = Path.Combine(tempDirectory, componentName + ".vue");
-            await File.WriteAllTextAsync(vuePath, $"<template><div>{componentName}</div></template>");
+        var document = CreateDocumentSnapshot(
+            project,
+            "Counter.jazor",
+            DocumentKind.Jazor,
+            $"<{componentName} />");
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                $"<{componentName} />",
-                "1");
-            await File.WriteAllTextAsync(document.DocumentPath, document.Text);
+        var secondDocumentPath = project.WriteFile(
+            "Dashboard.jazor",
+            $"""
+            <section>
+              <{componentName} />
+            </section>
+            """);
 
-            var secondDocumentPath = Path.Combine(tempDirectory, "Dashboard.jazor");
-            await File.WriteAllTextAsync(
-                secondDocumentPath,
-                $"""
-                <section>
-                  <{componentName} />
-                </section>
-                """);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
 
-            var workspaceStore = new InMemoryWorkspaceStore();
-            await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+        var coordinator = new ReferenceCoordinator(
+            new Dictionary<LaneKind, ILspLane>(),
+            new LspLaneRouter(),
+            new MarkupBridgeFanoutCoordinator(
+                new MarkupComponentBridgeService(workspaceStore),
+                new LspResultAggregator()));
 
-            var coordinator = new ReferenceCoordinator(
-                new Dictionary<LaneKind, ILspLane>(),
-                new LspLaneRouter(),
-                new MarkupBridgeFanoutCoordinator(
-                    new MarkupComponentBridgeService(workspaceStore),
-                    new LspResultAggregator()));
+        var locations = await coordinator.CoordinateAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            includeDeclaration: true,
+            CreateJazorTarget(document),
+            CancellationToken.None);
 
-            var locations = await coordinator.CoordinateAsync(
-                document,
-                new LspPosition { Line = 0, Character = 2 },
-                includeDeclaration: true,
-                CreateJazorTarget(document),
-                CancellationToken.None);
-
-            Assert.IsTrue(locations.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(vuePath)));
-            Assert.IsTrue(locations.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(document.DocumentPath)));
-            Assert.IsTrue(locations.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(secondDocumentPath)));
-        }
-        finally
-        {
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.IsTrue(locations.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(vuePath)));
+        Assert.IsTrue(locations.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(document.DocumentPath)));
+        Assert.IsTrue(locations.Any(location => location.Uri == LspProtocolHelpers.ToDocumentUri(secondDocumentPath)));
     }
 
     [TestMethod]
     public async Task Jolt_RenameCoordinator_ForJazorMarkupTag_FansOutWithoutLaneEdits()
     {
-        var tempDirectory = CreateTemporaryDirectory();
+        using var topology = CreateSingleProjectTopology(
+            nameof(Jolt_RenameCoordinator_ForJazorMarkupTag_FansOutWithoutLaneEdits),
+            out var project);
         var componentName = "UserBadge" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture);
+        var vuePath = project.WriteFile(componentName + ".vue", $"<template><div>{componentName}</div></template>");
 
-        try
-        {
-            var vuePath = Path.Combine(tempDirectory, componentName + ".vue");
-            await File.WriteAllTextAsync(vuePath, $"<template><div>{componentName}</div></template>");
+        var document = CreateDocumentSnapshot(
+            project,
+            "Counter.jazor",
+            DocumentKind.Jazor,
+            $"<{componentName} />");
 
-            var document = new DocumentSnapshot(
-                Path.Combine(tempDirectory, "Counter.jazor"),
-                DocumentKind.Jazor,
-                $"<{componentName} />",
-                "1");
-            await File.WriteAllTextAsync(document.DocumentPath, document.Text);
+        var secondDocumentPath = project.WriteFile(
+            "Dashboard.jazor",
+            $"""
+            <section>
+              <{componentName} />
+            </section>
+            """);
 
-            var secondDocumentPath = Path.Combine(tempDirectory, "Dashboard.jazor");
-            await File.WriteAllTextAsync(
-                secondDocumentPath,
-                $"""
-                <section>
-                  <{componentName} />
-                </section>
-                """);
+        var workspaceStore = new InMemoryWorkspaceStore();
+        await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
 
-            var workspaceStore = new InMemoryWorkspaceStore();
-            await workspaceStore.UpsertDocumentAsync(document, CancellationToken.None);
+        var coordinator = new RenameCoordinator(
+            new Dictionary<LaneKind, ILspLane>(),
+            new LspLaneRouter(),
+            new LspResultAggregator(),
+            new MarkupBridgeFanoutCoordinator(
+                new MarkupComponentBridgeService(workspaceStore),
+                new LspResultAggregator()));
 
-            var coordinator = new RenameCoordinator(
-                new Dictionary<LaneKind, ILspLane>(),
-                new LspLaneRouter(),
-                new LspResultAggregator(),
-                new MarkupBridgeFanoutCoordinator(
-                    new MarkupComponentBridgeService(workspaceStore),
-                    new LspResultAggregator()));
+        var edit = await coordinator.CoordinateAsync(
+            document,
+            new LspPosition { Line = 0, Character = 2 },
+            "ProfileBadge",
+            CreateJazorTarget(document),
+            CancellationToken.None);
 
-            var edit = await coordinator.CoordinateAsync(
-                document,
-                new LspPosition { Line = 0, Character = 2 },
-                "ProfileBadge",
-                CreateJazorTarget(document),
-                CancellationToken.None);
-
-            Assert.IsNotNull(edit);
-            var currentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
-            var secondUri = LspProtocolHelpers.ToDocumentUri(secondDocumentPath);
-            Assert.IsTrue(edit.Changes.ContainsKey(currentUri));
-            Assert.IsTrue(edit.Changes.ContainsKey(secondUri));
-            Assert.IsFalse(edit.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(vuePath)));
-            Assert.IsTrue(edit.Changes.Values.SelectMany(static changes => changes).All(static change => change.NewText == "ProfileBadge"));
-        }
-        finally
-        {
-            DeleteDirectory(tempDirectory);
-        }
+        Assert.IsNotNull(edit);
+        var currentUri = LspProtocolHelpers.ToDocumentUri(document.DocumentPath);
+        var secondUri = LspProtocolHelpers.ToDocumentUri(secondDocumentPath);
+        Assert.IsTrue(edit.Changes.ContainsKey(currentUri));
+        Assert.IsTrue(edit.Changes.ContainsKey(secondUri));
+        Assert.IsFalse(edit.Changes.ContainsKey(LspProtocolHelpers.ToDocumentUri(vuePath)));
+        Assert.IsTrue(edit.Changes.Values.SelectMany(static changes => changes).All(static change => change.NewText == "ProfileBadge"));
     }
 
     [TestMethod]
@@ -615,36 +569,25 @@ public sealed class JoltCoordinatorTests
             document.DocumentPath,
             MappingId: "test-jazor");
 
-    private static string CreateTemporaryDirectory()
+    private static JoltIntegrationTestTopology CreateSingleProjectTopology(
+        string scenarioName,
+        out JoltIntegrationProject project)
     {
-        var path = Path.Combine(Path.GetTempPath(), "jolt-coordinator-" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture));
-        Directory.CreateDirectory(path);
-        File.WriteAllText(
-            Path.Combine(path, "TestProject.csproj"),
-            """
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
-              </PropertyGroup>
-            </Project>
-            """);
-        File.WriteAllText(
-            Path.Combine(path, "TestProject.slnx"),
-            """
-            <Solution>
-              <Project Path="TestProject.csproj" />
-            </Solution>
-            """);
-        return path;
+        var topology = JoltIntegrationTestTopology.Create(scenarioName);
+        project = topology.CreateSingleProjectSolution("TestSolution", "TestProject");
+        return topology;
     }
 
-    private static void DeleteDirectory(string path)
-    {
-        if (Directory.Exists(path))
-        {
-            Directory.Delete(path, recursive: true);
-        }
-    }
+    private static DocumentSnapshot CreateDocumentSnapshot(
+        JoltIntegrationProject project,
+        string relativePath,
+        DocumentKind documentKind,
+        string text)
+        => new(
+            project.WriteFile(relativePath, text),
+            documentKind,
+            text,
+            "1");
 
     private sealed class FakeLane : ILspLane
     {

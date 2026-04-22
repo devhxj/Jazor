@@ -37,6 +37,17 @@ internal sealed class JoltIntegrationTestTopology : IDisposable
         return solution;
     }
 
+    public JoltIntegrationProject CreateSingleProjectSolution(
+        string solutionName,
+        string projectName,
+        string? projectDirectoryName = null)
+    {
+        // 单项目场景仍然走 `.slnx -> project entry` 的真实拓扑，
+        // 避免测试再次退回到手写零散 fixture。
+        var solution = CreateSolution(solutionName);
+        return solution.AddProject(projectName, projectDirectoryName);
+    }
+
     public void Dispose()
     {
         if (_disposed)
@@ -157,4 +168,18 @@ internal sealed record JoltIntegrationProject(
 {
     public string GetPath(params string[] relativeSegments)
         => Path.Combine(new[] { RootPath }.Concat(relativeSegments).ToArray());
+
+    public string WriteFile(string relativePath, string content)
+    {
+        // 统一由 project root 负责落盘，保证测试文件天然处于 owning project 边界内。
+        var path = GetPath(relativePath);
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        File.WriteAllText(path, content);
+        return path;
+    }
 }
