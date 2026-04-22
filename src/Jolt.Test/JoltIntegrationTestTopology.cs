@@ -119,7 +119,9 @@ internal sealed class JoltIntegrationSolution
     {
         var projectRoot = string.IsNullOrWhiteSpace(projectDirectoryName)
             ? Path.Combine(RootPath, projectName)
-            : Path.Combine(RootPath, projectDirectoryName);
+            : string.Equals(projectDirectoryName, ".", StringComparison.Ordinal)
+                ? RootPath
+                : Path.Combine(RootPath, projectDirectoryName);
         Directory.CreateDirectory(projectRoot);
 
         var projectPath = Path.Combine(projectRoot, projectName + ".csproj");

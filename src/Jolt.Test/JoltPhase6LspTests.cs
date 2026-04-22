@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Jazor.Vue;
 using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
@@ -18,6 +19,8 @@ namespace Jolt.Test;
 [TestClass]
 public sealed class JoltPhase6LspTests
 {
+    private static readonly ConcurrentDictionary<string, RootedPhase6WorkspaceLease> RootedPhase6WorkspaceLeases = new(StringComparer.OrdinalIgnoreCase);
+
     #region Semantic Token Legend
 
     [TestMethod]
@@ -571,7 +574,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -678,10 +681,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -749,10 +749,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            if (Directory.Exists(tempDirectory))
-            {
-                Directory.Delete(tempDirectory, recursive: true);
-            }
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -788,7 +785,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -820,7 +817,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -1121,7 +1118,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -1250,7 +1247,7 @@ public sealed class JoltPhase6LspTests
         }
         finally
         {
-            Directory.Delete(tempDirectory, recursive: true);
+            DeleteTemporaryDirectory(tempDirectory);
         }
     }
 
@@ -1266,25 +1263,37 @@ public sealed class JoltPhase6LspTests
 
     private static string CreateTemporaryDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), "jazor-phase6-test-" + Guid.NewGuid().ToString("N")[..8]);
-        Directory.CreateDirectory(path);
-        File.WriteAllText(
-            Path.Combine(path, "TestProject.csproj"),
-            """
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
-              </PropertyGroup>
-            </Project>
-            """);
-        File.WriteAllText(
-            Path.Combine(path, "TestProject.slnx"),
-            """
-            <Solution>
-              <Project Path="TestProject.csproj" />
-            </Solution>
-            """);
+        var topology = JoltIntegrationTestTopology.Create(nameof(JoltPhase6LspTests));
+        // Phase6 的 rooted slice 测试保持原来的“文件直接在项目根”语义，
+        // 但边界统一由共享 topology 写出的 `.slnx -> project entry` 提供。
+        var project = topology.CreateSingleProjectSolution(
+            solutionName: "JoltPhase6LspTests",
+            projectName: "JoltPhase6LspTests",
+            projectDirectoryName: ".");
+        var path = Path.GetFullPath(project.RootPath);
+        var lease = new RootedPhase6WorkspaceLease(topology, project.Solution.SolutionPath);
+        if (!RootedPhase6WorkspaceLeases.TryAdd(path, lease))
+        {
+            lease.Dispose();
+            throw new InvalidOperationException($"Temporary rooted workspace '{path}' is already tracked.");
+        }
+
         return path;
+    }
+
+    private static void DeleteTemporaryDirectory(string path)
+    {
+        var normalizedPath = Path.GetFullPath(path);
+        if (RootedPhase6WorkspaceLeases.TryRemove(normalizedPath, out var lease))
+        {
+            lease.Dispose();
+            return;
+        }
+
+        if (Directory.Exists(normalizedPath))
+        {
+            Directory.Delete(normalizedPath, recursive: true);
+        }
     }
 
     private static LspPosition ToPosition(string text, string marker, int advance = 0)
@@ -1312,6 +1321,25 @@ public sealed class JoltPhase6LspTests
             Line = line,
             Character = character
         };
+    }
+
+    private sealed class RootedPhase6WorkspaceLease : IDisposable
+    {
+        private readonly JoltIntegrationTestTopology _topology;
+        private readonly string _solutionPath;
+
+        public RootedPhase6WorkspaceLease(JoltIntegrationTestTopology topology, string solutionPath)
+        {
+            _topology = topology;
+            _solutionPath = solutionPath;
+        }
+
+        public void Dispose()
+        {
+            // rooted slice 测试会触发 `.slnx` resolver 缓存；释放时同步清理，避免并发批次污染。
+            JoltWorkspaceResolver.InvalidatePath(_solutionPath);
+            _topology.Dispose();
+        }
     }
 
     private sealed class CapturingVolarLane : ILspLane
