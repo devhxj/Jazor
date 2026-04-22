@@ -102,6 +102,7 @@ CLI (Program.cs)
 |------|---------|
 | [Store.md](workspace/Store.md) | 文档存储：IJoltWorkspaceStore, InMemoryWorkspaceStore, ChangeSink |
 | [Resolver.md](workspace/Resolver.md) | 路径解析：JoltWorkspaceResolver (4 种 Vue 组件策略), JazorRelatedDocumentResolver |
+| [SolutionScoping.md](workspace/SolutionScoping.md) | `.slnx` 作用域：解决方案边界、owning project、跨项目隐式发现限制 |
 
 ### 虚拟文档 (`virtual-documents/`)
 | 文档 | 覆盖范围 |

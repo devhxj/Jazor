@@ -58,6 +58,12 @@ internal enum ChangeUpdateKind
 }
 ```
 
+**作用域约束**：
+- 变更处理先解析 owning project，再计算受影响集合
+- 隐式依赖发现只在 owning project 内展开
+- HMR 广播只覆盖 owning project 的依赖闭包
+- sibling project 的模块和诊断不会因为这次变更被顺带刷新
+
 ### 2.2 FileChangeDebouncer
 
 **职责**：文件系统事件防抖，避免频繁变更触发过多编译。
@@ -221,6 +227,11 @@ public IReadOnlyList<string> GetAllAffectedModules(string changedModulePath)
     }
 }
 ```
+
+**项目边界**：
+- `DependencyGraph` 只存放当前 owning project 的模块关系
+- 跨项目文件即使在磁盘上可达，也不会自动并入这张图
+- 这保证了 HMR 影响面不会越过 `.slnx` 定义的项目边界
 
 ### 2.4 DevServerOptions
 

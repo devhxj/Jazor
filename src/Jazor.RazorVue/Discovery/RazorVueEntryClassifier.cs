@@ -51,11 +51,23 @@ internal static class RazorVueEntryClassifier
 
     public static bool IsLibraryComponent(INamedTypeSymbol symbol, RazorVueCompilationSymbols symbols)
     {
-        if (symbols.VueLibraryComponent is null || symbol.IsStatic || symbol.IsAbstract)
+        if (symbol.IsStatic || symbol.IsAbstract)
             return false;
 
-        return !Comparer.Equals(symbol.OriginalDefinition, symbols.VueLibraryComponent) &&
-               DerivesFrom(symbol, symbols.VueLibraryComponent);
+        if (symbols.VueLibraryComponent is not null)
+        {
+            if (Comparer.Equals(symbol.OriginalDefinition, symbols.VueLibraryComponent))
+                return false;
+
+            if (DerivesFrom(symbol, symbols.VueLibraryComponent))
+                return true;
+        }
+
+        if (symbols.IVueLibraryComponent is null)
+            return false;
+
+        return !Comparer.Equals(symbol.OriginalDefinition, symbols.IVueLibraryComponent) &&
+               Implements(symbol, symbols.IVueLibraryComponent);
     }
 
     public static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
@@ -183,5 +195,8 @@ internal static class RazorVueEntryClassifier
 
         return false;
     }
+
+    private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol interfaceType)
+        => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, interfaceType));
 }
 

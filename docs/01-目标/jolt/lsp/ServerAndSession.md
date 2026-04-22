@@ -324,7 +324,12 @@ private void ApplyWorkspaceFolderChanges(LspWorkspaceFoldersChangeEvent changeEv
 **交互**：
 - `didOpen/didChange/didClose`：更新文档存储
 - `GetDocumentAsync`：获取文档进行 LSP 操作
-- `GetOpenDocumentsAsync`：获取所有打开文档（用于跨文档引用）
+- `GetOpenDocumentsAsync`：获取所有打开文档（随后按 owning project 过滤后再做跨文档引用和诊断刷新）
+
+**作用域规则**：
+- 跨文档引用只在 owning project 内展开
+- 诊断刷新只重算 owning project 的受影响文档
+- 找不到 `.slnx` 时，项目级发现必须返回英文错误，不得静默降级为全工作区扫描
 
 ### 7.2 虚拟文档注册表 (IVirtualDocumentRegistry)
 
@@ -345,6 +350,8 @@ private async ValueTask UpdateProjectionStateAsync(
     await _virtualDocumentRegistry.UpsertAsync(virtualDocuments, cancellationToken);
 }
 ```
+
+**注意**：投影和刷新只应针对 owning project 内的文档集合；不要把 sibling project 的文档混进同一次诊断或 HMR 更新。
 
 ### 7.3 车道路由 (ILspLaneRouter)
 

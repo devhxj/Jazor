@@ -14,6 +14,7 @@ public sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol? RenderFragment,
     INamedTypeSymbol? RenderFragmentOfT,
     INamedTypeSymbol? VueLibraryComponent,
+    INamedTypeSymbol? IVueLibraryComponent,
     INamedTypeSymbol? VueLibraryComponentAttribute,
     INamedTypeSymbol? VueLibraryStyleAttribute,
     INamedTypeSymbol? VueLibraryPluginRequirementAttribute,
@@ -52,6 +53,7 @@ public sealed record RazorVueCompilationSymbols(
         var renderFragment = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment");
         var renderFragmentOfT = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment`1");
         var vueLibraryComponent = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponent");
+        var iVueLibraryComponent = compilation.GetTypeByMetadataName("Jazor.RazorVue.IVueLibraryComponent");
         var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponentAttribute");
         var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryStyleAttribute");
         var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryPluginRequirementAttribute");
@@ -72,6 +74,7 @@ public sealed record RazorVueCompilationSymbols(
             renderFragment,
             renderFragmentOfT,
             vueLibraryComponent,
+            iVueLibraryComponent,
             vueLibraryComponentAttribute,
             vueLibraryStyleAttribute,
             vueLibraryPluginRequirementAttribute,

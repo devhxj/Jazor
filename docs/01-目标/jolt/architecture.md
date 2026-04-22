@@ -132,7 +132,17 @@ Jolt LSP 采用三车道架构（Three-Lane Architecture），将语言功能按
 - `CodeActionCoordinator`: 跨车道代码动作聚合
 - `MarkupBridgeFanoutCoordinator`: Markup 变更通知到所有车道
 
-### 4.2 文档投影系统
+### 4.2 `.slnx` 解决方案 / 项目作用域
+
+Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只认 `.slnx`。Owning project 必须从 `.slnx` 的 project entries 解析，不能靠 `.sln`、`.csproj` 或目录邻近关系猜测。
+
+**关键约束**：
+- 隐式 discovery 只在 owning project 内展开
+- HMR 只传播到 owning project 的受影响集合
+- 诊断刷新只重算 owning project 的相关文档
+- 找不到 `.slnx` 时，项目级发现必须返回英文错误，而不是继续退回到磁盘猜测
+
+### 4.3 文档投影系统
 
 **投影管道** (`JazorProjectionService`):
 
@@ -166,7 +176,7 @@ Jolt LSP 采用三车道架构（Three-Lane Architecture），将语言功能按
 - 记录源文档位置 ↔ 投影文档位置的映射关系
 - 支持 LSP 位置转换（Source → Projection → Source）
 
-### 4.3 Source Map 链
+### 4.4 Source Map 链
 
 **Source Map 服务** (`ISourceMapService`):
 
@@ -186,7 +196,7 @@ Jolt LSP 采用三车道架构（Three-Lane Architecture），将语言功能按
 - DevServer HMR：错误堆栈映射到源文件
 - LSP 诊断：JavaScript 错误映射到 .jazor 位置
 
-### 4.4 可卸载扩展系统
+### 4.5 可卸载扩展系统
 
 **扩展加载架构**:
 

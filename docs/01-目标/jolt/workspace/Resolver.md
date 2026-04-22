@@ -5,7 +5,7 @@
 
 ## 1. 文档定位
 
-Workspace Resolver 子系统是 Jolt 工作区管理的核心解析引擎，负责处理文档路径的规范化、候选路径展开、导入解析、Vue 组件发现和工作区文件枚举。该子系统位于 `src/Jolt/Workspace/JoltWorkspaceResolver.cs`（约 1434 行），为 LSP 服务、DevServer 和编译器提供统一的工作区查询能力。
+Workspace Resolver 子系统是 Jolt 工作区管理的核心解析引擎，负责处理文档路径的规范化、候选路径展开、导入解析、Vue 组件发现和工作区文件枚举。本文档同时说明 `.slnx` 解决方案边界和 owning project 归属规则；更完整的 scoping 约定见 [SolutionScoping.md](SolutionScoping.md)。该子系统位于 `src/Jolt/Workspace/JoltWorkspaceResolver.cs`（约 1434 行），为 LSP 服务、DevServer 和编译器提供统一的工作区查询能力。
 
 核心设计目标：
 - 提供跨平台兼容的路径规范化
@@ -42,9 +42,7 @@ internal static class JoltWorkspaceResolver
         "Directory.Build.props",
         "Directory.Build.targets"
     ];
-    private static readonly string[] WorkspaceBoundaryProjectPatterns = [
-        "*.sln", "*.slnx", "*.csproj", "*.fsproj", "*.vbproj"
-    ];
+    private static readonly string SolutionBoundaryFile = ".slnx";
 }
 ```
 
@@ -644,13 +642,10 @@ private static bool ContainsWorkspaceBoundaryMarker(string directoryPath)
         }
     }
 
-    // 3. 检查项目文件模式
-    foreach (var searchPattern in WorkspaceBoundaryProjectPatterns)
+    // 3. 检查解决方案文件（仅 .slnx）
+    if (File.Exists(Path.Combine(directoryPath, SolutionBoundaryFile)))
     {
-        if (Directory.EnumerateFiles(directoryPath, searchPattern, SearchOption.TopDirectoryOnly).Any())
-        {
-            return true;
-        }
+        return true;
     }
 
     return false;
@@ -663,7 +658,7 @@ private static bool ContainsWorkspaceBoundaryMarker(string directoryPath)
 |------|------|
 | 版本控制目录 | `.git`, `.hg`, `.svn` |
 | 项目配置文件 | `jazor.config.json`, `package.json`, `global.json`, `Directory.Build.props`, `Directory.Build.targets` |
-| 项目文件模式 | `*.sln`, `*.slnx`, `*.csproj`, `*.fsproj`, `*.vbproj` |
+| 解决方案文件 | `.slnx` |
 
 **临时目录保护**：
 
@@ -1117,9 +1112,56 @@ public static bool TryResolveOwningJazorPath(string codeBehindPath, out string j
 }
 ```
 
-## 4. 线程安全模型
+## 4. 解决方案作用域与 owning project
 
-### 4.1 全局状态线程安全
+### 4.1 解决方案发现
+
+Jolt 在做项目级发现时，先向上查找 `.slnx`。找到以后，当前目录树才进入解决方案作用域。
+
+如果向上查找后仍然找不到 `.slnx`，项目级发现必须停止，不得继续退回到 `*.csproj`、`*.sln` 或任意磁盘目录推断。
+
+当前实现的用户错误为：
+
+```text
+No solution .slnx was found for '<documentPath>'. Open the project from a solution directory that contains a .slnx file.
+```
+
+### 4.2 项目归属
+
+Owning project 由 `.slnx` 中的 project entries 决定。
+
+这意味着：
+
+- 文档不属于“最近的文件夹”
+- 文档不属于“最近的 project 文件”
+- 文档只属于解决方案图中实际声明它的项目
+
+如果一个文件在多个项目中都可见，隐式路径仍然只绑定到当前文档的 owning project。
+
+### 4.3 隐式发现边界
+
+所有隐式发现都必须先拿到 owning project，再只在该项目的 document graph 内展开：
+
+- import / component discovery
+- related document discovery
+- open document scan
+- workspace symbol 的 project-local 解析
+
+跨项目文件可以被显式引用，但不能被隐式发现逻辑自动跨过去。
+
+### 4.4 HMR 和诊断刷新边界
+
+当文件变化时，Jolt 只刷新 owning project 的受影响集合：
+
+- HMR 只向 owning project 的依赖图传播
+- 诊断刷新只重算 owning project 的相关文档
+- sibling project 的诊断和更新保持不变，除非它们自己的文件也发生变化
+
+这条规则的目的不是限制一个 Jolt 实例的能力，而是避免把局部变更误扩散成工作区级广播。
+
+## 5. 线程安全模型
+
+### 5.1 全局状态线程安全
 
 **工作区文件缓存**：
 
@@ -1142,7 +1184,7 @@ private static readonly Dictionary<string, long> WorkspaceFileCacheAges =
 - 使用 `lock` 语句保护访问
 - 与 `ConcurrentDictionary` 配合使用
 
-### 4.2 AsyncLocal 状态
+### 5.2 AsyncLocal 状态
 
 **工作区文件夹根**：
 
@@ -1154,7 +1196,7 @@ private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
 - 每个异步上下文有独立的值
 - 自动清理，无需手动释放
 
-### 4.3 无状态方法
+### 5.3 无状态方法
 
 **静态工具方法**：
 
@@ -1162,9 +1204,9 @@ private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
 - 不依赖实例状态
 - 可以安全地并发调用
 
-## 5. 错误处理
+## 6. 错误处理
 
-### 5.1 参数验证
+### 6.1 参数验证
 
 **空值检查**：
 
@@ -1179,7 +1221,7 @@ ArgumentNullException.ThrowIfNull(workspaceFolderRoots);
 cancellationToken.ThrowIfCancellationRequested();
 ```
 
-### 5.2 文件系统异常处理
+### 6.2 文件系统异常处理
 
 **安全枚举**：
 
@@ -1232,7 +1274,7 @@ private static bool SafeFileExists(string filePath)
 }
 ```
 
-### 5.3 文档解析失败报告
+### 6.3 文档解析失败报告
 
 **写入警告到 stderr**：
 
@@ -1257,7 +1299,7 @@ private static void WriteDocumentResolutionWarning(string documentPath, Exceptio
 }
 ```
 
-### 5.4 路径规范化异常
+### 6.4 路径规范化异常
 
 **路径段深度限制**：
 
@@ -1269,9 +1311,9 @@ if (segments.Count > MaxPathSegmentDepth)
 }
 ```
 
-## 6. 配置选项
+## 7. 配置选项
 
-### 6.1 缓存大小限制
+### 7.1 缓存大小限制
 
 ```csharp
 private const int MaxWorkspaceCacheEntries = 1000;
@@ -1281,7 +1323,7 @@ private const int MaxWorkspaceCacheEntries = 1000;
 - 最多缓存 1000 个搜索结果
 - 超过限制时，使用 LRU 策略淘汰旧条目
 
-### 6.2 路径段深度限制
+### 7.2 路径段深度限制
 
 ```csharp
 private const int MaxPathSegmentDepth = 256;
@@ -1291,19 +1333,19 @@ private const int MaxPathSegmentDepth = 256;
 - 防止恶意路径导致栈溢出
 - 超过限制时抛出 `InvalidOperationException`
 
-### 6.3 工作区边界标记
+### 7.3 工作区边界标记
 
 **可配置的标记**：
 
 - 版本控制目录：`.git`, `.hg`, `.svn`
 - 项目配置文件：`jazor.config.json`, `package.json`, `global.json`, `Directory.Build.props`, `Directory.Build.targets`
-- 项目文件模式：`*.sln`, `*.slnx`, `*.csproj`, `*.fsproj`, `*.vbproj`
+- 解决方案文件：`.slnx`
 
 **影响**：
 - 停止向上枚举祖先目录
 - 限制工作区搜索范围
 
-### 6.4 目录跳过列表
+### 7.4 目录跳过列表
 
 ```csharp
 private static bool ShouldSkipWorkspaceDirectory(string directoryPath)
@@ -1330,9 +1372,9 @@ private static bool ShouldSkipWorkspaceDirectory(string directoryPath)
 - 提高文件枚举性能
 - 减少缓存压力
 
-## 7. 与其他子系统的交互
+## 8. 与其他子系统的交互
 
-### 7.1 LSP 服务交互
+### 8.1 LSP 服务交互
 
 **LspSession** 使用工作区解析器：
 
@@ -1356,7 +1398,7 @@ InvalidatePath(documentPath)
 清除相关缓存
 ```
 
-### 7.2 DevServer 交互
+### 8.2 DevServer 交互
 
 **OnDemandCompiler** 使用工作区解析器：
 
@@ -1370,7 +1412,7 @@ ResolveDocumentAsync
 执行编译
 ```
 
-### 7.3 编译器交互
+### 8.3 编译器交互
 
 **BuildOrchestrator** 使用工作区解析器：
 
@@ -1384,9 +1426,9 @@ EnumerateWorkspaceFiles
 检测变更并触发编译
 ```
 
-## 8. 设计权衡
+## 9. 设计权衡
 
-### 8.1 缓存 vs 实时性
+### 9.1 缓存 vs 实时性
 
 **当前选择**：LRU 缓存，路径失效时清除
 
@@ -1404,7 +1446,7 @@ EnumerateWorkspaceFiles
 - 重复查询相同路径
 - 内存充足的环境
 
-### 8.2 多策略组件解析
+### 9.2 多策略组件解析
 
 **当前选择**：4 种解析策略，按优先级依次尝试
 
@@ -1422,7 +1464,7 @@ EnumerateWorkspaceFiles
 - 大型工作区（nearby 优先避免全局扫描）
 - 多种组件组织方式
 
-### 8.3 工作区边界检测
+### 9.3 工作区边界检测
 
 **当前选择**：基于标记文件的启发式检测
 
@@ -1440,7 +1482,7 @@ EnumerateWorkspaceFiles
 - 需要自动配置的环境
 - 不想手动配置工作区根
 
-### 8.4 AsyncLocal 作用域
+### 9.4 AsyncLocal 作用域
 
 **当前选择**：使用 `AsyncLocal` 存储作用域工作区根
 
@@ -1458,7 +1500,7 @@ EnumerateWorkspaceFiles
 - 需要上下文传播
 - 避免参数污染
 
-### 8.5 静态类设计
+### 9.5 静态类设计
 
 **当前选择**：所有方法都是静态的
 

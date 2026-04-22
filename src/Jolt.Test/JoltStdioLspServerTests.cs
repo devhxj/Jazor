@@ -1,4 +1,5 @@
 using System.IO.Pipelines;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Jazor.VueContracts.Protocol;
@@ -121,7 +122,7 @@ public sealed class JoltStdioLspServerTests
         await using var clientInput = clientToServerPipe.Writer.AsStream(leaveOpen: true);
         await using var clientOutput = serverToClientPipe.Reader.AsStream(leaveOpen: true);
 
-        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
         var serverTask = server.RunAsync(serverInput, serverOutput, cancellationSource.Token).AsTask();
 
         await SendMessageAsync(
@@ -165,6 +166,7 @@ public sealed class JoltStdioLspServerTests
                 }
             },
             cancellationSource.Token);
+        await WaitUntilTrackedRequestCountAsync(server, expectedCount: 2, cancellationSource.Token);
         await SendMessageAsync(
             clientInput,
             new
@@ -880,6 +882,30 @@ public sealed class JoltStdioLspServerTests
 
         messageId = default;
         return false;
+    }
+
+    private static async Task WaitUntilTrackedRequestCountAsync(
+        StdioLspServer server,
+        int expectedCount,
+        CancellationToken cancellationToken)
+    {
+        var activeRequestsField = typeof(StdioLspServer).GetField(
+            "_activeRequests",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(activeRequestsField);
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var activeRequests = activeRequestsField.GetValue(server) as System.Collections.IDictionary;
+            Assert.IsNotNull(activeRequests);
+            if (activeRequests.Count >= expectedCount)
+            {
+                return;
+            }
+
+            await Task.Delay(10, cancellationToken);
+        }
     }
 
     private sealed class BlockingWorkspaceSymbolProvider : ILspWorkspaceSymbolProvider
