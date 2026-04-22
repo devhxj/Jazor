@@ -179,6 +179,7 @@ public sealed class JoltStdioLspServerTests
                 }
             },
             cancellationSource.Token);
+        await WaitUntilRequestCancellationObservedAsync(server, requestId: 3, cancellationSource.Token);
 
         provider.ReleaseFirstRequest();
 
@@ -902,6 +903,59 @@ public sealed class JoltStdioLspServerTests
             if (activeRequests.Count >= expectedCount)
             {
                 return;
+            }
+
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+
+    private static async Task WaitUntilRequestCancellationObservedAsync(
+        StdioLspServer server,
+        int requestId,
+        CancellationToken cancellationToken)
+    {
+        var activeRequestsField = typeof(StdioLspServer).GetField(
+            "_activeRequests",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(activeRequestsField);
+
+        var pendingCancellationRequestsField = typeof(StdioLspServer).GetField(
+            "_pendingCancellationRequests",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(pendingCancellationRequestsField);
+
+        var createRequestKeyMethod = typeof(StdioLspServer).GetMethod(
+            "CreateRequestKey",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(createRequestKeyMethod);
+        using var requestIdJson = JsonDocument.Parse(
+            requestId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        var requestKey = createRequestKeyMethod.Invoke(null, [requestIdJson.RootElement.Clone()]) as string;
+        Assert.IsFalse(string.IsNullOrWhiteSpace(requestKey));
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var activeRequests = activeRequestsField.GetValue(server) as System.Collections.IDictionary;
+            Assert.IsNotNull(activeRequests);
+            if (activeRequests.Contains(requestKey))
+            {
+                var cancellationSource = activeRequests[requestKey] as CancellationTokenSource;
+                if (cancellationSource is not null && cancellationSource.IsCancellationRequested)
+                {
+                    return;
+                }
+            }
+
+            var pendingCancellationRequests = pendingCancellationRequestsField.GetValue(server) as System.Collections.IEnumerable;
+            Assert.IsNotNull(pendingCancellationRequests);
+            foreach (var item in pendingCancellationRequests)
+            {
+                if (string.Equals(item as string, requestKey, StringComparison.Ordinal))
+                {
+                    return;
+                }
             }
 
             await Task.Delay(10, cancellationToken);

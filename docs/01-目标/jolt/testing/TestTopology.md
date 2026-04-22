@@ -12,6 +12,8 @@
 | 载体 | 位置 | 作用 |
 |------|------|------|
 | `JoltIntegrationTestTopology` | `src/Jolt.Test/JoltIntegrationTestTopology.cs` | 创建临时根、solution、project，并写入 `.slnx` project entries |
+| `JoltIntegrationProjectScope` | `src/Jolt.Test/JoltIntegrationTestTopology.cs` | 包装单项目 topology 生命周期，释放时通过 topology 统一失效 `.slnx` resolver 缓存 |
+| `JoltIntegrationRootedProjectDirectory` | `src/Jolt.Test/JoltIntegrationTestTopology.cs` | 兼容仍以 `string tempDirectory` 表达的 rooted 测试，统一跟踪和释放 topology 根目录 |
 | `SharedLspTestClient` | `src/Jolt.Test/JoltSharedLspProcessTests.cs` | 用单个 Jolt 进程覆盖多个 workspace roots |
 | `CreateTemporaryScopedProject()` | `src/Jolt.Test/JoltTests.cs` | 每用例创建最小 `.slnx + .csproj` 边界 |
 | `JoltWorkspaceResolverTests` | `src/Jolt.Test/JoltWorkspaceResolverTests.cs` | 纯 resolver / scoping 规则验证 |
@@ -39,7 +41,10 @@
 - `JoltIntegrationTestTopology.Create(...)` 为每个场景创建独立临时根。
 - `CreateSolution(...)` 会生成一个 solution root，并写出 `.slnx`。
 - `AddProject(...)` 会创建真实的 `*.csproj`，再回写 `.slnx` project entries。
+- `JoltIntegrationTestTopology.Dispose()` 会统一失效当前 topology 创建过的全部 `.slnx` resolver 缓存，再删除 topology 根目录。
 - `WriteFile(...)` 总是从 project root 落盘，保证测试文件天然处于 owning project 边界内。
+- `JoltIntegrationProjectScope.CreateSingleProject(...)` 用于 `using var` 形式的 scoped project 测试，`Dispose()` 通过底层 topology 统一失效 `.slnx` resolver 缓存并删除 topology 根目录。
+- `JoltIntegrationRootedProjectDirectory.Create(...)` 用于遗留 `string tempDirectory` 形态的 rooted 测试；清理时必须先调用 `TryDispose(...)`，只有未命中 tracked topology 时才允许退回普通目录删除。
 - `SharedLspTestClient.InitializeAsync(params string[] workspaceRoots)` 会把多个 workspace roots 一次性传入同一个 Jolt 进程。
 
 ## 6. 可验证约束
@@ -54,4 +59,3 @@
 ```text
 No solution .slnx was found for '<documentPath>'. Open the project from a solution directory that contains a .slnx file.
 ```
-

@@ -1752,35 +1752,11 @@ public sealed class JoltTests
         return path;
     }
 
-    private sealed class ScopedSolutionFixture : IDisposable
-    {
-        private readonly JoltIntegrationTestTopology _topology;
-
-        public ScopedSolutionFixture(JoltIntegrationTestTopology topology, JoltIntegrationProject project)
-        {
-            _topology = topology;
-            ProjectRoot = project.RootPath;
-            SolutionPath = project.Solution.SolutionPath;
-        }
-
-        public string ProjectRoot { get; }
-
-        public string SolutionPath { get; }
-
-        public void Dispose()
-        {
-            // scoped project 测试统一通过共享拓扑回收目录，并同步失效 resolver 缓存。
-            JoltWorkspaceResolver.InvalidatePath(SolutionPath);
-            _topology.Dispose();
-        }
-    }
-
-    private static ScopedSolutionFixture CreateTemporaryScopedProject(string projectName = "JoltTestProject")
-    {
-        var topology = JoltIntegrationTestTopology.Create(nameof(JoltTests));
-        var project = topology.CreateSingleProjectSolution(projectName, projectName);
-        return new ScopedSolutionFixture(topology, project);
-    }
+    private static JoltIntegrationProjectScope CreateTemporaryScopedProject(string projectName = "JoltTestProject")
+        => JoltIntegrationProjectScope.CreateSingleProject(
+            scenarioName: nameof(JoltTests),
+            solutionName: projectName,
+            projectName: projectName);
 
     private static void DeleteDirectory(string path)
     {

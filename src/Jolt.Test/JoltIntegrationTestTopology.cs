@@ -1,7 +1,11 @@
+using System.Collections.Concurrent;
+using Jolt.Workspace;
+
 namespace Jolt.Test;
 
 internal sealed class JoltIntegrationTestTopology : IDisposable
 {
+    private readonly List<string> _solutionPaths = [];
     private bool _disposed;
 
     private JoltIntegrationTestTopology(string rootPath)
@@ -33,6 +37,7 @@ internal sealed class JoltIntegrationTestTopology : IDisposable
         Directory.CreateDirectory(solutionRoot);
         var solutionPath = Path.Combine(solutionRoot, solutionName + ".slnx");
         var solution = new JoltIntegrationSolution(solutionName, solutionRoot, solutionPath);
+        _solutionPaths.Add(solutionPath);
         solution.WriteSolutionFile();
         return solution;
     }
@@ -56,6 +61,12 @@ internal sealed class JoltIntegrationTestTopology : IDisposable
         }
 
         _disposed = true;
+        // 裸 topology 使用者也可能触发 `.slnx` resolver 缓存，统一在根生命周期结束时失效。
+        foreach (var solutionPath in _solutionPaths)
+        {
+            JoltWorkspaceResolver.InvalidatePath(solutionPath);
+        }
+
         DeleteDirectoryWithRetry(RootPath);
     }
 
@@ -184,4 +195,99 @@ internal sealed record JoltIntegrationProject(
         File.WriteAllText(path, content);
         return path;
     }
+}
+
+internal sealed class JoltIntegrationProjectScope : IDisposable
+{
+    private readonly JoltIntegrationTestTopology _topology;
+    private int _disposed;
+
+    private JoltIntegrationProjectScope(JoltIntegrationTestTopology topology, JoltIntegrationProject project)
+    {
+        _topology = topology;
+        Project = project;
+    }
+
+    public JoltIntegrationProject Project { get; }
+
+    public string ProjectRoot => Project.RootPath;
+
+    public string SolutionPath => Project.Solution.SolutionPath;
+
+    public static JoltIntegrationProjectScope CreateSingleProject(
+        string scenarioName,
+        string solutionName,
+        string projectName,
+        string? projectDirectoryName = null)
+    {
+        var topology = JoltIntegrationTestTopology.Create(scenarioName);
+        try
+        {
+            var project = topology.CreateSingleProjectSolution(solutionName, projectName, projectDirectoryName);
+            return new JoltIntegrationProjectScope(topology, project);
+        }
+        catch
+        {
+            topology.Dispose();
+            throw;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        // 缓存失效由 topology 统一处理，避免每种 fixture 各自实现一份回收逻辑。
+        _topology.Dispose();
+    }
+}
+
+internal static class JoltIntegrationRootedProjectDirectory
+{
+    private static readonly ConcurrentDictionary<string, JoltIntegrationProjectScope> Scopes = new(StringComparer.OrdinalIgnoreCase);
+
+    public static string Create(
+        string scenarioName,
+        string solutionName,
+        string projectName,
+        string? projectDirectoryName = ".")
+    {
+        var scope = JoltIntegrationProjectScope.CreateSingleProject(
+            scenarioName,
+            solutionName,
+            projectName,
+            projectDirectoryName);
+        var projectRoot = NormalizeDirectoryPath(scope.ProjectRoot);
+        if (!Scopes.TryAdd(projectRoot, scope))
+        {
+            scope.Dispose();
+            throw new IOException($"Temporary rooted project directory '{projectRoot}' is already tracked.");
+        }
+
+        return projectRoot;
+    }
+
+    public static bool TryDispose(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        var projectRoot = NormalizeDirectoryPath(path);
+        if (!Scopes.TryRemove(projectRoot, out var scope))
+        {
+            return false;
+        }
+
+        // 所有以 string 形式暴露的 rooted project 目录都从这里释放，保证 topology 根目录不残留。
+        scope.Dispose();
+        return true;
+    }
+
+    private static string NormalizeDirectoryPath(string path)
+        => Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
 }

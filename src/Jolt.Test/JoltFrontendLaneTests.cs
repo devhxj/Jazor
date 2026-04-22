@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Collections.Concurrent;
 using Jazor.VueContracts.Protocol;
 using Jolt.DevServer;
 using Jolt.Frontend.Deno.Hosting;
@@ -22,8 +21,6 @@ namespace Jolt.Test;
 public sealed class JoltFrontendLaneTests
 {
     private static readonly object DenoCacheCopyGate = new();
-    private static readonly ConcurrentDictionary<string, RootedTemporaryDirectoryLease> RootedTemporaryDirectoryLeases =
-        new(StringComparer.OrdinalIgnoreCase);
 
     [TestMethod]
     public async Task Jolt_DenoFrontendHost_CompileSfc_StartsWorkerAndReturnsTypedResult()
@@ -2114,20 +2111,14 @@ public sealed class JoltFrontendLaneTests
             denoFrontendHost);
 
     private static string CreateTemporaryDirectory()
-    {
-        var lease = RootedTemporaryDirectoryLease.Create(nameof(JoltFrontendLaneTests));
-        if (!RootedTemporaryDirectoryLeases.TryAdd(lease.ProjectRootPath, lease))
-        {
-            lease.Dispose();
-            throw new IOException($"Temporary directory lease collision detected for '{lease.ProjectRootPath}'.");
-        }
-
-        return lease.ProjectRootPath;
-    }
+        => JoltIntegrationRootedProjectDirectory.Create(
+            scenarioName: nameof(JoltFrontendLaneTests),
+            solutionName: nameof(JoltFrontendLaneTests),
+            projectName: nameof(JoltFrontendLaneTests));
 
     private static void DeleteDirectoryWithRetry(string path)
     {
-        if (TryDisposeRootedTemporaryDirectory(path))
+        if (JoltIntegrationRootedProjectDirectory.TryDispose(path))
         {
             return;
         }
@@ -2342,70 +2333,6 @@ public sealed class JoltFrontendLaneTests
             DocumentKind.Jazor,
             text,
             "1");
-
-    private static bool TryDisposeRootedTemporaryDirectory(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return false;
-        }
-
-        var normalizedPath = Path.GetFullPath(path);
-        if (!RootedTemporaryDirectoryLeases.TryRemove(normalizedPath, out var lease))
-        {
-            return false;
-        }
-
-        // rooted 场景必须通过 topology 统一清理，避免只删 project 目录后残留 solution/topology 根目录。
-        lease.Dispose();
-        return true;
-    }
-
-    private sealed class RootedTemporaryDirectoryLease : IDisposable
-    {
-        private readonly JoltIntegrationTestTopology _topology;
-        private readonly string _solutionPath;
-        private int _disposed;
-
-        private RootedTemporaryDirectoryLease(JoltIntegrationTestTopology topology, JoltIntegrationProject project)
-        {
-            _topology = topology;
-            _solutionPath = project.Solution.SolutionPath;
-            ProjectRootPath = Path.GetFullPath(project.RootPath);
-        }
-
-        public string ProjectRootPath { get; }
-
-        public static RootedTemporaryDirectoryLease Create(string scenarioName)
-        {
-            var topology = JoltIntegrationTestTopology.Create(scenarioName);
-            try
-            {
-                // rooted 测试继续落在真实 `.slnx + .csproj` 边界内，但正文仍然只拿 project root 当工作目录。
-                var project = topology.CreateSingleProjectSolution(
-                    solutionName: "JoltFrontendLaneTests",
-                    projectName: "JoltFrontendLaneTests");
-                return new RootedTemporaryDirectoryLease(topology, project);
-            }
-            catch
-            {
-                topology.Dispose();
-                throw;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (Interlocked.Exchange(ref _disposed, 1) != 0)
-            {
-                return;
-            }
-
-            // rooted frontend 测试会走 `.slnx` 作用域解析；回收时同步清理缓存，避免并发批次残留。
-            JoltWorkspaceResolver.InvalidatePath(_solutionPath);
-            _topology.Dispose();
-        }
-    }
 
     private static LspPosition GetPosition(string text, string marker, int advance = 0)
     {

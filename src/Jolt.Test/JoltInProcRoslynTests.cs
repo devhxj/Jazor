@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -6,7 +5,6 @@ using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Razor.InProc;
 using Jolt.Roslyn.InProc;
-using Jolt.Workspace;
 using Microsoft.CodeAnalysis;
 
 namespace Jolt.Test;
@@ -14,7 +12,6 @@ namespace Jolt.Test;
 [TestClass]
 public sealed class JoltInProcRoslynTests
 {
-    private static readonly ConcurrentDictionary<string, RootedWorkspaceLease> RootedWorkspaceLeases = new(StringComparer.OrdinalIgnoreCase);
     private readonly InProcRoslynCodeService _service = new();
 
     [TestMethod]
@@ -1019,34 +1016,22 @@ public sealed class JoltInProcRoslynTests
             "1");
 
     private static string CreateTemporaryWorkspaceDirectory()
-    {
-        var topology = JoltIntegrationTestTopology.Create(nameof(JoltInProcRoslynTests));
         // rooted Roslyn 语义测试需要让项目根与 solution 根重合，
         // 这样磁盘文档仍然走真实 `.slnx -> owning project` 边界，同时不改现有路径语义。
-        var project = topology.CreateSingleProjectSolution(
+        => JoltIntegrationRootedProjectDirectory.Create(
+            scenarioName: nameof(JoltInProcRoslynTests),
             solutionName: "JoltInProcRoslynTests",
             projectName: "JoltInProcRoslynTests",
             projectDirectoryName: ".");
-        var path = Path.GetFullPath(project.RootPath);
-        var lease = new RootedWorkspaceLease(topology, project.Solution.SolutionPath);
-        if (!RootedWorkspaceLeases.TryAdd(path, lease))
-        {
-            lease.Dispose();
-            throw new InvalidOperationException($"Temporary rooted workspace '{path}' is already tracked.");
-        }
-
-        return path;
-    }
 
     private static void DeleteTemporaryWorkspaceDirectory(string path)
     {
-        var normalizedPath = Path.GetFullPath(path);
-        if (RootedWorkspaceLeases.TryRemove(normalizedPath, out var lease))
+        if (JoltIntegrationRootedProjectDirectory.TryDispose(path))
         {
-            lease.Dispose();
             return;
         }
 
+        var normalizedPath = Path.GetFullPath(path);
         if (Directory.Exists(normalizedPath))
         {
             Directory.Delete(normalizedPath, recursive: true);
@@ -1097,24 +1082,5 @@ public sealed class JoltInProcRoslynTests
         var offset = text.IndexOf(marker, StringComparison.Ordinal);
         Assert.IsTrue(offset >= 0, $"Expected marker '{marker}' to exist.");
         return LspProtocolHelpers.GetPosition(text, offset + advance);
-    }
-
-    private sealed class RootedWorkspaceLease : IDisposable
-    {
-        private readonly JoltIntegrationTestTopology _topology;
-        private readonly string _solutionPath;
-
-        public RootedWorkspaceLease(JoltIntegrationTestTopology topology, string solutionPath)
-        {
-            _topology = topology;
-            _solutionPath = solutionPath;
-        }
-
-        public void Dispose()
-        {
-            // rooted workspace 测试会触发 resolver 缓存；回收时同步清理，避免并发用例间残留状态。
-            JoltWorkspaceResolver.InvalidatePath(_solutionPath);
-            _topology.Dispose();
-        }
     }
 }
