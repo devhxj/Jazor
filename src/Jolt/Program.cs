@@ -306,12 +306,14 @@ try
                 new VolarLaneService(workspaceStore, hostService, virtualDocumentRegistry, denoVolarHost, markupComponentBridge)
             ];
             var laneMap = lanes.ToDictionary(static lane => lane.LaneKind);
+            var standardOutput = Console.OpenStandardOutput();
+            var lspWriter = new LspMessageWriter(standardOutput);
             var lspServer = new StdioLspServer(
                 new LspSession(
                     workspaceStore,
                     lanes,
                     laneRouter,
-                    new LspMessageWriter(Console.OpenStandardOutput()),
+                    lspWriter,
                     projectionService,
                     virtualDocumentRegistry,
                     projectionResolver,
@@ -321,11 +323,12 @@ try
                     new RenameCoordinator(laneMap, laneRouter, resultAggregator, markupBridgeFanoutCoordinator),
                     new CodeActionCoordinator(laneMap, laneRouter, resultAggregator),
                     devServer,
-                    extensionRegistry));
+                    extensionRegistry),
+                lspWriter);
 
             await lspServer.RunAsync(
                 Console.OpenStandardInput(),
-                Console.OpenStandardOutput(),
+                standardOutput,
                 cancellationToken);
         }
         finally

@@ -669,7 +669,10 @@ internal sealed partial class LspSession
         await PublishDiagnosticsAsync(document, cancellationToken);
         await RefreshOpenJazorDiagnosticsAsync(document, cancellationToken);
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        await NotifyWorkspaceDocumentChangedAsync(document, openDocuments, cancellationToken);
+        await NotifyWorkspaceDocumentChangedAsync(
+            document,
+            FilterOpenDocumentsToProjectScope(document, openDocuments),
+            cancellationToken);
     }
 
     private async ValueTask HandleDidCloseAsync(
@@ -834,6 +837,20 @@ internal sealed partial class LspSession
             WriteWorkspaceSinkWarning(document.DocumentPath, exception);
             // LSP diagnostics/projection updates must keep working even if dev-server HMR coordination fails.
         }
+    }
+
+    private static IReadOnlyList<DocumentSnapshot> FilterOpenDocumentsToProjectScope(
+        DocumentSnapshot document,
+        IReadOnlyList<DocumentSnapshot> openDocuments)
+    {
+        // 共享 Jolt 进程可以同时服务多个项目，但工作区变更广播只应该看到
+        // 当前文档所属项目内的打开文档，避免兄弟项目被无关刷新拖进来。
+        var filtered = openDocuments
+            .Where(candidate => JoltWorkspaceResolver.IsInSameProjectScope(document.DocumentPath, candidate.DocumentPath))
+            .ToArray();
+        return filtered.Length == openDocuments.Count
+            ? openDocuments
+            : filtered;
     }
 
     private string GetWorkspaceScopedDocumentPath(string documentUri)

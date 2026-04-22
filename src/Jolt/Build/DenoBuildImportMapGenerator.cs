@@ -4,6 +4,11 @@ namespace Jolt.Build;
 
 internal static class DenoBuildImportMapGenerator
 {
+    private static readonly JsonSerializerOptions ImportMapSerializerOptions = new()
+    {
+        WriteIndented = true
+    };
+
     public static async Task<string> GenerateAsync(
         string rootDirectory,
         CancellationToken cancellationToken)
@@ -29,11 +34,29 @@ internal static class DenoBuildImportMapGenerator
         Directory.CreateDirectory(jazorDirectory);
 
         var importMapPath = Path.Combine(jazorDirectory, "build.importmap.json");
-        await File.WriteAllTextAsync(
-            importMapPath,
-            JsonSerializer.Serialize(new { imports }, new JsonSerializerOptions { WriteIndented = true }),
-            cancellationToken);
+        var serializedImportMap = SerializeImportMap(imports);
+        if (File.Exists(importMapPath))
+        {
+            var existingImportMap = await File.ReadAllTextAsync(importMapPath, cancellationToken);
+            if (string.Equals(existingImportMap, serializedImportMap, StringComparison.Ordinal))
+            {
+                return importMapPath;
+            }
+        }
+
+        await File.WriteAllTextAsync(importMapPath, serializedImportMap, cancellationToken);
         return importMapPath;
+    }
+
+    private static string SerializeImportMap(IReadOnlyDictionary<string, string> imports)
+    {
+        var orderedImports = imports
+            .OrderBy(static entry => entry.Key, StringComparer.Ordinal)
+            .ToDictionary(
+                static entry => entry.Key,
+                static entry => entry.Value,
+                StringComparer.Ordinal);
+        return JsonSerializer.Serialize(new { imports = orderedImports }, ImportMapSerializerOptions);
     }
 
     private static void AddPackageImports(

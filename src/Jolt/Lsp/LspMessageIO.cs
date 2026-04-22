@@ -124,6 +124,7 @@ internal sealed class LspMessageReader
 internal sealed class LspMessageWriter
 {
     private readonly Stream _output;
+    private readonly SemaphoreSlim _writeGate = new(1, 1);
 
     public LspMessageWriter(Stream output)
     {
@@ -134,8 +135,16 @@ internal sealed class LspMessageWriter
     {
         var body = Encoding.UTF8.GetBytes(json);
         var header = Encoding.ASCII.GetBytes($"Content-Length: {body.Length}\r\n\r\n");
-        await _output.WriteAsync(header.AsMemory(), cancellationToken);
-        await _output.WriteAsync(body.AsMemory(), cancellationToken);
-        await _output.FlushAsync(cancellationToken);
+        await _writeGate.WaitAsync(cancellationToken);
+        try
+        {
+            await _output.WriteAsync(header.AsMemory(), cancellationToken);
+            await _output.WriteAsync(body.AsMemory(), cancellationToken);
+            await _output.FlushAsync(cancellationToken);
+        }
+        finally
+        {
+            _writeGate.Release();
+        }
     }
 }

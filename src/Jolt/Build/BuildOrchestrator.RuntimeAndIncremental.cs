@@ -11,12 +11,14 @@ namespace Jolt.Build;
 
 internal sealed partial class BuildOrchestrator
 {
+    private static readonly Lazy<string> CachedDenoHostBaseDirectory = new(ResolveDenoHostBaseDirectoryCore);
+
     /// <summary>
     /// Creates a DenoVolarHost for the build pipeline.
     /// </summary>
     private static DenoVolarHost CreateDenoHost()
     {
-        var baseDirectory = ResolveDenoHostBaseDirectory();
+        var baseDirectory = CachedDenoHostBaseDirectory.Value;
         var parsedOptions = DenoVolarHostOptionsParser.Parse(["--deno-worker"], baseDirectory);
         var options = new DenoVolarHostOptions
         {
@@ -33,7 +35,7 @@ internal sealed partial class BuildOrchestrator
         return new DenoVolarHost(options);
     }
 
-    private static string ResolveDenoHostBaseDirectory()
+    private static string ResolveDenoHostBaseDirectoryCore()
     {
         var assemblyBaseDirectory = Path.GetDirectoryName(typeof(BuildOrchestrator).Assembly.Location)
             ?? AppContext.BaseDirectory;

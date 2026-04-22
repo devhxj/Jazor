@@ -5,14 +5,33 @@ namespace Jolt.Lsp;
 
 internal sealed class StdioLspServer
 {
+    private const int MinimumDefaultMaxConcurrentRequests = 4;
     private readonly LspSession _session;
+    private readonly LspMessageWriter? _responseWriter;
+    private readonly SemaphoreSlim _requestExecutionGate;
     private readonly Lock _requestGate = new();
+    private readonly Lock _inFlightRequestTasksGate = new();
     private readonly Dictionary<string, CancellationTokenSource> _activeRequests = new(StringComparer.Ordinal);
     private readonly HashSet<string> _pendingCancellationRequests = new(StringComparer.Ordinal);
+    private readonly HashSet<Task> _inFlightRequestTasks = [];
 
-    public StdioLspServer(LspSession session)
+    public StdioLspServer(
+        LspSession session,
+        LspMessageWriter? responseWriter = null,
+        int? maxConcurrentRequests = null)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
+        _responseWriter = responseWriter;
+        var effectiveMaxConcurrentRequests = maxConcurrentRequests ?? Math.Max(MinimumDefaultMaxConcurrentRequests, Environment.ProcessorCount);
+        if (effectiveMaxConcurrentRequests < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maxConcurrentRequests),
+                effectiveMaxConcurrentRequests,
+                "The LSP server requires at least one concurrent request slot.");
+        }
+
+        _requestExecutionGate = new SemaphoreSlim(effectiveMaxConcurrentRequests, effectiveMaxConcurrentRequests);
     }
 
     public async ValueTask RunAsync(
@@ -21,7 +40,7 @@ internal sealed class StdioLspServer
         CancellationToken cancellationToken)
     {
         var reader = new LspMessageReader(input);
-        var writer = new LspMessageWriter(output);
+        var writer = _responseWriter ?? new LspMessageWriter(output);
         var queue = Channel.CreateUnbounded<LspRequestMessage>(new UnboundedChannelOptions
         {
             SingleReader = true,
@@ -71,6 +90,7 @@ internal sealed class StdioLspServer
         finally
         {
             queue.Writer.TryComplete();
+            CancelAndDisposeActiveRequests();
             try
             {
                 await workerTask;
@@ -121,7 +141,138 @@ internal sealed class StdioLspServer
                     continue;
                 }
 
-                await HandleRequestAsync(message, writer, cancellationToken);
+                TrackInFlightRequestTask(ProcessRequestWhenSlotAvailableAsync(message, writer, cancellationToken));
+            }
+        }
+
+        await DrainInFlightRequestTasksAsync();
+    }
+
+    private async Task ProcessRequestWhenSlotAvailableAsync(
+        LspRequestMessage request,
+        LspMessageWriter writer,
+        CancellationToken sessionCancellationToken)
+    {
+        var requestKey = CreateRequestKey(request.Id);
+        using var requestCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(sessionCancellationToken);
+        var executionSlotAcquired = false;
+
+        try
+        {
+            if (requestKey is not null)
+            {
+                var cancelledBeforeExecution = false;
+                lock (_requestGate)
+                {
+                    cancelledBeforeExecution = _pendingCancellationRequests.Remove(requestKey);
+                    if (!cancelledBeforeExecution)
+                    {
+                        if (_activeRequests.TryGetValue(requestKey, out var existing))
+                        {
+                            existing.Cancel();
+                            existing.Dispose();
+                        }
+
+                        _activeRequests[requestKey] = requestCancellationSource;
+                    }
+                }
+
+                if (cancelledBeforeExecution)
+                {
+                    await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
+                    return;
+                }
+            }
+
+            await _requestExecutionGate.WaitAsync(sessionCancellationToken);
+            executionSlotAcquired = true;
+        }
+        catch (OperationCanceledException) when (sessionCancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
+        try
+        {
+            await HandleRequestAsync(request, writer, requestCancellationSource.Token);
+        }
+        catch (OperationCanceledException) when (sessionCancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            WriteServerWarning(
+                "lspRequestDispatchFailed",
+                request.Method,
+                exception);
+        }
+        finally
+        {
+            if (requestKey is not null)
+            {
+                lock (_requestGate)
+                {
+                    _activeRequests.Remove(requestKey);
+                }
+            }
+
+            if (executionSlotAcquired)
+            {
+                _requestExecutionGate.Release();
+            }
+        }
+    }
+
+    private void TrackInFlightRequestTask(Task task)
+    {
+        lock (_inFlightRequestTasksGate)
+        {
+            _inFlightRequestTasks.Add(task);
+        }
+
+        _ = ObserveInFlightRequestTaskAsync(task);
+    }
+
+    private async Task ObserveInFlightRequestTaskAsync(Task task)
+    {
+        try
+        {
+            await task;
+        }
+        finally
+        {
+            lock (_inFlightRequestTasksGate)
+            {
+                _inFlightRequestTasks.Remove(task);
+            }
+        }
+    }
+
+    private async Task DrainInFlightRequestTasksAsync()
+    {
+        while (true)
+        {
+            Task[] pendingTasks;
+            lock (_inFlightRequestTasksGate)
+            {
+                if (_inFlightRequestTasks.Count == 0)
+                {
+                    return;
+                }
+
+                pendingTasks = _inFlightRequestTasks.ToArray();
+            }
+
+            try
+            {
+                await Task.WhenAll(pendingTasks);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception)
+            {
+                // Individual request failures are already converted into LSP responses/logs.
             }
         }
     }
@@ -129,55 +280,29 @@ internal sealed class StdioLspServer
     private async ValueTask HandleRequestAsync(
         LspRequestMessage request,
         LspMessageWriter writer,
-        CancellationToken sessionCancellationToken)
+        CancellationToken requestCancellationToken)
     {
-        var requestKey = CreateRequestKey(request.Id);
-        using var requestCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(sessionCancellationToken);
-        if (requestKey is not null)
+        // Let the reader loop observe any just-arrived `$/cancelRequest` before the
+        // handler starts running. Requests stay concurrent; this only closes a queue
+        // admission race for work that was already waiting on a slot.
+        await Task.Yield();
+        if (requestCancellationToken.IsCancellationRequested)
         {
-            var cancelledBeforeExecution = false;
-            lock (_requestGate)
-            {
-                cancelledBeforeExecution = _pendingCancellationRequests.Remove(requestKey);
-                if (!cancelledBeforeExecution)
-                {
-                    if (_activeRequests.TryGetValue(requestKey, out var existing))
-                    {
-                        existing.Cancel();
-                        existing.Dispose();
-                    }
-
-                    _activeRequests[requestKey] = requestCancellationSource;
-                }
-            }
-
-            if (cancelledBeforeExecution)
-            {
-                await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
-                return;
-            }
-
-            // Give the reader loop a turn so a just-arrived `$/cancelRequest`
-            // can cancel queued work before the handler starts executing.
-            await Task.Yield();
-            if (requestCancellationSource.IsCancellationRequested)
-            {
-                await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
-                return;
-            }
+            await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
+            return;
         }
 
         LspResponseMessage? response;
         try
         {
-            requestCancellationSource.Token.ThrowIfCancellationRequested();
-            response = await _session.HandleRequestAsync(request, requestCancellationSource.Token);
-            if (requestCancellationSource.IsCancellationRequested)
+            requestCancellationToken.ThrowIfCancellationRequested();
+            response = await _session.HandleRequestAsync(request, requestCancellationToken);
+            if (requestCancellationToken.IsCancellationRequested)
             {
                 response = CreateCancelledResponse(request.Id);
             }
         }
-        catch (OperationCanceledException) when (requestCancellationSource.IsCancellationRequested)
+        catch (OperationCanceledException) when (requestCancellationToken.IsCancellationRequested)
         {
             response = CreateCancelledResponse(request.Id);
         }
@@ -204,16 +329,6 @@ internal sealed class StdioLspServer
                     Message = ex.Message
                 }
             };
-        }
-        finally
-        {
-            if (requestKey is not null)
-            {
-                lock (_requestGate)
-                {
-                    _activeRequests.Remove(requestKey);
-                }
-            }
         }
 
         if (response is null)

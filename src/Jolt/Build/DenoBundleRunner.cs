@@ -216,7 +216,7 @@ internal sealed class DenoBundleRunner
         CancellationToken cancellationToken)
     {
         const int maxAttempts = 120;
-        const int delayMilliseconds = 50;
+        const int maxDelayMilliseconds = 50;
         // The Deno bundler process has already exited before we poll for files here,
         // so we only need a short quiet window to avoid catching transient filesystem lag.
         const int quiescenceDurationMilliseconds = 100;
@@ -224,20 +224,12 @@ internal sealed class DenoBundleRunner
         IReadOnlyList<OutputFileSnapshot> previousSnapshot = [];
         string[] bestPaths = [];
         var bestTotalSize = -1L;
-        var lastChangeElapsedMilliseconds = -1L;
-        var stopwatch = Stopwatch.StartNew();
 
         for (var attempt = 0; attempt < maxAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var currentSnapshot = CaptureOutputFileSnapshots(assetsDirectory, searchPattern);
-            var hasChanged = !AreOutputFileSnapshotsEqual(previousSnapshot, currentSnapshot);
-            if (hasChanged)
-            {
-                lastChangeElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-            }
-
             if (currentSnapshot.Count > 0)
             {
                 var currentTotalSize = currentSnapshot.Sum(static snapshot => snapshot.Length);
@@ -250,10 +242,9 @@ internal sealed class DenoBundleRunner
             }
 
             if (currentSnapshot.Count > 0
-                && !hasChanged
                 && AreOutputFilesReadable(currentSnapshot)
-                && lastChangeElapsedMilliseconds >= 0
-                && (stopwatch.ElapsedMilliseconds - lastChangeElapsedMilliseconds) >= quiescenceDurationMilliseconds)
+                && GetSnapshotQuietAgeMilliseconds(currentSnapshot) >= quiescenceDurationMilliseconds
+                && (previousSnapshot.Count == 0 || AreOutputFileSnapshotsEqual(previousSnapshot, currentSnapshot)))
             {
                 return currentSnapshot.Select(static snapshot => snapshot.FilePath).ToArray();
             }
@@ -264,10 +255,45 @@ internal sealed class DenoBundleRunner
                 return bestPaths;
             }
 
-            await Task.Delay(delayMilliseconds, cancellationToken);
+            await Task.Delay(
+                GetNextSnapshotDelayMilliseconds(currentSnapshot, quiescenceDurationMilliseconds, maxDelayMilliseconds),
+                cancellationToken);
         }
 
         return bestPaths;
+    }
+
+    private static int GetNextSnapshotDelayMilliseconds(
+        IReadOnlyList<OutputFileSnapshot> snapshots,
+        int quiescenceDurationMilliseconds,
+        int maxDelayMilliseconds)
+    {
+        if (snapshots.Count == 0)
+        {
+            return maxDelayMilliseconds;
+        }
+
+        var remainingQuietTime = quiescenceDurationMilliseconds - GetSnapshotQuietAgeMilliseconds(snapshots);
+        return Math.Clamp(remainingQuietTime, 1, maxDelayMilliseconds);
+    }
+
+    private static int GetSnapshotQuietAgeMilliseconds(IReadOnlyList<OutputFileSnapshot> snapshots)
+    {
+        if (snapshots.Count == 0)
+        {
+            return 0;
+        }
+
+        var latestWriteTimeUtcTicks = snapshots.Max(static snapshot => snapshot.LastWriteTimeUtcTicks);
+        if (latestWriteTimeUtcTicks <= 0)
+        {
+            return 0;
+        }
+
+        var quietAge = DateTime.UtcNow - new DateTime(latestWriteTimeUtcTicks, DateTimeKind.Utc);
+        return quietAge <= TimeSpan.Zero
+            ? 0
+            : (int)Math.Min(quietAge.TotalMilliseconds, int.MaxValue);
     }
 
     private static IReadOnlyList<OutputFileSnapshot> CaptureOutputFileSnapshots(
@@ -281,7 +307,7 @@ internal sealed class DenoBundleRunner
 
         try
         {
-            return Directory.GetFiles(assetsDirectory, searchPattern, SearchOption.AllDirectories)
+            return Directory.EnumerateFiles(assetsDirectory, searchPattern, SearchOption.AllDirectories)
                 .Select(Path.GetFullPath)
                 .OrderBy(static path => path, PathComparer)
                 .Select(path =>

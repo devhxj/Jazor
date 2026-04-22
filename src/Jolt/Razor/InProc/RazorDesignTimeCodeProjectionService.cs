@@ -61,7 +61,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
             }
 
             var projectedDocumentPath = "virtual:" + document.DocumentPath + ".razor.g.cs";
-            var projectionMap = CreateProjectionMap(document.DocumentPath, projectedDocumentPath, sourceMappings);
+            var projectionMap = CreateProjectionMap(document.DocumentPath, document.Text, projectedDocumentPath, sourceMappings);
             if (projectionMap.Segments.Count == 0)
             {
                 // Some design-time Razor toolchains produce generated source while omitting
@@ -121,16 +121,21 @@ internal sealed class RazorDesignTimeCodeProjectionService
 
     private static ProjectionMap CreateProjectionMap(
         string sourceDocumentPath,
+        string sourceText,
         string projectedDocumentPath,
         IEnumerable<SourceMapping> sourceMappings)
     {
         var normalizedSourceDocumentPath = NormalizeComparablePath(sourceDocumentPath);
+        var excludedDirectiveRanges = GetExcludedDirectiveRanges(sourceText);
         var segments = sourceMappings
             .Select(static mapping => TryCreateSegment(mapping))
             .Where(static segment => segment is not null)
             .Select(static segment => segment!)
             .Where(segment => segment.OriginalLength > 0 && segment.ProjectedLength > 0)
             .Where(segment => IsRelevantMappingSegment(segment, normalizedSourceDocumentPath))
+            // Keep Roslyn mapped to semantic/code regions. Top-level Jolt import directives are
+            // handled by the Jazor lane and must not be reinterpreted as C#.
+            .Where(segment => !OverlapsExcludedDirectiveRange(segment, excludedDirectiveRanges))
             .Select(static segment => new ProjectionSegment(
                 segment.OriginalStart,
                 segment.OriginalLength,
@@ -141,6 +146,35 @@ internal sealed class RazorDesignTimeCodeProjectionService
             .ToArray();
 
         return new ProjectionMap(sourceDocumentPath, projectedDocumentPath, segments);
+    }
+
+    private static (int Start, int End)[] GetExcludedDirectiveRanges(string sourceText)
+    {
+        if (string.IsNullOrWhiteSpace(sourceText))
+        {
+            return [];
+        }
+
+        return JazorImportDirectiveLocator.EnumerateDirectiveLines(sourceText)
+            .Select(static match => (Start: match.LineStartIndex, End: match.LineStartIndex + match.LineLength))
+            .Where(static range => range.End > range.Start)
+            .ToArray();
+    }
+
+    private static bool OverlapsExcludedDirectiveRange(
+        SourceMappingSegment segment,
+        IReadOnlyList<(int Start, int End)> excludedDirectiveRanges)
+    {
+        foreach (var range in excludedDirectiveRanges)
+        {
+            if (segment.OriginalStart < range.End
+                && segment.OriginalStart + segment.OriginalLength > range.Start)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool IsRelevantMappingSegment(

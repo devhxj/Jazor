@@ -289,10 +289,19 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         }
 
         var normalizedChangedPath = NormalizeComparablePath(request.DocumentPath);
+        if (Path.IsPathRooted(request.DocumentPath))
+        {
+            _ = JoltWorkspaceResolver.GetRequiredOwningProjectRoot(request.DocumentPath);
+        }
+
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var affectedJazorDocuments = new List<string>();
 
-        foreach (var document in openDocuments.Where(static document => document.DocumentKind == DocumentKind.Jazor))
+        // Hot update 影响面必须按 owning project 过滤；否则一个项目的前端文件变化
+        // 会把同 solution 下其他项目的 Jazor 页面也误判成受影响。
+        foreach (var document in openDocuments.Where(document =>
+                     document.DocumentKind == DocumentKind.Jazor
+                     && JoltWorkspaceResolver.IsInSameProjectScope(request.DocumentPath, document.DocumentPath)))
         {
             var referencesChangedPath = await _relatedDocumentResolver.ReferencesPathAsync(
                 document,

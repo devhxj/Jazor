@@ -154,6 +154,8 @@ const volarUnhandled = Symbol("volarUnhandled");
 async function main(): Promise<void> {
   const decoder = new TextDecoder();
   let buffered = "";
+  let writeChain = Promise.resolve();
+  const inFlightRequests = new Set<Promise<void>>();
 
   for await (const chunk of Deno.stdin.readable) {
     buffered += decoder.decode(chunk, { stream: true });
@@ -162,13 +164,25 @@ async function main(): Promise<void> {
       const line = buffered.slice(0, newlineIndex).trim();
       buffered = buffered.slice(newlineIndex + 1);
       if (line.length > 0) {
-        const response = await handleLine(line);
-        await Deno.stdout.write(encoder.encode(JSON.stringify(response) + "\n"));
+        const requestTask = handleLine(line)
+          .then((response) => {
+            writeChain = writeChain.then(() =>
+              Deno.stdout.write(encoder.encode(JSON.stringify(response) + "\n"))
+            );
+            return writeChain;
+          })
+          .finally(() => {
+            inFlightRequests.delete(requestTask);
+          });
+        inFlightRequests.add(requestTask);
       }
 
       newlineIndex = buffered.indexOf("\n");
     }
   }
+
+  await Promise.allSettled(Array.from(inFlightRequests));
+  await writeChain;
 }
 
 async function handleLine(line: string): Promise<ResponseEnvelope> {

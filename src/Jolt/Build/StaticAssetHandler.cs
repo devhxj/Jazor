@@ -45,7 +45,7 @@ internal sealed class StaticAssetHandler
         var assets = new List<AssetInfo>();
         var distDir = _context.OutDirectory;
 
-        await foreach (var assetPath in EnumerateFilesAsync(publicDir, ct))
+        foreach (var assetPath in EnumerateFiles(publicDir, ct))
         {
             ct.ThrowIfCancellationRequested();
 
@@ -229,9 +229,9 @@ internal sealed class StaticAssetHandler
     /// <summary>
     /// Enumerates files in a directory asynchronously.
     /// </summary>
-    private static async IAsyncEnumerable<string> EnumerateFilesAsync(
+    private static IEnumerable<string> EnumerateFiles(
         string directory,
-        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct)
+        CancellationToken ct)
     {
         var stack = new Stack<string>();
         stack.Push(directory);
@@ -252,9 +252,6 @@ internal sealed class StaticAssetHandler
             {
                 stack.Push(subDir);
             }
-
-            // Small delay to prevent blocking
-            await Task.Yield();
         }
     }
 

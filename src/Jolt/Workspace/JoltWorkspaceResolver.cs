@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
+using System.Xml;
+using System.Xml.Linq;
 using Jazor.VueContracts.Protocol;
 
 namespace Jolt.Workspace;
@@ -8,10 +10,14 @@ namespace Jolt.Workspace;
 internal static class JoltWorkspaceResolver
 {
     private const int MaxWorkspaceCacheEntries = 1000;
+    private const int MaxSolutionProjectRootCacheEntries = 128;
     private const int MaxPathSegmentDepth = 256;
     private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly object WorkspaceFileCacheSync = new();
     private static readonly Dictionary<string, long> WorkspaceFileCacheAges = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, string[]> SolutionProjectRootCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly object SolutionProjectRootCacheSync = new();
+    private static readonly Dictionary<string, long> SolutionProjectRootCacheAges = new(StringComparer.OrdinalIgnoreCase);
     private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
     private static readonly string[] WorkspaceBoundaryDirectories =
     [
@@ -34,6 +40,10 @@ internal static class JoltWorkspaceResolver
         "*.csproj",
         "*.fsproj",
         "*.vbproj"
+    ];
+    private static readonly string[] SolutionBoundaryProjectPatterns =
+    [
+        "*.slnx"
     ];
 
     public static IDisposable PushWorkspaceFolderRoots(IEnumerable<string> workspaceFolderRoots)
@@ -76,6 +86,11 @@ internal static class JoltWorkspaceResolver
             {
                 RemoveWorkspaceCacheEntry(cacheKey);
             }
+        }
+
+        if (IsProjectScopeDefinitionPath(normalizedPath))
+        {
+            InvalidateSolutionProjectRootCaches(normalizedPath);
         }
     }
 
@@ -432,11 +447,19 @@ internal static class JoltWorkspaceResolver
         out WorkspaceVueComponentResolution resolvedComponent)
     {
         var documentDirectory = Path.GetDirectoryName(documentPath);
-        var scopedWorkspaceRoot = TryGetScopedWorkspaceRootForDocument(documentPath);
+        // 跟踪态文档解析必须限制在当前项目内，否则同一个 Jolt 实例里
+        // 其他项目中同名的 Vue 组件会污染当前项目的解析结果。
+        var owningProjectRoot = TryGetOwningProjectRoot(documentPath);
+        if (Path.IsPathRooted(documentPath) && string.IsNullOrWhiteSpace(owningProjectRoot))
+        {
+            resolvedComponent = default;
+            return false;
+        }
+
         var tracked = openDocuments.FirstOrDefault(openDocument =>
             openDocument.DocumentKind == DocumentKind.Vue
-            && (scopedWorkspaceRoot is null
-                || IsPathWithinWorkspaceRoot(openDocument.DocumentPath, scopedWorkspaceRoot))
+            && (owningProjectRoot is null
+                || IsPathWithinWorkspaceRoot(openDocument.DocumentPath, owningProjectRoot))
             && string.Equals(
                 Path.GetFileNameWithoutExtension(openDocument.DocumentPath),
                 componentName,
@@ -464,11 +487,18 @@ internal static class JoltWorkspaceResolver
             yield break;
         }
 
-        var scopedWorkspaceRoot = TryGetScopedWorkspaceRootForDocument(documentPath);
+        // 这里会被补全和桥接逻辑复用，所以只能枚举当前项目内的打开文档，
+        // 不能把同 solution 下其他项目的 Vue 文件一起带进来。
+        var owningProjectRoot = TryGetOwningProjectRoot(documentPath);
+        if (Path.IsPathRooted(documentPath) && string.IsNullOrWhiteSpace(owningProjectRoot))
+        {
+            yield break;
+        }
+
         foreach (var openDocument in openDocuments.Where(candidate =>
                      candidate.DocumentKind == DocumentKind.Vue
-                     && (scopedWorkspaceRoot is null
-                         || IsPathWithinWorkspaceRoot(candidate.DocumentPath, scopedWorkspaceRoot))))
+                     && (owningProjectRoot is null
+                         || IsPathWithinWorkspaceRoot(candidate.DocumentPath, owningProjectRoot))))
         {
             var componentName = Path.GetFileNameWithoutExtension(openDocument.DocumentPath);
             if (string.IsNullOrWhiteSpace(componentName) || !char.IsUpper(componentName[0]))
@@ -548,6 +578,68 @@ internal static class JoltWorkspaceResolver
         return null;
     }
 
+    public static string? TryGetOwningProjectRoot(string documentPath)
+    {
+        if (string.IsNullOrWhiteSpace(documentPath) || !Path.IsPathRooted(documentPath))
+        {
+            return null;
+        }
+
+        var fullPath = Path.GetFullPath(documentPath);
+        var workspaceRoot = TryGetScopedWorkspaceRootForDocument(fullPath);
+        var solutionRoot = TryGetNearestSolutionRoot(fullPath, workspaceRoot);
+        if (!string.IsNullOrWhiteSpace(solutionRoot))
+        {
+            // `slnx` 是唯一认可的解决方案边界。先定位 solution，再把隐式发现
+            // 收敛到该 solution 中声明的 owning project。
+            if (TryFindContainingProjectRoot(fullPath, GetSolutionProjectRoots(solutionRoot), out var projectRoot))
+            {
+                return projectRoot;
+            }
+        }
+
+        return null;
+    }
+
+    public static string GetRequiredOwningProjectRoot(string documentPath)
+    {
+        var fullPath = Path.GetFullPath(documentPath);
+        var workspaceRoot = TryGetScopedWorkspaceRootForDocument(fullPath);
+        var solutionRoot = TryGetNearestSolutionRoot(fullPath, workspaceRoot);
+        if (string.IsNullOrWhiteSpace(solutionRoot))
+        {
+            throw new InvalidOperationException(
+                $"No solution .slnx was found for '{documentPath}'. Open the project from a solution directory that contains a .slnx file.");
+        }
+
+        if (TryFindContainingProjectRoot(fullPath, GetSolutionProjectRoots(solutionRoot), out var projectRoot))
+        {
+            return projectRoot;
+        }
+
+        throw new InvalidOperationException(
+            $"The file '{documentPath}' is not contained in any project declared by solution '{solutionRoot}'.");
+    }
+
+    public static bool IsInSameProjectScope(string primaryDocumentPath, string candidateDocumentPath)
+    {
+        if (!Path.IsPathRooted(primaryDocumentPath) || !Path.IsPathRooted(candidateDocumentPath))
+        {
+            return true;
+        }
+
+        var primaryProjectRoot = TryGetOwningProjectRoot(primaryDocumentPath);
+        if (string.IsNullOrWhiteSpace(primaryProjectRoot))
+        {
+            return string.Equals(
+                NormalizeComparablePath(primaryDocumentPath),
+                NormalizeComparablePath(candidateDocumentPath),
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        return IsPathWithinWorkspaceRoot(candidateDocumentPath, primaryProjectRoot);
+    }
+
     public static IEnumerable<WorkspaceVueComponentResolution> EnumerateWorkspaceVueComponents(
         string documentPath,
         IReadOnlyList<DocumentSnapshot> openDocuments,
@@ -589,6 +681,15 @@ internal static class JoltWorkspaceResolver
         string? secondaryDocumentPath,
         IReadOnlyList<DocumentSnapshot> openDocuments)
     {
+        if (Path.IsPathRooted(documentPath))
+        {
+            var owningProjectRoot = GetRequiredOwningProjectRoot(documentPath);
+            // 递归扫描是跨项目串扰的主要来源。这里直接返回 owning project 根，
+            // 让后续所有文件发现都天然落在项目范围内。
+            yield return owningProjectRoot;
+            yield break;
+        }
+
         var directories = CollectSearchDirectories(documentPath, secondaryDocumentPath, openDocuments);
         var workspaceFolderRoots = GetScopedWorkspaceFolderRoots();
         if (workspaceFolderRoots.Count > 0)
@@ -1112,6 +1213,48 @@ internal static class JoltWorkspaceResolver
         return FindContainingWorkspaceFolderRoot(documentDirectory, scopedRoots);
     }
 
+    private static string? TryGetNearestSolutionRoot(string documentPath, string? stopAtDirectory)
+    {
+        var current = Path.GetDirectoryName(Path.GetFullPath(documentPath));
+        if (string.IsNullOrWhiteSpace(current))
+        {
+            return null;
+        }
+
+        var normalizedStopAt = string.IsNullOrWhiteSpace(stopAtDirectory)
+            ? null
+            : NormalizeComparablePath(Path.GetFullPath(stopAtDirectory));
+        while (!string.IsNullOrWhiteSpace(current))
+        {
+            var normalizedCurrent = NormalizeComparablePath(current);
+            if (normalizedStopAt is not null && !PathMatchesOrContains(normalizedCurrent, normalizedStopAt))
+            {
+                break;
+            }
+
+            if (ContainsSolutionBoundaryMarker(current))
+            {
+                return Path.GetFullPath(current);
+            }
+
+            if (string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+
+            var parent = Directory.GetParent(current)?.FullName;
+            if (string.IsNullOrWhiteSpace(parent)
+                || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+
+            current = parent;
+        }
+
+        return null;
+    }
+
     private static bool IsPathWithinWorkspaceRoot(string path, string workspaceRoot)
     {
         if (string.IsNullOrWhiteSpace(path) || string.IsNullOrWhiteSpace(workspaceRoot))
@@ -1122,6 +1265,117 @@ internal static class JoltWorkspaceResolver
         return PathMatchesOrContains(
             NormalizeComparablePath(path),
             NormalizeComparablePath(workspaceRoot));
+    }
+
+    private static string[] GetSolutionProjectRoots(string solutionRoot)
+    {
+        var normalizedRoot = NormalizeComparablePath(Path.GetFullPath(solutionRoot));
+        if (!SolutionProjectRootCache.TryGetValue(normalizedRoot, out var roots))
+        {
+            roots = LoadSolutionProjectRoots(solutionRoot);
+            SetSolutionProjectRootCacheEntry(normalizedRoot, roots);
+        }
+        else
+        {
+            TouchSolutionProjectRootCacheEntry(normalizedRoot);
+        }
+
+        return roots;
+    }
+
+    private static string[] LoadSolutionProjectRoots(string solutionRoot)
+    {
+        if (!Directory.Exists(solutionRoot))
+        {
+            return [];
+        }
+
+        // 以 solution 根为粒度缓存项目目录，避免高频 LSP 请求反复解析 `slnx`。
+        var projectRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var solutionPath in SafeEnumerate(Directory.EnumerateFiles(solutionRoot, "*.slnx", SearchOption.TopDirectoryOnly)))
+        {
+            foreach (var projectRoot in ReadSlnxProjectRoots(solutionPath))
+            {
+                projectRoots.Add(projectRoot);
+            }
+        }
+
+        return projectRoots
+            .OrderBy(static root => root, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static IEnumerable<string> ReadSlnxProjectRoots(string solutionPath)
+    {
+        XDocument document;
+        try
+        {
+            using var stream = File.OpenRead(solutionPath);
+            using var reader = XmlReader.Create(stream, new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null
+            });
+            document = XDocument.Load(reader, LoadOptions.None);
+        }
+        catch (IOException)
+        {
+            yield break;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            yield break;
+        }
+        catch (XmlException)
+        {
+            yield break;
+        }
+
+        var solutionDirectory = Path.GetDirectoryName(Path.GetFullPath(solutionPath));
+        if (string.IsNullOrWhiteSpace(solutionDirectory))
+        {
+            yield break;
+        }
+
+        foreach (var project in document.Descendants().Where(static element => element.Name.LocalName == "Project"))
+        {
+            var projectPath = project.Attribute("Path")?.Value;
+            if (string.IsNullOrWhiteSpace(projectPath) || !IsDotNetProjectPath(projectPath))
+            {
+                continue;
+            }
+
+            var fullProjectPath = Path.GetFullPath(Path.Combine(solutionDirectory, projectPath));
+            var projectDirectory = Path.GetDirectoryName(fullProjectPath);
+            if (!string.IsNullOrWhiteSpace(projectDirectory))
+            {
+                yield return NormalizeComparablePath(projectDirectory);
+            }
+        }
+    }
+
+    private static bool TryFindContainingProjectRoot(
+        string documentPath,
+        IReadOnlyList<string> projectRoots,
+        out string projectRoot)
+    {
+        projectRoot = string.Empty;
+        var normalizedPath = NormalizeComparablePath(Path.GetFullPath(documentPath));
+        foreach (var candidateRoot in projectRoots)
+        {
+            var normalizedRoot = NormalizeComparablePath(candidateRoot);
+            if (!PathMatchesOrContains(normalizedPath, normalizedRoot))
+            {
+                continue;
+            }
+
+            if (projectRoot.Length == 0 || normalizedRoot.Length > projectRoot.Length)
+            {
+                projectRoot = normalizedRoot;
+            }
+        }
+
+        return projectRoot.Length > 0;
     }
 
     private static bool ContainsWorkspaceBoundaryMarker(string directoryPath)
@@ -1145,6 +1399,30 @@ internal static class JoltWorkspaceResolver
             }
 
             foreach (var searchPattern in WorkspaceBoundaryProjectPatterns)
+            {
+                if (Directory.EnumerateFiles(directoryPath, searchPattern, SearchOption.TopDirectoryOnly).Any())
+                {
+                    return true;
+                }
+            }
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool ContainsSolutionBoundaryMarker(string directoryPath)
+    {
+        try
+        {
+            foreach (var searchPattern in SolutionBoundaryProjectPatterns)
             {
                 if (Directory.EnumerateFiles(directoryPath, searchPattern, SearchOption.TopDirectoryOnly).Any())
                 {
@@ -1254,6 +1532,61 @@ internal static class JoltWorkspaceResolver
         lock (WorkspaceFileCacheSync)
         {
             WorkspaceFileCacheAges.Remove(cacheKey);
+        }
+    }
+
+    private static void SetSolutionProjectRootCacheEntry(string cacheKey, string[] projectRoots)
+    {
+        SolutionProjectRootCache[cacheKey] = projectRoots;
+        TouchSolutionProjectRootCacheEntry(cacheKey);
+
+        string[] keysToTrim;
+        lock (SolutionProjectRootCacheSync)
+        {
+            if (SolutionProjectRootCacheAges.Count <= MaxSolutionProjectRootCacheEntries)
+            {
+                return;
+            }
+
+            keysToTrim = SolutionProjectRootCacheAges
+                .OrderBy(static pair => pair.Value)
+                .Take(SolutionProjectRootCacheAges.Count - MaxSolutionProjectRootCacheEntries)
+                .Select(static pair => pair.Key)
+                .ToArray();
+
+            foreach (var key in keysToTrim)
+            {
+                SolutionProjectRootCacheAges.Remove(key);
+            }
+        }
+
+        foreach (var key in keysToTrim)
+        {
+            SolutionProjectRootCache.TryRemove(key, out _);
+        }
+    }
+
+    private static void TouchSolutionProjectRootCacheEntry(string cacheKey)
+    {
+        lock (SolutionProjectRootCacheSync)
+        {
+            SolutionProjectRootCacheAges[cacheKey] = Environment.TickCount64;
+        }
+    }
+
+    private static void InvalidateSolutionProjectRootCaches(string normalizedPath)
+    {
+        foreach (var cacheKey in SolutionProjectRootCache.Keys)
+        {
+            if (PathMatchesOrContains(normalizedPath, cacheKey)
+                || PathMatchesOrContains(cacheKey, normalizedPath))
+            {
+                SolutionProjectRootCache.TryRemove(cacheKey, out _);
+                lock (SolutionProjectRootCacheSync)
+                {
+                    SolutionProjectRootCacheAges.Remove(cacheKey);
+                }
+            }
         }
     }
 
@@ -1393,6 +1726,15 @@ internal static class JoltWorkspaceResolver
 
     private static string NormalizeComparablePath(string path)
         => NormalizePath(path).TrimEnd('/', '\\');
+
+    private static bool IsProjectScopeDefinitionPath(string path)
+        => IsDotNetProjectPath(path)
+            || path.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsDotNetProjectPath(string path)
+        => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase);
 
     private static string? GetParentDirectoryPath(string documentDirectory)
     {

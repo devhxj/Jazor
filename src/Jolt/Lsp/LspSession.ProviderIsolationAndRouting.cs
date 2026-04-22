@@ -213,7 +213,11 @@ internal sealed partial class LspSession
         }
 
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        foreach (var openDocument in openDocuments.Where(static candidate => candidate.DocumentKind == DocumentKind.Jazor))
+        // 前端文件变化后只刷新同项目的 Jazor 诊断，避免一个项目的 CSS/TS 变动
+        // 把兄弟项目的诊断也一起拉起来，造成并发争用和无关刷新。
+        foreach (var openDocument in openDocuments.Where(candidate =>
+                     candidate.DocumentKind == DocumentKind.Jazor
+                     && JoltWorkspaceResolver.IsInSameProjectScope(triggeringDocument.DocumentPath, candidate.DocumentPath)))
         {
             cancellationToken.ThrowIfCancellationRequested();
             await PublishDiagnosticsAsync(openDocument, cancellationToken);

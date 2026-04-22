@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +18,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
     private readonly DenoVolarHostOptions _options;
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
-    private readonly SemaphoreSlim _requestGate = new(1, 1);
+    private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -25,9 +26,13 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     };
     private readonly Lock _standardErrorGate = new();
     private readonly Queue<string> _standardErrorLines = [];
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<DenoFrontendResponseEnvelope>> _pendingResponses =
+        new(StringComparer.Ordinal);
     private Process? _process;
     private StreamWriter? _writer;
     private StreamReader? _reader;
+    private Task? _standardOutputPumpTask;
+    private CancellationTokenSource? _standardOutputPumpCancellationSource;
     private Task? _standardErrorPumpTask;
     private CancellationTokenSource? _standardErrorPumpCancellationSource;
     private string? _launchWorkingDirectory;
@@ -126,6 +131,10 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                 NewLine = "\n"
             };
             _reader = new StreamReader(_process.StandardOutput.BaseStream, Encoding.UTF8);
+            _standardOutputPumpCancellationSource = new CancellationTokenSource();
+            _standardOutputPumpTask = PumpStandardOutputAsync(
+                _reader,
+                _standardOutputPumpCancellationSource.Token);
             _standardErrorPumpCancellationSource = new CancellationTokenSource();
             _standardErrorPumpTask = PumpStandardErrorAsync(
                 _process.StandardError,
@@ -148,31 +157,47 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
         ThrowIfWorkerUnavailable();
 
-        await _requestGate.WaitAsync(cancellationToken);
+        var requestId = Guid.NewGuid().ToString("N");
+        var responseSource = new TaskCompletionSource<DenoFrontendResponseEnvelope>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (!_pendingResponses.TryAdd(requestId, responseSource))
+        {
+            throw new InvalidOperationException($"Failed to track Deno frontend worker request '{requestId}'.");
+        }
+
         try
         {
-            ThrowIfWorkerUnavailable();
-
             var request = new DenoFrontendRequestEnvelope
             {
-                Id = Guid.NewGuid().ToString("N"),
+                Id = requestId,
                 Method = method,
                 Payload = payload
             };
 
-            await _writer.WriteLineAsync(JsonSerializer.Serialize(request, _jsonOptions));
-            var responseLine = await _reader.ReadLineAsync(cancellationToken);
-            if (string.IsNullOrWhiteSpace(responseLine))
+            await _writeGate.WaitAsync(cancellationToken);
+            try
             {
-                throw new InvalidOperationException(
-                    $"Deno frontend worker returned no response for request '{method}'.{CreateStandardErrorSummarySuffix()}");
+                ThrowIfWorkerUnavailable();
+                await _writer.WriteLineAsync(JsonSerializer.Serialize(request, _jsonOptions));
+            }
+            catch
+            {
+                _pendingResponses.TryRemove(requestId, out _);
+                throw;
+            }
+            finally
+            {
+                _writeGate.Release();
             }
 
-            var response = JsonSerializer.Deserialize<DenoFrontendResponseEnvelope>(responseLine, _jsonOptions);
-            if (response is null)
+            DenoFrontendResponseEnvelope response;
+            try
             {
-                throw new InvalidOperationException(
-                    $"Deno frontend worker returned an invalid response for request '{method}'.{CreateStandardErrorSummarySuffix()}");
+                response = await responseSource.Task.WaitAsync(cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                _pendingResponses.TryRemove(requestId, out _);
+                throw;
             }
 
             if (!response.Success)
@@ -194,7 +219,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         }
         finally
         {
-            _requestGate.Release();
+            _pendingResponses.TryRemove(requestId, out _);
         }
     }
 
@@ -223,6 +248,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         await _lifecycleGate.WaitAsync(cancellationToken);
         try
         {
+            FailPendingResponses(CreateWorkerUnavailableException());
             if (_process is null)
             {
                 return;
@@ -238,6 +264,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             }
             finally
             {
+                await StopStandardOutputPumpAsync();
                 await StopStandardErrorPumpAsync();
                 _writer?.Dispose();
                 _writer = null;
@@ -251,6 +278,81 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         finally
         {
             _lifecycleGate.Release();
+        }
+    }
+
+    private async Task PumpStandardOutputAsync(
+        StreamReader standardOutputReader,
+        CancellationToken cancellationToken)
+    {
+        Exception? terminalFailure = null;
+        try
+        {
+            while (true)
+            {
+                string? line;
+                try
+                {
+                    line = await standardOutputReader.ReadLineAsync(cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (line is null)
+                {
+                    terminalFailure = CreateWorkerUnavailableException();
+                    break;
+                }
+
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                DenoFrontendResponseEnvelope? response;
+                try
+                {
+                    response = JsonSerializer.Deserialize<DenoFrontendResponseEnvelope>(line, _jsonOptions);
+                }
+                catch (JsonException ex)
+                {
+                    terminalFailure = new InvalidOperationException(
+                        $"Deno frontend worker returned an invalid response.{CreateStandardErrorSummarySuffix()}",
+                        ex);
+                    break;
+                }
+
+                if (response is null || string.IsNullOrWhiteSpace(response.Id))
+                {
+                    terminalFailure = new InvalidOperationException(
+                        $"Deno frontend worker returned an invalid response.{CreateStandardErrorSummarySuffix()}");
+                    break;
+                }
+
+                if (_pendingResponses.TryRemove(response.Id, out var pendingResponse))
+                {
+                    pendingResponse.TrySetResult(response);
+                }
+            }
+        }
+        catch (IOException ex)
+        {
+            terminalFailure = new InvalidOperationException(
+                $"Deno frontend worker output stream failed.{CreateStandardErrorSummarySuffix()}",
+                ex);
+        }
+        catch (ObjectDisposedException ex)
+        {
+            terminalFailure = new InvalidOperationException(
+                $"Deno frontend worker output stream was disposed unexpectedly.{CreateStandardErrorSummarySuffix()}",
+                ex);
+        }
+
+        if (terminalFailure is not null)
+        {
+            FailPendingResponses(terminalFailure);
         }
     }
 
@@ -294,6 +396,38 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         var pumpTask = _standardErrorPumpTask;
         _standardErrorPumpCancellationSource = null;
         _standardErrorPumpTask = null;
+
+        if (pumpCancellationSource is not null)
+        {
+            try
+            {
+                pumpCancellationSource.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        if (pumpTask is not null)
+        {
+            try
+            {
+                await pumpTask;
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        pumpCancellationSource?.Dispose();
+    }
+
+    private async ValueTask StopStandardOutputPumpAsync()
+    {
+        var pumpCancellationSource = _standardOutputPumpCancellationSource;
+        var pumpTask = _standardOutputPumpTask;
+        _standardOutputPumpCancellationSource = null;
+        _standardOutputPumpTask = null;
 
         if (pumpCancellationSource is not null)
         {
@@ -379,6 +513,28 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         }
     }
 
+    private InvalidOperationException CreateWorkerUnavailableException()
+    {
+        if (_process is { HasExited: true } exitedProcess)
+        {
+            return new InvalidOperationException(
+                $"Deno frontend worker exited unexpectedly with code {exitedProcess.ExitCode}.{CreateStandardErrorSummarySuffix()}");
+        }
+
+        return new InvalidOperationException($"Deno frontend worker is not running.{CreateStandardErrorSummarySuffix()}");
+    }
+
+    private void FailPendingResponses(Exception exception)
+    {
+        foreach (var pendingResponse in _pendingResponses)
+        {
+            if (_pendingResponses.TryRemove(pendingResponse.Key, out var responseSource))
+            {
+                responseSource.TrySetException(exception);
+            }
+        }
+    }
+
     private string? ResolveLaunchWorkingDirectory()
     {
         if (string.IsNullOrWhiteSpace(_options.WorkingDirectory))
@@ -404,6 +560,14 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             return configuredWorkingDirectory;
         }
 
+        if (HasReadyWorkerNodeModules(normalizedWorkerDirectory))
+        {
+            // Bundled workers can carry a ready node_modules tree. Keep that
+            // directory as the config root so Deno resolves npm specifiers
+            // against the packaged dependencies instead of an empty temp root.
+            return configuredWorkingDirectory;
+        }
+
         if (!string.IsNullOrWhiteSpace(_launchWorkingDirectory))
         {
             return _launchWorkingDirectory;
@@ -420,6 +584,13 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         RegisterLaunchWorkspaceForCleanup(launchWorkspaceDirectory);
         _launchWorkingDirectory = launchWorkspaceDirectory;
         return launchWorkspaceDirectory;
+    }
+
+    private static bool HasReadyWorkerNodeModules(string workerDirectory)
+    {
+        var nodeModulesDirectory = Path.Combine(workerDirectory, "node_modules");
+        return Directory.Exists(Path.Combine(nodeModulesDirectory, "@volar"))
+            && Directory.Exists(Path.Combine(nodeModulesDirectory, "@vue"));
     }
 
     private static void CopyWorkerConfigurationFiles(
@@ -500,18 +671,27 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
     private static void TryDeleteLaunchWorkspace(string launchWorkspaceDirectory)
     {
-        try
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            if (Directory.Exists(launchWorkspaceDirectory))
+            try
             {
+                if (!Directory.Exists(launchWorkspaceDirectory))
+                {
+                    return;
+                }
+
                 Directory.Delete(launchWorkspaceDirectory, recursive: true);
+                return;
             }
-        }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(50 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(50 * attempt);
+            }
         }
     }
 }
