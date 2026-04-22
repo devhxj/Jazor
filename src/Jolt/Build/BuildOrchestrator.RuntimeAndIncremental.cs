@@ -11,6 +11,10 @@ namespace Jolt.Build;
 
 internal sealed partial class BuildOrchestrator
 {
+    internal sealed record IncrementalInputSnapshot(
+        IReadOnlyDictionary<string, string> Inputs,
+        bool HasReadFailure);
+
     private static readonly Lazy<string> CachedDenoHostBaseDirectory = new(ResolveDenoHostBaseDirectoryCore);
 
     /// <summary>
@@ -318,9 +322,10 @@ internal sealed partial class BuildOrchestrator
 
     private static async Task AppendProjectLegacyImportDiagnosticsAsync(
         BuildContext context,
+        IReadOnlyList<string> incrementalInputFiles,
         CancellationToken cancellationToken)
     {
-        foreach (var filePath in EnumerateIncrementalInputFiles(context))
+        foreach (var filePath in incrementalInputFiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!string.Equals(Path.GetExtension(filePath), ".jazor", StringComparison.OrdinalIgnoreCase))
@@ -405,30 +410,63 @@ internal sealed partial class BuildOrchestrator
     }
 
     internal static IReadOnlyDictionary<string, string> CollectIncrementalInputSignatures(BuildContext context)
+        => CollectIncrementalInputSnapshot(context).Inputs;
+
+    internal static IReadOnlyDictionary<string, string> CollectIncrementalInputSignatures(
+        BuildContext context,
+        IReadOnlyList<string> incrementalInputFiles)
+        => CollectIncrementalInputSnapshot(context, incrementalInputFiles).Inputs;
+
+    internal static IncrementalInputSnapshot CollectIncrementalInputSnapshot(BuildContext context)
+        => CollectIncrementalInputSnapshot(context, CollectIncrementalInputFiles(context));
+
+    internal static IncrementalInputSnapshot CollectIncrementalInputSnapshot(
+        BuildContext context,
+        IReadOnlyList<string> incrementalInputFiles)
     {
         var inputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var filePath in EnumerateIncrementalInputFiles(context))
+        var hasReadFailure = false;
+        foreach (var filePath in incrementalInputFiles)
         {
             try
             {
                 var fileInfo = new FileInfo(filePath);
                 var relativePath = Path.GetRelativePath(context.RootDirectory, filePath).Replace('\\', '/');
-                var signature = fileInfo.Length.ToString(CultureInfo.InvariantCulture)
-                    + "|"
-                    + fileInfo.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture);
-                inputs[relativePath] = signature;
+                inputs[relativePath] = ComputeIncrementalInputSignature(fileInfo);
             }
             catch (IOException)
             {
+                hasReadFailure = true;
                 // Skip transiently inaccessible files. A subsequent build run will re-evaluate.
             }
             catch (UnauthorizedAccessException)
             {
+                hasReadFailure = true;
                 // Skip inaccessible files. Fingerprint remains stable for accessible inputs.
             }
         }
 
-        return inputs;
+        return new IncrementalInputSnapshot(inputs, hasReadFailure);
+    }
+
+    private static string ComputeIncrementalInputSignature(FileInfo fileInfo)
+    {
+        // 不能只依赖长度和 mtime：某些同步工具/编辑器会保留元数据，
+        // 如果缺少内容哈希，生产构建可能错误复用旧产物。
+        using var stream = new FileStream(
+            fileInfo.FullName,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            bufferSize: 64 * 1024,
+            FileOptions.SequentialScan);
+        using var sha256 = SHA256.Create();
+        var contentHash = Convert.ToHexString(sha256.ComputeHash(stream));
+        return fileInfo.Length.ToString(CultureInfo.InvariantCulture)
+            + "|"
+            + fileInfo.LastWriteTimeUtc.Ticks.ToString(CultureInfo.InvariantCulture)
+            + "|"
+            + contentHash;
     }
 
     internal static string ComputeIncrementalFingerprint(
@@ -504,6 +542,9 @@ internal sealed partial class BuildOrchestrator
         return builder.ToString();
     }
 
+    private static IReadOnlyList<string> CollectIncrementalInputFiles(BuildContext context)
+        => EnumerateIncrementalInputFiles(context).ToArray();
+
     private static IEnumerable<string> EnumerateIncrementalInputFiles(BuildContext context)
     {
         var rootDirectory = Path.GetFullPath(context.RootDirectory);
@@ -547,7 +588,13 @@ internal sealed partial class BuildOrchestrator
 
             foreach (var childDirectory in childDirectories)
             {
-                pendingDirectories.Push(Path.GetFullPath(childDirectory));
+                var fullChildDirectory = Path.GetFullPath(childDirectory);
+                if (!ShouldTraverseIncrementalDirectory(rootDirectory, fullChildDirectory))
+                {
+                    continue;
+                }
+
+                pendingDirectories.Push(fullChildDirectory);
             }
 
             string[] files;
@@ -575,13 +622,69 @@ internal sealed partial class BuildOrchestrator
     }
 
     private static bool IsIgnoredIncrementalDirectory(string? directoryName)
+        // 这些目录属于工具缓存、测试结果或构建产物，不应该参与业务输入指纹。
         => string.Equals(directoryName, ".git", StringComparison.OrdinalIgnoreCase)
             || string.Equals(directoryName, ".jazor", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".omx", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".omc", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".dotnet", StringComparison.OrdinalIgnoreCase)
             || string.Equals(directoryName, "node_modules", StringComparison.OrdinalIgnoreCase)
             || string.Equals(directoryName, ".vs", StringComparison.OrdinalIgnoreCase)
             || string.Equals(directoryName, ".idea", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, "TestResults", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".test-results", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".tmp", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(directoryName, ".verify", StringComparison.OrdinalIgnoreCase)
+            || directoryName?.StartsWith(".artifacts", StringComparison.OrdinalIgnoreCase) == true
+            || directoryName?.StartsWith(".dotnet-out", StringComparison.OrdinalIgnoreCase) == true
+            || directoryName?.StartsWith(".dotnet-obj", StringComparison.OrdinalIgnoreCase) == true
             || string.Equals(directoryName, "bin", StringComparison.OrdinalIgnoreCase)
             || string.Equals(directoryName, "obj", StringComparison.OrdinalIgnoreCase);
+
+    internal static bool ShouldTraverseIncrementalDirectory(
+        string rootDirectory,
+        string candidateDirectory,
+        FileAttributes attributes)
+    {
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidateDirectory = Path.GetFullPath(candidateDirectory);
+        if (!IsInsideRoot(fullRootDirectory, fullCandidateDirectory))
+        {
+            return false;
+        }
+
+        // 不跟随 reparse point，避免把仓库外目录或循环链接带进生产构建扫描。
+        return (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    private static bool ShouldTraverseIncrementalDirectory(
+        string rootDirectory,
+        string candidateDirectory)
+    {
+        try
+        {
+            return ShouldTraverseIncrementalDirectory(
+                rootDirectory,
+                candidateDirectory,
+                File.GetAttributes(candidateDirectory));
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     private static bool ShouldIncludeIncrementalInputFile(
         string rootDirectory,
@@ -589,12 +692,7 @@ internal sealed partial class BuildOrchestrator
         string filePath)
     {
         var fullPath = Path.GetFullPath(filePath);
-        if (!File.Exists(fullPath))
-        {
-            return false;
-        }
-
-        if (string.Equals(Path.GetDirectoryName(fullPath), outDirectory, FilePathComparison))
+        if (IsInsideRoot(outDirectory, fullPath))
         {
             return false;
         }
@@ -621,7 +719,20 @@ internal sealed partial class BuildOrchestrator
         [NotNullWhen(true)] out BuildIncrementalState? state)
     {
         state = null;
-        var statePath = Path.Combine(context.OutDirectory, IncrementalStateFileName);
+        string statePath;
+        try
+        {
+            statePath = EnsureTrustedBuildOutputPath(
+                context.RootDirectory,
+                context.OutDirectory,
+                Path.Combine(context.OutDirectory, IncrementalStateFileName),
+                allowMissingLeaf: true);
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+
         if (!File.Exists(statePath))
         {
             return false;
@@ -663,7 +774,7 @@ internal sealed partial class BuildOrchestrator
         BuildContext context,
         BuildIncrementalState state)
     {
-        if (!IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, state.ManifestPath)))
+        if (!TryResolveTrustedIncrementalOutputPath(context, state.ManifestPath, out _))
         {
             return false;
         }
@@ -671,13 +782,13 @@ internal sealed partial class BuildOrchestrator
         foreach (var chunk in state.Chunks)
         {
             if (string.IsNullOrWhiteSpace(chunk.FilePath)
-                || !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, chunk.FilePath)))
+                || !TryResolveTrustedIncrementalOutputPath(context, chunk.FilePath, out _))
             {
                 return false;
             }
 
             if (!string.IsNullOrWhiteSpace(chunk.SourceMapPath)
-                && !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, chunk.SourceMapPath!)))
+                && !TryResolveTrustedIncrementalOutputPath(context, chunk.SourceMapPath!, out _))
             {
                 return false;
             }
@@ -686,19 +797,48 @@ internal sealed partial class BuildOrchestrator
         foreach (var asset in state.CssAssets.Concat(state.StaticAssets))
         {
             if (string.IsNullOrWhiteSpace(asset.FilePath)
-                || !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, asset.FilePath)))
+                || !TryResolveTrustedIncrementalOutputPath(context, asset.FilePath, out _))
             {
                 return false;
             }
 
             if (!string.IsNullOrWhiteSpace(asset.SourceMapPath)
-                && !IsReadableFilePresent(ResolveAbsolutePath(context.RootDirectory, asset.SourceMapPath!)))
+                && !TryResolveTrustedIncrementalOutputPath(context, asset.SourceMapPath!, out _))
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static bool TryResolveTrustedIncrementalOutputPath(
+        BuildContext context,
+        string path,
+        [NotNullWhen(true)] out string? absolutePath)
+    {
+        try
+        {
+            // 增量状态文件属于内部缓存，命中前必须确认路径仍然落在当前输出目录内，
+            // 不能因为状态文件被篡改或污染而信任仓库外/输出目录外的文件。
+            absolutePath = ResolveTrustedBuildOutputPath(context, path);
+            return IsReadableFilePresent(absolutePath);
+        }
+        catch (ArgumentException)
+        {
+            absolutePath = null;
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            absolutePath = null;
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            absolutePath = null;
+            return false;
+        }
     }
 
     private static async Task<BuildResult?> TryBuildHtmlRefreshIncrementalResultAsync(
@@ -818,7 +958,11 @@ internal sealed partial class BuildOrchestrator
             StaticAssets = buildResult.StaticAssets,
             TotalSize = buildResult.TotalSize
         };
-        var statePath = Path.Combine(context.OutDirectory, IncrementalStateFileName);
+        var statePath = EnsureTrustedBuildOutputPath(
+            context.RootDirectory,
+            context.OutDirectory,
+            Path.Combine(context.OutDirectory, IncrementalStateFileName),
+            allowMissingLeaf: true);
         var stateJson = JsonSerializer.Serialize(
             state,
             new JsonSerializerOptions
@@ -872,12 +1016,17 @@ internal sealed partial class BuildOrchestrator
                 $"Resolved build output directory '{outDirectory}' must stay inside project root '{rootDirectory}' and cannot point at the project root itself.");
         }
 
-        if (Directory.Exists(outDirectory))
+        var trustedOutDirectory = EnsureTrustedBuildOutputPath(
+            rootDirectory,
+            rootDirectory,
+            outDirectory,
+            allowMissingLeaf: true);
+        if (Directory.Exists(trustedOutDirectory))
         {
-            Directory.Delete(outDirectory, recursive: true);
+            Directory.Delete(trustedOutDirectory, recursive: true);
         }
 
-        Directory.CreateDirectory(outDirectory);
+        Directory.CreateDirectory(trustedOutDirectory);
     }
 
     private static bool IsInsideRoot(string rootDirectory, string candidatePath)
@@ -893,13 +1042,128 @@ internal sealed partial class BuildOrchestrator
     private static string ResolveEntryRequestPath(string rootDirectory, string entryPointPath)
         => "/" + Path.GetRelativePath(rootDirectory, entryPointPath).Replace('\\', '/');
 
-    private static string ToHtmlPath(BuildContext context, string rootRelativePath)
+    internal static bool IsTrustedBuildOutputPath(
+        string rootDirectory,
+        string candidatePath,
+        FileAttributes attributes)
+    {
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        return IsInsideRoot(fullRootDirectory, fullCandidatePath)
+            && (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    private static string ResolveTrustedBuildOutputPath(
+        BuildContext context,
+        string rootRelativePath,
+        bool requireInsideAssetsDirectory = false,
+        bool allowMissingLeaf = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootRelativePath);
 
         var absolutePath = Path.GetFullPath(Path.Combine(
             context.RootDirectory,
             rootRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        return EnsureTrustedBuildOutputPath(
+            context.RootDirectory,
+            requireInsideAssetsDirectory ? context.AssetsDirectory : context.OutDirectory,
+            absolutePath,
+            allowMissingLeaf);
+    }
+
+    private static string EnsureTrustedBuildOutputPath(
+        string rootDirectory,
+        string boundaryDirectory,
+        string candidatePath,
+        bool allowMissingLeaf = false)
+    {
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullBoundaryDirectory = Path.GetFullPath(boundaryDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        if (!IsInsideRoot(fullRootDirectory, fullBoundaryDirectory))
+        {
+            throw new InvalidOperationException(
+                $"Resolved build output boundary '{fullBoundaryDirectory}' must stay inside project root '{fullRootDirectory}'.");
+        }
+
+        if (!IsInsideRoot(fullBoundaryDirectory, fullCandidatePath))
+        {
+            throw new InvalidOperationException(
+                $"Resolved build output '{fullCandidatePath}' must stay inside trusted output boundary '{fullBoundaryDirectory}'.");
+        }
+
+        var inspectionPath = GetExistingBuildOutputTrustInspectionPath(fullCandidatePath, allowMissingLeaf);
+        while (!string.IsNullOrWhiteSpace(inspectionPath))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(inspectionPath);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Build output path '{fullCandidatePath}' became unavailable while validating '{inspectionPath}'.",
+                    ex);
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Build output path '{fullCandidatePath}' became unavailable while validating '{inspectionPath}'.",
+                    ex);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Build output path '{fullCandidatePath}' could not be validated because '{inspectionPath}' is not readable.",
+                    ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Build output path '{fullCandidatePath}' could not be validated because '{inspectionPath}' is not accessible.",
+                    ex);
+            }
+
+            // 生产构建只接受“仍在项目根目录内，且链路上不存在 reparse point”的输出路径。
+            if (!IsTrustedBuildOutputPath(fullRootDirectory, inspectionPath, attributes))
+            {
+                throw new InvalidOperationException(
+                    $"Build output path '{fullCandidatePath}' traverses an untrusted reparse point inside project root '{fullRootDirectory}'.");
+            }
+
+            if (string.Equals(inspectionPath, fullRootDirectory, FilePathComparison))
+            {
+                return fullCandidatePath;
+            }
+
+            inspectionPath = GetContainingDirectoryPath(inspectionPath);
+        }
+
+        throw new InvalidOperationException(
+            $"Build output path '{fullCandidatePath}' could not be validated within project root '{fullRootDirectory}'.");
+    }
+
+    private static string GetExistingBuildOutputTrustInspectionPath(
+        string candidatePath,
+        bool allowMissingLeaf)
+    {
+        if (File.Exists(candidatePath) || Directory.Exists(candidatePath))
+        {
+            return candidatePath;
+        }
+
+        if (!allowMissingLeaf)
+        {
+            throw new FileNotFoundException($"Build output '{candidatePath}' was not found.", candidatePath);
+        }
+
+        return GetContainingDirectoryPath(candidatePath);
+    }
+
+    private static string ToHtmlPath(BuildContext context, string rootRelativePath)
+    {
+        var absolutePath = ResolveTrustedBuildOutputPath(context, rootRelativePath);
         var relativePath = Path.GetRelativePath(context.OutDirectory, absolutePath).Replace('\\', '/');
         return relativePath.StartsWith("./", StringComparison.Ordinal)
             ? relativePath[2..]
@@ -908,16 +1172,26 @@ internal sealed partial class BuildOrchestrator
 
     private static long GetAssetSize(BuildContext context, string rootRelativePath)
     {
-        var absolutePath = Path.Combine(
-            context.RootDirectory,
-            rootRelativePath.Replace('/', Path.DirectorySeparatorChar));
         try
         {
+            var absolutePath = ResolveTrustedBuildOutputPath(context, rootRelativePath);
             return File.Exists(absolutePath)
                 ? new FileInfo(absolutePath).Length
                 : 0;
         }
+        catch (ArgumentException)
+        {
+            return 0;
+        }
         catch (IOException)
+        {
+            return 0;
+        }
+        catch (InvalidOperationException)
+        {
+            return 0;
+        }
+        catch (NotSupportedException)
         {
             return 0;
         }

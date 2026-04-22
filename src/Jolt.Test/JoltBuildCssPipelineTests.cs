@@ -1111,6 +1111,45 @@ public sealed class JoltBuildCssPipelineTests
         }
     }
 
+    [TestMethod]
+    public void BuildOrchestrator_TryReadSourceMapContent_WhenFileIsLocked_ReturnsFalseInsteadOfThrowing()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var sourcePath = Path.Combine(tempDir, "locked.css");
+            File.WriteAllText(sourcePath, ".app { color: red; }");
+
+            var method = typeof(BuildOrchestrator).GetMethod(
+                "TryReadSourceMapContent",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method, "Expected to locate BuildOrchestrator.TryReadSourceMapContent.");
+
+            using var lockHandle = new FileStream(
+                sourcePath,
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.None);
+
+            object?[] args =
+            [
+                sourcePath,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                null
+            ];
+
+            var result = method.Invoke(null, args);
+
+            Assert.IsInstanceOfType<bool>(result);
+            Assert.IsFalse((bool)result);
+            Assert.AreEqual(string.Empty, args[2] as string);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
     private static async Task<BuildResult> BuildWithLazyChunkRetryAsync(
         BuildOrchestrator orchestrator,
         BuildOptions options,

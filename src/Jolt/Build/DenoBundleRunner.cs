@@ -47,6 +47,8 @@ internal sealed class DenoBundleRunner
 
         var assetsDirectory = _context.AssetsDirectory;
         Directory.CreateDirectory(assetsDirectory);
+        // 产物目录一旦落在 reparse point 上，后续删除和重写就可能穿出 dist 边界。
+        EnsureTrustedBundleOutputPath(assetsDirectory, assetsDirectory);
 
         await using var bundlerProxy = await BundlerModuleProxyServer.StartAsync(entryUri, cancellationToken);
         var bundlerEntryUri = bundlerProxy.CreateBundlerEntryUri(entryUri);
@@ -305,28 +307,84 @@ internal sealed class DenoBundleRunner
             return [];
         }
 
+        var fullAssetsDirectory = Path.GetFullPath(assetsDirectory);
+        var stack = new Stack<string>();
+        var snapshots = new List<OutputFileSnapshot>();
+        stack.Push(fullAssetsDirectory);
+
+        while (stack.Count > 0)
+        {
+            var currentDirectory = stack.Pop();
+
+            foreach (var filePath in SafeEnumerate(() => Directory.EnumerateFiles(currentDirectory, searchPattern)))
+            {
+                // 输出快照只有在“完整且可信”时才参与稳定性判断，避免把越界或半成品文件当成合法 bundle 结果。
+                if (!TryCaptureOutputFileSnapshot(fullAssetsDirectory, filePath, out var snapshot))
+                {
+                    return [];
+                }
+
+                snapshots.Add(snapshot);
+            }
+
+            foreach (var subDirectory in SafeEnumerate(() => Directory.EnumerateDirectories(currentDirectory)))
+            {
+                var fullSubDirectory = Path.GetFullPath(subDirectory);
+                if (!ShouldTraverseBundleOutputDirectory(fullAssetsDirectory, fullSubDirectory))
+                {
+                    continue;
+                }
+
+                stack.Push(fullSubDirectory);
+            }
+        }
+
+        return snapshots
+            .OrderBy(static snapshot => snapshot.FilePath, PathComparer)
+            .ToArray();
+    }
+
+    private static bool TryCaptureOutputFileSnapshot(
+        string assetsDirectory,
+        string filePath,
+        out OutputFileSnapshot snapshot)
+    {
+        snapshot = default;
+
         try
         {
-            return Directory.EnumerateFiles(assetsDirectory, searchPattern, SearchOption.AllDirectories)
-                .Select(Path.GetFullPath)
-                .OrderBy(static path => path, PathComparer)
-                .Select(path =>
-                {
-                    var fileInfo = new FileInfo(path);
-                    return new OutputFileSnapshot(
-                        path,
-                        fileInfo.Exists ? fileInfo.Length : 0,
-                        fileInfo.Exists ? fileInfo.LastWriteTimeUtc.Ticks : 0);
-                })
-                .ToArray();
+            var trustedPath = EnsureTrustedBundleOutputPath(assetsDirectory, filePath);
+            var fileInfo = new FileInfo(trustedPath);
+            if (!fileInfo.Exists)
+            {
+                return false;
+            }
+
+            snapshot = new OutputFileSnapshot(
+                trustedPath,
+                fileInfo.Length,
+                fileInfo.LastWriteTimeUtc.Ticks);
+            return true;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
         }
         catch (IOException)
         {
-            return [];
+            return false;
         }
         catch (UnauthorizedAccessException)
         {
-            return [];
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
         }
     }
 
@@ -388,32 +446,40 @@ internal sealed class DenoBundleRunner
         string provisionalEntryOutputPath,
         CancellationToken cancellationToken)
     {
+        var trustedAssetsDirectory = Path.GetFullPath(_context.AssetsDirectory);
+        var trustedEntryOutputPath = EnsureTrustedBundleOutputPath(trustedAssetsDirectory, provisionalEntryOutputPath);
         var bundleFiles = new List<ProvisionalBundleFile>(provisionalOutputPaths.Count);
         foreach (var provisionalOutputPath in provisionalOutputPaths.OrderBy(static path => path, PathComparer))
         {
-            var jsContent = await File.ReadAllTextAsync(provisionalOutputPath, cancellationToken);
-            var hashedFileName = CreateHashedFileName(provisionalOutputPath, jsContent);
-            var hashedOutputPath = Path.Combine(GetContainingDirectoryPath(provisionalOutputPath), hashedFileName);
-            var sourceMapPath = provisionalOutputPath + ".map";
-            var hashedSourceMapPath = File.Exists(sourceMapPath)
-                ? hashedOutputPath + ".map"
+            var trustedOutputPath = EnsureTrustedBundleOutputPath(trustedAssetsDirectory, provisionalOutputPath);
+            var jsContent = await File.ReadAllTextAsync(trustedOutputPath, cancellationToken);
+            var hashedFileName = CreateHashedFileName(trustedOutputPath, jsContent);
+            var hashedOutputPath = EnsureTrustedBundleOutputPath(
+                trustedAssetsDirectory,
+                Path.Combine(GetContainingDirectoryPath(trustedOutputPath), hashedFileName),
+                allowMissingLeaf: true);
+            var sourceMapPath = trustedOutputPath + ".map";
+            var trustedSourceMapPath = File.Exists(sourceMapPath)
+                ? EnsureTrustedBundleOutputPath(trustedAssetsDirectory, sourceMapPath)
                 : null;
+            var hashedSourceMapPath = trustedSourceMapPath is null
+                ? null
+                : EnsureTrustedBundleOutputPath(
+                    trustedAssetsDirectory,
+                    hashedOutputPath + ".map",
+                    allowMissingLeaf: true);
 
             bundleFiles.Add(new ProvisionalBundleFile
             {
-                OriginalPath = Path.GetFullPath(provisionalOutputPath),
-                HashedPath = Path.GetFullPath(hashedOutputPath),
+                OriginalPath = trustedOutputPath,
+                HashedPath = hashedOutputPath,
                 HashedFileName = hashedFileName,
                 OriginalContent = jsContent,
-                OriginalSourceMapPath = File.Exists(sourceMapPath)
-                    ? Path.GetFullPath(sourceMapPath)
-                    : null,
-                HashedSourceMapPath = hashedSourceMapPath is null
-                    ? null
-                    : Path.GetFullPath(hashedSourceMapPath),
+                OriginalSourceMapPath = trustedSourceMapPath,
+                HashedSourceMapPath = hashedSourceMapPath,
                 IsEntry = string.Equals(
-                    Path.GetFullPath(provisionalOutputPath),
-                    Path.GetFullPath(provisionalEntryOutputPath),
+                    trustedOutputPath,
+                    trustedEntryOutputPath,
                     PathComparison)
             });
         }
@@ -431,13 +497,13 @@ internal sealed class DenoBundleRunner
 
         foreach (var bundleFile in bundleFiles)
         {
-            await WriteFinalChunkAsync(bundleFile, cancellationToken);
+            await WriteFinalChunkAsync(trustedAssetsDirectory, bundleFile, cancellationToken);
         }
 
         foreach (var bundleFile in bundleFiles)
         {
-            DeleteIfExists(bundleFile.OriginalPath);
-            DeleteIfExists(bundleFile.OriginalSourceMapPath);
+            DeleteIfExists(trustedAssetsDirectory, bundleFile.OriginalPath);
+            DeleteIfExists(trustedAssetsDirectory, bundleFile.OriginalSourceMapPath);
         }
 
         return bundleFiles
@@ -514,19 +580,25 @@ internal sealed class DenoBundleRunner
             && specifier.EndsWith(".js", StringComparison.OrdinalIgnoreCase);
 
     private static async Task WriteFinalChunkAsync(
+        string assetsDirectory,
         ProvisionalBundleFile bundleFile,
         CancellationToken cancellationToken)
     {
-        if (File.Exists(bundleFile.HashedPath))
+        var trustedHashedPath = EnsureTrustedBundleOutputPath(
+            assetsDirectory,
+            bundleFile.HashedPath,
+            allowMissingLeaf: true);
+        if (File.Exists(trustedHashedPath))
         {
-            File.Delete(bundleFile.HashedPath);
+            DeleteIfExists(assetsDirectory, trustedHashedPath);
         }
 
-        await File.WriteAllTextAsync(bundleFile.HashedPath, bundleFile.RewrittenContent, cancellationToken);
+        await File.WriteAllTextAsync(trustedHashedPath, bundleFile.RewrittenContent, cancellationToken);
 
         if (bundleFile.OriginalSourceMapPath is not null && bundleFile.HashedSourceMapPath is not null)
         {
             await RewriteSourceMapAsync(
+                assetsDirectory,
                 bundleFile.OriginalSourceMapPath,
                 bundleFile.HashedSourceMapPath,
                 bundleFile.HashedFileName,
@@ -535,22 +607,28 @@ internal sealed class DenoBundleRunner
     }
 
     private static async Task RewriteSourceMapAsync(
+        string assetsDirectory,
         string originalSourceMapPath,
         string hashedSourceMapPath,
         string hashedFileName,
         CancellationToken cancellationToken)
     {
-        using var sourceMapDocument = JsonDocument.Parse(await File.ReadAllTextAsync(originalSourceMapPath, cancellationToken));
+        var trustedOriginalSourceMapPath = EnsureTrustedBundleOutputPath(assetsDirectory, originalSourceMapPath);
+        var trustedHashedSourceMapPath = EnsureTrustedBundleOutputPath(
+            assetsDirectory,
+            hashedSourceMapPath,
+            allowMissingLeaf: true);
+        using var sourceMapDocument = JsonDocument.Parse(await File.ReadAllTextAsync(trustedOriginalSourceMapPath, cancellationToken));
         var sourceMapObject = JsonSerializer.Deserialize<Dictionary<string, object?>>(sourceMapDocument.RootElement.GetRawText())
             ?? new Dictionary<string, object?>(StringComparer.Ordinal);
         sourceMapObject["file"] = hashedFileName;
 
-        if (File.Exists(hashedSourceMapPath))
+        if (File.Exists(trustedHashedSourceMapPath))
         {
-            File.Delete(hashedSourceMapPath);
+            DeleteIfExists(assetsDirectory, trustedHashedSourceMapPath);
         }
 
-        await File.WriteAllTextAsync(hashedSourceMapPath, JsonSerializer.Serialize(sourceMapObject), cancellationToken);
+        await File.WriteAllTextAsync(trustedHashedSourceMapPath, JsonSerializer.Serialize(sourceMapObject), cancellationToken);
     }
 
     private string CreateHashedFileName(string provisionalOutputPath, string content)
@@ -610,11 +688,13 @@ internal sealed class DenoBundleRunner
         }
     }
 
-    private static void DeleteIfExists(string? path)
+    private static void DeleteIfExists(
+        string assetsDirectory,
+        string? path)
     {
         if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
         {
-            File.Delete(path);
+            File.Delete(EnsureTrustedBundleOutputPath(assetsDirectory, path));
         }
     }
 
@@ -631,42 +711,49 @@ internal sealed class DenoBundleRunner
             return [];
         }
 
+        var trustedAssetsDirectory = Path.GetFullPath(_context.AssetsDirectory);
         var cssFiles = new List<ProvisionalCssFile>(provisionalOutputPaths.Length);
         foreach (var provisionalOutputPath in provisionalOutputPaths)
         {
-            var cssContent = await File.ReadAllTextAsync(provisionalOutputPath, cancellationToken);
-            var hashedFileName = CreateHashedFileName(provisionalOutputPath, cssContent);
-            var hashedOutputPath = Path.Combine(GetContainingDirectoryPath(provisionalOutputPath), hashedFileName);
-            var sourceMapPath = provisionalOutputPath + ".map";
-            var hashedSourceMapPath = File.Exists(sourceMapPath)
-                ? hashedOutputPath + ".map"
+            var trustedOutputPath = EnsureTrustedBundleOutputPath(trustedAssetsDirectory, provisionalOutputPath);
+            var cssContent = await File.ReadAllTextAsync(trustedOutputPath, cancellationToken);
+            var hashedFileName = CreateHashedFileName(trustedOutputPath, cssContent);
+            var hashedOutputPath = EnsureTrustedBundleOutputPath(
+                trustedAssetsDirectory,
+                Path.Combine(GetContainingDirectoryPath(trustedOutputPath), hashedFileName),
+                allowMissingLeaf: true);
+            var sourceMapPath = trustedOutputPath + ".map";
+            var trustedSourceMapPath = File.Exists(sourceMapPath)
+                ? EnsureTrustedBundleOutputPath(trustedAssetsDirectory, sourceMapPath)
                 : null;
+            var hashedSourceMapPath = trustedSourceMapPath is null
+                ? null
+                : EnsureTrustedBundleOutputPath(
+                    trustedAssetsDirectory,
+                    hashedOutputPath + ".map",
+                    allowMissingLeaf: true);
 
             cssFiles.Add(new ProvisionalCssFile
             {
-                OriginalPath = provisionalOutputPath,
+                OriginalPath = trustedOutputPath,
                 HashedPath = hashedOutputPath,
                 HashedFileName = hashedFileName,
                 OriginalContent = cssContent,
-                OriginalSourceMapPath = File.Exists(sourceMapPath)
-                    ? Path.GetFullPath(sourceMapPath)
-                    : null,
-                HashedSourceMapPath = hashedSourceMapPath is null
-                    ? null
-                    : Path.GetFullPath(hashedSourceMapPath)
+                OriginalSourceMapPath = trustedSourceMapPath,
+                HashedSourceMapPath = hashedSourceMapPath
             });
         }
 
         foreach (var cssFile in cssFiles)
         {
             cssFile.RewrittenContent = RewriteCssContent(cssFile);
-            await WriteFinalCssAsync(cssFile, cancellationToken);
+            await WriteFinalCssAsync(trustedAssetsDirectory, cssFile, cancellationToken);
         }
 
         foreach (var cssFile in cssFiles)
         {
-            DeleteIfExists(cssFile.OriginalPath);
-            DeleteIfExists(cssFile.OriginalSourceMapPath);
+            DeleteIfExists(trustedAssetsDirectory, cssFile.OriginalPath);
+            DeleteIfExists(trustedAssetsDirectory, cssFile.OriginalSourceMapPath);
         }
 
         return cssFiles
@@ -696,19 +783,25 @@ internal sealed class DenoBundleRunner
     }
 
     private static async Task WriteFinalCssAsync(
+        string assetsDirectory,
         ProvisionalCssFile cssFile,
         CancellationToken cancellationToken)
     {
-        if (File.Exists(cssFile.HashedPath))
+        var trustedHashedPath = EnsureTrustedBundleOutputPath(
+            assetsDirectory,
+            cssFile.HashedPath,
+            allowMissingLeaf: true);
+        if (File.Exists(trustedHashedPath))
         {
-            File.Delete(cssFile.HashedPath);
+            DeleteIfExists(assetsDirectory, trustedHashedPath);
         }
 
-        await File.WriteAllTextAsync(cssFile.HashedPath, cssFile.RewrittenContent, cancellationToken);
+        await File.WriteAllTextAsync(trustedHashedPath, cssFile.RewrittenContent, cancellationToken);
 
         if (cssFile.OriginalSourceMapPath is not null && cssFile.HashedSourceMapPath is not null)
         {
             await RewriteSourceMapAsync(
+                assetsDirectory,
                 cssFile.OriginalSourceMapPath,
                 cssFile.HashedSourceMapPath,
                 cssFile.HashedFileName,
@@ -734,6 +827,214 @@ internal sealed class DenoBundleRunner
             SourceMapOption.External => "linked",
             _ => null
         };
+
+    internal static bool IsTrustedBundleOutputPath(
+        string assetsDirectory,
+        string candidatePath,
+        FileAttributes attributes)
+    {
+        var fullAssetsDirectory = Path.GetFullPath(assetsDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        return IsInsideDirectory(fullAssetsDirectory, fullCandidatePath)
+            && (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    internal static bool ShouldTraverseBundleOutputDirectory(
+        string assetsDirectory,
+        string candidateDirectory,
+        FileAttributes attributes)
+    {
+        var fullAssetsDirectory = Path.GetFullPath(assetsDirectory);
+        var fullCandidateDirectory = Path.GetFullPath(candidateDirectory);
+        if (!IsInsideDirectory(fullAssetsDirectory, fullCandidateDirectory))
+        {
+            return false;
+        }
+
+        // bundle 输出目录不允许跟随 reparse point，避免把删除/重写操作引到 dist 外部。
+        return (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    private static bool ShouldTraverseBundleOutputDirectory(
+        string assetsDirectory,
+        string candidateDirectory)
+    {
+        try
+        {
+            return ShouldTraverseBundleOutputDirectory(
+                assetsDirectory,
+                candidateDirectory,
+                File.GetAttributes(candidateDirectory));
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    private static IEnumerable<string> SafeEnumerate(Func<IEnumerable<string>> factory)
+    {
+        IEnumerator<string>? enumerator = null;
+        try
+        {
+            enumerator = factory().GetEnumerator();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            yield break;
+        }
+        catch (FileNotFoundException)
+        {
+            yield break;
+        }
+        catch (IOException)
+        {
+            yield break;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            yield break;
+        }
+
+        using (enumerator)
+        {
+            while (true)
+            {
+                string current;
+                try
+                {
+                    if (!enumerator.MoveNext())
+                    {
+                        yield break;
+                    }
+
+                    current = enumerator.Current;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    yield break;
+                }
+                catch (FileNotFoundException)
+                {
+                    yield break;
+                }
+                catch (IOException)
+                {
+                    yield break;
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    yield break;
+                }
+
+                yield return current;
+            }
+        }
+    }
+
+    private static string EnsureTrustedBundleOutputPath(
+        string assetsDirectory,
+        string candidatePath,
+        bool allowMissingLeaf = false)
+    {
+        var fullAssetsDirectory = Path.GetFullPath(assetsDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        if (!IsInsideDirectory(fullAssetsDirectory, fullCandidatePath))
+        {
+            throw new InvalidOperationException(
+                $"Bundled Deno output '{fullCandidatePath}' resolved outside trusted assets directory '{fullAssetsDirectory}'.");
+        }
+
+        var inspectionPath = GetExistingPathForTrustInspection(fullCandidatePath, allowMissingLeaf);
+        while (!string.IsNullOrWhiteSpace(inspectionPath))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(inspectionPath);
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Bundled Deno output path '{fullCandidatePath}' became unavailable while validating '{inspectionPath}'.",
+                    ex);
+            }
+            catch (FileNotFoundException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Bundled Deno output path '{fullCandidatePath}' became unavailable while validating '{inspectionPath}'.",
+                    ex);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Bundled Deno output path '{fullCandidatePath}' could not be validated because '{inspectionPath}' is not readable.",
+                    ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Bundled Deno output path '{fullCandidatePath}' could not be validated because '{inspectionPath}' is not accessible.",
+                    ex);
+            }
+
+            // 生产构建只接受“路径仍在 assets 内，且链路上不存在 reparse point”的输出路径。
+            if (!IsTrustedBundleOutputPath(fullAssetsDirectory, inspectionPath, attributes))
+            {
+                throw new InvalidOperationException(
+                    $"Bundled Deno output path '{fullCandidatePath}' traverses an untrusted reparse point inside '{fullAssetsDirectory}'.");
+            }
+
+            if (string.Equals(inspectionPath, fullAssetsDirectory, PathComparison))
+            {
+                return fullCandidatePath;
+            }
+
+            inspectionPath = GetContainingDirectoryPath(inspectionPath);
+        }
+
+        throw new InvalidOperationException(
+            $"Bundled Deno output path '{fullCandidatePath}' could not be validated within '{fullAssetsDirectory}'.");
+    }
+
+    private static string GetExistingPathForTrustInspection(
+        string candidatePath,
+        bool allowMissingLeaf)
+    {
+        if (File.Exists(candidatePath) || Directory.Exists(candidatePath))
+        {
+            return candidatePath;
+        }
+
+        if (!allowMissingLeaf)
+        {
+            throw new FileNotFoundException($"Bundled Deno output '{candidatePath}' was not found.", candidatePath);
+        }
+
+        return GetContainingDirectoryPath(candidatePath);
+    }
+
+    private static bool IsInsideDirectory(string rootDirectory, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, candidatePath);
+        return string.Equals(relativePath, ".", StringComparison.Ordinal)
+            || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
+                && !Path.IsPathRooted(relativePath));
+    }
 
     private static DenoBundleResult Failure(string message)
         => new()

@@ -30,7 +30,12 @@ internal sealed partial class BuildOrchestrator
         var htmlAssets = staticAssets
             .Select(asset => CreateHtmlAssetInfo(context, asset))
             .ToArray();
-        Directory.CreateDirectory(context.AssetsDirectory);
+        var trustedAssetsDirectory = EnsureTrustedBuildOutputPath(
+            context.RootDirectory,
+            context.OutDirectory,
+            context.AssetsDirectory,
+            allowMissingLeaf: true);
+        Directory.CreateDirectory(trustedAssetsDirectory);
         var assets = new List<AssetInfo>();
         var groupedFragments = cssFragments
             .GroupBy(
@@ -45,7 +50,7 @@ internal sealed partial class BuildOrchestrator
             var baseName = CreateCssAssetBaseName(ownerChunkFilePaths, entryChunkFilePath);
             var extractedCssPublicPath = Path.GetRelativePath(
                 context.OutDirectory,
-                Path.Combine(context.AssetsDirectory, baseName + ".css")).Replace('\\', '/');
+                Path.Combine(trustedAssetsDirectory, baseName + ".css")).Replace('\\', '/');
             var emittedFragments = group
                 .Select(fragment => new EmittedCssFragment(
                     CssUrlRewriter.RewriteAssetReferences(
@@ -83,7 +88,11 @@ internal sealed partial class BuildOrchestrator
             }
 
             var fileName = CreateHashedAssetFileName(baseName, ".css", optimizedContent, context.Options.AssetHashLength);
-            var outputPath = Path.Combine(context.AssetsDirectory, fileName);
+            var outputPath = EnsureTrustedBuildOutputPath(
+                context.RootDirectory,
+                trustedAssetsDirectory,
+                Path.Combine(trustedAssetsDirectory, fileName),
+                allowMissingLeaf: true);
             string? sourceMapPath = null;
             var finalContent = optimizedContent;
             if (context.Options.GenerateSourceMap)
@@ -94,7 +103,11 @@ internal sealed partial class BuildOrchestrator
                     switch (context.Options.SourceMap)
                     {
                         case SourceMapOption.External:
-                            var sourceMapOutputPath = outputPath + ".map";
+                            var sourceMapOutputPath = EnsureTrustedBuildOutputPath(
+                                context.RootDirectory,
+                                trustedAssetsDirectory,
+                                outputPath + ".map",
+                                allowMissingLeaf: true);
                             await File.WriteAllTextAsync(sourceMapOutputPath, sourceMap, cancellationToken);
                             sourceMapPath = Path.GetRelativePath(context.RootDirectory, sourceMapOutputPath).Replace('\\', '/');
                             finalContent = AppendCssSourceMapComment(optimizedContent, Path.GetFileName(sourceMapOutputPath));
@@ -203,9 +216,34 @@ internal sealed partial class BuildOrchestrator
             return false;
         }
 
-        sourceContent = File.ReadAllText(sourcePath);
-        sourceContentCache[sourcePath] = sourceContent;
-        return true;
+        try
+        {
+            // SourceMap 的 sourcesContent 只是增强信息，生产构建里遇到瞬时锁或删除时应降级跳过，
+            // 不能因为附加元数据读取失败而让整轮 CSS 构建失败。
+            sourceContent = File.ReadAllText(sourcePath);
+            sourceContentCache[sourcePath] = sourceContent;
+            return true;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            sourceContent = string.Empty;
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            sourceContent = string.Empty;
+            return false;
+        }
+        catch (IOException)
+        {
+            sourceContent = string.Empty;
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            sourceContent = string.Empty;
+            return false;
+        }
     }
 
     private static string CreateSourceMapRelativePath(string sourceMapDirectory, string sourcePath)

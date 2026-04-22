@@ -22,6 +22,7 @@ internal sealed partial class BuildOrchestrator
     private const string IncrementalStateFileName = "jazor-build-state.json";
     private const string IncrementalCacheHitMessage = "Incremental build cache hit.";
     private const string IncrementalHtmlRefreshMessage = "Incremental build html refresh.";
+    private const string IncrementalScanBypassMessage = "Incremental cache bypassed because one or more input files could not be read reliably.";
     private static readonly Regex CssSourceMapCommentPattern = new(
         @"/\*#\s*sourceMappingURL=(?<value>[^*]+?)\s*\*/\s*$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -96,7 +97,9 @@ internal sealed partial class BuildOrchestrator
         try
         {
             using var context = new BuildContext(options);
-            await AppendProjectLegacyImportDiagnosticsAsync(context, cancellationToken);
+            // 生产构建先固定一份输入文件快照，避免诊断和增量指纹各自重复遍历工作区。
+            var incrementalInputFiles = CollectIncrementalInputFiles(context);
+            await AppendProjectLegacyImportDiagnosticsAsync(context, incrementalInputFiles, cancellationToken);
             if (HasErrorDiagnostics(context.Diagnostics))
             {
                 stopwatch.Stop();
@@ -110,11 +113,25 @@ internal sealed partial class BuildOrchestrator
 
             IReadOnlyDictionary<string, string> incrementalInputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             string? incrementalFingerprint = null;
+            var canPersistIncrementalState = false;
             if (options.Incremental)
             {
-                incrementalInputs = CollectIncrementalInputSignatures(context);
+                var incrementalInputSnapshot = CollectIncrementalInputSnapshot(context, incrementalInputFiles);
+                incrementalInputs = incrementalInputSnapshot.Inputs;
+                canPersistIncrementalState = !incrementalInputSnapshot.HasReadFailure;
+                if (incrementalInputSnapshot.HasReadFailure)
+                {
+                    // 输入集不完整时宁可放弃增量命中，也不能在生产构建里错误复用旧产物。
+                    context.Diagnostics.Add(new BuildDiagnostic
+                    {
+                        Severity = DiagnosticSeverity.Warning,
+                        Message = IncrementalScanBypassMessage
+                    });
+                }
+
                 incrementalFingerprint = ComputeIncrementalFingerprint(options, incrementalInputs);
-                if (TryReadIncrementalState(context, out var incrementalState)
+                if (!incrementalInputSnapshot.HasReadFailure
+                    && TryReadIncrementalState(context, out var incrementalState)
                     && AreIncrementalOutputsAvailable(context, incrementalState))
                 {
                     if (string.Equals(incrementalState.Fingerprint, incrementalFingerprint, StringComparison.Ordinal))
@@ -328,8 +345,11 @@ internal sealed partial class BuildOrchestrator
                 TotalSize = totalSize
             };
 
-            if (options.Incremental && !string.IsNullOrWhiteSpace(incrementalFingerprint))
+            if (options.Incremental
+                && canPersistIncrementalState
+                && !string.IsNullOrWhiteSpace(incrementalFingerprint))
             {
+                // 只有在输入快照完整可信时才落盘增量状态，避免把“部分输入视图”写进缓存。
                 await PersistIncrementalStateAsync(
                     context,
                     buildResult,
@@ -425,7 +445,11 @@ internal sealed partial class BuildOrchestrator
         }
 
         // Write to dist/index.html
-        var outPath = Path.Combine(context.OutDirectory, "index.html");
+        var outPath = EnsureTrustedBuildOutputPath(
+            context.RootDirectory,
+            context.OutDirectory,
+            Path.Combine(context.OutDirectory, "index.html"),
+            allowMissingLeaf: true);
         await File.WriteAllTextAsync(outPath, html, cancellationToken);
     }
 
@@ -461,9 +485,7 @@ internal sealed partial class BuildOrchestrator
 
         foreach (var cssAsset in cssAssets)
         {
-            var cssPath = Path.Combine(
-                context.RootDirectory,
-                cssAsset.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var cssPath = ResolveTrustedBuildOutputPath(context, cssAsset.FilePath);
             if (!File.Exists(cssPath))
             {
                 continue;
@@ -651,9 +673,7 @@ internal sealed partial class BuildOrchestrator
 
         foreach (var chunk in chunks)
         {
-            var chunkAbsolutePath = Path.Combine(
-                context.RootDirectory,
-                chunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var chunkAbsolutePath = ResolveTrustedBuildOutputPath(context, chunk.FilePath);
             if (!File.Exists(chunkAbsolutePath))
             {
                 continue;
@@ -706,9 +726,7 @@ internal sealed partial class BuildOrchestrator
 
         foreach (var chunk in chunks)
         {
-            var chunkAbsolutePath = Path.Combine(
-                context.RootDirectory,
-                chunk.FilePath.Replace('/', Path.DirectorySeparatorChar));
+            var chunkAbsolutePath = ResolveTrustedBuildOutputPath(context, chunk.FilePath);
             if (!File.Exists(chunkAbsolutePath))
             {
                 continue;
@@ -862,7 +880,11 @@ internal sealed partial class BuildOrchestrator
             TotalSize = totalSize
         };
 
-        var manifestPath = Path.Combine(context.OutDirectory, ManifestFileName);
+        var manifestPath = EnsureTrustedBuildOutputPath(
+            context.RootDirectory,
+            context.OutDirectory,
+            Path.Combine(context.OutDirectory, ManifestFileName),
+            allowMissingLeaf: true);
         var json = JsonSerializer.Serialize(
             manifest,
             new JsonSerializerOptions

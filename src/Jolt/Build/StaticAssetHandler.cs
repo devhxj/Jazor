@@ -6,6 +6,7 @@ namespace Jolt.Build;
 /// </summary>
 internal sealed class StaticAssetHandler
 {
+    private const int FileIoBufferSize = 64 * 1024;
     private static readonly HashSet<string> HashExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp",
@@ -51,23 +52,40 @@ internal sealed class StaticAssetHandler
 
             try
             {
-                var relativePath = Path.GetRelativePath(publicDir, assetPath);
+                var fullAssetPath = Path.GetFullPath(assetPath);
+                if (!File.Exists(fullAssetPath))
+                {
+                    AddSkippedAssetDiagnostic(assetPath);
+                    continue;
+                }
+
+                if (!TryGetTrustedFilePath(publicDir, fullAssetPath, out var trustedAssetPath))
+                {
+                    AddSkippedAssetTrustDiagnostic(assetPath);
+                    continue;
+                }
+
+                if (!TryResolvePublicAssetOutputPath(publicDir, distDir, assetPath, out var relativePath, out var destPath))
+                {
+                    AddSkippedAssetBoundaryDiagnostic(assetPath);
+                    continue;
+                }
+
                 var fileName = Path.GetFileName(assetPath);
                 var extension = Path.GetExtension(assetPath);
                 var fileNameWithoutExt = Path.GetFileNameWithoutExtension(assetPath);
 
                 // Determine if we should hash this file
-                var fileInfo = new FileInfo(assetPath);
-                var shouldHash = ShouldHash(assetPath) && fileInfo.Length < HashSizeThreshold;
+                var fileInfo = new FileInfo(trustedAssetPath);
+                var shouldHash = ShouldHash(trustedAssetPath) && fileInfo.Length < HashSizeThreshold;
 
                 var destFileName = fileName;
                 if (shouldHash)
                 {
-                    var hash = await ComputeFileHashAsync(assetPath, _context.Options.AssetHashLength, ct);
+                    var hash = await ComputeFileHashAsync(trustedAssetPath, _context.Options.AssetHashLength, ct);
                     destFileName = $"{fileNameWithoutExt}-{hash}{extension}";
                 }
 
-                var destPath = Path.Combine(distDir, relativePath);
                 var destDir = Path.GetDirectoryName(destPath);
 
                 if (!string.IsNullOrEmpty(destDir))
@@ -82,7 +100,7 @@ internal sealed class StaticAssetHandler
                 }
 
                 // Copy file
-                await CopyFileAsync(assetPath, destPath, ct);
+                await CopyFileAsync(trustedAssetPath, destPath, ct);
 
                 var assetInfo = new AssetInfo
                 {
@@ -140,41 +158,66 @@ internal sealed class StaticAssetHandler
             }
 
             var absolutePath = Path.GetFullPath(sourceAsset.AbsolutePath);
-            if (!IsInsideRoot(absolutePath) || !File.Exists(absolutePath))
+            if (!File.Exists(absolutePath))
             {
                 continue;
             }
 
-            var normalizedOriginalPath = NormalizePublicAssetPath(sourceAsset.OriginalPath);
-            var relativeOutputDirectory = Path.GetDirectoryName(
-                normalizedOriginalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar))
-                ?? string.Empty;
-            var fileName = Path.GetFileName(absolutePath);
-            var extension = Path.GetExtension(absolutePath);
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(absolutePath);
-            var fileInfo = new FileInfo(absolutePath);
-            var shouldHash = ShouldHash(absolutePath) && fileInfo.Length < HashSizeThreshold;
-            var outputDirectory = Path.Combine(_context.OutDirectory, relativeOutputDirectory);
-
-            Directory.CreateDirectory(outputDirectory);
-
-            var outputFileName = fileName;
-            if (shouldHash)
+            if (!TryGetTrustedFilePath(_context.RootDirectory, absolutePath, out var trustedAbsolutePath))
             {
-                var hash = await ComputeFileHashAsync(absolutePath, _context.Options.AssetHashLength, ct);
-                outputFileName = $"{fileNameWithoutExtension}-{hash}{extension}";
+                AddSkippedSourceAssetTrustDiagnostic(sourceAsset.OriginalPath, absolutePath);
+                continue;
             }
 
-            var outputPath = Path.Combine(outputDirectory, outputFileName);
-            await CopyFileAsync(absolutePath, outputPath, ct);
-
-            assets.Add(new AssetInfo
+            try
             {
-                FileName = outputFileName,
-                FilePath = Path.GetRelativePath(_context.RootDirectory, outputPath).Replace('\\', '/'),
-                Size = new FileInfo(outputPath).Length,
-                OriginalPath = normalizedOriginalPath
-            });
+                var normalizedOriginalPath = NormalizePublicAssetPath(sourceAsset.OriginalPath);
+                var relativeOutputDirectory = Path.GetDirectoryName(
+                    normalizedOriginalPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar))
+                    ?? string.Empty;
+                var fileName = Path.GetFileName(trustedAbsolutePath);
+                var extension = Path.GetExtension(trustedAbsolutePath);
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(trustedAbsolutePath);
+                var fileInfo = new FileInfo(trustedAbsolutePath);
+                var shouldHash = ShouldHash(trustedAbsolutePath) && fileInfo.Length < HashSizeThreshold;
+                var outputDirectory = Path.Combine(_context.OutDirectory, relativeOutputDirectory);
+
+                Directory.CreateDirectory(outputDirectory);
+
+                var outputFileName = fileName;
+                if (shouldHash)
+                {
+                    var hash = await ComputeFileHashAsync(trustedAbsolutePath, _context.Options.AssetHashLength, ct);
+                    outputFileName = $"{fileNameWithoutExtension}-{hash}{extension}";
+                }
+
+                var outputPath = Path.Combine(outputDirectory, outputFileName);
+                await CopyFileAsync(trustedAbsolutePath, outputPath, ct);
+
+                assets.Add(new AssetInfo
+                {
+                    FileName = outputFileName,
+                    FilePath = Path.GetRelativePath(_context.RootDirectory, outputPath).Replace('\\', '/'),
+                    Size = new FileInfo(outputPath).Length,
+                    OriginalPath = normalizedOriginalPath
+                });
+            }
+            catch (DirectoryNotFoundException)
+            {
+                AddSkippedSourceAssetDiagnostic(sourceAsset.OriginalPath, absolutePath);
+            }
+            catch (FileNotFoundException)
+            {
+                AddSkippedSourceAssetDiagnostic(sourceAsset.OriginalPath, absolutePath);
+            }
+            catch (IOException)
+            {
+                AddSkippedSourceAssetDiagnostic(sourceAsset.OriginalPath, absolutePath);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                AddSkippedSourceAssetDiagnostic(sourceAsset.OriginalPath, absolutePath);
+            }
         }
 
         return assets;
@@ -207,10 +250,16 @@ internal sealed class StaticAssetHandler
     /// </summary>
     private static async Task<string> ComputeFileHashAsync(string filePath, int hashLength, CancellationToken ct)
     {
-        var bytes = await File.ReadAllBytesAsync(filePath, ct);
-
+        // 生产构建里静态资源数量可能很多，哈希改成流式读取，避免为每个文件分配整块 byte[]。
+        using var stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            FileIoBufferSize,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
         using var sha256 = SHA256.Create();
-        var hash = sha256.ComputeHash(bytes);
+        var hash = await sha256.ComputeHashAsync(stream, ct);
         return Convert.ToHexString(hash)[..hashLength].ToLowerInvariant();
     }
 
@@ -219,11 +268,22 @@ internal sealed class StaticAssetHandler
     /// </summary>
     private static async Task CopyFileAsync(string sourcePath, string destPath, CancellationToken ct)
     {
-        using var sourceStream = File.OpenRead(sourcePath);
-        using var destStream = File.Create(destPath);
+        using var sourceStream = new FileStream(
+            sourcePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete,
+            FileIoBufferSize,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var destStream = new FileStream(
+            destPath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None,
+            FileIoBufferSize,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
 
         await sourceStream.CopyToAsync(destStream, ct);
-        await destStream.FlushAsync(ct);
     }
 
     /// <summary>
@@ -234,7 +294,7 @@ internal sealed class StaticAssetHandler
         CancellationToken ct)
     {
         var stack = new Stack<string>();
-        stack.Push(directory);
+        stack.Push(Path.GetFullPath(directory));
 
         while (stack.Count > 0)
         {
@@ -250,7 +310,13 @@ internal sealed class StaticAssetHandler
             // Add subdirectories to stack
             foreach (var subDir in SafeEnumerate(() => Directory.EnumerateDirectories(currentDir)))
             {
-                stack.Push(subDir);
+                var fullSubDirectory = Path.GetFullPath(subDir);
+                if (!ShouldTraversePublicDirectory(directory, fullSubDirectory))
+                {
+                    continue;
+                }
+
+                stack.Push(fullSubDirectory);
             }
         }
     }
@@ -261,6 +327,42 @@ internal sealed class StaticAssetHandler
         {
             Severity = DiagnosticSeverity.Warning,
             Message = $"Skipped static asset '{assetPath}' because it became unavailable during traversal."
+        });
+    }
+
+    private void AddSkippedAssetBoundaryDiagnostic(string assetPath)
+    {
+        _context.Diagnostics.Add(new BuildDiagnostic
+        {
+            Severity = DiagnosticSeverity.Warning,
+            Message = $"Skipped static asset '{assetPath}' because it resolved outside the public directory boundary."
+        });
+    }
+
+    private void AddSkippedAssetTrustDiagnostic(string assetPath)
+    {
+        _context.Diagnostics.Add(new BuildDiagnostic
+        {
+            Severity = DiagnosticSeverity.Warning,
+            Message = $"Skipped static asset '{assetPath}' because it traversed an untrusted reparse point."
+        });
+    }
+
+    private void AddSkippedSourceAssetDiagnostic(string originalPath, string absolutePath)
+    {
+        _context.Diagnostics.Add(new BuildDiagnostic
+        {
+            Severity = DiagnosticSeverity.Warning,
+            Message = $"Skipped source asset '{originalPath}' from '{absolutePath}' because it became unavailable during build."
+        });
+    }
+
+    private void AddSkippedSourceAssetTrustDiagnostic(string originalPath, string absolutePath)
+    {
+        _context.Diagnostics.Add(new BuildDiagnostic
+        {
+            Severity = DiagnosticSeverity.Warning,
+            Message = $"Skipped source asset '{originalPath}' from '{absolutePath}' because it traversed an untrusted reparse point or resolved outside the workspace boundary."
         });
     }
 
@@ -316,9 +418,128 @@ internal sealed class StaticAssetHandler
         }
     }
 
-    private bool IsInsideRoot(string candidatePath)
+    internal static bool TryResolvePublicAssetOutputPath(
+        string publicDirectory,
+        string distDirectory,
+        string assetPath,
+        out string relativePath,
+        out string destinationPath)
     {
-        var relativePath = Path.GetRelativePath(_context.RootDirectory, candidatePath);
+        var fullPublicDirectory = Path.GetFullPath(publicDirectory);
+        var fullDistDirectory = Path.GetFullPath(distDirectory);
+        var fullAssetPath = Path.GetFullPath(assetPath);
+        if (!IsInsideDirectory(fullPublicDirectory, fullAssetPath))
+        {
+            relativePath = string.Empty;
+            destinationPath = string.Empty;
+            return false;
+        }
+
+        relativePath = Path.GetRelativePath(fullPublicDirectory, fullAssetPath);
+        destinationPath = Path.GetFullPath(Path.Combine(fullDistDirectory, relativePath));
+        return IsInsideDirectory(fullDistDirectory, destinationPath);
+    }
+
+    internal static bool ShouldTraversePublicDirectory(
+        string publicDirectory,
+        string candidateDirectory,
+        FileAttributes attributes)
+    {
+        var fullPublicDirectory = Path.GetFullPath(publicDirectory);
+        var fullCandidateDirectory = Path.GetFullPath(candidateDirectory);
+        if (!IsInsideDirectory(fullPublicDirectory, fullCandidateDirectory))
+        {
+            return false;
+        }
+
+        // 不跟随 public/ 下的 reparse point，避免把仓库外资源或循环目录带进产物复制。
+        return (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    internal static bool IsTrustedFilePath(
+        string rootDirectory,
+        string candidatePath,
+        FileAttributes attributes)
+    {
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        return IsInsideDirectory(fullRootDirectory, fullCandidatePath)
+            && (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    private static bool TryGetTrustedFilePath(
+        string rootDirectory,
+        string candidatePath,
+        out string trustedPath)
+    {
+        trustedPath = string.Empty;
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        if (!IsInsideDirectory(Path.GetFullPath(rootDirectory), fullCandidatePath))
+        {
+            return false;
+        }
+
+        try
+        {
+            // 目录不跟随 reparse point 还不够，文件本身如果是联接/符号链接，也可能把仓库外内容带进产物。
+            if (!IsTrustedFilePath(rootDirectory, fullCandidatePath, File.GetAttributes(fullCandidatePath)))
+            {
+                return false;
+            }
+
+            trustedPath = fullCandidatePath;
+            return true;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    private static bool ShouldTraversePublicDirectory(
+        string publicDirectory,
+        string candidateDirectory)
+    {
+        try
+        {
+            return ShouldTraversePublicDirectory(
+                publicDirectory,
+                candidateDirectory,
+                File.GetAttributes(candidateDirectory));
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return false;
+        }
+        catch (FileNotFoundException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    private static bool IsInsideDirectory(string rootDirectory, string candidatePath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, candidatePath);
         return string.Equals(relativePath, ".", StringComparison.Ordinal)
             || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
                 && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)

@@ -4,6 +4,10 @@ namespace Jolt.Build;
 
 internal static class BuildEntryPointResolver
 {
+    private static readonly StringComparison PathComparison = OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
     private static readonly Regex ScriptTagPattern = new(
         """<script\b(?<attrs>[^>]*)\bsrc\s*=\s*["'](?<src>[^"']+)["'][^>]*>""",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -49,9 +53,9 @@ internal static class BuildEntryPointResolver
         foreach (var candidate in CandidateEntryPoints)
         {
             var absoluteCandidate = Path.Combine(rootDirectory, candidate);
-            if (File.Exists(absoluteCandidate))
+            if (TryResolveTrustedProjectFilePath(rootDirectory, absoluteCandidate, out var trustedCandidatePath))
             {
-                return absoluteCandidate;
+                return trustedCandidatePath;
             }
         }
 
@@ -63,13 +67,13 @@ internal static class BuildEntryPointResolver
     private static bool TryResolveFromIndexHtml(string rootDirectory, out string entryPoint)
     {
         var indexHtmlPath = Path.Combine(rootDirectory, "index.html");
-        if (!File.Exists(indexHtmlPath))
+        if (!TryResolveTrustedProjectFilePath(rootDirectory, indexHtmlPath, out var trustedIndexHtmlPath))
         {
             entryPoint = string.Empty;
             return false;
         }
 
-        var html = File.ReadAllText(indexHtmlPath);
+        var html = File.ReadAllText(trustedIndexHtmlPath);
         string? fallbackCandidate = null;
         foreach (Match match in ScriptTagPattern.Matches(html))
         {
@@ -79,18 +83,18 @@ internal static class BuildEntryPointResolver
                 || IsExternalSource(src)
                 || !HasSupportedEntryExtension(src)
                 || !TryResolveLocalScriptPath(rootDirectory, src, out var absolutePath)
-                || !File.Exists(absolutePath))
+                || !TryResolveTrustedProjectFilePath(rootDirectory, absolutePath, out var trustedAbsolutePath))
             {
                 continue;
             }
 
             if (ModuleTypeAttributePattern.IsMatch(attrs))
             {
-                entryPoint = absolutePath;
+                entryPoint = trustedAbsolutePath;
                 return true;
             }
 
-            fallbackCandidate ??= absolutePath;
+            fallbackCandidate ??= trustedAbsolutePath;
         }
 
         if (fallbackCandidate is not null)
@@ -115,6 +119,17 @@ internal static class BuildEntryPointResolver
         return IsInsideRoot(rootDirectory, absolutePath);
     }
 
+    internal static bool IsTrustedProjectPath(
+        string rootDirectory,
+        string candidatePath,
+        FileAttributes attributes)
+    {
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        return IsInsideRoot(fullRootDirectory, fullCandidatePath)
+            && (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
     private static bool HasSupportedEntryExtension(string src)
         => SupportedEntryExtensions.Contains(Path.GetExtension(src));
 
@@ -133,6 +148,67 @@ internal static class BuildEntryPointResolver
                 && !relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal)
                 && !Path.IsPathRooted(relativePath));
     }
+
+    private static bool TryResolveTrustedProjectFilePath(
+        string rootDirectory,
+        string candidatePath,
+        out string trustedPath)
+    {
+        trustedPath = string.Empty;
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        if (!IsInsideRoot(fullRootDirectory, fullCandidatePath) || !File.Exists(fullCandidatePath))
+        {
+            return false;
+        }
+
+        var inspectionPath = fullCandidatePath;
+        while (!string.IsNullOrWhiteSpace(inspectionPath))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(inspectionPath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            // 入口解析不跟随项目内的 reparse point，避免把工作区外脚本通过联接路径带入生产构建。
+            if (!IsTrustedProjectPath(fullRootDirectory, inspectionPath, attributes))
+            {
+                return false;
+            }
+
+            if (string.Equals(inspectionPath, fullRootDirectory, PathComparison))
+            {
+                trustedPath = fullCandidatePath;
+                return true;
+            }
+
+            inspectionPath = GetContainingDirectoryPath(inspectionPath);
+        }
+
+        return false;
+    }
+
+    private static string GetContainingDirectoryPath(string path)
+        => Path.GetDirectoryName(path)
+            ?? Path.GetPathRoot(path)
+            ?? string.Empty;
 
     private static bool IsExternalSource(string src)
         => src.StartsWith("http://", StringComparison.OrdinalIgnoreCase)

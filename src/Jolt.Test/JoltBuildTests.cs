@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Jazor.Vue;
 using Jolt.Build;
@@ -351,6 +352,48 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
+    public void BuildEntryPointResolver_IsTrustedProjectPath_ReturnsTrue_ForRegularFileInsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "entry-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "src", "main.ts");
+
+        var result = BuildEntryPointResolver.IsTrustedProjectPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void BuildEntryPointResolver_IsTrustedProjectPath_ReturnsFalse_ForPathOutsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "entry-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootDirectory, "..", "main.ts"));
+
+        var result = BuildEntryPointResolver.IsTrustedProjectPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void BuildEntryPointResolver_IsTrustedProjectPath_ReturnsFalse_ForReparsePoint()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "entry-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "src", "linked.ts");
+
+        var result = BuildEntryPointResolver.IsTrustedProjectPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
     public async Task DenoBuildImportMapGenerator_GenerateAsync_IncludesVueFallback()
     {
         var tempDir = CreateTemporaryDirectory();
@@ -410,6 +453,48 @@ public sealed class JoltBuildTests
         {
             Directory.Delete(tempDir, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void DenoBuildImportMapGenerator_IsTrustedBuildMetadataPath_ReturnsTrue_ForRegularFileInsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "importmap-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, ".jazor", "build.importmap.json");
+
+        var result = DenoBuildImportMapGenerator.IsTrustedBuildMetadataPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void DenoBuildImportMapGenerator_IsTrustedBuildMetadataPath_ReturnsFalse_ForPathOutsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "importmap-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootDirectory, "..", "build.importmap.json"));
+
+        var result = DenoBuildImportMapGenerator.IsTrustedBuildMetadataPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void DenoBuildImportMapGenerator_IsTrustedBuildMetadataPath_ReturnsFalse_ForReparsePoint()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "importmap-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, ".jazor", "linked.importmap.json");
+
+        var result = DenoBuildImportMapGenerator.IsTrustedBuildMetadataPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
     }
 
     [TestMethod]
@@ -586,6 +671,104 @@ public sealed class JoltBuildTests
         {
             Directory.Delete(tempDir, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void DenoBundleRunner_ShouldTraverseBundleOutputDirectory_ReturnsFalse_ForReparsePoint()
+    {
+        var assetsDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "deno-bundle-assets-" + Guid.NewGuid().ToString("N")));
+        var candidateDirectory = Path.Combine(assetsDirectory, "linked");
+
+        var result = DenoBundleRunner.ShouldTraverseBundleOutputDirectory(
+            assetsDirectory,
+            candidateDirectory,
+            FileAttributes.Directory | FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void DenoBundleRunner_IsTrustedBundleOutputPath_ReturnsTrue_ForRegularFileInsideAssetsDirectory()
+    {
+        var assetsDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "deno-bundle-assets-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(assetsDirectory, "chunk.js");
+
+        var result = DenoBundleRunner.IsTrustedBundleOutputPath(
+            assetsDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void DenoBundleRunner_IsTrustedBundleOutputPath_ReturnsFalse_ForPathOutsideAssetsDirectory()
+    {
+        var assetsDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "deno-bundle-assets-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(assetsDirectory, "..", "escape.js"));
+
+        var result = DenoBundleRunner.IsTrustedBundleOutputPath(
+            assetsDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void DenoBundleRunner_IsTrustedBundleOutputPath_ReturnsFalse_ForReparsePointFile()
+    {
+        var assetsDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "deno-bundle-assets-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(assetsDirectory, "linked.js");
+
+        var result = DenoBundleRunner.IsTrustedBundleOutputPath(
+            assetsDirectory,
+            candidatePath,
+            FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_IsTrustedBuildOutputPath_ReturnsTrue_ForRegularFileInsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "build-output-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "dist", "index.html");
+
+        var result = BuildOrchestrator.IsTrustedBuildOutputPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_IsTrustedBuildOutputPath_ReturnsFalse_ForPathOutsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "build-output-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootDirectory, "..", "escape.js"));
+
+        var result = BuildOrchestrator.IsTrustedBuildOutputPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_IsTrustedBuildOutputPath_ReturnsFalse_ForReparsePoint()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "build-output-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "dist", "linked");
+
+        var result = BuildOrchestrator.IsTrustedBuildOutputPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Directory | FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
     }
 
     [TestMethod]
@@ -1104,6 +1287,168 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
+    public async Task BuildOrchestrator_CollectIncrementalInputSignatures_ChangesWhenContentChangesWithoutMetadataChange()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var inputPath = Path.Combine(tempDir, "main.js");
+            await File.WriteAllTextAsync(inputPath, """const value = "A";""");
+            var stableWriteTime = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            File.SetLastWriteTimeUtc(inputPath, stableWriteTime);
+            var observedWriteTime = File.GetLastWriteTimeUtc(inputPath);
+
+            using var context = new BuildContext(CreateIncrementalBuildOptions(tempDir));
+            var before = BuildOrchestrator.CollectIncrementalInputSignatures(context);
+
+            await File.WriteAllTextAsync(inputPath, """const value = "B";""");
+            File.SetLastWriteTimeUtc(inputPath, observedWriteTime);
+            Assert.AreEqual(before["main.js"].Split('|')[0], new FileInfo(inputPath).Length.ToString(CultureInfo.InvariantCulture));
+            Assert.AreEqual(observedWriteTime, File.GetLastWriteTimeUtc(inputPath));
+
+            var after = BuildOrchestrator.CollectIncrementalInputSignatures(context);
+
+            Assert.AreNotEqual(before["main.js"], after["main.js"]);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_CollectIncrementalInputSignatures_IgnoresToolingAndOutputDirectories()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "index.html"), "<html></html>");
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "main.js"), """console.log("tracked");""");
+
+            var ignoredFiles = new[]
+            {
+                Path.Combine(tempDir, ".omx", "state.json"),
+                Path.Combine(tempDir, ".artifacts-cache", "trace.txt"),
+                Path.Combine(tempDir, ".dotnet-out", "build.binlog"),
+                Path.Combine(tempDir, "TestResults", "result.trx"),
+                Path.Combine(tempDir, "dist", "stale.js")
+            };
+
+            foreach (var ignoredFile in ignoredFiles)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(ignoredFile)!);
+                await File.WriteAllTextAsync(ignoredFile, "ignored");
+            }
+
+            using var context = new BuildContext(CreateIncrementalBuildOptions(tempDir));
+            var inputs = BuildOrchestrator.CollectIncrementalInputSignatures(context);
+
+            CollectionAssert.AreEquivalent(
+                new[] { "index.html", "main.js" },
+                inputs.Keys.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_CollectIncrementalInputSnapshot_MarksReadFailure_WhenInputIsLocked()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(tempDir, "index.html"), "<html></html>");
+            var lockedPath = Path.Combine(tempDir, "main.js");
+            await File.WriteAllTextAsync(lockedPath, """console.log("locked");""");
+
+            using var lockHandle = new FileStream(
+                lockedPath,
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.None);
+
+            using var context = new BuildContext(CreateIncrementalBuildOptions(tempDir));
+            var snapshot = BuildOrchestrator.CollectIncrementalInputSnapshot(context);
+
+            Assert.IsTrue(snapshot.HasReadFailure);
+            CollectionAssert.AreEquivalent(
+                new[] { "index.html" },
+                snapshot.Inputs.Keys.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase).ToArray());
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_ShouldTraverseIncrementalDirectory_ReturnsFalse_ForReparsePoint()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "incremental-root-" + Guid.NewGuid().ToString("N")));
+        var candidateDirectory = Path.Combine(rootDirectory, "linked");
+
+        var result = BuildOrchestrator.ShouldTraverseIncrementalDirectory(
+            rootDirectory,
+            candidateDirectory,
+            FileAttributes.Directory | FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithIncrementalEnabled_DoesNotPersistState_WhenInputSnapshotIsIncomplete()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("incremental-scan-warning");""");
+
+            var lockedMetadataPath = Path.Combine(tempDir, "metadata.json");
+            await File.WriteAllTextAsync(lockedMetadataPath, """{"value":1}""");
+
+            BuildResult result;
+            using (var lockHandle = new FileStream(
+                       lockedMetadataPath,
+                       FileMode.Open,
+                       FileAccess.ReadWrite,
+                       FileShare.None))
+            {
+                result = await new BuildOrchestrator().BuildAsync(
+                    CreateIncrementalBuildOptions(tempDir) with
+                    {
+                        SourceMap = SourceMapOption.None
+                    },
+                    CancellationToken.None);
+            }
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            CollectionAssert.Contains(
+                result.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                "Incremental cache bypassed because one or more input files could not be read reliably.");
+            Assert.IsFalse(
+                File.Exists(Path.Combine(tempDir, "dist", "jazor-build-state.json")),
+                "Incomplete incremental snapshots must not be persisted.");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task BuildOrchestrator_BuildAsync_WithIncrementalEnabled_RebuildsWhenInputsChange()
     {
         var tempDir = CreateTemporaryDirectory();
@@ -1208,6 +1553,87 @@ public sealed class JoltBuildTests
         finally
         {
             Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithIncrementalEnabled_IgnoresStateOutputsOutsideOutDir()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("incremental-outdir-guard");""");
+
+            var options = CreateIncrementalBuildOptions(tempDir) with
+            {
+                SourceMap = SourceMapOption.None
+            };
+
+            using (var context = new BuildContext(options))
+            {
+                Directory.CreateDirectory(context.OutDirectory);
+
+                var externalManifestPath = Path.Combine(externalDir, "external-manifest.json");
+                await File.WriteAllTextAsync(externalManifestPath, """{"entry":"external.js"}""");
+                var externalChunkPath = Path.Combine(externalDir, "external-chunk.js");
+                await File.WriteAllTextAsync(externalChunkPath, """console.log("external-output");""");
+
+                var inputs = BuildOrchestrator.CollectIncrementalInputSignatures(context);
+                var fingerprint = BuildOrchestrator.ComputeIncrementalFingerprint(options, inputs);
+                var buildResult = new BuildResult
+                {
+                    Success = true,
+                    OutDirectory = context.OutDirectory,
+                    ManifestPath = externalManifestPath,
+                    Chunks =
+                    [
+                        new ChunkInfo
+                        {
+                            FileName = Path.GetFileName(externalChunkPath),
+                            FilePath = externalChunkPath,
+                            Size = new FileInfo(externalChunkPath).Length,
+                            IsEntry = true
+                        }
+                    ],
+                    TotalSize = new FileInfo(externalChunkPath).Length
+                };
+
+                await BuildOrchestrator.PersistIncrementalStateAsync(
+                    context,
+                    buildResult,
+                    fingerprint,
+                    inputs,
+                    entryRequestPath: "/main.js",
+                    CancellationToken.None);
+            }
+
+            var result = await new BuildOrchestrator().BuildAsync(options, CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            CollectionAssert.DoesNotContain(
+                result.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                "Incremental build cache hit.");
+            Assert.IsTrue(
+                Path.GetFullPath(result.ManifestPath!).StartsWith(
+                    Path.GetFullPath(Path.Combine(tempDir, "dist")),
+                    StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+            Directory.Delete(externalDir, recursive: true);
         }
     }
 

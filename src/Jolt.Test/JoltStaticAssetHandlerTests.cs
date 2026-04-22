@@ -89,6 +89,188 @@ public sealed class JoltStaticAssetHandlerTests
         }
     }
 
+    [TestMethod]
+    public async Task CopySourceAssetsAsync_SkipsLockedSourceAsset_WithWarningInsteadOfFailing()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var imagePath = Path.Combine(tempDir, "images", "logo.png");
+            Directory.CreateDirectory(Path.GetDirectoryName(imagePath)!);
+            await File.WriteAllTextAsync(imagePath, "fake-png-data");
+
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                AssetHashLength = 12
+            };
+
+            using var context = new BuildContext(options);
+            var handler = new StaticAssetHandler(context);
+            using var lockHandle = new FileStream(
+                imagePath,
+                FileMode.Open,
+                FileAccess.ReadWrite,
+                FileShare.None);
+
+            var assets = await handler.CopySourceAssetsAsync(
+                [
+                    new SourceAssetRequest
+                    {
+                        AbsolutePath = imagePath,
+                        OriginalPath = "/images/logo.png"
+                    }
+                ],
+                CancellationToken.None);
+
+            Assert.AreEqual(0, assets.Count);
+            CollectionAssert.Contains(
+                context.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                $"Skipped source asset '/images/logo.png' from '{Path.GetFullPath(imagePath)}' because it became unavailable during build.");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task CopySourceAssetsAsync_SkipsSourceAssetOutsideWorkspace_WithWarningInsteadOfCopying()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var externalAssetPath = Path.Combine(externalDir, "logo.png");
+            await File.WriteAllTextAsync(externalAssetPath, "fake-png-data");
+
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                AssetHashLength = 12
+            };
+
+            using var context = new BuildContext(options);
+            var handler = new StaticAssetHandler(context);
+
+            var assets = await handler.CopySourceAssetsAsync(
+                [
+                    new SourceAssetRequest
+                    {
+                        AbsolutePath = externalAssetPath,
+                        OriginalPath = "/images/logo.png"
+                    }
+                ],
+                CancellationToken.None);
+
+            Assert.AreEqual(0, assets.Count);
+            CollectionAssert.Contains(
+                context.Diagnostics.Select(static diagnostic => diagnostic.Message).ToArray(),
+                $"Skipped source asset '/images/logo.png' from '{Path.GetFullPath(externalAssetPath)}' because it traversed an untrusted reparse point or resolved outside the workspace boundary.");
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+            Directory.Delete(externalDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void TryResolvePublicAssetOutputPath_ReturnsFalse_WhenAssetEscapesPublicBoundary()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var publicDir = Path.Combine(tempDir, "public");
+            var distDir = Path.Combine(tempDir, "dist");
+            Directory.CreateDirectory(publicDir);
+            Directory.CreateDirectory(distDir);
+
+            var externalAssetPath = Path.Combine(tempDir, "..", "outside.png");
+
+            var result = StaticAssetHandler.TryResolvePublicAssetOutputPath(
+                publicDir,
+                distDir,
+                externalAssetPath,
+                out var relativePath,
+                out var destinationPath);
+
+            Assert.IsFalse(result);
+            Assert.AreEqual(string.Empty, relativePath);
+            Assert.AreEqual(string.Empty, destinationPath);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ShouldTraversePublicDirectory_ReturnsFalse_ForReparsePoint()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var publicDir = Path.Combine(tempDir, "public");
+            var candidateDirectory = Path.Combine(publicDir, "linked");
+
+            var result = StaticAssetHandler.ShouldTraversePublicDirectory(
+                publicDir,
+                candidateDirectory,
+                FileAttributes.Directory | FileAttributes.ReparsePoint);
+
+            Assert.IsFalse(result);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void IsTrustedFilePath_ReturnsTrue_ForRegularFileInsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "static-asset-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "logo.png");
+
+        var result = StaticAssetHandler.IsTrustedFilePath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void IsTrustedFilePath_ReturnsFalse_ForPathOutsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "static-asset-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootDirectory, "..", "logo.png"));
+
+        var result = StaticAssetHandler.IsTrustedFilePath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void IsTrustedFilePath_ReturnsFalse_ForReparsePointFile()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "static-asset-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "logo.png");
+
+        var result = StaticAssetHandler.IsTrustedFilePath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), "jazor-static-asset-test-" + Guid.NewGuid().ToString("N")[..8]);
