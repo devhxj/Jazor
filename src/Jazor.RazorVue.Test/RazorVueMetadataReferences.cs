@@ -10,37 +10,9 @@ namespace Jazor.RazorVue.Test;
 
 internal static class RazorVueMetadataReferences
 {
-    private const string AuthoringShimSource = """
-        namespace Jazor.Razor
-        {
-            public abstract class JazorComponent
-                : global::Microsoft.AspNetCore.Components.ComponentBase,
-                  global::Jazor.Razor.IJazorComponent
-            {
-            }
-        }
-
-        namespace Jazor.RazorVue
-        {
-            public abstract class VueComponent
-                : global::Jazor.Razor.JazorComponent,
-                  global::Jazor.RazorVue.IVueComponent
-            {
-            }
-
-            public abstract class VueLibraryComponent
-                : global::Jazor.RazorVue.VueComponent,
-                  global::Jazor.RazorVue.IVueLibraryComponent
-            {
-            }
-        }
-
-        namespace Jazor.Vue
-        {
-            public abstract class VueComponent : global::Jazor.RazorVue.VueComponent
-            {
-            }
-        }
+    private const string AuthoringGlobalUsings = """
+        global using Jazor.RazorVue;
+        global using Microsoft.AspNetCore.Components;
         """;
 
     public static List<MetadataReference> Create(params MetadataReference[] extraReferences)
@@ -72,18 +44,12 @@ internal static class RazorVueMetadataReferences
     }
 
     public static IReadOnlyList<SyntaxTree> CreateSyntaxTrees(string source)
-    {
-        if (!RequiresAuthoringShim(source))
-        {
-            return [CSharpSyntaxTree.ParseText(source)];
-        }
-
-        return
-        [
-            CSharpSyntaxTree.ParseText(AuthoringShimSource),
+        // 最新 authoring 模型直接使用 ComponentBase + IVueComponent/IVueLibraryComponent，
+        // 测试只补全命名空间导入，不再注入 VueComponent/JazorComponent 兼容基类。
+        => [
+            CSharpSyntaxTree.ParseText(AuthoringGlobalUsings, path: "RazorVueTestGlobalUsings.g.cs"),
             CSharpSyntaxTree.ParseText(source)
         ];
-    }
 
     private static void AddAssemblyReference(
         List<MetadataReference> references,
@@ -110,13 +76,4 @@ internal static class RazorVueMetadataReferences
 
         references.Add(reference);
     }
-
-    private static bool RequiresAuthoringShim(string source)
-        => source.Contains("VueComponent", StringComparison.Ordinal) ||
-           source.Contains("VueLibraryComponent", StringComparison.Ordinal) ||
-           source.Contains("JazorComponent", StringComparison.Ordinal) ||
-           source.Contains("ComponentBase", StringComparison.Ordinal) ||
-           source.Contains("IVueComponent", StringComparison.Ordinal) ||
-           source.Contains("IVueLibraryComponent", StringComparison.Ordinal) ||
-           source.Contains("Jazor.RazorVue", StringComparison.Ordinal);
 }

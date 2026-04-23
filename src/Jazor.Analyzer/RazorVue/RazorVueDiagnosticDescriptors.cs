@@ -7,7 +7,7 @@ internal static class RazorVueDiagnosticDescriptors
     public static readonly DiagnosticDescriptor InvalidEntryInheritance = new(
         id: "JAZORVUE001",
         title: "Invalid RazorVue component inheritance",
-        messageFormat: "RazorVue entry '{0}' must inherit JazorComponent",
+        messageFormat: "RazorVue entry '{0}' must inherit ComponentBase and implement IVueComponent",
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -15,7 +15,7 @@ internal static class RazorVueDiagnosticDescriptors
     public static readonly DiagnosticDescriptor DirectComponentBaseEntry = new(
         id: "JAZORVUE002",
         title: "Direct ComponentBase entry is not allowed",
-        messageFormat: "RazorVue entry '{0}' must inherit JazorComponent instead of ComponentBase directly",
+        messageFormat: "RazorVue entry '{0}' must implement IVueComponent instead of using ComponentBase only",
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);

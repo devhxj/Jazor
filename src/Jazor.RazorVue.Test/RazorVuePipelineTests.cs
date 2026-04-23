@@ -37,7 +37,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -101,7 +101,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public string? Title { get; set; }
@@ -152,12 +152,12 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -202,7 +202,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/toolbar-card")]
-                public class ToolbarCard : VueComponent
+                public class ToolbarCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -249,7 +249,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/toolbar-card")]
-                public class ToolbarCard : VueComponent
+                public class ToolbarCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -300,7 +300,7 @@ public sealed class RazorVuePipelineTests
                 [VueLibraryComponent("demo/components", "DemoButton")]
                 [VueLibraryStyle("demo/button.css")]
                 [VueLibraryPluginRequirement("demo-host")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Text { get; set; }
@@ -310,7 +310,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/library-host")]
-                public class LibraryHost : VueComponent
+                public class LibraryHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -357,7 +357,7 @@ public sealed class RazorVuePipelineTests
                 [VueLibraryComponent("demo/components", "DemoButton")]
                 [VueLibraryStyle("demo/button.css")]
                 [VueLibraryPluginRequirement("demo-host")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                 }
 
@@ -366,7 +366,7 @@ public sealed class RazorVuePipelineTests
                 [VueLibraryStyle("demo/card.css")]
                 [VueLibraryPluginRequirement(" demo-host ")]
                 [VueLibraryPluginRequirement("feature-flags")]
-                public sealed class DemoCard : VueLibraryComponent
+                public sealed class DemoCard : ComponentBase, IVueLibraryComponent
                 {
                 }
             }
@@ -374,7 +374,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/library-host")]
-                public class LibraryHost : VueComponent
+                public class LibraryHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -425,7 +425,7 @@ public sealed class RazorVuePipelineTests
                 [VueLibraryProp(nameof(Label), VuePropKind.LibrarySpecific, Name = "buttonLabel", Required = true)]
                 [VueLibraryEmit(nameof(OnSubmit), VueEmitKind.LibrarySpecific, Name = "onSaveNow")]
                 [VueLibrarySlot(nameof(Footer), Name = "actions")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Label { get; set; }
@@ -441,7 +441,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/library-host")]
-                public class LibraryHost : VueComponent
+                public class LibraryHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnSave { get; set; }
@@ -492,7 +492,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/editor-card")]
-                public class EditorCard : VueComponent
+                public class EditorCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnClick { get; set; }
@@ -555,7 +555,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
@@ -607,7 +607,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dashboard-card")]
-                public class DashboardCard : VueComponent
+                public class DashboardCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -669,7 +669,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/preferences-card")]
-                public class PreferencesCard : VueComponent
+                public class PreferencesCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public bool Enabled { get; set; }
@@ -746,7 +746,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/notification-panel")]
-                public class NotificationPanel : VueComponent
+                public class NotificationPanel : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public bool Enabled { get; set; }
@@ -846,7 +846,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/profile-form")]
-                public class ProfileForm : VueComponent
+                public class ProfileForm : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public string? Role { get; set; }
@@ -935,7 +935,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/navigation-shell")]
-                public class NavigationShell : VueComponent
+                public class NavigationShell : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public string? Query { get; set; }
@@ -1046,7 +1046,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -1088,7 +1088,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/icon-host")]
-                public class IconHost : VueComponent
+                public class IconHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -1130,7 +1130,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Library
             {
                 [VueLibraryComponent("demo/components", "TypedContentPanel")]
-                public sealed class TypedContentPanel : VueLibraryComponent
+                public sealed class TypedContentPanel : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ChildContent { get; set; }
@@ -1140,7 +1140,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/typed-content-host")]
-                public class TypedContentHost : VueComponent
+                public class TypedContentHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -1183,7 +1183,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? ChildContent { get; set; }
@@ -1230,7 +1230,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
@@ -1276,7 +1276,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1286,7 +1286,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1332,14 +1332,14 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1398,14 +1398,14 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int[] Items { get; set; } = Array.Empty<int>();
@@ -1452,7 +1452,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class ParentCardBase : VueComponent
+                public abstract class ParentCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? ChildContent { get; set; }
@@ -1499,7 +1499,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1512,7 +1512,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1567,14 +1567,14 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ItemTemplate { get; set; }
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ItemTemplate { get; set; }
@@ -1617,13 +1617,13 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ItemTemplate { get; set; }
                 }
 
-                public abstract class ParentCardBase : VueComponent
+                public abstract class ParentCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ItemTemplate { get; set; }
@@ -1667,7 +1667,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule]
-                public class InjectedCard : VueComponent
+                public class InjectedCard : ComponentBase, IVueComponent
                 {
                 }
             }
@@ -1701,12 +1701,12 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./zeta")]
-                public class ZetaCard : VueComponent
+                public class ZetaCard : ComponentBase, IVueComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./alpha")]
-                public class AlphaCard : VueComponent
+                public class AlphaCard : ComponentBase, IVueComponent
                 {
                 }
             }
@@ -1745,7 +1745,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/template-only")]
-                public class TemplateOnlyCard : VueComponent
+                public class TemplateOnlyCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1786,7 +1786,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class TemplateOnlyCardBase : VueComponent
+                public abstract class TemplateOnlyCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1834,7 +1834,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1892,7 +1892,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1950,7 +1950,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2011,7 +2011,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2068,7 +2068,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2124,7 +2124,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -2185,7 +2185,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -2247,7 +2247,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -2310,7 +2310,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/init-card")]
-                public class InitCard : VueComponent
+                public class InitCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2359,7 +2359,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/params-card")]
-                public class ParamsCard : VueComponent
+                public class ParamsCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2408,7 +2408,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/render-card")]
-                public class RenderCard : VueComponent
+                public class RenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2458,7 +2458,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/logic-safe")]
-                public class LogicSafeCard : VueComponent
+                public class LogicSafeCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2508,7 +2508,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/full-reload")]
-                public class FullReloadCard : VueComponent
+                public class FullReloadCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2553,7 +2553,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class FullReloadCardBase : VueComponent
+                public abstract class FullReloadCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2603,7 +2603,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-card")]
-                public class HashCard : VueComponent
+                public class HashCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2630,7 +2630,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-card")]
-                public class HashCard : VueComponent
+                public class HashCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Count { get; set; }
@@ -2658,7 +2658,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-template")]
-                public class HashTemplateCard : VueComponent
+                public class HashTemplateCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2693,7 +2693,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-template")]
-                public class HashTemplateCard : VueComponent
+                public class HashTemplateCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2728,7 +2728,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-logic")]
-                public class HashLogicCard : VueComponent
+                public class HashLogicCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2768,7 +2768,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-logic")]
-                public class HashLogicCard : VueComponent
+                public class HashLogicCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2825,7 +2825,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/noop-lifecycle-hash")]
-                public class NoOpLifecycleHashCard : VueComponent
+                public class NoOpLifecycleHashCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2861,7 +2861,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/noop-lifecycle-hash")]
-                public class NoOpLifecycleHashCard : VueComponent
+                public class NoOpLifecycleHashCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2917,7 +2917,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class InheritedNoOpLifecycleHashCardBase : VueComponent
+                public abstract class InheritedNoOpLifecycleHashCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2956,7 +2956,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class InheritedNoOpLifecycleHashCardBase : VueComponent
+                public abstract class InheritedNoOpLifecycleHashCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3018,7 +3018,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/static-badge")]
-                public class StaticBadge : VueComponent
+                public class StaticBadge : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -3059,7 +3059,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/panel")]
-                public class Panel : VueComponent
+                public class Panel : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? Header { get; set; }
@@ -3069,7 +3069,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/page")]
-                public class Page : VueComponent
+                public class Page : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? ChildContent { get; set; }
@@ -3115,7 +3115,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter")]
-                public class Counter : VueComponent
+                public class Counter : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Count { get; set; }
@@ -3125,7 +3125,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/host")]
-                public class Host : VueComponent
+                public class Host : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3171,7 +3171,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/pure-static")]
-                public class PureStaticBadge : VueComponent
+                public class PureStaticBadge : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -3218,7 +3218,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/card")]
-                public class Card : VueComponent
+                public class Card : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? HeaderContent { get; set; }
@@ -3228,7 +3228,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/page")]
-                public class Page : VueComponent
+                public class Page : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? ChildContent { get; set; }
@@ -3281,14 +3281,14 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child")]
-                public class Child : VueComponent
+                public class Child : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ItemTemplate { get; set; }
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/host")]
-                public class Host : VueComponent
+                public class Host : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -3333,7 +3333,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/field-card")]
-                public class FieldCard : VueComponent
+                public class FieldCard : ComponentBase, IVueComponent
                 {
                     private int _count = 1;
 
@@ -3374,7 +3374,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/method-card")]
-                public class MethodCard : VueComponent
+                public class MethodCard : ComponentBase, IVueComponent
                 {
                     private int Calculate()
                     {
@@ -3420,7 +3420,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/method-card")]
-                public class MethodCard : VueComponent
+                public class MethodCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3472,7 +3472,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/method-card")]
-                public class MethodCard : VueComponent
+                public class MethodCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3522,7 +3522,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public int InternalValue { get; set; }
                 }
@@ -3569,7 +3569,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -3612,7 +3612,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -3655,7 +3655,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -3699,7 +3699,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -3743,7 +3743,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -3794,7 +3794,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -3845,7 +3845,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -3897,7 +3897,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -3949,7 +3949,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4002,7 +4002,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> SyncChanged { get; set; }
@@ -4063,7 +4063,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4113,7 +4113,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4166,7 +4166,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4219,7 +4219,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4269,7 +4269,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4322,7 +4322,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4373,7 +4373,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4425,7 +4425,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4495,7 +4495,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4545,7 +4545,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4595,7 +4595,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4666,7 +4666,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4741,7 +4741,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4801,7 +4801,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4876,7 +4876,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4926,7 +4926,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4980,7 +4980,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5051,7 +5051,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5121,7 +5121,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5181,7 +5181,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5231,7 +5231,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5281,7 +5281,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5331,7 +5331,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5381,7 +5381,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5431,7 +5431,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5481,7 +5481,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5531,7 +5531,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5581,7 +5581,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5631,7 +5631,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5697,7 +5697,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5757,7 +5757,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5809,7 +5809,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5862,7 +5862,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5923,7 +5923,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5973,7 +5973,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6025,7 +6025,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6074,7 +6074,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public int InternalValue { get; set; }
                 }
@@ -6121,7 +6121,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public int InternalValue { get; set; }
                 }
@@ -6168,7 +6168,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public bool InternalReady { get; set; }
 
@@ -6223,7 +6223,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public bool InternalReady { get; set; }
 
@@ -6279,7 +6279,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6351,7 +6351,7 @@ public sealed class RazorVuePipelineTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6406,7 +6406,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6454,7 +6454,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override void OnInitialized()
                     {
@@ -6496,7 +6496,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override Task OnInitializedAsync()
                     {
@@ -6540,7 +6540,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override Task OnAfterRenderAsync(bool firstRender)
                     {
@@ -6590,7 +6590,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override void OnAfterRender(bool firstRender)
                     {
@@ -6639,7 +6639,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override void OnParametersSet()
                     {
@@ -6689,7 +6689,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override Task OnParametersSetAsync()
                     {
@@ -6740,7 +6740,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -6783,7 +6783,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -6826,7 +6826,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -6877,7 +6877,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -6927,7 +6927,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6980,7 +6980,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7032,7 +7032,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7085,7 +7085,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7138,7 +7138,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7191,7 +7191,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dual-ready-card")]
-                public class DualReadyCard : VueComponent
+                public class DualReadyCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -7252,7 +7252,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7305,7 +7305,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7359,7 +7359,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7412,7 +7412,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7463,7 +7463,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7518,7 +7518,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/disposable-async")]
-                public class DisposableAsyncCard : VueComponent
+                public class DisposableAsyncCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7565,7 +7565,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class DisposableAsyncCardBase : VueComponent
+                public abstract class DisposableAsyncCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7617,7 +7617,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/helper-card")]
-                public class HelperCard : VueComponent
+                public class HelperCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7668,7 +7668,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/helper-composition-card")]
-                public class HelperCompositionCard : VueComponent
+                public class HelperCompositionCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7721,7 +7721,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/helper-field-card")]
-                public class HelperFieldCard : VueComponent
+                public class HelperFieldCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7776,7 +7776,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/shared-helper-card")]
-                public class SharedHelperCard : VueComponent
+                public class SharedHelperCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7831,7 +7831,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/three-level-card")]
-                public class ThreeLevelCard : VueComponent
+                public class ThreeLevelCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7885,7 +7885,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/async-helper-card")]
-                public class AsyncHelperCard : VueComponent
+                public class AsyncHelperCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7940,7 +7940,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/logic-card")]
-                public class LogicCard : VueComponent
+                public class LogicCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -7986,7 +7986,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LogicCardBase : VueComponent
+                public abstract class LogicCardBase : ComponentBase, IVueComponent
                 {
                     public int Calculate(int value)
                     {
@@ -8037,7 +8037,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LogicCardBase : VueComponent
+                public abstract class LogicCardBase : ComponentBase, IVueComponent
                 {
                     public int Calculate(int value)
                     {
@@ -8096,7 +8096,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LogicCardBase : VueComponent
+                public abstract class LogicCardBase : ComponentBase, IVueComponent
                 {
                     public int Calculate(int value)
                     {
@@ -8140,7 +8140,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class LogicCardBase : VueComponent
+                public abstract class LogicCardBase : ComponentBase, IVueComponent
                 {
                     public int Calculate(int value)
                     {
@@ -8206,7 +8206,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLogicLifecycleCardBase : VueComponent
+                public abstract class HashLogicLifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8260,7 +8260,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLogicLifecycleCardBase : VueComponent
+                public abstract class HashLogicLifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8324,7 +8324,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLogicLifecycleAwaitShapeCardBase : VueComponent
+                public abstract class HashLogicLifecycleAwaitShapeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8376,7 +8376,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLogicLifecycleAwaitShapeCardBase : VueComponent
+                public abstract class HashLogicLifecycleAwaitShapeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8440,7 +8440,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/multi-lifecycle")]
-                public class MultiLifecycleCard : VueComponent
+                public class MultiLifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8497,7 +8497,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class ReadyCardBase : VueComponent
+                public abstract class ReadyCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnReady { get; set; }
@@ -8555,7 +8555,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class AsyncReadyCardBase : VueComponent
+                public abstract class AsyncReadyCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -8617,7 +8617,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-safe-mix")]
-                public class DisposeSafeMixCard : VueComponent
+                public class DisposeSafeMixCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8666,7 +8666,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class DisposeSafeMixCardBase : VueComponent
+                public abstract class DisposeSafeMixCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8720,7 +8720,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class DisposeAsyncSafeMixCardBase : VueComponent
+                public abstract class DisposeAsyncSafeMixCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -8775,7 +8775,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-card")]
-                public class DisposeCard : VueComponent, IDisposable
+                public class DisposeCard : ComponentBase, IVueComponent, IDisposable
                 {
                     [Parameter]
                     public EventCallback<int> ValueDisposed { get; set; }
@@ -8829,7 +8829,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-async-card")]
-                public class DisposeAsyncCard : VueComponent, IAsyncDisposable
+                public class DisposeAsyncCard : ComponentBase, IVueComponent, IAsyncDisposable
                 {
                     [Parameter]
                     public EventCallback OnDisposed { get; set; }
@@ -8881,7 +8881,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class DisposeCardBase : VueComponent, IDisposable
+                public abstract class DisposeCardBase : ComponentBase, IVueComponent, IDisposable
                 {
                     [Parameter]
                     public EventCallback<int> ValueDisposed { get; set; }
@@ -8942,7 +8942,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class DisposeAsyncCardBase : VueComponent, IAsyncDisposable
+                public abstract class DisposeAsyncCardBase : ComponentBase, IVueComponent, IAsyncDisposable
                 {
                     [Parameter]
                     public EventCallback<bool> DisposedChanged { get; set; }
@@ -9000,7 +9000,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-card")]
-                public class DisposeCard : VueComponent, IDisposable
+                public class DisposeCard : ComponentBase, IVueComponent, IDisposable
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9052,7 +9052,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-logic-sig")]
-                public class HashLogicSigCard : VueComponent
+                public class HashLogicSigCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9092,7 +9092,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-logic-sig")]
-                public class HashLogicSigCard : VueComponent
+                public class HashLogicSigCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9145,7 +9145,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class SetParamsAsyncWithSafeCardBase : VueComponent
+                public abstract class SetParamsAsyncWithSafeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9199,7 +9199,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLogicSigCardBase : VueComponent
+                public abstract class HashLogicSigCardBase : ComponentBase, IVueComponent
                 {
                     public int Calculate(int value)
                     {
@@ -9242,7 +9242,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLogicSigCardBase : VueComponent
+                public abstract class HashLogicSigCardBase : ComponentBase, IVueComponent
                 {
                     public int Calculate(int value, int scale)
                     {
@@ -9295,7 +9295,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLifecyclePayloadCardBase : VueComponent
+                public abstract class HashLifecyclePayloadCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9344,7 +9344,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashLifecyclePayloadCardBase : VueComponent
+                public abstract class HashLifecyclePayloadCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9403,7 +9403,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashAfterRenderPayloadCardBase : VueComponent
+                public abstract class HashAfterRenderPayloadCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public bool Ready { get; set; }
@@ -9449,7 +9449,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashAfterRenderPayloadCardBase : VueComponent
+                public abstract class HashAfterRenderPayloadCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public bool Ready { get; set; }
@@ -9506,7 +9506,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-lifecycle-payload")]
-                public class HashLifecyclePayloadCard : VueComponent
+                public class HashLifecyclePayloadCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9552,7 +9552,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-lifecycle-payload")]
-                public class HashLifecyclePayloadCard : VueComponent
+                public class HashLifecyclePayloadCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9608,7 +9608,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-lifecycle-await-shape")]
-                public class HashLifecycleAwaitShapeCard : VueComponent
+                public class HashLifecycleAwaitShapeCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9652,7 +9652,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/hash-lifecycle-await-shape")]
-                public class HashLifecycleAwaitShapeCard : VueComponent
+                public class HashLifecycleAwaitShapeCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9704,7 +9704,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashInheritedLifecycleAwaitShapeCardBase : VueComponent
+                public abstract class HashInheritedLifecycleAwaitShapeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9751,7 +9751,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashInheritedLifecycleAwaitShapeCardBase : VueComponent
+                public abstract class HashInheritedLifecycleAwaitShapeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9807,7 +9807,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashInheritedAfterRenderAwaitShapeCardBase : VueComponent
+                public abstract class HashInheritedAfterRenderAwaitShapeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -9851,7 +9851,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class HashInheritedAfterRenderAwaitShapeCardBase : VueComponent
+                public abstract class HashInheritedAfterRenderAwaitShapeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -9907,7 +9907,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/async-safe-lifecycle")]
-                public class AsyncSafeLifecycleCard : VueComponent
+                public class AsyncSafeLifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9966,7 +9966,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/async-parameters-set")]
-                public class AsyncParametersSetCard : VueComponent
+                public class AsyncParametersSetCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10016,7 +10016,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render")]
-                public class ShouldRenderCard : VueComponent
+                public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10063,7 +10063,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class ShouldRenderCardBase : VueComponent
+                public abstract class ShouldRenderCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10116,7 +10116,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render")]
-                public class ShouldRenderCard : VueComponent
+                public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10165,7 +10165,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async")]
-                public class SetParametersAsyncCard : VueComponent
+                public class SetParametersAsyncCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10212,7 +10212,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class SetParametersAsyncCardBase : VueComponent
+                public abstract class SetParametersAsyncCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10265,7 +10265,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async")]
-                public class SetParametersAsyncCard : VueComponent
+                public class SetParametersAsyncCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10319,7 +10319,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class SetParametersAsyncCardBase : VueComponent
+                public abstract class SetParametersAsyncCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10381,7 +10381,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class SetParametersAsyncCardBase : VueComponent
+                public abstract class SetParametersAsyncCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10443,7 +10443,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render-with-safe")]
-                public class ShouldRenderWithSafeCard : VueComponent
+                public class ShouldRenderWithSafeCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnReady { get; set; }
@@ -10495,7 +10495,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class ShouldRenderWithSafeCardBase : VueComponent
+                public abstract class ShouldRenderWithSafeCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10553,7 +10553,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-params-async-with-safe")]
-                public class SetParamsAsyncWithSafeCard : VueComponent
+                public class SetParamsAsyncWithSafeCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10605,7 +10605,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async-emit")]
-                public class SetParametersAsyncEmitCard : VueComponent
+                public class SetParametersAsyncEmitCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10659,7 +10659,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async-unsupported")]
-                public class SetParametersAsyncUnsupportedCard : VueComponent
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10707,7 +10707,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render")]
-                public class ShouldRenderCard : VueComponent
+                public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10753,7 +10753,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class ShouldRenderWithSafeCardBase : VueComponent
+                public abstract class ShouldRenderWithSafeCardBase : ComponentBase, IVueComponent
                 {
                     protected override bool ShouldRender() => true;
                 }
@@ -10806,7 +10806,7 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                public abstract class ShouldRenderCardBase : VueComponent
+                public abstract class ShouldRenderCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -10860,7 +10860,7 @@ public sealed class RazorVuePipelineTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/props-no-template")]
-                public class PropsNoTemplateCard : VueComponent
+                public class PropsNoTemplateCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }

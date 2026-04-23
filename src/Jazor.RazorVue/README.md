@@ -9,7 +9,7 @@ It owns descriptor extraction, component discovery, semantic snapshot shaping, l
 
 ## Responsibilities
 
-- Define the Vue-facing authoring entry type through `VueComponent`.
+- Define the Vue-facing authoring marker interfaces through `IVueComponent` and `IVueLibraryComponent`.
 - Build the RazorVue compilation context and component candidate model.
 - Extract component descriptors, props, emits, slots, and related semantic inputs.
 - Lower Razor-driven component semantics into Vue-oriented artifacts.
@@ -24,17 +24,18 @@ It owns descriptor extraction, component discovery, semantic snapshot shaping, l
 
 ## Key Files
 
-- `VueComponent.cs`: authoring entry base type for RazorVue components.
-- `RazorVue/RazorVueCompilationContext.cs`: shared compilation-time context.
-- `RazorVue/RazorVuePipeline.cs`: main execution path for catalog generation.
-- `RazorVue/Artifacts/`: semantic snapshot, catalog, source-origin, and compiled-artifact carriers.
-- `RazorVue/Descriptor/`: descriptor extraction, registry, and resolution.
-- `RazorVue/Lowering/`: Vue artifact shaping and lowering.
+- `IVueComponent.cs`: user component authoring marker used together with `ComponentBase`.
+- `IVueLibraryComponent.cs`: external Vue library component marker used together with `ComponentBase`.
+- `RazorVueCompilationContext.cs`: shared compilation-time context.
+- `RazorVuePipeline.cs`: main execution path for catalog generation.
+- `Artifacts/`: semantic snapshot, catalog, source-origin, and compiled-artifact carriers.
+- `Descriptor/`: descriptor extraction, registry, and resolution.
+- `Lowering/`: Vue artifact shaping and lowering.
 
 ## Verification
 
-- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQualifiedName~RazorVuePipelineTests"`
-- `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQualifiedName~ESGeneratorTests"`
+- `pwsh ./scripts/test-dotnet.ps1 -Project razorvue`
+- `dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQualifiedName~RazorVuePipelineTests"`
 
 ## Read Next
 

@@ -168,7 +168,7 @@ public sealed class RazorVueComponentRegistryTests
                 [VueLibraryComponent("demo/components", "DemoButton")]
                 [VueLibraryStyle("demo/styles")]
                 [VueLibraryPluginRequirement("demo-host")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Text { get; set; }
@@ -215,7 +215,7 @@ public sealed class RazorVueComponentRegistryTests
                 [VueLibraryStyle("demo/button.css")]
                 [VueLibraryPluginRequirement("demo-host")]
                 [VueLibraryPluginRequirement("feature-flags")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Text { get; set; }
@@ -260,7 +260,7 @@ public sealed class RazorVueComponentRegistryTests
             namespace Demo.Ui.Custom
             {
                 [VueLibraryComponent("demo/components", "DemoButton")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Text { get; set; }
@@ -300,7 +300,7 @@ public sealed class RazorVueComponentRegistryTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/host-card")]
-                public class HostCard : VueComponent
+                public class HostCard : ComponentBase, IVueComponent
                 {
                 }
             }

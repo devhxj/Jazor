@@ -34,7 +34,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
             }
             """);
@@ -118,7 +118,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 public void Trigger()
                 {
@@ -150,7 +150,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public int Value { get; set; }
@@ -184,7 +184,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 protected override bool ShouldRender()
                 {
@@ -215,7 +215,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 protected override bool ShouldRender()
                 {
@@ -248,7 +248,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 public override Task SetParametersAsync(ParameterView parameters)
                 {
@@ -281,7 +281,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public int Value { get; set; }
@@ -321,7 +321,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public int Value { get; set; }
@@ -358,7 +358,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public int Value { get; set; }
@@ -397,7 +397,7 @@ public sealed class RazorVueAnalyzerTests
                 }
             }
 
-            public abstract class SetParametersAsyncBaseComponent : VueComponent
+            public abstract class SetParametersAsyncBaseComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public int Value { get; set; }
@@ -445,7 +445,7 @@ public sealed class RazorVueAnalyzerTests
                 }
             }
 
-            public abstract class SetParametersAsyncBaseComponent : VueComponent
+            public abstract class SetParametersAsyncBaseComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public int Value { get; set; }
@@ -496,7 +496,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 protected override void BuildRenderTree(RenderTreeBuilder builder)
                 {
@@ -532,7 +532,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 public string? Text { get; set; }
 
@@ -576,7 +576,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Label { get; set; }
@@ -615,7 +615,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Value { get; set; }
@@ -660,7 +660,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public RenderFragment? ChildContent { get; set; }
@@ -698,7 +698,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 protected override void BuildRenderTree(RenderTreeBuilder builder)
                 {
@@ -734,7 +734,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class InvalidComponent : VueComponent
+            public class InvalidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
@@ -774,7 +774,7 @@ public sealed class RazorVueAnalyzerTests
             }
 
             [ECMAScript.ECMAScriptModule]
-            public class ValidComponent : VueComponent
+            public class ValidComponent : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
@@ -809,7 +809,7 @@ public sealed class RazorVueAnalyzerTests
                 }
             }
 
-            public sealed class InvalidLibraryComponent : VueLibraryComponent
+            public sealed class InvalidLibraryComponent : ComponentBase, IVueLibraryComponent
             {
             }
             """);
@@ -838,7 +838,7 @@ public sealed class RazorVueAnalyzerTests
             [VueLibraryComponent("demo/components", "DemoPanel")]
             [VueLibraryStyle("demo/styles")]
             [VueLibraryStyle(" demo/styles ")]
-            public sealed class InvalidLibraryComponent : VueLibraryComponent
+            public sealed class InvalidLibraryComponent : ComponentBase, IVueLibraryComponent
             {
             }
             """);
@@ -867,7 +867,7 @@ public sealed class RazorVueAnalyzerTests
             [VueLibraryComponent("demo/components", "DemoPanel")]
             [VueLibraryPluginRequirement("demo-host")]
             [VueLibraryPluginRequirement(" demo-host ")]
-            public sealed class InvalidLibraryComponent : VueLibraryComponent
+            public sealed class InvalidLibraryComponent : ComponentBase, IVueLibraryComponent
             {
             }
             """);
@@ -896,7 +896,7 @@ public sealed class RazorVueAnalyzerTests
             [VueLibraryComponent("demo/components", "DemoPanel")]
             [VueLibraryStyle("demo/styles")]
             [VueLibraryPluginRequirement("demo-host")]
-            public sealed class ValidLibraryComponent : VueLibraryComponent
+            public sealed class ValidLibraryComponent : ComponentBase, IVueLibraryComponent
             {
             }
             """);

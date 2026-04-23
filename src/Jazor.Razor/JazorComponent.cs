@@ -1,7 +1,6 @@
 namespace Jazor.Razor;
 
-public interface IJazorComponent 
+public interface IJazorComponent
 {
-    // Keep this type intentionally thin: it marks entry into the Jazor Razor
-    // substrate without mixing author-facing APIs with compiler analysis logic.
+    // 仅保留为 Jazor Razor 基础标记，避免把 authoring API 与编译分析逻辑耦合在同一个基类中。
 }

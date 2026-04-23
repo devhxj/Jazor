@@ -4,8 +4,8 @@ namespace Jazor.RazorVue;
 
 public sealed record RazorVueCompilationSymbols(
     INamedTypeSymbol ECMAScriptModuleAttribute,
-    INamedTypeSymbol JazorComponent,
-    INamedTypeSymbol VueComponent,
+    INamedTypeSymbol JazorComponentMarker,
+    INamedTypeSymbol VueComponentMarker,
     INamedTypeSymbol ComponentBase,
     INamedTypeSymbol? ParameterAttribute,
     INamedTypeSymbol? ParameterView,
@@ -26,16 +26,9 @@ public sealed record RazorVueCompilationSymbols(
     public static RazorVueCompilationSymbols? TryCreate(Compilation compilation)
     {
         var ecmaScriptModuleAttribute = compilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
-        // Prefer the final public runtime libraries but keep transitional
-        // fallbacks so older test inputs and intermediate branches still load.
-        var jazorComponent = GetTypeByMetadataName(
-            compilation,
-            "Jazor.Razor.JazorComponent",
-            "Jazor.Compiler.Razor.JazorComponent");
-        var vueComponent = GetTypeByMetadataName(
-            compilation,
-            "Jazor.RazorVue.VueComponent",
-            "Jazor.Compiler.RazorVue.VueComponent");
+        // 生产 authoring 面保持低 TFM：组件边界只由接口标记表达，不再依赖 VueComponent/JazorComponent 基类。
+        var jazorComponent = compilation.GetTypeByMetadataName("Jazor.Razor.IJazorComponent");
+        var vueComponent = compilation.GetTypeByMetadataName("Jazor.RazorVue.IVueComponent");
         var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
 
         if (ecmaScriptModuleAttribute is null ||
@@ -84,15 +77,4 @@ public sealed record RazorVueCompilationSymbols(
             vueLibraryComponentFlagsAttribute);
     }
 
-    private static INamedTypeSymbol? GetTypeByMetadataName(Compilation compilation, params string[] metadataNames)
-    {
-        foreach (var metadataName in metadataNames)
-        {
-            var symbol = compilation.GetTypeByMetadataName(metadataName);
-            if (symbol is not null)
-                return symbol;
-        }
-
-        return null;
-    }
 }

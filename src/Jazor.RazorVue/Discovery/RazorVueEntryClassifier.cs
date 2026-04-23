@@ -27,7 +27,7 @@ internal static class RazorVueEntryClassifier
         if (!DerivesFrom(symbol, symbols.ComponentBase))
             return RazorVueEntryKind.None;
 
-        return DerivesFrom(symbol, symbols.JazorComponent)
+        return Implements(symbol, symbols.VueComponentMarker)
             ? RazorVueEntryKind.RazorVueComponent
             : RazorVueEntryKind.Invalid;
     }
@@ -35,7 +35,8 @@ internal static class RazorVueEntryClassifier
     public static bool IsDirectComponentBaseEntry(INamedTypeSymbol symbol, RazorVueCompilationSymbols symbols)
         => HasECMAScriptModuleAttribute(symbol, symbols) &&
            !symbol.IsStatic &&
-           Comparer.Equals(symbol.BaseType?.OriginalDefinition, symbols.ComponentBase);
+           Comparer.Equals(symbol.BaseType?.OriginalDefinition, symbols.ComponentBase) &&
+           !Implements(symbol, symbols.VueComponentMarker);
 
     public static bool IsInRazorVueScope(INamedTypeSymbol symbol, RazorVueCompilationSymbols symbols)
     {

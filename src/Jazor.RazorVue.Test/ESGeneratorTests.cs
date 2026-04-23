@@ -105,9 +105,8 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Id == "CS0436")
             .ToArray();
 
-        // 生成器当前会把模块内容按 CRLF 写入 catalog 字符串字面量；
-        // 这里显式锁定该形状，避免 Environment.NewLine 让测试随宿主环境漂移。
-        var moduleContent = "export let Value = 2;\r\n";
+        // 生成器固定以 LF 写入 catalog 字符串字面量，避免模块内容随宿主换行漂移。
+        var moduleContent = "export let Value = 2;\n";
         var moduleHash = ComputeSha256Hex(moduleContent);
 
         Assert.AreEqual(0, conflicts.Length, string.Join("\n", conflicts.Select(static x => x.ToString())));
@@ -199,8 +198,8 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
-        var alphaContent = $"export let Value = 1;{Environment.NewLine}";
-        var zetaContent = $"export let Value = 2;{Environment.NewLine}";
+        var alphaContent = "export let Value = 1;\n";
+        var zetaContent = "export let Value = 2;\n";
         var alphaHash = ComputeSha256Hex(alphaContent);
         var zetaHash = ComputeSha256Hex(zetaContent);
 
@@ -382,7 +381,7 @@ public sealed class ESGeneratorTests
         var diagnostics = outputCompilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
-        var moduleContent = $"export let Value = 7;{Environment.NewLine}";
+        var moduleContent = "export let Value = 7;\n";
         var moduleHash = ComputeSha256Hex(moduleContent);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
@@ -558,7 +557,7 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
-        const string moduleContent = "export let QuoteString = \"He said \\\"Hello\\\"\";\r\nexport let SpecialString = \"Hello\\nWorld\\t!\";\r\n";
+        const string moduleContent = "export let QuoteString = \"He said \\\"Hello\\\"\";\nexport let SpecialString = \"Hello\\nWorld\\t!\";\n";
         var moduleHash = ComputeSha256Hex(moduleContent);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
@@ -638,7 +637,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -697,12 +696,12 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -752,7 +751,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -762,7 +761,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -820,7 +819,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -885,7 +884,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components.Alpha
             {
                 [ECMAScript.ECMAScriptModule("./components/alpha-child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                 }
             }
@@ -893,7 +892,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components.Beta
             {
                 [ECMAScript.ECMAScriptModule("./components/beta-child-card")]
-                public class ChildCard : VueComponent
+                public class ChildCard : ComponentBase, IVueComponent
                 {
                 }
             }
@@ -901,7 +900,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components.Host
             {
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -963,12 +962,12 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/teleport-card")]
-                public class Teleport : VueComponent
+                public class Teleport : ComponentBase, IVueComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/parent-card")]
-                public class ParentCard : VueComponent
+                public class ParentCard : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -1031,7 +1030,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1124,7 +1123,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/save-card")]
-                public class SaveCard : VueComponent
+                public class SaveCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnSave { get; set; }
@@ -1195,7 +1194,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/save-card")]
-                public class SaveCard : VueComponent
+                public class SaveCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnSave { get; set; }
@@ -1266,7 +1265,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1341,7 +1340,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1416,7 +1415,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1493,7 +1492,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/save-card")]
-                public class SaveCard : VueComponent
+                public class SaveCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnSave { get; set; }
@@ -1565,7 +1564,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                public class CounterCard : VueComponent
+                public class CounterCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1639,7 +1638,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class CounterCardBase : VueComponent
+                public abstract class CounterCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1710,7 +1709,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/ready-card")]
-                public class ReadyCard : VueComponent
+                public class ReadyCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnReady { get; set; }
@@ -1785,7 +1784,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/async-ready-card")]
-                public class AsyncReadyCard : VueComponent
+                public class AsyncReadyCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -1860,7 +1859,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class AsyncReadyCardBase : VueComponent
+                public abstract class AsyncReadyCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -1932,7 +1931,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/init-card")]
-                public class InitCard : VueComponent
+                public class InitCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -1992,7 +1991,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/params-card")]
-                public class ParamsCard : VueComponent
+                public class ParamsCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2052,7 +2051,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/render-card")]
-                public class RenderCard : VueComponent
+                public class RenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2112,7 +2111,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class ReadyCardBase : VueComponent
+                public abstract class ReadyCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback OnReady { get; set; }
@@ -2181,7 +2180,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class AsyncReadyCardBase : VueComponent
+                public abstract class AsyncReadyCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -2252,7 +2251,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/sync-ready-card")]
-                public class SyncReadyCard : VueComponent
+                public class SyncReadyCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -2330,7 +2329,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dual-ready-card")]
-                public class DualReadyCard : VueComponent
+                public class DualReadyCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> OnReady { get; set; }
@@ -2411,7 +2410,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/noop-card")]
-                public class NoOpCard : VueComponent
+                public class NoOpCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2499,7 +2498,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/noop-sync-card")]
-                public class NoOpSyncCard : VueComponent
+                public class NoOpSyncCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2580,7 +2579,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-card")]
-                public class DisposeCard : VueComponent, IDisposable
+                public class DisposeCard : ComponentBase, IVueComponent, IDisposable
                 {
                     [Parameter]
                     public EventCallback OnDisposed { get; set; }
@@ -2642,7 +2641,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-async-card")]
-                public class DisposeAsyncCard : VueComponent, IAsyncDisposable
+                public class DisposeAsyncCard : ComponentBase, IVueComponent, IAsyncDisposable
                 {
                     [Parameter]
                     public EventCallback OnDisposed { get; set; }
@@ -2702,7 +2701,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class DisposeCardBase : VueComponent, IDisposable
+                public abstract class DisposeCardBase : ComponentBase, IVueComponent, IDisposable
                 {
                     [Parameter]
                     public EventCallback<int> ValueDisposed { get; set; }
@@ -2774,7 +2773,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class DisposeAsyncCardBase : VueComponent, IAsyncDisposable
+                public abstract class DisposeAsyncCardBase : ComponentBase, IVueComponent, IAsyncDisposable
                 {
                     [Parameter]
                     public EventCallback<bool> DisposedChanged { get; set; }
@@ -2843,7 +2842,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dispose-card")]
-                public class DisposeCard : VueComponent, IDisposable
+                public class DisposeCard : ComponentBase, IVueComponent, IDisposable
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2902,7 +2901,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render")]
-                public class ShouldRenderCard : VueComponent
+                public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -2961,7 +2960,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render")]
-                public class ShouldRenderCard : VueComponent
+                public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3019,7 +3018,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/should-render")]
-                public class ShouldRenderCard : VueComponent
+                public class ShouldRenderCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3079,7 +3078,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async")]
-                public class SetParametersAsyncCard : VueComponent
+                public class SetParametersAsyncCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3139,7 +3138,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async-emit")]
-                public class SetParametersAsyncEmitCard : VueComponent
+                public class SetParametersAsyncEmitCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3203,7 +3202,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class SetParametersAsyncEmitCardBase : VueComponent
+                public abstract class SetParametersAsyncEmitCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3276,7 +3275,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class SetParametersAsyncEmitCardBase : VueComponent
+                public abstract class SetParametersAsyncEmitCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3350,7 +3349,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async-unsupported")]
-                public class SetParametersAsyncUnsupportedCard : VueComponent
+                public class SetParametersAsyncUnsupportedCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3410,7 +3409,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/set-parameters-async")]
-                public class SetParametersAsyncCard : VueComponent
+                public class SetParametersAsyncCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3473,7 +3472,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -3540,7 +3539,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public int InternalValue { get; set; }
                 }
@@ -3608,7 +3607,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public int InternalValue { get; set; }
                 }
@@ -3677,7 +3676,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public int InternalValue { get; set; }
                 }
@@ -3746,7 +3745,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public bool InternalReady { get; set; }
 
@@ -3823,7 +3822,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     public bool InternalReady { get; set; }
 
@@ -3899,7 +3898,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -3964,7 +3963,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -4029,7 +4028,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -4094,7 +4093,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -4160,7 +4159,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -4226,7 +4225,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4299,7 +4298,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4372,7 +4371,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4446,7 +4445,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4520,7 +4519,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4598,7 +4597,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> SyncChanged { get; set; }
@@ -4679,7 +4678,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4751,7 +4750,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4824,7 +4823,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4897,7 +4896,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -4969,7 +4968,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5042,7 +5041,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5115,7 +5114,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5189,7 +5188,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5281,7 +5280,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5353,7 +5352,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5425,7 +5424,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5518,7 +5517,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5615,7 +5614,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5697,7 +5696,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5794,7 +5793,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5866,7 +5865,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -5942,7 +5941,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6035,7 +6034,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6127,7 +6126,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6209,7 +6208,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6281,7 +6280,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6353,7 +6352,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6425,7 +6424,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6497,7 +6496,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6569,7 +6568,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6641,7 +6640,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6713,7 +6712,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6785,7 +6784,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6857,7 +6856,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -6945,7 +6944,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7027,7 +7026,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7101,7 +7100,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7174,7 +7173,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7257,7 +7256,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7329,7 +7328,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7403,7 +7402,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7477,7 +7476,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7571,7 +7570,7 @@ public sealed class ESGeneratorTests
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7648,7 +7647,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -7718,7 +7717,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override void OnInitialized()
                     {
@@ -7782,7 +7781,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override Task OnInitializedAsync()
                     {
@@ -7848,7 +7847,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override Task OnAfterRenderAsync(bool firstRender)
                     {
@@ -7920,7 +7919,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override void OnAfterRender(bool firstRender)
                     {
@@ -7991,7 +7990,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override void OnParametersSet()
                     {
@@ -8063,7 +8062,7 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public abstract class LifecycleCardBase : VueComponent
+                public abstract class LifecycleCardBase : ComponentBase, IVueComponent
                 {
                     protected override Task OnParametersSetAsync()
                     {
@@ -8136,7 +8135,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -8201,7 +8200,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -8266,7 +8265,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -8339,7 +8338,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<int> ValueChanged { get; set; }
@@ -8411,7 +8410,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8484,7 +8483,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8556,7 +8555,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8629,7 +8628,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8702,7 +8701,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8775,7 +8774,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8848,7 +8847,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8922,7 +8921,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -8995,7 +8994,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -9066,7 +9065,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public EventCallback<bool> ReadyChanged { get; set; }
@@ -9138,7 +9137,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/bad-helper")]
-                public class BadHelper : VueComponent
+                public class BadHelper : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9201,7 +9200,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/three-level-card")]
-                public class ThreeLevelCard : VueComponent
+                public class ThreeLevelCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9264,7 +9263,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/async-helper-card")]
-                public class AsyncHelperCard : VueComponent
+                public class AsyncHelperCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
@@ -9326,7 +9325,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/button-host")]
-                public class ButtonHost : VueComponent
+                public class ButtonHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9379,7 +9378,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/button-host")]
-                public class ButtonHost : VueComponent
+                public class ButtonHost : ComponentBase, IVueComponent
                 {
                     private bool Disabled { get; set; }
 
@@ -9439,7 +9438,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/card-host")]
-                public class CardHost : VueComponent
+                public class CardHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? Header { get; set; }
@@ -9494,7 +9493,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/icon-host")]
-                public class IconHost : VueComponent
+                public class IconHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9546,7 +9545,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Library
             {
                 [VueLibraryComponent("demo/components", "TypedContentPanel")]
-                public sealed class TypedContentPanel : VueLibraryComponent
+                public sealed class TypedContentPanel : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public RenderFragment<int>? ChildContent { get; set; }
@@ -9556,7 +9555,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/typed-content-host")]
-                public class TypedContentHost : VueComponent
+                public class TypedContentHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9607,7 +9606,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9660,7 +9659,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment? ChildContent { get; set; }
@@ -9717,7 +9716,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : VueComponent
+                public class DialogHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
@@ -9771,12 +9770,12 @@ public sealed class ESGeneratorTests
 
             namespace Demo.Components
             {
-                public sealed class InvalidLibraryPanel : VueLibraryComponent
+                public sealed class InvalidLibraryPanel : ComponentBase, IVueLibraryComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/host")]
-                public class HostComponent : VueComponent
+                public class HostComponent : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9833,12 +9832,12 @@ public sealed class ESGeneratorTests
                 [VueLibraryComponent("demo/components", "InvalidLibraryPanel")]
                 [VueLibraryStyle("demo/styles")]
                 [VueLibraryStyle(" demo/styles ")]
-                public sealed class InvalidLibraryPanel : VueLibraryComponent
+                public sealed class InvalidLibraryPanel : ComponentBase, IVueLibraryComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/host")]
-                public class HostComponent : VueComponent
+                public class HostComponent : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9890,12 +9889,12 @@ public sealed class ESGeneratorTests
                 [VueLibraryComponent("demo/components", "InvalidLibraryPanel")]
                 [VueLibraryPluginRequirement("demo-host")]
                 [VueLibraryPluginRequirement(" demo-host ")]
-                public sealed class InvalidLibraryPanel : VueLibraryComponent
+                public sealed class InvalidLibraryPanel : ComponentBase, IVueLibraryComponent
                 {
                 }
 
                 [ECMAScript.ECMAScriptModule("./components/host")]
-                public class HostComponent : VueComponent
+                public class HostComponent : ComponentBase, IVueComponent
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -9944,7 +9943,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent
+                public class LifecycleCard : ComponentBase, IVueComponent
                 {
                     protected override void OnInitialized()
                     {
@@ -10005,7 +10004,7 @@ public sealed class ESGeneratorTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/field-card")]
-                public class FieldCard : VueComponent
+                public class FieldCard : ComponentBase, IVueComponent
                 {
                     private int _count = 1;
 

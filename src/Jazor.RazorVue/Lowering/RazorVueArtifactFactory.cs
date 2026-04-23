@@ -305,4 +305,5 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             builder.Append(item.ToString("X2"));
         return builder.ToString();
     }
+
 }

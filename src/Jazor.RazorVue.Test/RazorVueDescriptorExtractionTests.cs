@@ -38,7 +38,7 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule]
-                public partial class Counter : VueComponent
+                public partial class Counter : ComponentBase, IVueComponent
                 {
                     protected void BuildRenderTree(object builder)
                     {
@@ -76,7 +76,7 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/counter")]
-                public class Counter : VueComponent
+                public class Counter : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public string? Title { get; set; }
@@ -169,7 +169,7 @@ public sealed class RazorVueDescriptorExtractionTests
                 [VueLibraryComponent("demo/components", "DemoButton")]
                 [VueLibraryStyle("demo/styles")]
                 [VueLibraryPluginRequirement("demo-host")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Text { get; set; }
@@ -225,7 +225,7 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/host-card")]
-                public class HostCard : VueComponent
+                public class HostCard : ComponentBase, IVueComponent
                 {
                 }
             }
@@ -408,7 +408,7 @@ public sealed class RazorVueDescriptorExtractionTests
                 [VueLibraryComponent("demo/components", "DemoButton")]
                 [VueLibraryStyle("demo/styles")]
                 [VueLibraryStyle(" demo/styles ")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                 }
             }
@@ -442,7 +442,7 @@ public sealed class RazorVueDescriptorExtractionTests
                 [VueLibraryComponent("demo/components", "DemoButton")]
                 [VueLibraryPluginRequirement("demo-host")]
                 [VueLibraryPluginRequirement(" demo-host ")]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                 }
             }
@@ -480,7 +480,7 @@ public sealed class RazorVueDescriptorExtractionTests
                 [VueLibraryEmit(nameof(OnSubmit), VueEmitKind.LibrarySpecific, Name = "onSaveNow", PayloadTypeName = "Demo.Payload")]
                 [VueLibrarySlot(nameof(Footer), Name = "actions", Required = true, ContextTypeName = "Demo.FooterContext", ContextParameterName = "item")]
                 [VueLibraryComponentFlags(VueComponentFlags.RequiresExplicitChildren | VueComponentFlags.IsFormControl)]
-                public sealed class DemoButton : VueLibraryComponent
+                public sealed class DemoButton : ComponentBase, IVueLibraryComponent
                 {
                     [Parameter]
                     public string? Label { get; set; }
@@ -544,7 +544,7 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent, IDisposable, IAsyncDisposable
+                public class LifecycleCard : ComponentBase, IVueComponent, IDisposable, IAsyncDisposable
                 {
                     protected override void OnInitialized()
                     {
@@ -611,7 +611,7 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/lifecycle-card")]
-                public class LifecycleCard : VueComponent, IDisposable, IAsyncDisposable
+                public class LifecycleCard : ComponentBase, IVueComponent, IDisposable, IAsyncDisposable
                 {
                     protected override void OnInitialized()
                     {
@@ -683,7 +683,7 @@ public sealed class RazorVueDescriptorExtractionTests
             namespace Demo.Components
             {
                 [ECMAScript.ECMAScriptModule("./components/helper-card")]
-                public class HelperCard : VueComponent
+                public class HelperCard : ComponentBase, IVueComponent
                 {
                     [Parameter]
                     public int Value { get; set; }
