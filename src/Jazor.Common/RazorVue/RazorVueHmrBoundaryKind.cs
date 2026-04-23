@@ -1,4 +1,4 @@
-namespace Jazor.Vue;
+namespace Jazor.Common.RazorVue;
 
 public enum RazorVueHmrBoundaryKind
 {

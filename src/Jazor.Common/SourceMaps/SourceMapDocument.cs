@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 
-namespace Jazor.SourceMaps;
+namespace Jazor.Common.SourceMaps;
 
-internal sealed record SourceMapDocument(
+public sealed record SourceMapDocument(
     string File,
     IReadOnlyList<SourceMapSource> Sources,
     IReadOnlyList<SourceMapSegment> Segments);
 
-internal sealed record SourceMapSource(
+public sealed record SourceMapSource(
     string Path,
     string? Content);
 
-internal sealed record SourceMapSegment(
+public sealed record SourceMapSegment(
     int GeneratedLine,
     int GeneratedColumn,
     int SourceIndex,

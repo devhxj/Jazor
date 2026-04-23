@@ -1,4 +1,4 @@
-using Jazor.SourceMaps;
+using Jazor.Common.SourceMaps;
 
 namespace Jazor.Emit.SourceMaps;
 

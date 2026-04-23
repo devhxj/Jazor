@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 
-namespace Jazor.SourceMaps;
+namespace Jazor.Common.SourceMaps;
 
-internal sealed class SourceMapChainBuilder
+public sealed class SourceMapChainBuilder
 {
     public SourceMapDocument Chain(SourceMapDocument bundleMap, IReadOnlyDictionary<string, SourceMapDocument> moduleMapsByPath)
     {

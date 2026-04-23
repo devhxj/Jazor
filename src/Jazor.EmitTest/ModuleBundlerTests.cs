@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Jazor.Emit;
-using Jazor.SourceMaps;
+using Jazor.Common.SourceMaps;
 
 namespace Jazor.EmitTest;
 

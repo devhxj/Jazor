@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Jazor.Common.RazorVue;
 
-namespace Jazor.Vue;
+namespace Jazor.Common.Emit;
 
 public static class RazorVueManifestDiffer
 {

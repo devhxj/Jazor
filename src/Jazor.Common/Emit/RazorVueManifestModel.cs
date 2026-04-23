@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Jazor.Common.RazorVue;
 
-namespace Jazor.Vue;
+namespace Jazor.Common.Emit;
 
 public sealed record RazorVueManifestModel(
     string AssemblyName,

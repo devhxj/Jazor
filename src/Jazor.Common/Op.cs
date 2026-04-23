@@ -15,7 +15,7 @@ namespace Jazor.Common;
 /// - consumer 侧在 <c>SemanticWalker</c> 中会优先尝试 <see cref="Compile"/>，再回落到 Alias / Inline / Import。
 /// - 这不表示 producer 侧应优先选择 Compile；Compile 仍然是保留给编译器内部特例的最窄选项。
 /// </summary>
-internal enum Op
+public enum Op
 {
 	/// <summary>
 	/// 明确不支持该成员。

@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using DenoHost.Core;
-using Jazor.SourceMaps;
+using Jazor.Common.SourceMaps;
 
 namespace Jazor.Emit;
 

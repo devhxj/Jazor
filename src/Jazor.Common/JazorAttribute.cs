@@ -19,7 +19,7 @@ namespace Jazor.Common;
 	AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method,
 	AllowMultiple = false,
 	Inherited = false)]
-internal sealed class JazorAttribute : Attribute
+public sealed class JazorAttribute : Attribute
 {
 	public Op Op { get; }
 

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Jazor.Vue;
+namespace Jazor.Common.Emit;
 
-internal static class RazorVueManifestSerializer
+public static class RazorVueManifestSerializer
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

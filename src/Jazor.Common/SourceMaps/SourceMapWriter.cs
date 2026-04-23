@@ -3,9 +3,9 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 
-namespace Jazor.SourceMaps;
+namespace Jazor.Common.SourceMaps;
 
-internal sealed class SourceMapWriter
+public sealed class SourceMapWriter
 {
     private const string Base64Digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
