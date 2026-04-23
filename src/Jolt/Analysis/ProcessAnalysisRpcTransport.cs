@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using Jazor.VueContracts.Protocol;
 using Jolt.Hosting;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Rpc;
 
 namespace Jolt.Analysis;

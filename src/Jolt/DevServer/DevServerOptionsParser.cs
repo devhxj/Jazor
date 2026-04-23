@@ -61,7 +61,7 @@ internal static class DevServerOptionsParser
             if (TryGetOptionValue(arg, "--dev-frontend", out var frontendCompiler)
                 && !string.IsNullOrWhiteSpace(frontendCompiler))
             {
-                options = options with { FrontendCompiler = frontendCompiler.Trim().ToLowerInvariant() };
+                options = options with { VolarCompiler = frontendCompiler.Trim().ToLowerInvariant() };
                 continue;
             }
 

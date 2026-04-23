@@ -1,7 +1,7 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Lsp.Coordination;
 
@@ -73,7 +73,7 @@ internal sealed class CodeActionCoordinator
 
     private static bool ContainsVolarDiagnostic(IReadOnlyList<LspDiagnostic> diagnostics)
         => diagnostics.Any(diagnostic =>
-            string.Equals(diagnostic.Source, "Jolt.Frontend", StringComparison.Ordinal)
+            string.Equals(diagnostic.Source, "Jolt.Volar", StringComparison.Ordinal)
             || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND001", StringComparison.Ordinal)
             || string.Equals(diagnostic.Code, "JAZORVUEFRONTEND002", StringComparison.Ordinal));
 

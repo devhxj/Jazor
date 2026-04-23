@@ -5,13 +5,13 @@ using Jolt.Hosting;
 
 namespace Jolt.DevServer;
 
-internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
+internal sealed class StubVolarModuleCompiler : IVolarModuleCompiler
 {
     private static readonly Regex StyleBlockPattern = new(
         @"(?<open><style\b[^>]*>)(?<content>[\s\S]*?)(?<close></style>)",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
+    public ValueTask<VolarModuleCompilation?> CompileSfcAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
@@ -19,17 +19,17 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
         cancellationToken.ThrowIfCancellationRequested();
         ReportStubCompilationActivated();
 
-        return ValueTask.FromResult<FrontendModuleCompilation?>(
-            new FrontendModuleCompilation
+        return ValueTask.FromResult<VolarModuleCompilation?>(
+            new VolarModuleCompilation
             {
                 JavaScript = CreateStubSfcModule(documentPath, text),
                 StyleContent = ExtractStyleContent(text),
-                Dependencies = Array.Empty<string>(),
+                Dependencies = [],
                 SupportsHmr = true
             });
     }
 
-    public ValueTask<FrontendModuleCompilation?> CompileTypeScriptAsync(
+    public ValueTask<VolarModuleCompilation?> CompileTypeScriptAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
@@ -37,11 +37,11 @@ internal sealed class StubFrontendModuleCompiler : IFrontendModuleCompiler
         cancellationToken.ThrowIfCancellationRequested();
         ReportStubCompilationActivated();
 
-        return ValueTask.FromResult<FrontendModuleCompilation?>(
-            new FrontendModuleCompilation
+        return ValueTask.FromResult<VolarModuleCompilation?>(
+            new VolarModuleCompilation
             {
                 JavaScript = text,
-                Dependencies = DenoFrontendModuleCompiler.ExtractJavaScriptDependencies(text),
+                Dependencies = DenoVolarModuleCompiler.ExtractJavaScriptDependencies(text),
                 SupportsHmr = true
             });
     }

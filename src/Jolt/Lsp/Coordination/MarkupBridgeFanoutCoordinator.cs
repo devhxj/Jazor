@@ -1,5 +1,5 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp.Aggregation;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Lsp.Coordination;
 

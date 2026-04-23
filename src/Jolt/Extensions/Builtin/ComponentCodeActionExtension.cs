@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Extensions.Builtin;
@@ -83,7 +83,7 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
             return true;
         }
 
-        if (!string.Equals(diagnostic.Source, "Jolt.Frontend", StringComparison.Ordinal))
+        if (!string.Equals(diagnostic.Source, "Jolt.Volar", StringComparison.Ordinal))
         {
             return false;
         }

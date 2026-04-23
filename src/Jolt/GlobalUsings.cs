@@ -1,2 +1,4 @@
 global using Jazor.Vue;
-global using Jazor.SourceMaps;
+global using Jazor.Common.Emit;
+global using Jazor.Common.RazorVue;
+global using Jazor.Common.SourceMaps;

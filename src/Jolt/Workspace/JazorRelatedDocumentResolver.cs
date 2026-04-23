@@ -1,5 +1,5 @@
 using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -42,7 +42,7 @@ internal sealed class JazorRelatedDocumentResolver
         foreach (var candidatePath in candidatePaths)
         {
             var document = await JoltWorkspaceResolver.ResolveDocumentAsync(candidatePath, openDocuments, cancellationToken);
-            if (document is null || !IsSupportedFrontendDocument(document))
+            if (document is null || !IsSupportedVolarDocument(document))
             {
                 continue;
             }
@@ -90,7 +90,7 @@ internal sealed class JazorRelatedDocumentResolver
         return false;
     }
 
-    private static bool IsSupportedFrontendDocument(DocumentSnapshot document)
+    private static bool IsSupportedVolarDocument(DocumentSnapshot document)
         => document.DocumentKind is DocumentKind.Vue
             or DocumentKind.JavaScript
             or DocumentKind.TypeScript
@@ -102,7 +102,7 @@ internal sealed class JazorRelatedDocumentResolver
         IReadOnlyList<DocumentSnapshot>? openDocuments,
         CancellationToken cancellationToken)
     {
-        var parsed = _parser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
+        var parsed = JazorVueParser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
         openDocuments ??= await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var candidatePaths = new LinkedHashSet<string>(StringComparer.OrdinalIgnoreCase);
 

@@ -1,12 +1,11 @@
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.Hosting;
+using Jazor.Vue;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Analysis;
 
 internal sealed class FallbackJazorAnalysisService
 {
-    private readonly JazorVueParser _parser = new();
     private readonly JazorVueCompiler _compiler = new();
 
     public ValueTask<AnalyzeJazorResponse> AnalyzeJazorAsync(
@@ -28,7 +27,7 @@ internal sealed class FallbackJazorAnalysisService
             // Telemetry must not break the fallback analysis path.
         }
 
-        var document = _parser.Parse(
+        var document = JazorVueParser.Parse(
             request.JazorDocument.DocumentPath,
             request.JazorDocument.Text);
         var compilation = _compiler.Compile(document);

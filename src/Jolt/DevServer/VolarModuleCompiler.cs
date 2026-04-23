@@ -1,13 +1,13 @@
 namespace Jolt.DevServer;
 
-internal interface IFrontendModuleCompiler
+internal interface IVolarModuleCompiler
 {
-    ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
+    ValueTask<VolarModuleCompilation?> CompileSfcAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken);
 
-    ValueTask<FrontendModuleCompilation?> CompileTypeScriptAsync(
+    ValueTask<VolarModuleCompilation?> CompileTypeScriptAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken);
@@ -19,7 +19,7 @@ internal interface IFrontendModuleCompiler
         => ValueTask.FromResult<CssModuleCompilation?>(null);
 }
 
-internal sealed class FrontendModuleCompilation
+internal sealed class VolarModuleCompilation
 {
     public required string JavaScript { get; init; }
 
@@ -56,17 +56,17 @@ internal sealed class CssModuleCompilation
     public IReadOnlyList<string> Diagnostics { get; init; } = [];
 }
 
-internal sealed class NullFrontendModuleCompiler : IFrontendModuleCompiler
+internal sealed class NullVolarModuleCompiler : IVolarModuleCompiler
 {
-    public ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
+    public ValueTask<VolarModuleCompilation?> CompileSfcAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<FrontendModuleCompilation?>(null);
+        => ValueTask.FromResult<VolarModuleCompilation?>(null);
 
-    public ValueTask<FrontendModuleCompilation?> CompileTypeScriptAsync(
+    public ValueTask<VolarModuleCompilation?> CompileTypeScriptAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<FrontendModuleCompilation?>(null);
+        => ValueTask.FromResult<VolarModuleCompilation?>(null);
 }

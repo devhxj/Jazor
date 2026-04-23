@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Workspace;
 

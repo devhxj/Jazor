@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Extensions;
 

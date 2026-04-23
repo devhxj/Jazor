@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Jazor.Vue;
 using Jolt.DevServer;
-using Jolt.Frontend.Deno.Hosting;
+using Jolt.Volar.Deno.Hosting;
 
 namespace Jolt.Build;
 
@@ -223,37 +223,15 @@ internal sealed partial class BuildOrchestrator
 
     private static bool IsUsableDenoHostBaseDirectory(string baseDirectory)
     {
-        var workerPath = Path.Combine(baseDirectory, "Frontend", "Deno", "Worker", "frontend-worker.ts");
+        var workerPath = Path.Combine(baseDirectory, "Volar", "Deno", "Worker", "volar-worker.ts");
         var workerDirectory = Path.GetDirectoryName(workerPath);
         var workerConfigPath = string.IsNullOrWhiteSpace(workerDirectory)
             ? null
             : Path.Combine(workerDirectory, "deno.json");
-        var workerNodeModulesDirectory = string.IsNullOrWhiteSpace(workerDirectory)
-            ? null
-            : Path.Combine(workerDirectory, "node_modules");
-        var cacheDirectory = Path.Combine(baseDirectory, "Frontend", "Deno", "Cache");
-        var npmCacheDirectory = Path.Combine(cacheDirectory, "npm");
-        var registryCacheDirectory = Path.Combine(npmCacheDirectory, "registry.npmjs.org");
         return File.Exists(workerPath)
             && !string.IsNullOrWhiteSpace(workerConfigPath)
             && File.Exists(workerConfigPath)
-            && HasReadyDenoWorkerDependencies(workerNodeModulesDirectory, registryCacheDirectory)
             && DenoRuntimeAssetResolver.TryResolveBundledExecutablePath(baseDirectory, out _);
-    }
-
-    private static bool HasReadyDenoWorkerDependencies(
-        string? workerNodeModulesDirectory,
-        string registryCacheDirectory)
-    {
-        if (!string.IsNullOrWhiteSpace(workerNodeModulesDirectory)
-            && Directory.Exists(Path.Combine(workerNodeModulesDirectory, "@volar"))
-            && Directory.Exists(Path.Combine(workerNodeModulesDirectory, "@vue")))
-        {
-            return true;
-        }
-
-        return Directory.Exists(Path.Combine(registryCacheDirectory, "@volar"))
-            && Directory.Exists(Path.Combine(registryCacheDirectory, "@vue"));
     }
 
     private static async Task EnsureBuildGraphCompiledAsync(

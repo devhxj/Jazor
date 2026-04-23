@@ -1,5 +1,5 @@
-using Jazor.VueContracts.Protocol;
-using SharedJoltRpcMethodNames = Jazor.VueContracts.Protocol.JoltRpcMethodNames;
+using Jazor.Common.VueContracts.Protocol;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Rpc;
 
@@ -27,7 +27,7 @@ public sealed class JoltRpcDispatcher : IJoltRpcDispatcher
             SharedJoltRpcMethodNames.UpdateDocument => await DispatchUpdateDocumentAsync(payload, cancellationToken),
             SharedJoltRpcMethodNames.CloseDocument => await DispatchCloseDocumentAsync(payload, cancellationToken),
             SharedJoltRpcMethodNames.GetOpenDocuments => await _rpcService.GetOpenDocumentsAsync(cancellationToken),
-            SharedJoltRpcMethodNames.GetFrontendContext => await DispatchGetFrontendContextAsync(payload, cancellationToken),
+            SharedJoltRpcMethodNames.GetVolarContext => await DispatchGetVolarContextAsync(payload, cancellationToken),
             SharedJoltRpcMethodNames.AnalyzeJazor => await DispatchAnalyzeJazorAsync(payload, cancellationToken),
             SharedJoltRpcMethodNames.GetVirtualArtifact => await DispatchGetVirtualArtifactAsync(payload, cancellationToken),
             SharedJoltRpcMethodNames.GetHotUpdatePlan => await DispatchGetHotUpdatePlanAsync(payload, cancellationToken),
@@ -53,11 +53,11 @@ public sealed class JoltRpcDispatcher : IJoltRpcDispatcher
         return null;
     }
 
-    private Task<GetFrontendContextResponse> DispatchGetFrontendContextAsync(
+    private Task<GetVolarContextResponse> DispatchGetVolarContextAsync(
         object? payload,
         CancellationToken cancellationToken)
-        => _rpcService.GetFrontendContextAsync(
-            RequirePayload<GetFrontendContextRequest>(payload),
+        => _rpcService.GetVolarContextAsync(
+            RequirePayload<GetVolarContextRequest>(payload),
             cancellationToken);
 
     private Task<AnalyzeJazorResponse> DispatchAnalyzeJazorAsync(

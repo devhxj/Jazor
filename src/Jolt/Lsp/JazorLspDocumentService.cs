@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
-using Jazor.Vue;
 using Jolt.Analysis;
 using Jolt.Lsp.Coordination;
 using Jolt.Workspace;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
+using Jazor.Vue;
 
 namespace Jolt.Lsp;
 
@@ -243,7 +243,7 @@ internal sealed class JazorLspDocumentService
             return ValueTask.FromResult<IReadOnlyList<LspSemanticToken>>(Array.Empty<LspSemanticToken>());
         }
 
-        var parsed = _parser.Parse(document.DocumentPath, document.Text);
+        var parsed = JazorVueParser.Parse(document.DocumentPath, document.Text);
         var tokens = new List<LspSemanticToken>();
 
         // Template wrapper tags: <template> and </template>
@@ -364,7 +364,7 @@ internal sealed class JazorLspDocumentService
             return ValueTask.FromResult<IReadOnlyList<LspDocumentSymbol>>(Array.Empty<LspDocumentSymbol>());
         }
 
-        var parsed = _parser.Parse(document.DocumentPath, document.Text);
+        var parsed = JazorVueParser.Parse(document.DocumentPath, document.Text);
         var symbols = new List<LspDocumentSymbol>();
 
         if (parsed.TemplateStartIndex >= 0 && parsed.TemplateLength > 0)
@@ -709,7 +709,7 @@ internal sealed class JazorLspDocumentService
                 document,
                 explicitPaths: Array.Empty<string>(),
                 cancellationToken),
-            frontendContext: null);
+            volarContext: null);
         return await _analysisClient.AnalyzeWithFallbackAsync(
             _fallbackAnalysisService,
             request,

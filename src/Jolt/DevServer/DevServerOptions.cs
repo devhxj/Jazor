@@ -12,7 +12,7 @@ internal sealed record DevServerOptions
 
     public bool HmrEnabled { get; init; } = true;
 
-    public string FrontendCompiler { get; init; } = "deno";
+    public string VolarCompiler { get; init; } = "deno";
 
     public TimeSpan FileChangeDebounceInterval { get; init; } = TimeSpan.FromMilliseconds(100);
 

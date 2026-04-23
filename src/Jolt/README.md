@@ -75,13 +75,13 @@ LSP mode:
 - the host always wires the Jazor lane, an in-proc Roslyn-backed code lane, and the bundled Deno Volar lane
 - semantic request routing no longer fabricates lane-local fallback behind frontend/code lanes; native lane answers stay native, and only the shared host bridge supplement adds cross-lane `definition/references/rename` results when bridge identity can be resolved
 - the self-contained Deno worker now serves real `.vue` / `.ts` / `.js` / `.css` / `.html` Volar/TypeScript semantics, while `.jazor` template requests stay on the source document and consume Jolt-coordinated Volar metadata instead of a projected `.g.vue`
-- the bundled Deno worker is enabled by default, primes its dependency cache into `Frontend/Deno/Cache` at build time, resolves worker-local npm dependencies through `Frontend/Deno/Worker/deno.json`, starts with `--cached-only --allow-env --allow-read`, sets `DENO_DIR` to that bundled cache, and the Volar lane only supplements it with workspace-graph results while that worker is actually active
+- the bundled Deno worker is enabled by default, primes its dependency cache into `Volar/Deno/Cache` at build time, resolves worker-local npm dependencies through `Volar/Deno/Worker/deno.json`, starts with `--cached-only --allow-env --allow-read`, sets `DENO_DIR` to that bundled cache, and the Volar lane only supplements it with workspace-graph results while that worker is actually active
 
 Volar/Deno runtime path:
 
 - Deno is the only frontend/runtime host path
-- the bundled Volar worker lives at `Frontend/Deno/Worker/frontend-worker.ts`
-- bundled worker-local Deno config lives at `Frontend/Deno/Worker/deno.json`
+- the bundled Volar worker lives at `Volar/Deno/Worker/volar-worker.ts`
+- bundled worker-local Deno config lives at `Volar/Deno/Worker/deno.json`
 - `Jazor.Vite`, Bun, and the old split-host route are migration leftovers
 
 Analysis compatibility mode:
@@ -91,8 +91,8 @@ Analysis compatibility mode:
 Current layout:
 
 - `Analysis/` contains the analysis client abstraction, stdio RPC compatibility server, and transport-based migration bridge
-- `Frontend/Deno/Hosting/` contains Deno worker startup, runtime asset resolution, and option parsing
-- `Frontend/Deno/Protocol/` and `Frontend/Deno/Worker/` contain the Volar worker protocol and worker entrypoint
+- `Volar/Deno/Hosting/` contains Deno worker startup, runtime asset resolution, and option parsing
+- `Volar/Deno/Protocol/` and `Volar/Deno/Worker/` contain the Volar worker protocol and worker entrypoint
 - `Hosting/` contains host lifecycle entry abstractions
 - `Jazor/Core/` contains parsing, markup/import extraction, and fallback artifact generation for `.jazor`
 - `Jazor/Projection/` contains projection generation used by LSP and tooling

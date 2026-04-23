@@ -3,8 +3,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
-using Jazor.VueContracts.Protocol;
 using Jolt.DevServer;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -178,7 +178,7 @@ internal static class JoltWorkspaceResolver
             _ => DocumentKind.Unknown
         };
 
-    public static DocumentKind? GetFrontendDocumentKind(string documentPath)
+    public static DocumentKind? GetVolarDocumentKind(string documentPath)
         => MapDocumentKind(documentPath) switch
         {
             DocumentKind.Vue => DocumentKind.Vue,
@@ -303,7 +303,7 @@ internal static class JoltWorkspaceResolver
         string jazorDocumentPath,
         string importSource)
     {
-        if (!IsFrontendImport(importSource))
+        if (!IsVolarImport(importSource))
         {
             yield break;
         }
@@ -1068,8 +1068,8 @@ internal static class JoltWorkspaceResolver
         return results.ToArray();
     }
 
-    private static bool IsFrontendImport(string importSource)
-        => GetFrontendDocumentKind(importSource) is not null
+    private static bool IsVolarImport(string importSource)
+        => GetVolarDocumentKind(importSource) is not null
             || importSource.StartsWith("./", StringComparison.Ordinal)
             || importSource.StartsWith("../", StringComparison.Ordinal)
             || importSource.StartsWith(".\\", StringComparison.Ordinal)

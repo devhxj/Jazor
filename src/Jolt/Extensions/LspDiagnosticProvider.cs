@@ -1,5 +1,5 @@
 using Jolt.Lsp;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Extensions;
 

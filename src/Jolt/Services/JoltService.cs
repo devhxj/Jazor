@@ -1,19 +1,19 @@
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
-using Jolt.Frontend;
-using Jolt.Frontend.Deno.Hosting;
+using Jolt.Volar;
+using Jolt.Volar.Deno.Hosting;
 using Jolt.Hosting;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.Rpc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
 using System.Text.RegularExpressions;
-using SharedJoltRpcMethodNames = Jazor.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
+using Jazor.Vue;
 
 namespace Jolt.Services;
 
-public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContextProvider
+public sealed class JoltService : IJoltService, IJoltRpcService, IVolarContextProvider
 {
     private static readonly IReadOnlyList<HostCapabilityDescriptor> HostCapabilities =
     [
@@ -23,7 +23,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         new HostCapabilityDescriptor(SharedJoltRpcMethodNames.UpdateDocument, "Updates an already tracked document."),
         new HostCapabilityDescriptor(SharedJoltRpcMethodNames.CloseDocument, "Stops tracking a document in the workspace."),
         new HostCapabilityDescriptor(SharedJoltRpcMethodNames.GetOpenDocuments, "Returns currently tracked workspace documents."),
-        new HostCapabilityDescriptor(SharedJoltRpcMethodNames.GetFrontendContext, "Returns frontend semantic context for a .jazor document."),
+        new HostCapabilityDescriptor(SharedJoltRpcMethodNames.GetVolarContext, "Returns frontend semantic context for a .jazor document."),
         new HostCapabilityDescriptor(SharedJoltRpcMethodNames.AnalyzeJazor, "Delegates .jazor analysis to the analysis client."),
         new HostCapabilityDescriptor(SharedJoltRpcMethodNames.GetVirtualArtifact, "Compiles a .jazor document and returns one requested virtual artifact."),
         new HostCapabilityDescriptor(SharedJoltRpcMethodNames.GetHotUpdatePlan, "Returns host-driven hot update impact for a changed workspace document.")
@@ -139,8 +139,8 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         JoltWorkspaceResolver.InvalidatePath(documentPath);
     }
 
-    public async Task<GetFrontendContextResponse> GetFrontendContextAsync(
-        GetFrontendContextRequest request,
+    public async Task<GetVolarContextResponse> GetVolarContextAsync(
+        GetVolarContextRequest request,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -190,17 +190,17 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
                 contentHash: null)
         };
         artifacts.AddRange(CreateRoslynProjectionArtifacts(request.DocumentPath, roslynProjection));
-        artifacts.AddRange(CreateFrontendSummaryArtifacts(relatedDocuments));
+        artifacts.AddRange(CreateVolarSummaryArtifacts(relatedDocuments));
 
-        return new GetFrontendContextResponse(
+        return new GetVolarContextResponse(
             semanticContext,
             artifacts);
     }
 
-    ValueTask<GetFrontendContextResponse> IFrontendContextProvider.GetFrontendContextAsync(
-        GetFrontendContextRequest request,
+    ValueTask<GetVolarContextResponse> IVolarContextProvider.GetVolarContextAsync(
+        GetVolarContextRequest request,
         CancellationToken cancellationToken)
-        => new(GetFrontendContextAsync(request, cancellationToken));
+        => new(GetVolarContextAsync(request, cancellationToken));
 
     public Task<AnalyzeJazorResponse> AnalyzeJazorAsync(
         AnalyzeJazorRequest request,
@@ -222,7 +222,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         var analysisRequest = await BuildAnalyzeJazorRequestAsync(
             jazorDocument,
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null,
+            volarContext: null,
             cancellationToken);
         var analysisResponse = await _analysisClient.AnalyzeWithFallbackAsync(
             _fallbackAnalysisService,
@@ -253,7 +253,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         var hydratedRequest = await BuildAnalyzeJazorRequestAsync(
             request.JazorDocument,
             request.RelatedDocuments,
-            request.FrontendContext,
+            request.VolarContext,
             cancellationToken);
         return await _analysisClient.AnalyzeJazorAsync(hydratedRequest, cancellationToken);
     }
@@ -326,7 +326,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
     private static IReadOnlyDictionary<string, string> CreateContextProperties(
         string documentPath,
         IReadOnlyList<DocumentSnapshot> relatedDocuments,
-        FrontendRoslynProjectionContext? roslynProjection = null,
+        VolarRoslynProjectionContext? roslynProjection = null,
         int explicitDocumentCount = 0,
         int derivedDocumentCount = 0)
     {
@@ -417,7 +417,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
     private async Task<AnalyzeJazorRequest> BuildAnalyzeJazorRequestAsync(
         DocumentSnapshot jazorDocument,
         IReadOnlyList<DocumentSnapshot> relatedDocuments,
-        SemanticContext? frontendContext,
+        SemanticContext? volarContext,
         CancellationToken cancellationToken)
     {
         var resolvedDocuments = await ResolveRelatedDocumentsAsync(
@@ -426,7 +426,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
             cancellationToken);
         var mergedDocuments = MergeRelatedDocuments(relatedDocuments, resolvedDocuments);
         var derivedDocumentCount = Math.Max(0, mergedDocuments.Count - relatedDocuments.Count);
-        var effectiveFrontendContext = frontendContext
+        var effectiveVolarContext = volarContext
             ?? new SemanticContext(
                 contextKind: "frontend",
                 relatedDocuments: mergedDocuments,
@@ -439,7 +439,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         return new AnalyzeJazorRequest(
             jazorDocument,
             mergedDocuments,
-            effectiveFrontendContext);
+            effectiveVolarContext);
     }
 
     private async Task<IReadOnlyList<DocumentSnapshot>> ResolveRelatedDocumentsAsync(
@@ -466,15 +466,15 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         return merged;
     }
 
-    private static IReadOnlyList<ArtifactRecord> CreateFrontendSummaryArtifacts(
+    private static IReadOnlyList<ArtifactRecord> CreateVolarSummaryArtifacts(
         IReadOnlyList<DocumentSnapshot> relatedDocuments)
         => relatedDocuments
-            .Select(CreateFrontendSummaryArtifact)
+            .Select(CreateVolarSummaryArtifact)
             .ToArray();
 
     private static IReadOnlyList<ArtifactRecord> CreateRoslynProjectionArtifacts(
         string documentPath,
-        FrontendRoslynProjectionContext? roslynProjection)
+        VolarRoslynProjectionContext? roslynProjection)
     {
         if (roslynProjection is null)
         {
@@ -516,7 +516,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
         ];
     }
 
-    private static ArtifactRecord CreateFrontendSummaryArtifact(DocumentSnapshot document)
+    private static ArtifactRecord CreateVolarSummaryArtifact(DocumentSnapshot document)
     {
         var importedSources = GetImportedSources(document.Text);
         var exportedSymbols = GetExportedSymbols(document.Text);
@@ -542,7 +542,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
             contentHash: null);
     }
 
-    private async Task<FrontendRoslynProjectionContext?> CreateRoslynProjectionContextAsync(
+    private async Task<VolarRoslynProjectionContext?> CreateRoslynProjectionContextAsync(
         DocumentSnapshot jazorDocument,
         CancellationToken cancellationToken)
     {
@@ -553,7 +553,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
             return null;
         }
 
-        var parsed = _parser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
+        var parsed = JazorVueParser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
         var projection = _roslynCodeService.CreateProjection(jazorDocument, parsed);
         var openDocuments = await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
         var workspaceSourceDocuments = await _roslynCodeService.GetSourceDocumentsAsync(jazorDocument, openDocuments, cancellationToken);
@@ -573,7 +573,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
             .ToArray();
         var codeBehindDocumentCount = sourceDocuments.Count(static document => document.DocumentKind == DocumentKind.CSharp);
 
-        return new FrontendRoslynProjectionContext(
+        return new VolarRoslynProjectionContext(
             ProjectionKind: GetProjectionKind(projection.ProjectedDocumentPath),
             ProjectedDocumentPath: projection.ProjectedDocumentPath,
             SourceText: projection.SourceText,
@@ -627,7 +627,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IFrontendContex
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-    private sealed record FrontendRoslynProjectionContext(
+    private sealed record VolarRoslynProjectionContext(
         string ProjectionKind,
         string ProjectedDocumentPath,
         string SourceText,

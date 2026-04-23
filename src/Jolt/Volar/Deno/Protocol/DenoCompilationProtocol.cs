@@ -1,4 +1,4 @@
-namespace Jolt.Frontend.Deno.Protocol;
+namespace Jolt.Volar.Deno.Protocol;
 
 internal sealed class DenoSfcCompileRequest
 {

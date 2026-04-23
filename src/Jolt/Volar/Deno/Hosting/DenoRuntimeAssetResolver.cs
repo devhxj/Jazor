@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Jolt.Frontend.Deno.Hosting;
+namespace Jolt.Volar.Deno.Hosting;
 
 internal static class DenoRuntimeAssetResolver
 {
@@ -59,10 +59,10 @@ internal static class DenoRuntimeAssetResolver
         var resolvedBaseDirectory = ResolveBaseDirectory(baseDirectory);
         var outputWorkerPath = Path.GetFullPath(Path.Combine(
             resolvedBaseDirectory,
-            "Frontend",
+            "Volar",
             "Deno",
             "Worker",
-            "frontend-worker.ts"));
+            "volar-worker.ts"));
         if (File.Exists(outputWorkerPath))
         {
             return outputWorkerPath;
@@ -76,10 +76,10 @@ internal static class DenoRuntimeAssetResolver
             "..",
             "src",
             "Jolt",
-            "Frontend",
+            "Volar",
             "Deno",
             "Worker",
-            "frontend-worker.ts"));
+            "volar-worker.ts"));
         if (File.Exists(sourceWorkerPath))
         {
             return sourceWorkerPath;
@@ -101,9 +101,36 @@ internal static class DenoRuntimeAssetResolver
     public static string ResolveCacheDirectory(string? baseDirectory = null)
         => Path.GetFullPath(Path.Combine(
             ResolveBaseDirectory(baseDirectory),
-            "Frontend",
+            "Volar",
             "Deno",
             "Cache"));
+
+    public static bool HasReadyWorkerDependencies(string workerPath, string? cacheDirectory)
+    {
+        var workerDirectory = string.IsNullOrWhiteSpace(workerPath)
+            ? null
+            : Path.GetDirectoryName(workerPath);
+        if (!string.IsNullOrWhiteSpace(workerDirectory)
+            && Directory.Exists(Path.Combine(workerDirectory, "node_modules", "@volar"))
+            && Directory.Exists(Path.Combine(workerDirectory, "node_modules", "@vue")))
+        {
+            return true;
+        }
+
+        return HasReadyDependencyCache(cacheDirectory);
+    }
+
+    public static bool HasReadyDependencyCache(string? cacheDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(cacheDirectory))
+        {
+            return false;
+        }
+
+        var registryCacheDirectory = Path.Combine(cacheDirectory, "npm", "registry.npmjs.org");
+        return Directory.Exists(Path.Combine(registryCacheDirectory, "@volar"))
+            && Directory.Exists(Path.Combine(registryCacheDirectory, "@vue"));
+    }
 
     public static string CreateMissingRuntimeMessage(string executablePath)
         => $"Failed to locate the packaged Deno runtime for Jolt at '{executablePath}'. Ensure DenoHost runtime assets are available for the current RID and restore/build Jolt before starting the Volar worker.";

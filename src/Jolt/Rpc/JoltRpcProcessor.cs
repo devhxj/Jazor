@@ -1,5 +1,5 @@
-using Jazor.VueContracts.Protocol;
-using SharedJoltRpcMethodNames = Jazor.VueContracts.Protocol.JoltRpcMethodNames;
+using Jazor.Common.VueContracts.Protocol;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Rpc;
 
@@ -60,7 +60,7 @@ public sealed class JoltRpcProcessor : IJoltRpcProcessor
             SharedJoltRpcMethodNames.UpdateDocument => DeserializeRequired<DocumentSnapshot>(payloadJson),
             SharedJoltRpcMethodNames.CloseDocument => DeserializeRequired<string>(payloadJson),
             SharedJoltRpcMethodNames.GetOpenDocuments => null,
-            SharedJoltRpcMethodNames.GetFrontendContext => DeserializeRequired<GetFrontendContextRequest>(payloadJson),
+            SharedJoltRpcMethodNames.GetVolarContext => DeserializeRequired<GetVolarContextRequest>(payloadJson),
             SharedJoltRpcMethodNames.AnalyzeJazor => DeserializeRequired<AnalyzeJazorRequest>(payloadJson),
             SharedJoltRpcMethodNames.GetVirtualArtifact => DeserializeRequired<GetVirtualArtifactRequest>(payloadJson),
             SharedJoltRpcMethodNames.GetHotUpdatePlan => DeserializeRequired<GetHotUpdatePlanRequest>(payloadJson),

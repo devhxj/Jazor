@@ -8,13 +8,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
 using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
+using Jazor.Vue;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 
@@ -122,7 +122,7 @@ internal sealed partial class InProcRoslynCodeService
             return;
         }
 
-        var parsed = _parser.Parse(document.DocumentPath, document.Text);
+        var parsed = JazorVueParser.Parse(document.DocumentPath, document.Text);
         if (string.IsNullOrWhiteSpace(parsed.Code) || parsed.CodeStartIndex < 0)
             return;
 
@@ -169,7 +169,7 @@ internal sealed partial class InProcRoslynCodeService
         DocumentSnapshot document,
         [NotNullWhen(true)] out ProjectedDocumentContext? projectedDocument)
     {
-        var parsed = _parser.Parse(document.DocumentPath, document.Text);
+        var parsed = JazorVueParser.Parse(document.DocumentPath, document.Text);
         if (string.IsNullOrWhiteSpace(parsed.Code) || parsed.CodeStartIndex < 0)
         {
             projectedDocument = null;

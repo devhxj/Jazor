@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <NoWarn>$(NoWarn);RS1035</NoWarn>
-    <JoltWorkerOutputPath>$(TargetDir)Frontend\Deno\Worker\frontend-worker.ts</JoltWorkerOutputPath>
+    <JoltWorkerOutputPath>$(TargetDir)Volar\Deno\Worker\volar-worker.ts</JoltWorkerOutputPath>
     <JoltRoslynBinariesPath Condition="$([System.IO.Directory]::Exists('$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))'))">$([System.IO.Path]::GetFullPath('$(MSBuildSDKsPath)\..\Roslyn\bincore'))</JoltRoslynBinariesPath>
     <JoltRoslynBinariesPath Condition="'$(JoltRoslynBinariesPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Roslyn\bincore'))</JoltRoslynBinariesPath>
     <JoltRazorSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</JoltRazorSdkPath>
@@ -18,6 +18,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Volar\Deno\Worker\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
@@ -34,13 +40,5 @@
       <HintPath>$(JoltRazorSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
       <Private>true</Private>
     </Reference>
-    <None Include="Frontend\Deno\Worker\frontend-worker.ts">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>Frontend\Deno\Worker\frontend-worker.ts</TargetPath>
-    </None>
-    <None Include="Frontend\Deno\Worker\deno.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>Frontend\Deno\Worker\deno.json</TargetPath>
-    </None>
   </ItemGroup>
 </Project>

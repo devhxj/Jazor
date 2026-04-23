@@ -1,14 +1,9 @@
+using Jolt.DevServer;
+using Jazor.Vue;
 using System.Diagnostics;
-using System.Globalization;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Jazor.Vue;
-using Jolt.DevServer;
-using Jolt.Frontend.Deno.Hosting;
-using Jazor.SourceMaps;
 
 namespace Jolt.Build;
 
@@ -196,7 +191,7 @@ internal sealed partial class BuildOrchestrator
                 options.RootDirectory,
                 options.ResolveAliases,
                 enforceTrustedProjectPaths: true);
-            var frontendCompiler = new DenoFrontendModuleCompiler(denoHost, isProduction: true);
+            var frontendCompiler = new DenoVolarModuleCompiler(denoHost, isProduction: true);
             var compiler = new OnDemandCompiler(
                 new JazorVueParser(),
                 new JazorVueCompiler(),
@@ -214,7 +209,7 @@ internal sealed partial class BuildOrchestrator
                 // cross-test port races between "pick free port" and "bind".
                 Port = 0,
                 HmrEnabled = false,
-                FrontendCompiler = "deno"
+                VolarCompiler = "deno"
             };
 
             await using var moduleServer = new DevHttpServer(

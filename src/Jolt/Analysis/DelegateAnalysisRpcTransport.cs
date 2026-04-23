@@ -1,18 +1,13 @@
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Analysis;
 
-public sealed class DelegateAnalysisRpcTransport : IAnalysisRpcTransport
+public sealed class DelegateAnalysisRpcTransport(
+	Func<RpcRequestEnvelope, CancellationToken, ValueTask<RpcResponseEnvelope>> handler) : IAnalysisRpcTransport
 {
-    private readonly Func<RpcRequestEnvelope, CancellationToken, ValueTask<RpcResponseEnvelope>> _handler;
+    private readonly Func<RpcRequestEnvelope, CancellationToken, ValueTask<RpcResponseEnvelope>> _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-    public DelegateAnalysisRpcTransport(
-        Func<RpcRequestEnvelope, CancellationToken, ValueTask<RpcResponseEnvelope>> handler)
-    {
-        _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-    }
-
-    public ValueTask<RpcResponseEnvelope> SendAsync(
+	public ValueTask<RpcResponseEnvelope> SendAsync(
         RpcRequestEnvelope request,
         CancellationToken cancellationToken)
         => _handler(request, cancellationToken);

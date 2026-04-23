@@ -1,16 +1,3 @@
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Text.Json;
-using Jolt.Extensions;
-using Jazor.VueContracts.Protocol;
-using Jolt.Jazor.Projection;
-using Jolt.Lsp.Aggregation;
-using Jolt.Lsp.Coordination;
-using Jolt.Lsp.Lanes;
-using Jolt.Lsp.Routing;
-using Jolt.VirtualDocuments.Registry;
-using Jolt.Workspace;
-
 namespace Jolt.Lsp;
 
 internal sealed partial class LspSession

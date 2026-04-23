@@ -1,18 +1,18 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
 using Jolt.Build;
 using Jolt.Debug;
 using Jolt.DevServer;
 using Jolt.Extensions;
 using Jolt.Extensions.Builtin;
-using Jolt.Frontend.Deno.Hosting;
 using Jolt.Hosting;
+using Jazor.Vue;
 using Jolt.Jazor.Projection;
 using Jolt.Lsp;
 using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.Razor.Toolset;
 using Jolt.Roslyn.InProc;
@@ -20,12 +20,13 @@ using Jolt.Rpc;
 using Jolt.Services;
 using Jolt.SourceMap;
 using Jolt.VirtualDocuments.Registry;
+using Jolt.Volar.Deno.Hosting;
 using Jolt.Workspace;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using System.Text.Json;
-using SharedJoltRpcMethodNames = Jazor.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
 
 var useLsp = args.Any(static arg => string.Equals(arg, "--lsp", StringComparison.OrdinalIgnoreCase));
 var useDev = args.Any(static arg => string.Equals(arg, "--dev", StringComparison.OrdinalIgnoreCase));
@@ -169,9 +170,9 @@ if (useAnalysisStdio)
 
 if (useDap && !useLsp)
 {
-    await using var denoFrontendHost = useDev ? new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args)) : null;
-    await using var devRuntime = useDev && denoFrontendHost is not null
-        ? CreateDevServerRuntime(DevServerOptionsParser.Parse(args), denoFrontendHost)
+    await using var dapVolarHost = useDev ? new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args)) : null;
+    await using var devRuntime = useDev && dapVolarHost is not null
+        ? CreateDevServerRuntime(DevServerOptionsParser.Parse(args), dapVolarHost)
         : null;
 
     if (devRuntime is not null)
@@ -201,9 +202,9 @@ if (useDap && !useLsp)
 
 if (useDev && !useLsp)
 {
-    await using var denoFrontendHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
+    await using var devVolarHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
     var devOptions = DevServerOptionsParser.Parse(args);
-    await using var devRuntime = CreateDevServerRuntime(devOptions, denoFrontendHost);
+    await using var devRuntime = CreateDevServerRuntime(devOptions, devVolarHost);
     var devServer = devRuntime.Server;
     using var shutdownSource = new CancellationTokenSource();
     ConsoleCancelEventHandler cancelHandler = (_, eventArgs) =>
@@ -529,38 +530,38 @@ static void WriteExtensionProviderLog(ExtensionProviderInvocation invocation)
 
 static DevServerRuntime CreateDevServerRuntime(
     DevServerOptions devOptions,
-    IDenoVolarHost denoFrontendHost)
+    IDenoVolarHost denoVolarHost)
 {
-    return CreateDevServerRuntimeCore(devOptions, denoFrontendHost, workspaceStore: null);
+    return CreateDevServerRuntimeCore(devOptions, denoVolarHost, workspaceStore: null);
 }
 
 static DevServerRuntime CreateWorkspaceDevServerRuntime(
     DevServerOptions devOptions,
-    IDenoVolarHost denoFrontendHost,
+    IDenoVolarHost denoVolarHost,
     IJoltWorkspaceStore workspaceStore)
 {
     ArgumentNullException.ThrowIfNull(workspaceStore);
-    return CreateDevServerRuntimeCore(devOptions, denoFrontendHost, workspaceStore);
+    return CreateDevServerRuntimeCore(devOptions, denoVolarHost, workspaceStore);
 }
 
 static DevServerRuntime CreateDevServerRuntimeCore(
     DevServerOptions devOptions,
-    IDenoVolarHost denoFrontendHost,
+    IDenoVolarHost denoVolarHost,
     IJoltWorkspaceStore? workspaceStore)
 {
     // Null is intentional for standalone dev/DAP modes where no LSP workspace exists.
     // LSP+dev callers must use the non-null overload above so workspace-backed HMR is wired.
     var moduleResolver = new ModuleResolver(devOptions.RootDirectory, devOptions.ResolveAliases);
     var sourceMapService = new InMemorySourceMapService();
-    IFrontendModuleCompiler frontendCompiler = string.Equals(
-        devOptions.FrontendCompiler,
+    IVolarModuleCompiler frontendCompiler = string.Equals(
+        devOptions.VolarCompiler,
         "stub",
         StringComparison.OrdinalIgnoreCase)
-        ? new StubFrontendModuleCompiler()
-        : new DenoFrontendModuleCompiler(denoFrontendHost);
+        ? new StubVolarModuleCompiler()
+        : new DenoVolarModuleCompiler(denoVolarHost);
     var compiler = new OnDemandCompiler(
-        new Jazor.Vue.JazorVueParser(),
-        new Jazor.Vue.JazorVueCompiler(),
+        new JazorVueParser(),
+        new JazorVueCompiler(),
         frontendCompiler,
         new CompilationCache(),
         new DependencyGraph(moduleResolver),

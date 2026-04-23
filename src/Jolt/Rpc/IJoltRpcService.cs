@@ -1,4 +1,4 @@
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Rpc;
 
@@ -16,8 +16,8 @@ public interface IJoltRpcService
 
     Task<IReadOnlyList<DocumentSnapshot>> GetOpenDocumentsAsync(CancellationToken cancellationToken);
 
-    Task<GetFrontendContextResponse> GetFrontendContextAsync(
-        GetFrontendContextRequest request,
+    Task<GetVolarContextResponse> GetVolarContextAsync(
+        GetVolarContextRequest request,
         CancellationToken cancellationToken);
 
     Task<AnalyzeJazorResponse> AnalyzeJazorAsync(

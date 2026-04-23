@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using Jolt.Frontend.Deno.Hosting;
+using Jolt.Volar.Deno.Hosting;
 using Jolt.Hosting;
 
 namespace Jolt.Build;

@@ -1,9 +1,8 @@
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
-using Jolt.Frontend;
-using Jolt.Frontend.Deno.Hosting;
+using Jolt.Volar;
+using Jolt.Volar.Deno.Hosting;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
@@ -11,7 +10,7 @@ using Jolt.Workspace;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading;
+using Jazor.Vue;
 
 namespace Jolt.Lsp.Lanes;
 
@@ -22,20 +21,20 @@ internal sealed class VolarLaneService : ILspLane
     private const int MaxDenoFailureSnapshots = 64;
     private static readonly ConcurrentDictionary<string, DenoFailureSnapshot> DenoFailureSnapshots = new(StringComparer.OrdinalIgnoreCase);
     private static readonly AsyncLocal<ConcurrentDictionary<string, DenoFailureSnapshot>?> TestDenoFailureSnapshots = new();
-    private readonly IFrontendContextProvider? _frontendContextProvider;
+    private readonly IVolarContextProvider? _volarContextProvider;
     private readonly IVirtualDocumentRegistry? _virtualDocumentRegistry;
     private readonly IDenoVolarHost? _denoVolarHost;
     private readonly MarkupComponentBridgeService _markupComponentBridge;
 
     public VolarLaneService(
         IJoltWorkspaceStore workspaceStore,
-        IFrontendContextProvider? frontendContextProvider = null,
+        IVolarContextProvider? volarContextProvider = null,
         IVirtualDocumentRegistry? virtualDocumentRegistry = null,
         IDenoVolarHost? denoVolarHost = null,
         MarkupComponentBridgeService? markupComponentBridge = null)
     {
         ArgumentNullException.ThrowIfNull(workspaceStore);
-        _frontendContextProvider = frontendContextProvider;
+        _volarContextProvider = volarContextProvider;
         _virtualDocumentRegistry = virtualDocumentRegistry;
         _denoVolarHost = denoVolarHost;
         _markupComponentBridge = markupComponentBridge ?? new MarkupComponentBridgeService(workspaceStore);
@@ -56,11 +55,11 @@ internal sealed class VolarLaneService : ILspLane
         CancellationToken cancellationToken)
     {
         var diagnostics = new List<LspDiagnostic>();
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget: null, cancellationToken);
         if (document.DocumentKind != DocumentKind.Vue || frontendDocument.ProjectionMap is not null)
         {
-            var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-            var denoDiagnostics = await TryGetDenoDiagnosticsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+            var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+            var denoDiagnostics = await TryGetDenoDiagnosticsAsync(frontendDocument.RequestDocument, volarContext, cancellationToken);
             diagnostics.AddRange(await FilterDenoDiagnosticsAsync(document, MapDiagnostics(document, frontendDocument, denoDiagnostics), cancellationToken));
         }
 
@@ -70,12 +69,11 @@ internal sealed class VolarLaneService : ILspLane
             diagnostics.AddRange(await CreateUnresolvedMarkupComponentDiagnosticsAsync(document, cancellationToken));
         }
 
-        return diagnostics
+        return [.. diagnostics
             .GroupBy(static diagnostic =>
                 $"{diagnostic.Code}:{diagnostic.Range.Start.Line}:{diagnostic.Range.Start.Character}:{diagnostic.Range.End.Line}:{diagnostic.Range.End.Character}",
                 StringComparer.Ordinal)
-            .Select(static group => group.First())
-            .ToArray();
+            .Select(static group => group.First())];
     }
 
     public async ValueTask<LspHoverResult?> GetHoverAsync(
@@ -89,7 +87,7 @@ internal sealed class VolarLaneService : ILspLane
             return null;
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
         if (CanUseWorkspaceGraph()
             && TryGetComponentTagNameAtPosition(document.Text, position, out _))
@@ -101,8 +99,8 @@ internal sealed class VolarLaneService : ILspLane
             }
         }
 
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var denoResult = await TryGetDenoHoverAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var denoResult = await TryGetDenoHoverAsync(frontendDocument.RequestDocument, requestPosition, volarContext, cancellationToken);
         if (denoResult is not null)
         {
             return MapHover(document, frontendDocument, denoResult);
@@ -127,12 +125,12 @@ internal sealed class VolarLaneService : ILspLane
             return Array.Empty<LspCompletionItem>();
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var items = new List<LspCompletionItem>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var item in await TryGetDenoCompletionItemsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken))
+        foreach (var item in await TryGetDenoCompletionItemsAsync(frontendDocument.RequestDocument, requestPosition, volarContext, cancellationToken))
         {
             if (seen.Add($"{item.Label}|{item.Kind}|{item.Detail}"))
             {
@@ -184,9 +182,9 @@ internal sealed class VolarLaneService : ILspLane
             return Array.Empty<LspSemanticToken>();
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var tokens = await TryGetDenoSemanticTokensAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var tokens = await TryGetDenoSemanticTokensAsync(frontendDocument.RequestDocument, volarContext, cancellationToken);
         var mappedTokens = MapSemanticTokens(document, frontendDocument, tokens);
         if (mappedTokens.Count > 0)
         {
@@ -209,9 +207,9 @@ internal sealed class VolarLaneService : ILspLane
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var denoResult = await TryGetDenoDocumentSymbolsAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var denoResult = await TryGetDenoDocumentSymbolsAsync(frontendDocument.RequestDocument, volarContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
             return MapDocumentSymbols(document, frontendDocument, denoResult);
@@ -236,9 +234,9 @@ internal sealed class VolarLaneService : ILspLane
             return Array.Empty<LspDocumentLink>();
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var links = await TryGetDenoDocumentLinksAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var links = await TryGetDenoDocumentLinksAsync(frontendDocument.RequestDocument, volarContext, cancellationToken);
         return MapDocumentLinks(document, frontendDocument, links);
     }
 
@@ -249,10 +247,10 @@ internal sealed class VolarLaneService : ILspLane
     {
         if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css))
         {
-            return Array.Empty<LspInlayHint>();
+            return [];
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget: null, cancellationToken);
         var requestRange = range;
         if (frontendDocument.ProjectionMap is not null
             && !frontendDocument.ProjectionMap.TryMapToProjectedRange(
@@ -261,11 +259,11 @@ internal sealed class VolarLaneService : ILspLane
                 frontendDocument.RequestDocument.Text,
                 out requestRange))
         {
-            return Array.Empty<LspInlayHint>();
+            return [];
         }
 
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var hints = await TryGetDenoInlayHintsAsync(frontendDocument.RequestDocument, requestRange, frontendContext, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var hints = await TryGetDenoInlayHintsAsync(frontendDocument.RequestDocument, requestRange, volarContext, cancellationToken);
         return MapInlayHints(document, frontendDocument, hints);
     }
 
@@ -275,12 +273,12 @@ internal sealed class VolarLaneService : ILspLane
     {
         if (document.DocumentKind is not (DocumentKind.Jazor or DocumentKind.Vue or DocumentKind.JavaScript or DocumentKind.TypeScript or DocumentKind.Css))
         {
-            return Array.Empty<LspFoldingRange>();
+            return [];
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget: null, cancellationToken);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
-        var ranges = await TryGetDenoFoldingRangesAsync(frontendDocument.RequestDocument, frontendContext, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget: null, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var ranges = await TryGetDenoFoldingRangesAsync(frontendDocument.RequestDocument, volarContext, cancellationToken);
         return MapFoldingRanges(document, frontendDocument, ranges);
     }
 
@@ -295,11 +293,11 @@ internal sealed class VolarLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var locations = new List<LspLocation>();
-        var denoResult = await TryGetDenoDefinitionsAsync(frontendDocument.RequestDocument, requestPosition, frontendContext, cancellationToken);
+        var denoResult = await TryGetDenoDefinitionsAsync(frontendDocument.RequestDocument, requestPosition, volarContext, cancellationToken);
         if (denoResult is { Count: > 0 })
         {
             locations.AddRange(MapLocations(document, frontendDocument, denoResult));
@@ -334,8 +332,8 @@ internal sealed class VolarLaneService : ILspLane
         }
 
         return locations.Count == 0
-            ? Array.Empty<LspLocation>()
-            : locations
+            ? []
+			: locations
                 .GroupBy(static location =>
                     $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}",
                     StringComparer.Ordinal)
@@ -351,28 +349,27 @@ internal sealed class VolarLaneService : ILspLane
     {
         if (!IsTemplateTarget(projectionTarget))
         {
-            return Array.Empty<LspLocation>();
+            return [];
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var denoLocations = await TryGetDenoImplementationsAsync(
             frontendDocument.RequestDocument,
             requestPosition,
-            frontendContext,
+            volarContext,
             cancellationToken);
 
         var locations = MapLocations(
             document,
             frontendDocument,
             denoLocations);
-        return locations
+        return [.. locations
             .GroupBy(static location =>
                 $"{location.Uri}:{location.Range.Start.Line}:{location.Range.Start.Character}:{location.Range.End.Line}:{location.Range.End.Character}",
                 StringComparer.Ordinal)
-            .Select(static group => group.First())
-            .ToArray();
+            .Select(static group => group.First())];
     }
 
     private static LspLocation CreateDocumentStartLocation(string documentPath)
@@ -449,15 +446,15 @@ internal sealed class VolarLaneService : ILspLane
             return Array.Empty<LspLocation>();
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var locations = new List<LspLocation>();
         var denoLocations = await TryGetDenoReferencesAsync(
             frontendDocument.RequestDocument,
             requestPosition,
             includeDeclaration,
-            frontendContext,
+            volarContext,
             cancellationToken);
         locations.AddRange(MapLocations(
             document,
@@ -477,7 +474,7 @@ internal sealed class VolarLaneService : ILspLane
     {
         if (!IsTemplateTarget(projectionTarget))
         {
-            return Array.Empty<LspDocumentHighlight>();
+            return [];
         }
 
         var locations = await GetReferencesAsync(
@@ -506,14 +503,14 @@ internal sealed class VolarLaneService : ILspLane
             return null;
         }
 
-        var frontendDocument = await ResolveFrontendDocumentAsync(document, projectionTarget, cancellationToken);
+        var frontendDocument = await ResolveVolarDocumentAsync(document, projectionTarget, cancellationToken);
         var requestPosition = frontendDocument.MapPosition(position, projectionTarget.ProjectedPosition);
-        var frontendContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
+        var volarContext = await GetVolarIntelliSenseContextAsync(document, cancellationToken);
         var changes = new Dictionary<string, List<LspTextEdit>>(StringComparer.Ordinal);
         var denoResult = MapWorkspaceEdit(
             document,
             frontendDocument,
-            await TryGetDenoRenameAsync(frontendDocument.RequestDocument, requestPosition, newName, frontendContext, cancellationToken));
+            await TryGetDenoRenameAsync(frontendDocument.RequestDocument, requestPosition, newName, volarContext, cancellationToken));
         if (denoResult is not null)
         {
             foreach (var change in denoResult.Changes)
@@ -553,7 +550,7 @@ internal sealed class VolarLaneService : ILspLane
         IReadOnlyList<LspDiagnostic> diagnostics,
         ProjectionTarget projectionTarget,
         CancellationToken cancellationToken)
-        => ValueTask.FromResult<IReadOnlyList<LspCodeAction>>(Array.Empty<LspCodeAction>());
+        => ValueTask.FromResult<IReadOnlyList<LspCodeAction>>([]);
 
     private static bool IsTemplateTarget(ProjectionTarget projectionTarget)
         => projectionTarget.LaneKind == LaneKind.Volar
@@ -620,7 +617,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "completion",
-            fallbackValue: Array.Empty<LspCompletionItem>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateCompletionItemsAsync(document, position, context, token),
             cancellationToken);
 
@@ -644,7 +641,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "definition",
-            fallbackValue: Array.Empty<LspLocation>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateDefinitionAsync(document, position, context, token),
             cancellationToken);
 
@@ -656,7 +653,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "implementation",
-            fallbackValue: Array.Empty<LspLocation>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateImplementationAsync(document, position, context, token),
             cancellationToken);
 
@@ -669,7 +666,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "references",
-            fallbackValue: Array.Empty<LspLocation>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateReferencesAsync(
                 document,
                 position,
@@ -698,7 +695,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "documentSymbol",
-            fallbackValue: Array.Empty<LspDocumentSymbol>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateDocumentSymbolsAsync(document, context, token),
             cancellationToken);
 
@@ -709,7 +706,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "diagnostics",
-            fallbackValue: Array.Empty<LspDiagnostic>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateDiagnosticsAsync(document, context, token),
             cancellationToken);
 
@@ -720,7 +717,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "semanticTokens",
-            fallbackValue: Array.Empty<LspSemanticToken>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateSemanticTokensAsync(document, context, token),
             cancellationToken);
 
@@ -731,7 +728,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "documentLink",
-            fallbackValue: Array.Empty<LspDocumentLink>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateDocumentLinksAsync(document, context, token),
             cancellationToken);
 
@@ -743,7 +740,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "inlayHint",
-            fallbackValue: Array.Empty<LspInlayHint>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateInlayHintsAsync(document, range, context, token),
             cancellationToken);
 
@@ -754,7 +751,7 @@ internal sealed class VolarLaneService : ILspLane
         => ExecuteDenoRequestAsync(
             document,
             operation: "foldingRange",
-            fallbackValue: Array.Empty<LspFoldingRange>(),
+            fallbackValue: [],
             requestAsync: (host, token) => host.GetTemplateFoldingRangesAsync(document, context, token),
             cancellationToken);
 
@@ -762,19 +759,19 @@ internal sealed class VolarLaneService : ILspLane
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
-        if (document.DocumentKind != DocumentKind.Jazor || _frontendContextProvider is null)
+        if (document.DocumentKind != DocumentKind.Jazor || _volarContextProvider is null)
         {
             return ValueTask.FromResult<DenoVolarIntelliSenseContext?>(null);
         }
 
         return ExecuteWithFailureCaptureAsync(
-            operation: "frontendContext",
+            operation: "volarContext",
             documentPath: document.DocumentPath,
-            fallbackValue: default(DenoVolarIntelliSenseContext?),
+            fallbackValue: default,
             operationAsync: async token =>
             {
-                var response = await _frontendContextProvider.GetFrontendContextAsync(
-                    new GetFrontendContextRequest(document.DocumentPath, Array.Empty<string>()),
+                var response = await _volarContextProvider.GetVolarContextAsync(
+                    new GetVolarContextRequest(document.DocumentPath, []),
                     token);
                 return new DenoVolarIntelliSenseContext(response.SemanticContext, response.Artifacts);
             },
@@ -802,7 +799,7 @@ internal sealed class VolarLaneService : ILspLane
             cancellationToken);
     }
 
-    private async ValueTask<T> ExecuteWithFailureCaptureAsync<T>(
+    private static async ValueTask<T> ExecuteWithFailureCaptureAsync<T>(
         string operation,
         string documentPath,
         T fallbackValue,
@@ -824,7 +821,7 @@ internal sealed class VolarLaneService : ILspLane
         }
     }
 
-    private async ValueTask<VolarRequestDocument> ResolveFrontendDocumentAsync(
+    private async ValueTask<VolarRequestDocument> ResolveVolarDocumentAsync(
         DocumentSnapshot sourceDocument,
         ProjectionTarget? projectionTarget,
         CancellationToken cancellationToken)
@@ -1353,7 +1350,7 @@ internal sealed class VolarLaneService : ILspLane
                 },
                 Severity = DiagnosticSeverityWarning,
                 Code = MissingTemplateImportDiagnosticCode,
-                Source = "Jolt.Frontend",
+                Source = "Jolt.Volar",
                 Message = $"Razor component '{group.Value}' could not be resolved to a nearby Vue file."
             });
         }

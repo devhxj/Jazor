@@ -1,8 +1,6 @@
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
 using Microsoft.AspNetCore.Components;
@@ -10,6 +8,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics.CodeAnalysis;
+using Jazor.Vue;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 

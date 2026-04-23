@@ -1,8 +1,8 @@
-using Jazor.VueContracts.Protocol;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 
-namespace Jolt.Frontend.Deno.Hosting;
+namespace Jolt.Volar.Deno.Hosting;
 
 internal sealed record DenoVolarIntelliSenseContext(
     SemanticContext SemanticContext,

@@ -1,26 +1,21 @@
 using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
+using Jolt.Roslyn.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
-using Jolt.Roslyn.InProc;
 
 namespace Jolt.Jazor.Projection;
 
-internal sealed class JazorProjectionService
+internal sealed class JazorProjectionService(InProcRoslynCodeService? inProcRoslynCodeService = null)
 {
     private const string TemplateOpenTag = "<template>";
     private const string TemplateCloseTag = "</template>";
     private const string CodeCommentMarker = "Original @code block retained for bridge diagnostics:";
     private readonly JazorVueParser _parser = new();
     private readonly JazorVueCompiler _compiler = new();
-    private readonly InProcRoslynCodeService _inProcRoslynCodeService;
+    private readonly InProcRoslynCodeService _inProcRoslynCodeService = inProcRoslynCodeService ?? new InProcRoslynCodeService();
 
-    public JazorProjectionService(InProcRoslynCodeService? inProcRoslynCodeService = null)
-    {
-        _inProcRoslynCodeService = inProcRoslynCodeService ?? new InProcRoslynCodeService();
-    }
-
-    public ValueTask<IReadOnlyList<VirtualDocument>> ProjectAsync(
+	public ValueTask<IReadOnlyList<VirtualDocument>> ProjectAsync(
         DocumentSnapshot document,
         CancellationToken cancellationToken)
     {
@@ -32,7 +27,7 @@ internal sealed class JazorProjectionService
             return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(Array.Empty<VirtualDocument>());
         }
 
-        var parsedDocument = _parser.Parse(document.DocumentPath, document.Text);
+        var parsedDocument = JazorVueParser.Parse(document.DocumentPath, document.Text);
         var compilation = _compiler.Compile(parsedDocument);
         var virtualDocuments = new List<VirtualDocument>
         {
@@ -55,7 +50,7 @@ internal sealed class JazorProjectionService
             return ValueTask.FromResult<IReadOnlyList<VirtualDocument>>(Array.Empty<VirtualDocument>());
         }
 
-        var parsedDocument = _parser.Parse(document.DocumentPath, document.Text);
+        var parsedDocument = JazorVueParser.Parse(document.DocumentPath, document.Text);
         IReadOnlyList<VirtualDocument> virtualDocuments =
         [
             CreateCodeProjectionDocument(document, parsedDocument)

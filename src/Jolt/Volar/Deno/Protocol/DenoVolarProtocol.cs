@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 
-namespace Jolt.Frontend.Deno.Protocol;
+namespace Jolt.Volar.Deno.Protocol;
 
-internal sealed class DenoFrontendRequestEnvelope
+internal sealed class DenoVolarRequestEnvelope
 {
     public string Id { get; set; } = string.Empty;
 
@@ -13,7 +13,7 @@ internal sealed class DenoFrontendRequestEnvelope
     public object? Payload { get; set; }
 }
 
-internal sealed class DenoFrontendResponseEnvelope
+internal sealed class DenoVolarResponseEnvelope
 {
     public string Id { get; set; } = string.Empty;
 
@@ -30,9 +30,9 @@ internal class DenoTemplateDocumentRequest
 
     public required string Text { get; init; }
 
-    public SemanticContext? FrontendContext { get; init; }
+    public SemanticContext? VolarContext { get; init; }
 
-    public IReadOnlyList<ArtifactRecord>? FrontendArtifacts { get; init; }
+    public IReadOnlyList<ArtifactRecord>? VolarArtifacts { get; init; }
 }
 
 internal class DenoTemplateRequest : DenoTemplateDocumentRequest

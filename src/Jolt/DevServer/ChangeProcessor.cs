@@ -1,27 +1,20 @@
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
-using Jazor.VueContracts.Protocol;
 using Jolt.Workspace;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.DevServer;
 
-internal sealed class ChangeProcessor
+internal sealed class ChangeProcessor(
+	OnDemandCompiler compiler,
+	ModuleResolver moduleResolver,
+	DependencyGraph dependencyGraph)
 {
-    private readonly OnDemandCompiler _compiler;
-    private readonly ModuleResolver _moduleResolver;
-    private readonly DependencyGraph _dependencyGraph;
+    private readonly OnDemandCompiler _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+    private readonly ModuleResolver _moduleResolver = moduleResolver ?? throw new ArgumentNullException(nameof(moduleResolver));
+    private readonly DependencyGraph _dependencyGraph = dependencyGraph ?? throw new ArgumentNullException(nameof(dependencyGraph));
 
-    public ChangeProcessor(
-        OnDemandCompiler compiler,
-        ModuleResolver moduleResolver,
-        DependencyGraph dependencyGraph)
-    {
-        _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
-        _moduleResolver = moduleResolver ?? throw new ArgumentNullException(nameof(moduleResolver));
-        _dependencyGraph = dependencyGraph ?? throw new ArgumentNullException(nameof(dependencyGraph));
-    }
-
-    public async ValueTask<ChangeProcessingResult> ProcessChangesAsync(
+	public async ValueTask<ChangeProcessingResult> ProcessChangesAsync(
         IReadOnlyList<string> changedPaths,
         CancellationToken cancellationToken)
         => await ProcessChangesCoreAsync(changedPaths, documentOverrides: null, cancellationToken);

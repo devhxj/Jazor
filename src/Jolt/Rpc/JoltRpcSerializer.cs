@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Rpc;
 

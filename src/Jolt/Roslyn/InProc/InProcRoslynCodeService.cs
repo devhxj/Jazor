@@ -1,5 +1,6 @@
-using Jazor.VueContracts.Protocol;
+using Jazor.Vue;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Microsoft.CodeAnalysis;

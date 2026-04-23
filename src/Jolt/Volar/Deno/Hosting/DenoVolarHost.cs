@@ -1,9 +1,9 @@
-using Jazor.VueContracts.Protocol;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using System.Text.Json;
+using Jazor.Common.VueContracts.Protocol;
 
-namespace Jolt.Frontend.Deno.Hosting;
+namespace Jolt.Volar.Deno.Hosting;
 
 internal sealed class DenoVolarHost : IDenoVolarHost
 {
@@ -193,11 +193,11 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var diagnostics = await SendAsync<LspDiagnostic[]>("template/diagnostics", request, cancellationToken);
-        return diagnostics ?? Array.Empty<LspDiagnostic>();
+        return diagnostics ?? [];
     }
 
     public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionItemsAsync(
@@ -220,8 +220,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var symbols = await SendAsync<LspDocumentSymbol[]>("template/documentSymbols", request, cancellationToken);
         return symbols ?? Array.Empty<LspDocumentSymbol>();
@@ -236,8 +236,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var tokens = await SendAsync<LspSemanticToken[]>("template/semanticTokens", request, cancellationToken);
         return tokens ?? Array.Empty<LspSemanticToken>();
@@ -252,8 +252,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var links = await SendAsync<LspDocumentLink[]>("template/documentLinks", request, cancellationToken);
         return links ?? Array.Empty<LspDocumentLink>();
@@ -270,8 +270,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             DocumentPath = document.DocumentPath,
             Text = document.Text,
             Range = range,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var hints = await SendAsync<LspInlayHint[]>("template/inlayHints", request, cancellationToken);
         return hints ?? Array.Empty<LspInlayHint>();
@@ -286,11 +286,11 @@ internal sealed class DenoVolarHost : IDenoVolarHost
         {
             DocumentPath = document.DocumentPath,
             Text = document.Text,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var ranges = await SendAsync<LspFoldingRange[]>("template/foldingRanges", request, cancellationToken);
-        return ranges ?? Array.Empty<LspFoldingRange>();
+        return ranges ?? [];
     }
 
     public async ValueTask<LspHoverResult?> GetTemplateHoverAsync(
@@ -338,8 +338,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             Text = document.Text,
             Position = position,
             IncludeDeclaration = includeDeclaration,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         var locations = await SendAsync<LspLocation[]>("template/references", request, cancellationToken);
         return locations ?? Array.Empty<LspLocation>();
@@ -358,8 +358,8 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             Text = document.Text,
             Position = position,
             NewName = newName,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
         return await SendAsync<LspWorkspaceEdit>("template/rename", request, cancellationToken);
     }
@@ -492,7 +492,7 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             DocumentPath = document.DocumentPath,
             Text = document.Text,
             Position = position,
-            FrontendContext = context?.SemanticContext,
-            FrontendArtifacts = context?.Artifacts
+            VolarContext = context?.SemanticContext,
+            VolarArtifacts = context?.Artifacts
         };
 }

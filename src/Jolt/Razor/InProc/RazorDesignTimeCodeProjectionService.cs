@@ -5,10 +5,10 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Components;
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.Razor.Toolset;
 using Jolt.VirtualDocuments.Mapping;
+using Jazor.Vue;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Razor.InProc;
 
@@ -49,7 +49,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
             var codeDocument = projectEngine.ProcessDesignTime(
                 sourceDocument,
                 RazorFileKind.Component,
-                ImmutableArray<RazorSourceDocument>.Empty,
+				[],
                 tagHelpers: null);
             if (!TryGetGeneratedCodeDocument(
                     codeDocument,
@@ -223,7 +223,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
         string generatedCode,
         out ProjectionMap projectionMap)
     {
-        var parsed = new JazorVueParser().Parse(document.DocumentPath, document.Text);
+        var parsed = JazorVueParser.Parse(document.DocumentPath, document.Text);
         if (parsed.CodeStartIndex < 0
             || parsed.CodeLength <= 0
             || string.IsNullOrWhiteSpace(parsed.Code))
@@ -256,7 +256,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
         DocumentSnapshot document,
         out RazorDesignTimeCodeProjection projection)
     {
-        var parsed = new JazorVueParser().Parse(document.DocumentPath, document.Text);
+        var parsed = JazorVueParser.Parse(document.DocumentPath, document.Text);
         if (parsed.CodeStartIndex < 0
             || parsed.CodeLength <= 0
             || string.IsNullOrWhiteSpace(parsed.Code))
@@ -401,7 +401,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
             mapping.OriginalSpan.FilePath);
     }
 
-    private static IReadOnlyList<SourceMapping> GetSourceMappings(RazorCSharpDocument csharpDocument)
+    private static SourceMapping[] GetSourceMappings(RazorCSharpDocument csharpDocument)
     {
         try
         {
@@ -410,7 +410,7 @@ internal sealed class RazorDesignTimeCodeProjectionService
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (property?.GetValue(csharpDocument) is IEnumerable<SourceMapping> sourceMappings)
             {
-                return sourceMappings.ToArray();
+                return [.. sourceMappings];
             }
         }
         catch (ArgumentException ex)

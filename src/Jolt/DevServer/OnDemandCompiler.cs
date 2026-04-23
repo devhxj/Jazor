@@ -3,11 +3,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
 using Jolt.Roslyn.InProc;
-using Jazor.SourceMaps;
+using Jazor.Common.SourceMaps;
 using Jolt.SourceMap;
+using Jazor.Vue;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.DevServer;
 
@@ -31,7 +31,7 @@ internal sealed class OnDemandCompiler
 
     private readonly JazorVueParser _parser;
     private readonly JazorVueCompiler _compiler;
-    private readonly IFrontendModuleCompiler _frontendCompiler;
+    private readonly IVolarModuleCompiler _frontendCompiler;
     private readonly CompilationCache _cache;
     private readonly DependencyGraph? _dependencyGraph;
     private readonly ModuleResolver? _moduleResolver;
@@ -45,7 +45,7 @@ internal sealed class OnDemandCompiler
     public OnDemandCompiler(
         JazorVueParser parser,
         JazorVueCompiler compiler,
-        IFrontendModuleCompiler? frontendCompiler,
+        IVolarModuleCompiler? frontendCompiler,
         CompilationCache cache,
         DependencyGraph? dependencyGraph = null,
         ModuleResolver? moduleResolver = null,
@@ -55,7 +55,7 @@ internal sealed class OnDemandCompiler
     {
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
-        _frontendCompiler = frontendCompiler ?? new NullFrontendModuleCompiler();
+        _frontendCompiler = frontendCompiler ?? new NullVolarModuleCompiler();
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _dependencyGraph = dependencyGraph;
         _moduleResolver = moduleResolver;
@@ -276,12 +276,12 @@ internal sealed class OnDemandCompiler
         IReadOnlyList<DocumentSnapshot>? companionDocuments,
         CancellationToken cancellationToken)
     {
-        var document = _parser.Parse(absolutePath, text);
+        var document = JazorVueParser.Parse(absolutePath, text);
         var sfc = _compiler.Compile(document);
         var module = await _frontendCompiler.CompileSfcAsync(absolutePath, sfc.GeneratedVueText, cancellationToken);
         if (module is null)
         {
-            return CreateFrontendUnavailableResult(
+            return CreateVolarUnavailableResult(
                 "Vue SFC compilation is not available because the frontend compiler is unavailable.",
                 sfc.Diagnostics);
         }
@@ -317,7 +317,7 @@ internal sealed class OnDemandCompiler
         var module = await _frontendCompiler.CompileSfcAsync(absolutePath, text, cancellationToken);
         if (module is null)
         {
-            return CreateFrontendUnavailableResult("Vue SFC compilation is not available because the frontend compiler is unavailable.");
+            return CreateVolarUnavailableResult("Vue SFC compilation is not available because the frontend compiler is unavailable.");
         }
 
         var preparedJavaScript = await PrepareJavaScriptForCurrentModeAsync(absolutePath, module.JavaScript, module.StyleContent, cancellationToken);
@@ -346,7 +346,7 @@ internal sealed class OnDemandCompiler
             ? default
             : await PrepareJavaScriptForCurrentModeAsync(absolutePath, module.JavaScript, styleContent: null, cancellationToken);
         return module is null
-            ? CreateFrontendUnavailableResult("TypeScript transpilation is not available because the frontend compiler is unavailable.")
+            ? CreateVolarUnavailableResult("TypeScript transpilation is not available because the frontend compiler is unavailable.")
             : new CompilationResult
             {
                 ContentType = "text/javascript",
@@ -366,13 +366,13 @@ internal sealed class OnDemandCompiler
             {
                 ContentType = "text/javascript",
                 Content = content,
-                Dependencies = DenoFrontendModuleCompiler.ExtractJavaScriptDependencies(content)
+                Dependencies = DenoVolarModuleCompiler.ExtractJavaScriptDependencies(content)
             }
             : new CompilationResult
             {
                 ContentType = "text/javascript",
                 Content = await TransformBuildJavaScriptAsync(absolutePath, content, cancellationToken),
-                Dependencies = DenoFrontendModuleCompiler.ExtractJavaScriptDependencies(content)
+                Dependencies = DenoVolarModuleCompiler.ExtractJavaScriptDependencies(content)
             };
 
     private static CompilationResult CreatePassThrough(string contentType, string content)
@@ -403,7 +403,7 @@ internal sealed class OnDemandCompiler
         var module = await _frontendCompiler.CompileCssModuleAsync(absolutePath, content, cancellationToken);
         if (module is null)
         {
-            return CreateFrontendUnavailableResult("CSS Modules compilation is not available because the frontend compiler is unavailable.");
+            return CreateVolarUnavailableResult("CSS Modules compilation is not available because the frontend compiler is unavailable.");
         }
 
         if (_buildMode)
@@ -432,7 +432,7 @@ internal sealed class OnDemandCompiler
         };
     }
 
-    private static CompilationResult CreateFrontendUnavailableResult(
+    private static CompilationResult CreateVolarUnavailableResult(
         string message,
         IReadOnlyList<string>? diagnostics = null)
         => new()
@@ -938,7 +938,7 @@ internal sealed class OnDemandCompiler
         string documentPath,
         JazorVueDocument document,
         JazorVueCompilationResult compilation,
-        FrontendModuleCompilation module,
+        VolarModuleCompilation module,
         IReadOnlyList<DocumentSnapshot>? companionDocuments)
     {
         var hotReloadMetadata = _hotReloadMetadataProvider.CreateMetadata(document, compilation.Diagnostics, companionDocuments);

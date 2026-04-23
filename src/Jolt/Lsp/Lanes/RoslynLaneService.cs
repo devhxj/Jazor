@@ -1,6 +1,6 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.Workspace;
 

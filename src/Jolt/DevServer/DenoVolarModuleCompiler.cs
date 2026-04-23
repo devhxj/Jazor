@@ -1,10 +1,10 @@
-using Jolt.Frontend.Deno.Hosting;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Hosting;
+using Jolt.Volar.Deno.Protocol;
 using System.Text.RegularExpressions;
 
 namespace Jolt.DevServer;
 
-internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
+internal sealed class DenoVolarModuleCompiler(IDenoVolarHost host, bool isProduction = false) : IVolarModuleCompiler
 {
     private static readonly Regex JavaScriptDependencyPattern = new(
         @"\bimport\s+(?:[^'"";]*?\s+from\s*)?[""'](?<specifier>[^""']+)[""']|\bexport\s+[^'"";]*?\s+from\s*[""'](?<specifier>[^""']+)[""']|\bimport\s*\(\s*[""'](?<specifier>[^""']+)[""']\s*\)",
@@ -13,16 +13,10 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
         @"<style\b[^>]*\bsrc\s*=\s*(?<quote>[""'])(?<specifier>[^""']+)\k<quote>[^>]*>",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
-    private readonly IDenoVolarHost _host;
-    private readonly bool _isProduction;
+    private readonly IDenoVolarHost _host = host ?? throw new ArgumentNullException(nameof(host));
+    private readonly bool _isProduction = isProduction;
 
-    public DenoFrontendModuleCompiler(IDenoVolarHost host, bool isProduction = false)
-    {
-        _host = host ?? throw new ArgumentNullException(nameof(host));
-        _isProduction = isProduction;
-    }
-
-    public async ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
+	public async ValueTask<VolarModuleCompilation?> CompileSfcAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
@@ -38,7 +32,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
             return null;
         }
 
-        return new FrontendModuleCompilation
+        return new VolarModuleCompilation
         {
             JavaScript = result.JsContent,
             StyleContent = result.CssContent,
@@ -52,7 +46,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
         };
     }
 
-    public ValueTask<FrontendModuleCompilation?> CompileTypeScriptAsync(
+    public ValueTask<VolarModuleCompilation?> CompileTypeScriptAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
@@ -82,7 +76,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
         };
     }
 
-    private async ValueTask<FrontendModuleCompilation?> CompileTypeScriptCoreAsync(
+    private async ValueTask<VolarModuleCompilation?> CompileTypeScriptCoreAsync(
         string documentPath,
         string text,
         CancellationToken cancellationToken)
@@ -97,7 +91,7 @@ internal sealed class DenoFrontendModuleCompiler : IFrontendModuleCompiler
             return null;
         }
 
-        return new FrontendModuleCompilation
+        return new VolarModuleCompilation
         {
             JavaScript = result.JsContent,
             StyleContent = null,

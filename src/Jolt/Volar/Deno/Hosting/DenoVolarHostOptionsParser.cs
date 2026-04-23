@@ -1,4 +1,4 @@
-namespace Jolt.Frontend.Deno.Hosting;
+namespace Jolt.Volar.Deno.Hosting;
 
 internal static class DenoVolarHostOptionsParser
 {
@@ -23,6 +23,7 @@ internal static class DenoVolarHostOptionsParser
         var workingDirectory = Environment.GetEnvironmentVariable(WorkingDirectoryEnvironmentVariable);
         var arguments = ParseArgumentList(Environment.GetEnvironmentVariable(ArgumentsEnvironmentVariable)).ToList();
         var workerPath = DenoRuntimeAssetResolver.ResolveWorkerPath(baseDirectory);
+        var cacheDirectory = DenoRuntimeAssetResolver.ResolveCacheDirectory(baseDirectory);
 
         foreach (var arg in args)
         {
@@ -59,7 +60,7 @@ internal static class DenoVolarHostOptionsParser
 
         if (arguments.Count == 0)
         {
-            arguments.AddRange(CreateDefaultArguments(workerPath));
+            arguments.AddRange(CreateDefaultArguments(workerPath, cacheDirectory));
         }
 
         return new DenoVolarHostOptions
@@ -70,24 +71,25 @@ internal static class DenoVolarHostOptionsParser
                 : executableOverride,
             HasExplicitExecutableOverride = !string.IsNullOrWhiteSpace(executableOverride),
             WorkerScriptPath = workerPath,
-            CacheDirectory = DenoRuntimeAssetResolver.ResolveCacheDirectory(baseDirectory),
+            CacheDirectory = cacheDirectory,
             Arguments = arguments.ToArray(),
             WorkingDirectory = DenoRuntimeAssetResolver.ResolveWorkingDirectory(workingDirectory, workerPath),
             IgnoreStartupFailure = true
         };
     }
 
-    private static IEnumerable<string> CreateDefaultArguments(string workerPath)
+    private static IEnumerable<string> CreateDefaultArguments(string workerPath, string cacheDirectory)
     {
-        return
-        [
-            "run",
-            "--quiet",
-            "--cached-only",
-            "--allow-env",
-            "--allow-read",
-            workerPath
-        ];
+        yield return "run";
+        yield return "--quiet";
+        if (DenoRuntimeAssetResolver.HasReadyWorkerDependencies(workerPath, cacheDirectory))
+        {
+            yield return "--cached-only";
+        }
+
+        yield return "--allow-env";
+        yield return "--allow-read";
+        yield return workerPath;
     }
 
     private static bool TryGetOptionValue(string arg, string optionName, out string value)

@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Protocol;
 
-namespace Jolt.Frontend.Deno.Hosting;
+namespace Jolt.Volar.Deno.Hosting;
 
 internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 {
@@ -26,7 +26,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
     };
     private readonly Lock _standardErrorGate = new();
     private readonly Queue<string> _standardErrorLines = [];
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<DenoFrontendResponseEnvelope>> _pendingResponses =
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<DenoVolarResponseEnvelope>> _pendingResponses =
         new(StringComparer.Ordinal);
     private Process? _process;
     private StreamWriter? _writer;
@@ -158,7 +158,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         ThrowIfWorkerUnavailable();
 
         var requestId = Guid.NewGuid().ToString("N");
-        var responseSource = new TaskCompletionSource<DenoFrontendResponseEnvelope>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var responseSource = new TaskCompletionSource<DenoVolarResponseEnvelope>(TaskCreationOptions.RunContinuationsAsynchronously);
         if (!_pendingResponses.TryAdd(requestId, responseSource))
         {
             throw new InvalidOperationException($"Failed to track Deno frontend worker request '{requestId}'.");
@@ -166,7 +166,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
         try
         {
-            var request = new DenoFrontendRequestEnvelope
+            var request = new DenoVolarRequestEnvelope
             {
                 Id = requestId,
                 Method = method,
@@ -189,7 +189,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                 _writeGate.Release();
             }
 
-            DenoFrontendResponseEnvelope response;
+            DenoVolarResponseEnvelope response;
             try
             {
                 response = await responseSource.Task.WaitAsync(cancellationToken);
@@ -311,10 +311,10 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                     continue;
                 }
 
-                DenoFrontendResponseEnvelope? response;
+                DenoVolarResponseEnvelope? response;
                 try
                 {
-                    response = JsonSerializer.Deserialize<DenoFrontendResponseEnvelope>(line, _jsonOptions);
+                    response = JsonSerializer.Deserialize<DenoVolarResponseEnvelope>(line, _jsonOptions);
                 }
                 catch (JsonException ex)
                 {

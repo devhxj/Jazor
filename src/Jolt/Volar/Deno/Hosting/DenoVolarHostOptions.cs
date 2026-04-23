@@ -1,4 +1,4 @@
-namespace Jolt.Frontend.Deno.Hosting;
+namespace Jolt.Volar.Deno.Hosting;
 
 public sealed class DenoVolarHostOptions
 {

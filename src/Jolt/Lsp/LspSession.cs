@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Jolt.Extensions;
-using Jazor.VueContracts.Protocol;
 using Jolt.Jazor.Projection;
 using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
@@ -9,6 +8,7 @@ using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
 using Jolt.VirtualDocuments.Registry;
 using Jolt.Workspace;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Lsp;
 

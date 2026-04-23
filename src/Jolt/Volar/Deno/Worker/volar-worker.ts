@@ -30,8 +30,8 @@ type RequestEnvelope = {
     range?: Range;
     includeDeclaration?: boolean;
     newName?: string;
-    frontendContext?: FrontendSemanticContext | null;
-    frontendArtifacts?: FrontendArtifactRecord[] | null;
+    volarContext?: VolarSemanticContext | null;
+    volarArtifacts?: VolarArtifactRecord[] | null;
   };
 };
 
@@ -42,7 +42,7 @@ type ResponseEnvelope = {
   error?: string;
 };
 
-type FrontendDocumentKind = "jazor" | "vue" | "typescript" | "javascript" | "css" | "html" | "unknown";
+type VolarDocumentKind = "jazor" | "vue" | "typescript" | "javascript" | "css" | "html" | "unknown";
 type ScriptLanguage = "ts" | "js";
 type ScriptSymbolKind = "const" | "let" | "var" | "function" | "class" | "import";
 type TemplateSymbol = { name: string; range: { start: Position; end: Position } };
@@ -66,24 +66,24 @@ type CompiledStyleFragment = {
   sourceLineStart?: number | null;
   sourceLineCount?: number | null;
 };
-type FrontendDocumentSnapshot = {
+type VolarDocumentSnapshot = {
   documentPath: string;
   documentKind: string | number | null | undefined;
   text: string;
   version?: string | null;
 };
-type FrontendSemanticContext = {
+type VolarSemanticContext = {
   contextKind: string;
-  relatedDocuments: FrontendDocumentSnapshot[];
+  relatedDocuments: VolarDocumentSnapshot[];
   properties?: Record<string, string> | null;
 };
-type FrontendArtifactRecord = {
+type VolarArtifactRecord = {
   artifactName: string;
   artifactKind: string;
   content: string;
   contentHash?: string | null;
 };
-type FrontendSummaryArtifact = {
+type VolarSummaryArtifact = {
   documentPath?: string;
   documentKind?: string;
   lineCount?: number;
@@ -93,12 +93,12 @@ type FrontendSummaryArtifact = {
   referencedComponents?: string[];
   hasScriptSetup?: boolean;
 };
-type FrontendComponent = {
+type VolarComponent = {
   componentName: string;
   absolutePath: string;
   importPath: string;
   source: "metadata" | "disk";
-  summary?: FrontendSummaryArtifact | null;
+  summary?: VolarSummaryArtifact | null;
 };
 
 type ScriptSymbol = {
@@ -235,8 +235,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
       return await getDiagnostics(
         payload.documentPath,
         payload.text,
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/completion":
       assertPosition(method, payload.position);
@@ -244,8 +244,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.documentPath,
         payload.text,
         payload.position,
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/hover":
       assertPosition(method, payload.position);
@@ -253,8 +253,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.documentPath,
         payload.text,
         payload.position,
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/definition":
       assertPosition(method, payload.position);
@@ -262,8 +262,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.documentPath,
         payload.text,
         payload.position,
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/implementation":
       assertPosition(method, payload.position);
@@ -271,8 +271,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.documentPath,
         payload.text,
         payload.position,
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/references":
       assertPosition(method, payload.position);
@@ -281,8 +281,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.text,
         payload.position,
         payload.includeDeclaration !== false,
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/rename":
       assertPosition(method, payload.position);
@@ -291,8 +291,8 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
         payload.text,
         payload.position,
         payload.newName ?? "",
-        payload.frontendContext,
-        payload.frontendArtifacts,
+        payload.volarContext,
+        payload.volarArtifacts,
       );
     case "template/documentSymbols":
       return await getDocumentSymbols(payload.documentPath, payload.text);
@@ -313,10 +313,10 @@ async function dispatch(method: string, payload: RequestEnvelope["payload"]): Pr
 async function getDiagnostics(
   documentPath: string,
   text: string,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const diagnostics = await tryGetVueDiagnostics(documentPath, text);
     if (diagnostics !== volarUnhandled) {
       return diagnostics;
@@ -325,7 +325,7 @@ async function getDiagnostics(
 
   const diagnostics: unknown[] = [];
 
-  const documentKind = getFrontendDocumentKind(documentPath);
+  const documentKind = getVolarDocumentKind(documentPath);
   const scriptContext = tryCreateScriptDocumentContext(documentPath, text);
   if (scriptContext !== null) {
     diagnostics.push(...getScriptDiagnostics(scriptContext));
@@ -333,7 +333,7 @@ async function getDiagnostics(
 
   if (documentKind === "jazor" || documentKind === "vue") {
     for (const symbol of findTemplateSymbols(text)) {
-      if (resolveComponent(documentPath, symbol.name, frontendContext, frontendArtifacts) !== null) {
+      if (resolveComponent(documentPath, symbol.name, volarContext, volarArtifacts) !== null) {
         continue;
       }
 
@@ -341,7 +341,7 @@ async function getDiagnostics(
         range: symbol.range,
         severity: 2,
         code: "JAZORVUEFRONTEND001",
-        source: "Jolt.Frontend",
+        source: "Jolt.Volar",
         message: `Razor component '${symbol.name}' could not be resolved to a nearby Vue file.`,
       });
     }
@@ -354,10 +354,10 @@ async function getCompletionItems(
   documentPath: string,
   text: string,
   position: Position,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const items = await tryGetVueCompletionItems(documentPath, text, position);
     if (items !== volarUnhandled) {
       return items;
@@ -374,7 +374,7 @@ async function getCompletionItems(
     return [];
   }
 
-  return enumerateNearbyVueComponents(documentPath, frontendContext, frontendArtifacts)
+  return enumerateNearbyVueComponents(documentPath, volarContext, volarArtifacts)
     .filter((item) => item.componentName.toLowerCase().startsWith(tagPrefix.toLowerCase()))
     .map((item) => ({
       label: item.componentName,
@@ -397,10 +397,10 @@ async function getHover(
   documentPath: string,
   text: string,
   position: Position,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown | null> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const hover = await tryGetVueHover(documentPath, text, position);
     if (hover !== volarUnhandled) {
       return hover;
@@ -417,7 +417,7 @@ async function getHover(
     return null;
   }
 
-  const component = resolveComponent(documentPath, symbol.name, frontendContext, frontendArtifacts);
+  const component = resolveComponent(documentPath, symbol.name, volarContext, volarArtifacts);
   if (component === null) {
     return null;
   }
@@ -435,10 +435,10 @@ async function getDefinition(
   documentPath: string,
   text: string,
   position: Position,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const locations = await tryGetVueDefinition(documentPath, text, position);
     if (locations !== volarUnhandled) {
       return locations;
@@ -455,7 +455,7 @@ async function getDefinition(
     return [];
   }
 
-  const component = resolveComponent(documentPath, symbol.name, frontendContext, frontendArtifacts);
+  const component = resolveComponent(documentPath, symbol.name, volarContext, volarArtifacts);
   if (component === null) {
     return [];
   }
@@ -473,10 +473,10 @@ async function getImplementation(
   documentPath: string,
   text: string,
   position: Position,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const locations = await tryGetVueImplementation(documentPath, text, position);
     if (locations !== volarUnhandled) {
       return locations;
@@ -493,7 +493,7 @@ async function getImplementation(
     return [];
   }
 
-  const component = resolveComponent(documentPath, symbol.name, frontendContext, frontendArtifacts);
+  const component = resolveComponent(documentPath, symbol.name, volarContext, volarArtifacts);
   if (component === null) {
     return [];
   }
@@ -512,10 +512,10 @@ async function getReferences(
   text: string,
   position: Position,
   includeDeclaration: boolean,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const locations = await tryGetVueReferences(documentPath, text, position, includeDeclaration);
     if (locations !== volarUnhandled) {
       return locations;
@@ -532,7 +532,7 @@ async function getReferences(
     return [];
   }
 
-  const component = resolveComponent(documentPath, symbol.name, frontendContext, frontendArtifacts);
+  const component = resolveComponent(documentPath, symbol.name, volarContext, volarArtifacts);
   if (component === null) {
     return [];
   }
@@ -563,10 +563,10 @@ async function getRename(
   text: string,
   position: Position,
   newName: string,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
 ): Promise<unknown | null> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const workspaceEdit = await tryGetVueRename(documentPath, text, position, newName);
     if (workspaceEdit !== volarUnhandled) {
       return workspaceEdit;
@@ -587,8 +587,8 @@ async function getRename(
     text,
     position,
     true,
-    frontendContext,
-    frontendArtifacts,
+    volarContext,
+    volarArtifacts,
   ) as Array<{ uri: string; range: { start: Position } }>;
   if (references.length === 0) {
     return null;
@@ -617,7 +617,7 @@ async function getRename(
 }
 
 async function getDocumentSymbols(documentPath: string, text: string): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const symbols = await tryGetVueDocumentSymbols(documentPath, text);
     if (symbols !== volarUnhandled) {
       return symbols;
@@ -625,7 +625,7 @@ async function getDocumentSymbols(documentPath: string, text: string): Promise<u
   }
 
   const scriptContext = tryCreateScriptDocumentContext(documentPath, text);
-  const documentKind = getFrontendDocumentKind(documentPath);
+  const documentKind = getVolarDocumentKind(documentPath);
   if (scriptContext !== null && documentKind !== "vue") {
     return getScriptDocumentSymbols(scriptContext);
   }
@@ -675,7 +675,7 @@ async function getDocumentSymbols(documentPath: string, text: string): Promise<u
 }
 
 async function getSemanticTokens(documentPath: string, text: string): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) === "vue") {
+  if (getVolarDocumentKind(documentPath) === "vue") {
     const tokens = await tryGetVueSemanticTokens(documentPath, text);
     if (tokens !== volarUnhandled) {
       return tokens;
@@ -683,7 +683,7 @@ async function getSemanticTokens(documentPath: string, text: string): Promise<un
   }
 
   const tokens: unknown[] = [];
-  const documentKind = getFrontendDocumentKind(documentPath);
+  const documentKind = getVolarDocumentKind(documentPath);
 
   if (documentKind === "jazor" || documentKind === "vue") {
     for (const symbol of findTemplateSymbols(text)) {
@@ -709,7 +709,7 @@ async function getSemanticTokens(documentPath: string, text: string): Promise<un
 }
 
 async function getDocumentLinks(documentPath: string, text: string): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) !== "vue") {
+  if (getVolarDocumentKind(documentPath) !== "vue") {
     return [];
   }
 
@@ -722,7 +722,7 @@ async function getInlayHints(
   text: string,
   range: Range,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) !== "vue") {
+  if (getVolarDocumentKind(documentPath) !== "vue") {
     return [];
   }
 
@@ -734,7 +734,7 @@ async function getFoldingRanges(
   documentPath: string,
   text: string,
 ): Promise<unknown[]> {
-  if (getFrontendDocumentKind(documentPath) !== "vue") {
+  if (getVolarDocumentKind(documentPath) !== "vue") {
     return [];
   }
 
@@ -1707,8 +1707,8 @@ function getScriptDiagnostics(context: ScriptContext): unknown[] {
       }),
       severity: 1,
       code: "JAZORVUEFRONTENDSCRIPT001",
-      source: "Jolt.Frontend",
-      message: `Frontend import '${importPath}' could not be resolved.`,
+      source: "Jolt.Volar",
+      message: `Volar import '${importPath}' could not be resolved.`,
     });
   }
 
@@ -2141,7 +2141,7 @@ function tryCreateTypeScriptProject(context: ScriptContext): TypeScriptProject |
 
 function getTypeScriptEntryFilePath(context: ScriptContext): string {
   const normalizedPath = normalizePath(context.sourceDocumentPath);
-  return getFrontendDocumentKind(context.sourceDocumentPath) === "vue"
+  return getVolarDocumentKind(context.sourceDocumentPath) === "vue"
     ? `${normalizedPath}.__jazor_jolt_script__.${context.scriptLanguage}`
     : normalizedPath;
 }
@@ -2344,7 +2344,7 @@ function tryCreateScriptContext(documentPath: string, text: string, position: Po
 }
 
 function tryCreateScriptDocumentContext(documentPath: string, text: string): ScriptContext | null {
-  switch (getFrontendDocumentKind(documentPath)) {
+  switch (getVolarDocumentKind(documentPath)) {
     case "typescript":
       return createScriptContext(documentPath, text, text, 0, {
         start: { line: 0, character: 0 },
@@ -2861,11 +2861,11 @@ function mapScriptSymbolSemanticTokenType(symbol: ScriptSymbol): string {
 
 function createScriptSymbolDocumentation(symbol: ScriptSymbol): string {
   return symbol.importPath === undefined
-    ? `Frontend script symbol: \`${symbol.detail}\`.`
-    : `Frontend import from \`${symbol.importPath}\`.`;
+    ? `Volar script symbol: \`${symbol.detail}\`.`
+    : `Volar import from \`${symbol.importPath}\`.`;
 }
 
-function getFrontendDocumentKind(documentPath: string): FrontendDocumentKind {
+function getVolarDocumentKind(documentPath: string): VolarDocumentKind {
   const normalized = normalizePath(documentPath).toLowerCase();
   if (normalized.endsWith(".jazor")) {
     return "jazor";
@@ -3007,10 +3007,10 @@ function hasPathExtension(value: string): boolean {
 function resolveComponent(
   documentPath: string,
   componentName: string,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
-): FrontendComponent | null {
-  for (const component of enumerateNearbyVueComponents(documentPath, frontendContext, frontendArtifacts)) {
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
+): VolarComponent | null {
+  for (const component of enumerateNearbyVueComponents(documentPath, volarContext, volarArtifacts)) {
     if (component.componentName === componentName) {
       return component;
     }
@@ -3021,10 +3021,10 @@ function resolveComponent(
 
 function enumerateNearbyVueComponents(
   documentPath: string,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
-): FrontendComponent[] {
-  const metadataComponents = enumerateFrontendMetadataVueComponents(documentPath, frontendContext, frontendArtifacts);
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
+): VolarComponent[] {
+  const metadataComponents = enumerateVolarMetadataVueComponents(documentPath, volarContext, volarArtifacts);
   if (metadataComponents.length > 0) {
     return metadataComponents;
   }
@@ -3049,7 +3049,7 @@ function enumerateNearbyVueComponents(
     searchDirectories.add(`${parentDirectory}/components`);
   }
 
-  const results: FrontendComponent[] = [];
+  const results: VolarComponent[] = [];
   const seen = new Set<string>();
   for (const directory of searchDirectories) {
     try {
@@ -3084,22 +3084,22 @@ function enumerateNearbyVueComponents(
   return results;
 }
 
-function enumerateFrontendMetadataVueComponents(
+function enumerateVolarMetadataVueComponents(
   documentPath: string,
-  frontendContext?: FrontendSemanticContext | null,
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
-): FrontendComponent[] {
-  const relatedDocuments = frontendContext?.relatedDocuments ?? [];
+  volarContext?: VolarSemanticContext | null,
+  volarArtifacts?: VolarArtifactRecord[] | null,
+): VolarComponent[] {
+  const relatedDocuments = volarContext?.relatedDocuments ?? [];
   if (relatedDocuments.length === 0) {
     return [];
   }
 
-  const summaryByPath = createFrontendSummaryArtifactMap(frontendArtifacts);
+  const summaryByPath = createVolarSummaryArtifactMap(volarArtifacts);
   const documentDirectory = getDirectoryName(documentPath);
-  const results: FrontendComponent[] = [];
+  const results: VolarComponent[] = [];
   const seenPaths = new Set<string>();
   for (const relatedDocument of relatedDocuments) {
-    if (normalizeFrontendDocumentKind(relatedDocument.documentKind) !== "vue") {
+    if (normalizeVolarDocumentKind(relatedDocument.documentKind) !== "vue") {
       continue;
     }
 
@@ -3125,16 +3125,16 @@ function enumerateFrontendMetadataVueComponents(
   return results;
 }
 
-function createFrontendSummaryArtifactMap(
-  frontendArtifacts?: FrontendArtifactRecord[] | null,
-): Map<string, FrontendSummaryArtifact> {
-  const results = new Map<string, FrontendSummaryArtifact>();
-  for (const artifact of frontendArtifacts ?? []) {
+function createVolarSummaryArtifactMap(
+  volarArtifacts?: VolarArtifactRecord[] | null,
+): Map<string, VolarSummaryArtifact> {
+  const results = new Map<string, VolarSummaryArtifact>();
+  for (const artifact of volarArtifacts ?? []) {
     if (artifact.artifactKind !== "frontend-summary") {
       continue;
     }
 
-    const summary = tryParseFrontendSummaryArtifact(artifact.content);
+    const summary = tryParseVolarSummaryArtifact(artifact.content);
     if (summary?.documentPath === undefined) {
       continue;
     }
@@ -3145,15 +3145,15 @@ function createFrontendSummaryArtifactMap(
   return results;
 }
 
-function tryParseFrontendSummaryArtifact(content: string): FrontendSummaryArtifact | null {
+function tryParseVolarSummaryArtifact(content: string): VolarSummaryArtifact | null {
   try {
-    return JSON.parse(content) as FrontendSummaryArtifact;
+    return JSON.parse(content) as VolarSummaryArtifact;
   } catch {
     return null;
   }
 }
 
-function normalizeFrontendDocumentKind(value: string | number | null | undefined): FrontendDocumentKind {
+function normalizeVolarDocumentKind(value: string | number | null | undefined): VolarDocumentKind {
   if (typeof value === "number") {
     switch (value) {
       case 0:

@@ -1,5 +1,3 @@
-using Jazor.VueContracts.Protocol;
-
 namespace Jolt.Lsp.Routing;
 
 internal sealed record ProjectionTarget(

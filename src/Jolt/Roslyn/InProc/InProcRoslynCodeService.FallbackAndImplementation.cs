@@ -1,19 +1,9 @@
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
+using Jolt.Lsp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
-using Jolt.Lsp;
-using Jolt.Lsp.Routing;
-using Jolt.Razor.InProc;
-using Jolt.VirtualDocuments.Mapping;
-using Jolt.Workspace;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Jolt.Roslyn.InProc;
 
