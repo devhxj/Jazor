@@ -4,6 +4,10 @@
 
 实现 `dotnet run --project Jolt -- --build` 生产构建命令，输出优化后的静态资源到 `dist/` 目录，支持 tree shaking、code splitting、minification、CSS 提取、Source Map 链式合并。
 
+> 当前生产目标说明（2026-04-23 收敛）
+> Phase 5 中的“生产”指正式构建 lane，而不是让 `Jolt` 进程直接对公网提供服务。
+> `--preview` 的定位是本地或受控内网预览；正式对外服务应由 `--build` 产物后的静态站点承接。
+
 **验收标准**: 执行构建命令后，`dist/` 目录包含：
 - 压缩后的 JS bundle（带 hash）
 - 提取的 CSS 文件（带 hash）
@@ -1119,7 +1123,7 @@ async function compileFile(id, resolveDir) {{
 
 ---
 
-## 四、jazor.config.json 扩展
+## 四、jolt.config.json 扩展
 
 ```jsonc
 {
@@ -1539,7 +1543,7 @@ app.mount('#app');
 ### 8.3 手动 Chunk 分割
 
 ```jsonc
-// jazor.config.json
+// jolt.config.json
 {
   "build": {
     "rollupOptions": {
@@ -1808,7 +1812,7 @@ static async Task<int> PreviewCommand(
 - 新增 `Build/BuildConfig.cs`
 
 **测试**:
-- 解析完整 jazor.config.json
+- 解析完整 jolt.config.json
 - BuildConfig.ToBuildOptions() 转换正确
 - 默认值与配置文件合并正确
 

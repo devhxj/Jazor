@@ -343,7 +343,7 @@ public static BuildOptions ResolveBuildOptions(
 | `--incremental` | `--incremental=true\|false` | `--incremental=true` |
 
 **配置文件解析**：
-- 从 `jazor.config.json` 读取 `build` 配置
+- 从 `jolt.config.json` 读取 `build` 配置
 - 从 `resolve.alias` 读取别名配置
 - 规范化别名键值对（去除首尾空格）
 

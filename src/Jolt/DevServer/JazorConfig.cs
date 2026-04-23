@@ -83,10 +83,12 @@ internal sealed class JazorBuildConfig
     {
         return value?.ToLowerInvariant() switch
         {
+            null => SourceMapOption.External,
             "inline" => SourceMapOption.Inline,
-            "false" => SourceMapOption.None,
-            "external" => SourceMapOption.External,
-            _ => SourceMapOption.External
+            "false" or "none" => SourceMapOption.None,
+            "true" or "external" or "linked" => SourceMapOption.External,
+            _ => throw new InvalidOperationException(
+                $"Invalid value '{value}' for build.sourceMap. Expected inline, true, external, linked, false, or none.")
         };
     }
 }

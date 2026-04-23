@@ -54,8 +54,15 @@ if (useBuild)
 {
     var rootDir = GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory();
     rootDir = Path.GetFullPath(rootDir);
-    var config = LoadJazorConfig(rootDir);
-    var buildOptions = BuildCommandOptionsResolver.ResolveBuildOptions(args, rootDir, config);
+    if (!TryLoadJoltConfigForCommand(rootDir, out var config))
+    {
+        return;
+    }
+
+    if (!TryResolveBuildOptionsForCommand(args, rootDir, config, out var buildOptions))
+    {
+        return;
+    }
 
     var orchestrator = new BuildOrchestrator();
     var result = await orchestrator.BuildAsync(buildOptions, cancellationToken);
@@ -92,8 +99,15 @@ if (usePreview)
 {
     var rootDir = GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory();
     rootDir = Path.GetFullPath(rootDir);
-    var config = LoadJazorConfig(rootDir);
-    var distDir = BuildCommandOptionsResolver.ResolveOutputDirectory(args, rootDir, config);
+    if (!TryLoadJoltConfigForCommand(rootDir, out var config))
+    {
+        return;
+    }
+
+    if (!TryResolveOutputDirectoryForCommand(args, rootDir, config, out var distDir))
+    {
+        return;
+    }
 
     if (!Directory.Exists(distDir))
     {
@@ -260,7 +274,11 @@ try
     if (useLsp)
     {
         var hostRootDirectory = Path.GetFullPath(GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory());
-        var hostConfig = LoadJazorConfig(hostRootDirectory);
+        if (!TryLoadJoltConfigForCommand(hostRootDirectory, out var hostConfig))
+        {
+            return;
+        }
+
         var extensionHostOptions = ExtensionHostOptionsResolver.Resolve(args, hostRootDirectory, hostConfig);
         var extensionRegistry = new ExtensionRegistry(
             loadEventRetention: extensionHostOptions.LoadEventRetention,
@@ -414,38 +432,62 @@ static string? GetOptionValue(string[] args, string optionName)
     return null;
 }
 
-static JazorConfig? LoadJazorConfig(string rootDirectory)
-{
-    var configPath = Path.Combine(rootDirectory, "jazor.config.json");
-    if (!File.Exists(configPath))
-    {
-        return null;
-    }
+static JazorConfig? LoadJoltConfig(string rootDirectory)
+    => JoltConfigLoader.Load(rootDirectory);
 
+static bool TryLoadJoltConfigForCommand(string rootDirectory, out JazorConfig? config)
+{
     try
     {
-        return System.Text.Json.JsonSerializer.Deserialize<JazorConfig>(
-            File.ReadAllText(configPath),
-            new System.Text.Json.JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+        config = LoadJoltConfig(rootDirectory);
+        return true;
     }
-    catch (IOException)
+    catch (InvalidOperationException exception)
     {
-        return null;
+        Console.Error.WriteLine(exception.Message);
+        Environment.ExitCode = 1;
+        config = null;
+        return false;
     }
-    catch (UnauthorizedAccessException)
+}
+
+static bool TryResolveBuildOptionsForCommand(
+    string[] args,
+    string rootDirectory,
+    JazorConfig? config,
+    out BuildOptions buildOptions)
+{
+    try
     {
-        return null;
+        buildOptions = BuildCommandOptionsResolver.ResolveBuildOptions(args, rootDirectory, config);
+        return true;
     }
-    catch (System.Text.Json.JsonException)
+    catch (InvalidOperationException exception)
     {
-        return null;
+        Console.Error.WriteLine(exception.Message);
+        Environment.ExitCode = 1;
+        buildOptions = new BuildOptions { RootDirectory = rootDirectory };
+        return false;
     }
-    catch (NotSupportedException)
+}
+
+static bool TryResolveOutputDirectoryForCommand(
+    string[] args,
+    string rootDirectory,
+    JazorConfig? config,
+    out string outputDirectory)
+{
+    try
     {
-        return null;
+        outputDirectory = BuildCommandOptionsResolver.ResolveOutputDirectory(args, rootDirectory, config);
+        return true;
+    }
+    catch (InvalidOperationException exception)
+    {
+        Console.Error.WriteLine(exception.Message);
+        Environment.ExitCode = 1;
+        outputDirectory = string.Empty;
+        return false;
     }
 }
 

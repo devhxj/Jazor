@@ -240,13 +240,13 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
-    public void DevServerOptionsParser_Parse_LoadsServerAndProxyRulesFromJazorConfig()
+    public void DevServerOptionsParser_Parse_LoadsServerAndProxyRulesFromJoltConfig()
     {
         var rootDirectory = CreateTemporaryDirectory();
         try
         {
             File.WriteAllText(
-                Path.Combine(rootDirectory, "jazor.config.json"),
+                Path.Combine(rootDirectory, "jolt.config.json"),
                 """
                 {
                   "server": {
@@ -298,13 +298,13 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
-    public void DevServerOptionsParser_Parse_CommandLineOverridesJazorConfig()
+    public void DevServerOptionsParser_Parse_CommandLineOverridesJoltConfig()
     {
         var rootDirectory = CreateTemporaryDirectory();
         try
         {
             File.WriteAllText(
-                Path.Combine(rootDirectory, "jazor.config.json"),
+                Path.Combine(rootDirectory, "jolt.config.json"),
                 """
                 {
                   "server": {
@@ -379,7 +379,7 @@ public sealed class JoltDevServerTests
         var rootDirectory = CreateTemporaryDirectory();
         try
         {
-            var filePath = Path.Combine(rootDirectory, "jazor.config.json");
+            var filePath = Path.Combine(rootDirectory, "jolt.config.json");
 
             Assert.IsTrue(DevServerFileWatchFilter.ShouldObserve(rootDirectory, filePath));
         }
@@ -852,7 +852,8 @@ public sealed class JoltDevServerTests
 
             var previousSnapshot = DevServerFileSnapshotPoller.CaptureSnapshot(rootDirectory);
 
-            File.WriteAllText(existingPath, "<template><div>new</div></template>");
+            // Use a different length so detection does not depend on filesystem timestamp granularity.
+            File.WriteAllText(existingPath, "<template><div>new value</div></template>");
             var createdPath = Path.Combine(rootDirectory, "site.css");
             File.WriteAllText(createdPath, "body { color: red; }");
             File.Delete(deletedPath);
@@ -3602,7 +3603,7 @@ public sealed class JoltDevServerTests
         try
         {
             await File.WriteAllTextAsync(Path.Combine(rootDirectory, "index.html"), "<html><body>before</body></html>");
-            var configPath = Path.Combine(rootDirectory, "jazor.config.json");
+            var configPath = Path.Combine(rootDirectory, "jolt.config.json");
             await File.WriteAllTextAsync(configPath, """{"server":{"hmr":true}}""");
 
             var options = new DevServerOptions
@@ -7282,7 +7283,7 @@ public sealed class JoltDevServerTests
         var rootDirectory = CreateTemporaryDirectory();
         try
         {
-            var configPath = Path.Combine(rootDirectory, "jazor.config.json");
+            var configPath = Path.Combine(rootDirectory, "jolt.config.json");
             await File.WriteAllTextAsync(configPath, "{}");
 
             var compiler = new OnDemandCompiler(

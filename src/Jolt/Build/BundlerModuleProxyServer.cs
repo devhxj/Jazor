@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Jolt.Build;
 
@@ -74,6 +75,7 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         }
 
         var builder = WebApplication.CreateSlimBuilder();
+        builder.Logging.ClearProviders();
         // 让 Kestrel 直接绑定端口 0，避免“先找空闲端口再绑定”的竞态。
         builder.WebHost.UseUrls("http://127.0.0.1:0");
 

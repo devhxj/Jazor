@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Jolt.Frontend.Deno.Hosting;
 using Jolt.Frontend.Deno.Protocol;
 
@@ -44,23 +45,37 @@ public sealed class JoltDenoFrontendHostLifecycleTests
         await Task.WhenAll(firstRequest, secondRequest);
 
         Assert.AreEqual(1, workerProcess.StartCallCount);
-        Assert.AreEqual(2, workerProcess.RequestMethods.Count);
+        var requestMethods = workerProcess.RequestMethods;
+        Assert.AreEqual(2, requestMethods.Count);
         CollectionAssert.AreEqual(
             new[] { "compile/sfc", "compile/sfc" },
-            workerProcess.RequestMethods.ToArray());
+            requestMethods.ToArray());
     }
 
     private sealed class DelayedStartWorkerProcess : IDenoWorkerProcess
     {
         private readonly TaskCompletionSource<bool> _startObserved = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly TaskCompletionSource<bool> _startRelease = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly Dictionary<string, object?> _results = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, object?> _results = new(StringComparer.Ordinal);
+        private readonly List<string> _requestMethods = [];
+        private readonly Lock _requestMethodsGate = new();
+        private int _isRunning;
+        private int _startCallCount;
 
-        public bool IsRunning { get; private set; }
+        public bool IsRunning => Volatile.Read(ref _isRunning) == 1;
 
-        public int StartCallCount { get; private set; }
+        public int StartCallCount => Volatile.Read(ref _startCallCount);
 
-        public List<string> RequestMethods { get; } = [];
+        public IReadOnlyList<string> RequestMethods
+        {
+            get
+            {
+                lock (_requestMethodsGate)
+                {
+                    return _requestMethods.ToArray();
+                }
+            }
+        }
 
         public void SetResult(string method, object? result)
         {
@@ -70,10 +85,10 @@ public sealed class JoltDenoFrontendHostLifecycleTests
         public async ValueTask StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            StartCallCount++;
+            Interlocked.Increment(ref _startCallCount);
             _startObserved.TrySetResult(true);
             await _startRelease.Task.WaitAsync(cancellationToken);
-            IsRunning = true;
+            Volatile.Write(ref _isRunning, 1);
         }
 
         public ValueTask<TResult?> SendRequestAsync<TResult>(
@@ -82,7 +97,11 @@ public sealed class JoltDenoFrontendHostLifecycleTests
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            RequestMethods.Add(method);
+            lock (_requestMethodsGate)
+            {
+                _requestMethods.Add(method);
+            }
+
             return ValueTask.FromResult(
                 _results.TryGetValue(method, out var result)
                     ? (TResult?)result
@@ -92,7 +111,7 @@ public sealed class JoltDenoFrontendHostLifecycleTests
         public ValueTask StopAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            IsRunning = false;
+            Volatile.Write(ref _isRunning, 0);
             return ValueTask.CompletedTask;
         }
 

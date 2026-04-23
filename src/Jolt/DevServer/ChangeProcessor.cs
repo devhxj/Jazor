@@ -222,7 +222,7 @@ internal sealed class ChangeProcessor
                 break;
             }
 
-            if (string.Equals(fileName, "jazor.config.json", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(fileName, JoltConfigFile.FileName, StringComparison.OrdinalIgnoreCase))
             {
                 reason = "config-change";
                 break;

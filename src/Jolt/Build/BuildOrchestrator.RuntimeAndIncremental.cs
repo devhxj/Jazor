@@ -728,7 +728,7 @@ internal sealed partial class BuildOrchestrator
         var fileName = Path.GetFileName(fullPath);
         if (string.Equals(fileName, "index.html", StringComparison.OrdinalIgnoreCase)
             || string.Equals(fileName, "package.json", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(fileName, "jazor.config.json", StringComparison.OrdinalIgnoreCase))
+            || string.Equals(fileName, JoltConfigFile.FileName, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -1383,4 +1383,3 @@ internal sealed partial class BuildOrchestrator
     }
 
 }
-

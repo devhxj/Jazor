@@ -1,3 +1,4 @@
+using System.Globalization;
 using Jolt.DevServer;
 
 namespace Jolt.Build;
@@ -24,18 +25,11 @@ internal static class BuildCommandOptionsResolver
         {
             buildOptions = buildOptions with
             {
-                SourceMap = sourcemapOverride.ToLowerInvariant() switch
-                {
-                    "inline" => SourceMapOption.Inline,
-                    "true" or "external" or "linked" => SourceMapOption.External,
-                    "false" or "none" => SourceMapOption.None,
-                    _ => buildOptions.SourceMap
-                }
+                SourceMap = ParseSourceMapOption("--sourcemap", sourcemapOverride)
             };
         }
 
-        if (TryGetOptionValue(args, "--minify", out var minifyOverride)
-            && bool.TryParse(minifyOverride, out var minify))
+        if (TryGetBooleanOption(args, "--minify", out var minify))
         {
             buildOptions = buildOptions with { Minify = minify };
         }
@@ -51,8 +45,7 @@ internal static class BuildCommandOptionsResolver
             buildOptions = buildOptions with { Target = targetOverride };
         }
 
-        if (TryGetOptionValue(args, "--code-splitting", out var codeSplittingOverride)
-            && bool.TryParse(codeSplittingOverride, out var codeSplitting))
+        if (TryGetBooleanOption(args, "--code-splitting", out var codeSplitting))
         {
             buildOptions = buildOptions with { CodeSplitting = codeSplitting };
         }
@@ -62,20 +55,23 @@ internal static class BuildCommandOptionsResolver
             buildOptions = buildOptions with { AssetsDir = assetsDirOverride };
         }
 
-        if (TryGetOptionValue(args, "--asset-hash-length", out var assetHashLengthOverride)
-            && int.TryParse(assetHashLengthOverride, out var assetHashLength))
+        if (TryGetOptionValue(args, "--asset-hash-length", out var assetHashLengthOverride))
         {
-            buildOptions = buildOptions with { AssetHashLength = assetHashLength };
+            buildOptions = buildOptions with
+            {
+                AssetHashLength = ParseIntegerOption("--asset-hash-length", assetHashLengthOverride)
+            };
         }
 
-        if (TryGetOptionValue(args, "--chunk-size-warning-limit", out var chunkSizeWarningLimitOverride)
-            && int.TryParse(chunkSizeWarningLimitOverride, out var chunkSizeWarningLimit))
+        if (TryGetOptionValue(args, "--chunk-size-warning-limit", out var chunkSizeWarningLimitOverride))
         {
-            buildOptions = buildOptions with { ChunkSizeWarningLimit = chunkSizeWarningLimit };
+            buildOptions = buildOptions with
+            {
+                ChunkSizeWarningLimit = ParseIntegerOption("--chunk-size-warning-limit", chunkSizeWarningLimitOverride)
+            };
         }
 
-        if (TryGetOptionValue(args, "--incremental", out var incrementalOverride)
-            && bool.TryParse(incrementalOverride, out var incremental))
+        if (TryGetBooleanOption(args, "--incremental", out var incremental))
         {
             buildOptions = buildOptions with { Incremental = incremental };
         }
@@ -106,6 +102,62 @@ internal static class BuildCommandOptionsResolver
         value = string.Empty;
         return false;
     }
+
+    private static bool TryGetBooleanOption(string[] args, string optionName, out bool value)
+    {
+        foreach (var arg in args)
+        {
+            if (string.Equals(arg, optionName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = true;
+                return true;
+            }
+
+            if (arg.StartsWith(optionName + "=", StringComparison.OrdinalIgnoreCase))
+            {
+                var rawValue = arg[(optionName.Length + 1)..];
+                if (!bool.TryParse(rawValue, out value))
+                {
+                    throw CreateInvalidOptionException(optionName, rawValue, "true or false");
+                }
+
+                return true;
+            }
+        }
+
+        value = false;
+        return false;
+    }
+
+    private static SourceMapOption ParseSourceMapOption(string optionName, string value)
+    {
+        return value.ToLowerInvariant() switch
+        {
+            "inline" => SourceMapOption.Inline,
+            "true" or "external" or "linked" => SourceMapOption.External,
+            "false" or "none" => SourceMapOption.None,
+            _ => throw CreateInvalidOptionException(
+                optionName,
+                value,
+                "inline, true, external, linked, false, or none")
+        };
+    }
+
+    private static int ParseIntegerOption(string optionName, string value)
+    {
+        if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+        {
+            return parsed;
+        }
+
+        throw CreateInvalidOptionException(optionName, value, "an integer");
+    }
+
+    private static InvalidOperationException CreateInvalidOptionException(
+        string optionName,
+        string value,
+        string expected)
+        => new($"Invalid value '{value}' for {optionName}. Expected {expected}.");
 
     private static IReadOnlyDictionary<string, string> NormalizeResolveAliases(
         IDictionary<string, string>? aliases)

@@ -36,7 +36,7 @@ internal static class JoltWorkspaceResolver
     // 工作区边界标记
     private static readonly string[] WorkspaceBoundaryDirectories = [".git", ".hg", ".svn"];
     private static readonly string[] WorkspaceBoundaryFiles = [
-        "jazor.config.json",
+        "jolt.config.json",
         "package.json",
         "global.json",
         "Directory.Build.props",
@@ -657,7 +657,7 @@ private static bool ContainsWorkspaceBoundaryMarker(string directoryPath)
 | 类型 | 标记 |
 |------|------|
 | 版本控制目录 | `.git`, `.hg`, `.svn` |
-| 项目配置文件 | `jazor.config.json`, `package.json`, `global.json`, `Directory.Build.props`, `Directory.Build.targets` |
+| 项目配置文件 | `jolt.config.json`, `package.json`, `global.json`, `Directory.Build.props`, `Directory.Build.targets` |
 | 解决方案文件 | `.slnx` |
 
 **临时目录保护**：
@@ -1338,7 +1338,7 @@ private const int MaxPathSegmentDepth = 256;
 **可配置的标记**：
 
 - 版本控制目录：`.git`, `.hg`, `.svn`
-- 项目配置文件：`jazor.config.json`, `package.json`, `global.json`, `Directory.Build.props`, `Directory.Build.targets`
+- 项目配置文件：`jolt.config.json`, `package.json`, `global.json`, `Directory.Build.props`, `Directory.Build.targets`
 - 解决方案文件：`.slnx`
 
 **影响**：

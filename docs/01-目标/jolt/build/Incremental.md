@@ -139,7 +139,7 @@ internal static IReadOnlyDictionary<string, string> CollectIncrementalInputSigna
 - 跳过忽略的目录（`.git`, `.jazor`, `node_modules`, `.vs`, `.idea`, `bin`, `obj`）
 - 包含的文件：
   - `public/` 目录下的所有文件
-  - 根目录的 `index.html`, `package.json`, `jazor.config.json`
+  - 根目录的 `index.html`, `package.json`, `jolt.config.json`
   - 具有以下扩展名的文件：`.jazor`, `.vue`, `.ts`, `.js`, `.css`, `.html`, `.json`
 
 **文件系统容错**：
@@ -511,7 +511,7 @@ internal static async Task PersistIncrementalStateAsync(
 jolt build --incremental=true
 ```
 
-**配置文件**（`jazor.config.json`）：
+**配置文件**（`jolt.config.json`）：
 ```json
 {
   "build": {

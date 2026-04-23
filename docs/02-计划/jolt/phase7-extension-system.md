@@ -106,7 +106,7 @@
 │  │ (Bundled)        │     │ (Local)          │     │ (Package)        │    │
 │  │                  │     │                  │     │                  │    │
 │  │ - Jazor 规则     │     │ .jazor/extensions│     │ npm package      │    │
-│  │ - 基础诊断       │     │ jazor.config.json│     │ NuGet package    │    │
+│  │ - 基础诊断       │     │ jolt.config.json│     │ NuGet package    │    │
 │  │ - 标准代码操作   │     │                  │     │                  │    │
 │  └────────┬─────────┘     └────────┬─────────┘     └────────┬─────────┘    │
 │           │                        │                        │               │
@@ -1807,7 +1807,7 @@ public sealed class CircuitBreakerException : Exception
     "onLanguage:jazor",
     "onLanguage:vue",
     "onLanguage:typescript",
-    "workspaceContains:jazor.config.json"
+    "workspaceContains:jolt.config.json"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -2053,7 +2053,7 @@ export async function deactivate() {
 
 ---
 
-## 七、jazor.config.json 扩展
+## 七、jolt.config.json 扩展
 
 ```jsonc
 {

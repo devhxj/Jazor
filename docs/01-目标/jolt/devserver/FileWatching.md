@@ -275,7 +275,7 @@ internal static class DevServerOptionsParser
 
 ### 2.6 JazorConfig
 
-**职责**：`jazor.config.json` 配置文件结构。
+**职责**：`jolt.config.json` 配置文件结构。
 
 **定义**（`src/Jolt/DevServer/JazorConfig.cs`）：
 ```csharp
@@ -482,8 +482,8 @@ private static ChangeProcessingResult? TryCreateClassifiedReload(
             break;
         }
 
-        // 2. jazor.config.json 变更 -> 全页面重新加载
-        if (string.Equals(fileName, "jazor.config.json", StringComparison.OrdinalIgnoreCase))
+        // 2. jolt.config.json 变更 -> 全页面重新加载
+        if (string.Equals(fileName, "jolt.config.json", StringComparison.OrdinalIgnoreCase))
         {
             reason = "config-change";
             break;
@@ -705,7 +705,7 @@ public static DevServerOptions Parse(string[] args)
 ```csharp
 private static DevServerOptions ApplyConfigFile(DevServerOptions options)
 {
-    var configPath = Path.Combine(options.RootDirectory, "jazor.config.json");
+    var configPath = Path.Combine(options.RootDirectory, "jolt.config.json");
     if (!File.Exists(configPath))
     {
         return options;
@@ -935,7 +935,7 @@ private bool TryNormalizeDependency(
 
 ### 6.2 配置文件
 
-**jazor.config.json**：
+**jolt.config.json**：
 ```json
 {
   "server": {

@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace Jolt.DevServer;
 
 internal static class DevServerOptionsParser
@@ -86,26 +84,7 @@ internal static class DevServerOptionsParser
 
     private static DevServerOptions ApplyConfigFile(DevServerOptions options)
     {
-        var configPath = Path.Combine(options.RootDirectory, "jazor.config.json");
-        if (!File.Exists(configPath))
-        {
-            return options;
-        }
-
-        JazorConfig? config;
-        try
-        {
-            config = JsonSerializer.Deserialize<JazorConfig>(
-                File.ReadAllText(configPath),
-                new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException($"Failed to parse dev-server config '{configPath}'.", ex);
-        }
+        var config = JoltConfigLoader.Load(options.RootDirectory);
 
         if (config is null)
         {

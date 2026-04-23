@@ -890,7 +890,7 @@ if (sourceMapJson is not null)
 或者通过配置选择 inline vs external：
 
 ```csharp
-// jazor.config.json
+// jolt.config.json
 {
     "build": {
         "sourcemap": "inline"   // "inline" | "external" | false

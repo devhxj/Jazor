@@ -75,7 +75,7 @@
 | `.ts` / `.js` | `js-update` | 重新编译 → 模块级热替换 |
 | `.css` / `.vue` 中的 `<style>` | `style-update` | CSS 热注入，无刷新 |
 | `index.html` | `full-reload` | 需要刷新页面 |
-| `jazor.config.json` | `full-reload` | 配置变更，重启 Dev Server |
+| `jolt.config.json` | `full-reload` | 配置变更，重启 Dev Server |
 | `.jazor` 中的 `@code` 签名变更 | `full-reload` | Props/状态签名变更不可热替换 |
 
 ---
@@ -501,7 +501,7 @@ private static bool NeedsFullReload(FileChangeEventArgs change)
 
     // 配置文件变更 → full reload
     if (Path.GetFileName(change.AbsolutePath)
-        .Equals("jazor.config.json", StringComparison.OrdinalIgnoreCase))
+        .Equals("jolt.config.json", StringComparison.OrdinalIgnoreCase))
         return true;
 
     // 文件删除 → full reload
@@ -1011,7 +1011,7 @@ foreach (var change in changes)
 
 ---
 
-## 七、jazor.config.json 扩展
+## 七、jolt.config.json 扩展
 
 ```jsonc
 {

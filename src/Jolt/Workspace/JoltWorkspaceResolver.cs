@@ -4,6 +4,7 @@ using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Jazor.VueContracts.Protocol;
+using Jolt.DevServer;
 
 namespace Jolt.Workspace;
 
@@ -27,7 +28,7 @@ internal static class JoltWorkspaceResolver
     ];
     private static readonly string[] WorkspaceBoundaryFiles =
     [
-        "jazor.config.json",
+        JoltConfigFile.FileName,
         "package.json",
         "global.json",
         "Directory.Build.props",

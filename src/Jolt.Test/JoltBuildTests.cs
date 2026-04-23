@@ -109,6 +109,22 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
+    public void JazorBuildConfig_SourceMap_None_MapsToNone()
+    {
+        var config = new JazorBuildConfig { SourceMap = "none" };
+        var options = config.ToBuildOptions("/tmp");
+        Assert.AreEqual(SourceMapOption.None, options.SourceMap);
+    }
+
+    [TestMethod]
+    public void JazorBuildConfig_SourceMap_True_MapsToExternal()
+    {
+        var config = new JazorBuildConfig { SourceMap = "true" };
+        var options = config.ToBuildOptions("/tmp");
+        Assert.AreEqual(SourceMapOption.External, options.SourceMap);
+    }
+
+    [TestMethod]
     public void JazorBuildConfig_SourceMap_Null_MapsToExternal()
     {
         var config = new JazorBuildConfig { SourceMap = null };
@@ -117,11 +133,14 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
-    public void JazorBuildConfig_SourceMap_Unknown_MapsToExternal()
+    public void JazorBuildConfig_SourceMap_Unknown_Throws()
     {
         var config = new JazorBuildConfig { SourceMap = "yes" };
-        var options = config.ToBuildOptions("/tmp");
-        Assert.AreEqual(SourceMapOption.External, options.SourceMap);
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() => config.ToBuildOptions("/tmp"));
+
+        StringAssert.Contains(exception.Message, "build.sourceMap");
+        StringAssert.Contains(exception.Message, "yes");
     }
 
     [TestMethod]
@@ -202,6 +221,59 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
+    public void BuildCommandOptionsResolver_ResolveBuildOptions_AllowsBareBooleanCliFlags()
+    {
+        var config = new JazorConfig
+        {
+            Build = new JazorBuildConfig
+            {
+                Minify = false,
+                CodeSplitting = false,
+                Incremental = false
+            }
+        };
+
+        var options = BuildCommandOptionsResolver.ResolveBuildOptions(
+            ["--minify", "--code-splitting", "--incremental"],
+            "/project",
+            config);
+
+        Assert.IsTrue(options.Minify);
+        Assert.IsTrue(options.CodeSplitting);
+        Assert.IsTrue(options.Incremental);
+    }
+
+    [TestMethod]
+    public void BuildCommandOptionsResolver_ResolveBuildOptions_ThrowsForInvalidSourceMapCliValue()
+    {
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            BuildCommandOptionsResolver.ResolveBuildOptions(["--sourcemap=bogus"], "/project", config: null));
+
+        StringAssert.Contains(exception.Message, "--sourcemap");
+        StringAssert.Contains(exception.Message, "bogus");
+    }
+
+    [TestMethod]
+    public void BuildCommandOptionsResolver_ResolveBuildOptions_ThrowsForInvalidBooleanCliValue()
+    {
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            BuildCommandOptionsResolver.ResolveBuildOptions(["--minify=maybe"], "/project", config: null));
+
+        StringAssert.Contains(exception.Message, "--minify");
+        StringAssert.Contains(exception.Message, "maybe");
+    }
+
+    [TestMethod]
+    public void BuildCommandOptionsResolver_ResolveBuildOptions_ThrowsForInvalidIntegerCliValue()
+    {
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            BuildCommandOptionsResolver.ResolveBuildOptions(["--asset-hash-length=wide"], "/project", config: null));
+
+        StringAssert.Contains(exception.Message, "--asset-hash-length");
+        StringAssert.Contains(exception.Message, "wide");
+    }
+
+    [TestMethod]
     public void BuildCommandOptionsResolver_ResolveOutputDirectory_UsesResolvedOutDir()
     {
         var config = new JazorConfig
@@ -268,6 +340,40 @@ public sealed class JoltBuildTests
 
         Assert.IsNotNull(config);
         Assert.IsNull(config.Build);
+    }
+
+    [TestMethod]
+    public void JoltConfigLoader_Load_ReturnsNull_WhenConfigIsMissing()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Assert.IsNull(JoltConfigLoader.Load(tempDir));
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void JoltConfigLoader_Load_Throws_WhenConfigJsonIsInvalid()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var configPath = Path.Combine(tempDir, "jolt.config.json");
+            File.WriteAllText(configPath, "{ invalid-json");
+
+            var exception = Assert.ThrowsExactly<InvalidOperationException>(() => JoltConfigLoader.Load(tempDir));
+
+            StringAssert.Contains(exception.Message, "Failed to load Jolt config");
+            StringAssert.Contains(exception.Message, configPath);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
     }
 
     [TestMethod]

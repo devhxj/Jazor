@@ -1038,12 +1038,12 @@ public ResolveResult Resolve(string requestPath, string? importerPath = null)
 
 ---
 
-## 九、jazor.config.json (可选配置)
+## 九、jolt.config.json (可选配置)
 
 Phase 1 支持最小配置文件。如果不存在，使用默认值。
 
 ```jsonc
-// jazor.config.json
+// jolt.config.json
 {
     "server": {
         "port": 5173,
@@ -1083,7 +1083,7 @@ public static class JazorConfigLoader
 {
     public static JazorConfig Load(string rootDirectory)
     {
-        var configPath = Path.Combine(rootDirectory, "jazor.config.json");
+        var configPath = Path.Combine(rootDirectory, "jolt.config.json");
         if (!File.Exists(configPath))
             return new JazorConfig();
 
@@ -1171,7 +1171,7 @@ public static class JazorConfigLoader
 
 **退出标准**: 浏览器打开 Dev Server 地址，可以看到 `.jazor` 组件渲染的页面。
 
-### Step 6: jazor.config.json 支持 (可选，可后移)
+### Step 6: jolt.config.json 支持 (可选，可后移)
 
 **产出文件**:
 - 新增 `DevServer/JazorConfig.cs`
