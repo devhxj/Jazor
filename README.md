@@ -46,32 +46,39 @@ Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是�
 ```
 Jazor/
 ├── src/
-│   ├── ECMAScript/                    # ECMAScript AST 核心类型与特性
-│   ├── ECMAScript.WebIDL.Generator/   # WebIDL 绑定生成器（.NET）
-│   ├── Jazor.Compiler/                # C# → JS 编译器核心（SemanticWalker 分文件组织）
-│   ├── Jazor.Compiler.Generator/      # 白名单 Source Generator
-│   ├── Jazor.Compiler.Razor/          # 编译器 Razor 集成层
-│   ├── Jazor.CLR/                     # CLR 运行时支持（白名单声明 + JS 实现）
-│   ├── Jazor.CLR.Generator/           # CLR 类型映射与绑定代码生成器
-│   ├── Jazor.Common/                  # 跨项目共享契约
-│   ├── Jazor.Name/                    # 符号格式化与哈希命名工具
-│   ├── Jazor.Emit/                    # 发射管线、打包物化、SourceMap 输出
-│   ├── Jazor.Analyzer/                # 静态代码分析器（白名单编译时验证）
-│   ├── Jazor.Razor/                   # Razor 基础层（桥接 ASP.NET Core）
-│   ├── Jazor.RazorVue/                # 【RazorVue 线路】核心语义
-│   ├── Jazor.RazorVue.Analysis/       # 【RazorVue 线路】编译时分析
-│   ├── Jazor.RazorVue.Vuetify/        # 【RazorVue 线路】Vuetify 3 组件库
-│   ├── Jolt/                          # 【Jolt 线路】LSP + DevServer + HMR + Debug + Build
-│   ├── Jolt.VSCodeExtension/          # VS Code Language Client 扩展
-│   ├── Jazor/                         # NuGet 包（运行时 + 分析器 + 生成器 + MSBuild）
-│   ├── Jazor.CompilerTest/            # 编译器 + Jolt + LSP 测试（MSTest）
-│   └── Jazor.EmitTest/                # 发射测试（MSTest）
-├── docs/                              # 文档中心（01-目标/02-计划/03-完成/04-补充/05-遗弃）
-├── scripts/                           # 构建与工具脚本
+│   ├── ECMAScript/                         # ECMAScript AST 核心类型与特性
+│   ├── ECMAScript.WebIDL/                  # WebIDL 绑定生成器（TypeScript，已归档）
+│   ├── ECMAScript.WebIDL.Generator/        # WebIDL 绑定生成器（.NET）
+│   ├── ECMAScript.WebIDL.GeneratorTest/    # WebIDL 生成器测试（MSTest）
+│   ├── Jazor.Compiler/                     # C# → JS 编译器核心（SemanticWalker 分文件组织）
+│   ├── Jazor.Compiler.Generator/           # 白名单 Source Generator
+│   ├── Jazor.Compiler.Razor/               # 编译器 Razor 集成层
+│   ├── Jazor.CompilerTest/                 # 编译器 + Jolt + LSP 测试（MSTest）
+│   ├── Jazor.CLR/                          # CLR 运行时支持（白名单声明 + JS 实现）
+│   ├── Jazor.CLR.Generator/                # CLR 类型映射与绑定代码生成器
+│   ├── Jazor.CLR.Test/                     # CLR 测试（MSTest）
+│   ├── Jazor.Common/                       # 跨项目共享契约
+│   ├── Jazor.Name/                         # 符号格式化与哈希命名工具
+│   ├── Jazor.Emit/                         # 发射管线、打包物化、SourceMap 输出
+│   ├── Jazor.EmitTest/                     # 发射测试（MSTest）
+│   ├── Jazor.Analyzer/                     # 静态代码分析器（白名单编译时验证）
+│   ├── Jazor.Razor/                        # Razor 基础层（桥接 ASP.NET Core）
+│   ├── Jazor.RazorVue/                     # 【RazorVue 线路】核心语义
+│   ├── Jazor.RazorVue.Analysis/            # 【RazorVue 线路】编译时分析
+│   ├── Jazor.RazorVue.Test/                # 【RazorVue 线路】测试（MSTest）
+│   ├── Jazor.RazorVue.Vuetify/             # 【RazorVue 线路】Vuetify 3 组件库
+│   ├── Jazor.Test/                         # Jazor 集成测试（MSTest）
+│   ├── Jolt/                               # 【Jolt 线路】LSP + DevServer + HMR + Debug + Build
+│   ├── Jolt.Test/                          # Jolt 测试（MSTest）
+│   ├── Jolt.VSCodeExtension/               # VS Code Language Client 扩展
+│   └── Jazor/                              # NuGet 包（运行时 + 分析器 + 生成器 + MSBuild）
+├── samples/                                # 示例项目
+├── docs/                                   # 文档中心（01-目标/02-计划/03-完成/04-补充/05-遗弃）
+├── scripts/                                # 构建与工具脚本
 └── README.md
 ```
 
-> **注**：`ECMAScript.WebIDL`（TypeScript 版）、`Jazor.Vite`、`Jazor.Vue.*`、`Jazor.VueContracts` 等为历史迁移残留，非当前活跃方向。
+> **注**：`ECMAScript.WebIDL`（TypeScript 版）已归档，非当前活跃方向。
 
 ## 核心组件
 
