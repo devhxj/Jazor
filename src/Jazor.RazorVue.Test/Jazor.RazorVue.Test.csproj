@@ -10,9 +10,9 @@
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <ProjectReference Include="..\Jazor.Razor\Jazor.Razor.csproj" />
-    <ProjectReference Include="..\Jolt\Jolt.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue.Vuetify\Jazor.RazorVue.Vuetify.csproj" />
     <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />

@@ -25,7 +25,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         Assert.AreEqual("Counter.jazor", document.FilePath);
         Assert.AreEqual(3, document.Imports.Count);
@@ -51,7 +51,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         Assert.AreEqual(2, document.Imports.Count);
         Assert.AreEqual(JazorImportKind.VueImport, document.Imports[0].Kind);
@@ -74,7 +74,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         StringAssert.Contains(document.Template, "<UserCard Title=\"@Title\" />");
         StringAssert.Contains(document.Code, "[Prop] public string Title");
@@ -92,7 +92,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         StringAssert.Contains(document.Code, "private int Count = 1;");
         Assert.IsTrue(document.CodeStartIndex > source.IndexOf("@code", StringComparison.Ordinal));
@@ -113,7 +113,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         Assert.AreEqual(string.Empty, document.Code);
         Assert.AreEqual(-1, document.CodeStartIndex);
@@ -136,7 +136,7 @@ public sealed class JazorVueCompilerTests
             """";
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         StringAssert.Contains(document.Code, "private string Json => \"}\";");
         StringAssert.Contains(document.Code, "private string Raw =>");
@@ -162,7 +162,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
 
         Assert.AreEqual(1, document.Imports.Count);
         Assert.AreEqual("dayjs", document.Imports[0].Source);
@@ -194,7 +194,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         Assert.AreEqual(3, result.ExternalSymbols.Symbols.Count);
@@ -234,7 +234,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         Assert.IsNotNull(result.GeneratedVueSourceMap);
@@ -312,7 +312,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         Assert.IsNotNull(result.GeneratedVueSourceMap);
@@ -348,7 +348,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         Assert.IsNotNull(result.GeneratedVueSourceMap);
@@ -388,7 +388,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "import { computed, ref, toRef } from \"vue\";");
@@ -432,7 +432,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "const normalizedLabel = computed(() => title.value ?? `Count: ${count.value}`);");
@@ -468,7 +468,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "const summary = computed(() => `Count: ${count.value + step.value}`);");
@@ -532,7 +532,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "import { ref, toRef } from \"vue\";");
@@ -601,7 +601,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "const numbers = toRef(props, \"numbers\");");
@@ -649,7 +649,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "let Title = \"local\";");
@@ -692,7 +692,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "function refresh()");
@@ -726,7 +726,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("Counter.jazor", source);
+        var document = JazorVueParser.Parse("Counter.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "let literal = \"this.Title|string.Empty|Task.CompletedTask|new InvalidOperationException(\";");
@@ -746,7 +746,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("ImportsOnly.jazor", source);
+        var document = JazorVueParser.Parse("ImportsOnly.jazor", source);
 
         Assert.AreEqual(3, document.Imports.Count);
 
@@ -778,7 +778,7 @@ public sealed class JazorVueCompilerTests
             """;
 
         var parser = new JazorVueParser();
-        var document = parser.Parse("CompositeImports.jazor", source);
+        var document = JazorVueParser.Parse("CompositeImports.jazor", source);
 
         Assert.AreEqual(2, document.Imports.Count);
 
@@ -858,7 +858,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("ImportsOnly.jazor", source);
+        var document = JazorVueParser.Parse("ImportsOnly.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "import dayjs from \"dayjs\";");
@@ -883,7 +883,7 @@ public sealed class JazorVueCompilerTests
 
         var parser = new JazorVueParser();
         var compiler = new JazorVueCompiler();
-        var document = parser.Parse("CompositeImports.jazor", source);
+        var document = JazorVueParser.Parse("CompositeImports.jazor", source);
         var result = compiler.Compile(document);
 
         StringAssert.Contains(result.GeneratedVueText, "import Vue, { ref as vueRef, computed } from \"vue\";");
@@ -905,7 +905,7 @@ public sealed class JazorVueCompilerTests
                 "<template><div>UserCard</div></template>");
 
             var parser = new JazorVueParser();
-            var document = parser.Parse(documentPath, """
+            var document = JazorVueParser.Parse(documentPath, """
                 <UserCard />
 
                 @code {
@@ -943,7 +943,7 @@ public sealed class JazorVueCompilerTests
 
             var parser = new JazorVueParser();
             var compiler = new JazorVueCompiler();
-            var document = parser.Parse(documentPath, """
+            var document = JazorVueParser.Parse(documentPath, """
                 <UserCard Title="@Title" />
 
                 @code {

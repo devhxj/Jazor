@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Jazor.Vue;
-using Jazor.VueContracts.Protocol;
-using Jolt.Analysis;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jazor.RazorVue.Test;
 
@@ -21,6 +20,39 @@ public sealed class JazorVueAnalysisRuntimeTests
         Assert.AreEqual("Counter.vue", root.GetProperty("documentPath").GetString());
         Assert.AreEqual("Vue", root.GetProperty("documentKind").GetString());
         Assert.AreEqual("42", root.GetProperty("version").GetString());
+    }
+
+    [TestMethod]
+    public void ProtocolJsonSerializer_AnalyzeJazorRequest_UsesVolarContextPropertyName()
+    {
+        var request = new AnalyzeJazorRequest(
+            new DocumentSnapshot(
+                "Counter.jazor",
+                DocumentKind.Jazor,
+                "<template><div /></template>",
+                "volar-context-json"),
+            relatedDocuments: Array.Empty<DocumentSnapshot>(),
+            volarContext: new SemanticContext(
+                contextKind: "volar",
+                relatedDocuments: Array.Empty<DocumentSnapshot>(),
+                properties: new Dictionary<string, string>(StringComparer.Ordinal)
+                {
+                    ["source"] = "test"
+                }));
+
+        var json = ProtocolJsonSerializer.Serialize(request);
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        Assert.IsTrue(root.TryGetProperty("volarContext", out var volarContext));
+        var legacyContextPropertyName = "frontend" + "Context";
+        Assert.IsFalse(root.TryGetProperty(legacyContextPropertyName, out _));
+        Assert.AreEqual("volar", volarContext.GetProperty("contextKind").GetString());
+
+        var roundTrip = ProtocolJsonSerializer.Deserialize<AnalyzeJazorRequest>(json);
+        Assert.IsNotNull(roundTrip);
+        Assert.IsNotNull(roundTrip.VolarContext);
+        Assert.AreEqual("volar", roundTrip.VolarContext.ContextKind);
     }
 
     [TestMethod]
@@ -44,7 +76,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
 
@@ -80,7 +112,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "2"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
 
@@ -106,7 +138,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "legacy-vueimport"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
         var diagnostic = response.Diagnostics.FirstOrDefault(static record =>
@@ -134,7 +166,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "legacy-jsimport"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
         var diagnostic = response.Diagnostics.FirstOrDefault(static record =>
@@ -162,7 +194,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "legacy-import"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
         var diagnostic = response.Diagnostics.FirstOrDefault(static record =>
@@ -202,7 +234,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """",
                 "legacy-ignore"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await service.AnalyzeJazorAsync(request, CancellationToken.None);
         var diagnostics = response.Diagnostics
@@ -236,7 +268,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "3"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
         var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "analysis-req-1",
             method: VueAnalysisRpcMethodNames.AnalyzeJazor,
@@ -297,7 +329,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 """,
                 "4"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
         var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "analysis-stdio",
             method: VueAnalysisRpcMethodNames.AnalyzeJazor,
@@ -346,7 +378,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 "<template><div /></template>",
                 "5"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
         var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "analysis-cancelled",
             method: VueAnalysisRpcMethodNames.AnalyzeJazor,
@@ -374,7 +406,7 @@ public sealed class JazorVueAnalysisRuntimeTests
                 "<template><div /></template>",
                 "6"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
         var requestJson = VueAnalysisRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "analysis-stdio-blank-lines",
             method: VueAnalysisRpcMethodNames.AnalyzeJazor,
