@@ -21,6 +21,12 @@ internal static class DevServerFileWatchFilter
         ".git",
         "bin",
         "obj",
+        "dist",
+        "artifacts",
+        ".artifacts",
+        ".jazor",
+        ".dotnet",
+        "TestResults",
         ".vs",
         ".deno"
     };

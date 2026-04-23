@@ -4851,13 +4851,13 @@ public sealed class JoltLspTests
                 const palette = createPalette();
                 const swatch = palette.primary;
 
-                palette.pr
+                palette.
                 </script>
                 """;
 
             await client.OpenDocumentAsync(documentUri, text, version: 1, languageId: "vue");
 
-            var completionPosition = GetLastPosition(text, "palette.pr", advance: "palette.pr".Length);
+            var completionPosition = GetLastPosition(text, "palette.", advance: "palette.".Length);
             var completionLabels = await client.RequestCompletionLabelsAsync(
                 requestId: 212,
                 documentUri,
@@ -7774,6 +7774,15 @@ public sealed class JoltLspTests
         public static async Task<LspTestClient> StartAsync(params string[] additionalArguments)
         {
             var hostAssemblyPath = GetBuiltAssemblyPath("Jolt", "Jolt.dll");
+            var effectiveArguments = additionalArguments.ToList();
+            if (!effectiveArguments.Any(static argument => argument.StartsWith("--dev-root=", StringComparison.OrdinalIgnoreCase)))
+            {
+                // The VS Code extension passes the workspace root in production.
+                // Tests create isolated workspaces under temp, so keep those roots
+                // inside the Deno read sandbox without granting all filesystem reads.
+                effectiveArguments.Add($"--dev-root={Path.GetTempPath()}");
+            }
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -7787,7 +7796,7 @@ public sealed class JoltLspTests
                 }
             };
 
-            if (additionalArguments.Any(static argument =>
+            if (effectiveArguments.Any(static argument =>
                     string.Equals(argument, "--dev", StringComparison.OrdinalIgnoreCase)
                     || argument.StartsWith("--dev-", StringComparison.OrdinalIgnoreCase)))
             {
@@ -7799,7 +7808,7 @@ public sealed class JoltLspTests
 
             process.StartInfo.ArgumentList.Add(hostAssemblyPath);
             process.StartInfo.ArgumentList.Add("--lsp");
-            foreach (var argument in additionalArguments)
+            foreach (var argument in effectiveArguments)
             {
                 process.StartInfo.ArgumentList.Add(argument);
             }

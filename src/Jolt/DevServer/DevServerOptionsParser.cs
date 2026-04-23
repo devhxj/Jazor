@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Jolt.DevServer;
 
 internal static class DevServerOptionsParser
@@ -32,10 +34,9 @@ internal static class DevServerOptionsParser
                 continue;
             }
 
-            if (TryGetOptionValue(arg, "--dev-port", out var portValue) &&
-                int.TryParse(portValue, out var port))
+            if (TryGetOptionValue(arg, "--dev-port", out var portValue))
             {
-                options = options with { Port = port };
+                options = options with { Port = ParsePortOption("--dev-port", portValue) };
                 continue;
             }
 
@@ -65,17 +66,32 @@ internal static class DevServerOptionsParser
                 continue;
             }
 
-            if (TryGetOptionValue(arg, "--dev-proxy", out var proxyValue) &&
-                TryParseProxyRule(proxyValue, out var proxyPrefix, out var proxyTarget))
+            if (TryGetOptionValue(arg, "--dev-proxy", out var proxyValue))
             {
+                if (!TryParseProxyRule(proxyValue, out var proxyPrefix, out var proxyTarget))
+                {
+                    throw CreateInvalidOptionException(
+                        "--dev-proxy",
+                        proxyValue,
+                        "a rule like /api=http://localhost:5000");
+                }
+
                 options = ApplyProxyRule(options, proxyPrefix, proxyTarget);
                 continue;
             }
 
-            if (TryGetOptionValue(arg, "--dev-alias", out var aliasValue) &&
-                TryParseAliasRule(aliasValue, out var aliasPrefix, out var aliasTarget))
+            if (TryGetOptionValue(arg, "--dev-alias", out var aliasValue))
             {
+                if (!TryParseAliasRule(aliasValue, out var aliasPrefix, out var aliasTarget))
+                {
+                    throw CreateInvalidOptionException(
+                        "--dev-alias",
+                        aliasValue,
+                        "a rule like @=/src");
+                }
+
                 options = ApplyResolveAlias(options, aliasPrefix, aliasTarget);
+                continue;
             }
         }
 
@@ -95,7 +111,10 @@ internal static class DevServerOptionsParser
         {
             if (config.Server.Port is { } port)
             {
-                options = options with { Port = port };
+                options = options with
+                {
+                    Port = ValidatePortValue("jolt.config.json server.port", port)
+                };
             }
 
             if (!string.IsNullOrWhiteSpace(config.Server.Host))
@@ -120,7 +139,10 @@ internal static class DevServerOptionsParser
             {
                 if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrWhiteSpace(target))
                 {
-                    continue;
+                    throw CreateInvalidOptionException(
+                        "jolt.config.json resolve.alias",
+                        $"{prefix}={target}",
+                        "non-empty alias mappings");
                 }
 
                 options = ApplyResolveAlias(options, prefix.Trim(), target.Trim());
@@ -133,12 +155,18 @@ internal static class DevServerOptionsParser
             {
                 if (!TryCreateProxyTarget(proxyConfig, out var proxyTarget))
                 {
-                    continue;
+                    throw CreateInvalidOptionException(
+                        "jolt.config.json proxy",
+                        $"{prefix}={proxyConfig?.Target}",
+                        "proxy targets with an absolute URI");
                 }
 
                 if (string.IsNullOrWhiteSpace(prefix) || !prefix.StartsWith("/", StringComparison.Ordinal))
                 {
-                    continue;
+                    throw CreateInvalidOptionException(
+                        "jolt.config.json proxy",
+                        prefix ?? string.Empty,
+                        "proxy prefixes that start with '/'");
                 }
 
                 options = ApplyProxyRule(options, prefix, proxyTarget);
@@ -274,4 +302,36 @@ internal static class DevServerOptionsParser
         };
         return options with { ResolveAliases = aliases };
     }
+
+    internal static int ParsePortOption(string optionName, string value)
+    {
+        if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedPort))
+        {
+            throw CreateInvalidOptionException(
+                optionName,
+                value,
+                "an integer between 0 and 65535");
+        }
+
+        return ValidatePortValue(optionName, parsedPort);
+    }
+
+    private static int ValidatePortValue(string optionName, int port)
+    {
+        if (port is < 0 or > 65535)
+        {
+            throw CreateInvalidOptionException(
+                optionName,
+                port.ToString(CultureInfo.InvariantCulture),
+                "an integer between 0 and 65535");
+        }
+
+        return port;
+    }
+
+    private static InvalidOperationException CreateInvalidOptionException(
+        string optionName,
+        string value,
+        string expected)
+        => new($"Invalid value '{value}' for {optionName}. Expected {expected}.");
 }

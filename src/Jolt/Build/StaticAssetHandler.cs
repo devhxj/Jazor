@@ -15,8 +15,6 @@ internal sealed class StaticAssetHandler
         ".pdf"
     };
 
-    private const int HashSizeThreshold = 4 * 1024; // 4KB
-
     private readonly BuildContext _context;
 
     public StaticAssetHandler(BuildContext context)
@@ -75,9 +73,7 @@ internal sealed class StaticAssetHandler
                 var extension = Path.GetExtension(assetPath);
                 var fileNameWithoutExt = Path.GetFileNameWithoutExtension(assetPath);
 
-                // Determine if we should hash this file
-                var fileInfo = new FileInfo(trustedAssetPath);
-                var shouldHash = ShouldHash(trustedAssetPath) && fileInfo.Length < HashSizeThreshold;
+                var shouldHash = ShouldHash(trustedAssetPath);
 
                 var destFileName = fileName;
                 if (shouldHash)
@@ -178,8 +174,7 @@ internal sealed class StaticAssetHandler
                 var fileName = Path.GetFileName(trustedAbsolutePath);
                 var extension = Path.GetExtension(trustedAbsolutePath);
                 var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(trustedAbsolutePath);
-                var fileInfo = new FileInfo(trustedAbsolutePath);
-                var shouldHash = ShouldHash(trustedAbsolutePath) && fileInfo.Length < HashSizeThreshold;
+                var shouldHash = ShouldHash(trustedAbsolutePath);
                 var outputDirectory = Path.Combine(_context.OutDirectory, relativeOutputDirectory);
 
                 Directory.CreateDirectory(outputDirectory);

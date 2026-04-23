@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Channels;
 using Jolt.Workspace;
 using Jazor.Common.VueContracts.Protocol;
 
@@ -22,7 +21,7 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
     private readonly IJoltWorkspaceStore? _workspaceStore;
     private readonly DevServerProxy? _proxy;
     private readonly DevServerReloadHub _reloadHub = new();
-    private readonly Channel<IReadOnlyList<string>> _fileChangeChannel = Channel.CreateUnbounded<IReadOnlyList<string>>();
+    private readonly CoalescingPathChangeQueue _fileChangeQueue = new();
     private readonly Dictionary<string, DevServerObservedFileSnapshot?> _lastBroadcastSnapshots = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _pendingWorkspaceBroadcastHashes = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _lastBroadcastSnapshotsLock = new();
@@ -387,12 +386,18 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
     }
 
     private void OnDebouncedFileChanges(IReadOnlyList<string> changedPaths)
-        => _fileChangeChannel.Writer.TryWrite(changedPaths);
+        => _fileChangeQueue.Enqueue(changedPaths);
 
     private async Task PumpFileChangesAsync(CancellationToken cancellationToken)
     {
-        await foreach (var changedPaths in _fileChangeChannel.Reader.ReadAllAsync(cancellationToken))
+        while (true)
         {
+            var changedPaths = await _fileChangeQueue.DequeueAsync(cancellationToken);
+            if (changedPaths.Count == 0)
+            {
+                continue;
+            }
+
             try
             {
                 await ProcessAndBroadcastChangesAsync(changedPaths, cancellationToken);

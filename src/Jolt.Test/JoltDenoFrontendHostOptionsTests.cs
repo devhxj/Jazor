@@ -5,6 +5,9 @@ namespace Jolt.Test;
 [TestClass]
 public sealed class JoltDenoFrontendHostOptionsTests
 {
+    private const string DefaultAllowEnvArgument =
+        "--allow-env=__MINIMATCH_TESTING_PLATFORM__,BABEL_TYPES_8_BREAKING,DENO_DIR,JOLT_*,LANG,NODE_DEBUG,NODE_ENV,NODE_INSPECTOR_IPC,NO_COLOR,TSC_*,VSCODE_INSPECTOR_OPTIONS,VSCODE_NLS_CONFIG,XDG_RUNTIME_DIR";
+
     [TestMethod]
     public void Jolt_DenoFrontendHostOptionsParser_Parse_UsesBundledRuntimeAndWorkerDefaults()
     {
@@ -14,23 +17,33 @@ public sealed class JoltDenoFrontendHostOptionsTests
         {
             var expectedCommand = WriteBundledRuntime(baseDirectory);
             var expectedWorkerPath = WriteWorkerScript(baseDirectory);
+            var expectedWorkspaceRoot = Path.Combine(baseDirectory, "workspace");
+            Directory.CreateDirectory(expectedWorkspaceRoot);
 
-            var options = DenoVolarHostOptionsParser.Parse([], baseDirectory);
+            var options = DenoVolarHostOptionsParser.Parse(
+                [$"--dev-root={expectedWorkspaceRoot}"],
+                baseDirectory);
 
             Assert.IsTrue(options.Enabled);
             Assert.AreEqual(expectedCommand, options.ExecutablePath);
             Assert.IsFalse(options.HasExplicitExecutableOverride);
             Assert.AreEqual(expectedWorkerPath, options.WorkerScriptPath);
-            CollectionAssert.AreEqual(
+            Assert.AreEqual("run", options.Arguments[0]);
+            Assert.AreEqual("--quiet", options.Arguments[1]);
+            Assert.AreEqual(DefaultAllowEnvArgument, options.Arguments[2]);
+            Assert.AreEqual(expectedWorkerPath, options.Arguments[^1]);
+
+            var allowReadArgument = options.Arguments.Single(argument => argument.StartsWith("--allow-read=", StringComparison.Ordinal));
+            var allowedReadPaths = allowReadArgument["--allow-read=".Length..]
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            CollectionAssert.AreEquivalent(
                 new[]
                 {
-                    "run",
-                    "--quiet",
-                    "--allow-env",
-                    "--allow-read",
-                    expectedWorkerPath
+                    Path.GetDirectoryName(expectedWorkerPath)!,
+                    options.CacheDirectory,
+                    expectedWorkspaceRoot
                 },
-                options.Arguments);
+                allowedReadPaths);
             Assert.AreEqual(Path.GetDirectoryName(expectedWorkerPath), options.WorkingDirectory);
             Assert.IsTrue(options.IgnoreStartupFailure);
         }
@@ -93,7 +106,15 @@ public sealed class JoltDenoFrontendHostOptionsTests
                     ExecutablePath = executablePath,
                     HasExplicitExecutableOverride = false,
                     WorkerScriptPath = workerPath,
-                    Arguments = ["run", "--quiet", "--cached-only", "--allow-env", "--allow-read", workerPath],
+                    Arguments =
+                    [
+                        "run",
+                        "--quiet",
+                        "--cached-only",
+                        DefaultAllowEnvArgument,
+                        $"--allow-read={Path.GetDirectoryName(workerPath)},{Path.Combine(baseDirectory, "Volar", "Deno", "Cache")},{Path.GetDirectoryName(workerPath)}",
+                        workerPath
+                    ],
                     WorkingDirectory = Path.GetDirectoryName(workerPath),
                     IgnoreStartupFailure = false
                 });
@@ -107,6 +128,38 @@ public sealed class JoltDenoFrontendHostOptionsTests
         {
             Directory.Delete(baseDirectory, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void Jolt_DenoWorkerProcess_HardenInheritedWorkerEnvironment_RemovesHostControlledAllowEnvKnobs()
+    {
+        var environment = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["PATH"] = "keep",
+            ["DENO_DIR"] = "host-deno-cache",
+            ["JOLT_SECRET"] = "host-secret",
+            ["TSC_WATCHFILE"] = "dynamicPriorityPolling",
+            ["NODE_ENV"] = "production",
+            ["NODE_DEBUG"] = "module",
+            ["VSCODE_NLS_CONFIG"] = "{}",
+            ["__MINIMATCH_TESTING_PLATFORM__"] = "win32",
+            ["BABEL_TYPES_8_BREAKING"] = "1",
+            ["XDG_RUNTIME_DIR"] = "/run/user/1000"
+        };
+
+        DenoWorkerProcess.HardenInheritedWorkerEnvironment(environment);
+
+        Assert.AreEqual("keep", environment["PATH"]);
+        Assert.AreEqual("1", environment["NO_COLOR"]);
+        Assert.IsFalse(environment.ContainsKey("DENO_DIR"));
+        Assert.IsFalse(environment.ContainsKey("JOLT_SECRET"));
+        Assert.IsFalse(environment.ContainsKey("TSC_WATCHFILE"));
+        Assert.IsFalse(environment.ContainsKey("NODE_ENV"));
+        Assert.IsFalse(environment.ContainsKey("NODE_DEBUG"));
+        Assert.IsFalse(environment.ContainsKey("VSCODE_NLS_CONFIG"));
+        Assert.IsFalse(environment.ContainsKey("__MINIMATCH_TESTING_PLATFORM__"));
+        Assert.IsFalse(environment.ContainsKey("BABEL_TYPES_8_BREAKING"));
+        Assert.IsFalse(environment.ContainsKey("XDG_RUNTIME_DIR"));
     }
 
     private static string CreateTemporaryDirectory()

@@ -20,10 +20,12 @@ internal sealed partial class BuildOrchestrator
     /// <summary>
     /// Creates a DenoVolarHost for the build pipeline.
     /// </summary>
-    private static DenoVolarHost CreateDenoHost()
+    private static DenoVolarHost CreateDenoHost(string rootDirectory)
     {
         var baseDirectory = CachedDenoHostBaseDirectory.Value;
-        var parsedOptions = DenoVolarHostOptionsParser.Parse(["--deno-worker"], baseDirectory);
+        var parsedOptions = DenoVolarHostOptionsParser.Parse(
+            ["--deno-worker", $"--dev-root={rootDirectory}"],
+            baseDirectory);
         var options = new DenoVolarHostOptions
         {
             Enabled = parsedOptions.Enabled,
@@ -33,7 +35,8 @@ internal sealed partial class BuildOrchestrator
             CacheDirectory = parsedOptions.CacheDirectory,
             Arguments = parsedOptions.Arguments,
             WorkingDirectory = parsedOptions.WorkingDirectory,
-            IgnoreStartupFailure = false
+            IgnoreStartupFailure = false,
+            RequestTimeout = parsedOptions.RequestTimeout
         };
 
         return new DenoVolarHost(options);

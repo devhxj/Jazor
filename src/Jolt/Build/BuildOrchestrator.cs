@@ -182,7 +182,7 @@ internal sealed partial class BuildOrchestrator
 
             PrepareOutputDirectory(context);
 
-            await using var denoHost = CreateDenoHost();
+            await using var denoHost = CreateDenoHost(options.RootDirectory);
             await denoHost.StartAsync(cancellationToken);
 
             // 生产构建阶段的模块解析不跟随 reparse point，避免 bundler/dev-server
@@ -941,4 +941,3 @@ internal sealed partial class BuildOrchestrator
     }
 
 }
-

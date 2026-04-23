@@ -15,6 +15,7 @@ internal sealed class StdioLspServer
     private readonly Lock _requestGate = new();
     private readonly Lock _inFlightRequestTasksGate = new();
     private readonly Dictionary<string, CancellationTokenSource> _activeRequests = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _admittedRequestKeys = new(StringComparer.Ordinal);
     private readonly HashSet<string> _pendingCancellationRequests = new(StringComparer.Ordinal);
     private readonly HashSet<Task> _inFlightRequestTasks = [];
 
@@ -86,14 +87,18 @@ internal sealed class StdioLspServer
                     continue;
                 }
 
-                if (request.Id is null
-                    && string.Equals(request.Method, "exit", StringComparison.Ordinal))
+                if (request.Id is null)
                 {
                     await queue.Writer.WriteAsync(request, cancellationToken);
-                    break;
+                    if (string.Equals(request.Method, "exit", StringComparison.Ordinal))
+                    {
+                        break;
+                    }
+
+                    continue;
                 }
 
-                if (request.Id is not null && !_requestAdmissionGate.Wait(0))
+                if (!_requestAdmissionGate.Wait(0))
                 {
                     await WriteResponseAsync(writer, CreateServerBusyResponse(request.Id));
                     WriteServerWarning(
@@ -104,33 +109,23 @@ internal sealed class StdioLspServer
                 }
 
                 var accepted = false;
+                var requestKey = CreateRequestKey(request.Id);
+                RegisterAdmittedRequest(requestKey);
                 try
                 {
                     accepted = queue.Writer.TryWrite(request);
                     if (!accepted)
                     {
-                        if (request.Id is not null)
-                        {
-                            _requestAdmissionGate.Release();
-                        }
-
-                        if (request.Id is not null)
-                        {
-                            await WriteResponseAsync(writer, CreateServerBusyResponse(request.Id));
-                        }
-                        else
-                        {
-                            WriteServerWarning(
-                                "lspNotificationDropped",
-                                request.Method,
-                                new InvalidOperationException("The LSP message queue is full."));
-                        }
+                        UnregisterAdmittedRequest(requestKey);
+                        _requestAdmissionGate.Release();
+                        await WriteResponseAsync(writer, CreateServerBusyResponse(request.Id));
                     }
                 }
                 catch
                 {
-                    if (!accepted && request.Id is not null)
+                    if (!accepted)
                     {
+                        UnregisterAdmittedRequest(requestKey);
                         _requestAdmissionGate.Release();
                     }
 
@@ -279,6 +274,8 @@ internal sealed class StdioLspServer
                 lock (_requestGate)
                 {
                     _activeRequests.Remove(requestKey);
+                    _admittedRequestKeys.Remove(requestKey);
+                    _pendingCancellationRequests.Remove(requestKey);
                 }
             }
 
@@ -468,7 +465,37 @@ internal sealed class StdioLspServer
                 return;
             }
 
-            _pendingCancellationRequests.Add(requestKey);
+            if (_admittedRequestKeys.Contains(requestKey))
+            {
+                _pendingCancellationRequests.Add(requestKey);
+            }
+        }
+    }
+
+    private void RegisterAdmittedRequest(string? requestKey)
+    {
+        if (requestKey is null)
+        {
+            return;
+        }
+
+        lock (_requestGate)
+        {
+            _admittedRequestKeys.Add(requestKey);
+        }
+    }
+
+    private void UnregisterAdmittedRequest(string? requestKey)
+    {
+        if (requestKey is null)
+        {
+            return;
+        }
+
+        lock (_requestGate)
+        {
+            _admittedRequestKeys.Remove(requestKey);
+            _pendingCancellationRequests.Remove(requestKey);
         }
     }
 
@@ -479,6 +506,7 @@ internal sealed class StdioLspServer
         {
             activeSources = _activeRequests.Values.ToArray();
             _activeRequests.Clear();
+            _admittedRequestKeys.Clear();
             _pendingCancellationRequests.Clear();
         }
 

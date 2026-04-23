@@ -243,7 +243,7 @@ public sealed class JoltFrontendLaneTests
                 """;
             await File.WriteAllTextAsync(documentPath, sfcText);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var result = await host.CompileSfcAsync(
                 documentPath,
@@ -326,7 +326,7 @@ public sealed class JoltFrontendLaneTests
                 """;
             await File.WriteAllTextAsync(documentPath, initialCss);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var initialResult = await host.CompileCssModuleAsync(
                 documentPath,
@@ -392,7 +392,7 @@ public sealed class JoltFrontendLaneTests
                 """;
             await File.WriteAllTextAsync(tsPath, tsText);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
             var compileVueTask = host.CompileSfcAsync(
                 vuePath,
                 vueText,
@@ -633,7 +633,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             await File.WriteAllTextAsync(document.DocumentPath, document.Text);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var completionItems = await host.GetTemplateCompletionItemsAsync(
                 document,
@@ -691,7 +691,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             await File.WriteAllTextAsync(document.DocumentPath, document.Text);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var completionItems = await host.GetTemplateCompletionItemsAsync(
                 document,
@@ -736,7 +736,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             await File.WriteAllTextAsync(document.DocumentPath, document.Text);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var diagnostics = await host.GetTemplateDiagnosticsAsync(document, null, CancellationToken.None);
 
@@ -772,7 +772,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             var context = CreateFrontendIntelliSenseContext(componentPath);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var diagnostics = await host.GetTemplateDiagnosticsAsync(document, context, CancellationToken.None);
             Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Code == "JAZORVUEFRONTEND001"));
@@ -813,7 +813,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             await File.WriteAllTextAsync(document.DocumentPath, document.Text);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var usagePosition = GetPosition(document.Text, "formatLabel(1)", advance: 1);
             var hover = await host.GetTemplateHoverAsync(document, usagePosition, null, CancellationToken.None);
@@ -882,7 +882,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             await File.WriteAllTextAsync(document.DocumentPath, document.Text);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var defaultUsagePosition = GetPosition(document.Text, "formatLabel(1)", advance: 1);
             var defaultHover = await host.GetTemplateHoverAsync(document, defaultUsagePosition, null, CancellationToken.None);
@@ -963,7 +963,7 @@ public sealed class JoltFrontendLaneTests
                 "1");
             await File.WriteAllTextAsync(document.DocumentPath, document.Text);
 
-            await using var host = CreateBundledDenoFrontendHost();
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
 
             var completionItems = await host.GetTemplateCompletionItemsAsync(
                 document,
@@ -980,6 +980,63 @@ public sealed class JoltFrontendLaneTests
             Assert.IsNotNull(hover);
             StringAssert.Contains(hover.Contents.Value, "primary");
             StringAssert.Contains(hover.Contents.Value, "string");
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                DeleteDirectoryWithRetry(tempDirectory);
+            }
+        }
+    }
+
+    [TestMethod]
+    public async Task Jolt_DenoFrontendHost_VueScriptSetupDocument_CompletesImportedObjectMembersAfterDot()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDirectory, "palette.ts"),
+                """
+                export function createPalette() {
+                  return {
+                    primary: "}",
+                    secondary: "#000000",
+                  };
+                }
+                """);
+
+            var document = new DocumentSnapshot(
+                Path.Combine(tempDirectory, "Host.vue"),
+                DocumentKind.Vue,
+                """
+                <template>
+                  <div>{{ swatch }}</div>
+                </template>
+                <script setup lang="ts">
+                import { createPalette } from "./palette";
+
+                const palette = createPalette();
+                const swatch = palette.primary;
+
+                palette.
+                </script>
+                """,
+                "1");
+            await File.WriteAllTextAsync(document.DocumentPath, document.Text);
+
+            await using var host = CreateBundledDenoFrontendHost(tempDirectory);
+
+            var completionItems = await host.GetTemplateCompletionItemsAsync(
+                document,
+                GetLastPosition(document.Text, "palette.", advance: "palette.".Length),
+                null,
+                CancellationToken.None);
+            var completionLabels = completionItems.Select(static item => item.Label).ToArray();
+            CollectionAssert.Contains(completionLabels, "primary");
+            CollectionAssert.Contains(completionLabels, "secondary");
         }
         finally
         {
@@ -2152,10 +2209,12 @@ public sealed class JoltFrontendLaneTests
         }
     }
 
-    private static DenoVolarHost CreateBundledDenoFrontendHost()
+    private static DenoVolarHost CreateBundledDenoFrontendHost(string workspaceRoot)
     {
         var baseDirectory = GetJoltBuildBaseDirectory();
-        var parsedOptions = DenoVolarHostOptionsParser.Parse(["--deno-worker"], baseDirectory);
+        var parsedOptions = DenoVolarHostOptionsParser.Parse(
+            ["--deno-worker", $"--dev-root={workspaceRoot}"],
+            baseDirectory);
         var options = new DenoVolarHostOptions
         {
             Enabled = true,
@@ -2165,7 +2224,8 @@ public sealed class JoltFrontendLaneTests
             CacheDirectory = parsedOptions.CacheDirectory,
             Arguments = parsedOptions.Arguments,
             WorkingDirectory = parsedOptions.WorkingDirectory,
-            IgnoreStartupFailure = false
+            IgnoreStartupFailure = false,
+            RequestTimeout = parsedOptions.RequestTimeout
         };
 
         Assert.IsTrue(

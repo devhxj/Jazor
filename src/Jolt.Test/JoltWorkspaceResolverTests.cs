@@ -651,6 +651,82 @@ public sealed class JoltWorkspaceResolverTests
         }
     }
 
+    [TestMethod]
+    public void Jolt_WorkspaceResolver_EnumerateWorkspaceFiles_RefreshesExpiredWorkspaceCacheEntry()
+    {
+        var workspaceRoot = CreateTemporaryDirectory();
+        try
+        {
+            JoltWorkspaceResolver.InvalidatePath(workspaceRoot);
+            File.WriteAllText(Path.Combine(workspaceRoot, "ComponentA.vue"), "<template>A</template>");
+
+            var initialFiles = JoltWorkspaceResolver
+                .EnumerateWorkspaceFiles([workspaceRoot], "*.vue", CancellationToken.None)
+                .Select(Path.GetFileName)
+                .OrderBy(static name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            CollectionAssert.AreEqual(new[] { "ComponentA.vue" }, initialFiles);
+
+            File.WriteAllText(Path.Combine(workspaceRoot, "ComponentB.vue"), "<template>B</template>");
+            ExpireWorkspaceFileCacheEntry(JoltWorkspaceResolver.NormalizePath(workspaceRoot) + "|*.vue");
+
+            var refreshedFiles = JoltWorkspaceResolver
+                .EnumerateWorkspaceFiles([workspaceRoot], "*.vue", CancellationToken.None)
+                .Select(Path.GetFileName)
+                .OrderBy(static name => name, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            CollectionAssert.AreEqual(new[] { "ComponentA.vue", "ComponentB.vue" }, refreshedFiles);
+        }
+        finally
+        {
+            JoltWorkspaceResolver.InvalidatePath(workspaceRoot);
+            DeleteDirectory(workspaceRoot);
+        }
+    }
+
+    [TestMethod]
+    public void Jolt_WorkspaceResolver_GetRequiredOwningProjectRoot_RefreshesExpiredSolutionProjectRootCache()
+    {
+        var baseDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var solutionRoot = Path.Combine(baseDirectory, "Solution");
+            Directory.CreateDirectory(solutionRoot);
+
+            var projectARoot = CreateScopedSolutionProject(solutionRoot, "ProjectA");
+            var solutionPath = WriteScopedSolutionFile(solutionRoot, "Scoped.slnx", "ProjectA/ProjectA.csproj");
+            var documentAPath = Path.Combine(projectARoot, "Pages", "Index.jazor");
+            Directory.CreateDirectory(Path.GetDirectoryName(documentAPath)!);
+            File.WriteAllText(documentAPath, "<div />");
+
+            Assert.AreEqual(
+                JoltWorkspaceResolver.NormalizePath(projectARoot),
+                JoltWorkspaceResolver.GetRequiredOwningProjectRoot(documentAPath));
+
+            var projectBRoot = CreateScopedSolutionProject(solutionRoot, "ProjectB");
+            var documentBPath = Path.Combine(projectBRoot, "Pages", "Dashboard.jazor");
+            Directory.CreateDirectory(Path.GetDirectoryName(documentBPath)!);
+            File.WriteAllText(documentBPath, "<div />");
+
+            var staleException = Assert.Throws<InvalidOperationException>(
+                () => JoltWorkspaceResolver.GetRequiredOwningProjectRoot(documentBPath));
+            StringAssert.Contains(staleException.Message, "not contained", StringComparison.OrdinalIgnoreCase);
+
+            WriteScopedSolutionFile(solutionRoot, Path.GetFileName(solutionPath), "ProjectA/ProjectA.csproj", "ProjectB/ProjectB.csproj");
+            ExpireSolutionProjectRootCacheEntry(JoltWorkspaceResolver.NormalizePath(solutionRoot).TrimEnd('/', '\\'));
+
+            Assert.AreEqual(
+                JoltWorkspaceResolver.NormalizePath(projectBRoot),
+                JoltWorkspaceResolver.GetRequiredOwningProjectRoot(documentBPath));
+        }
+        finally
+        {
+            JoltWorkspaceResolver.InvalidatePath(Path.Combine(baseDirectory, "Solution", "Scoped.slnx"));
+            DeleteDirectory(baseDirectory);
+        }
+    }
+
     private static bool IsSameOrDescendantPath(string path, string root)
     {
         var normalizedPath = path.Replace('\\', '/').TrimEnd('/');
@@ -667,6 +743,30 @@ public sealed class JoltWorkspaceResolverTests
             Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void ExpireWorkspaceFileCacheEntry(string cacheKey)
+    {
+        var agesField = typeof(JoltWorkspaceResolver).GetField(
+            "WorkspaceFileCacheAges",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(agesField);
+
+        var ages = agesField.GetValue(null) as IDictionary<string, long>;
+        Assert.IsNotNull(ages);
+        ages[cacheKey] = Environment.TickCount64 - (long)JoltWorkspaceResolver.CacheEntryTtl.TotalMilliseconds - 1;
+    }
+
+    private static void ExpireSolutionProjectRootCacheEntry(string cacheKey)
+    {
+        var agesField = typeof(JoltWorkspaceResolver).GetField(
+            "SolutionProjectRootCacheAges",
+            BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(agesField);
+
+        var ages = agesField.GetValue(null) as IDictionary<string, long>;
+        Assert.IsNotNull(ages);
+        ages[cacheKey] = Environment.TickCount64 - (long)JoltWorkspaceResolver.CacheEntryTtl.TotalMilliseconds - 1;
     }
 
     private readonly record struct ScopedSolutionFixture(

@@ -241,6 +241,33 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
+    public void DevServerOptionsParser_Parse_InvalidDevPort_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => DevServerOptionsParser.Parse(["--dev-port=abc"]));
+
+        StringAssert.Contains(exception.Message, "--dev-port");
+    }
+
+    [TestMethod]
+    public void DevServerOptionsParser_Parse_InvalidProxyRule_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => DevServerOptionsParser.Parse(["--dev-proxy=/api=not-a-uri"]));
+
+        StringAssert.Contains(exception.Message, "--dev-proxy");
+    }
+
+    [TestMethod]
+    public void DevServerOptionsParser_Parse_InvalidAliasRule_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => DevServerOptionsParser.Parse(["--dev-alias=@="]));
+
+        StringAssert.Contains(exception.Message, "--dev-alias");
+    }
+
+    [TestMethod]
     public void DevServerOptionsParser_Parse_LoadsServerAndProxyRulesFromJoltConfig()
     {
         var rootDirectory = CreateTemporaryDirectory();
@@ -464,6 +491,62 @@ public sealed class JoltDevServerTests
         {
             Directory.Delete(rootDirectory, recursive: true);
         }
+    }
+
+    [TestMethod]
+    public void DevServerFileWatchFilter_ShouldIgnore_DistAndArtifactsLikeDirectories()
+    {
+        var rootDirectory = CreateTemporaryDirectory();
+        try
+        {
+            var distPath = Path.Combine(rootDirectory, "dist", "assets", "app.js");
+            var jazorCachePath = Path.Combine(rootDirectory, ".jazor", "generated", "App.jazor");
+            var artifactsPath = Path.Combine(rootDirectory, "artifacts", "client", "app.js");
+            var hiddenArtifactsPath = Path.Combine(rootDirectory, ".artifacts", "client", "app.css");
+            var dotnetCachePath = Path.Combine(rootDirectory, ".dotnet", "cache", "app.js");
+            var testResultsPath = Path.Combine(rootDirectory, "TestResults", "session", "app.js");
+
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, distPath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, jazorCachePath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, artifactsPath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, hiddenArtifactsPath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, dotnetCachePath));
+            Assert.IsFalse(DevServerFileWatchFilter.ShouldObserve(rootDirectory, testResultsPath));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task CoalescingPathChangeQueue_DequeueAsync_CoalescesBurstsUntilConsumerRuns()
+    {
+        var queue = new CoalescingPathChangeQueue();
+
+        queue.Enqueue(["/styles/site.css", "/app/main.js"]);
+        queue.Enqueue(["/app/main.js", "/components/counter.jazor"]);
+
+        var firstBatch = await queue.DequeueAsync(CancellationToken.None);
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "/app/main.js",
+                "/components/counter.jazor",
+                "/styles/site.css"
+            },
+            firstBatch.ToArray());
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var secondBatchTask = queue.DequeueAsync(cancellationSource.Token).AsTask();
+        await Task.Delay(50);
+        Assert.IsFalse(secondBatchTask.IsCompleted);
+
+        queue.Enqueue(["/app/next.js"]);
+
+        var secondBatch = await secondBatchTask;
+        CollectionAssert.AreEqual(new[] { "/app/next.js" }, secondBatch.ToArray());
     }
 
     [TestMethod]

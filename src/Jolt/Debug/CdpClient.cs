@@ -30,11 +30,15 @@ internal interface ICdpClient : IAsyncDisposable
         CancellationToken cancellationToken);
 }
 
-internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
+internal sealed class CdpClient(ICdpConnection connection, TimeSpan? requestTimeout = null) : ICdpClient
 {
+    private static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromSeconds(15);
     private const int MaxTrackedScriptUrls = 2048;
 
     private readonly ICdpConnection _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+    private readonly TimeSpan? _requestTimeout = requestTimeout.HasValue
+        ? (requestTimeout.Value > TimeSpan.Zero ? requestTimeout.Value : null)
+        : DefaultRequestTimeout;
     private readonly ConcurrentDictionary<long, TaskCompletionSource<JsonElement>> _pendingById = [];
     private readonly ConcurrentDictionary<string, string> _scriptUrlById = new(StringComparer.Ordinal);
     private readonly ConcurrentQueue<string> _scriptUrlInsertionOrder = new();
@@ -198,10 +202,24 @@ internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
 
         try
         {
-            await _connection.SendAsync(requestJson, cancellationToken);
+            using var requestTimeoutSource = CreateRequestTimeoutSource(cancellationToken);
+            var effectiveCancellationToken = requestTimeoutSource?.Token ?? cancellationToken;
+            await _connection.SendAsync(requestJson, effectiveCancellationToken);
 
-            using var registration = cancellationToken.Register(() => completion.TrySetCanceled(cancellationToken));
-            JsonElement response = await completion.Task;
+            using var registration = effectiveCancellationToken.Register(() => completion.TrySetCanceled(effectiveCancellationToken));
+            JsonElement response;
+            try
+            {
+                response = await completion.Task;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (OperationCanceledException) when (requestTimeoutSource is not null && requestTimeoutSource.IsCancellationRequested)
+            {
+                throw CreateRequestTimeoutException(method);
+            }
 
             if (TryGetProperty(response, "error", out var errorElement))
             {
@@ -215,6 +233,26 @@ internal sealed class CdpClient(ICdpConnection connection) : ICdpClient
         {
             _pendingById.TryRemove(requestId, out _);
         }
+    }
+
+    private CancellationTokenSource? CreateRequestTimeoutSource(CancellationToken cancellationToken)
+    {
+        if (_requestTimeout is not { } timeout
+            || timeout <= TimeSpan.Zero)
+        {
+            return null;
+        }
+
+        var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutSource.CancelAfter(timeout);
+        return timeoutSource;
+    }
+
+    private TimeoutException CreateRequestTimeoutException(string method)
+    {
+        var timeout = _requestTimeout ?? TimeSpan.Zero;
+        return new TimeoutException(
+            $"CDP request '{method}' timed out after {timeout.TotalMilliseconds:0}ms.");
     }
 
     private async Task ReadLoopAsync(CancellationToken cancellationToken)

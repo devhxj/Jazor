@@ -1,5 +1,7 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Net.WebSockets;
+using System.Text;
 using Jolt.Debug;
 
 namespace Jolt.Test;
@@ -258,6 +260,54 @@ public sealed class JoltDebugCdpClientTests
         StringAssert.Contains(exception.Message, "closed", StringComparison.OrdinalIgnoreCase);
     }
 
+    [TestMethod]
+    public async Task CdpClient_ContinueAsync_WhenConnectionStalls_TimesOut()
+    {
+        var connection = new FakeCdpConnection();
+        await using var client = new CdpClient(connection, TimeSpan.FromMilliseconds(50));
+        await client.ConnectAsync(new Uri("ws://localhost:9222/devtools/page/1"), CancellationToken.None);
+
+        var continueTask = client.ContinueAsync(CancellationToken.None);
+        await connection.WaitForSendAsync();
+
+        var exception = await Assert.ThrowsAsync<TimeoutException>(
+            async () => await continueTask.WaitAsync(TimeSpan.FromSeconds(1)));
+
+        StringAssert.Contains(exception.Message, "timed out", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public async Task CdpConnection_ReceiveAsync_WhenMessageExceedsConfiguredLimit_ThrowsIOException()
+    {
+        await using var connection = new CdpConnection(
+            new FragmentedWebSocket(
+                Encoding.UTF8.GetBytes("""{"id":1,"result":"payload"}"""),
+                fragmentSize: 8),
+            ownsWebSocket: true,
+            maxMessageBytes: 16);
+
+        var exception = await Assert.ThrowsAsync<IOException>(
+            async () => await connection.ReceiveAsync(CancellationToken.None));
+
+        StringAssert.Contains(exception.Message, "exceeds", StringComparison.OrdinalIgnoreCase);
+    }
+
+    [TestMethod]
+    public async Task CdpConnection_ReceiveAsync_WhenFragmentedMessageWithinLimit_ReturnsPayload()
+    {
+        const string payload = """{"id":1,"result":{"ok":true}}""";
+        await using var connection = new CdpConnection(
+            new FragmentedWebSocket(
+                Encoding.UTF8.GetBytes(payload),
+                fragmentSize: 5),
+            ownsWebSocket: true,
+            maxMessageBytes: 1024);
+
+        var received = await connection.ReceiveAsync(CancellationToken.None);
+
+        Assert.AreEqual(payload, received);
+    }
+
     private sealed class FakeCdpConnection : ICdpConnection
     {
         private readonly TaskCompletionSource<bool> _sendObserved = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -292,6 +342,95 @@ public sealed class JoltDebugCdpClientTests
         {
             IsConnected = false;
             _nextReceive.TrySetCanceled();
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class FragmentedWebSocket : WebSocket
+    {
+        private readonly byte[] _payload;
+        private readonly int _fragmentSize;
+        private int _position;
+        private WebSocketState _state = WebSocketState.Open;
+
+        public FragmentedWebSocket(byte[] payload, int fragmentSize)
+        {
+            _payload = payload;
+            _fragmentSize = fragmentSize;
+        }
+
+        public override WebSocketCloseStatus? CloseStatus => null;
+
+        public override string? CloseStatusDescription => null;
+
+        public override WebSocketState State => _state;
+
+        public override string? SubProtocol => null;
+
+        public override void Abort()
+            => _state = WebSocketState.Aborted;
+
+        public override Task CloseAsync(
+            WebSocketCloseStatus closeStatus,
+            string? statusDescription,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _state = WebSocketState.Closed;
+            return Task.CompletedTask;
+        }
+
+        public override Task CloseOutputAsync(
+            WebSocketCloseStatus closeStatus,
+            string? statusDescription,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _state = WebSocketState.CloseSent;
+            return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+            => _state = WebSocketState.Closed;
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(
+            ArraySegment<byte> buffer,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_position >= _payload.Length)
+            {
+                _state = WebSocketState.CloseReceived;
+                return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true));
+            }
+
+            var bytesToCopy = Math.Min(Math.Min(buffer.Count, _fragmentSize), _payload.Length - _position);
+            _payload.AsSpan(_position, bytesToCopy).CopyTo(buffer.AsSpan(0, bytesToCopy));
+            _position += bytesToCopy;
+            return Task.FromResult(
+                new WebSocketReceiveResult(
+                    bytesToCopy,
+                    WebSocketMessageType.Text,
+                    endOfMessage: _position >= _payload.Length));
+        }
+
+        public override Task SendAsync(
+            ArraySegment<byte> buffer,
+            WebSocketMessageType messageType,
+            bool endOfMessage,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public override ValueTask SendAsync(
+            ReadOnlyMemory<byte> buffer,
+            WebSocketMessageType messageType,
+            bool endOfMessage,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.CompletedTask;
         }
     }

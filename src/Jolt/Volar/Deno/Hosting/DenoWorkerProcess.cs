@@ -12,6 +12,19 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 {
     private const int MaxCapturedStandardErrorLines = 32;
     private static int _launchWorkspaceSequence;
+    private static readonly HashSet<string> InheritedWorkerEnvironmentVariablesToRemove = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "__MINIMATCH_TESTING_PLATFORM__",
+        "BABEL_TYPES_8_BREAKING",
+        "DENO_DIR",
+        "LANG",
+        "NODE_DEBUG",
+        "NODE_ENV",
+        "NODE_INSPECTOR_IPC",
+        "VSCODE_INSPECTOR_OPTIONS",
+        "VSCODE_NLS_CONFIG",
+        "XDG_RUNTIME_DIR"
+    };
     private static readonly Lock LaunchWorkspaceCleanupGate = new();
     private static readonly HashSet<string> LaunchWorkspaces = new(StringComparer.OrdinalIgnoreCase);
     private static bool _launchWorkspaceCleanupHookRegistered;
@@ -86,6 +99,8 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
                 startInfo.ArgumentList.Add(argument);
             }
 
+            HardenInheritedWorkerEnvironment(startInfo.Environment);
+
             var workingDirectory = ResolveLaunchWorkingDirectory();
             if (!string.IsNullOrWhiteSpace(workingDirectory))
             {
@@ -145,6 +160,26 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
             _lifecycleGate.Release();
         }
     }
+
+    internal static void HardenInheritedWorkerEnvironment(IDictionary<string, string?> environment)
+    {
+        ArgumentNullException.ThrowIfNull(environment);
+
+        foreach (var key in environment.Keys.ToArray())
+        {
+            if (ShouldRemoveInheritedEnvironmentVariable(key))
+            {
+                environment.Remove(key);
+            }
+        }
+
+        environment["NO_COLOR"] = "1";
+    }
+
+    private static bool ShouldRemoveInheritedEnvironmentVariable(string key)
+        => InheritedWorkerEnvironmentVariablesToRemove.Contains(key)
+            || key.StartsWith("JOLT_", StringComparison.OrdinalIgnoreCase)
+            || key.StartsWith("TSC_", StringComparison.OrdinalIgnoreCase);
 
     public async ValueTask<TResult?> SendRequestAsync<TResult>(
         string method,

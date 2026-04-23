@@ -51,7 +51,7 @@ public sealed class JoltStaticAssetHandlerTests
     }
 
     [TestMethod]
-    public async Task CopyPublicAssetsAsync_DoesNotHashFiles_AtOrAboveSizeThreshold()
+    public async Task CopyPublicAssetsAsync_HashesLargeHashableFiles_ByDefault()
     {
         var tempDir = CreateTemporaryDirectory();
         try
@@ -60,7 +60,8 @@ public sealed class JoltStaticAssetHandlerTests
             Directory.CreateDirectory(publicDir);
 
             var sourcePath = Path.Combine(publicDir, "large.png");
-            await File.WriteAllTextAsync(sourcePath, new string('a', 4 * 1024));
+            var content = new string('a', 4 * 1024);
+            await File.WriteAllTextAsync(sourcePath, content);
 
             var options = new BuildOptions
             {
@@ -77,7 +78,8 @@ public sealed class JoltStaticAssetHandlerTests
             Assert.AreEqual(1, assets.Count);
 
             var asset = assets.Single();
-            Assert.AreEqual("large.png", asset.FileName);
+            var expectedHash = ComputeHashPrefix(content, options.AssetHashLength);
+            Assert.AreEqual($"large-{expectedHash}.png", asset.FileName);
             Assert.AreEqual("/large.png", asset.OriginalPath);
 
             var copiedPath = Path.Combine(tempDir, asset.FilePath.Replace('/', Path.DirectorySeparatorChar));

@@ -857,9 +857,211 @@ public sealed class JoltStdioLspServerTests
         await serverTask.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
-    private static LspSession CreateSession(ILspWorkspaceSymbolProvider workspaceSymbolProvider)
+    [TestMethod]
+    public async Task Jolt_StdioLspServer_StateChangingNotifications_AreBackpressuredInsteadOfDropped()
     {
-        var workspaceStore = new InMemoryWorkspaceStore();
+        var workspaceSink = new BlockingWorkspaceDocumentChangeSink();
+        var session = CreateSession(
+            new NoOpWorkspaceSymbolProvider(),
+            out var workspaceStore,
+            workspaceSink);
+        var server = new StdioLspServer(session, maxConcurrentRequests: 1, maxQueuedRequests: 1);
+
+        var clientToServerPipe = new Pipe();
+        var serverToClientPipe = new Pipe();
+        await using var serverInput = clientToServerPipe.Reader.AsStream(leaveOpen: true);
+        await using var serverOutput = serverToClientPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientInput = clientToServerPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientOutput = serverToClientPipe.Reader.AsStream(leaveOpen: true);
+
+        var documentPath = Path.Combine(
+            Path.GetTempPath(),
+            "jolt-lsp-notification-" + Guid.NewGuid().ToString("N") + ".jazor");
+        var documentUri = new Uri(documentPath).AbsoluteUri;
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        var serverTask = server.RunAsync(serverInput, serverOutput, cancellationSource.Token).AsTask();
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 1,
+                method = "initialize",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        using var initializeResponse = await ReadResponseAsync(clientOutput, expectedId: 1, cancellationSource.Token);
+        Assert.IsTrue(initializeResponse.RootElement.TryGetProperty("result", out _));
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didOpen",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        languageId = "jazor",
+                        version = 1,
+                        text = "initial"
+                    }
+                }
+            },
+            cancellationSource.Token);
+
+        await SendDidChangeAsync(clientInput, documentUri, version: 2, text: "one", cancellationSource.Token);
+        await workspaceSink.WaitUntilFirstChangeStartedAsync(cancellationSource.Token);
+
+        await SendDidChangeAsync(clientInput, documentUri, version: 3, text: "two", cancellationSource.Token);
+        await SendDidChangeAsync(clientInput, documentUri, version: 4, text: "three", cancellationSource.Token);
+        await SendDidChangeAsync(clientInput, documentUri, version: 5, text: "four", cancellationSource.Token);
+
+        await Task.Delay(100, cancellationSource.Token);
+        workspaceSink.ReleaseFirstChange();
+
+        await WaitUntilDocumentTextAsync(workspaceStore, documentPath, "four", cancellationSource.Token);
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 6,
+                method = "shutdown",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        using var shutdownResponse = await ReadResponseAsync(clientOutput, expectedId: 6, cancellationSource.Token);
+        Assert.AreEqual(JsonValueKind.Null, shutdownResponse.RootElement.GetProperty("result").ValueKind);
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                method = "exit",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        await clientInput.DisposeAsync();
+
+        await serverTask.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task Jolt_StdioLspServer_CancelRequest_WithUnknownIds_DoesNotAccumulatePendingCancellations()
+    {
+        var session = CreateSession(new NoOpWorkspaceSymbolProvider());
+        var server = new StdioLspServer(session);
+
+        var clientToServerPipe = new Pipe();
+        var serverToClientPipe = new Pipe();
+        await using var serverInput = clientToServerPipe.Reader.AsStream(leaveOpen: true);
+        await using var serverOutput = serverToClientPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientInput = clientToServerPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientOutput = serverToClientPipe.Reader.AsStream(leaveOpen: true);
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        var serverTask = server.RunAsync(serverInput, serverOutput, cancellationSource.Token).AsTask();
+
+        for (var index = 0; index < 256; index++)
+        {
+            await SendMessageAsync(
+                clientInput,
+                new
+                {
+                    jsonrpc = "2.0",
+                    method = "$/cancelRequest",
+                    @params = new
+                    {
+                        id = 100_000 + index
+                    }
+                },
+                cancellationSource.Token);
+        }
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 1,
+                method = "shutdown",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        using var shutdownResponse = await ReadResponseAsync(clientOutput, expectedId: 1, cancellationSource.Token);
+        Assert.AreEqual(JsonValueKind.Null, shutdownResponse.RootElement.GetProperty("result").ValueKind);
+        Assert.AreEqual(0, GetPendingCancellationRequestCount(server));
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                method = "exit",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        await clientInput.DisposeAsync();
+
+        await serverTask.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task LspSession_TextDocumentRequest_ForDiskOnlyFile_DoesNotTrackOpenDocument()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "jolt-lsp-disk-doc-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            var documentPath = Path.Combine(tempDir, "DiskOnly.jazor");
+            await File.WriteAllTextAsync(documentPath, "<template><div /></template>");
+            var session = CreateSession(new NoOpWorkspaceSymbolProvider(), out var workspaceStore);
+
+            var response = await session.HandleRequestAsync(
+                new LspRequestMessage
+                {
+                    Id = 1,
+                    Method = "textDocument/documentSymbol",
+                    Params = JsonSerializer.SerializeToElement(new
+                    {
+                        textDocument = new
+                        {
+                            uri = new Uri(documentPath).AbsoluteUri
+                        }
+                    })
+                },
+                CancellationToken.None);
+
+            Assert.IsNotNull(response);
+            Assert.IsTrue(response.Result is not null);
+            var openDocuments = await workspaceStore.GetOpenDocumentsAsync(CancellationToken.None);
+            Assert.AreEqual(0, openDocuments.Count);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
+    }
+
+    private static LspSession CreateSession(ILspWorkspaceSymbolProvider workspaceSymbolProvider)
+        => CreateSession(workspaceSymbolProvider, out _);
+
+    private static LspSession CreateSession(
+        ILspWorkspaceSymbolProvider workspaceSymbolProvider,
+        out InMemoryWorkspaceStore workspaceStore,
+        IWorkspaceDocumentChangeSink? workspaceDocumentChangeSink = null)
+    {
+        workspaceStore = new InMemoryWorkspaceStore();
         var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
         var laneRouter = new LspLaneRouter();
         var projectionResolver = new DocumentProjectionResolver(
@@ -886,9 +1088,40 @@ public sealed class JoltStdioLspServerTests
             new ReferenceCoordinator(new Dictionary<LaneKind, ILspLane>(), laneRouter, markupBridgeFanout),
             new RenameCoordinator(new Dictionary<LaneKind, ILspLane>(), laneRouter, resultAggregator, markupBridgeFanout),
             new CodeActionCoordinator(new Dictionary<LaneKind, ILspLane>(), laneRouter, resultAggregator),
+            workspaceDocumentChangeSink,
             extensionRegistry: extensionRegistry,
             extensionProviderTimeout: TimeSpan.FromSeconds(30));
     }
+
+    private static Task SendDidChangeAsync(
+        Stream stream,
+        string documentUri,
+        int version,
+        string text,
+        CancellationToken cancellationToken)
+        => SendMessageAsync(
+            stream,
+            new
+            {
+                jsonrpc = "2.0",
+                method = "textDocument/didChange",
+                @params = new
+                {
+                    textDocument = new
+                    {
+                        uri = documentUri,
+                        version
+                    },
+                    contentChanges = new[]
+                    {
+                        new
+                        {
+                            text
+                        }
+                    }
+                }
+            },
+            cancellationToken);
 
     private static async Task SendMessageAsync(
         Stream stream,
@@ -1024,6 +1257,38 @@ public sealed class JoltStdioLspServerTests
         }
     }
 
+    private static async Task WaitUntilDocumentTextAsync(
+        InMemoryWorkspaceStore workspaceStore,
+        string documentPath,
+        string expectedText,
+        CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var document = await workspaceStore.GetDocumentAsync(documentPath, cancellationToken);
+            if (string.Equals(document?.Text, expectedText, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            await Task.Delay(10, cancellationToken);
+        }
+    }
+
+    private static int GetPendingCancellationRequestCount(StdioLspServer server)
+    {
+        var pendingCancellationRequestsField = typeof(StdioLspServer).GetField(
+            "_pendingCancellationRequests",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.IsNotNull(pendingCancellationRequestsField);
+        var pendingCancellationRequests = pendingCancellationRequestsField.GetValue(server);
+        Assert.IsNotNull(pendingCancellationRequests);
+        var countProperty = pendingCancellationRequests.GetType().GetProperty("Count");
+        Assert.IsNotNull(countProperty);
+        return (int)countProperty.GetValue(pendingCancellationRequests)!;
+    }
+
     private static async Task WaitUntilRequestCancellationObservedAsync(
         StdioLspServer server,
         int requestId,
@@ -1075,6 +1340,31 @@ public sealed class JoltStdioLspServerTests
 
             await Task.Delay(10, cancellationToken);
         }
+    }
+
+    private sealed class BlockingWorkspaceDocumentChangeSink : IWorkspaceDocumentChangeSink
+    {
+        private readonly TaskCompletionSource<bool> _firstChangeStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> _firstChangeRelease = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _changeCount;
+
+        public async ValueTask OnWorkspaceDocumentChangedAsync(
+            DocumentSnapshot document,
+            IReadOnlyList<DocumentSnapshot> openDocuments,
+            CancellationToken cancellationToken)
+        {
+            if (Interlocked.Increment(ref _changeCount) == 1)
+            {
+                _firstChangeStarted.TrySetResult(true);
+                await _firstChangeRelease.Task.WaitAsync(cancellationToken);
+            }
+        }
+
+        public async Task WaitUntilFirstChangeStartedAsync(CancellationToken cancellationToken)
+            => await _firstChangeStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken);
+
+        public void ReleaseFirstChange()
+            => _firstChangeRelease.TrySetResult(true);
     }
 
     private sealed class BlockingWorkspaceSymbolProvider : ILspWorkspaceSymbolProvider

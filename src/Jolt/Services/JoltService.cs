@@ -33,7 +33,7 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IVolarContextPr
     private readonly IVueAnalysisClient _analysisClient;
     private readonly IDenoVolarHost _denoVolarHost;
     private readonly JazorRelatedDocumentResolver _relatedDocumentResolver;
-    private readonly InProcRoslynCodeService _roslynCodeService = new();
+    private readonly InProcRoslynCodeService _roslynCodeService;
     private readonly FallbackJazorAnalysisService _fallbackAnalysisService = new();
     private readonly JazorVueParser _parser = new();
     private readonly SemaphoreSlim _lifecycleGate = new(1, 1);
@@ -42,18 +42,20 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IVolarContextPr
     public JoltService(
         IJoltWorkspaceStore workspaceStore,
         IVueAnalysisClient analysisClient)
-        : this(workspaceStore, analysisClient, denoVolarHost: null)
+        : this(workspaceStore, analysisClient, denoVolarHost: null, roslynCodeService: null)
     {
     }
 
     internal JoltService(
         IJoltWorkspaceStore workspaceStore,
         IVueAnalysisClient analysisClient,
-        IDenoVolarHost? denoVolarHost)
+        IDenoVolarHost? denoVolarHost,
+        InProcRoslynCodeService? roslynCodeService = null)
     {
         _workspaceStore = workspaceStore ?? throw new ArgumentNullException(nameof(workspaceStore));
         _analysisClient = analysisClient ?? throw new ArgumentNullException(nameof(analysisClient));
         _denoVolarHost = denoVolarHost ?? new DenoVolarHost(new DenoVolarHostOptions());
+        _roslynCodeService = roslynCodeService ?? new InProcRoslynCodeService();
         _relatedDocumentResolver = new JazorRelatedDocumentResolver(_workspaceStore);
     }
 

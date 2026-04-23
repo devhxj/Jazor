@@ -13,6 +13,7 @@ internal static class JoltWorkspaceResolver
     private const int MaxWorkspaceCacheEntries = 1000;
     private const int MaxSolutionProjectRootCacheEntries = 128;
     private const int MaxPathSegmentDepth = 256;
+    internal static TimeSpan CacheEntryTtl => TimeSpan.FromSeconds(30);
     private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(WorkspacePathComparison.StringComparer);
     private static readonly object WorkspaceFileCacheSync = new();
     private static readonly Dictionary<string, long> WorkspaceFileCacheAges = new(WorkspacePathComparison.StringComparer);
@@ -1271,14 +1272,10 @@ internal static class JoltWorkspaceResolver
     private static string[] GetSolutionProjectRoots(string solutionRoot)
     {
         var normalizedRoot = NormalizeComparablePath(Path.GetFullPath(solutionRoot));
-        if (!SolutionProjectRootCache.TryGetValue(normalizedRoot, out var roots))
+        if (!TryGetSolutionProjectRootCacheEntry(normalizedRoot, out var roots))
         {
             roots = LoadSolutionProjectRoots(solutionRoot);
             SetSolutionProjectRootCacheEntry(normalizedRoot, roots);
-        }
-        else
-        {
-            TouchSolutionProjectRootCacheEntry(normalizedRoot);
         }
 
         return roots;
@@ -1484,7 +1481,37 @@ internal static class JoltWorkspaceResolver
             return false;
         }
 
+        if (IsCacheEntryExpired(cacheKey, WorkspaceFileCacheSync, WorkspaceFileCacheAges))
+        {
+            RemoveWorkspaceCacheEntry(cacheKey);
+            files = [];
+            return false;
+        }
+
         TouchWorkspaceCacheEntry(cacheKey);
+        return true;
+    }
+
+    private static bool TryGetSolutionProjectRootCacheEntry(string cacheKey, out string[] projectRoots)
+    {
+        if (!SolutionProjectRootCache.TryGetValue(cacheKey, out projectRoots!))
+        {
+            return false;
+        }
+
+        if (IsCacheEntryExpired(cacheKey, SolutionProjectRootCacheSync, SolutionProjectRootCacheAges))
+        {
+            SolutionProjectRootCache.TryRemove(cacheKey, out _);
+            lock (SolutionProjectRootCacheSync)
+            {
+                SolutionProjectRootCacheAges.Remove(cacheKey);
+            }
+
+            projectRoots = [];
+            return false;
+        }
+
+        TouchSolutionProjectRootCacheEntry(cacheKey);
         return true;
     }
 
@@ -1533,6 +1560,22 @@ internal static class JoltWorkspaceResolver
         lock (WorkspaceFileCacheSync)
         {
             WorkspaceFileCacheAges.Remove(cacheKey);
+        }
+    }
+
+    private static bool IsCacheEntryExpired(
+        string cacheKey,
+        object sync,
+        Dictionary<string, long> ages)
+    {
+        lock (sync)
+        {
+            if (!ages.TryGetValue(cacheKey, out var age))
+            {
+                return true;
+            }
+
+            return Environment.TickCount64 - age > CacheEntryTtl.TotalMilliseconds;
         }
     }
 

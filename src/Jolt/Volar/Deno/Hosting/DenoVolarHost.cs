@@ -377,13 +377,30 @@ internal sealed class DenoVolarHost : IDenoVolarHost
                 return default;
             }
 
+            using var requestTimeoutSource = CreateRequestTimeoutSource(cancellationToken);
             try
             {
-                return await _workerProcess.SendRequestAsync<TResult>(method, payload, cancellationToken);
+                return await _workerProcess.SendRequestAsync<TResult>(
+                    method,
+                    payload,
+                    requestTimeoutSource?.Token ?? cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 throw;
+            }
+            catch (OperationCanceledException) when (requestTimeoutSource is not null && requestTimeoutSource.IsCancellationRequested)
+            {
+                await TryResetWorkerStateAsync();
+                var timeoutException = CreateRequestTimeoutException(method);
+                WriteSendRetryWarning(method, attempt, timeoutException);
+                if (attempt == MaxSendAttempts)
+                {
+                    throw timeoutException;
+                }
+
+                var delay = TimeSpan.FromMilliseconds(RetryBackoffBase.TotalMilliseconds * Math.Pow(2, attempt - 1));
+                await Task.Delay(delay, cancellationToken);
             }
             catch (Exception ex) when (IsRecoverableWorkerFailure(ex))
             {
@@ -407,7 +424,28 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             or IOException
             or InvalidOperationException
             or JsonException
-            or NotSupportedException;
+            or NotSupportedException
+            or TimeoutException;
+
+    private CancellationTokenSource? CreateRequestTimeoutSource(CancellationToken cancellationToken)
+    {
+        if (_options.RequestTimeout is not { } requestTimeout
+            || requestTimeout <= TimeSpan.Zero)
+        {
+            return null;
+        }
+
+        var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutSource.CancelAfter(requestTimeout);
+        return timeoutSource;
+    }
+
+    private TimeoutException CreateRequestTimeoutException(string method)
+    {
+        var requestTimeout = _options.RequestTimeout ?? TimeSpan.Zero;
+        return new TimeoutException(
+            $"Deno frontend worker request '{method}' timed out after {requestTimeout.TotalMilliseconds:0}ms.");
+    }
 
     private static void WriteSendRetryWarning(string method, int attempt, Exception exception)
     {

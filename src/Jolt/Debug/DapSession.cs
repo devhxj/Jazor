@@ -8,6 +8,7 @@ internal sealed class DapSession
     private const string FallbackCallFrameId = "fallback-frame-1";
     private const string FallbackFunctionName = "render";
     private const string FallbackSourcePath = "/__jazor__/Counter.jazor";
+    internal static int MaxTrackedVariablesReferences => 2048;
 
     private readonly ICdpClient? _cdpClient;
     private readonly VariableMapper _variableMapper;
@@ -15,6 +16,7 @@ internal sealed class DapSession
     private readonly Lock _breakpointGate = new();
     private readonly Dictionary<string, IReadOnlyList<DapBreakpointBinding>> _breakpointsBySourcePath = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<int, VariablesReferenceEntry> _variablesByReference = [];
+    private readonly Queue<int> _variablesReferenceInsertionOrder = [];
     private IReadOnlyList<CdpCallFrame> _currentCallFrames = [];
     private int _nextVariablesReference = 1;
     private bool _isPaused;
@@ -45,6 +47,17 @@ internal sealed class DapSession
             lock (_stateGate)
             {
                 return _isPaused;
+            }
+        }
+    }
+
+    internal int TrackedVariablesReferenceCount
+    {
+        get
+        {
+            lock (_stateGate)
+            {
+                return _variablesByReference.Count;
             }
         }
     }
@@ -499,9 +512,7 @@ internal sealed class DapSession
     {
         lock (_stateGate)
         {
-            var variablesReference = _nextVariablesReference++;
-            _variablesByReference[variablesReference] = VariablesReferenceEntry.FromVariables(variables);
-            return variablesReference;
+            return AllocateVariablesReferenceCore(VariablesReferenceEntry.FromVariables(variables));
         }
     }
 
@@ -514,9 +525,7 @@ internal sealed class DapSession
 
         lock (_stateGate)
         {
-            var variablesReference = _nextVariablesReference++;
-            _variablesByReference[variablesReference] = VariablesReferenceEntry.FromRemoteObject(remoteObject!);
-            return variablesReference;
+            return AllocateVariablesReferenceCore(VariablesReferenceEntry.FromRemoteObject(remoteObject!));
         }
     }
 
@@ -651,7 +660,26 @@ internal sealed class DapSession
     private void ResetVariableReferencesCore()
     {
         _variablesByReference.Clear();
+        _variablesReferenceInsertionOrder.Clear();
         _nextVariablesReference = 1;
+    }
+
+    private int AllocateVariablesReferenceCore(VariablesReferenceEntry entry)
+    {
+        var variablesReference = _nextVariablesReference++;
+        _variablesByReference[variablesReference] = entry;
+        _variablesReferenceInsertionOrder.Enqueue(variablesReference);
+        TrimVariableReferencesCore();
+        return variablesReference;
+    }
+
+    private void TrimVariableReferencesCore()
+    {
+        while (_variablesByReference.Count > MaxTrackedVariablesReferences
+               && _variablesReferenceInsertionOrder.TryDequeue(out var variablesReference))
+        {
+            _variablesByReference.Remove(variablesReference);
+        }
     }
 }
 

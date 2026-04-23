@@ -100,6 +100,19 @@ public sealed class JoltDevServerReloadHubTests
         await IgnoreCancellationAsync(receiveLoop);
     }
 
+    [TestMethod]
+    public async Task DevServerReloadHub_AcceptAsync_WhenClientSendsOversizedMessage_ClosesSocket()
+    {
+        await using var hub = new DevServerReloadHub();
+        using var socket = new OversizedIncomingWebSocket(80 * 1024, 4096);
+
+        await hub.AcceptAsync(socket, CancellationToken.None);
+
+        Assert.AreEqual(0, hub.ConnectedClientCount);
+        Assert.AreEqual(WebSocketState.Closed, socket.State);
+        Assert.AreEqual(WebSocketCloseStatus.MessageTooBig, socket.CloseStatus);
+    }
+
     private static async Task IgnoreCancellationAsync(Task task)
     {
         try
@@ -252,6 +265,106 @@ public sealed class JoltDevServerReloadHubTests
                     Interlocked.Decrement(ref _activeSenders);
                 }
             }
+        }
+    }
+
+    private sealed class OversizedIncomingWebSocket : WebSocket
+    {
+        private readonly byte[] _payload;
+        private readonly int _fragmentSize;
+        private int _position;
+        private WebSocketState _state = WebSocketState.Open;
+        private WebSocketCloseStatus? _closeStatus;
+        private string? _closeStatusDescription;
+
+        public OversizedIncomingWebSocket(int payloadSizeBytes, int fragmentSize)
+        {
+            _payload = Encoding.UTF8.GetBytes(new string('x', payloadSizeBytes));
+            _fragmentSize = fragmentSize;
+        }
+
+        public override WebSocketCloseStatus? CloseStatus => _closeStatus;
+
+        public override string? CloseStatusDescription => _closeStatusDescription;
+
+        public override WebSocketState State => _state;
+
+        public override string? SubProtocol => null;
+
+        public override void Abort()
+            => _state = WebSocketState.Aborted;
+
+        public override Task CloseAsync(
+            WebSocketCloseStatus closeStatus,
+            string? statusDescription,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _closeStatus = closeStatus;
+            _closeStatusDescription = statusDescription;
+            _state = WebSocketState.Closed;
+            return Task.CompletedTask;
+        }
+
+        public override Task CloseOutputAsync(
+            WebSocketCloseStatus closeStatus,
+            string? statusDescription,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _closeStatus = closeStatus;
+            _closeStatusDescription = statusDescription;
+            _state = WebSocketState.CloseSent;
+            return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+            => _state = WebSocketState.Closed;
+
+        public override Task<WebSocketReceiveResult> ReceiveAsync(
+            ArraySegment<byte> buffer,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_state != WebSocketState.Open)
+            {
+                return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true));
+            }
+
+            if (_position >= _payload.Length)
+            {
+                _state = WebSocketState.CloseReceived;
+                return Task.FromResult(new WebSocketReceiveResult(0, WebSocketMessageType.Close, endOfMessage: true));
+            }
+
+            var bytesToCopy = Math.Min(Math.Min(_fragmentSize, buffer.Count), _payload.Length - _position);
+            _payload.AsSpan(_position, bytesToCopy).CopyTo(buffer.AsSpan(0, bytesToCopy));
+            _position += bytesToCopy;
+            return Task.FromResult(
+                new WebSocketReceiveResult(
+                    bytesToCopy,
+                    WebSocketMessageType.Text,
+                    endOfMessage: _position >= _payload.Length));
+        }
+
+        public override Task SendAsync(
+            ArraySegment<byte> buffer,
+            WebSocketMessageType messageType,
+            bool endOfMessage,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.CompletedTask;
+        }
+
+        public override ValueTask SendAsync(
+            ReadOnlyMemory<byte> buffer,
+            WebSocketMessageType messageType,
+            bool endOfMessage,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.CompletedTask;
         }
     }
 }

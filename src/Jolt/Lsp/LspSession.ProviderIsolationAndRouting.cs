@@ -364,7 +364,6 @@ internal sealed partial class LspSession
             MapDocumentKind(languageId: null, documentPath),
             await File.ReadAllTextAsync(documentPath, cancellationToken),
             version: null);
-        await _workspaceStore.UpsertDocumentAsync(document, cancellationToken);
         await UpdateProjectionStateAsync(document, cancellationToken);
         return document;
     }

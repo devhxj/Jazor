@@ -11,16 +11,19 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
     private static readonly TimeSpan DefaultSendTimeout = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan DefaultHeartbeatTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DefaultHeartbeatSweepInterval = TimeSpan.FromSeconds(10);
+    private const int DefaultMaxIncomingMessageBytes = 64 * 1024;
     private readonly ConcurrentDictionary<WebSocket, HmrClientState> _sockets = new();
     private readonly TimeSpan _sendTimeout;
     private readonly TimeSpan _heartbeatTimeout;
+    private readonly int _maxIncomingMessageBytes;
     private readonly CancellationTokenSource _heartbeatSweepCancellationSource = new();
     private readonly Task _heartbeatSweepTask;
 
     public DevServerReloadHub(
         TimeSpan? sendTimeout = null,
         TimeSpan? heartbeatTimeout = null,
-        TimeSpan? heartbeatSweepInterval = null)
+        TimeSpan? heartbeatSweepInterval = null,
+        int? maxIncomingMessageBytes = null)
     {
         _sendTimeout = sendTimeout is { } timeout && timeout > TimeSpan.Zero
             ? timeout
@@ -28,6 +31,9 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         _heartbeatTimeout = heartbeatTimeout is { } heartbeat && heartbeat > TimeSpan.Zero
             ? heartbeat
             : DefaultHeartbeatTimeout;
+        _maxIncomingMessageBytes = maxIncomingMessageBytes is { } maxBytes && maxBytes > 0
+            ? maxBytes
+            : DefaultMaxIncomingMessageBytes;
         var sweepInterval = heartbeatSweepInterval is { } interval && interval > TimeSpan.Zero
             ? interval
             : DefaultHeartbeatSweepInterval;
@@ -42,6 +48,8 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         var state = new HmrClientState(Guid.NewGuid().ToString("N")[..8]);
         _sockets.TryAdd(socket, state);
         var buffer = new byte[256];
+        var closeStatus = WebSocketCloseStatus.NormalClosure;
+        var closeDescription = "Jolt dev server shutdown";
 
         try
         {
@@ -57,7 +65,11 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
                 cancellationToken);
             while (!cancellationToken.IsCancellationRequested && socket.State == WebSocketState.Open)
             {
-                var result = await ReceiveMessageAsync(socket, buffer, cancellationToken);
+                var result = await ReceiveMessageAsync(
+                    socket,
+                    buffer,
+                    _maxIncomingMessageBytes,
+                    cancellationToken);
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
                     break;
@@ -72,10 +84,15 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
         }
+        catch (HmrMessageTooLargeException exception)
+        {
+            closeStatus = WebSocketCloseStatus.MessageTooBig;
+            closeDescription = exception.Message;
+        }
         finally
         {
             RemoveSocket(socket);
-            await CloseAndDisposeAsync(socket, CancellationToken.None);
+            await CloseAndDisposeAsync(socket, closeStatus, closeDescription, CancellationToken.None);
         }
     }
 
@@ -235,15 +252,24 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
     private static async Task<HmrReceivedMessage> ReceiveMessageAsync(
         WebSocket socket,
         byte[] buffer,
+        int maxIncomingMessageBytes,
         CancellationToken cancellationToken)
     {
         using var stream = new MemoryStream();
+        var totalMessageBytes = 0;
         while (true)
         {
             var result = await socket.ReceiveAsync(buffer, cancellationToken);
             if (result.MessageType == WebSocketMessageType.Close)
             {
                 return new HmrReceivedMessage(result.MessageType, null);
+            }
+
+            totalMessageBytes += result.Count;
+            if (totalMessageBytes > maxIncomingMessageBytes)
+            {
+                throw new HmrMessageTooLargeException(
+                    $"HMR client message exceeds the {maxIncomingMessageBytes} byte limit.");
             }
 
             if (result.MessageType == WebSocketMessageType.Text)
@@ -358,15 +384,19 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
         return false;
     }
 
-    private static async Task CloseAndDisposeAsync(WebSocket socket, CancellationToken cancellationToken)
+    private static async Task CloseAndDisposeAsync(
+        WebSocket socket,
+        WebSocketCloseStatus closeStatus = WebSocketCloseStatus.NormalClosure,
+        string closeDescription = "Jolt dev server shutdown",
+        CancellationToken cancellationToken = default)
     {
         try
         {
             if (socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
             {
                 await socket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Jolt dev server shutdown",
+                    closeStatus,
+                    closeDescription,
                     cancellationToken);
             }
         }
@@ -387,6 +417,13 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
             socket.Dispose();
         }
     }
+
+    private static Task CloseAndDisposeAsync(WebSocket socket, CancellationToken cancellationToken)
+        => CloseAndDisposeAsync(
+            socket,
+            WebSocketCloseStatus.NormalClosure,
+            "Jolt dev server shutdown",
+            cancellationToken);
 }
 
 internal sealed class DevServerNotificationEnvelope
@@ -442,3 +479,5 @@ internal sealed class HmrClientState(string clientId) : IDisposable
 internal readonly record struct HmrReceivedMessage(
     WebSocketMessageType MessageType,
     string? Text);
+
+internal sealed class HmrMessageTooLargeException(string message) : InvalidOperationException(message);

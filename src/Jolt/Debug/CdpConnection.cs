@@ -16,15 +16,45 @@ internal interface ICdpConnection : IAsyncDisposable
 
 internal sealed class CdpConnection : ICdpConnection
 {
-    private readonly ClientWebSocket _webSocket = new();
+    private const int DefaultMaxMessageBytes = 4 * 1024 * 1024;
+    private readonly WebSocket _webSocket;
+    private readonly ClientWebSocket? _clientWebSocket;
+    private readonly bool _ownsWebSocket;
+    private readonly int _maxMessageBytes;
     private readonly SemaphoreSlim _sendLock = new(1, 1);
+
+    public CdpConnection(int? maxMessageBytes = null)
+        : this(
+            new ClientWebSocket(),
+            ownsWebSocket: true,
+            maxMessageBytes: maxMessageBytes)
+    {
+    }
+
+    internal CdpConnection(
+        WebSocket webSocket,
+        bool ownsWebSocket,
+        int? maxMessageBytes = null)
+    {
+        _webSocket = webSocket ?? throw new ArgumentNullException(nameof(webSocket));
+        _clientWebSocket = webSocket as ClientWebSocket;
+        _ownsWebSocket = ownsWebSocket;
+        _maxMessageBytes = maxMessageBytes is > 0
+            ? maxMessageBytes.Value
+            : DefaultMaxMessageBytes;
+    }
 
     public bool IsConnected => _webSocket.State == WebSocketState.Open;
 
     public async Task ConnectAsync(Uri endpoint, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(endpoint);
-        await _webSocket.ConnectAsync(endpoint, cancellationToken);
+        if (_clientWebSocket is null)
+        {
+            throw new InvalidOperationException("CDP connection test transport does not support ConnectAsync.");
+        }
+
+        await _clientWebSocket.ConnectAsync(endpoint, cancellationToken);
     }
 
     public async Task SendAsync(string payloadJson, CancellationToken cancellationToken)
@@ -64,6 +94,7 @@ internal sealed class CdpConnection : ICdpConnection
         var decoder = Encoding.UTF8.GetDecoder();
         var chars = new char[Encoding.UTF8.GetMaxCharCount(buffer.Length)];
         var receivedPartialMessage = false;
+        var totalBytes = 0;
         while (true)
         {
             var result = await _webSocket.ReceiveAsync(buffer.AsMemory(), cancellationToken);
@@ -78,6 +109,13 @@ internal sealed class CdpConnection : ICdpConnection
             }
 
             receivedPartialMessage = true;
+            totalBytes += result.Count;
+            if (totalBytes > _maxMessageBytes)
+            {
+                throw new IOException(
+                    $"CDP WebSocket message exceeds the configured {_maxMessageBytes} byte limit.");
+            }
+
             var completedChars = decoder.GetChars(
                 buffer,
                 0,
@@ -113,7 +151,11 @@ internal sealed class CdpConnection : ICdpConnection
             // Best effort close.
         }
 
-        _webSocket.Dispose();
+        if (_ownsWebSocket)
+        {
+            _webSocket.Dispose();
+        }
+
         _sendLock.Dispose();
     }
 }

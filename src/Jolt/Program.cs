@@ -117,8 +117,10 @@ if (usePreview)
         return;
     }
 
-    var portValue = GetOptionValue(args, "--dev-port");
-    var previewPort = portValue is not null && int.TryParse(portValue, out var p) ? p : 4173;
+    if (!TryResolvePreviewPortForCommand(args, out var previewPort))
+    {
+        return;
+    }
     Console.WriteLine($"Preview server running at http://localhost:{previewPort}");
 
     var builder = WebApplication.CreateSlimBuilder();
@@ -170,9 +172,15 @@ if (useAnalysisStdio)
 
 if (useDap && !useLsp)
 {
+    var dapDevOptions = new DevServerOptions();
+    if (useDev && !TryResolveDevServerOptionsForCommand(args, out dapDevOptions))
+    {
+        return;
+    }
+
     await using var dapVolarHost = useDev ? new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args)) : null;
     await using var devRuntime = useDev && dapVolarHost is not null
-        ? CreateDevServerRuntime(DevServerOptionsParser.Parse(args), dapVolarHost)
+        ? CreateDevServerRuntime(dapDevOptions, dapVolarHost)
         : null;
 
     if (devRuntime is not null)
@@ -203,7 +211,11 @@ if (useDap && !useLsp)
 if (useDev && !useLsp)
 {
     await using var devVolarHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
-    var devOptions = DevServerOptionsParser.Parse(args);
+    if (!TryResolveDevServerOptionsForCommand(args, out var devOptions))
+    {
+        return;
+    }
+
     await using var devRuntime = CreateDevServerRuntime(devOptions, devVolarHost);
     var devServer = devRuntime.Server;
     using var shutdownSource = new CancellationTokenSource();
@@ -232,13 +244,26 @@ if (useDev && !useLsp)
     return;
 }
 
+var razorSdkToolsetHost = new RazorSdkToolsetHost();
+var razorProjectionService = new RazorDesignTimeCodeProjectionService(razorSdkToolsetHost);
+
+if (inspectRazorToolset)
+{
+    Console.WriteLine(razorSdkToolsetHost.Describe());
+    return;
+}
+
+if (!string.IsNullOrWhiteSpace(probeInProcRazorPath))
+{
+    ProbeInProcRazor(probeInProcRazorPath, razorProjectionService);
+    return;
+}
+
 var analysisClient = VueAnalysisClientFactory.Create(args);
 var workspaceStore = new InMemoryWorkspaceStore();
 var virtualDocumentRegistry = new InMemoryVirtualDocumentRegistry();
 // Keep one shared in-proc projection pipeline so LSP lanes and virtual-document projection
 // observe the same Razor->C# mapping behavior.
-var razorSdkToolsetHost = new RazorSdkToolsetHost();
-var razorProjectionService = new RazorDesignTimeCodeProjectionService(razorSdkToolsetHost);
 var inProcRoslynCodeService = new InProcRoslynCodeService(razorProjectionService);
 var projectionService = new JazorProjectionService(inProcRoslynCodeService);
 await using var denoVolarHost = new DenoVolarHost(DenoVolarHostOptionsParser.Parse(args));
@@ -252,7 +277,8 @@ var markupBridgeFanoutCoordinator = new MarkupBridgeFanoutCoordinator(markupComp
 var hostService = new JoltService(
     workspaceStore,
     analysisClient,
-    denoVolarHost);
+    denoVolarHost,
+    inProcRoslynCodeService);
 var entry = new JoltServiceEntry(hostService);
 var rpcDispatcher = new JoltRpcDispatcher(hostService);
 var rpcProcessor = new JoltRpcProcessor(rpcDispatcher);
@@ -260,18 +286,6 @@ var rpcProcessor = new JoltRpcProcessor(rpcDispatcher);
 await entry.RunAsync(cancellationToken);
 try
 {
-    if (inspectRazorToolset)
-    {
-        Console.WriteLine(razorSdkToolsetHost.Describe());
-        return;
-    }
-
-    if (!string.IsNullOrWhiteSpace(probeInProcRazorPath))
-    {
-        ProbeInProcRazor(probeInProcRazorPath, razorProjectionService);
-        return;
-    }
-
     if (useLsp)
     {
         var hostRootDirectory = Path.GetFullPath(GetOptionValue(args, "--dev-root") ?? Directory.GetCurrentDirectory());
@@ -310,7 +324,11 @@ try
         {
             if (useDev)
             {
-                var devOptions = DevServerOptionsParser.Parse(args);
+                if (!TryResolveDevServerOptionsForCommand(args, out var devOptions))
+                {
+                    return;
+                }
+
                 devRuntime = CreateWorkspaceDevServerRuntime(devOptions, denoVolarHost, workspaceStore);
                 devServer = devRuntime.Server;
                 await devServer.StartAsync(cancellationToken);
@@ -488,6 +506,45 @@ static bool TryResolveOutputDirectoryForCommand(
         Console.Error.WriteLine(exception.Message);
         Environment.ExitCode = 1;
         outputDirectory = string.Empty;
+        return false;
+    }
+}
+
+static bool TryResolveDevServerOptionsForCommand(string[] args, out DevServerOptions options)
+{
+    try
+    {
+        options = DevServerOptionsParser.Parse(args);
+        return true;
+    }
+    catch (InvalidOperationException exception)
+    {
+        Console.Error.WriteLine(exception.Message);
+        Environment.ExitCode = 1;
+        options = new DevServerOptions();
+        return false;
+    }
+}
+
+static bool TryResolvePreviewPortForCommand(string[] args, out int port)
+{
+    var portValue = GetOptionValue(args, "--dev-port");
+    if (portValue is null)
+    {
+        port = 4173;
+        return true;
+    }
+
+    try
+    {
+        port = DevServerOptionsParser.ParsePortOption("--dev-port", portValue);
+        return true;
+    }
+    catch (InvalidOperationException exception)
+    {
+        Console.Error.WriteLine(exception.Message);
+        Environment.ExitCode = 1;
+        port = 4173;
         return false;
     }
 }

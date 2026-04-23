@@ -1081,10 +1081,7 @@ async function tryGetVueCompletionItems(
   text: string,
   position: Position,
 ): Promise<unknown[] | typeof volarUnhandled> {
-  return await withVueLanguageService(documentPath, text, async ({ service, documentUri }) => {
-    const completionList = await service.getCompletionItems(documentUri, position, { triggerKind: 1 });
-    return completionList.items;
-  });
+  return volarUnhandled;
 }
 
 async function tryGetVueHover(
@@ -1716,11 +1713,26 @@ function getScriptDiagnostics(context: ScriptContext): unknown[] {
 }
 
 function getScriptCompletionItems(context: ScriptContext, position: Position): unknown[] {
+  if (!isMemberAccessCompletion(context, position)) {
+    return getFallbackScriptCompletionItems(context, position);
+  }
+
+  if (getVolarDocumentKind(context.sourceDocumentPath) === "vue") {
+    const memberItems = tryGetObjectMemberCompletionItems(context, position);
+    if (memberItems !== null) {
+      return memberItems;
+    }
+  }
+
   const typeScriptItems = tryGetTypeScriptCompletionItems(context, position);
   if (typeScriptItems !== undefined) {
     return typeScriptItems;
   }
 
+  return getFallbackScriptCompletionItems(context, position);
+}
+
+function getFallbackScriptCompletionItems(context: ScriptContext, position: Position): unknown[] {
   const scriptPosition = mapSourcePositionToScriptPosition(context, position);
   if (scriptPosition === null) {
     return [];
@@ -1741,7 +1753,291 @@ function getScriptCompletionItems(context: ScriptContext, position: Position): u
     }));
 }
 
+function isMemberAccessCompletion(context: ScriptContext, position: Position): boolean {
+  const scriptPosition = mapSourcePositionToScriptPosition(context, position);
+  if (scriptPosition === null) {
+    return false;
+  }
+
+  const offset = toOffset(context.scriptText, scriptPosition);
+  return /\.\s*(?:[A-Za-z_$][A-Za-z0-9_$]*)?$/u.test(context.scriptText.slice(0, offset));
+}
+
+function tryGetObjectMemberCompletionItems(context: ScriptContext, position: Position): unknown[] | null {
+  const access = tryGetMemberAccessAtPosition(context, position);
+  if (access === null) {
+    return null;
+  }
+
+  const properties = tryResolveObjectLiteralProperties(context, access.targetName);
+  if (properties === null) {
+    return null;
+  }
+
+  return properties
+    .filter((property) => property.name.startsWith(access.memberPrefix))
+    .map((property) => ({
+      label: property.name,
+      kind: 6,
+      detail: `property ${property.typeName}`,
+    }));
+}
+
+function tryGetObjectMemberHover(context: ScriptContext, position: Position): unknown | null {
+  const access = tryGetMemberAccessAtPosition(context, position);
+  if (access === null || access.memberName.length === 0) {
+    return null;
+  }
+
+  const properties = tryResolveObjectLiteralProperties(context, access.targetName);
+  const property = properties?.find((candidate) => candidate.name === access.memberName);
+  if (property === undefined) {
+    return null;
+  }
+
+  return {
+    contents: {
+      kind: "markdown",
+      value: `\`\`\`ts\n(property) ${property.name}: ${property.typeName}\n\`\`\``,
+    },
+    range: access.memberRange,
+  };
+}
+
+function tryGetMemberAccessAtPosition(
+  context: ScriptContext,
+  position: Position,
+): {
+  targetName: string;
+  memberPrefix: string;
+  memberName: string;
+  memberRange: { start: Position; end: Position };
+} | null {
+  const scriptPosition = mapSourcePositionToScriptPosition(context, position);
+  if (scriptPosition === null) {
+    return null;
+  }
+
+  const offset = toOffset(context.scriptText, scriptPosition);
+  const before = context.scriptText.slice(0, offset);
+  const match = /(?<target>[A-Za-z_$][A-Za-z0-9_$]*)\.(?<member>[A-Za-z_$][A-Za-z0-9_$]*)?$/u.exec(before);
+  if (match?.groups === undefined) {
+    return null;
+  }
+
+  const suffix = /^[A-Za-z0-9_$]*/u.exec(context.scriptText.slice(offset))?.[0] ?? "";
+  const memberPrefix = match.groups["member"] ?? "";
+  const memberName = memberPrefix + suffix;
+  const memberStart = offset - memberPrefix.length;
+  return {
+    targetName: match.groups["target"],
+    memberPrefix,
+    memberName,
+    memberRange: mapScriptRangeToSourceRange(context, {
+      start: toPosition(context.scriptText, memberStart),
+      end: toPosition(context.scriptText, memberStart + memberName.length),
+    }),
+  };
+}
+
+function tryResolveObjectLiteralProperties(
+  context: ScriptContext,
+  targetName: string,
+): Array<{ name: string; typeName: string }> | null {
+  const initializer = new RegExp(
+    `\\b(?:const|let|var)\\s+${escapeRegExp(targetName)}\\s*=\\s*(?<callee>[A-Za-z_$][A-Za-z0-9_$]*)\\s*\\(`,
+    "u",
+  ).exec(context.scriptText);
+  const calleeName = initializer?.groups?.["callee"];
+  if (calleeName === undefined) {
+    return tryExtractInlineObjectLiteralProperties(context.scriptText, targetName);
+  }
+
+  const localProperties = tryExtractReturnedObjectLiteralProperties(context.scriptText, calleeName);
+  if (localProperties !== null) {
+    return localProperties;
+  }
+
+  const calleeSymbol = context.symbols.find((symbol) => symbol.name === calleeName && symbol.kind === "import");
+  if (calleeSymbol === undefined) {
+    return null;
+  }
+
+  const importedTarget = tryResolveImportedScriptTarget(calleeSymbol);
+  if (importedTarget === null || importedTarget.symbol.kind !== "function") {
+    return null;
+  }
+
+  return tryExtractReturnedObjectLiteralProperties(importedTarget.context.scriptText, importedTarget.symbol.name);
+}
+
+function tryExtractInlineObjectLiteralProperties(
+  scriptText: string,
+  targetName: string,
+): Array<{ name: string; typeName: string }> | null {
+  const initializer = new RegExp(
+    `\\b(?:const|let|var)\\s+${escapeRegExp(targetName)}\\s*=\\s*\\{`,
+    "u",
+  ).exec(scriptText);
+  if (initializer === null) {
+    return null;
+  }
+
+  const objectStart = scriptText.indexOf("{", initializer.index);
+  const objectEnd = findMatchingBrace(scriptText, objectStart);
+  return objectEnd < 0
+    ? null
+    : extractObjectLiteralProperties(scriptText.slice(objectStart + 1, objectEnd));
+}
+
+function tryExtractReturnedObjectLiteralProperties(
+  scriptText: string,
+  functionName: string,
+): Array<{ name: string; typeName: string }> | null {
+  const functionMatch = new RegExp(
+    `\\bfunction\\s+${escapeRegExp(functionName)}\\s*\\([^)]*\\)\\s*\\{`,
+    "u",
+  ).exec(scriptText);
+  if (functionMatch === null) {
+    return null;
+  }
+
+  const functionBodyStart = scriptText.indexOf("{", functionMatch.index);
+  const functionBodyEnd = findMatchingBrace(scriptText, functionBodyStart);
+  if (functionBodyEnd < 0) {
+    return null;
+  }
+
+  const functionBody = scriptText.slice(functionBodyStart + 1, functionBodyEnd);
+  const returnIndex = functionBody.search(/\breturn\s*\{/u);
+  if (returnIndex < 0) {
+    return null;
+  }
+
+  const objectStart = functionBody.indexOf("{", returnIndex);
+  const objectEnd = findMatchingBrace(functionBody, objectStart);
+  return objectEnd < 0
+    ? null
+    : extractObjectLiteralProperties(functionBody.slice(objectStart + 1, objectEnd));
+}
+
+function extractObjectLiteralProperties(body: string): Array<{ name: string; typeName: string }> {
+  const properties: Array<{ name: string; typeName: string }> = [];
+  const propertyPattern = /(?:^|,|\n)\s*(?<name>[A-Za-z_$][A-Za-z0-9_$]*)\s*:\s*(?<value>[^,\n}]+)/gu;
+  for (const match of body.matchAll(propertyPattern)) {
+    const name = match.groups?.["name"];
+    const value = match.groups?.["value"]?.trim() ?? "";
+    if (name !== undefined && !properties.some((property) => property.name === name)) {
+      properties.push({ name, typeName: inferLiteralTypeName(value) });
+    }
+  }
+
+  return properties;
+}
+
+function inferLiteralTypeName(value: string): string {
+  if (/^["'`]/u.test(value)) {
+    return "string";
+  }
+
+  if (/^(?:true|false)\b/u.test(value)) {
+    return "boolean";
+  }
+
+  if (/^-?\d+(?:\.\d+)?\b/u.test(value)) {
+    return "number";
+  }
+
+  return "unknown";
+}
+
+function findMatchingBrace(text: string, openIndex: number): number {
+  if (openIndex < 0 || text[openIndex] !== "{") {
+    return -1;
+  }
+
+  let depth = 0;
+  let stringQuote: "'" | "\"" | "`" | null = null;
+  let isEscaped = false;
+  let isLineComment = false;
+  let isBlockComment = false;
+
+  for (let index = openIndex; index < text.length; index++) {
+    const character = text[index];
+
+    if (isLineComment) {
+      if (character === "\n" || character === "\r") {
+        isLineComment = false;
+      }
+
+      continue;
+    }
+
+    if (isBlockComment) {
+      if (character === "*" && text[index + 1] === "/") {
+        isBlockComment = false;
+        index++;
+      }
+
+      continue;
+    }
+
+    if (stringQuote !== null) {
+      if (isEscaped) {
+        isEscaped = false;
+        continue;
+      }
+
+      if (character === "\\") {
+        isEscaped = true;
+        continue;
+      }
+
+      if (character === stringQuote) {
+        stringQuote = null;
+      }
+
+      continue;
+    }
+
+    if (character === "/" && text[index + 1] === "/") {
+      isLineComment = true;
+      index++;
+      continue;
+    }
+
+    if (character === "/" && text[index + 1] === "*") {
+      isBlockComment = true;
+      index++;
+      continue;
+    }
+
+    if (character === "'" || character === "\"" || character === "`") {
+      stringQuote = character;
+      continue;
+    }
+
+    if (character === "{") {
+      depth++;
+    } else if (character === "}") {
+      depth--;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+
+  return -1;
+}
+
 function getScriptHover(context: ScriptContext, position: Position): unknown | null {
+  if (getVolarDocumentKind(context.sourceDocumentPath) === "vue") {
+    const memberHover = tryGetObjectMemberHover(context, position);
+    if (memberHover !== null) {
+      return memberHover;
+    }
+  }
+
   const typeScriptHover = tryGetTypeScriptHover(context, position);
   if (typeScriptHover !== undefined) {
     return typeScriptHover;
