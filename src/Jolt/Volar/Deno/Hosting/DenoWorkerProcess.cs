@@ -256,11 +256,7 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
 
             try
             {
-                if (!_process.HasExited)
-                {
-                    _process.Kill(entireProcessTree: true);
-                    await _process.WaitForExitAsync(cancellationToken);
-                }
+                await TerminateProcessIfRunningAsync(_process, cancellationToken);
             }
             finally
             {
@@ -278,6 +274,49 @@ internal sealed class DenoWorkerProcess : IDenoWorkerProcess
         finally
         {
             _lifecycleGate.Release();
+        }
+    }
+
+    private static async Task TerminateProcessIfRunningAsync(
+        Process process,
+        CancellationToken cancellationToken)
+    {
+        if (HasExitedOrDetached(process))
+        {
+            return;
+        }
+
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch (InvalidOperationException) when (HasExitedOrDetached(process))
+        {
+            return;
+        }
+        catch (Win32Exception) when (HasExitedOrDetached(process))
+        {
+            return;
+        }
+
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (InvalidOperationException) when (HasExitedOrDetached(process))
+        {
+        }
+    }
+
+    private static bool HasExitedOrDetached(Process process)
+    {
+        try
+        {
+            return process.HasExited;
+        }
+        catch (InvalidOperationException)
+        {
+            return true;
         }
     }
 

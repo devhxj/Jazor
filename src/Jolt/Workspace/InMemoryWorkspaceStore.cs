@@ -6,7 +6,7 @@ namespace Jolt.Workspace;
 public sealed class InMemoryWorkspaceStore : IJoltWorkspaceStore
 {
     private readonly ConcurrentDictionary<string, DocumentSnapshot> _documents =
-        new(StringComparer.OrdinalIgnoreCase);
+        new(WorkspacePathComparison.StringComparer);
 
     public ValueTask<DocumentSnapshot?> GetDocumentAsync(
         string documentPath,
@@ -43,7 +43,7 @@ public sealed class InMemoryWorkspaceStore : IJoltWorkspaceStore
         cancellationToken.ThrowIfCancellationRequested();
 
         IReadOnlyList<DocumentSnapshot> documents = _documents.Values
-            .OrderBy(static document => document.DocumentPath, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static document => document.DocumentPath, WorkspacePathComparison.StringComparer)
             .ToArray();
 
         return ValueTask.FromResult(documents);

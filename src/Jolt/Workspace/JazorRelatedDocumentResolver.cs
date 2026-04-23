@@ -37,7 +37,7 @@ internal sealed class JazorRelatedDocumentResolver
             cancellationToken);
 
         var documents = new List<DocumentSnapshot>();
-        var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seenPaths = new HashSet<string>(WorkspacePathComparison.StringComparer);
 
         foreach (var candidatePath in candidatePaths)
         {
@@ -81,7 +81,7 @@ internal sealed class JazorRelatedDocumentResolver
             if (string.Equals(
                     JoltWorkspaceResolver.NormalizePath(relatedPath),
                     normalizedCandidatePath,
-                    StringComparison.OrdinalIgnoreCase))
+                    WorkspacePathComparison.StringComparison))
             {
                 return true;
             }
@@ -104,7 +104,7 @@ internal sealed class JazorRelatedDocumentResolver
     {
         var parsed = JazorVueParser.Parse(jazorDocument.DocumentPath, jazorDocument.Text);
         openDocuments ??= await _workspaceStore.GetOpenDocumentsAsync(cancellationToken);
-        var candidatePaths = new LinkedHashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var candidatePaths = new LinkedHashSet<string>(WorkspacePathComparison.StringComparer);
 
         foreach (var explicitPath in explicitPaths)
         {

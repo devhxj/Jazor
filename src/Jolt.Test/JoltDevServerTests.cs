@@ -503,6 +503,58 @@ public sealed class JoltDevServerTests
     }
 
     [TestMethod]
+    public async Task DevServerProxy_TryProxyAsync_WhenHttpUpstreamUnavailable_ReturnsBadGateway()
+    {
+        using var proxy = new DevServerProxy(
+            new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["/api"] = new()
+                {
+                    Target = "http://upstream.test"
+                }
+            },
+            new FailingHttpMessageHandler(new HttpRequestException("connection refused")));
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Path = "/api/todos";
+        context.Response.Body = new MemoryStream();
+
+        var proxied = await proxy.TryProxyAsync(context);
+
+        Assert.IsTrue(proxied);
+        Assert.AreEqual(StatusCodes.Status502BadGateway, context.Response.StatusCode);
+        context.Response.Body.Position = 0;
+        using var reader = new StreamReader(context.Response.Body);
+        StringAssert.Contains(await reader.ReadToEndAsync(), "Upstream proxy request failed.");
+    }
+
+    [TestMethod]
+    public async Task DevServerProxy_TryProxyAsync_WhenWebSocketUpstreamHandshakeFails_ReturnsBadGateway()
+    {
+        var unavailablePort = GetFreePort();
+        using var proxy = new DevServerProxy(
+            new Dictionary<string, ProxyTarget>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["/ws"] = new()
+                {
+                    Target = $"http://127.0.0.1:{unavailablePort}",
+                    WebSocket = true
+                }
+            });
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Path = "/ws/chat";
+        context.Request.Headers.Connection = "Upgrade";
+        context.Request.Headers.Upgrade = "websocket";
+        context.Response.Body = new MemoryStream();
+
+        var proxied = await proxy.TryProxyAsync(context);
+
+        Assert.IsTrue(proxied);
+        Assert.AreEqual(StatusCodes.Status502BadGateway, context.Response.StatusCode);
+    }
+
+    [TestMethod]
     public async Task DevServerProxy_TryProxyAsync_WhenNoRuleMatches_ReturnsFalse()
     {
         var handler = new CapturingHttpMessageHandler();
@@ -8756,6 +8808,14 @@ public sealed class JoltDevServerTests
                 }
             };
         }
+    }
+
+    private sealed class FailingHttpMessageHandler(Exception exception) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+            => Task.FromException<HttpResponseMessage>(exception);
     }
 
     private sealed record UpstreamRequestSnapshot(

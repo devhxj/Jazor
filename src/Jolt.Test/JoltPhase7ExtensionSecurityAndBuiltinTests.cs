@@ -422,6 +422,40 @@ public sealed class JoltPhase7ExtensionSecurityAndBuiltinTests
     }
 
     [TestMethod]
+    public async Task ExtensionLoader_LoadUserExtensionsAsync_WhenRootEnumerationFails_ReportsWarningAndContinues()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), "JoltExtensionLoaderTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(rootDirectory);
+        try
+        {
+            var extensionRoot = Path.Combine(rootDirectory, ".jazor", "extensions");
+            Directory.CreateDirectory(extensionRoot);
+            var loadEvents = new List<ExtensionLoadInvocation>();
+            var registry = new ExtensionRegistry();
+            await using var loader = new ExtensionLoader(
+                registry,
+                loadEvents.Add,
+                _ => throw new IOException("extensions root disappeared"));
+
+            await loader.LoadUserExtensionsAsync(
+                CreateHostOptions(rootDirectory, extensionRoot),
+                CancellationToken.None);
+
+            Assert.AreEqual(0, registry.GetExtensions().Count);
+            Assert.AreEqual(1, loadEvents.Count);
+            Assert.AreEqual(ExtensionLoadStatus.Failed, loadEvents[0].Status);
+            StringAssert.Contains(loadEvents[0].Reason, "extensions root enumeration failed");
+        }
+        finally
+        {
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task ExtensionLoader_LoadUserExtensionsAsync_WithLegacyManifestVersion0_MigratesAndLoadsExtension()
     {
         var sandbox = CreateExtensionSandbox();

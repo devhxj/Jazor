@@ -13,12 +13,12 @@ internal static class JoltWorkspaceResolver
     private const int MaxWorkspaceCacheEntries = 1000;
     private const int MaxSolutionProjectRootCacheEntries = 128;
     private const int MaxPathSegmentDepth = 256;
-    private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, string[]> WorkspaceFileCache = new(WorkspacePathComparison.StringComparer);
     private static readonly object WorkspaceFileCacheSync = new();
-    private static readonly Dictionary<string, long> WorkspaceFileCacheAges = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly ConcurrentDictionary<string, string[]> SolutionProjectRootCache = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, long> WorkspaceFileCacheAges = new(WorkspacePathComparison.StringComparer);
+    private static readonly ConcurrentDictionary<string, string[]> SolutionProjectRootCache = new(WorkspacePathComparison.StringComparer);
     private static readonly object SolutionProjectRootCacheSync = new();
-    private static readonly Dictionary<string, long> SolutionProjectRootCacheAges = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, long> SolutionProjectRootCacheAges = new(WorkspacePathComparison.StringComparer);
     private static readonly AsyncLocal<string[]?> WorkspaceFolderRoots = new();
     private static readonly string[] WorkspaceBoundaryDirectories =
     [
@@ -55,7 +55,7 @@ internal static class JoltWorkspaceResolver
         var normalizedRoots = workspaceFolderRoots
             .Where(static root => !string.IsNullOrWhiteSpace(root))
             .Select(root => Path.GetFullPath(root))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Distinct(WorkspacePathComparison.StringComparer)
             .ToArray();
         WorkspaceFolderRoots.Value = normalizedRoots.Length == 0
             ? null
@@ -214,7 +214,7 @@ internal static class JoltWorkspaceResolver
         if (Path.IsPathRooted(documentPath))
         {
             var fullPath = Path.GetFullPath(documentPath);
-            if (!string.Equals(documentPath, fullPath, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(documentPath, fullPath, WorkspacePathComparison.StringComparison))
             {
                 yield return fullPath;
             }
@@ -351,7 +351,7 @@ internal static class JoltWorkspaceResolver
 
     public static IEnumerable<string> GetNearbyVueSearchDirectories(string documentDirectory)
     {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(WorkspacePathComparison.StringComparer);
         var parentDirectory = GetParentDirectoryPath(documentDirectory);
         foreach (var directory in new[]
                  {
@@ -425,7 +425,7 @@ internal static class JoltWorkspaceResolver
                     && string.Equals(
                         NormalizePath(openDocument.DocumentPath),
                         expectedPath,
-                        StringComparison.OrdinalIgnoreCase));
+                        WorkspacePathComparison.StringComparison));
                 if (tracked is not null)
                 {
                     resolvedComponent = new WorkspaceVueComponentResolution(
@@ -522,7 +522,7 @@ internal static class JoltWorkspaceResolver
             yield break;
         }
 
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var directory in GetNearbyVueSearchDirectories(documentDirectory))
         {
             if (!Directory.Exists(directory))
@@ -635,7 +635,7 @@ internal static class JoltWorkspaceResolver
             return string.Equals(
                 NormalizeComparablePath(primaryDocumentPath),
                 NormalizeComparablePath(candidateDocumentPath),
-                StringComparison.OrdinalIgnoreCase);
+                WorkspacePathComparison.StringComparison);
         }
 
         return IsPathWithinWorkspaceRoot(candidateDocumentPath, primaryProjectRoot);
@@ -652,7 +652,7 @@ internal static class JoltWorkspaceResolver
             yield break;
         }
 
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var filePath in EnumerateWorkspaceFiles(
                      GetWorkspaceSearchRoots(documentPath, secondaryDocumentPath: null, openDocuments),
                      "*.vue",
@@ -715,7 +715,7 @@ internal static class JoltWorkspaceResolver
         IReadOnlyList<DocumentSnapshot> openDocuments)
     {
         var directories = new List<string>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var seen = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var path in new[] { documentPath, secondaryDocumentPath }
                      .Concat(openDocuments
                          .Where(static document => document.DocumentKind is DocumentKind.Jazor or DocumentKind.CSharp or DocumentKind.Vue)
@@ -768,7 +768,7 @@ internal static class JoltWorkspaceResolver
             yield break;
         }
 
-        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var emitted = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var directory in directories)
         {
             foreach (var ancestor in EnumerateSearchAncestors(directory))
@@ -788,7 +788,7 @@ internal static class JoltWorkspaceResolver
         var normalizedFolderRoots = workspaceFolderRoots
             .Where(static root => !string.IsNullOrWhiteSpace(root))
             .Select(static root => Path.GetFullPath(root))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Distinct(WorkspacePathComparison.StringComparer)
             .ToArray();
         if (normalizedFolderRoots.Length == 0)
         {
@@ -815,7 +815,7 @@ internal static class JoltWorkspaceResolver
         if (!string.IsNullOrWhiteSpace(primaryRoot))
         {
             boundedDirectories = boundedDirectories
-                .Where(item => string.Equals(item.Root, primaryRoot, StringComparison.OrdinalIgnoreCase))
+                .Where(item => string.Equals(item.Root, primaryRoot, WorkspacePathComparison.StringComparison))
                 .ToArray();
         }
 
@@ -842,7 +842,7 @@ internal static class JoltWorkspaceResolver
             }
         }
 
-        var emitted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var emitted = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var bounded in boundedDirectories)
         {
             foreach (var ancestor in EnumerateSearchAncestors(bounded.Directory, bounded.Root))
@@ -856,7 +856,7 @@ internal static class JoltWorkspaceResolver
 
         var relevantRoots = boundedDirectories
             .Select(static item => item.Root)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Distinct(WorkspacePathComparison.StringComparer)
             .ToArray();
         foreach (var root in relevantRoots)
         {
@@ -872,7 +872,7 @@ internal static class JoltWorkspaceResolver
         string searchPattern,
         CancellationToken cancellationToken)
     {
-        var visitedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visitedFiles = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var searchRoot in searchRoots)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -924,7 +924,7 @@ internal static class JoltWorkspaceResolver
                 string.Equals(
                     NormalizePath(document.DocumentPath),
                     normalizedProbePath,
-                    StringComparison.OrdinalIgnoreCase));
+                    WorkspacePathComparison.StringComparison));
             if (trackedDocument is not null)
             {
                 return trackedDocument;
@@ -1002,8 +1002,8 @@ internal static class JoltWorkspaceResolver
             return Array.Empty<string>();
         }
 
-        var visitedDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var visitedFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visitedDirectories = new HashSet<string>(WorkspacePathComparison.StringComparer);
+        var visitedFiles = new HashSet<string>(WorkspacePathComparison.StringComparer);
         var results = new List<string>();
         var pendingDirectories = new Stack<string>();
         pendingDirectories.Push(searchRoot);
@@ -1093,14 +1093,14 @@ internal static class JoltWorkspaceResolver
                 break;
             }
 
-            if (string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(current, Path.GetPathRoot(current), WorkspacePathComparison.StringComparison))
             {
                 yield break;
             }
 
             yield return current;
             if (normalizedStopAt is not null
-                && string.Equals(normalizedCurrent, normalizedStopAt, StringComparison.OrdinalIgnoreCase))
+                && string.Equals(normalizedCurrent, normalizedStopAt, WorkspacePathComparison.StringComparison))
             {
                 emittedStopDirectory = true;
                 yield break;
@@ -1118,7 +1118,7 @@ internal static class JoltWorkspaceResolver
 
             var parent = Directory.GetParent(current)?.FullName;
             if (string.IsNullOrWhiteSpace(parent)
-                || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+                || string.Equals(parent, current, WorkspacePathComparison.StringComparison))
             {
                 yield break;
             }
@@ -1149,7 +1149,7 @@ internal static class JoltWorkspaceResolver
             }
         }
 
-        return string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase)
+        return string.Equals(current, Path.GetPathRoot(current), WorkspacePathComparison.StringComparison)
             ? null
             : current;
     }
@@ -1159,11 +1159,11 @@ internal static class JoltWorkspaceResolver
         var candidate = Path.GetFullPath(left);
         var normalizedRight = NormalizePath(right);
         while (!string.IsNullOrWhiteSpace(candidate)
-               && !string.Equals(candidate, Path.GetPathRoot(candidate), StringComparison.OrdinalIgnoreCase))
+               && !string.Equals(candidate, Path.GetPathRoot(candidate), WorkspacePathComparison.StringComparison))
         {
             var normalizedCandidate = NormalizePath(candidate);
-            if (normalizedRight.StartsWith(normalizedCandidate + "/", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(normalizedRight, normalizedCandidate, StringComparison.OrdinalIgnoreCase))
+            if (normalizedRight.StartsWith(normalizedCandidate + "/", WorkspacePathComparison.StringComparison)
+                || string.Equals(normalizedRight, normalizedCandidate, WorkspacePathComparison.StringComparison))
             {
                 return candidate;
             }
@@ -1238,14 +1238,14 @@ internal static class JoltWorkspaceResolver
                 return Path.GetFullPath(current);
             }
 
-            if (string.Equals(current, Path.GetPathRoot(current), StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(current, Path.GetPathRoot(current), WorkspacePathComparison.StringComparison))
             {
                 break;
             }
 
             var parent = Directory.GetParent(current)?.FullName;
             if (string.IsNullOrWhiteSpace(parent)
-                || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+                || string.Equals(parent, current, WorkspacePathComparison.StringComparison))
             {
                 break;
             }
@@ -1292,7 +1292,7 @@ internal static class JoltWorkspaceResolver
         }
 
         // 以 solution 根为粒度缓存项目目录，避免高频 LSP 请求反复解析 `slnx`。
-        var projectRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var projectRoots = new HashSet<string>(WorkspacePathComparison.StringComparer);
         foreach (var solutionPath in SafeEnumerate(Directory.EnumerateFiles(solutionRoot, "*.slnx", SearchOption.TopDirectoryOnly)))
         {
             foreach (var projectRoot in ReadSlnxProjectRoots(solutionPath))
@@ -1302,7 +1302,7 @@ internal static class JoltWorkspaceResolver
         }
 
         return projectRoots
-            .OrderBy(static root => root, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static root => root, WorkspacePathComparison.StringComparer)
             .ToArray();
     }
 
@@ -1608,10 +1608,10 @@ internal static class JoltWorkspaceResolver
         return string.Equals(
                    comparableRoot,
                    normalizedSystemTemp,
-                   StringComparison.OrdinalIgnoreCase)
+                   WorkspacePathComparison.StringComparison)
                || normalizedSystemTemp.StartsWith(
                    comparableRoot + "/",
-                   StringComparison.OrdinalIgnoreCase);
+                   WorkspacePathComparison.StringComparison);
     }
 
     private static bool SafeFileExists(string filePath)
@@ -1640,7 +1640,7 @@ internal static class JoltWorkspaceResolver
             return false;
         }
 
-        if (!normalizedDirectory.StartsWith(normalizedSystemTemp + "/", StringComparison.OrdinalIgnoreCase))
+        if (!normalizedDirectory.StartsWith(normalizedSystemTemp + "/", WorkspacePathComparison.StringComparison))
         {
             return false;
         }
@@ -1651,8 +1651,8 @@ internal static class JoltWorkspaceResolver
     }
 
     private static bool PathMatchesOrContains(string left, string right)
-        => string.Equals(left, right, StringComparison.OrdinalIgnoreCase)
-            || left.StartsWith(right + "/", StringComparison.OrdinalIgnoreCase);
+        => string.Equals(left, right, WorkspacePathComparison.StringComparison)
+            || left.StartsWith(right + "/", WorkspacePathComparison.StringComparison);
 
     private static IEnumerable<string> SafeEnumerate(IEnumerable<string> values)
     {

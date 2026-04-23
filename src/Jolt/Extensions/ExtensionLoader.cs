@@ -19,6 +19,7 @@ internal sealed class ExtensionLoader : IAsyncDisposable
 
     private readonly IExtensionRegistry _registry;
     private readonly Action<ExtensionLoadInvocation>? _loadEventSink;
+    private readonly Func<string, IEnumerable<string>> _userExtensionDirectoryEnumerator;
     private readonly Lock _stateGate = new();
     private readonly List<LoadedExtensionState> _loadedExtensions = [];
 
@@ -26,10 +27,12 @@ internal sealed class ExtensionLoader : IAsyncDisposable
 
     public ExtensionLoader(
         IExtensionRegistry registry,
-        Action<ExtensionLoadInvocation>? loadEventSink = null)
+        Action<ExtensionLoadInvocation>? loadEventSink = null,
+        Func<string, IEnumerable<string>>? userExtensionDirectoryEnumerator = null)
     {
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _loadEventSink = loadEventSink;
+        _userExtensionDirectoryEnumerator = userExtensionDirectoryEnumerator ?? Directory.EnumerateDirectories;
     }
 
     public async ValueTask LoadBuiltinExtensionsAsync(
@@ -92,10 +95,48 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             return;
         }
 
-        foreach (var extensionDirectory in Directory.EnumerateDirectories(options.ExtensionsDirectory))
+        foreach (var extensionDirectory in SafeEnumerateUserExtensionDirectories(options.ExtensionsDirectory))
         {
             cancellationToken.ThrowIfCancellationRequested();
             await LoadUserExtensionFromDirectoryAsync(options, extensionDirectory, cancellationToken);
+        }
+    }
+
+    private IEnumerable<string> SafeEnumerateUserExtensionDirectories(string extensionsDirectory)
+    {
+        IEnumerator<string>? enumerator = null;
+        try
+        {
+            enumerator = _userExtensionDirectoryEnumerator(extensionsDirectory).GetEnumerator();
+        }
+        catch (Exception ex) when (IsUserExtensionRootEnumerationFailure(ex))
+        {
+            ReportUserExtensionRootEnumerationFailure(extensionsDirectory, ex);
+            yield break;
+        }
+
+        using (enumerator)
+        {
+            while (true)
+            {
+                string extensionDirectory;
+                try
+                {
+                    if (!enumerator.MoveNext())
+                    {
+                        yield break;
+                    }
+
+                    extensionDirectory = enumerator.Current;
+                }
+                catch (Exception ex) when (IsUserExtensionRootEnumerationFailure(ex))
+                {
+                    ReportUserExtensionRootEnumerationFailure(extensionsDirectory, ex);
+                    yield break;
+                }
+
+                yield return extensionDirectory;
+            }
         }
     }
 
@@ -1170,6 +1211,23 @@ internal sealed class ExtensionLoader : IAsyncDisposable
             // Ignore sink errors to keep extension loading isolated from telemetry output.
         }
     }
+
+    private void ReportUserExtensionRootEnumerationFailure(string extensionsDirectory, Exception exception)
+        => ReportLoad(
+            extensionId: "user.extensions",
+            source: UserSource,
+            extensionDirectory: extensionsDirectory,
+            manifestPath: null,
+            assemblyPath: null,
+            status: ExtensionLoadStatus.Failed,
+            reason: $"extensions root enumeration failed: {exception.Message}");
+
+    private static bool IsUserExtensionRootEnumerationFailure(Exception exception)
+        => exception is DirectoryNotFoundException
+            or IOException
+            or UnauthorizedAccessException
+            or ArgumentException
+            or NotSupportedException;
 
     private void ThrowIfDisposed()
     {

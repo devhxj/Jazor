@@ -69,6 +69,41 @@ public sealed class JoltDenoWorkerProcessConcurrencyTests
         }
     }
 
+    [TestMethod]
+    public async Task Jolt_DenoWorkerProcess_StopAsync_WhenWorkerAlreadyExited_CleansUpWithoutThrowing()
+    {
+        var tempDirectory = CreateTemporaryDirectory();
+        var scriptPath = Path.Combine(tempDirectory, "exit-worker.ts");
+        await File.WriteAllTextAsync(scriptPath, "Deno.exit(0);");
+
+        var executablePath = DenoRuntimeAssetResolver.ResolveBundledExecutablePath();
+        if (!File.Exists(executablePath))
+        {
+            Assert.Inconclusive($"Bundled Deno runtime was not found at '{executablePath}'.");
+        }
+
+        var process = CreateWorkerProcess(
+            executablePath,
+            scriptPath,
+            Path.Combine(tempDirectory, "cache"),
+            Path.Combine(tempDirectory, "workspace"));
+
+        try
+        {
+            await process.StartAsync(CancellationToken.None);
+            await Task.Delay(250);
+
+            await process.StopAsync(CancellationToken.None);
+
+            Assert.IsFalse(process.IsRunning);
+        }
+        finally
+        {
+            await process.StopAsync(CancellationToken.None);
+            DeleteDirectoryIfExists(tempDirectory);
+        }
+    }
+
     private static string CreateTemporaryDirectory()
     {
         var path = Path.Combine(Path.GetTempPath(), $"jolt-deno-worker-concurrency-{Guid.NewGuid():N}");

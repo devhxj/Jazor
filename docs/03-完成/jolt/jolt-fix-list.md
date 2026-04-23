@@ -1,6 +1,6 @@
 # Jolt 实现代码修复清单
 
-> 审查日期：2026-04-21
+> 审查日期：2026-04-21（2026-04-23 补记增量问题）
 > 审查范围：`src/Jolt/` 全部模块（~100+ 源文件）
 > 审查维度：Bug、缺陷、不完整实现、缺失的错误处理、线程安全、资源泄漏、性能
 
@@ -11,10 +11,10 @@
 | 严重度 | 数量 | 说明 |
 |--------|------|------|
 | **Critical** | 18 | 必须修复，可能导致崩溃、数据丢失、安全漏洞 |
-| **High** | 36 | 应当修复，影响稳定性或正确性 |
-| **Medium** | 41 | 建议修复，影响性能、可维护性或可观测性 |
+| **High** | 35 | 应当修复，影响稳定性或正确性 |
+| **Medium** | 43 | 建议修复，影响性能、可维护性或可观测性 |
 | **Low** | 17 | 可延后，代码质量改进 |
-| **合计** | **112** | |
+| **合计** | **113** | |
 
 ---
 
@@ -125,6 +125,13 @@
 | H-32 | Extensions | `ExtensionSecurityPolicy.cs:397-401` | **SHA256 计算加载整个文件**：`File.ReadAllBytes` 将大型扩展程序全部加载到内存 | 已完成（2026-04-21 当前基线）：SHA256 改为 `FileStream` 流式计算 |
 | H-33 | Extensions | `ExtensionWorkerClient.cs:344-347` | **stderr 缓冲区可无限增长**：超过 8KB 阈值后才裁剪，快速输出时缓冲区可能远超限制 | 已完成（2026-04-21 本轮）：stderr 缓冲改为追加前裁剪并保留超长单行尾部，增长已被严格封顶 |
 
+### 2.6 增量问题
+
+| # | 模块 | 文件 | 问题 | 修复方向 |
+|---|------|------|------|----------|
+| H-34 | DevServer | `DevServer/Proxy/DevServerProxy.cs:81`, `DevServer/Proxy/DevServerProxy.cs:109`, `DevServer/DevHttpServer.cs:113` | **Dev proxy 上游不可达未收敛为受控 502/504**：HTTP 转发直接等待 `_httpClient.SendAsync(...)`，WebSocket 转发直接等待 `ConnectAsync(...)`，路由层直接等待 `_proxy.TryProxyAsync(context)`；`HttpRequestException`、连接超时和 WebSocket 握手失败可能穿透为未受控错误 | 已完成（2026-04-23 本轮）：proxy 边界已把上游连接失败收敛为 502、超时收敛为 504，并输出 `devProxyUpstreamFailure` 结构化错误；补充 HTTP upstream unavailable 与 WebSocket handshake failure 回归 |
+| H-35 | Frontend | `Volar/Deno/Hosting/DenoWorkerProcess.cs:245-262` | **DenoWorkerProcess.StopAsync 存在 HasExited -> Kill/WaitForExitAsync TOCTOU 竞态**：进程可能在 `HasExited` 判断后、`Kill` 或 `WaitForExitAsync` 前自行退出，导致停机路径抛出非预期异常或产生不稳定清理结果 | 已完成（2026-04-23 本轮）：StopAsync 现在基于本地 process 快照执行终止，并将进程已退出/已分离视为幂等成功路径；补充已退出 worker 清理回归 |
+
 ---
 
 ## 三、Medium（建议修复）
@@ -188,6 +195,14 @@
 | M-38 | DevServer | `DevServer/DevHttpServer.cs:214-227` | **静态文件缺少 MIME 类型验证**：仅按扩展名确定类型，不验证内容匹配 | 已处理（2026-04-21 本轮）：dev server 当前仅服务编译器已知文本模块，并新增 `X-Content-Type-Options: nosniff`；二进制资产签名校验不属于当前路由面的职责 |
 | M-39 | Workspace | `InMemoryWorkspaceStore.cs:8-9` | **快照不一致**：`GetOpenDocumentsAsync` 返回的有序快照在枚举期间可能不一致 | 已处理（2026-04-21 本轮）：该接口语义已明确为“调用时点有序快照”，后续变更不会回写到既有枚举结果，按设计接受 |
 | M-40 | SourceMap | `InMemorySourceMapService.cs:140-176` | **Parse 不验证数组长度**：`sourcesContent` 和 `sources` 长度不匹配时 `IndexOutOfRangeException` | 已完成（2026-04-21 当前基线）：`Parse` 现在先验证 `sourcesContent` 与 `sources` 长度一致 |
+
+### 3.5 增量问题
+
+| # | 模块 | 文件 | 问题 | 修复方向 |
+|---|------|------|------|----------|
+| M-41 | Workspace | `Workspace/InMemoryWorkspaceStore.cs:8`, `Workspace/InMemoryWorkspaceStore.cs:45`, `Workspace/InMemoryWorkspaceStore.cs:82`, `Workspace/JoltWorkspaceResolver.cs:16`, `Workspace/JoltWorkspaceResolver.cs:55`, `Workspace/JoltWorkspaceResolver.cs:217`, `Workspace/JoltWorkspaceResolver.cs:354` | **路径比较固定使用 OrdinalIgnoreCase**：文档存储、缓存、去重和路径相等判断大量按大小写不敏感处理；在 Linux/macOS 上 `Foo.jazor` 与 `foo.jazor` 会被覆盖、去重或错命中缓存 | 已完成（2026-04-23 本轮，当前生产仅 Windows）：新增 `WorkspacePathComparison`，workspace 存储、缓存、去重和包含关系统一走平台相关路径比较；Windows 保持忽略大小写，非 Windows 改为 `Ordinal` |
+| M-42 | Extensions | `Extensions/ExtensionLoader.cs:83`, `Extensions/ExtensionLoader.cs:95`, `Program.cs:294`, `Program.cs:305` | **用户扩展目录枚举失败没有隔离**：`LoadUserExtensionsAsync` 在 `Directory.Exists(...)` 后直接 `Directory.EnumerateDirectories(...)`，根目录枚举异常会沿启动链穿透到 `Program`，导致 LSP 启动失败 | 已完成（2026-04-23 本轮）：用户扩展根目录枚举改为 safe wrapper，目录消失、ACL/IO、非法路径等枚举失败降级为 `ExtensionLoadStatus.Failed` 记录并继续启动；补充 root enumeration failure 回归 |
+| M-43 | Lsp | `Lsp/StdioLspServer.cs:37`, `Lsp/StdioLspServer.cs:44`, `Lsp/StdioLspServer.cs:111`, `Lsp/StdioLspServer.cs:144`, `Lsp/StdioLspServer.cs:187` | **StdioLspServer 请求队列无界**：`Channel.CreateUnbounded<LspRequestMessage>` 允许客户端无限入队，`_requestExecutionGate` 只限制执行并发，不限制排队长度 | 已完成（2026-04-23 本轮）：请求通道改为有界队列，并增加 request admission gate 限制已接收未完成请求总量；过载请求返回 JSON-RPC `-32000` 并输出 `lspRequestQueueFull` warning，补充 burst/backpressure 回归 |
 
 ---
 

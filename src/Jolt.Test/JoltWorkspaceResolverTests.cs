@@ -10,6 +10,45 @@ namespace Jolt.Test;
 public sealed class JoltWorkspaceResolverTests
 {
     [TestMethod]
+    public void WorkspacePathComparison_ForCaseSensitivePlatform_DistinguishesPathCasing()
+    {
+        var comparer = WorkspacePathComparison.CreateStringComparer(isCaseSensitive: true);
+
+        Assert.IsFalse(comparer.Equals("Foo.jazor", "foo.jazor"));
+        Assert.AreEqual(StringComparison.Ordinal, WorkspacePathComparison.CreateStringComparison(isCaseSensitive: true));
+    }
+
+    [TestMethod]
+    public async Task InMemoryWorkspaceStore_PathCasingSemantics_FollowCurrentPlatformPolicy()
+    {
+        var store = new InMemoryWorkspaceStore();
+        var root = Path.Combine(Path.GetTempPath(), "JoltWorkspaceStoreTests", Guid.NewGuid().ToString("N"));
+        var upperPath = Path.Combine(root, "Foo.jazor");
+        var lowerPath = Path.Combine(root, "foo.jazor");
+
+        await store.UpsertDocumentAsync(
+            new DocumentSnapshot(upperPath, DocumentKind.Jazor, "upper", "1"),
+            CancellationToken.None);
+        await store.UpsertDocumentAsync(
+            new DocumentSnapshot(lowerPath, DocumentKind.Jazor, "lower", "2"),
+            CancellationToken.None);
+
+        var openDocuments = await store.GetOpenDocumentsAsync(CancellationToken.None);
+
+        if (WorkspacePathComparison.IsCaseSensitivePlatform)
+        {
+            Assert.AreEqual(2, openDocuments.Count);
+            CollectionAssert.AreEquivalent(
+                new[] { "upper", "lower" },
+                openDocuments.Select(static document => document.Text).ToArray());
+            return;
+        }
+
+        Assert.AreEqual(1, openDocuments.Count);
+        Assert.AreEqual("lower", openDocuments[0].Text);
+    }
+
+    [TestMethod]
     public void Jolt_WorkspaceResolver_RootedDocumentWithoutSlnx_DoesNotFallbackToConfiguredWorkspaceFolders()
     {
         var baseDirectory = CreateTemporaryDirectory();

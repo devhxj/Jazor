@@ -1,7 +1,9 @@
 using System.Net.Http.Headers;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
@@ -67,15 +69,69 @@ internal sealed class DevServerProxy : IDisposable
                     return false;
                 }
 
-                await ForwardWebSocketAsync(context, prefix, target);
+                await TryForwardWithFailureBoundaryAsync(
+                    context,
+                    target,
+                    "websocket",
+                    () => ForwardWebSocketAsync(context, prefix, target));
                 return true;
             }
 
-            await ForwardHttpAsync(context, prefix, target);
+            await TryForwardWithFailureBoundaryAsync(
+                context,
+                target,
+                "http",
+                () => ForwardHttpAsync(context, prefix, target));
             return true;
         }
 
         return false;
+    }
+
+    private static async Task TryForwardWithFailureBoundaryAsync(
+        HttpContext context,
+        ProxyTarget target,
+        string proxyKind,
+        Func<Task> forward)
+    {
+        try
+        {
+            await forward();
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException ex)
+        {
+            await WriteProxyFailureAsync(
+                context,
+                target,
+                proxyKind,
+                StatusCodes.Status504GatewayTimeout,
+                "Upstream proxy request timed out.",
+                ex);
+        }
+        catch (TimeoutException ex)
+        {
+            await WriteProxyFailureAsync(
+                context,
+                target,
+                proxyKind,
+                StatusCodes.Status504GatewayTimeout,
+                "Upstream proxy request timed out.",
+                ex);
+        }
+        catch (Exception ex) when (IsUpstreamConnectionFailure(ex))
+        {
+            await WriteProxyFailureAsync(
+                context,
+                target,
+                proxyKind,
+                StatusCodes.Status502BadGateway,
+                "Upstream proxy request failed.",
+                ex);
+        }
     }
 
     private async Task ForwardHttpAsync(
@@ -292,6 +348,59 @@ internal sealed class DevServerProxy : IDisposable
         var upgrade = request.Headers.Upgrade.ToString();
         return connection.Contains("Upgrade", StringComparison.OrdinalIgnoreCase)
             && string.Equals(upgrade, "websocket", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsUpstreamConnectionFailure(Exception exception)
+        => exception is HttpRequestException
+            or WebSocketException
+            or IOException
+            or SocketException;
+
+    private static async Task WriteProxyFailureAsync(
+        HttpContext context,
+        ProxyTarget target,
+        string proxyKind,
+        int statusCode,
+        string message,
+        Exception exception)
+    {
+        WriteProxyFailureLog(context, target, proxyKind, statusCode, exception);
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
+
+        context.Response.Clear();
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "text/plain; charset=utf-8";
+        await context.Response.WriteAsync(message, context.RequestAborted);
+    }
+
+    private static void WriteProxyFailureLog(
+        HttpContext context,
+        ProxyTarget target,
+        string proxyKind,
+        int statusCode,
+        Exception exception)
+    {
+        try
+        {
+            Console.Error.WriteLine(JsonSerializer.Serialize(new
+            {
+                eventType = "devProxyUpstreamFailure",
+                proxyKind,
+                requestPath = context.Request.Path.Value,
+                target = target.Target,
+                statusCode,
+                errorType = exception.GetType().FullName ?? exception.GetType().Name,
+                message = exception.Message,
+                timestamp = DateTimeOffset.UtcNow
+            }));
+        }
+        catch (Exception)
+        {
+            // Observability failures must not destabilize request handling.
+        }
     }
 
     private static void CopyResponseHeaders(

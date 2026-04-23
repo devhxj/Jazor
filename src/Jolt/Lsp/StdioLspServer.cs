@@ -6,9 +6,12 @@ namespace Jolt.Lsp;
 internal sealed class StdioLspServer
 {
     private const int MinimumDefaultMaxConcurrentRequests = 4;
+    private const int DefaultMaxQueuedRequests = 1024;
     private readonly LspSession _session;
     private readonly LspMessageWriter? _responseWriter;
     private readonly SemaphoreSlim _requestExecutionGate;
+    private readonly SemaphoreSlim _requestAdmissionGate;
+    private readonly int _requestQueueCapacity;
     private readonly Lock _requestGate = new();
     private readonly Lock _inFlightRequestTasksGate = new();
     private readonly Dictionary<string, CancellationTokenSource> _activeRequests = new(StringComparer.Ordinal);
@@ -18,7 +21,8 @@ internal sealed class StdioLspServer
     public StdioLspServer(
         LspSession session,
         LspMessageWriter? responseWriter = null,
-        int? maxConcurrentRequests = null)
+        int? maxConcurrentRequests = null,
+        int? maxQueuedRequests = null)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _responseWriter = responseWriter;
@@ -31,7 +35,18 @@ internal sealed class StdioLspServer
                 "The LSP server requires at least one concurrent request slot.");
         }
 
+        var effectiveMaxQueuedRequests = maxQueuedRequests ?? DefaultMaxQueuedRequests;
+        if (effectiveMaxQueuedRequests < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(maxQueuedRequests),
+                effectiveMaxQueuedRequests,
+                "The LSP server requires at least one queued request slot.");
+        }
+
+        _requestQueueCapacity = checked(effectiveMaxConcurrentRequests + effectiveMaxQueuedRequests);
         _requestExecutionGate = new SemaphoreSlim(effectiveMaxConcurrentRequests, effectiveMaxConcurrentRequests);
+        _requestAdmissionGate = new SemaphoreSlim(_requestQueueCapacity, _requestQueueCapacity);
     }
 
     public async ValueTask RunAsync(
@@ -41,10 +56,11 @@ internal sealed class StdioLspServer
     {
         var reader = new LspMessageReader(input);
         var writer = _responseWriter ?? new LspMessageWriter(output);
-        var queue = Channel.CreateUnbounded<LspRequestMessage>(new UnboundedChannelOptions
+        var queue = Channel.CreateBounded<LspRequestMessage>(new BoundedChannelOptions(_requestQueueCapacity)
         {
             SingleReader = true,
-            SingleWriter = true
+            SingleWriter = true,
+            FullMode = BoundedChannelFullMode.Wait
         });
         var workerTask = ProcessMessagesAsync(queue.Reader, writer, cancellationToken);
 
@@ -77,7 +93,49 @@ internal sealed class StdioLspServer
                     break;
                 }
 
-                await queue.Writer.WriteAsync(request, cancellationToken);
+                if (request.Id is not null && !_requestAdmissionGate.Wait(0))
+                {
+                    await WriteResponseAsync(writer, CreateServerBusyResponse(request.Id));
+                    WriteServerWarning(
+                        "lspRequestQueueFull",
+                        request.Method,
+                        new InvalidOperationException("The LSP request queue is full."));
+                    continue;
+                }
+
+                var accepted = false;
+                try
+                {
+                    accepted = queue.Writer.TryWrite(request);
+                    if (!accepted)
+                    {
+                        if (request.Id is not null)
+                        {
+                            _requestAdmissionGate.Release();
+                        }
+
+                        if (request.Id is not null)
+                        {
+                            await WriteResponseAsync(writer, CreateServerBusyResponse(request.Id));
+                        }
+                        else
+                        {
+                            WriteServerWarning(
+                                "lspNotificationDropped",
+                                request.Method,
+                                new InvalidOperationException("The LSP message queue is full."));
+                        }
+                    }
+                }
+                catch
+                {
+                    if (!accepted && request.Id is not null)
+                    {
+                        _requestAdmissionGate.Release();
+                    }
+
+                    throw;
+                }
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -159,55 +217,63 @@ internal sealed class StdioLspServer
 
         try
         {
-            if (requestKey is not null)
+            try
             {
-                var cancelledBeforeExecution = false;
-                lock (_requestGate)
+                if (requestKey is not null)
                 {
-                    cancelledBeforeExecution = _pendingCancellationRequests.Remove(requestKey);
-                    if (!cancelledBeforeExecution)
+                    var cancelledBeforeExecution = false;
+                    lock (_requestGate)
                     {
-                        if (_activeRequests.TryGetValue(requestKey, out var existing))
+                        cancelledBeforeExecution = _pendingCancellationRequests.Remove(requestKey);
+                        if (!cancelledBeforeExecution)
                         {
-                            existing.Cancel();
-                            existing.Dispose();
-                        }
+                            if (_activeRequests.TryGetValue(requestKey, out var existing))
+                            {
+                                existing.Cancel();
+                                existing.Dispose();
+                            }
 
-                        _activeRequests[requestKey] = requestCancellationSource;
+                            _activeRequests[requestKey] = requestCancellationSource;
+                        }
+                    }
+
+                    if (cancelledBeforeExecution)
+                    {
+                        await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
+                        return;
                     }
                 }
 
-                if (cancelledBeforeExecution)
-                {
-                    await WriteResponseAsync(writer, CreateCancelledResponse(request.Id));
-                    return;
-                }
+                await _requestExecutionGate.WaitAsync(sessionCancellationToken);
+                executionSlotAcquired = true;
+            }
+            catch (OperationCanceledException) when (sessionCancellationToken.IsCancellationRequested)
+            {
+                return;
             }
 
-            await _requestExecutionGate.WaitAsync(sessionCancellationToken);
-            executionSlotAcquired = true;
-        }
-        catch (OperationCanceledException) when (sessionCancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
-
-        try
-        {
-            await HandleRequestAsync(request, writer, requestCancellationSource.Token);
-        }
-        catch (OperationCanceledException) when (sessionCancellationToken.IsCancellationRequested)
-        {
-        }
-        catch (Exception exception)
-        {
-            WriteServerWarning(
-                "lspRequestDispatchFailed",
-                request.Method,
-                exception);
+            try
+            {
+                await HandleRequestAsync(request, writer, requestCancellationSource.Token);
+            }
+            catch (OperationCanceledException) when (sessionCancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception exception)
+            {
+                WriteServerWarning(
+                    "lspRequestDispatchFailed",
+                    request.Method,
+                    exception);
+            }
         }
         finally
         {
+            if (request.Id is not null)
+            {
+                _requestAdmissionGate.Release();
+            }
+
             if (requestKey is not null)
             {
                 lock (_requestGate)
@@ -371,6 +437,17 @@ internal sealed class StdioLspServer
             {
                 Code = -32800,
                 Message = "Request cancelled."
+            }
+        };
+
+    private static LspResponseMessage CreateServerBusyResponse(object? requestId)
+        => new()
+        {
+            Id = requestId,
+            Error = new LspResponseError
+            {
+                Code = -32000,
+                Message = "Server request queue is full."
             }
         };
 

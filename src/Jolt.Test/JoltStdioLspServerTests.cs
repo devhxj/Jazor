@@ -221,6 +221,121 @@ public sealed class JoltStdioLspServerTests
     }
 
     [TestMethod]
+    public async Task Jolt_StdioLspServer_WhenRequestQueueIsFull_ReturnsServerBusyError()
+    {
+        var provider = new SequencedWorkspaceSymbolProvider();
+        var session = CreateSession(provider);
+        var server = new StdioLspServer(session, maxConcurrentRequests: 1, maxQueuedRequests: 1);
+
+        var clientToServerPipe = new Pipe();
+        var serverToClientPipe = new Pipe();
+        await using var serverInput = clientToServerPipe.Reader.AsStream(leaveOpen: true);
+        await using var serverOutput = serverToClientPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientInput = clientToServerPipe.Writer.AsStream(leaveOpen: true);
+        await using var clientOutput = serverToClientPipe.Reader.AsStream(leaveOpen: true);
+
+        using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var serverTask = server.RunAsync(serverInput, serverOutput, cancellationSource.Token).AsTask();
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 1,
+                method = "initialize",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        using var initializeResponse = await ReadResponseAsync(clientOutput, expectedId: 1, cancellationSource.Token);
+        Assert.IsTrue(initializeResponse.RootElement.TryGetProperty("result", out _));
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 2,
+                method = "workspace/symbol",
+                @params = new
+                {
+                    query = "first"
+                }
+            },
+            cancellationSource.Token);
+        await provider.WaitUntilFirstStartedAsync(cancellationSource.Token);
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 3,
+                method = "workspace/symbol",
+                @params = new
+                {
+                    query = "second"
+                }
+            },
+            cancellationSource.Token);
+        await WaitUntilTrackedRequestCountAsync(server, expectedCount: 2, cancellationSource.Token);
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 4,
+                method = "workspace/symbol",
+                @params = new
+                {
+                    query = "third"
+                }
+            },
+            cancellationSource.Token);
+
+        using var rejectedResponse = await ReadResponseAsync(clientOutput, expectedId: 4, cancellationSource.Token);
+        var error = rejectedResponse.RootElement.GetProperty("error");
+        Assert.AreEqual(-32000, error.GetProperty("code").GetInt32());
+        StringAssert.Contains(error.GetProperty("message").GetString() ?? string.Empty, "queue");
+
+        provider.ReleaseFirstRequest();
+
+        using var firstResponse = await ReadResponseAsync(clientOutput, expectedId: 2, cancellationSource.Token);
+        Assert.AreEqual(JsonValueKind.Array, firstResponse.RootElement.GetProperty("result").ValueKind);
+
+        using var secondResponse = await ReadResponseAsync(clientOutput, expectedId: 3, cancellationSource.Token);
+        Assert.AreEqual(JsonValueKind.Array, secondResponse.RootElement.GetProperty("result").ValueKind);
+        Assert.AreEqual(2, provider.InvocationCount);
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                id = 5,
+                method = "shutdown",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        using var shutdownResponse = await ReadResponseAsync(clientOutput, expectedId: 5, cancellationSource.Token);
+        Assert.AreEqual(JsonValueKind.Null, shutdownResponse.RootElement.GetProperty("result").ValueKind);
+
+        await SendMessageAsync(
+            clientInput,
+            new
+            {
+                jsonrpc = "2.0",
+                method = "exit",
+                @params = new { }
+            },
+            cancellationSource.Token);
+        await clientInput.DisposeAsync();
+
+        await serverTask.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
     public async Task Jolt_StdioLspServer_WorkspaceSymbolRequests_RunConcurrentlyWhenCapacityAllows()
     {
         var provider = new ConcurrentWorkspaceSymbolProvider(expectedConcurrentInvocations: 2);
