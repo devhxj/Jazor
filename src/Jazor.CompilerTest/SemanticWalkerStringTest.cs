@@ -841,7 +841,10 @@ public sealed class SemanticWalkerStringTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual("{\r\n  let message = 'Line1\nLine2';\r\n}", script);
+		AssertScriptEqual(@"{
+  let message = 'Line1
+Line2';
+}", script);
 
 	}
 

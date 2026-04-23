@@ -63,7 +63,7 @@ namespace Jazor.EmitTest
                 namespace Demo.Components
                 {
                     [ECMAScript.ECMAScriptModule("./components/counter-card")]
-                    public class CounterCard : VueComponent
+                    public class CounterCard : ComponentBase, IVueComponent
                     {
                         [Parameter]
                         public int Value { get; set; }

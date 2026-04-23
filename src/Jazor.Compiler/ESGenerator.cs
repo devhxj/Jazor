@@ -252,7 +252,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("        };");
         builder.AppendLine("    }");
         builder.AppendLine("}");
-        return builder.ToString();
+        return Util.NormalizeLineEndingsToLf(builder.ToString());
     }
 
     private static string BuildModuleSourceMapCatalogSource(string assemblyName, IReadOnlyList<GeneratedModuleInfo> modules)
@@ -319,7 +319,7 @@ public sealed class ESGenerator : IIncrementalGenerator
         builder.AppendLine("        };");
         builder.AppendLine("    }");
         builder.AppendLine("}");
-        return builder.ToString();
+        return Util.NormalizeLineEndingsToLf(builder.ToString());
     }
 
     private static string GetRelativePath(INamedTypeSymbol classSymbol)

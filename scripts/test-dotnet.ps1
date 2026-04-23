@@ -1,7 +1,8 @@
 param(
-    [ValidateSet("all", "compiler", "clr", "razorvue", "jolt", "emit")]
+    [ValidateSet("all", "compiler", "clr", "razorvue", "jolt", "jolt-build", "emit")]
     [string]$Project = "all",
-    [string]$Configuration = "Debug"
+    [string]$Configuration = "Debug",
+    [string]$Filter = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,12 +17,23 @@ $razorVueTestProject = Join-Path $repoRoot "src\Jazor.RazorVue.Test\Jazor.RazorV
 $joltTestProject = Join-Path $repoRoot "src\Jolt.Test\Jolt.Test.csproj"
 $emitTestProject = Join-Path $repoRoot "src\Jazor.EmitTest\Jazor.EmitTest.csproj"
 
+$joltBuildFilter = @(
+    "FullyQualifiedName~JoltBuildTests",
+    "FullyQualifiedName~JoltStaticAssetHandlerTests",
+    "FullyQualifiedName~JoltBuildCssPipelineTests",
+    "FullyQualifiedName~JoltBuildOptimizationTests",
+    "FullyQualifiedName~JoltBuildJsSourceMapTests",
+    "FullyQualifiedName~JoltBuildSliceFixTests"
+) -join "|"
+$effectiveFilter = if ($Project -eq "jolt-build" -and [string]::IsNullOrWhiteSpace($Filter)) { $joltBuildFilter } else { $Filter }
+
 $testTargets = @(
     switch ($Project) {
         "compiler" { $compilerTestProject }
         "clr" { $clrTestProject }
         "razorvue" { $razorVueTestProject }
         "jolt" { $joltTestProject }
+        "jolt-build" { $joltTestProject }
         "emit" { $emitTestProject }
         default { $compilerTestProject, $clrTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }
     }
@@ -39,7 +51,12 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 foreach ($testProject in $testTargets) {
-    dotnet test $testProject -c $Configuration --no-build --no-restore -v minimal
+    $testArgs = @("test", $testProject, "-c", $Configuration, "--no-build", "--no-restore", "-v", "minimal")
+    if (-not [string]::IsNullOrWhiteSpace($effectiveFilter)) {
+        $testArgs += @("--filter", $effectiveFilter)
+    }
+
+    dotnet @testArgs
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet test failed for '$testProject' with exit code $LASTEXITCODE."
     }

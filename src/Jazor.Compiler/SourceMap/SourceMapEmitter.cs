@@ -409,6 +409,9 @@ internal static class SourceMapEmitter
     {
         private bool _lastWasCarriageReturn;
 
+        public TrackingStringWriter()
+            => NewLine = "\n";
+
         public int Line { get; private set; }
 
         public int Column { get; private set; }

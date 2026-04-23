@@ -1,0 +1,24 @@
+# Normalize text files to LF in both the repository and working tree.
+* text=auto eol=lf
+
+# Windows command launchers require CRLF for maximum compatibility.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Keep binary payloads out of line-ending conversion.
+*.dll binary
+*.exe binary
+*.pdb binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.nupkg binary
+*.snupkg binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary

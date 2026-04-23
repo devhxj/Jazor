@@ -445,7 +445,7 @@ public sealed class SdkIntegrationTests
             namespace RazorVueSample.Host;
 
             [ECMAScriptModule("./components/profile-form")]
-            public sealed class ProfileForm : VueComponent
+            public sealed class ProfileForm : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Name { get; set; }
@@ -537,7 +537,7 @@ public sealed class SdkIntegrationTests
             [VueLibraryComponent("demo/components", "DemoButton")]
             [VueLibraryStyle("demo/button.css")]
             [VueLibraryPluginRequirement("demo-host")]
-            public sealed class DemoButton : VueLibraryComponent
+            public sealed class DemoButton : ComponentBase, IVueLibraryComponent
             {
                 [Parameter]
                 public string? Label { get; set; }
@@ -559,7 +559,7 @@ public sealed class SdkIntegrationTests
             namespace Demo.Sample;
 
             [ECMAScript.ECMAScriptModule("./components/counter-card")]
-            public sealed class CounterCard : VueComponent
+            public sealed class CounterCard : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Label { get; set; }
@@ -828,7 +828,7 @@ public sealed class SdkIntegrationTests
             namespace PackagedRazorVueVuetifySample;
 
             [ECMAScriptModule("./components/profile-form")]
-            public sealed class ProfileForm : VueComponent
+            public sealed class ProfileForm : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Name { get; set; }
@@ -940,7 +940,7 @@ public sealed class SdkIntegrationTests
         var packageVersion = ReadPackageVersion(Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
         var ecmascriptOutput = Path.Combine(repoRoot, "src", "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
-        var razorVueOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "bin", "Debug", "net10.0", "Jazor.RazorVue.dll");
+        var razorVueOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll");
         var vuetifyOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "bin", "Debug", "net10.0", "Jazor.RazorVue.Vuetify.dll");
         var analyzerOutput = Path.Combine(repoRoot, "src", "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
         var emitPublishOutput = Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish", "Jazor.Emit.dll");
@@ -950,19 +950,10 @@ public sealed class SdkIntegrationTests
 
         Directory.CreateDirectory(packageOutputDirectory);
 
-        if (!File.Exists(ecmascriptOutput))
-        {
-            await RunDotNetAndAssertAsync(
-                repoRoot,
-                [
-                    "build",
-                    Path.Combine(repoRoot, "src", "ECMAScript", "ECMAScript.csproj"),
-                    "-c",
-                    "Debug",
-                    "/m:1",
-                    "/p:BuildInParallel=false"
-                ]);
-        }
+        await EnsureProjectBuiltAsync(
+            repoRoot,
+            Path.Combine(repoRoot, "src", "ECMAScript", "ECMAScript.csproj"),
+            ecmascriptOutput);
         await EnsureProjectBuiltAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Jazor.RazorVue.csproj"),
@@ -1026,11 +1017,7 @@ public sealed class SdkIntegrationTests
         string projectPath,
         string expectedOutputPath)
     {
-        if (File.Exists(expectedOutputPath))
-        {
-            return;
-        }
-
+        // 生产打包验证不能只看 DLL 是否存在；Directory.Build.props 或依赖版本变更时旧产物会污染 nupkg。
         await RunDotNetAndAssertAsync(
             repoRoot,
             [
@@ -1041,6 +1028,8 @@ public sealed class SdkIntegrationTests
                 "/m:1",
                 "/p:BuildInParallel=false"
             ]);
+
+        Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected build output was not produced: {expectedOutputPath}");
     }
 
     private static async Task EnsureProjectPublishedAsync(
@@ -1049,11 +1038,7 @@ public sealed class SdkIntegrationTests
         string expectedOutputPath,
         string publishDirectory)
     {
-        if (File.Exists(expectedOutputPath))
-        {
-            return;
-        }
-
+        // publish 输出同样走 MSBuild 增量判断，避免复用旧工具导致包内行为和源码不一致。
         await RunDotNetAndAssertAsync(
             repoRoot,
             [
@@ -1066,6 +1051,8 @@ public sealed class SdkIntegrationTests
                 "/m:1",
                 "/p:BuildInParallel=false"
             ]);
+
+        Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected publish output was not produced: {expectedOutputPath}");
     }
 
     private static async Task<ProcessResult> RunSourceReferencedRazorVueBuildAsync(
@@ -1278,7 +1265,7 @@ public sealed class SdkIntegrationTests
             [VueLibraryProp(nameof(Value), Name = "modelValue", AcceptsBinding = true, Required = true)]
             [VueLibraryEmit(nameof(ValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
             [VueLibrarySlot(nameof(Header), Name = "header", ContextTypeName = "string", ContextParameterName = "slotProps")]
-            public sealed class DemoButton : VueLibraryComponent
+            public sealed class DemoButton : ComponentBase, IVueLibraryComponent
             {
                 [Parameter]
                 public string? Label { get; set; }
@@ -1374,7 +1361,7 @@ public sealed class SdkIntegrationTests
             namespace PackagedCustomRazorVueSample;
 
             [ECMAScriptModule("./components/counter-card")]
-            public sealed class CounterCard : VueComponent
+            public sealed class CounterCard : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Label { get; set; }
@@ -1484,7 +1471,7 @@ public sealed class SdkIntegrationTests
             namespace RazorVueSample.Host;
 
             [ECMAScriptModule("./components/profile-form")]
-            public sealed class ProfileForm : VueComponent
+            public sealed class ProfileForm : ComponentBase, IVueComponent
             {
                 [Parameter]
                 public string? Name { get; set; }

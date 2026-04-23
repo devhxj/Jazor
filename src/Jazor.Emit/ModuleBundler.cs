@@ -161,7 +161,7 @@ internal sealed class ModuleBundler
                 $"export {{ razorVueHostAssemblyName, razorVueHostGeneratedAtUtc, razorVueHostModules, razorVueHostRequirements, razorVuePluginRequirements, razorVueStyles }} from \"./{razorVueHostRequirementsRelativePath}\";");
         }
 
-        var entrySource = string.Join(Environment.NewLine, entryLines);
+        var entrySource = string.Join("\n", entryLines);
         var entryMapPath = tempEntryPath + ".map";
         var entrySourcePaths = entryRelativePaths.ToList();
         if (!string.IsNullOrWhiteSpace(razorVueHostRequirementsRelativePath))

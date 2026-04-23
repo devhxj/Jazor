@@ -3346,8 +3346,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let value = ""line1\r\nline2"";
-  let result = value === ""line1\r\nline2"";
+  let value = ""line1\nline2"";
+  let result = value === ""line1\nline2"";
 }", script);
   }
 

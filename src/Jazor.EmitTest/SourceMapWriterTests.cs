@@ -62,8 +62,8 @@ public sealed class SourceMapWriterTests
         var code = writer.AppendSourceMappingUrl("export const a = 1;\n\n", "counter-card.mjs.map");
 
         Assert.AreEqual(
-            "export const a = 1;" + Environment.NewLine +
-            "//# sourceMappingURL=counter-card.mjs.map" + Environment.NewLine,
+            "export const a = 1;\n" +
+            "//# sourceMappingURL=counter-card.mjs.map\n",
             code);
     }
 
@@ -74,7 +74,7 @@ public sealed class SourceMapWriterTests
         var code = writer.AppendSourceMappingUrl(string.Empty, "counter-card.mjs.map");
 
         Assert.AreEqual(
-            "//# sourceMappingURL=counter-card.mjs.map" + Environment.NewLine,
+            "//# sourceMappingURL=counter-card.mjs.map\n",
             code);
     }
 

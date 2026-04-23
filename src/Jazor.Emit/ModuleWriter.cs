@@ -140,9 +140,9 @@ internal sealed class ModuleWriter
     {
         var normalized = (content ?? string.Empty).TrimEnd('\r', '\n');
         if (normalized.Length == 0)
-            return $"//# sourceMappingURL={mapFileName}" + Environment.NewLine;
+            return $"//# sourceMappingURL={mapFileName}\n";
 
-        return normalized + Environment.NewLine + $"//# sourceMappingURL={mapFileName}" + Environment.NewLine;
+        return normalized + "\n" + $"//# sourceMappingURL={mapFileName}\n";
     }
 
     private static string ComputeSha256Hex(string content)

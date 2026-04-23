@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using Acornima;
 using Acornima.Ast;
@@ -37,7 +38,11 @@ public static class Util
     /// 以仓库测试使用的 KnR 风格输出 ECMAScript 文本。
     /// </summary>
     public static string ToKnRECMAScript(this Node node)
-        => node.ToJavaScript(KnRJavaScriptTextFormatterOptions.Default, AstToJavaScriptOptions.Default);
+    {
+        using var writer = new LfStringWriter();
+        AstToJavaScript.WriteJavaScript(node, writer, KnRJavaScriptTextFormatterOptions.Default, AstToJavaScriptOptions.Default);
+        return writer.ToString();
+    }
 
     /// <summary>
     /// 以仓库测试使用的 KnR 风格输出 ECMAScript 文本与 source map。
@@ -66,7 +71,31 @@ public static class Util
     /// 以默认 writer 选项输出 ECMAScript 文本。
     /// </summary>
     public static string ToECMAScript(this Node node)
-        => node.ToJavaScript(JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
+    {
+        using var writer = new LfStringWriter();
+        AstToJavaScript.WriteJavaScript(node, writer, JavaScriptTextWriterOptions.Default, AstToJavaScriptOptions.Default);
+        return writer.ToString();
+    }
+
+    /// <summary>
+    /// 统一将文本内容归一化为 LF，避免生成产物随运行平台漂移。
+    /// </summary>
+    public static string NormalizeLineEndingsToLf(string? value)
+    {
+        var text = value ?? string.Empty;
+        if (text.Length == 0)
+            return text;
+
+        return text.IndexOf('\r') < 0
+            ? text
+            : text.Replace("\r\n", "\n").Replace("\r", "\n");
+    }
+
+    private sealed class LfStringWriter : StringWriter
+    {
+        public LfStringWriter()
+            => NewLine = "\n";
+    }
 
     /// <summary>
     /// 以默认 writer 选项输出 ECMAScript 文本与 source map。

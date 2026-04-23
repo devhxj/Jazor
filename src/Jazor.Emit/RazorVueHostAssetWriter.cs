@@ -83,7 +83,7 @@ internal sealed class RazorVueHostAssetWriter
         var lines = styles
             .Select(static style => $"@import \"{style}\";")
             .ToArray();
-        return string.Join(Environment.NewLine, lines) + Environment.NewLine;
+        return string.Join("\n", lines) + "\n";
     }
 
     private static void DeleteIfExists(string path)
