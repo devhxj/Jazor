@@ -46,7 +46,7 @@ public sealed class JoltStaticAssetHandlerTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -85,7 +85,7 @@ public sealed class JoltStaticAssetHandlerTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -131,7 +131,7 @@ public sealed class JoltStaticAssetHandlerTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -172,8 +172,8 @@ public sealed class JoltStaticAssetHandlerTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
-            Directory.Delete(externalDir, recursive: true);
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
         }
     }
 
@@ -203,7 +203,7 @@ public sealed class JoltStaticAssetHandlerTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -225,7 +225,42 @@ public sealed class JoltStaticAssetHandlerTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task CopyPublicAssetsAsync_SkipsDirectorySymlink()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var publicDir = Path.Combine(tempDir, "public");
+            Directory.CreateDirectory(publicDir);
+            var externalAssetPath = Path.Combine(externalDir, "logo.png");
+            await File.WriteAllTextAsync(externalAssetPath, "external-png-data");
+            var linkPath = Path.Combine(publicDir, "linked");
+            CreateDirectorySymbolicLinkOrInconclusive(linkPath, externalDir);
+
+            var options = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                AssetHashLength = 12
+            };
+
+            using var context = new BuildContext(options);
+            var handler = new StaticAssetHandler(context);
+
+            var assets = await handler.CopyPublicAssetsAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, assets.Count);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
         }
     }
 
@@ -276,6 +311,51 @@ public sealed class JoltStaticAssetHandlerTests
         var path = Path.Combine(Path.GetTempPath(), "jazor-static-asset-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+        }
+    }
+
+    private static void CreateDirectorySymbolicLinkOrInconclusive(string linkPath, string targetPath)
+    {
+        try
+        {
+            Directory.CreateSymbolicLink(linkPath, targetPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            Assert.Inconclusive(
+                $"Current environment cannot create a directory symbolic link for reparse-point verification: {ex.GetType().Name}: {ex.Message}");
+        }
+
+        var attributes = File.GetAttributes(linkPath);
+        if ((attributes & FileAttributes.ReparsePoint) == 0)
+        {
+            Assert.Inconclusive("Current environment created the link path without FileAttributes.ReparsePoint.");
+        }
     }
 
     private static string ComputeHashPrefix(string content, int hashLength)

@@ -295,7 +295,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -327,7 +327,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -347,7 +347,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -408,7 +408,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -451,7 +451,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -581,7 +581,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -669,7 +669,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -769,6 +769,141 @@ public sealed class JoltBuildTests
             FileAttributes.Directory | FileAttributes.ReparsePoint);
 
         Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_IsTrustedProjectInputPath_ReturnsTrue_ForRegularFileInsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "build-input-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "index.html");
+
+        var result = BuildOrchestrator.IsTrustedProjectInputPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_IsTrustedProjectInputPath_ReturnsFalse_ForPathOutsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "build-input-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootDirectory, "..", "index.html"));
+
+        var result = BuildOrchestrator.IsTrustedProjectInputPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_IsTrustedProjectInputPath_ReturnsFalse_ForReparsePoint()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "build-input-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "index.html");
+
+        var result = BuildOrchestrator.IsTrustedProjectInputPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void ModuleResolver_IsTrustedProjectPath_ReturnsTrue_ForRegularFileInsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "module-resolver-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "main.js");
+
+        var result = ModuleResolver.IsTrustedProjectPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public void ModuleResolver_IsTrustedProjectPath_ReturnsFalse_ForPathOutsideRoot()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "module-resolver-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.GetFullPath(Path.Combine(rootDirectory, "..", "main.js"));
+
+        var result = ModuleResolver.IsTrustedProjectPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.Normal);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public void ModuleResolver_IsTrustedProjectPath_ReturnsFalse_ForReparsePoint()
+    {
+        var rootDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "module-resolver-root-" + Guid.NewGuid().ToString("N")));
+        var candidatePath = Path.Combine(rootDirectory, "linked.js");
+
+        var result = ModuleResolver.IsTrustedProjectPath(
+            rootDirectory,
+            candidatePath,
+            FileAttributes.ReparsePoint);
+
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task ModuleResolver_Resolve_WithoutTrustedProjectPaths_AllowsFileSymlinkByDefault()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var externalModulePath = Path.Combine(externalDir, "external.js");
+            await File.WriteAllTextAsync(externalModulePath, """console.log("external");""");
+            var linkPath = Path.Combine(tempDir, "linked.js");
+            CreateFileSymbolicLinkOrInconclusive(linkPath, externalModulePath);
+
+            var resolver = new ModuleResolver(tempDir);
+            var result = resolver.Resolve("/linked.js");
+
+            Assert.IsTrue(result.Found);
+            Assert.AreEqual(Path.GetFullPath(linkPath), result.AbsolutePath);
+            Assert.AreEqual("/linked.js", result.ResolvedUrl);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task ModuleResolver_Resolve_WithTrustedProjectPaths_RejectsFileSymlink()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var externalModulePath = Path.Combine(externalDir, "external.js");
+            await File.WriteAllTextAsync(externalModulePath, """console.log("external");""");
+            var linkPath = Path.Combine(tempDir, "linked.js");
+            CreateFileSymbolicLinkOrInconclusive(linkPath, externalModulePath);
+
+            var resolver = new ModuleResolver(tempDir, enforceTrustedProjectPaths: true);
+            var result = resolver.Resolve("/linked.js");
+
+            Assert.IsFalse(result.Found);
+            StringAssert.Contains(result.Error!, "untrusted reparse point");
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
+        }
     }
 
     [TestMethod]
@@ -873,7 +1008,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -939,7 +1074,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -979,7 +1114,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1022,7 +1157,92 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_BuildAsync_WithOutputDirectoryOccupiedByFile_ReturnsFailureDiagnostic()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "index.html"),
+                """
+                <html>
+                <body>
+                  <script type="module" src="/main.js"></script>
+                </body>
+                </html>
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "main.js"),
+                """console.log("build output file conflict");""");
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "dist"),
+                "occupied");
+
+            var orchestrator = new BuildOrchestrator();
+            var result = await orchestrator.BuildAsync(
+                new BuildOptions
+                {
+                    RootDirectory = tempDir,
+                    OutDir = "dist",
+                    SourceMap = SourceMapOption.External,
+                    Minify = false,
+                    CodeSplitting = false
+                },
+                CancellationToken.None);
+
+            Assert.IsFalse(result.Success);
+            Assert.IsTrue(
+                result.Diagnostics.Any(static diagnostic =>
+                    diagnostic.Message.Contains("existing file", StringComparison.OrdinalIgnoreCase)),
+                string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_DeleteTrustedBuildOutputDirectory_DeletesNestedOutputDirectory()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var outDirectory = Path.Combine(tempDir, "dist");
+            var nestedFile = Path.Combine(outDirectory, "assets", "app.js");
+            Directory.CreateDirectory(Path.GetDirectoryName(nestedFile)!);
+            await File.WriteAllTextAsync(nestedFile, """console.log("stale");""");
+
+            BuildOrchestrator.DeleteTrustedBuildOutputDirectory(outDirectory);
+
+            Assert.IsFalse(Directory.Exists(outDirectory));
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_DeleteTrustedBuildOutputDirectory_IgnoresMissingDirectory()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var outDirectory = Path.Combine(tempDir, "missing-dist");
+
+            BuildOrchestrator.DeleteTrustedBuildOutputDirectory(outDirectory);
+
+            Assert.IsFalse(Directory.Exists(outDirectory));
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1170,7 +1390,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1243,7 +1463,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1282,7 +1502,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1312,7 +1532,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1349,7 +1569,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1379,7 +1599,36 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_CollectIncrementalInputSnapshot_MarksReadFailure_WhenInputFallsOutsideRoot()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var indexHtmlPath = Path.Combine(tempDir, "index.html");
+            var externalPath = Path.Combine(externalDir, "main.js");
+            await File.WriteAllTextAsync(indexHtmlPath, "<html></html>");
+            await File.WriteAllTextAsync(externalPath, """console.log("external");""");
+
+            using var context = new BuildContext(CreateIncrementalBuildOptions(tempDir));
+            var snapshot = BuildOrchestrator.CollectIncrementalInputSnapshot(
+                context,
+                [indexHtmlPath, externalPath]);
+
+            Assert.IsTrue(snapshot.HasReadFailure);
+            CollectionAssert.AreEquivalent(
+                new[] { "index.html" },
+                snapshot.Inputs.Keys.OrderBy(static path => path, StringComparer.OrdinalIgnoreCase).ToArray());
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
         }
     }
 
@@ -1444,7 +1693,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1490,7 +1739,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1552,7 +1801,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1632,8 +1881,8 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
-            Directory.Delete(externalDir, recursive: true);
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
         }
     }
 
@@ -1720,6 +1969,64 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
+    public void BuildOrchestrator_TryResolveBuiltChunkDynamicImportFilePath_WithOutputRelativeSpecifier_ReturnsRootRelativeOutputPath()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            using var context = new BuildContext(new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist"
+            });
+            var chunkDirectory = Path.Combine(context.OutDirectory, "assets");
+            Directory.CreateDirectory(chunkDirectory);
+
+            var result = BuildOrchestrator.TryResolveBuiltChunkDynamicImportFilePath(
+                context,
+                chunkDirectory,
+                "./lazy.js?v=1",
+                out var targetChunkFilePath);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual("dist/assets/lazy.js", targetChunkFilePath);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_TryResolveBuiltChunkDynamicImportFilePath_WithEscapingSpecifier_ReturnsFalse()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            using var context = new BuildContext(new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist"
+            });
+            var chunkDirectory = Path.Combine(context.OutDirectory, "assets");
+            Directory.CreateDirectory(chunkDirectory);
+
+            var result = BuildOrchestrator.TryResolveBuiltChunkDynamicImportFilePath(
+                context,
+                chunkDirectory,
+                "../../outside.js",
+                out var targetChunkFilePath);
+
+            Assert.IsFalse(result);
+            Assert.AreEqual(string.Empty, targetChunkFilePath);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
     public void BuildContext_Initializes_Correctly()
     {
         var options = new BuildOptions { RootDirectory = "/tmp/test" };
@@ -1799,7 +2106,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1838,7 +2145,7 @@ public sealed class JoltBuildTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1908,6 +2215,51 @@ public sealed class JoltBuildTests
         var path = Path.Combine(Path.GetTempPath(), "jazor-build-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+        }
+    }
+
+    private static void CreateFileSymbolicLinkOrInconclusive(string linkPath, string targetPath)
+    {
+        try
+        {
+            File.CreateSymbolicLink(linkPath, targetPath);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException)
+        {
+            Assert.Inconclusive(
+                $"Current environment cannot create a file symbolic link for reparse-point verification: {ex.GetType().Name}: {ex.Message}");
+        }
+
+        var attributes = File.GetAttributes(linkPath);
+        if ((attributes & FileAttributes.ReparsePoint) == 0)
+        {
+            Assert.Inconclusive("Current environment created the link path without FileAttributes.ReparsePoint.");
+        }
     }
 
     private static string GetHtmlRelativePath(string rootDirectory, string outDirName, string rootRelativePath)

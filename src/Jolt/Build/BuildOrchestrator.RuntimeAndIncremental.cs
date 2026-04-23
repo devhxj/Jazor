@@ -279,18 +279,25 @@ internal sealed partial class BuildOrchestrator
                 continue;
             }
 
+            // 编译图遍历也必须重新校验模块落点，不能因为依赖解析阶段给出了路径，
+            // 就跳过生产构建对项目输入边界的最终确认。
+            if (!TryResolveTrustedProjectInputFilePath(context.RootDirectory, modulePath, out var trustedModulePath))
+            {
+                continue;
+            }
+
             CompilationResult result;
             try
             {
-                if (string.Equals(Path.GetExtension(modulePath), ".jazor", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Path.GetExtension(trustedModulePath), ".jazor", StringComparison.OrdinalIgnoreCase))
                 {
-                    var sourceText = await File.ReadAllTextAsync(modulePath, cancellationToken);
-                    result = await compiler.CompileAsync(modulePath, sourceText, cancellationToken);
-                    AppendLegacyImportDiagnostics(context, modulePath, sourceText);
+                    var sourceText = await File.ReadAllTextAsync(trustedModulePath, cancellationToken);
+                    result = await compiler.CompileAsync(trustedModulePath, sourceText, cancellationToken);
+                    AppendLegacyImportDiagnostics(context, trustedModulePath, sourceText);
                 }
                 else
                 {
-                    result = await compiler.CompileAsync(modulePath, cancellationToken);
+                    result = await compiler.CompileAsync(trustedModulePath, cancellationToken);
                 }
             }
             catch (IOException)
@@ -304,7 +311,7 @@ internal sealed partial class BuildOrchestrator
 
             foreach (var dependency in result.Dependencies)
             {
-                var resolved = moduleResolver.Resolve(dependency, modulePath);
+                var resolved = moduleResolver.Resolve(dependency, trustedModulePath);
                 if (!resolved.Found
                     || resolved.IsVirtual
                     || !IsBuildGraphCompilablePath(resolved.AbsolutePath))
@@ -334,9 +341,16 @@ internal sealed partial class BuildOrchestrator
             }
 
             string sourceText;
+            string diagnosticFilePath;
             try
             {
-                sourceText = await File.ReadAllTextAsync(filePath, cancellationToken);
+                if (!TryResolveTrustedProjectInputFilePath(context.RootDirectory, filePath, out var trustedFilePath))
+                {
+                    continue;
+                }
+
+                diagnosticFilePath = trustedFilePath;
+                sourceText = await File.ReadAllTextAsync(trustedFilePath, cancellationToken);
             }
             catch (IOException)
             {
@@ -347,7 +361,7 @@ internal sealed partial class BuildOrchestrator
                 continue;
             }
 
-            AppendLegacyImportDiagnostics(context, filePath, sourceText);
+            AppendLegacyImportDiagnostics(context, diagnosticFilePath, sourceText);
         }
     }
 
@@ -430,19 +444,27 @@ internal sealed partial class BuildOrchestrator
         {
             try
             {
-                var fileInfo = new FileInfo(filePath);
-                var relativePath = Path.GetRelativePath(context.RootDirectory, filePath).Replace('\\', '/');
+                if (!TryResolveTrustedProjectInputFilePath(context.RootDirectory, filePath, out var trustedFilePath))
+                {
+                    hasReadFailure = true;
+                    // 只要增量快照里混入工作区外/不可信输入，就必须降级为不完整，
+                    // 否则生产构建可能错误复用旧缓存。
+                    continue;
+                }
+
+                var fileInfo = new FileInfo(trustedFilePath);
+                var relativePath = Path.GetRelativePath(context.RootDirectory, trustedFilePath).Replace('\\', '/');
                 inputs[relativePath] = ComputeIncrementalInputSignature(fileInfo);
             }
             catch (IOException)
             {
                 hasReadFailure = true;
-                // Skip transiently inaccessible files. A subsequent build run will re-evaluate.
+                // 文件被短暂占用时直接降级为不完整快照，下一次构建再重新评估。
             }
             catch (UnauthorizedAccessException)
             {
                 hasReadFailure = true;
-                // Skip inaccessible files. Fingerprint remains stable for accessible inputs.
+                // 不可访问输入同样不能参与缓存命中，避免用“部分可见”的输入集复用旧产物。
             }
         }
 
@@ -1021,12 +1043,62 @@ internal sealed partial class BuildOrchestrator
             rootDirectory,
             outDirectory,
             allowMissingLeaf: true);
-        if (Directory.Exists(trustedOutDirectory))
+        // OutDir 指向现有普通文件时不能尝试清理或覆写；直接给出明确配置错误。
+        if (File.Exists(trustedOutDirectory))
         {
-            Directory.Delete(trustedOutDirectory, recursive: true);
+            throw new InvalidOperationException(
+                $"Resolved build output path '{trustedOutDirectory}' is an existing file. Configure OutDir to a directory inside project root.");
         }
 
+        // 只允许清理已经通过信任边界校验的输出目录，避免把“准备输出目录”
+        // 变成对项目根内任意路径的递归删除入口。
+        DeleteTrustedBuildOutputDirectory(trustedOutDirectory);
+
         Directory.CreateDirectory(trustedOutDirectory);
+    }
+
+    internal static void DeleteTrustedBuildOutputDirectory(string trustedOutDirectory)
+    {
+        if (!Directory.Exists(trustedOutDirectory))
+        {
+            return;
+        }
+
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                Directory.Delete(trustedOutDirectory, recursive: true);
+                return;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                // 输出目录可能刚被 bundler、杀毒或索引器释放，短暂退避比立即失败更适合生产构建。
+                Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                // Windows 上权限/句柄状态可能短暂滞后，重试后仍失败再交给最终异常。
+                Thread.Sleep(100 * attempt);
+            }
+            catch (IOException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Build output directory '{trustedOutDirectory}' could not be cleaned after {maxAttempts} attempts.",
+                    ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Build output directory '{trustedOutDirectory}' could not be cleaned after {maxAttempts} attempts.",
+                    ex);
+            }
+        }
     }
 
     private static bool IsInsideRoot(string rootDirectory, string candidatePath)
@@ -1041,6 +1113,94 @@ internal sealed partial class BuildOrchestrator
 
     private static string ResolveEntryRequestPath(string rootDirectory, string entryPointPath)
         => "/" + Path.GetRelativePath(rootDirectory, entryPointPath).Replace('\\', '/');
+
+    internal static bool IsTrustedProjectInputPath(
+        string rootDirectory,
+        string candidatePath,
+        FileAttributes attributes)
+    {
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        return IsInsideRoot(fullRootDirectory, fullCandidatePath)
+            && (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    private static bool TryResolveTrustedProjectInputFilePath(
+        string rootDirectory,
+        string candidatePath,
+        [NotNullWhen(true)] out string? trustedPath)
+    {
+        trustedPath = null;
+        string fullRootDirectory;
+        string fullCandidatePath;
+        try
+        {
+            fullRootDirectory = Path.GetFullPath(rootDirectory);
+            fullCandidatePath = Path.GetFullPath(candidatePath);
+            if (!IsInsideRoot(fullRootDirectory, fullCandidatePath) || !File.Exists(fullCandidatePath))
+            {
+                return false;
+            }
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
+
+        var inspectionPath = fullCandidatePath;
+        while (!string.IsNullOrWhiteSpace(inspectionPath))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(inspectionPath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            // 构建输入文件也不跟随 reparse point，避免把工作区外源码伪装成本地输入。
+            if (!IsTrustedProjectInputPath(fullRootDirectory, inspectionPath, attributes))
+            {
+                return false;
+            }
+
+            if (string.Equals(inspectionPath, fullRootDirectory, FilePathComparison))
+            {
+                trustedPath = fullCandidatePath;
+                return true;
+            }
+
+            inspectionPath = GetContainingDirectoryPath(inspectionPath);
+        }
+
+        return false;
+    }
 
     internal static bool IsTrustedBuildOutputPath(
         string rootDirectory,

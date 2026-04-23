@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -160,14 +161,19 @@ internal sealed partial class BuildOrchestrator
             if (!string.IsNullOrWhiteSpace(fragment.SourcePath)
                 && fragment.SourceLineStart.HasValue
                 && fragment.SourceLineCount.HasValue
-                && TryReadSourceMapContent(fragment.SourcePath, sourceContentCache, out var sourceContent))
+                && TryReadTrustedSourceMapContent(
+                    context.RootDirectory,
+                    fragment.SourcePath,
+                    sourceContentCache,
+                    out var trustedSourcePath,
+                    out var sourceContent))
             {
-                if (!sourceIndices.TryGetValue(fragment.SourcePath, out var sourceIndex))
+                if (!sourceIndices.TryGetValue(trustedSourcePath, out var sourceIndex))
                 {
                     sourceIndex = sources.Count;
-                    sourceIndices[fragment.SourcePath] = sourceIndex;
+                    sourceIndices[trustedSourcePath] = sourceIndex;
                     sources.Add(new SourceMapSource(
-                        CreateSourceMapRelativePath(context.AssetsDirectory, fragment.SourcePath),
+                        CreateSourceMapRelativePath(context.AssetsDirectory, trustedSourcePath),
                         sourceContent));
                 }
 
@@ -197,6 +203,23 @@ internal sealed partial class BuildOrchestrator
         }
 
         return new SourceMapWriter().Write(new SourceMapDocument(outputFileName, sources, segments));
+    }
+
+    internal static bool TryReadTrustedSourceMapContent(
+        string rootDirectory,
+        string sourcePath,
+        IDictionary<string, string> sourceContentCache,
+        [NotNullWhen(true)] out string? trustedSourcePath,
+        out string sourceContent)
+    {
+        if (!TryResolveTrustedProjectInputFilePath(rootDirectory, sourcePath, out trustedSourcePath))
+        {
+            // sourcesContent 是附加调试信息，遇到不可信源码路径时直接降级跳过。
+            sourceContent = string.Empty;
+            return false;
+        }
+
+        return TryReadSourceMapContent(trustedSourcePath, sourceContentCache, out sourceContent);
     }
 
     private static bool TryReadSourceMapContent(
@@ -782,17 +805,14 @@ internal sealed partial class BuildOrchestrator
             return [];
         }
 
-        var sourceMapAbsolutePath = Path.Combine(
-            rootDirectory,
-            sourceMapPath.Replace('/', Path.DirectorySeparatorChar));
-        if (!File.Exists(sourceMapAbsolutePath))
+        if (!TryResolveTrustedSourceMapArtifactPath(rootDirectory, sourceMapPath, out var trustedSourceMapPath))
         {
             return [];
         }
 
         try
         {
-            using var sourceMapDocument = JsonDocument.Parse(File.ReadAllText(sourceMapAbsolutePath));
+            using var sourceMapDocument = JsonDocument.Parse(File.ReadAllText(trustedSourceMapPath));
             if (!sourceMapDocument.RootElement.TryGetProperty("sources", out var sourcesElement)
                 || sourcesElement.ValueKind != JsonValueKind.Array)
             {
@@ -809,7 +829,7 @@ internal sealed partial class BuildOrchestrator
 
                 var normalizedSourcePath = NormalizeSourceMapSourcePath(
                     rootDirectory,
-                    GetContainingDirectoryPath(sourceMapAbsolutePath),
+                    GetContainingDirectoryPath(trustedSourceMapPath),
                     sourceElement.GetString(),
                     moduleResolver);
                 if (!string.IsNullOrWhiteSpace(normalizedSourcePath))
@@ -821,6 +841,10 @@ internal sealed partial class BuildOrchestrator
             return normalizedSources.OrderBy(static path => path, FilePathComparer).ToArray();
         }
         catch (IOException)
+        {
+            return [];
+        }
+        catch (UnauthorizedAccessException)
         {
             return [];
         }
@@ -885,10 +909,70 @@ internal sealed partial class BuildOrchestrator
 
     private static string? NormalizeAbsoluteSourceMapPath(string rootDirectory, string path)
     {
-        var absolutePath = Path.GetFullPath(Uri.UnescapeDataString(path));
-        return IsPathInsideRoot(rootDirectory, absolutePath) && File.Exists(absolutePath)
-            ? absolutePath
+        return TryResolveTrustedProjectInputFilePath(
+            rootDirectory,
+            Uri.UnescapeDataString(path),
+            out var trustedPath)
+            ? trustedPath
             : null;
+    }
+
+    private static bool TryResolveTrustedSourceMapArtifactPath(
+        string rootDirectory,
+        string sourceMapPath,
+        out string trustedPath)
+    {
+        trustedPath = string.Empty;
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(Path.Combine(
+            fullRootDirectory,
+            sourceMapPath.Replace('/', Path.DirectorySeparatorChar)));
+        if (!IsInsideRoot(fullRootDirectory, fullCandidatePath) || !File.Exists(fullCandidatePath))
+        {
+            return false;
+        }
+
+        var inspectionPath = fullCandidatePath;
+        while (!string.IsNullOrWhiteSpace(inspectionPath))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(inspectionPath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            // SourceMap 只是所有权/映射恢复的辅助输入，遇到越界或 reparse point 要直接降级忽略。
+            if (!IsTrustedBuildOutputPath(fullRootDirectory, inspectionPath, attributes))
+            {
+                return false;
+            }
+
+            if (string.Equals(inspectionPath, fullRootDirectory, FilePathComparison))
+            {
+                trustedPath = fullCandidatePath;
+                return true;
+            }
+
+            inspectionPath = GetContainingDirectoryPath(inspectionPath);
+        }
+
+        return false;
     }
 
     private static bool IsPathInsideRoot(string rootDirectory, string candidatePath)
@@ -1057,17 +1141,14 @@ internal sealed partial class BuildOrchestrator
             return [];
         }
 
-        var sourceMapAbsolutePath = Path.Combine(
-            rootDirectory,
-            chunk.SourceMapPath.Replace('/', Path.DirectorySeparatorChar));
-        if (!File.Exists(sourceMapAbsolutePath))
+        if (!TryResolveTrustedSourceMapArtifactPath(rootDirectory, chunk.SourceMapPath, out var trustedSourceMapPath))
         {
             return [];
         }
 
         try
         {
-            using var sourceMapDocument = JsonDocument.Parse(File.ReadAllText(sourceMapAbsolutePath));
+            using var sourceMapDocument = JsonDocument.Parse(File.ReadAllText(trustedSourceMapPath));
             if (!sourceMapDocument.RootElement.TryGetProperty("sources", out var sourcesElement)
                 || sourcesElement.ValueKind != JsonValueKind.Array)
             {
@@ -1083,6 +1164,7 @@ internal sealed partial class BuildOrchestrator
                 }
 
                 var sourceModulePath = NormalizeSourceMapSourceToModulePath(
+                    rootDirectory,
                     sourceElement.GetString(),
                     cachedResults,
                     moduleResolver);
@@ -1098,6 +1180,10 @@ internal sealed partial class BuildOrchestrator
         {
             return [];
         }
+        catch (UnauthorizedAccessException)
+        {
+            return [];
+        }
         catch (JsonException)
         {
             return [];
@@ -1105,6 +1191,7 @@ internal sealed partial class BuildOrchestrator
     }
 
     private static string? NormalizeSourceMapSourceToModulePath(
+        string rootDirectory,
         string? source,
         IReadOnlyDictionary<string, CompilationResult> cachedResults,
         ModuleResolver moduleResolver)
@@ -1117,6 +1204,7 @@ internal sealed partial class BuildOrchestrator
         if (source.StartsWith("deno:", StringComparison.OrdinalIgnoreCase))
         {
             return NormalizeSourceMapSourceToModulePath(
+                rootDirectory,
                 source["deno:".Length..],
                 cachedResults,
                 moduleResolver);
@@ -1131,9 +1219,12 @@ internal sealed partial class BuildOrchestrator
         {
             if (absoluteUri.IsFile)
             {
-                var absolutePath = Path.GetFullPath(Uri.UnescapeDataString(absoluteUri.LocalPath));
-                return cachedResults.ContainsKey(absolutePath)
-                    ? absolutePath
+                return TryGetCachedTrustedSourceModulePath(
+                    rootDirectory,
+                    Uri.UnescapeDataString(absoluteUri.LocalPath),
+                    cachedResults,
+                    out var trustedSourceModulePath)
+                    ? trustedSourceModulePath
                     : null;
             }
 
@@ -1141,6 +1232,7 @@ internal sealed partial class BuildOrchestrator
                 || string.Equals(absoluteUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
             {
                 return ResolveSourceMapRequestPathToModulePath(
+                    rootDirectory,
                     Uri.UnescapeDataString(absoluteUri.AbsolutePath),
                     cachedResults,
                     moduleResolver);
@@ -1151,25 +1243,45 @@ internal sealed partial class BuildOrchestrator
 
         if (source.StartsWith("/", StringComparison.Ordinal))
         {
-            return ResolveSourceMapRequestPathToModulePath(source, cachedResults, moduleResolver);
+            return ResolveSourceMapRequestPathToModulePath(rootDirectory, source, cachedResults, moduleResolver);
         }
 
         var resolved = moduleResolver.Resolve(source);
-        return resolved.Found && !resolved.IsVirtual && cachedResults.ContainsKey(resolved.AbsolutePath)
-            ? resolved.AbsolutePath
+        return resolved.Found
+            && !resolved.IsVirtual
+            && TryGetCachedTrustedSourceModulePath(rootDirectory, resolved.AbsolutePath, cachedResults, out var resolvedTrustedPath)
+            ? resolvedTrustedPath
             : null;
     }
 
     private static string? ResolveSourceMapRequestPathToModulePath(
+        string rootDirectory,
         string requestPath,
         IReadOnlyDictionary<string, CompilationResult> cachedResults,
         ModuleResolver moduleResolver)
     {
         requestPath = NormalizeBundlerProxyRequestPath(requestPath);
         var resolved = moduleResolver.Resolve(requestPath);
-        return resolved.Found && !resolved.IsVirtual && cachedResults.ContainsKey(resolved.AbsolutePath)
-            ? resolved.AbsolutePath
+        return resolved.Found
+            && !resolved.IsVirtual
+            && TryGetCachedTrustedSourceModulePath(rootDirectory, resolved.AbsolutePath, cachedResults, out var trustedPath)
+            ? trustedPath
             : null;
+    }
+
+    private static bool TryGetCachedTrustedSourceModulePath(
+        string rootDirectory,
+        string candidatePath,
+        IReadOnlyDictionary<string, CompilationResult> cachedResults,
+        [NotNullWhen(true)] out string? trustedPath)
+    {
+        // SourceMap 里声明的源码模块只能回指本次构建已缓存、且仍可信的项目输入。
+        if (!TryResolveTrustedProjectInputFilePath(rootDirectory, candidatePath, out trustedPath))
+        {
+            return false;
+        }
+
+        return cachedResults.ContainsKey(trustedPath);
     }
 
     private static string NormalizeBundlerProxyRequestPath(string requestPath)
@@ -1428,6 +1540,18 @@ internal sealed partial class BuildOrchestrator
         ModuleResolver moduleResolver,
         CancellationToken cancellationToken)
     {
+        string sourcePublicPath;
+        try
+        {
+            // CSS 片段的公开路径必须仍能映射回可信项目输入；否则说明这个依赖
+            // 已经越过 build 模式边界，直接降级丢弃，避免把外部样式拼进产物。
+            sourcePublicPath = moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/');
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+
         string? sourceText = null;
         if (File.Exists(cssPath))
         {
@@ -1445,7 +1569,7 @@ internal sealed partial class BuildOrchestrator
 
         return new CssFragment(
             emittedCss!,
-            moduleResolver.GetResolvedUrlForAbsolutePath(cssPath).TrimStart('/'),
+            sourcePublicPath,
             cssPath,
             sourceText is null ? null : 1,
             sourceText is null ? null : CountSourceMapLines(sourceText),

@@ -4,6 +4,10 @@ namespace Jolt.DevServer;
 
 internal sealed class ModuleResolver
 {
+    private static readonly StringComparison FilePathComparison = OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
     private static readonly string[] SupportedExtensions =
     [
         ".jazor",
@@ -16,14 +20,17 @@ internal sealed class ModuleResolver
 
     private readonly string _rootDirectory;
     private readonly IReadOnlyList<ResolveAliasRule> _resolveAliasRules;
+    private readonly bool _enforceTrustedProjectPaths;
 
     public ModuleResolver(
         string rootDirectory,
-        IReadOnlyDictionary<string, string>? resolveAliases = null)
+        IReadOnlyDictionary<string, string>? resolveAliases = null,
+        bool enforceTrustedProjectPaths = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
         _rootDirectory = Path.GetFullPath(rootDirectory);
         _resolveAliasRules = CreateResolveAliasRules(resolveAliases);
+        _enforceTrustedProjectPaths = enforceTrustedProjectPaths;
     }
 
     public ResolveResult Resolve(string requestPath, string? importerPath = null)
@@ -72,9 +79,19 @@ internal sealed class ModuleResolver
         ArgumentException.ThrowIfNullOrWhiteSpace(absolutePath);
 
         var fullPath = Path.GetFullPath(absolutePath);
-        if (!IsInsideRoot(fullPath))
+        if (!IsInsideRoot(_rootDirectory, fullPath))
         {
             throw new InvalidOperationException("Resolved path escapes the dev-server root.");
+        }
+
+        // 默认 dev server 保持既有解析语义；只有 build 显式开启严格模式时，
+        // 才拒绝通过 reparse point 暴露出来的“看似在项目内”的文件。
+        if (_enforceTrustedProjectPaths
+            && File.Exists(fullPath)
+            && !TryResolveTrustedProjectFilePath(fullPath, out _))
+        {
+            throw new InvalidOperationException(
+                "Resolved path could not be trusted because it traverses an untrusted reparse point or became unavailable.");
         }
 
         return BuildResolvedUrl(fullPath);
@@ -114,7 +131,7 @@ internal sealed class ModuleResolver
     private ResolveResult ResolveAbsolutePath(string absolutePath, string resolvedUrl)
     {
         var fullPath = Path.GetFullPath(absolutePath);
-        if (!IsInsideRoot(fullPath))
+        if (!IsInsideRoot(_rootDirectory, fullPath))
         {
             return new ResolveResult
             {
@@ -124,6 +141,23 @@ internal sealed class ModuleResolver
                 IsVirtual = false,
                 Found = false,
                 Error = "Resolved path escapes the dev-server root."
+            };
+        }
+
+        // Resolve(...) 仍复用同一套严格边界：build 模式下如果文件链路上出现
+        // reparse point，就直接按未命中处理，避免后续编译把外部源码纳入产物。
+        if (_enforceTrustedProjectPaths
+            && File.Exists(fullPath)
+            && !TryResolveTrustedProjectFilePath(fullPath, out _))
+        {
+            return new ResolveResult
+            {
+                AbsolutePath = fullPath,
+                ResolvedUrl = resolvedUrl,
+                DocumentKind = DocumentKind.Unknown,
+                IsVirtual = false,
+                Found = false,
+                Error = "Resolved path could not be trusted because it traverses an untrusted reparse point or became unavailable."
             };
         }
 
@@ -147,9 +181,72 @@ internal sealed class ModuleResolver
             : "/" + relativePath;
     }
 
-    private bool IsInsideRoot(string fullPath)
+    internal static bool IsTrustedProjectPath(
+        string rootDirectory,
+        string candidatePath,
+        FileAttributes attributes)
     {
-        var relativePath = Path.GetRelativePath(_rootDirectory, fullPath);
+        var fullRootDirectory = Path.GetFullPath(rootDirectory);
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        return IsInsideRoot(fullRootDirectory, fullCandidatePath)
+            && (attributes & FileAttributes.ReparsePoint) == 0;
+    }
+
+    private bool TryResolveTrustedProjectFilePath(string candidatePath, out string trustedPath)
+    {
+        trustedPath = string.Empty;
+        var fullCandidatePath = Path.GetFullPath(candidatePath);
+        if (!IsInsideRoot(_rootDirectory, fullCandidatePath) || !File.Exists(fullCandidatePath))
+        {
+            return false;
+        }
+
+        var inspectionPath = fullCandidatePath;
+        while (!string.IsNullOrWhiteSpace(inspectionPath))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(inspectionPath);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return false;
+            }
+            catch (FileNotFoundException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+
+            // build 模式下不跟随 reparse point，避免把工作区外源码伪装成项目模块。
+            if (!IsTrustedProjectPath(_rootDirectory, inspectionPath, attributes))
+            {
+                return false;
+            }
+
+            if (string.Equals(inspectionPath, _rootDirectory, FilePathComparison))
+            {
+                trustedPath = fullCandidatePath;
+                return true;
+            }
+
+            inspectionPath = Path.GetDirectoryName(inspectionPath);
+        }
+
+        return false;
+    }
+
+    private static bool IsInsideRoot(string rootDirectory, string fullPath)
+    {
+        var relativePath = Path.GetRelativePath(rootDirectory, fullPath);
         return string.Equals(relativePath, ".", StringComparison.Ordinal)
             || (!string.Equals(relativePath, "..", StringComparison.Ordinal)
                 && !relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)

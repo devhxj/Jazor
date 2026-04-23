@@ -94,7 +94,7 @@ public sealed class JoltBuildSliceFixTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -177,6 +177,32 @@ public sealed class JoltBuildSliceFixTests
         var path = Path.Combine(Path.GetTempPath(), "jazor-build-slice-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+        }
     }
 
     private sealed class TestHttpServer : IAsyncDisposable

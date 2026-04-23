@@ -190,7 +190,12 @@ internal sealed partial class BuildOrchestrator
             await using var denoHost = CreateDenoHost();
             await denoHost.StartAsync(cancellationToken);
 
-            var moduleResolver = new ModuleResolver(options.RootDirectory, options.ResolveAliases);
+            // 生产构建阶段的模块解析不跟随 reparse point，避免 bundler/dev-server
+            // 把工作区外源码伪装成本地依赖读入产物。
+            var moduleResolver = new ModuleResolver(
+                options.RootDirectory,
+                options.ResolveAliases,
+                enforceTrustedProjectPaths: true);
             var frontendCompiler = new DenoFrontendModuleCompiler(denoHost, isProduction: true);
             var compiler = new OnDemandCompiler(
                 new JazorVueParser(),
@@ -403,17 +408,19 @@ internal sealed partial class BuildOrchestrator
         CancellationToken cancellationToken)
     {
         var htmlPath = Path.Combine(context.RootDirectory, "index.html");
-        if (!File.Exists(htmlPath))
+        // 生产构建读取入口 HTML 也要走项目输入信任边界，避免通过链接/越界路径
+        // 把工作区外模板写进最终产物。
+        if (!TryResolveTrustedProjectInputFilePath(context.RootDirectory, htmlPath, out var trustedHtmlPath))
         {
             context.Diagnostics.Add(new BuildDiagnostic
             {
                 Severity = DiagnosticSeverity.Warning,
-                Message = "index.html not found in project root. Skipping HTML generation."
+                Message = "index.html is missing or could not be trusted from project root. Skipping HTML generation."
             });
             return;
         }
 
-        var html = await File.ReadAllTextAsync(htmlPath, cancellationToken);
+        var html = await File.ReadAllTextAsync(trustedHtmlPath, cancellationToken);
 
         // Remove dev-mode script references
         html = HtmlTransformer.RemoveDevScriptRefs(html);
@@ -685,15 +692,15 @@ internal sealed partial class BuildOrchestrator
                 originalContent,
                 specifier =>
                 {
-                    if (!TryGetBuiltChunkDynamicImportPath(specifier.Value, out var specifierPath))
+                    if (!TryResolveBuiltChunkDynamicImportFilePath(
+                            context,
+                            currentChunkDirectory,
+                            specifier.Value,
+                            out var targetChunkFilePath))
                     {
                         return null;
                     }
 
-                    var targetAbsolutePath = Path.GetFullPath(Path.Combine(
-                        currentChunkDirectory,
-                        specifierPath.Replace('/', Path.DirectorySeparatorChar)));
-                    var targetChunkFilePath = Path.GetRelativePath(context.RootDirectory, targetAbsolutePath).Replace('\\', '/');
                     if (!chunkCssByFilePath.TryGetValue(targetChunkFilePath, out var targetCssPaths) || targetCssPaths.Length == 0)
                     {
                         return null;
@@ -739,15 +746,16 @@ internal sealed partial class BuildOrchestrator
             foreach (var specifier in JavaScriptModuleSpecifierScanner.EnumerateSpecifiers(chunkContent)
                          .Where(static specifier => specifier.Kind == JavaScriptModuleSpecifierKind.DynamicImport))
             {
-                if (!TryGetBuiltChunkDynamicImportPath(specifier.Value, out var specifierPath))
+                if (!TryResolveBuiltChunkDynamicImportFilePath(
+                        context,
+                        currentChunkDirectory,
+                        specifier.Value,
+                        out var targetChunkFilePath))
                 {
                     continue;
                 }
 
-                var targetAbsolutePath = Path.GetFullPath(Path.Combine(
-                    currentChunkDirectory,
-                    specifierPath.Replace('/', Path.DirectorySeparatorChar)));
-                dynamicImports.Add(Path.GetRelativePath(context.RootDirectory, targetAbsolutePath).Replace('\\', '/'));
+                dynamicImports.Add(targetChunkFilePath);
             }
 
             dynamicImportsByChunk[chunk.FilePath] = dynamicImports;
@@ -822,6 +830,48 @@ internal sealed partial class BuildOrchestrator
         return (path.StartsWith("./", StringComparison.Ordinal)
                 || path.StartsWith("../", StringComparison.Ordinal))
             && path.EndsWith(".js", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool TryResolveBuiltChunkDynamicImportFilePath(
+        BuildContext context,
+        string currentChunkDirectory,
+        string specifier,
+        out string targetChunkFilePath)
+    {
+        targetChunkFilePath = string.Empty;
+        if (!TryGetBuiltChunkDynamicImportPath(specifier, out var specifierPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var targetAbsolutePath = Path.GetFullPath(Path.Combine(
+                currentChunkDirectory,
+                specifierPath.Replace('/', Path.DirectorySeparatorChar)));
+
+            // 已生成 chunk 的 import 文本也不当作可信输入；目标必须仍落在当前输出目录内，
+            // 防止异常产物里的 ../ 路径污染 CSS 闭包或二次重写。
+            var trustedTargetPath = EnsureTrustedBuildOutputPath(
+                context.RootDirectory,
+                context.OutDirectory,
+                targetAbsolutePath,
+                allowMissingLeaf: true);
+            targetChunkFilePath = Path.GetRelativePath(context.RootDirectory, trustedTargetPath).Replace('\\', '/');
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
     }
 
     private static string CreateDynamicChunkCssImportExpression(

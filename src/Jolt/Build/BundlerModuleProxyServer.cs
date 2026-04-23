@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Sockets;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -74,9 +73,9 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
             return;
         }
 
-        var port = GetAvailablePort();
         var builder = WebApplication.CreateSlimBuilder();
-        builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
+        // 让 Kestrel 直接绑定端口 0，避免“先找空闲端口再绑定”的竞态。
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
 
         var application = builder.Build();
         application.Map(
@@ -303,12 +302,4 @@ internal sealed class BundlerModuleProxyServer : IAsyncDisposable
         return null;
     }
 
-    private static int GetAvailablePort()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return port;
-    }
 }

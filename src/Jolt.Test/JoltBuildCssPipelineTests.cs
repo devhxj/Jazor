@@ -228,7 +228,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -286,7 +286,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -403,7 +403,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -514,7 +514,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -701,7 +701,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -936,7 +936,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1074,7 +1074,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1107,7 +1107,299 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_ReadNormalizedSourceMapSources_WithInvalidSourcePath_ReturnsEmpty()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var mapDirectory = Path.Combine(tempDir, "dist", "assets");
+            Directory.CreateDirectory(mapDirectory);
+            var sourceMapPath = Path.Combine(mapDirectory, "invalid-source.css.map");
+            File.WriteAllText(
+                sourceMapPath,
+                """{"version":3,"sources":["bad\u0000.css"],"names":[],"mappings":""}""");
+
+            var readSourcesMethod = typeof(BuildOrchestrator).GetMethod(
+                "ReadNormalizedSourceMapSources",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(readSourcesMethod, "Expected to locate BuildOrchestrator.ReadNormalizedSourceMapSources.");
+
+            var resolvedSources = readSourcesMethod.Invoke(
+                null,
+                [
+                    tempDir,
+                    Path.GetRelativePath(tempDir, sourceMapPath).Replace('\\', '/'),
+                    new ModuleResolver(tempDir)
+                ]) as IReadOnlyList<string>;
+
+            Assert.IsNotNull(resolvedSources);
+            Assert.AreEqual(0, resolvedSources.Count);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_ReadNormalizedSourceMapSources_WithPathEscapingRoot_ReturnsEmpty()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var sourceMapPath = Path.Combine(externalDir, "outside.css.map");
+            File.WriteAllText(sourceMapPath, """{"version":3,"sources":["/main.css"],"names":[],"mappings":""}""");
+
+            var readSourcesMethod = typeof(BuildOrchestrator).GetMethod(
+                "ReadNormalizedSourceMapSources",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(readSourcesMethod, "Expected to locate BuildOrchestrator.ReadNormalizedSourceMapSources.");
+
+            var resolvedSources = readSourcesMethod.Invoke(
+                null,
+                [
+                    tempDir,
+                    Path.GetRelativePath(tempDir, sourceMapPath).Replace('\\', '/'),
+                    new ModuleResolver(tempDir)
+                ]) as IReadOnlyList<string>;
+
+            Assert.IsNotNull(resolvedSources);
+            Assert.AreEqual(0, resolvedSources.Count);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_ReadChunkSourceModules_WithPathEscapingRoot_ReturnsEmpty()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var sourceMapPath = Path.Combine(externalDir, "outside.js.map");
+            File.WriteAllText(sourceMapPath, """{"version":3,"sources":["/main.js"],"names":[],"mappings":""}""");
+            var chunk = new ChunkInfo
+            {
+                FileName = "main.js",
+                FilePath = "dist/main.js",
+                Size = 0,
+                SourceMapPath = Path.GetRelativePath(tempDir, sourceMapPath).Replace('\\', '/')
+            };
+
+            var readModulesMethod = typeof(BuildOrchestrator).GetMethod(
+                "ReadChunkSourceModules",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(readModulesMethod, "Expected to locate BuildOrchestrator.ReadChunkSourceModules.");
+
+            var sourceModules = readModulesMethod.Invoke(
+                null,
+                [
+                    tempDir,
+                    chunk,
+                    new Dictionary<string, CompilationResult>(StringComparer.OrdinalIgnoreCase),
+                    new ModuleResolver(tempDir)
+                ]) as ISet<string>;
+
+            Assert.IsNotNull(sourceModules);
+            Assert.AreEqual(0, sourceModules.Count);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_ReadChunkSourceModules_WithExternalFileUriSource_ReturnsEmpty()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var externalModulePath = Path.Combine(externalDir, "external.js");
+            File.WriteAllText(externalModulePath, """console.log("external");""");
+
+            var mapDirectory = Path.Combine(tempDir, "dist", "assets");
+            Directory.CreateDirectory(mapDirectory);
+            var sourceMapPath = Path.Combine(mapDirectory, "main.js.map");
+            var externalModuleUri = new Uri(externalModulePath).AbsoluteUri;
+            File.WriteAllText(
+                sourceMapPath,
+                $$"""{"version":3,"sources":[{{JsonSerializer.Serialize(externalModuleUri)}}],"names":[],"mappings":""}""");
+            var chunk = new ChunkInfo
+            {
+                FileName = "main.js",
+                FilePath = "dist/assets/main.js",
+                Size = 0,
+                SourceMapPath = Path.GetRelativePath(tempDir, sourceMapPath).Replace('\\', '/')
+            };
+            var cachedResults = new Dictionary<string, CompilationResult>(StringComparer.OrdinalIgnoreCase)
+            {
+                [Path.GetFullPath(externalModulePath)] = new CompilationResult
+                {
+                    ContentType = "application/javascript",
+                    Content = """console.log("external");"""
+                }
+            };
+
+            var readModulesMethod = typeof(BuildOrchestrator).GetMethod(
+                "ReadChunkSourceModules",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(readModulesMethod, "Expected to locate BuildOrchestrator.ReadChunkSourceModules.");
+
+            var sourceModules = readModulesMethod.Invoke(
+                null,
+                [
+                    tempDir,
+                    chunk,
+                    cachedResults,
+                    new ModuleResolver(tempDir)
+                ]) as ISet<string>;
+
+            Assert.IsNotNull(sourceModules);
+            Assert.AreEqual(0, sourceModules.Count);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_TryReadTrustedSourceMapContent_WithInvalidSourcePath_ReturnsFalse()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var result = BuildOrchestrator.TryReadTrustedSourceMapContent(
+                tempDir,
+                "bad\0.css",
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                out var trustedSourcePath,
+                out var sourceContent);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(trustedSourcePath);
+            Assert.AreEqual(string.Empty, sourceContent);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_TryReadTrustedSourceMapContent_WithSourceInsideRoot_ReturnsTrue()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var sourcePath = Path.Combine(tempDir, "src", "app.css");
+            Directory.CreateDirectory(Path.GetDirectoryName(sourcePath)!);
+            File.WriteAllText(sourcePath, ".app { color: red; }");
+            var cache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            var result = BuildOrchestrator.TryReadTrustedSourceMapContent(
+                tempDir,
+                sourcePath,
+                cache,
+                out var trustedSourcePath,
+                out var sourceContent);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(Path.GetFullPath(sourcePath), trustedSourcePath);
+            Assert.AreEqual(".app { color: red; }", sourceContent);
+            Assert.IsTrue(cache.ContainsKey(Path.GetFullPath(sourcePath)));
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public void BuildOrchestrator_TryReadTrustedSourceMapContent_WithSourceOutsideRoot_ReturnsFalse()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var sourcePath = Path.Combine(externalDir, "external.css");
+            File.WriteAllText(sourcePath, ".external { color: red; }");
+
+            var result = BuildOrchestrator.TryReadTrustedSourceMapContent(
+                tempDir,
+                sourcePath,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                out var trustedSourcePath,
+                out var sourceContent);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(trustedSourcePath);
+            Assert.AreEqual(string.Empty, sourceContent);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task BuildOrchestrator_CreateCssDependencyFragmentAsync_WithExternalCssPath_ReturnsNull()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        var externalDir = CreateTemporaryDirectory();
+        try
+        {
+            var externalCssPath = Path.Combine(externalDir, "external.css");
+            await File.WriteAllTextAsync(externalCssPath, ".external { color: red; }");
+
+            var method = typeof(BuildOrchestrator).GetMethod(
+                "CreateCssDependencyFragmentAsync",
+                BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(method, "Expected to locate BuildOrchestrator.CreateCssDependencyFragmentAsync.");
+
+            var invocation = method.Invoke(
+                null,
+                [
+                    externalCssPath,
+                    Array.Empty<string>(),
+                    new Dictionary<string, CompilationResult>(StringComparer.OrdinalIgnoreCase),
+                    new ModuleResolver(tempDir, enforceTrustedProjectPaths: true),
+                    CancellationToken.None
+                ]);
+            Assert.IsNotNull(invocation);
+
+            var asTaskMethod = invocation.GetType().GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance);
+            Assert.IsNotNull(asTaskMethod, "Expected ValueTask<T>.AsTask().");
+
+            var task = asTaskMethod.Invoke(invocation, null) as Task;
+            Assert.IsNotNull(task, "Expected ValueTask<T>.AsTask() to produce a Task instance.");
+            await task;
+
+            var resultProperty = task.GetType().GetProperty("Result", BindingFlags.Public | BindingFlags.Instance);
+            Assert.IsNotNull(resultProperty, "Expected Task<T>.Result.");
+            var result = resultProperty.GetValue(task);
+
+            Assert.IsNull(result);
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+            DeleteDirectory(externalDir);
         }
     }
 
@@ -1146,7 +1438,7 @@ public sealed class JoltBuildCssPipelineTests
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            DeleteDirectory(tempDir);
         }
     }
 
@@ -1191,6 +1483,32 @@ public sealed class JoltBuildCssPipelineTests
         var path = Path.Combine(Path.GetTempPath(), "jazor-build-css-test-" + Guid.NewGuid().ToString("N")[..8]);
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (!Directory.Exists(path))
+        {
+            return;
+        }
+
+        const int maxAttempts = 5;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                Directory.Delete(path, recursive: true);
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100 * attempt);
+            }
+        }
     }
 
     private static void AssertSourceMapContainsSourceContent(
