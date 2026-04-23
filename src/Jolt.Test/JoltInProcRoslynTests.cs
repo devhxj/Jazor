@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.Roslyn.InProc;
 using Microsoft.CodeAnalysis;

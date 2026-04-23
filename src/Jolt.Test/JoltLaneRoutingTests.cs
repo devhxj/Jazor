@@ -1,5 +1,5 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Test;
 

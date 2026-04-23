@@ -1,4 +1,4 @@
-using Jolt.Protocol.Documents;
+using Jazor.Common.VueContracts.Documents;
 
 namespace Jolt.Test;
 

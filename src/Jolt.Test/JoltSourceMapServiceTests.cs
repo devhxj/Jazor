@@ -1,4 +1,4 @@
-using Jazor.SourceMaps;
+using Jazor.Common.SourceMaps;
 using Jolt.SourceMap;
 using static Jolt.Test.SourceMapTestHelpers;
 

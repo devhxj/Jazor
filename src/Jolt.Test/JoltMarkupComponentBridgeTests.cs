@@ -1,6 +1,6 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Coordination;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Test;

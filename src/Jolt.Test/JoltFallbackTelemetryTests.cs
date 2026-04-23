@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
 using Jolt.DevServer;
 using Jolt.Hosting;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Test;
 
@@ -53,7 +53,7 @@ public sealed class JoltFallbackTelemetryTests
 
         try
         {
-            var compiler = new StubFrontendModuleCompiler();
+            var compiler = new StubVolarModuleCompiler();
             await compiler.CompileSfcAsync(
                 "Features/Counter.vue",
                 "<template><div>Counter</div></template>",
@@ -107,7 +107,7 @@ public sealed class JoltFallbackTelemetryTests
                 "<template><div /></template>",
                 "1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
     private static void AssertFallbackEvent(
         string payload,

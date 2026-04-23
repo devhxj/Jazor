@@ -1,8 +1,8 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
-using Jolt.Frontend.Deno.Hosting;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Hosting;
+using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Services;
 using Jolt.Workspace;
 

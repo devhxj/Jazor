@@ -24,8 +24,8 @@ public sealed class JoltDevServerSliceFixTests
             var moduleResolver = new ModuleResolver(rootDirectory);
             var dependencyGraph = new DependencyGraph(moduleResolver);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler: null,
                 new CompilationCache(),
                 dependencyGraph,

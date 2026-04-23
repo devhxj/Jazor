@@ -1,4 +1,4 @@
-using Jolt.Frontend.Deno.Hosting;
+using Jolt.Volar.Deno.Hosting;
 
 namespace Jolt.Test;
 
@@ -26,7 +26,6 @@ public sealed class JoltDenoFrontendHostOptionsTests
                 {
                     "run",
                     "--quiet",
-                    "--cached-only",
                     "--allow-env",
                     "--allow-read",
                     expectedWorkerPath
@@ -119,7 +118,7 @@ public sealed class JoltDenoFrontendHostOptionsTests
 
     private static string WriteWorkerScript(string baseDirectory)
     {
-        var workerPath = Path.Combine(baseDirectory, "Frontend", "Deno", "Worker", "frontend-worker.ts");
+        var workerPath = Path.Combine(baseDirectory, "Volar", "Deno", "Worker", "volar-worker.ts");
         Directory.CreateDirectory(Path.GetDirectoryName(workerPath)!);
         File.WriteAllText(workerPath, "console.log('ok');");
         return workerPath;

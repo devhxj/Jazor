@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Jolt.Frontend.Deno.Hosting;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Hosting;
+using Jolt.Volar.Deno.Protocol;
 
 namespace Jolt.Test;
 

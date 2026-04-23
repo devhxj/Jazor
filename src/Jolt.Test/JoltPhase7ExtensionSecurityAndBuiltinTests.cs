@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using Jazor.VueContracts.Protocol;
 using Jolt.DevServer;
 using Jolt.Extensions;
 using Jolt.Extensions.Builtin;
@@ -12,6 +11,7 @@ using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Registry;
 using Jolt.Workspace;
 

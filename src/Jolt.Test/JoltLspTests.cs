@@ -6,11 +6,11 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Directory = Jolt.Test.TestDirectory;
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
 using Jolt.Lsp;
 using Jolt.Razor.InProc;
 using Jolt.Workspace;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Test;
 

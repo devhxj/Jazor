@@ -9,12 +9,13 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Jazor.VueContracts.Protocol;
 using Jolt.DevServer;
-using Jazor.SourceMaps;
+using Jazor.Common.SourceMaps;
 using Jolt.SourceMap;
 using Jolt.Workspace;
 using static Jolt.Test.SourceMapTestHelpers;
+using Jazor.Vue;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Test;
 
@@ -344,7 +345,7 @@ public sealed class JoltDevServerTests
             Assert.AreEqual("0.0.0.0", options.Host);
             Assert.IsTrue(options.OpenBrowser);
             Assert.IsFalse(options.HmrEnabled);
-            Assert.AreEqual("stub", options.FrontendCompiler);
+            Assert.AreEqual("stub", options.VolarCompiler);
             Assert.AreEqual(1, options.ProxyRules.Count);
             Assert.AreEqual("http://localhost:5000", options.ProxyRules["/api"].Target);
             Assert.IsTrue(options.ProxyRules["/api"].WebSocket);
@@ -737,7 +738,7 @@ public sealed class JoltDevServerTests
     [TestMethod]
     public void DenoFrontendModuleCompiler_ExtractJavaScriptDependencies_ReturnsUniqueStaticAndDynamicSpecifiers()
     {
-        var dependencies = DenoFrontendModuleCompiler.ExtractJavaScriptDependencies(
+        var dependencies = DenoVolarModuleCompiler.ExtractJavaScriptDependencies(
             """
             import { ref } from "vue";
             import "./counter.css";
@@ -935,7 +936,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const message = 'hello';",
                     Dependencies = ["vue"]
@@ -949,8 +950,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -993,7 +994,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const message = 'hello';",
                     SourceMap = """
@@ -1010,8 +1011,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1050,7 +1051,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const message = 'hello';",
                     SourceMap = """
@@ -1067,8 +1068,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1109,7 +1110,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SourceMap = """
@@ -1126,8 +1127,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1167,7 +1168,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SourceMap = """
@@ -1184,8 +1185,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1228,7 +1229,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'CounterUpdated' };",
                     SourceMap = """
@@ -1247,8 +1248,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1304,7 +1305,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SourceMap = """
@@ -1322,8 +1323,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1381,7 +1382,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'CounterUnsaved' };",
                     SourceMap = """
@@ -1400,8 +1401,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1453,7 +1454,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     Dependencies = ["vue"]
@@ -1467,8 +1468,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1509,8 +1510,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1553,8 +1554,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -1600,8 +1601,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1653,8 +1654,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1731,7 +1732,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = """
                         import styles from "./app.module.css";
@@ -1753,8 +1754,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1843,7 +1844,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = """
                         import styles from "./app.module.css";
@@ -1865,8 +1866,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1944,7 +1945,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = """
                         import styles from "./app.module.css";
@@ -1965,8 +1966,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2052,7 +2053,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = """
                         import styles from "./app.module.css";
@@ -2073,8 +2074,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2136,8 +2137,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -2188,7 +2189,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
@@ -2197,8 +2198,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2227,7 +2228,7 @@ public sealed class JoltDevServerTests
             var updatedText = "<template><div>Counter updated</div></template>";
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'CounterUpdated' };",
                     SupportsHmr = true
@@ -2265,7 +2266,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
@@ -2275,8 +2276,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2303,7 +2304,7 @@ public sealed class JoltDevServerTests
             var unsavedText = "<template><div>Unsaved edit</div></template>";
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'CounterUnsaved' };",
                     SupportsHmr = true
@@ -2353,7 +2354,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }",
@@ -2363,8 +2364,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2397,7 +2398,7 @@ public sealed class JoltDevServerTests
                 """;
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }",
@@ -2441,7 +2442,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }",
@@ -2451,8 +2452,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2485,7 +2486,7 @@ public sealed class JoltDevServerTests
                 """;
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }",
@@ -2520,7 +2521,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     Dependencies = []
@@ -2530,8 +2531,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2557,7 +2558,7 @@ public sealed class JoltDevServerTests
             var updatedSource = "export const count: number = 2;";
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 2;",
                     Dependencies = []
@@ -2598,7 +2599,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 2;",
                     SourceMap = """
@@ -2617,8 +2618,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2667,7 +2668,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     Dependencies = []
@@ -2676,8 +2677,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2704,7 +2705,7 @@ public sealed class JoltDevServerTests
             var updatedSource = "export const count: number = 2;";
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 2;",
                     Dependencies = []
@@ -2752,7 +2753,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
                     SupportsHmr = true
@@ -2763,8 +2764,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2787,7 +2788,7 @@ public sealed class JoltDevServerTests
             var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment() { return 2; } } };",
                 SupportsHmr = true
@@ -2854,7 +2855,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return null; } };",
                     SupportsHmr = true
@@ -2864,8 +2865,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2889,7 +2890,7 @@ public sealed class JoltDevServerTests
             var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
                 SupportsHmr = true
@@ -2947,7 +2948,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
                     SupportsHmr = true
@@ -2957,8 +2958,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2982,7 +2983,7 @@ public sealed class JoltDevServerTests
             var connectedMessage = await ReceiveWebSocketJsonAsync(socket, TimeSpan.FromSeconds(5));
             Assert.AreEqual("connected", connectedMessage.GetProperty("type").GetString());
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment() { return 2; } } };",
                 SupportsHmr = true
@@ -3046,7 +3047,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 1; } };",
                     SupportsHmr = true
@@ -3055,8 +3056,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3091,7 +3092,7 @@ public sealed class JoltDevServerTests
                 """;
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 2; } };",
                     SupportsHmr = true
@@ -3144,7 +3145,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 1; } };",
                     SupportsHmr = true
@@ -3153,8 +3154,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3187,7 +3188,7 @@ public sealed class JoltDevServerTests
                 """;
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 2; } };",
                     SupportsHmr = true
@@ -3242,7 +3243,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta + 1; } } };",
                     SupportsHmr = true
@@ -3251,8 +3252,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3288,7 +3289,7 @@ public sealed class JoltDevServerTests
                 """;
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta) + 1; } } };",
                     SupportsHmr = true
@@ -3336,7 +3337,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 1; } };",
                     SupportsHmr = true
@@ -3345,8 +3346,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3379,7 +3380,7 @@ public sealed class JoltDevServerTests
                 """;
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 2; } };",
                     SupportsHmr = true
@@ -3413,7 +3414,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
@@ -3428,8 +3429,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3457,7 +3458,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'CounterUpdated' };",
                     SupportsHmr = true
@@ -3490,7 +3491,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
@@ -3506,8 +3507,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3565,8 +3566,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -3614,8 +3615,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -3664,8 +3665,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3717,8 +3718,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3768,8 +3769,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3822,7 +3823,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return null; } };",
                     SupportsHmr = true
@@ -3837,8 +3838,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3866,7 +3867,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
                     SupportsHmr = true
@@ -3925,7 +3926,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
                     SupportsHmr = true
@@ -3940,8 +3941,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3969,7 +3970,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', setup() { return { count: 2 }; } };",
                     SupportsHmr = true
@@ -4032,7 +4033,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta; } } };",
                     SupportsHmr = true
@@ -4047,8 +4048,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -4075,7 +4076,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta); } } };",
                     SupportsHmr = true
@@ -4115,7 +4116,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     Dependencies = []
@@ -4130,8 +4131,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -4159,7 +4160,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 2;",
                     Dependencies = []
@@ -4222,8 +4223,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4296,8 +4297,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4367,8 +4368,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4432,8 +4433,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4506,8 +4507,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4594,8 +4595,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4676,8 +4677,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4759,8 +4760,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4833,8 +4834,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4900,8 +4901,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4968,8 +4969,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -5021,7 +5022,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const compiled = true;",
                     Dependencies = ["vue"]
@@ -5029,8 +5030,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: moduleResolver);
@@ -5087,15 +5088,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5155,15 +5156,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5228,15 +5229,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5305,15 +5306,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5378,15 +5379,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5455,15 +5456,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5525,15 +5526,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5576,7 +5577,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }"
@@ -5584,8 +5585,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: moduleResolver);
@@ -5614,14 +5615,14 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const cached = true;"
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -5658,15 +5659,15 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }",
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5675,7 +5676,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }",
@@ -5711,15 +5712,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default {};",
                     Dependencies = ["vue", "./Child.vue"]
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -5757,7 +5758,7 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "import App from './App.vue'; export { App };",
                     Dependencies = ["./App.vue"]
@@ -5765,21 +5766,21 @@ public sealed class JoltDevServerTests
             };
             frontendCompiler.SetSfcResult(
                 appPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "import Child from './Child.vue'; export default { components: { Child } };",
                     Dependencies = ["./Child.vue"]
                 });
             frontendCompiler.SetSfcResult(
                 childPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Child' };",
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -5793,7 +5794,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 childPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'ChildUpdated' };",
                     SupportsHmr = true
@@ -5841,21 +5842,21 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 mainPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "import { count } from './util.ts'; export { count };",
                     Dependencies = ["./util.ts"]
                 });
             frontendCompiler.SetTypeScriptResult(
                 utilPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     Dependencies = []
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -5868,7 +5869,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetTypeScriptResult(
                 utilPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 2;",
                     Dependencies = []
@@ -5920,22 +5921,22 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return null; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
                 SupportsHmr = true
@@ -5988,22 +5989,22 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return null; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
                 SupportsHmr = true
@@ -6060,15 +6061,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6076,7 +6077,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment() { return 2; } } };",
                 SupportsHmr = true
@@ -6140,15 +6141,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6156,7 +6157,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta); } } };",
                 SupportsHmr = true
@@ -6218,15 +6219,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6234,7 +6235,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment() { return 2; } } };",
                 SupportsHmr = true
@@ -6294,22 +6295,22 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return null; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
                 SupportsHmr = true
@@ -6355,15 +6356,15 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 utilPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     Dependencies = []
                 });
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6374,7 +6375,7 @@ public sealed class JoltDevServerTests
             var updatedSource = "export const count: number = 2;";
             frontendCompiler.SetTypeScriptResult(
                 utilPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 2;",
                     Dependencies = []
@@ -6429,15 +6430,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6445,7 +6446,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', setup() { return { count: 2 }; } };",
                 SupportsHmr = true
@@ -6509,15 +6510,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6525,7 +6526,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', setup() { return { count: 2 }; } };",
                 SupportsHmr = true
@@ -6589,15 +6590,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta + 1; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6605,7 +6606,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta) + 1; } } };",
                 SupportsHmr = true
@@ -6670,15 +6671,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return delta + 1; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6686,7 +6687,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment(delta) { return Number(delta) + 2; } } };",
                 SupportsHmr = true
@@ -6762,15 +6763,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', setup() { return { count: 1 }; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6832,15 +6833,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', computed: { total() { return 1; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6848,7 +6849,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', computed: { total() { return 2; } } };",
                 SupportsHmr = true
@@ -6908,15 +6909,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6924,7 +6925,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', methods: { increment() { return 1; } }, __build: '2' };",
                 SupportsHmr = true
@@ -6976,15 +6977,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter', render() { return null; } };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6992,7 +6993,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export default { name: 'Counter', render() { return 'updated'; } };",
                 SupportsHmr = true
@@ -7044,15 +7045,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "import helper from './helper-a'; export default { name: 'Counter' };",
                     SupportsHmr = true
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7060,7 +7061,7 @@ public sealed class JoltDevServerTests
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
 
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "import helper from './helper-b'; export default { name: 'Counter' };",
                 SupportsHmr = true
@@ -7114,15 +7115,15 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }",
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7132,7 +7133,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }",
@@ -7182,7 +7183,7 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "import App from './App.vue'; export { App };",
                     Dependencies = ["./App.vue"]
@@ -7190,7 +7191,7 @@ public sealed class JoltDevServerTests
             };
             frontendCompiler.SetSfcResult(
                 appPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "import Counter from './Counter.jazor'; export default { components: { Counter } };",
                     Dependencies = ["./Counter.jazor"],
@@ -7198,15 +7199,15 @@ public sealed class JoltDevServerTests
                 });
             frontendCompiler.SetSfcResult(
                 counterPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }",
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7218,7 +7219,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 counterPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }",
@@ -7254,8 +7255,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(htmlPath, "<html></html>");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7287,8 +7288,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(configPath, "{}");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7318,8 +7319,8 @@ public sealed class JoltDevServerTests
             var deletedPath = Path.Combine(rootDirectory, "Deleted.vue");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7350,8 +7351,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(stylePath, "body { color: red; }");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7388,15 +7389,15 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(new ModuleResolver(rootDirectory));
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "import './site.css'; export {};",
                     Dependencies = ["./site.css"]
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -7440,7 +7441,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 componentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }",
@@ -7448,8 +7449,8 @@ public sealed class JoltDevServerTests
                     EmbeddedStyleDependencies = ["./site.css"]
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7458,7 +7459,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 componentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }",
@@ -7498,14 +7499,14 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: red; }"
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -7514,7 +7515,7 @@ public sealed class JoltDevServerTests
 
             frontendCompiler.SetSfcResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     StyleContent = ".counter { color: blue; }"
@@ -7562,8 +7563,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -7638,8 +7639,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -7693,7 +7694,7 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = """
                         import styles from "./app.module.css";
@@ -7711,8 +7712,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7775,7 +7776,7 @@ public sealed class JoltDevServerTests
             var graph = new DependencyGraph(moduleResolver);
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = """
                         import styles from "./app.module.css";
@@ -7793,8 +7794,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7840,19 +7841,19 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const version = 1;"
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
             _ = await compiler.CompileAsync(documentPath, CancellationToken.None);
-            frontendCompiler.SfcResult = new FrontendModuleCompilation
+            frontendCompiler.SfcResult = new VolarModuleCompilation
             {
                 JavaScript = "export const version = 2;"
             };
@@ -7880,14 +7881,14 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const version = 1;"
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -7915,7 +7916,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     Dependencies = ["vue"],
@@ -7923,8 +7924,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -7946,7 +7947,7 @@ public sealed class JoltDevServerTests
     [TestMethod]
     public async Task StubFrontendModuleCompiler_CompileSfcAsync_WhenOnlyStyleChanges_PreservesJavaScriptAndUpdatesStyleContent()
     {
-        var compiler = new StubFrontendModuleCompiler();
+        var compiler = new StubVolarModuleCompiler();
         var documentPath = Path.Combine(Path.GetTempPath(), "Counter.vue");
         var originalText =
             """
@@ -7985,15 +7986,15 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     Dependencies = ["vue"]
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8027,7 +8028,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { name: 'Counter' };",
                     SourceMap = """
@@ -8038,8 +8039,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -8091,9 +8092,9 @@ public sealed class JoltDevServerTests
                 """;
             await File.WriteAllTextAsync(documentPath, source);
 
-            var parser = new global::Jazor.Vue.JazorVueParser();
-            var vueCompiler = new global::Jazor.Vue.JazorVueCompiler();
-            var generatedSfc = vueCompiler.Compile(parser.Parse(documentPath, source));
+            var parser = new global::Jazor.Common.RazorVue.JazorVueParser();
+            var vueCompiler = new global::Jazor.Common.RazorVue.JazorVueCompiler();
+            var generatedSfc = vueCompiler.Compile(JazorVueParser.Parse(documentPath, source));
             var frontendSourceMap = CreateSingleSourceLineMap(
                 "Counter.jazor",
                 generatedSfc.GeneratedVueText,
@@ -8104,7 +8105,7 @@ public sealed class JoltDevServerTests
             var sourceMapService = new InMemorySourceMapService();
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "const count = ref(1);\ncount.value++;",
                     SourceMap = frontendSourceMap,
@@ -8164,7 +8165,7 @@ public sealed class JoltDevServerTests
             var sourceMapService = new InMemorySourceMapService();
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     SourceMap = """
@@ -8174,8 +8175,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8225,7 +8226,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     SourceMap = """
@@ -8234,8 +8235,8 @@ public sealed class JoltDevServerTests
                     Dependencies = []
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8250,7 +8251,7 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(documentPath, updatedSource);
             frontendCompiler.SetTypeScriptResult(
                 documentPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = """
                         export const count = 1;
@@ -8299,7 +8300,7 @@ public sealed class JoltDevServerTests
             var sourceMapService = new InMemorySourceMapService();
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                SfcResult = new FrontendModuleCompilation
+                SfcResult = new VolarModuleCompilation
                 {
                     JavaScript = "export default { setup() { const count = 1; return { count }; } };",
                     SourceMap = """
@@ -8309,8 +8310,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8352,7 +8353,7 @@ public sealed class JoltDevServerTests
             var frontendCompiler = new FakeFrontendModuleCompiler();
             frontendCompiler.SetTypeScriptResult(
                 counterPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     SourceMap = """
@@ -8362,7 +8363,7 @@ public sealed class JoltDevServerTests
                 });
             frontendCompiler.SetTypeScriptResult(
                 todoPath,
-                new FrontendModuleCompilation
+                new VolarModuleCompilation
                 {
                     JavaScript = "export const todo = 'ship';",
                     SourceMap = """
@@ -8371,8 +8372,8 @@ public sealed class JoltDevServerTests
                     Dependencies = []
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8407,7 +8408,7 @@ public sealed class JoltDevServerTests
 
             var frontendCompiler = new FakeFrontendModuleCompiler
             {
-                TypeScriptResult = new FrontendModuleCompilation
+                TypeScriptResult = new VolarModuleCompilation
                 {
                     JavaScript = "export const count = 1;",
                     SourceMap = """
@@ -8417,8 +8418,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8449,8 +8450,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(documentPath, "<template><div>Hello</div></template>");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Vue.JazorVueParser(),
-                new global::Jazor.Vue.JazorVueCompiler(),
+                new global::Jazor.Common.RazorVue.JazorVueParser(),
+                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
                 frontendCompiler: null,
                 new CompilationCache());
 
@@ -8647,15 +8648,15 @@ public sealed class JoltDevServerTests
         }
     }
 
-    private sealed class FakeFrontendModuleCompiler : IFrontendModuleCompiler
+    private sealed class FakeFrontendModuleCompiler : IVolarModuleCompiler
     {
-        private readonly Dictionary<string, FrontendModuleCompilation> _sfcResultsByPath = new(StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, FrontendModuleCompilation> _typeScriptResultsByPath = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, VolarModuleCompilation> _sfcResultsByPath = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, VolarModuleCompilation> _typeScriptResultsByPath = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, CssModuleCompilation> _cssModuleResultsByPath = new(StringComparer.OrdinalIgnoreCase);
 
-        public FrontendModuleCompilation? SfcResult { get; set; }
+        public VolarModuleCompilation? SfcResult { get; set; }
 
-        public FrontendModuleCompilation? TypeScriptResult { get; set; }
+        public VolarModuleCompilation? TypeScriptResult { get; set; }
 
         public CssModuleCompilation? CssModuleResult { get; set; }
 
@@ -8677,16 +8678,16 @@ public sealed class JoltDevServerTests
 
         public string? LastCssModuleText { get; private set; }
 
-        public void SetSfcResult(string documentPath, FrontendModuleCompilation result)
+        public void SetSfcResult(string documentPath, VolarModuleCompilation result)
             => _sfcResultsByPath[documentPath] = result;
 
-        public void SetTypeScriptResult(string documentPath, FrontendModuleCompilation result)
+        public void SetTypeScriptResult(string documentPath, VolarModuleCompilation result)
             => _typeScriptResultsByPath[documentPath] = result;
 
         public void SetCssModuleResult(string documentPath, CssModuleCompilation result)
             => _cssModuleResultsByPath[documentPath] = result;
 
-        public ValueTask<FrontendModuleCompilation?> CompileSfcAsync(
+        public ValueTask<VolarModuleCompilation?> CompileSfcAsync(
             string documentPath,
             string text,
             CancellationToken cancellationToken)
@@ -8700,7 +8701,7 @@ public sealed class JoltDevServerTests
                     : SfcResult);
         }
 
-        public ValueTask<FrontendModuleCompilation?> CompileTypeScriptAsync(
+        public ValueTask<VolarModuleCompilation?> CompileTypeScriptAsync(
             string documentPath,
             string text,
             CancellationToken cancellationToken)

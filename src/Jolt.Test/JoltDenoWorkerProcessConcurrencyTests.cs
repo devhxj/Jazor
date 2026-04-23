@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Jolt.Frontend.Deno.Hosting;
+using Jolt.Volar.Deno.Hosting;
 
 namespace Jolt.Test;
 

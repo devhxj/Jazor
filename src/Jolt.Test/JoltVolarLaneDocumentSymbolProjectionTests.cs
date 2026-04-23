@@ -1,8 +1,8 @@
-using Jazor.VueContracts.Protocol;
-using Jolt.Frontend.Deno.Hosting;
-using Jolt.Frontend.Deno.Protocol;
+using Jolt.Volar.Deno.Hosting;
+using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Lanes;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
@@ -95,7 +95,7 @@ public sealed class JoltVolarLaneDocumentSymbolProjectionTests
         IVirtualDocumentRegistry registry)
         => new(
             new InMemoryWorkspaceStore(),
-            frontendContextProvider: null,
+            volarContextProvider: null,
             registry,
             denoHost);
 

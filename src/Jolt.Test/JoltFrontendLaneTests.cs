@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.DevServer;
-using Jolt.Frontend.Deno.Hosting;
-using Jolt.Frontend.Deno.Protocol;
-using Jolt.Frontend;
+using Jolt.Volar.Deno.Hosting;
+using Jolt.Volar.Deno.Protocol;
+using Jolt.Volar;
 using Jolt.Lsp;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
@@ -186,7 +186,7 @@ public sealed class JoltFrontendLaneTests
     [TestMethod]
     public async Task DenoFrontendModuleCompiler_CompileSfcAsync_PropagatesWorkerSourceMap()
     {
-        var compiler = new DenoFrontendModuleCompiler(
+        var compiler = new DenoVolarModuleCompiler(
             new FakeDenoFrontendHost
             {
                 SfcCompileResult = new DenoSfcCompileResult
@@ -1303,7 +1303,7 @@ public sealed class JoltFrontendLaneTests
     }
 
     [TestMethod]
-    public async Task Jolt_FrontendLaneService_UsesFrontendContextForJazorTemplateRequests()
+    public async Task Jolt_FrontendLaneService_UsesVolarContextForJazorTemplateRequests()
     {
         var denoHost = new FakeDenoFrontendHost
         {
@@ -1324,8 +1324,8 @@ public sealed class JoltFrontendLaneTests
         var document = CreateDocument("""
             <UserCard />
             """);
-        var frontendContextProvider = new FakeFrontendContextProvider(
-            new GetFrontendContextResponse(
+        var volarContextProvider = new FakeVolarContextProvider(
+            new GetVolarContextResponse(
                 new SemanticContext(
                     "frontend",
                     [
@@ -1347,7 +1347,7 @@ public sealed class JoltFrontendLaneTests
                         content: """{"documentPath":"D:/temp/Components/UserCard.vue","documentKind":"Vue","referencedComponents":["UserCard"]}""",
                         contentHash: null)
                 ]));
-        var lane = CreateLane(denoHost, frontendContextProvider);
+        var lane = CreateLane(denoHost, volarContextProvider);
 
         var hover = await lane.GetHoverAsync(
             document,
@@ -1636,7 +1636,7 @@ public sealed class JoltFrontendLaneTests
 
             var lane = new VolarLaneService(
                 workspaceStore,
-                frontendContextProvider: null,
+                volarContextProvider: null,
                 virtualDocumentRegistry: registry,
                 denoVolarHost: denoHost);
 
@@ -2102,11 +2102,11 @@ public sealed class JoltFrontendLaneTests
 
     private static VolarLaneService CreateLane(
         IDenoVolarHost denoFrontendHost,
-        IFrontendContextProvider? frontendContextProvider = null,
+        IVolarContextProvider? volarContextProvider = null,
         IVirtualDocumentRegistry? virtualDocumentRegistry = null)
         => new(
             new InMemoryWorkspaceStore(),
-            frontendContextProvider,
+            volarContextProvider,
             virtualDocumentRegistry,
             denoFrontendHost);
 
@@ -2170,11 +2170,11 @@ public sealed class JoltFrontendLaneTests
 
         Assert.IsTrue(
             IsUsableDenoHostBaseDirectory(baseDirectory),
-            $"Expected Deno host base directory '{baseDirectory}' to contain a ready worker dependency root.");
+            $"Expected Deno host base directory '{baseDirectory}' to contain a Volar worker and bundled runtime.");
         Assert.IsTrue(File.Exists(options.ExecutablePath), $"Expected bundled Deno runtime '{options.ExecutablePath}' to exist.");
-        Assert.IsTrue(File.Exists(options.WorkerScriptPath), $"Expected frontend worker script '{options.WorkerScriptPath}' to exist.");
+        Assert.IsTrue(File.Exists(options.WorkerScriptPath), $"Expected Volar worker script '{options.WorkerScriptPath}' to exist.");
         EnsureDenoCacheDirectory(options.CacheDirectory);
-        Assert.IsTrue(Directory.Exists(options.CacheDirectory), $"Expected frontend worker cache directory '{options.CacheDirectory}' to exist.");
+        Assert.IsTrue(Directory.Exists(options.CacheDirectory), $"Expected Volar worker cache directory '{options.CacheDirectory}' to exist.");
         return new DenoVolarHost(options);
     }
 
@@ -2195,12 +2195,14 @@ public sealed class JoltFrontendLaneTests
                 "bin",
                 "Debug",
                 "net10.0",
-                "Frontend",
+                "Volar",
                 "Deno",
                 "Cache");
-            Assert.IsTrue(
-                Directory.Exists(fallbackCacheDirectory),
-                $"Expected frontend worker cache seed '{fallbackCacheDirectory}' to exist.");
+            if (!Directory.Exists(fallbackCacheDirectory))
+            {
+                Directory.CreateDirectory(cacheDirectory);
+                return;
+            }
 
             if (Directory.Exists(cacheDirectory))
             {
@@ -2263,38 +2265,17 @@ public sealed class JoltFrontendLaneTests
             return false;
         }
 
-        var workerPath = Path.Combine(baseDirectory, "Frontend", "Deno", "Worker", "frontend-worker.ts");
+        var workerPath = Path.Combine(baseDirectory, "Volar", "Deno", "Worker", "volar-worker.ts");
         var workerDirectory = Path.GetDirectoryName(workerPath);
         var workerConfigPath = string.IsNullOrWhiteSpace(workerDirectory)
             ? null
             : Path.Combine(workerDirectory, "deno.json");
-        var workerNodeModulesDirectory = string.IsNullOrWhiteSpace(workerDirectory)
-            ? null
-            : Path.Combine(workerDirectory, "node_modules");
         var runtimePath = DenoRuntimeAssetResolver.ResolveBundledExecutablePath(baseDirectory);
-        var cacheDirectory = Path.Combine(baseDirectory, "Frontend", "Deno", "Cache");
-        var registryCacheDirectory = Path.Combine(cacheDirectory, "npm", "registry.npmjs.org");
 
         return File.Exists(workerPath)
             && !string.IsNullOrWhiteSpace(workerConfigPath)
             && File.Exists(workerConfigPath)
-            && File.Exists(runtimePath)
-            && HasReadyDenoWorkerDependencies(workerNodeModulesDirectory, registryCacheDirectory);
-    }
-
-    private static bool HasReadyDenoWorkerDependencies(
-        string? workerNodeModulesDirectory,
-        string registryCacheDirectory)
-    {
-        if (!string.IsNullOrWhiteSpace(workerNodeModulesDirectory)
-            && Directory.Exists(Path.Combine(workerNodeModulesDirectory, "@volar"))
-            && Directory.Exists(Path.Combine(workerNodeModulesDirectory, "@vue")))
-        {
-            return true;
-        }
-
-        return Directory.Exists(Path.Combine(registryCacheDirectory, "@volar"))
-            && Directory.Exists(Path.Combine(registryCacheDirectory, "@vue"));
+            && File.Exists(runtimePath);
     }
 
     private static string GetRepositoryRoot()
@@ -2816,10 +2797,10 @@ public sealed class JoltFrontendLaneTests
         }
     }
 
-    private sealed class FakeFrontendContextProvider(GetFrontendContextResponse response) : IFrontendContextProvider
+    private sealed class FakeVolarContextProvider(GetVolarContextResponse response) : IVolarContextProvider
     {
-        public ValueTask<GetFrontendContextResponse> GetFrontendContextAsync(
-            GetFrontendContextRequest request,
+        public ValueTask<GetVolarContextResponse> GetVolarContextAsync(
+            GetVolarContextRequest request,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

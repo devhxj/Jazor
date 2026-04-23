@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Rpc;
-using SharedJoltRpcMethodNames = Jazor.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Test;
 
@@ -37,7 +37,7 @@ public sealed class JoltProcessTests
                 """,
                 "process-1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
         var requestJson = JoltRpcSerializer.Serialize(new RpcRequestEnvelope(
             id: "host-process-1",
             method: SharedJoltRpcMethodNames.AnalyzeJazor,

@@ -1,4 +1,4 @@
-using Jazor.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Analysis;
 using Jolt.Rpc;
 

@@ -1,4 +1,3 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
 using Jolt.Extensions;
 using Jolt.Jazor.Projection;
@@ -7,6 +6,7 @@ using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Registry;
 using Jolt.Workspace;
 

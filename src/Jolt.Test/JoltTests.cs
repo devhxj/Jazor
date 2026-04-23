@@ -1,9 +1,9 @@
-using Jazor.VueContracts.Protocol;
 using Jolt.Analysis;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Rpc;
 using Jolt.Services;
 using Jolt.Workspace;
-using SharedJoltRpcMethodNames = Jazor.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Test;
 
@@ -11,7 +11,7 @@ namespace Jolt.Test;
 public sealed class JoltTests
 {
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_ReturnsTrackedFrontendDocuments()
+    public async Task Jolt_GetVolarContext_ReturnsTrackedFrontendDocuments()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -30,8 +30,8 @@ public sealed class JoltTests
         await host.OpenDocumentAsync(vueDocument, CancellationToken.None);
         await host.OpenDocumentAsync(tsDocument, CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(
                 "Features/Counter.jazor",
                 ["Components/UserCard.vue", "Scripts/user-card.ts"]),
             CancellationToken.None);
@@ -44,7 +44,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_DerivesTrackedDocumentsFromRazorMarkupAndJsImports()
+    public async Task Jolt_GetVolarContext_DerivesTrackedDocumentsFromRazorMarkupAndJsImports()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -77,8 +77,8 @@ public sealed class JoltTests
                 "1"),
             CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(
                 "Features/Pages/Counter.jazor",
                 Array.Empty<string>()),
             CancellationToken.None);
@@ -98,7 +98,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_DerivesTrackedDocumentsFromRazorMarkupAndCoLocatedAssets()
+    public async Task Jolt_GetVolarContext_DerivesTrackedDocumentsFromRazorMarkupAndCoLocatedAssets()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -133,8 +133,8 @@ public sealed class JoltTests
                 "1"),
             CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(
                 documentPath,
                 Array.Empty<string>()),
             CancellationToken.None);
@@ -146,7 +146,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_DerivesTrackedWorkspaceVueDocumentOutsideNearbyDirectories()
+    public async Task Jolt_GetVolarContext_DerivesTrackedWorkspaceVueDocumentOutsideNearbyDirectories()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -173,8 +173,8 @@ public sealed class JoltTests
                 "1"),
             CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(jazorPath, Array.Empty<string>()),
             CancellationToken.None);
 
         Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
@@ -183,7 +183,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_DerivesDiskBackedWorkspaceVueDocumentOutsideNearbyDirectories()
+    public async Task Jolt_GetVolarContext_DerivesDiskBackedWorkspaceVueDocumentOutsideNearbyDirectories()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -197,8 +197,8 @@ public sealed class JoltTests
         await File.WriteAllTextAsync(jazorPath, "<UserBadge />");
         await File.WriteAllTextAsync(sharedVuePath, "<template><div>UserBadge</div></template>");
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(jazorPath, Array.Empty<string>()),
             CancellationToken.None);
 
         Assert.AreEqual(1, response.SemanticContext.RelatedDocuments.Count);
@@ -207,7 +207,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_ProjectWideDiscoveryWithoutSlnx_ThrowsFriendlyEnglishRefusal()
+    public async Task Jolt_GetVolarContext_ProjectWideDiscoveryWithoutSlnx_ThrowsFriendlyEnglishRefusal()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -223,8 +223,8 @@ public sealed class JoltTests
             await File.WriteAllTextAsync(componentPath, "<template><button /></template>");
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await host.GetFrontendContextAsync(
-                    new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+                async () => await host.GetVolarContextAsync(
+                    new GetVolarContextRequest(jazorPath, Array.Empty<string>()),
                     CancellationToken.None));
 
             StringAssert.Contains(exception.Message, "No solution .slnx was found");
@@ -386,7 +386,7 @@ public sealed class JoltTests
                 "<template><div /></template>",
                 "1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await host.AnalyzeJazorAsync(request, CancellationToken.None);
 
@@ -399,7 +399,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_AnalyzeJazor_PopulatesFrontendContextFromTrackedImports()
+    public async Task Jolt_AnalyzeJazor_PopulatesVolarContextFromTrackedImports()
     {
         var expectedResponse = new AnalyzeJazorResponse(
             diagnostics: Array.Empty<DiagnosticRecord>(),
@@ -440,14 +440,14 @@ public sealed class JoltTests
                     """,
                     "5"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.IsNotNull(analysisClient.LastRequest);
         Assert.AreEqual(2, analysisClient.LastRequest.RelatedDocuments.Count);
-        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
-        Assert.AreEqual("frontend", analysisClient.LastRequest.FrontendContext.ContextKind);
-        Assert.AreEqual("2", analysisClient.LastRequest.FrontendContext.Properties["derivedDocumentCount"]);
+        Assert.IsNotNull(analysisClient.LastRequest.VolarContext);
+        Assert.AreEqual("frontend", analysisClient.LastRequest.VolarContext.ContextKind);
+        Assert.AreEqual("2", analysisClient.LastRequest.VolarContext.Properties["derivedDocumentCount"]);
         Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentKind == DocumentKind.Vue));
         Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentKind == DocumentKind.TypeScript));
     }
@@ -462,7 +462,7 @@ public sealed class JoltTests
                 "<template><div /></template>",
                 "5"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
         var expectedResponse = new AnalyzeJazorResponse(
             diagnostics:
             [
@@ -489,7 +489,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_AnalyzeJazor_DerivesFrontendContextFromImportedTrackedDocuments()
+    public async Task Jolt_AnalyzeJazor_DerivesVolarContextFromImportedTrackedDocuments()
     {
         var expectedResponse = new AnalyzeJazorResponse(
             diagnostics: Array.Empty<DiagnosticRecord>(),
@@ -531,19 +531,19 @@ public sealed class JoltTests
                     """,
                     "1"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.IsNotNull(analysisClient.LastRequest);
         Assert.AreEqual(2, analysisClient.LastRequest.RelatedDocuments.Count);
-        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
-        Assert.AreEqual("frontend", analysisClient.LastRequest.FrontendContext.ContextKind);
+        Assert.IsNotNull(analysisClient.LastRequest.VolarContext);
+        Assert.AreEqual("frontend", analysisClient.LastRequest.VolarContext.ContextKind);
         Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentPath == "Features/Components/UserCard.vue"));
         Assert.IsTrue(analysisClient.LastRequest.RelatedDocuments.Any(static document => document.DocumentPath == "Features/scripts/counter.ts"));
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_DerivesRelatedDocumentsFromJazorImports()
+    public async Task Jolt_GetVolarContext_DerivesRelatedDocumentsFromJazorImports()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -569,8 +569,8 @@ public sealed class JoltTests
                 "2"),
             CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(
                 "Features/Counter.jazor",
                 relatedDocumentPaths: Array.Empty<string>()),
             CancellationToken.None);
@@ -585,7 +585,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_EmitsRoslynProjectionArtifactsAndCodeBehindSummary()
+    public async Task Jolt_GetVolarContext_EmitsRoslynProjectionArtifactsAndCodeBehindSummary()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -623,8 +623,8 @@ public sealed class JoltTests
                 "2"),
             CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(jazorPath, Array.Empty<string>()),
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(jazorPath, Array.Empty<string>()),
             CancellationToken.None);
 
         CollectionAssert.Contains(
@@ -643,7 +643,7 @@ public sealed class JoltTests
     }
 
     [TestMethod]
-    public async Task Jolt_GetFrontendContext_EmitsFrontendSummaryArtifacts()
+    public async Task Jolt_GetVolarContext_EmitsFrontendSummaryArtifacts()
     {
         var host = CreateHost();
         await host.StartAsync(CancellationToken.None);
@@ -687,8 +687,8 @@ public sealed class JoltTests
                 "3"),
             CancellationToken.None);
 
-        var response = await host.GetFrontendContextAsync(
-            new GetFrontendContextRequest(
+        var response = await host.GetVolarContextAsync(
+            new GetVolarContextRequest(
                 "Features/Counter.jazor",
                 Array.Empty<string>()),
             CancellationToken.None);
@@ -1105,11 +1105,11 @@ public sealed class JoltTests
         Assert.IsNotNull(analysisClient.LastRequest);
         Assert.AreEqual(1, analysisClient.LastRequest.RelatedDocuments.Count);
         Assert.AreEqual("Features/Components/UserCard.vue", analysisClient.LastRequest.RelatedDocuments[0].DocumentPath);
-        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
+        Assert.IsNotNull(analysisClient.LastRequest.VolarContext);
     }
 
     [TestMethod]
-    public async Task Jolt_GetVirtualArtifact_PassesDerivedFrontendContextToAnalysisClient()
+    public async Task Jolt_GetVirtualArtifact_PassesDerivedVolarContextToAnalysisClient()
     {
         var analysisClient = new RecordingVueAnalysisClient(
             new AnalyzeJazorResponse(
@@ -1145,7 +1145,7 @@ public sealed class JoltTests
 
         Assert.IsNotNull(analysisClient.LastRequest);
         Assert.AreEqual(1, analysisClient.LastRequest.RelatedDocuments.Count);
-        Assert.IsNotNull(analysisClient.LastRequest.FrontendContext);
+        Assert.IsNotNull(analysisClient.LastRequest.VolarContext);
         Assert.AreEqual("Features/Components/UserCard.vue", analysisClient.LastRequest.RelatedDocuments[0].DocumentPath);
         Assert.AreEqual("vue-sfc", response.Artifact.ArtifactKind);
         StringAssert.Contains(response.Artifact.Content, "<template>");
@@ -1208,7 +1208,7 @@ public sealed class JoltTests
                     """,
                     "factory-default"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.IsInstanceOfType<JazorVueAnalysisService>(client);
@@ -1233,7 +1233,7 @@ public sealed class JoltTests
                     """,
                     "factory-create-default"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.IsInstanceOfType<JazorVueAnalysisService>(client);
@@ -1256,7 +1256,7 @@ public sealed class JoltTests
                     """,
                     "factory-create-null-alias"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.IsInstanceOfType<JazorVueAnalysisService>(client);
@@ -1279,7 +1279,7 @@ public sealed class JoltTests
                     """,
                     "factory-transport-missing-command"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.IsInstanceOfType<JazorVueAnalysisService>(client);
@@ -1331,7 +1331,7 @@ public sealed class JoltTests
         var request = new AnalyzeJazorRequest(
             new DocumentSnapshot("Features/Counter.jazor", DocumentKind.Jazor, "<template/>", "1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var result = await client.AnalyzeJazorAsync(request, CancellationToken.None);
 
@@ -1354,7 +1354,7 @@ public sealed class JoltTests
         var request = new AnalyzeJazorRequest(
             new DocumentSnapshot("Features/Counter.jazor", DocumentKind.Jazor, "<template/>", "1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         InvalidOperationException? exception = null;
         try
@@ -1408,7 +1408,7 @@ public sealed class JoltTests
                 """,
                 "1"),
             relatedDocuments: Array.Empty<DocumentSnapshot>(),
-            frontendContext: null);
+            volarContext: null);
 
         var response = await host.AnalyzeJazorAsync(request, CancellationToken.None);
 
@@ -1453,7 +1453,7 @@ public sealed class JoltTests
                     """,
                     "6"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.AreEqual(1, response.Imports.Count);
@@ -1487,7 +1487,7 @@ public sealed class JoltTests
                     """,
                     "8"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.AreEqual(1, response.Imports.Count);
@@ -1525,7 +1525,7 @@ public sealed class JoltTests
                     """,
                     "8"),
                 relatedDocuments: Array.Empty<DocumentSnapshot>(),
-                frontendContext: null),
+                volarContext: null),
             CancellationToken.None);
 
         Assert.AreEqual(1, response.Imports.Count);

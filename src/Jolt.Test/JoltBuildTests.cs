@@ -635,7 +635,7 @@ public sealed class JoltBuildTests
                 Host = "127.0.0.1",
                 Port = 0,
                 HmrEnabled = false,
-                FrontendCompiler = "stub"
+                VolarCompiler = "stub"
             };
 
             var moduleResolver = new ModuleResolver(tempDir);
@@ -717,7 +717,7 @@ public sealed class JoltBuildTests
                 Host = "127.0.0.1",
                 Port = 0,
                 HmrEnabled = false,
-                FrontendCompiler = "stub"
+                VolarCompiler = "stub"
             };
 
             var moduleResolver = new ModuleResolver(tempDir);
