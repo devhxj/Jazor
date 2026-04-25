@@ -928,7 +928,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		Assert.AreEqual(@"{
   let empty = [];
-  for (item of empty) {
+  for (let item of empty) {
     console.log(item);
   }
 }", script);

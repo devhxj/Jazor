@@ -215,6 +215,32 @@ export let PublicField = 24;
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithAsyncMethod_GeneratesAsyncFunctionDeclaration()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static async System.Threading.Tasks.Task TestMethodAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export async function TestMethodAsync() {
+  await Task.CompletedTask;
+}
+", script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithProperty_GeneratesPropertyMethods()
     {
         // Arrange
@@ -814,6 +840,37 @@ export class NestedClass {{
 @"export class NestedClass {
   Square(x) {
     return x * x;
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassAsyncMethod_GeneratesAsyncMethod()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public async System.Threading.Tasks.Task LoadAsync()
+                    {
+                        await System.Threading.Tasks.Task.CompletedTask;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class NestedClass {
+  async LoadAsync() {
+    await Task.CompletedTask;
   }
 }
 ", script);
@@ -1539,7 +1596,8 @@ export function get_P7() {
   return _aa3181446f60dc6e;
 }
 export function set_P7(value) {
-  _aa3181446f60dc6e = value.trim();
+  let __cacc$db228d45b7e701d8a374d195;
+  _aa3181446f60dc6e = (__cacc$db228d45b7e701d8a374d195 = value, __cacc$db228d45b7e701d8a374d195 == null ? undefined : __cacc$db228d45b7e701d8a374d195.trim());
 }
 export function get_P8() {
   return B;

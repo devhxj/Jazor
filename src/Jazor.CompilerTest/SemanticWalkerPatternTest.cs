@@ -3657,7 +3657,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let items = [1, ""hello"", 3.14];
-  for (item of items) {
+  for (let item of items) {
     let value;
     if (typeof item === ""number"" && (value = item, true)) {
       console.log(value);
@@ -4366,7 +4366,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let items = [1, ""hello"", 3.14, 42];
-  for (item of items) {
+  for (let item of items) {
     let value;
     if (typeof item === ""number"" && (value = item, true) && item > 0) {
       console.log(value);
@@ -5392,6 +5392,37 @@ line2"";
   }
 
   /// <summary>
+  /// 测试 switch 表达式 - 异步分支应生成 async IIFE
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpression_AsyncArms_UsesAsyncIife()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    int value = 2;
+                    int result = value switch
+                    {
+                        1 => await System.Threading.Tasks.Task.FromResult(10),
+                        _ => await System.Threading.Tasks.Task.FromResult(20)
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = (async () => {", StringComparison.Ordinal);
+    StringAssert.Contains(script, "await Task.FromResult(10);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "await Task.FromResult(20);", StringComparison.Ordinal);
+  }
+
+  /// <summary>
   /// 测试 switch 表达式 - 类型模式
   /// </summary>
   [TestMethod]
@@ -5492,7 +5523,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let items = [1, ""two"", 3];
-  for (item of items) {
+  for (let item of items) {
     let n;
     if (typeof item === ""number"" && (n = item, true)) {
       console.log(n * 2);

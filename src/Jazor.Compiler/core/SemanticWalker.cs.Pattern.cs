@@ -264,7 +264,7 @@ public partial class SemanticWalker
 			NodeList.From<Node>(),
 			functionBody,
 			expression: false,
-			async: false
+			async: ContainsAwaitOperation(operation)
 		);
 
 		// 立即调用箭头函数
@@ -1150,7 +1150,7 @@ public partial class SemanticWalker
 			NodeList.From<Node>(),
 			functionBody,
 			expression: false,
-			async: false
+			async: ContainsAwaitOperation(operation)
 		);
 
 		return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);

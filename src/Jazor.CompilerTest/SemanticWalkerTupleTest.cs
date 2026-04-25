@@ -2153,7 +2153,7 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(@"{
   let points = [{ Item1: 1, Item2: 2 }, { Item1: 3, Item2: 4 }, { Item1: 5, Item2: 6 }];
-  for ({ x: x, y: y } of points) {
+  for (let { x: x, y: y } of points) {
     console.log(x + "","" + y);
   }
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());

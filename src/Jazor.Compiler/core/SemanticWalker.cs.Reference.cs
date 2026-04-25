@@ -1264,6 +1264,12 @@ public partial class SemanticWalker
 			arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
 		}
 
+		// 检查白名单映射。索引器 getter 也必须先走这里，
+		// 否则会绕过运行时 helper，丢失越界/缺键等 CLR 语义。
+		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias);
+		if (mapperExpr is not null)
+			return WithOriginIfMissing(mapperExpr, operation);
+
 		if (instance is not null &&
 			arguments.Count > 0 &&
 			(operation.Property.IsIndexer || operation.Property.Parameters.Length > 0))
@@ -1271,11 +1277,6 @@ public partial class SemanticWalker
 			var indexerOptional = operation.Instance is IConditionalAccessInstanceOperation;
 			return WithOriginIfMissing(new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional), operation);
 		}
-
-		// 检查白名单映射
-		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias);
-		if (mapperExpr is not null)
-			return WithOriginIfMissing(mapperExpr, operation);
 
 		// 获取方法名称
 		var propertyName = string.IsNullOrEmpty(alias)

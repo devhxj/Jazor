@@ -3028,10 +3028,10 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let list = [1, 2, 3];
-  let first = list[0];
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  let first = _d389c31d59037b42(list, 0);
+}", script);
 	}
 
 	/// <summary>
@@ -3056,11 +3056,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = dict[""key""];
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  let value = _e73dbdff85c46ddc(dict, ""key"");
+}", script);
 	}
 
 	/// <summary>
@@ -3145,12 +3145,156 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let person = null;
   let dict = new Map;
   dict.set(person?.Name, 42);
-  let value = dict[person?.Name];
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  let value = _e73dbdff85c46ddc(dict, person?.Name);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试只读字典索引器 getter 必须保留运行时 helper 语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_ReadOnlyDictionary_UsesRuntimeHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new Dictionary<string, int>();
+                    source[""key""] = 42;
+                    var dict = new System.Collections.ObjectModel.ReadOnlyDictionary<string, int>(source);
+                    int value = dict[""key""];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let source = new Map;
+  source.set(""key"", 42);
+  let dict = source;
+  let value = _ed4a7913b74bfd87(dict, ""key"");
+}", script);
+	}
+
+	/// <summary>
+	/// 测试只读集合索引器 getter 必须保留运行时 helper 语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_ReadOnlyCollection_UsesRuntimeHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new List<int> { 1, 2, 3 };
+                    var list = new System.Collections.ObjectModel.ReadOnlyCollection<int>(source);
+                    int value = list[1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let source = [1, 2, 3];
+  let list = source;
+  let value = _b8c9d0e1f2a3b4c5(list, 1);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试可选链 + 列表索引器 getter 不能丢掉短路语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_List_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    List<int> list = null;
+                    int? value = list?[0];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = null;
+  let value = (v$0 = list, v$0 == null ? undefined : _d389c31d59037b42(v$0, 0));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试可选链 + 字典索引器 getter 不能丢掉短路语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_Dictionary_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Dictionary<string, int> dict = null;
+                    int? value = dict?[""key""];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let dict = null;
+  let value = (v$0 = dict, v$0 == null ? undefined : _e73dbdff85c46ddc(v$0, ""key""));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试可选链 + helper 方法调用保留短路语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_Invocation_ListRemove_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    List<int> list = null;
+                    bool? removed = list?.Remove(1);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = null;
+  let removed = (v$0 = list, v$0 == null ? undefined : _562f832fd220e768(v$0, 1));
+}", script);
 	}
 
 	#endregion
@@ -3464,10 +3608,10 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let list = [1, 2, 3];
-  let first = list[0];
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  let first = _d389c31d59037b42(list, 0);
+}", script);
 	}
 
 	/// <summary>
@@ -3492,11 +3636,11 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = dict[""key""];
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  let value = _e73dbdff85c46ddc(dict, ""key"");
+}", script);
 	}
 
 	#endregion

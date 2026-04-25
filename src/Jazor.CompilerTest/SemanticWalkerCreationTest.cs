@@ -1711,6 +1711,64 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void Visit_ObjectCreation_WithAsyncObjectInitializer_UsesAsyncIife()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    var obj = new MyClass { Value = await System.Threading.Tasks.Task.FromResult(42) };
+                }
+
+                class MyClass
+                {
+                    public int Value { get; set; }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let obj = (async () => {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "await Task.FromResult(42);", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void Visit_ObjectCreation_WithAsyncLambdaInitializer_DoesNotPromoteOuterIifeToAsync()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new MyClass
+                    {
+                        Callback = async () => await System.Threading.Tasks.Task.CompletedTask
+                    };
+                }
+
+                class MyClass
+                {
+                    public System.Func<System.Threading.Tasks.Task>? Callback { get; set; }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let obj = (() => {", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("let obj = (async () => {", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "v$0.Callback = async () => {", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
     public void VisitArrayCreation_ZeroSize()
     {
         var block = GetBlockOperation(@"

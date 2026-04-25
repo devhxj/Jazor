@@ -93,10 +93,45 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   let numbers = [1, 2, 3, 4, 5];
-  for (num of numbers) {
+  for (let num of numbers) {
     console.log(num);
   }
 }", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitForEachLoop - await foreach 应保留异步枚举语义
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_AsyncEnumerable_UsesForAwait()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod()
+                {
+                    await foreach (var num in GetNumbers())
+                    {
+                        Console.WriteLine(num);
+                    }
+                }
+
+                async IAsyncEnumerable<int> GetNumbers()
+                {
+                    yield return 1;
+                    await System.Threading.Tasks.Task.Yield();
+                    yield return 2;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "for await (let num of", StringComparison.Ordinal);
+    StringAssert.Contains(script, "console.log(num);", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -157,6 +192,72 @@ public sealed class SemanticWalkerLoopTest
   let i = 0;
   for (; i < 10; i++) {
     console.log(i);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitForLoop - 表达式初始化器不应被丢失
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_ExpressionInitializer()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i;
+                    for (i = 0; i < 3; i++)
+                    {
+                        Console.WriteLine(i);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let i;
+  for (i = 0; i < 3; i++) {
+    console.log(i);
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 VisitForLoop - 多表达式初始化器应保留顺序
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForLoop_MultipleExpressionInitializers()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int i;
+                    int j;
+                    for (i = 0, j = 10; i < j; i++, j--)
+                    {
+                        Console.WriteLine(i + j);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let i;
+  let j;
+  for (i = 0, j = 10; i < j; i++, j--) {
+    console.log(i + j);
   }
 }", script);
   }
@@ -370,7 +471,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   let numbers = [1, 2, 3];
-  for (num of numbers) {
+  for (let num of numbers) {
     console.log(num);
   }
   for (let i = 0; i < 5; i++) {
@@ -449,7 +550,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   let list = [10, 20, 30];
-  for (item of list) {
+  for (let item of list) {
     console.log(item);
   }
 }", script);
@@ -483,7 +584,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   let numbers = [1, 2, 3];
-  for (num of numbers) {
+  for (let num of numbers) {
     console.log(num);
   }
 }", script);
@@ -517,7 +618,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   let names = [""Alice"", ""Bob"", ""Charlie""];
-  for (name of names) {
+  for (let name of names) {
     console.log(name);
   }
 }", script);
@@ -996,7 +1097,7 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let matrix = [[1, 2], [3, 4]];
-  for (row of matrix) {
+  for (let row of matrix) {
     for (let j = 0; j < row.length; j++) {
       console.log(row[j]);
     }
@@ -1096,7 +1197,7 @@ AssertScriptEqual(@"{
 
     AssertScriptEqual(@"{
   let items = [1, 2, 3];
-  for (item of items) {
+  for (let item of items) {
     console.log(item);
   }
   for (let i = 0; i < 5; i++) {
@@ -1270,7 +1371,7 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let text = ""hello"";
-  for (c of text) {
+  for (let c of text) {
     console.log(c);
   }
 }", script);
@@ -1305,7 +1406,7 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let items = [""a"", ""b"", ""c""];
   let index = 0;
-  for (item of items) {
+  for (let item of items) {
     console.log(index + "": "" + item);
     index++;
   }
@@ -1341,8 +1442,8 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let matrix = [[1, 2], [3, 4]];
-  for (row of matrix) {
-    for (col of row) {
+  for (let row of matrix) {
+    for (let col of row) {
       console.log(col);
     }
   }
@@ -1967,7 +2068,7 @@ AssertScriptEqual(@"{
     AssertScriptEqual(@"{
   let items = [10, 20, 30];
   let index = 0;
-  for (item of items) {
+  for (let item of items) {
     console.log(index + "": "" + item);
     index++;
   }
@@ -2215,7 +2316,7 @@ AssertScriptEqual(@"{
 
     AssertScriptEqual(@"{
   let text = ""Hello"";
-  for (c of text) {
+  for (let c of text) {
     console.log(c);
   }
 }", script);

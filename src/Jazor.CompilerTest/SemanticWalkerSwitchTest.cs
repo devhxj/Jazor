@@ -582,6 +582,37 @@ public sealed class SemanticWalkerSwitchTest
 
 	}
 
+	[TestMethod]
+	public void VisitSwitch_PatternMatching_AsyncCaseBody_UsesAsyncIife()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				async System.Threading.Tasks.Task TestMethod()
+				{
+					object obj = ""hello"";
+					switch (obj)
+					{
+						case string s:
+							await System.Threading.Tasks.Task.CompletedTask;
+							break;
+						default:
+							await System.Threading.Tasks.Task.CompletedTask;
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "(async () => {", StringComparison.Ordinal);
+		StringAssert.Contains(script, "await Task.CompletedTask;", StringComparison.Ordinal);
+	}
+
 	/// <summary>
 	/// 测试 switch 语句（关系模式）
 	/// C# 示例：switch (value) { case > 0: break; case < 0: break; }

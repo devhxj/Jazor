@@ -1676,8 +1676,64 @@ ${name}!`;
 
 		AssertScriptEqual(@"{
   let text = ""Hello"";
-  let first = text[0];
-  let last = text[text.length - 1];
+  let first = _5ad63706a889c294(text, 0);
+  let last = _5ad63706a889c294(text, text.length - 1);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串索引器在可选链下仍保留短路语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_Indexer_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = null;
+					char? first = text?[0];
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let text = null;
+  let first = (v$0 = text, v$0 == null ? undefined : _5ad63706a889c294(v$0, 0));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字符串 intrinsic 方法在可选链下保留短路语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_String_PadLeft_ConditionalAccess_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = null;
+					string value = text?.PadLeft(3);
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let text = null;
+  let value = (v$0 = text, v$0 == null ? undefined : v$0.padStart(3));
 }", script);
 	}
 

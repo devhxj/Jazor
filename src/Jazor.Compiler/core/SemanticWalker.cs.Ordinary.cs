@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -160,8 +161,13 @@ public partial class SemanticWalker
 			statement = new EmptyStatement();
 		else
 		{
-			var expr = TranslateExpression(operation.Operation, argument);
-			statement = new NonSpecialExpressionStatement(expr);
+			var node = Visit(operation.Operation, argument);
+			statement = node switch
+			{
+				Statement stmt => stmt,
+				Expression expr => new NonSpecialExpressionStatement(expr),
+				_ => HandleTransformationFailure<Statement>(operation.Operation, "Labeled statement target could not be translated to JavaScript.")
+			};
 		}
 
 		return new LabeledStatement(label, statement);
@@ -280,16 +286,94 @@ public partial class SemanticWalker
 
 		// 检查函数是否为async或generator
 		var isAsync = operation.Symbol.IsAsync;
-
-		// 检查是否返回IEnumerable类型（可能是迭代器）
-		var returnTypeName = operation.Symbol.ReturnType.Name;
-		var isGenerator = returnTypeName.Contains("IEnumerable") || returnTypeName.Contains("IEnumerator");
+		var isGenerator = ContainsYieldOperation(operation.Body);
 
 		return new FunctionDeclaration(id,
 			NodeList.From(parameters),
 			body,
 			generator: isGenerator,
 			@async: isAsync);
+	}
+
+	private static bool ContainsAwaitOperation(IOperation? operation)
+		=> operation is not null &&
+		   (ContainsOperation(operation, static op => op.Kind == OperationKind.Await) ||
+			ContainsAwaitSyntax(operation.Syntax));
+
+	private static bool ContainsYieldOperation(IOperation? operation)
+		=> ContainsOperation(operation, static op => op.Kind is OperationKind.YieldReturn or OperationKind.YieldBreak);
+
+	private static bool ContainsOperation(IOperation? operation, Func<IOperation, bool> predicate)
+	{
+		if (operation is null)
+			return false;
+
+		if (predicate(operation))
+			return true;
+
+		foreach (var child in EnumerateContainedOperations(operation))
+		{
+			// 嵌套函数边界内的 yield 不应影响当前函数的 generator 语义。
+			if (child is IAnonymousFunctionOperation or ILocalFunctionOperation)
+				continue;
+
+			if (ContainsYieldOperation(child))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static IEnumerable<IOperation> EnumerateContainedOperations(IOperation operation)
+	{
+		foreach (var child in operation.ChildOperations)
+		{
+			if (child is not null)
+				yield return child;
+		}
+
+		switch (operation)
+		{
+			case ISwitchExpressionOperation switchExpression:
+				foreach (var arm in switchExpression.Arms)
+					yield return arm;
+				break;
+
+			case ISwitchExpressionArmOperation arm:
+				yield return arm.Pattern;
+				if (arm.Guard is not null)
+					yield return arm.Guard;
+				yield return arm.Value;
+				break;
+
+			case ISwitchOperation switchOperation:
+				if (switchOperation.Value is not null)
+					yield return switchOperation.Value;
+				foreach (var @case in switchOperation.Cases)
+					yield return @case;
+				break;
+
+			case ISwitchCaseOperation switchCase:
+				foreach (var clause in switchCase.Clauses)
+					yield return clause;
+				foreach (var body in switchCase.Body)
+					yield return body;
+				break;
+		}
+	}
+
+	private static bool ContainsAwaitSyntax(SyntaxNode syntax)
+	{
+		if (syntax is AwaitExpressionSyntax)
+			return true;
+
+		return syntax.DescendantNodes(descendIntoChildren: static node =>
+				node is not AnonymousFunctionExpressionSyntax
+				and not AnonymousMethodExpressionSyntax
+				and not SimpleLambdaExpressionSyntax
+				and not ParenthesizedLambdaExpressionSyntax
+				and not LocalFunctionStatementSyntax)
+			.Any(static node => node is AwaitExpressionSyntax);
 	}
 
 	private Expression? BuildValueLiteral(ITypeSymbol? type, object? value)
@@ -614,11 +698,66 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitConditionalAccess(IConditionalAccessOperation operation, SenseArgument argument)
 	{
-		// 先转换 Operation，然后通过 PatternInput 传递给 WhenNotNull
 		var operand = Translate<Expression>(operation.Operation, argument);
+
+		if (TryBuildConditionalAccessNullishGuard(operation, argument, operand, out var guardedExpression) &&
+			guardedExpression is not null)
+			return guardedExpression;
+
+		// 先转换 Operation，然后通过 PatternInput 传递给 WhenNotNull
 		var whenNotNullArg = argument.WithPatternInput(operand);
 		var whenNotNull = Translate<Expression>(operation.WhenNotNull, whenNotNullArg);
 		return new ChainExpression(whenNotNull);
+	}
+
+	private bool TryBuildConditionalAccessNullishGuard(
+		IConditionalAccessOperation operation,
+		SenseArgument argument,
+		Expression operand,
+		out Expression? expression)
+	{
+		expression = null;
+
+		switch (operation.WhenNotNull)
+		{
+			case IPropertyReferenceOperation propertyReference when RequiresConditionalAccessNullishGuard(propertyReference):
+				break;
+
+			case IInvocationOperation invocation when invocation.Instance is IConditionalAccessInstanceOperation:
+				break;
+
+			default:
+				return false;
+		}
+
+		var tempId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.ConditionalAccessInput()));
+		argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
+
+		var whenNotNullArg = argument.WithPatternInput(tempId);
+		var whenNotNull = Translate<Expression>(operation.WhenNotNull, whenNotNullArg);
+		var assign = new AssignmentExpression(Operator.Assignment, tempId, operand);
+		var isNullish = new NonLogicalBinaryExpression(Operator.Equality, tempId, Null);
+		var guarded = new ConditionalExpression(isNullish, Undefined, whenNotNull);
+		expression = new SequenceExpression(NodeList.From<Expression>(assign, guarded));
+		return true;
+	}
+
+	private bool RequiresConditionalAccessNullishGuard(IPropertyReferenceOperation operation)
+	{
+		if (operation.Instance is not IConditionalAccessInstanceOperation)
+			return false;
+
+		var getter = operation.Property.GetMethod;
+		if (getter is null)
+			return false;
+
+		if (TryGetWhiteListValue(_whiteListCompiles, getter, out _, out _))
+			return true;
+
+		if (!TryGetWhiteListValue(WhiteList.Members, getter, out _, out var entry))
+			return false;
+
+		return !(entry.Op == Op.Alias && operation.Arguments.Length == 0);
 	}
 
 	/// <summary>
@@ -855,7 +994,7 @@ public partial class SemanticWalker
 		// 创建箭头函数
 		return new ArrowFunctionExpression(
 			NodeList.From(parameters), body,
-			@async: false,
+			@async: operation.Symbol.IsAsync,
 			expression: false);
 	}
 

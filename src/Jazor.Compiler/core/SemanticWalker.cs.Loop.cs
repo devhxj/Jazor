@@ -22,11 +22,24 @@ public partial class SemanticWalker
 	public override Node? VisitForEachLoop(IForEachLoopOperation operation, SenseArgument argument)
 	{
 		// 获取循环变量 - 使用 LoopControlVariable 直接访问
-		var left = Translate<Node>(operation.LoopControlVariable, argument);
+		var left = CreateForEachLoopBinding(Translate<Node>(operation.LoopControlVariable, argument));
 		var right = Translate<Expression>(operation.Collection, argument);
 		var body = Translate<Statement>(operation.Body, argument);
 
-		return new ForOfStatement(left, right, body, @await: false);
+		return new ForOfStatement(left, right, body, @await: operation.IsAsynchronous);
+	}
+
+	private static Node CreateForEachLoopBinding(Node loopControl)
+	{
+		if (loopControl is VariableDeclaration)
+			return loopControl;
+
+		var declarator = loopControl as VariableDeclarator
+			?? new VariableDeclarator(loopControl, null);
+
+		return new VariableDeclaration(
+			VariableDeclarationKind.Let,
+			NodeList.From([declarator]));
 	}
 
 	/// <summary>
@@ -42,27 +55,8 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitForLoop(IForLoopOperation operation, SenseArgument argument)
 	{
-		StatementOrExpression? init = null;
+		StatementOrExpression? init = CreateForLoopInitializer(operation.Before, argument);
 		Expression? test = null;
-		if (operation.Before.Length > 0)
-		{
-			var variableDecls = new List<VariableDeclaration>();
-			foreach (var before in operation.Before)
-			{
-				Translate(variableDecls, before, argument);
-			}
-			if (variableDecls.Count == 1)
-				init = variableDecls[0];
-			else
-			{
-				var declarations = new List<VariableDeclarator>();
-				foreach (var decl in variableDecls)
-					declarations.AddRange(decl.Declarations);
-
-				variableDecls.Select(x => x.Declarations);
-				init = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarations));
-			}
-		}
 
 		if (operation.Condition is not null)
 		{
@@ -116,6 +110,58 @@ public partial class SemanticWalker
 
 		var body = Translate<Statement>(operation.Body, argument);
 		return new ForStatement(init, test, updateExpression, body);
+	}
+
+	private StatementOrExpression? CreateForLoopInitializer(IEnumerable<IOperation> beforeOperations, SenseArgument argument)
+	{
+		var declarations = new List<VariableDeclarator>();
+		var expressions = new List<Expression>();
+
+		foreach (var before in beforeOperations)
+		{
+			var node = Visit(before, argument);
+			switch (node)
+			{
+				case null:
+					continue;
+
+				case VariableDeclaration declaration:
+					if (declaration.Declarations.Count > 0)
+						declarations.AddRange(declaration.Declarations);
+					break;
+
+				case VariableDeclarator declarator:
+					declarations.Add(declarator);
+					break;
+
+				case Expression expression:
+					expressions.Add(expression);
+					break;
+
+				default:
+					return HandleTransformationFailure<StatementOrExpression>(
+						before,
+						"For loop initializer could not be translated to JavaScript.");
+			}
+		}
+
+		if (declarations.Count > 0 && expressions.Count > 0)
+		{
+			return HandleTransformationFailure<StatementOrExpression>(
+				beforeOperations.First(),
+				"For loop initializer cannot mix declarations and expressions.");
+		}
+
+		if (declarations.Count > 0)
+			return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarations));
+
+		if (expressions.Count == 0)
+			return null;
+
+		if (expressions.Count == 1)
+			return expressions[0];
+
+		return new SequenceExpression(NodeList.From(expressions));
 	}
 
 	/// <summary>

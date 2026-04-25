@@ -3,6 +3,7 @@ namespace Jazor.Compiler;
 internal enum LoweringSiteKind
 {
     CreationTemp,
+    ConditionalAccessInput,
     MethodReferenceProxy,
     ReferenceTemp,
     SwitchExpressionInput,
@@ -23,6 +24,7 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
         => Kind switch
         {
             LoweringSiteKind.CreationTemp => "creation",
+            LoweringSiteKind.ConditionalAccessInput => "cacc",
             LoweringSiteKind.MethodReferenceProxy => "mref",
             LoweringSiteKind.ReferenceTemp => "ref",
             LoweringSiteKind.SwitchExpressionInput => "swexpr",
@@ -40,6 +42,9 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
 
     public static LoweringSite CreationTemp()
         => new(LoweringSiteKind.CreationTemp);
+
+    public static LoweringSite ConditionalAccessInput()
+        => new(LoweringSiteKind.ConditionalAccessInput);
 
     public static LoweringSite MethodReferenceProxy()
         => new(LoweringSiteKind.MethodReferenceProxy);

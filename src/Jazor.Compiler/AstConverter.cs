@@ -285,7 +285,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             parameters: NodeList.From(parameters),
             body: body,
             generator: false,
-            async: false);
+            async: symbol.IsAsync);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             statements.Add(declaration);
@@ -542,7 +542,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 parameters: NodeList.From(parameters),
                 body: body,
                 generator: false,
-                async: false),
+                async: symbol.IsAsync),
             computed: false,
             isStatic: symbol.IsStatic,
             decorators: NodeList.Empty<Decorator>()

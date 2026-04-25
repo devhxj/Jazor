@@ -262,6 +262,36 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
+  /// 测试 VisitLabeled - 标签语句应支持语句块目标
+  /// </summary>
+  [TestMethod]
+  public void Visit_LabeledStatement_BlockTarget()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    label1:
+                    {
+                        Console.WriteLine(""Labeled block"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  label1: {
+    console.log(""Labeled block"");
+  }
+}", script);
+  }
+
+  /// <summary>
   /// 测试 VisitBranch - Break 操作
   /// </summary>
   [TestMethod]
@@ -437,6 +467,39 @@ public sealed class SemanticWalkerOrdinaryTest
   LocalFunction(42);
 }", script);
 
+  }
+
+  /// <summary>
+  /// 测试 VisitLocalFunction - 非 yield 的 IEnumerable 返回值不应被误判为 generator
+  /// </summary>
+  [TestMethod]
+  public void Visit_LocalFunction_IEnumerableReturnWithoutYield_DoesNotBecomeGenerator()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IEnumerable<int> LocalFunction()
+                    {
+                        return new int[] { 1, 2 };
+                    }
+
+                    var result = LocalFunction();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  function LocalFunction() {
+    return [1, 2];
+  }
+  let result = LocalFunction();
+}", script);
   }
 
   /// <summary>
@@ -851,6 +914,56 @@ public sealed class SemanticWalkerOrdinaryTest
   };
 }", script);
 
+  }
+
+  /// <summary>
+  /// 测试 VisitAnonymousFunction - Async Lambda 需要保留 async 语义
+  /// </summary>
+  [TestMethod]
+  public void Visit_AnonymousFunction_AsyncLambda_PreservesAsyncModifier()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    System.Func<System.Threading.Tasks.Task> func = async () =>
+                    {
+                        await System.Threading.Tasks.Task.Delay(1);
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    var declaration = GetOperationAt<IVariableDeclarationGroupOperation>(block);
+    var delegateCreation = declaration.Declarations.Single()
+      .Declarators.Single()
+      .Initializer?.Value as IDelegateCreationOperation;
+    Assert.IsNotNull(delegateCreation);
+
+    var anonymousFunction = delegateCreation.Target as IAnonymousFunctionOperation;
+    Assert.IsNotNull(anonymousFunction);
+
+    var awaitOperation = anonymousFunction.Body.Operations
+      .OfType<IExpressionStatementOperation>()
+      .Single();
+    Assert.IsNotNull(awaitOperation);
+    var awaited = awaitOperation.Operation as IAwaitOperation;
+    Assert.IsNotNull(awaited);
+    var invocation = awaited.Operation as IInvocationOperation;
+    Assert.IsNotNull(invocation);
+    var delayMethodName = $"Task.{Util.GetConfigOrSymbolName(invocation.TargetMethod)}";
+
+    AssertScriptEqual($@"{{
+  let func = async () => {{
+    await {delayMethodName}(1);
+    return;
+  }};
+}}", script);
   }
 
   /// <summary>
