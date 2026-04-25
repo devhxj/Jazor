@@ -1,6 +1,8 @@
 using Acornima;
 using Acornima.Ast;
 using Jazor.Name;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,6 +32,8 @@ public record struct SenseArgument
 
     /// <summary>Switch 表达式输入变量名</summary>
     public string? SwitchExpressionVar { get; init; }
+
+    internal EmissionScopeContext? ScopeContext { get; init; }
 
     // ===== 依赖项收集（原 WalkerArgument 功能，直接内联）=====
     private readonly Dictionary<string, VariableDeclarator>? _declarators;
@@ -69,6 +73,7 @@ public record struct SenseArgument
         this.PatternInput = PatternInput;
         this.CatchExceptionVar = CatchExceptionVar;
         this.SwitchExpressionVar = SwitchExpressionVar;
+        ScopeContext = null;
         _declarators = [];
         _specifiers = [];
         _importBindings = [];
@@ -87,13 +92,15 @@ public record struct SenseArgument
         Dictionary<string, List<ImportDeclarationSpecifier>>? specifiers,
         Dictionary<string, string>? importBindings,
         Dictionary<string, string>? importLocalBindings,
-        HashSet<string>? reservedImportNames)
+        HashSet<string>? reservedImportNames,
+        EmissionScopeContext? scopeContext)
     {
         Sense = sense;
         UseImportAliases = useImportAliases;
         PatternInput = patternInput;
         CatchExceptionVar = catchExceptionVar;
         SwitchExpressionVar = switchExpressionVar;
+        ScopeContext = scopeContext;
         _declarators = declarators;
         _specifiers = specifiers;
         _importBindings = importBindings;
@@ -111,7 +118,7 @@ public record struct SenseArgument
     // ===== Sense 变更 =====
     /// <summary>创建新实例，设置 Sense</summary>
     public SenseArgument With(Sense sense)
-        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
 
     // ===== 作用域隔离 =====
     /// <summary>
@@ -119,36 +126,91 @@ public record struct SenseArgument
     /// 共享导入字典，创建新的变量声明字典。
     /// </summary>
     public SenseArgument WithNewScope()
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, [], _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
+
+    internal SenseArgument WithScope(EmissionScopeContext scopeContext)
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, scopeContext);
+
+    internal SenseArgument EnterScope(IOperation anchor, ScopeSite site)
+    {
+        if (anchor is null)
+            throw new InvalidOperationException("Jazor 无法进入空的发射作用域。");
+
+        if (ScopeContext is null)
+            throw new InvalidOperationException($"Jazor 无法为 {anchor.Kind} 创建子作用域，因为当前上下文缺少发射作用域。");
+
+        return new(
+            Sense,
+            UseImportAliases,
+            PatternInput,
+            CatchExceptionVar,
+            SwitchExpressionVar,
+            [],
+            _specifiers,
+            _importBindings,
+            _importLocalBindings,
+            _reservedImportNames,
+            ScopeContext.Enter(anchor, site));
+    }
+
+    internal SenseArgument EnterEmissionScope(IOperation anchor, ScopeSite site)
+    {
+        if (anchor is null)
+            throw new InvalidOperationException("Jazor 无法进入空的发射作用域。");
+
+        if (ScopeContext is null)
+            throw new InvalidOperationException($"Jazor 无法为 {anchor.Kind} 创建发射作用域，因为当前上下文缺少父作用域。");
+
+        return new(
+            Sense,
+            UseImportAliases,
+            PatternInput,
+            CatchExceptionVar,
+            SwitchExpressionVar,
+            [],
+            _specifiers,
+            _importBindings,
+            _importLocalBindings,
+            _reservedImportNames,
+            ScopeContext.Enter(anchor, site));
+    }
+
+    internal string AllocateName(LoweringNameOwner owner, LoweringSite site)
+    {
+        if (ScopeContext is null)
+            throw new InvalidOperationException("Jazor 无法分配稳定名称，因为当前上下文缺少发射作用域。");
+
+        return ScopeContext.Allocate(owner, site);
+    }
 
     // ===== 模式匹配上下文 =====
     /// <summary>设置模式匹配输入表达式</summary>
     public SenseArgument WithPatternInput(Expression? input)
-        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(Sense, UseImportAliases, input, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
 
     // ===== 异常处理上下文 =====
     /// <summary>设置 Catch 异常参数名</summary>
     public SenseArgument WithCatchVar(string? varName)
-        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(Sense, UseImportAliases, PatternInput, varName, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
 
     // ===== Switch 表达式上下文 =====
     /// <summary>设置 Switch 表达式变量名</summary>
     public SenseArgument WithSwitchVar(string? varName)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, varName, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
 
     // ===== 组合设置 =====
     /// <summary>设置 Sense 和 PatternInput</summary>
     public SenseArgument With(Sense sense, Expression patternInput)
-        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(sense, UseImportAliases, patternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
 
     public SenseArgument WithImportAliases(bool useImportAliases = true)
-        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames);
+        => new(Sense, useImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, _importBindings, _importLocalBindings, _reservedImportNames, ScopeContext);
 
     public SenseArgument WithImportContext(
         Dictionary<string, string> importBindings,
         Dictionary<string, string> importLocalBindings,
         HashSet<string> reservedImportNames)
-        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames);
+        => new(Sense, UseImportAliases, PatternInput, CatchExceptionVar, SwitchExpressionVar, _declarators, _specifiers, importBindings, importLocalBindings, reservedImportNames, ScopeContext);
 
     // ===== 依赖项操作 =====
     /// <summary>

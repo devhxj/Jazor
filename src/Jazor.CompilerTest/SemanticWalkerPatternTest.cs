@@ -3112,9 +3112,9 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(
 @"{
-  let x;
   let obj = { X: 1, Y: 2 };
   let result = (() => {
+    let x;
     const v$0 = obj;
     if (v$0 != null && (""X"" in v$0 && v$0.X === 1) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 2)))
       return ""Point (1,2)"";
@@ -3795,9 +3795,9 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let x;
   let value = 5;
   let result = (() => {
+    let x;
     const v$0 = value;
     if ((x = v$0, true) && (x > 0 && x < 10))
       return ""Small"";
@@ -3837,9 +3837,9 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let v;
   let obj = { Value: 42 };
   let result = (() => {
+    let v;
     const v$0 = obj;
     if (v$0 != null && (""Value"" in v$0 && (v = v$0.Value, true)) && v > 0)
       return ""Positive"";
@@ -4137,9 +4137,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let s, x;
   let obj = 42;
   (() => {
+    let s, x;
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true)) {
       console.log(s);
@@ -4481,9 +4481,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let first, second, last;
   let numbers = [1, 2, 3, 4, 5];
   let result = (() => {
+    let first, second, last;
     const v$0 = numbers;
     if (Array.isArray(v$0) && v$0.length >= 2 && (first = v$0[0], true) && (second = v$0[1], true) && first > 0)
       return ""Starts with positive"";
@@ -4526,8 +4526,8 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let first, second, last;
   let result = (() => {
+    let first, second, last;
     const v$0 = A.GetNumbers();
     if (Array.isArray(v$0) && v$0.length >= 2 && (first = v$0[0], true) && (second = v$0[1], true) && first > 0)
       return ""Starts with positive"";
@@ -4791,10 +4791,11 @@ line2"";
 
     Assert.AreEqual(
   @"{
-  let x, s;
+  let x;
   let value = 5;
   let result = value > 9 && (value > 0 && value < 10 && !(value === 5)) && ((x = value, true) && x < 10);
   (() => {
+    let s;
     const v$0 = value;
     if ((s = v$0, true) && s > 0) {
       console.log("">0"");
@@ -5417,9 +5418,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let s, i;
   let obj = ""hello"";
   let result = (() => {
+    let s, i;
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true))
       return `string: ${s}`;

@@ -558,15 +558,15 @@ public sealed class SemanticWalkerSwitchTest
 		var script = node?.ToKnRECMAScript();
 
 		// 包含类型模式，应该转换为 IIFE + 独立 if 语句
-		// 类型模式中的变量 s 和 i 被声明在外层，并通过赋值表达式进行初始化
+		// 类型模式中的变量 s 和 i 只在 IIFE 内部可见，并通过赋值表达式进行初始化
 		// 空 case 体被转换为 return 语句
 		// 每个 case 是独立的 if 语句
 		// 类型模式中的变量声明通过逗号表达式转换为赋值
 		Assert.AreEqual(
 @"{
-  let s, i;
   let obj = ""hello"";
   (() => {
+    let s, i;
     const v$0 = obj;
     if (v$0 === null) {
       return;
@@ -1060,9 +1060,9 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  let x;
   let point = { X: 0, Y: 0 };
   let result = (() => {
+    let x;
     const v$0 = point;
     if (v$0 != null && (""X"" in v$0 && v$0.X === 0) && (v$0 != null && (""Y"" in v$0 && v$0.Y === 0)))
       return ""origin"";
@@ -1344,9 +1344,9 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  let s, i;
   let obj = ""hello"";
   (() => {
+    let s, i;
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true)) {
       console.log(s.length);
@@ -1395,9 +1395,9 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  let n;
   let value = 5;
   (() => {
+    let n;
     const v$0 = value;
     if (typeof v$0 === ""number"" && (n = v$0, true) && n > 0) {
       console.log(""positive"");
@@ -2054,8 +2054,8 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  let s;
   (() => {
+    let s;
     const v$0 = score;
     if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 90) {
       return ""A"";
@@ -2385,8 +2385,8 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  let n;
   (() => {
+    let n;
     const v$0 = value;
     if (typeof v$0 === ""number"" && (n = v$0, true) && n > 0) {
       console.log(""positive"");

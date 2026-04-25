@@ -25,7 +25,10 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitBlock(IBlockOperation operation, SenseArgument argument)
 	{
-		var ctx = argument.WithNewScope();
+		var scopedArgument = EnsureScopeContext(operation, argument);
+		var ctx = scopedArgument.ScopeContext is not null && ReferenceEquals(scopedArgument.ScopeContext.Anchor, operation)
+			? scopedArgument
+			: scopedArgument.EnterScope(operation, ScopeSite.NestedBlock());
 		var pendingStatements = new List<Statement>();
 		foreach (var stmt in operation.Operations)
 		{
@@ -55,19 +58,13 @@ public partial class SemanticWalker
 
 		// 所有 stmt 处理完后，将 out/pattern 变量声明集中提升到块顶
 		// C# 编译器保证同一作用域内不会有同名变量，提升是安全的
-		var statements = new List<Statement>();
-		if (ctx.HasVarDeclarator)
-		{
-			var declarators = ctx.FlushVarDeclarator();
-			statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-		}
-		statements.AddRange(pendingStatements);
+		var statements = MaterializeScopedStatements(ctx, pendingStatements);
 
 		// 根据上下文判断返回不同类型的语句块
-		if (argument.Sense == Sense.FunctionBody)
+		if (scopedArgument.Sense == Sense.FunctionBody)
 			return new FunctionBody(NodeList.From(statements), strict: true);
 
-		if (argument.Sense == Sense.StaticBlock)
+		if (scopedArgument.Sense == Sense.StaticBlock)
 			return new StaticBlock(NodeList.From(statements));
 
 		return new NestedBlockStatement(NodeList.From(statements));
@@ -87,17 +84,22 @@ public partial class SemanticWalker
 	{
 		// 如果有块体，直接访问块
 		if (operation.BlockBody is not null)
-			return Visit(operation.BlockBody, argument);
+		{
+			var bodyArg = EnsureScopeContext(operation, argument).EnterScope(operation.BlockBody, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
+			return Visit(operation.BlockBody, bodyArg);
+		}
 
 		// 如果有表达式体，转换为返回语句
 		if (operation.ExpressionBody is not null)
 		{
+			var bodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
 			if (operation.ExpressionBody is IBlockOperation blockExpression)
-				return Visit(blockExpression, argument);
+				return Visit(blockExpression, bodyArg);
 
-			var expr = Translate<Expression>(operation.ExpressionBody, argument);
+			var expr = Translate<Expression>(operation.ExpressionBody, bodyArg);
 			var returnStmt = new ReturnStatement(expr);
-			return new FunctionBody(NodeList.From<Statement>(returnStmt), strict: true);
+			var statements = MaterializeScopedStatements(bodyArg, [returnStmt]);
+			return new FunctionBody(NodeList.From(statements), strict: true);
 		}
 
 		return HandleTransformationFailure<Node>(operation, "Method body has neither block nor expression body.");
@@ -118,7 +120,22 @@ public partial class SemanticWalker
 	{
 		// 如果有块体，直接访问块
 		if (operation.BlockBody is not null)
-			return Visit(operation.BlockBody, argument);
+		{
+			var bodyArg = EnsureScopeContext(operation, argument).EnterScope(operation.BlockBody, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
+			return Visit(operation.BlockBody, bodyArg);
+		}
+
+		if (operation.ExpressionBody is not null)
+		{
+			var bodyArg = EnsureScopeContext(operation, argument, ScopeSite.FunctionBody()).With(Sense.FunctionBody);
+			if (operation.ExpressionBody is IBlockOperation blockExpression)
+				return Visit(blockExpression, bodyArg);
+
+			var expr = Translate<Expression>(operation.ExpressionBody, bodyArg);
+			var statement = new NonSpecialExpressionStatement(expr);
+			var statements = MaterializeScopedStatements(bodyArg, [statement]);
+			return new FunctionBody(NodeList.From(statements), strict: true);
+		}
 
 		return HandleTransformationFailure<Node>(operation, "Constructor body has no block body.");
 	}
@@ -240,7 +257,7 @@ public partial class SemanticWalker
 			parameters.Add(new Identifier(param.Name));
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
-		var bodyCtx = argument.WithNewScope();
+		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LocalFunctionBody());
 		var pendingStatements = new List<Statement>();
 		if (operation.Body is not null)
 		{
@@ -257,13 +274,7 @@ public partial class SemanticWalker
 		}
 
 		// 将函数体内的变量声明提升到函数体顶部
-		var bodyStatements = new List<Statement>();
-		if (bodyCtx.HasVarDeclarator)
-		{
-			var declarators = bodyCtx.FlushVarDeclarator();
-			bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-		}
-		bodyStatements.AddRange(pendingStatements);
+		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
 
 		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
 
@@ -823,7 +834,7 @@ public partial class SemanticWalker
 		}
 
 		// 函数边界：隔离 _declarators，共享 _specifiers（import 需跨函数边界传播）
-		var bodyCtx = argument.WithNewScope();
+		var bodyCtx = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.LambdaBody());
 		var pendingStatements = new List<Statement>();
 		foreach (var stmt in operation.Body.Operations)
 		{
@@ -837,13 +848,7 @@ public partial class SemanticWalker
 		}
 
 		// 将函数体内的变量声明提升到函数体顶部
-		var bodyStatements = new List<Statement>();
-		if (bodyCtx.HasVarDeclarator)
-		{
-			var declarators = bodyCtx.FlushVarDeclarator();
-			bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-		}
-		bodyStatements.AddRange(pendingStatements);
+		var bodyStatements = MaterializeScopedStatements(bodyCtx, pendingStatements);
 
 		var body = new FunctionBody(NodeList.From(bodyStatements), strict: true);
 

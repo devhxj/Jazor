@@ -2987,6 +2987,48 @@ public sealed class SemanticWalkerCreationTest
 }", script);
     }
 
+    [TestMethod]
+    public void Visit_ObjectInitializer_WithGeneratedTemporary_KeepsTemporaryInsideIifeBody()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new Box { Value = GetTuple() == (1, 2) ? 1 : 0 };
+                }
+
+                (int, int) GetTuple() => (1, 2);
+            }
+
+            class Box
+            {
+                public int Value { get; set; }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let obj = (() => {");
+        StringAssert.Contains(script, "let v$1;");
+        StringAssert.Contains(script, "let v$0 = new Box;");
+        StringAssert.Contains(script, "v$1 = this.GetTuple()");
+        Assert.IsFalse(
+            script.Contains("{\r\n  let v$1;\r\n  let obj = (() => {", StringComparison.Ordinal)
+            || script.Contains("{\n  let v$1;\n  let obj = (() => {", StringComparison.Ordinal),
+            $"Expected the generated tuple cache to stay inside the object-initializer IIFE.{Environment.NewLine}{script}");
+
+        var iifeIndex = script.IndexOf("let obj = (() => {", StringComparison.Ordinal);
+        var innerTempIndex = script.IndexOf("let v$1;", StringComparison.Ordinal);
+        var objectTempIndex = script.IndexOf("let v$0 = new Box;", StringComparison.Ordinal);
+        Assert.IsTrue(
+            iifeIndex >= 0 && innerTempIndex > iifeIndex && objectTempIndex > innerTempIndex,
+            $"Expected the generated tuple cache declaration to live inside the IIFE body before object initialization.{Environment.NewLine}{script}");
+    }
+
     #endregion
 
     #region 扩展测试用例 - 特殊类型创建

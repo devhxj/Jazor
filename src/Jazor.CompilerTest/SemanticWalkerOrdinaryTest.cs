@@ -62,6 +62,88 @@ public sealed class SemanticWalkerOrdinaryTest
     throw new InvalidOperationException("未找到可分析的操作");
   }
 
+  private static IMethodBodyOperation GetMethodBodyOperation(string code, string methodName = "TestMethod")
+  {
+    var usings = @"
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
+
+    var references = Basic.Reference.Assemblies.Net100.References.All
+      .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+    var compilation = CSharpCompilation.Create(
+      assemblyName: "TestAssembly",
+      syntaxTrees: [
+        CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+      ],
+      references: references,
+      options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
+    }
+
+    var syntaxTree = compilation.SyntaxTrees.Last();
+    var semanticModel = compilation.GetSemanticModel(syntaxTree);
+    var root = syntaxTree.GetRoot();
+    var methodDeclaration = root.DescendantNodes()
+      .OfType<MethodDeclarationSyntax>()
+      .FirstOrDefault(m => m.Identifier.ValueText == methodName);
+    if (methodDeclaration is not null &&
+        semanticModel.GetOperation(methodDeclaration) is IMethodBodyOperation operation)
+      return operation;
+
+    throw new InvalidOperationException($"未找到方法体操作: {methodName}");
+  }
+
+  private static IConstructorBodyOperation GetConstructorBodyOperation(string code)
+  {
+    var usings = @"
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
+
+    var references = Basic.Reference.Assemblies.Net100.References.All
+      .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+    var compilation = CSharpCompilation.Create(
+      assemblyName: "TestAssembly",
+      syntaxTrees: [
+        CSharpSyntaxTree.ParseText(usings),
+          CSharpSyntaxTree.ParseText(code)
+      ],
+      references: references,
+      options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    var diagnostics = compilation.GetDiagnostics();
+    var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+    if (errors.Count > 0)
+    {
+      var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+      throw new InvalidOperationException(errorMessages);
+    }
+
+    var syntaxTree = compilation.SyntaxTrees.Last();
+    var semanticModel = compilation.GetSemanticModel(syntaxTree);
+    var root = syntaxTree.GetRoot();
+    var constructorDeclaration = root.DescendantNodes().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
+    if (constructorDeclaration is not null &&
+        semanticModel.GetOperation(constructorDeclaration) is IConstructorBodyOperation operation)
+      return operation;
+
+    throw new InvalidOperationException("未找到构造函数体操作");
+  }
+
   private static void AssertScriptEqual(string expected, string? actual)
     => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
@@ -104,6 +186,51 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 }", script);
 
+  }
+
+  [TestMethod]
+  public void Visit_MethodBody_ExpressionBodyThatNeedsGeneratedTemporaries_MaterializesDeclarationsInsideFunctionBody()
+  {
+    var methodBody = GetMethodBodyOperation(@"
+            class TestClass
+            {
+                int TestMethod(string input)
+                    => int.TryParse(input, out var value) ? value : 0;
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(methodBody, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let value, v$0;");
+    StringAssert.Contains(script, "return ");
+    Assert.IsFalse(
+      script.Contains("return int.TryParse", StringComparison.Ordinal),
+      $"Expected the expression-bodied method body to be lowered with materialized temporaries.{Environment.NewLine}{script}");
+  }
+
+  [TestMethod]
+  public void Visit_ConstructorBody_ExpressionBodyThatNeedsGeneratedTemporaries_MaterializesDeclarationsInsideFunctionBody()
+  {
+    var constructorBody = GetConstructorBodyOperation(@"
+            class TestClass
+            {
+                int Value;
+
+                TestClass(string input)
+                    => Value = int.TryParse(input, out var value) ? value : 0;
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(constructorBody, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let value, v$0;");
+    StringAssert.Contains(script, "this.Value =");
   }
 
   /// <summary>

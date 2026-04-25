@@ -55,17 +55,13 @@ public partial class SemanticWalker
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? VisitTry(ITryOperation operation, SenseArgument argument)
     {
+        var scopedArgument = EnsureScopeContext(operation, argument);
+
         // try 体：隔离 scope，变量声明不泄漏到 try 外
-        var tryCtx = argument.WithNewScope();
+        var tryCtx = scopedArgument.EnterScope(operation.Body, ScopeSite.TryBody());
         var tryPending = TranslateOperationsToStatements(operation.Body.Operations, tryCtx);
 
-        var tryBodyStatements = new List<Statement>();
-        if (tryCtx.HasVarDeclarator)
-        {
-            var declarators = tryCtx.FlushVarDeclarator();
-            tryBodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-        }
-        tryBodyStatements.AddRange(tryPending);
+        var tryBodyStatements = MaterializeScopedStatements(tryCtx, tryPending);
         var block = new NestedBlockStatement(NodeList.From(tryBodyStatements));
 
         // js只有单catch，多个catch需要合并成一个catch，在内部使用if分支
@@ -80,7 +76,8 @@ public partial class SemanticWalker
         }
         else if (operation.Catches.Length > 1)
         {
-            var tryParam = new Identifier(GetUniqueName(operation));
+            var mergedCatchArg = scopedArgument.EnterScope(operation, ScopeSite.CatchBody());
+            var tryParam = new Identifier(AllocateUniqueName(operation, mergedCatchArg, LoweringSite.MultiCatchParameter()));
             var sharedCatchParam = TryExtractSharedCatchParam(operation.Catches);
             var groups = new List<(string TypeName, List<ICatchClauseOperation> Clauses)>();
             foreach (var @catch in operation.Catches)
@@ -117,10 +114,13 @@ public partial class SemanticWalker
                         NodeList.From(new VariableDeclarator(currentParam, tryParam))));
                 }
 
-                var handlerStatements = ExtractCatchHandlerStatements(@catch, argument, tryParam);
+                var filterArgument = currentParam is not null
+                    ? mergedCatchArg.WithCatchVar(currentParam.Name)
+                    : mergedCatchArg;
+                var handlerStatements = ExtractCatchHandlerStatements(@catch, mergedCatchArg, tryParam);
                 if (@catch.Filter is not null)
                 {
-                    var filterExpr = TranslateExpression(@catch.Filter, argument);
+                    var filterExpr = TranslateExpression(@catch.Filter, filterArgument);
                     var consequent = new NestedBlockStatement(NodeList.From(handlerStatements));
                     var alternate = BuildGroupChain(clauses, index + 1, sharedParam, fallback);
                     branchStatements.Add(new IfStatement(filterExpr, consequent, alternate));
@@ -201,16 +201,10 @@ public partial class SemanticWalker
         if (operation.Finally is not null)
         {
             // finally 体：隔离 scope，变量声明不泄漏到 try 外
-            var finallyCtx = argument.WithNewScope();
+            var finallyCtx = scopedArgument.EnterScope(operation.Finally, ScopeSite.FinallyBody());
             var finallyPending = TranslateOperationsToStatements(operation.Finally.Operations, finallyCtx);
 
-            var finallyBodyStatements = new List<Statement>();
-            if (finallyCtx.HasVarDeclarator)
-            {
-                var declarators = finallyCtx.FlushVarDeclarator();
-                finallyBodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-            }
-            finallyBodyStatements.AddRange(finallyPending);
+            var finallyBodyStatements = MaterializeScopedStatements(finallyCtx, finallyPending);
             finalizer = new NestedBlockStatement(NodeList.From(finallyBodyStatements));
         }
 
@@ -329,7 +323,7 @@ public partial class SemanticWalker
             // 如果 catch 有参数名则使用参数名，否则使用 tryParam
             var throwExpr = exceptionParam is not null
                 ? (Expression)new Identifier(exceptionParam.Name)
-                : new Identifier(GetUniqueName(operation));
+                : new Identifier(AllocateUniqueName(operation, argument, LoweringSite.SyntheticCatchParameter()));
 
             // 构造 if (!(condition)) throw ex; 语句
             var notFilter = new NonUpdateUnaryExpression(Operator.LogicalNot, filterExpr);
@@ -347,19 +341,15 @@ public partial class SemanticWalker
     {
         // catch 体：隔离 scope，变量声明不泄漏到 catch 外
         // 同时传递异常参数名（用于 re-throw）
-        var catchContext = (exceptionParam is not null
+        var catchContextBase = exceptionParam is not null
             ? argument.WithCatchVar(exceptionParam.Name)
-            : argument).WithNewScope();
+            : argument;
+        var catchContext = catchContextBase.ScopeContext is not null && ReferenceEquals(catchContextBase.ScopeContext.Anchor, operation)
+            ? catchContextBase
+            : catchContextBase.EnterScope(operation, ScopeSite.CatchBody());
         var catchPending = TranslateOperationsToStatements(operation.Handler.Operations, catchContext);
 
-        var statements = new List<Statement>();
-        if (catchContext.HasVarDeclarator)
-        {
-            var declarators = catchContext.FlushVarDeclarator();
-            statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-        }
-        statements.AddRange(catchPending);
-        return statements;
+        return MaterializeScopedStatements(catchContext, catchPending);
     }
 
     /// <summary>
@@ -377,10 +367,14 @@ public partial class SemanticWalker
     public override Node? VisitCatchClause(ICatchClauseOperation operation, SenseArgument argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
+        var catchScope = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.CatchBody());
         var param = RequiresCatchBinding(operation)
-            ? ExtractCatchClauseParam(operation) ?? new Identifier(GetUniqueName(operation))
+            ? ExtractCatchClauseParam(operation) ?? new Identifier(AllocateUniqueName(operation, catchScope, LoweringSite.SyntheticCatchParameter()))
             : null;
-        var statements = ExtractCatchClauseBody(operation, argument, param);
+        var catchArgument = param is not null
+            ? catchScope.WithCatchVar(param.Name)
+            : catchScope;
+        var statements = ExtractCatchClauseBody(operation, catchArgument, param);
         var body = new NestedBlockStatement(NodeList.From(statements));
 
         return new CatchClause(param, body);

@@ -460,9 +460,10 @@ public partial class SemanticWalker
 		if (operation.Initializers.Length == 0)
 			return null;
 
-		var name = GetUniqueName(operation);
+		var iifeArg = EnsureScopeContext(operation, argument).EnterEmissionScope(operation, ScopeSite.ObjectInitializerIife());
+		var name = AllocateUniqueName(operation, iifeArg, LoweringSite.CreationTemp());
 		var obj = new Identifier(name);
-		var initExprs = BuildObjectCreationInitializer(obj, operation, argument);
+		var initExprs = BuildObjectCreationInitializer(obj, operation, iifeArg);
 		if (initExpr is null)
 			return new SequenceExpression(NodeList.From(initExprs));
 
@@ -483,7 +484,7 @@ public partial class SemanticWalker
 		statements.Add(returnStatement);
 
 		// 使用立即调用的箭头函数包装
-		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+		var functionBody = new FunctionBody(NodeList.From(MaterializeScopedStatements(iifeArg, statements)), strict: true);
 		var arrowFunction = new ArrowFunctionExpression(
 			NodeList.From<Node>(),
 			functionBody,

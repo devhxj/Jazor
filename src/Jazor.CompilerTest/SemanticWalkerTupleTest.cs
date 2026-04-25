@@ -739,7 +739,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTupleBinaryOperator(operation, arg);
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("(v$0.Item1===1&&v$0.Item2===2)", script);
+        Assert.AreEqual("(v$0=this.GetTuple(),v$0.Item1===1&&v$0.Item2===2)", script);
         Assert.IsTrue(arg.HasVarDeclarator);
     }
 
@@ -766,10 +766,44 @@ public sealed class SemanticWalkerTupleTest
 
         Assert.AreEqual(
 @"{
-  let v$0 = this.Get1(), v$1 = this.Get2();
-  let result = (v$0.Item1 === v$1.Item1 && v$0.Item2 === v$1.Item2);
+  let v$0, v$1;
+  let result = (v$0 = this.Get1(), v$1 = this.Get2(), v$0.Item1 === v$1.Item1 && v$0.Item2 === v$1.Item2);
 }", script);
 
+    }
+
+    [TestMethod]
+    public void VisitTupleBinaryOperator_WithPriorStatement_InitializesCachedOperandAtUseSite()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int seed)
+                {
+                    Console.WriteLine(seed);
+                    var result = GetTuple(seed) == (1,2);
+                }
+
+                (int, int) GetTuple(int value) => (value, 2);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var ctx = SenseArgument.Default;
+        var node = walker.Visit(block, ctx);
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let v$0;");
+        StringAssert.Contains(script, "console.log(seed);");
+        StringAssert.Contains(script, "v$0 = this.GetTuple(seed)");
+        Assert.IsFalse(script.Contains("let v$0 = this.GetTuple(seed);", StringComparison.Ordinal), script);
+
+        var consoleIndex = script.IndexOf("console.log(seed);", StringComparison.Ordinal);
+        var assignmentIndex = script.IndexOf("v$0 = this.GetTuple(seed)", StringComparison.Ordinal);
+        Assert.IsTrue(
+            consoleIndex >= 0 && assignmentIndex > consoleIndex,
+            $"Expected tuple cache assignment to remain at the comparison site, after prior statements.{Environment.NewLine}{script}");
     }
 
     [TestMethod]

@@ -241,24 +241,25 @@ public partial class SemanticWalker
 
 		// 复杂模式匹配switch，生成健全的IIFE保证副作用顺序
 		// 采用分层判断：先模式匹配，后when条件，确保求值节拍与C#一致
+		var iifeArg = EnsureScopeContext(operation, argument).EnterEmissionScope(operation, ScopeSite.SwitchExpressionIife());
 		var statements = new List<Statement>();
 
 		// input 可能是方法调用或一个复杂表达式，此处定义一个中间变量存储其值
-		var id = new Identifier(GetUniqueName(operation.Value));
+		var id = new Identifier(AllocateUniqueName(operation.Value, iifeArg, LoweringSite.SwitchExpressionInput()));
 		var inputVar = new VariableDeclaration(
 			VariableDeclarationKind.Const,
 			NodeList.From(new VariableDeclarator(id, input))
 		);
 
 		// 设置 PatternInput 为输入变量，传递给所有 arm
-		var armArg = argument.WithPatternInput(id);
+		var armArg = iifeArg.WithPatternInput(id);
 
 		// 处理所有模式，采用嵌套if确保副作用顺序
 		foreach (var arm in operation.Arms)
 			Translate(statements, arm, armArg);
 
 		statements.Insert(0, inputVar);
-		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+		var functionBody = new FunctionBody(NodeList.From(MaterializeScopedStatements(iifeArg, statements)), strict: true);
 		var arrowFunction = new ArrowFunctionExpression(
 			NodeList.From<Node>(),
 			functionBody,
@@ -1069,19 +1070,22 @@ public partial class SemanticWalker
 		if (Visit(operation.Value, argument) is not Expression discriminant)
 			return HandleTransformationFailure<CallExpression>(operation.Value, "Switch discriminant could not be translated to JavaScript.");
 
+		var iifeArg = EnsureScopeContext(operation, argument).EnterEmissionScope(operation, ScopeSite.PatternIife());
+
 		// 创建唯一名称存储 switch 值
-		var inputId = new Identifier(GetUniqueName(operation.Value));
+		var inputId = new Identifier(AllocateUniqueName(operation.Value, iifeArg, LoweringSite.SwitchPatternInput()));
 		var inputVar = new VariableDeclaration(
 			VariableDeclarationKind.Const,
 			NodeList.From(new VariableDeclarator(inputId, discriminant))
 		);
 
 		// 设置 PatternInput 为输入变量
-		var caseArg = argument.WithPatternInput(inputId);
+		var caseArg = iifeArg.WithPatternInput(inputId);
 
 		var statements = new List<Statement>();
-		foreach (var switchCase in operation.Cases)
+		for (var caseIndex = 0; caseIndex < operation.Cases.Length; caseIndex++)
 		{
+			var switchCase = operation.Cases[caseIndex];
 			var hasDefault = false;
 			// 收集所有条件表达式
 			var conditions = new List<Expression>();
@@ -1102,7 +1106,7 @@ public partial class SemanticWalker
 			}
 
 			// 处理 case 体：隔离 scope，变量声明留在 case 块内
-			var caseCtx = caseArg.WithNewScope();
+			var caseCtx = caseArg.EnterScope(switchCase, ScopeSite.SwitchCaseBody());
 			var casePending = new List<Statement>();
 			foreach (var bodyOp in switchCase.Body)
 			{
@@ -1118,13 +1122,7 @@ public partial class SemanticWalker
 					casePending.Add(new NonSpecialExpressionStatement(expr));
 			}
 
-			var bodyStatements = new List<Statement>();
-			if (caseCtx.HasVarDeclarator)
-			{
-				var declarators = caseCtx.FlushVarDeclarator();
-				bodyStatements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
-			}
-			bodyStatements.AddRange(casePending);
+			var bodyStatements = MaterializeScopedStatements(caseCtx, casePending);
 
 			// 如果有条件
 			if (conditions.Count > 0)
@@ -1147,7 +1145,7 @@ public partial class SemanticWalker
 
 		// 构造 IIFE
 		statements.Insert(0, inputVar);
-		var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+		var functionBody = new FunctionBody(NodeList.From(MaterializeScopedStatements(iifeArg, statements)), strict: true);
 		var arrowFunction = new ArrowFunctionExpression(
 			NodeList.From<Node>(),
 			functionBody,

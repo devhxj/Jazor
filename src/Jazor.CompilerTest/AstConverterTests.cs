@@ -2823,6 +2823,60 @@ export function Increment() {
 
     }
 
+    [TestMethod]
+    public async Task Convert_ClassWithExpressionBodyMethodThatNeedsGeneratedTemporaries_EmitsThemInsideFunctionBody()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static int ParseOrZero(string input)
+                    => int.TryParse(input, out var value) ? value : 0;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "export function ParseOrZero(input) {");
+        StringAssert.Contains(script, "return ");
+        Assert.IsTrue(
+            System.Text.RegularExpressions.Regex.IsMatch(script, @"let\s+value,\s+__ref\$[0-9a-f]+;")
+            || System.Text.RegularExpressions.Regex.IsMatch(script, @"let\s+__ref\$[0-9a-f]+,\s+value;"),
+            $"Expected generated temporaries to be materialized inside the function body.{Environment.NewLine}{script}");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithTupleBinaryFieldInitializerThatNeedsTemporary_WrapsInitializerInIife()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static bool IsOrigin = Create() == (0, 0);
+
+                private static (int left, int right) Create()
+                    => (1, 2);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "export let IsOrigin = (() => {");
+        Assert.IsTrue(
+            System.Text.RegularExpressions.Regex.IsMatch(script, @"let\s+__tbin\$[0-9a-f]+;"),
+            $"Expected tuple-comparison temporary to be declared inside an initializer IIFE.{Environment.NewLine}{script}");
+        StringAssert.Contains(script, "return ");
+        StringAssert.Contains(script, "})();");
+    }
+
     #endregion
 
     #region 复杂场景测试

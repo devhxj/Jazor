@@ -255,7 +255,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 var walker = new SemanticWalker(_classSymbol);
                 var argument = CreateImportAwareArgument(Sense.FunctionBody);
-                body = walker.Visit(operation, argument) as FunctionBody;
+                body = MaterializeFunctionBody(walker.Visit(operation, argument), argument, symbol.ReturnsVoid);
                 MergeImports(argument);
             }
         }
@@ -266,17 +266,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 var walker = new SemanticWalker(_classSymbol);
                 var argument = CreateImportAwareArgument(Sense.Any);
-                var stmt = walker.Visit(operation, argument) switch
-                {
-                    Statement s => s,
-                    Expression e => symbol.ReturnsVoid
-                        ? new NonSpecialExpressionStatement(e)
-                        : new ReturnStatement(e),
-                    _ => null
-                };
+                var visited = walker.Visit(operation, argument);
                 MergeImports(argument);
-                if (stmt is not null)
-                    body = new FunctionBody(NodeList.From(stmt), true);
+                body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
             }
         }
         if (body is null)
@@ -429,19 +421,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var visited = walker.Visit(operation, argument);
         MergeImports(argument);
 
-        return visited switch
-        {
-            FunctionBody body => body,
-            NestedBlockStatement block => new FunctionBody(block.Body, true),
-            Statement statement => new FunctionBody(NodeList.From(statement), true),
-            Expression expression => new FunctionBody(
-                NodeList.From<Statement>(
-                    returnsVoid
-                        ? new NonSpecialExpressionStatement(expression)
-                        : new ReturnStatement(expression)),
-                true),
-            _ => null
-        };
+        return MaterializeFunctionBody(visited, argument, returnsVoid);
     }
 
     private MethodDefinition ConvertMemberMethod(IMethodSymbol symbol)
@@ -863,10 +843,78 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var expr = walker.Visit(operation, argument) as Expression;
             MergeImports(argument);
             if (expr is not null)
-                return expr;
+                return MaterializeExpression(expr, argument);
         }
 
         throw new NotSupportedException($"Only literal expressions are supported, got: {value.Kind()}");
+    }
+
+    private static FunctionBody? MaterializeFunctionBody(Node? visited, SenseArgument argument, bool returnsVoid)
+    {
+        if (visited is null)
+            return null;
+
+        if (visited is FunctionBody body)
+        {
+            var statements = MaterializeTemporaryDeclarationPrefix(argument);
+            if (statements.Count == 0)
+                return body;
+
+            statements.AddRange(body.Body);
+            return new FunctionBody(NodeList.From(statements), body.Strict);
+        }
+
+        var bodyStatements = MaterializeTemporaryDeclarationPrefix(argument);
+        switch (visited)
+        {
+            case NestedBlockStatement block:
+                bodyStatements.AddRange(block.Body);
+                break;
+
+            case Statement statement:
+                bodyStatements.Add(statement);
+                break;
+
+            case Expression expression:
+                bodyStatements.Add(returnsVoid
+                    ? new NonSpecialExpressionStatement(expression)
+                    : new ReturnStatement(expression));
+                break;
+
+            default:
+                return null;
+        }
+
+        return new FunctionBody(NodeList.From(bodyStatements), true);
+    }
+
+    private static Expression MaterializeExpression(Expression expression, SenseArgument argument)
+    {
+        var statements = MaterializeTemporaryDeclarationPrefix(argument);
+        if (statements.Count == 0)
+            return expression;
+
+        statements.Add(new ReturnStatement(expression));
+        var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+        var arrowFunction = new ArrowFunctionExpression(
+            NodeList.From<Node>(),
+            functionBody,
+            expression: false,
+            async: false);
+        return new CallExpression(arrowFunction, NodeList.From<Expression>(), optional: false);
+    }
+
+    private static List<Statement> MaterializeTemporaryDeclarationPrefix(SenseArgument argument)
+    {
+        var statements = new List<Statement>();
+        if (!argument.HasVarDeclarator)
+            return statements;
+
+        var declarators = argument.FlushVarDeclarator();
+        if (declarators.Count > 0)
+            statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+
+        return statements;
     }
 
     private static FunctionBody ApplyRefOutReturnProtocol(FunctionBody body, IReadOnlyList<Expression> refParas, bool hasReturn)

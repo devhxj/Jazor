@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -585,13 +586,17 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// </summary>
     private readonly bool _test;
 
-    private readonly List<string> _testCache = [];
+    private readonly Dictionary<string, string> _testNameAliases = new(System.StringComparer.Ordinal);
+    private readonly Dictionary<IOperation, string> _semanticNameKeyCache =
+        new(ReferenceEqualityComparer<IOperation>.Instance);
 
     private readonly Action<Location, string?>? _report;
 
     private readonly ITypeSymbol? _moduleRootType;
 
     private readonly Dictionary<string, Func<Expression?, Expression?[], Expression?>> _whiteListCompiles;
+
+    private UniqueNameSession? _uniqueNameSession;
 
     public SemanticWalker()
     {
@@ -689,7 +694,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         try
         {
             EnsureSufficientExecutionStack(_recursionDepth);
-            var result = operation.Accept(this, argument);
+            var scopedArgument = EnsureScopeContext(operation, argument);
+            var result = operation.Accept(this, scopedArgument);
             if (result is null)
                 return null;
 
@@ -702,35 +708,388 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         finally
         {
             _recursionDepth--;
+            if (_recursionDepth == 0)
+            {
+                _uniqueNameSession = null;
+                _semanticNameKeyCache.Clear();
+                _testNameAliases.Clear();
+            }
         }
     }
 
-    /// <summary>
-    /// 根据操作生成稳定的唯一名称
-    /// </summary>
-    /// <param name="operation">操作</param>
-    /// <param name="prefix">后缀</param>
-    /// <returns>此名称仅针对语法树唯一</returns>
-    private string GetUniqueName(IOperation operation, string? prefix = null)
+    private SenseArgument EnsureScopeContext(IOperation operation, SenseArgument argument, ScopeSite? explicitRootSite = null)
     {
-        var syntaxTree = operation.Syntax.SyntaxTree;
-        var sourceSpan = operation.Syntax.GetLocation().SourceSpan;
-        var key = $"{syntaxTree.FilePath}${operation.Syntax.Kind()}${sourceSpan.Start}${sourceSpan.End}${operation.Kind}${prefix}";
-        var name = Format.HashName(key);
+        if (argument.ScopeContext is not null)
+            return argument;
 
-        //方便单元测试，生成固定名称
-        if (_test)
+        if (_recursionDepth > 1)
+            throw new InvalidOperationException($"Jazor 在访问 {operation.Kind} 时丢失了发射作用域上下文。");
+
+        var rootSite = explicitRootSite ?? ResolveRootScopeSite(argument.Sense);
+        _uniqueNameSession = new UniqueNameSession(operation, rootSite);
+        return argument.WithScope(_uniqueNameSession.RootScope);
+    }
+
+    private static ScopeSite ResolveRootScopeSite(Sense sense)
+        => sense switch
         {
-            var index = _testCache.IndexOf(name);
-            if (index < 0)
-            {
-                _testCache.Add(name);
-                return $"v${_testCache.Count - 1}";
-            }
-            return $"v${index}";
+            Sense.FunctionBody => ScopeSite.FunctionBody(),
+            Sense.StaticBlock => ScopeSite.StaticBlock(),
+            _ => ScopeSite.RootFragment()
+        };
+
+    private string AllocateUniqueName(IOperation operation, SenseArgument argument, LoweringSite site)
+    {
+        var scopedArgument = EnsureScopeContext(operation, argument);
+        var owner = CreateLoweringNameOwner(operation, site, scopedArgument);
+        var canonicalName = scopedArgument.AllocateName(owner, site);
+        if (!_test)
+            return canonicalName;
+
+        if (_testNameAliases.TryGetValue(canonicalName, out var alias))
+            return alias;
+
+        alias = $"v${_testNameAliases.Count}";
+        _testNameAliases.Add(canonicalName, alias);
+        return alias;
+    }
+
+    private LoweringNameOwner CreateLoweringNameOwner(IOperation operation, LoweringSite site, SenseArgument argument)
+    {
+        var session = argument.ScopeContext?.Session ?? _uniqueNameSession;
+        if (session is null)
+            throw new InvalidOperationException($"Jazor 无法为 {operation.Kind} 创建稳定命名 owner，因为会话尚未初始化。");
+
+        return new(
+            BuildLoweringOwnerStableKey(operation, site),
+            session.GetOperationIdentity(operation));
+    }
+
+    private string BuildLoweringOwnerStableKey(IOperation operation, LoweringSite site)
+    {
+        var builder = new StringBuilder();
+        builder.Append("owner|").Append(site.Kind).Append('|');
+
+        switch (site.Kind)
+        {
+            case LoweringSiteKind.CreationTemp:
+                builder.Append("creation");
+                break;
+
+            case LoweringSiteKind.SwitchExpressionInput:
+                if (operation is ISwitchExpressionOperation switchExpression)
+                    builder.Append(BuildSemanticNameKey(switchExpression.Value));
+                else
+                    builder.Append(BuildSemanticNameKey(operation));
+                break;
+
+            case LoweringSiteKind.SwitchPatternInput:
+                if (operation is ISwitchOperation @switch)
+                    builder.Append(BuildSemanticNameKey(@switch.Value));
+                else
+                    builder.Append(BuildSemanticNameKey(operation));
+                break;
+
+            case LoweringSiteKind.MethodReferenceProxy:
+                if (operation is IMethodReferenceOperation methodReference)
+                {
+                    var resolvedMethod = ResolveStaticInterfaceProjectionMethod(
+                        methodReference.Method,
+                        methodReference.Syntax,
+                        methodReference.SemanticModel);
+                    builder.Append(DescribeStableSymbol(resolvedMethod)).Append('|');
+                    builder.Append(methodReference.Instance is null
+                        ? "<null>"
+                        : BuildSemanticNameKey(methodReference.Instance));
+                }
+                else
+                    builder.Append(BuildSemanticNameKey(operation));
+                break;
+
+            case LoweringSiteKind.MultiCatchParameter:
+                builder.Append("mcatch");
+                break;
+
+            case LoweringSiteKind.SyntheticCatchParameter:
+                builder.Append("scatch");
+                break;
+
+            default:
+                builder.Append(BuildSemanticNameKey(operation));
+                break;
         }
 
-        return name;
+        return UniqueNameSession.HashHex(builder.ToString(), 24);
+    }
+
+    private string BuildSemanticNameKey(IOperation operation)
+    {
+        if (_semanticNameKeyCache.TryGetValue(operation, out var cached))
+            return cached;
+
+        var builder = new StringBuilder();
+        builder.Append("kind=").Append(operation.Kind);
+        AppendSemanticNameType(builder, operation.Type);
+        AppendSemanticNameConstant(builder, operation.ConstantValue);
+
+        switch (operation)
+        {
+            case ILocalReferenceOperation localReference:
+                builder.Append("|local=").Append(localReference.Local.Name);
+                break;
+
+            case IParameterReferenceOperation parameterReference:
+                builder.Append("|param=").Append(parameterReference.Parameter.Ordinal);
+                builder.Append(':').Append(parameterReference.Parameter.Name);
+                break;
+
+            case IInstanceReferenceOperation instanceReference:
+                builder.Append("|refkind=").Append(instanceReference.ReferenceKind);
+                break;
+
+            case IMethodReferenceOperation methodReference:
+                builder.Append("|method=").Append(DescribeStableSymbol(methodReference.Method));
+                builder.Append("|instance=").Append(methodReference.Instance is null
+                    ? "<null>"
+                    : BuildSemanticNameKey(methodReference.Instance));
+                break;
+
+            case IPropertyReferenceOperation propertyReference:
+                builder.Append("|property=").Append(DescribeStableSymbol(propertyReference.Property));
+                builder.Append("|instance=").Append(propertyReference.Instance is null
+                    ? "<null>"
+                    : BuildSemanticNameKey(propertyReference.Instance));
+                foreach (var propertyArgument in propertyReference.Arguments)
+                    builder.Append("|arg=").Append(BuildSemanticNameKey(propertyArgument));
+                break;
+
+            case IMemberReferenceOperation memberReference:
+                builder.Append("|member=").Append(DescribeStableSymbol(memberReference.Member));
+                builder.Append("|instance=").Append(memberReference.Instance is null
+                    ? "<null>"
+                    : BuildSemanticNameKey(memberReference.Instance));
+                break;
+
+            case IInvocationOperation invocation:
+                builder.Append("|method=").Append(DescribeStableSymbol(invocation.TargetMethod));
+                builder.Append("|instance=").Append(invocation.Instance is null
+                    ? "<null>"
+                    : BuildSemanticNameKey(invocation.Instance));
+                builder.Append("|virtual=").Append(invocation.IsVirtual);
+                foreach (var argument in invocation.Arguments)
+                    builder.Append("|arg=").Append(BuildSemanticNameKey(argument));
+                break;
+
+            case IArgumentOperation argument:
+                builder.Append("|argkind=").Append(argument.ArgumentKind);
+                builder.Append("|ref=").Append(argument.Parameter?.RefKind);
+                builder.Append("|param=").Append(argument.Parameter?.Ordinal.ToString(CultureInfo.InvariantCulture) ?? "<none>");
+                builder.Append("|value=").Append(BuildSemanticNameKey(argument.Value));
+                break;
+
+            case IConversionOperation conversion:
+                builder.Append("|implicit=").Append(conversion.IsImplicit);
+                builder.Append("|checked=").Append(conversion.IsChecked);
+                builder.Append("|exists=").Append(conversion.Conversion.Exists);
+                builder.Append("|identity=").Append(conversion.Conversion.IsIdentity);
+                builder.Append("|numeric=").Append(conversion.Conversion.IsNumeric);
+                builder.Append("|reference=").Append(conversion.Conversion.IsReference);
+                builder.Append("|operator=").Append(DescribeStableSymbol(conversion.OperatorMethod));
+                builder.Append("|operand=").Append(BuildSemanticNameKey(conversion.Operand));
+                break;
+
+            case IObjectCreationOperation objectCreation:
+                builder.Append("|ctor=").Append(DescribeStableSymbol(objectCreation.Constructor));
+                foreach (var argument in objectCreation.Arguments)
+                    builder.Append("|arg=").Append(BuildSemanticNameKey(argument));
+                builder.Append("|init=").Append(objectCreation.Initializer is null
+                    ? "<none>"
+                    : BuildSemanticNameKey(objectCreation.Initializer));
+                break;
+
+            case IArrayElementReferenceOperation arrayElementReference:
+                builder.Append("|array=").Append(BuildSemanticNameKey(arrayElementReference.ArrayReference));
+                foreach (var index in arrayElementReference.Indices)
+                    builder.Append("|index=").Append(BuildSemanticNameKey(index));
+                break;
+
+            case IBinaryOperation binary:
+                builder.Append("|operator=").Append(binary.OperatorKind);
+                builder.Append("|lifted=").Append(binary.IsLifted);
+                builder.Append("|checked=").Append(binary.IsChecked);
+                builder.Append("|method=").Append(DescribeStableSymbol(binary.OperatorMethod));
+                builder.Append("|left=").Append(BuildSemanticNameKey(binary.LeftOperand));
+                builder.Append("|right=").Append(BuildSemanticNameKey(binary.RightOperand));
+                break;
+
+            case IUnaryOperation unary:
+                builder.Append("|operator=").Append(unary.OperatorKind);
+                builder.Append("|lifted=").Append(unary.IsLifted);
+                builder.Append("|checked=").Append(unary.IsChecked);
+                builder.Append("|method=").Append(DescribeStableSymbol(unary.OperatorMethod));
+                builder.Append("|operand=").Append(BuildSemanticNameKey(unary.Operand));
+                break;
+
+            case IIncrementOrDecrementOperation incrementOrDecrement:
+                builder.Append("|postfix=").Append(incrementOrDecrement.IsPostfix);
+                builder.Append("|lifted=").Append(incrementOrDecrement.IsLifted);
+                builder.Append("|checked=").Append(incrementOrDecrement.IsChecked);
+                builder.Append("|method=").Append(DescribeStableSymbol(incrementOrDecrement.OperatorMethod));
+                builder.Append("|target=").Append(BuildSemanticNameKey(incrementOrDecrement.Target));
+                break;
+
+            case ITupleBinaryOperation tupleBinary:
+                builder.Append("|tupleop=").Append(tupleBinary.OperatorKind);
+                builder.Append("|left=").Append(BuildSemanticNameKey(tupleBinary.LeftOperand));
+                builder.Append("|right=").Append(BuildSemanticNameKey(tupleBinary.RightOperand));
+                break;
+
+            case IDeconstructionAssignmentOperation deconstruction:
+                builder.Append("|target=").Append(BuildSemanticNameKey(deconstruction.Target));
+                builder.Append("|value=").Append(BuildSemanticNameKey(deconstruction.Value));
+                break;
+
+            case ICompoundAssignmentOperation compoundAssignment:
+                builder.Append("|operator=").Append(compoundAssignment.OperatorKind);
+                builder.Append("|lifted=").Append(compoundAssignment.IsLifted);
+                builder.Append("|checked=").Append(compoundAssignment.IsChecked);
+                builder.Append("|method=").Append(DescribeStableSymbol(compoundAssignment.OperatorMethod));
+                builder.Append("|target=").Append(BuildSemanticNameKey(compoundAssignment.Target));
+                builder.Append("|value=").Append(BuildSemanticNameKey(compoundAssignment.Value));
+                break;
+
+            case IIsTypeOperation isType:
+                builder.Append("|value=").Append(BuildSemanticNameKey(isType.ValueOperand));
+                builder.Append("|checked=").Append(isType.TypeOperand?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                builder.Append("|negated=").Append(isType.IsNegated);
+                break;
+
+            case IRelationalPatternOperation relationalPattern:
+                builder.Append("|relop=").Append(relationalPattern.OperatorKind);
+                builder.Append("|value=").Append(BuildSemanticNameKey(relationalPattern.Value));
+                break;
+
+            case IBinaryPatternOperation binaryPattern:
+                builder.Append("|patop=").Append(binaryPattern.OperatorKind);
+                builder.Append("|left=").Append(BuildSemanticNameKey(binaryPattern.LeftPattern));
+                builder.Append("|right=").Append(BuildSemanticNameKey(binaryPattern.RightPattern));
+                break;
+
+            case IPropertySubpatternOperation propertySubpattern:
+                builder.Append("|member=").Append(BuildSemanticNameKey(propertySubpattern.Member));
+                builder.Append("|pattern=").Append(BuildSemanticNameKey(propertySubpattern.Pattern));
+                break;
+
+            case IDeclarationPatternOperation declarationPattern:
+                builder.Append("|matched=").Append(declarationPattern.MatchedType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                builder.Append("|declared=").Append(DescribeStableSymbol(declarationPattern.DeclaredSymbol));
+                builder.Append("|matchesnull=").Append(declarationPattern.MatchesNull);
+                break;
+
+            case ITypePatternOperation typePattern:
+                builder.Append("|matched=").Append(typePattern.MatchedType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                break;
+
+            case IRecursivePatternOperation recursivePattern:
+                builder.Append("|matched=").Append(recursivePattern.MatchedType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<null>");
+                builder.Append("|deconstruct=").Append(DescribeStableSymbol(recursivePattern.DeconstructSymbol));
+                builder.Append("|declared=").Append(DescribeStableSymbol(recursivePattern.DeclaredSymbol));
+                foreach (var subpattern in recursivePattern.DeconstructionSubpatterns)
+                    builder.Append("|decon=").Append(BuildSemanticNameKey(subpattern));
+                foreach (var subpattern in recursivePattern.PropertySubpatterns)
+                    builder.Append("|prop=").Append(BuildSemanticNameKey(subpattern));
+                break;
+
+            case IListPatternOperation listPattern:
+                builder.Append("|declared=").Append(DescribeStableSymbol(listPattern.DeclaredSymbol));
+                builder.Append("|length=").Append(DescribeStableSymbol(listPattern.LengthSymbol));
+                builder.Append("|indexer=").Append(DescribeStableSymbol(listPattern.IndexerSymbol));
+                foreach (var pattern in listPattern.Patterns)
+                    builder.Append("|item=").Append(BuildSemanticNameKey(pattern));
+                break;
+
+            case ISlicePatternOperation slicePattern:
+                builder.Append("|slice=").Append(DescribeStableSymbol(slicePattern.SliceSymbol));
+                builder.Append("|pattern=").Append(slicePattern.Pattern is null
+                    ? "<null>"
+                    : BuildSemanticNameKey(slicePattern.Pattern));
+                break;
+
+            case IInterpolatedStringTextOperation interpolatedText:
+                builder.Append("|text=").Append(interpolatedText.Text.ConstantValue.Value as string ?? string.Empty);
+                break;
+
+            case IAnonymousFunctionOperation anonymousFunction:
+                builder.Append("|symbol=").Append(DescribeStableSymbol(anonymousFunction.Symbol));
+                break;
+
+            case ILocalFunctionOperation localFunction:
+                builder.Append("|symbol=").Append(DescribeStableSymbol(localFunction.Symbol));
+                break;
+
+            default:
+                foreach (var child in operation.ChildOperations)
+                {
+                    if (child is not null)
+                        builder.Append("|child=").Append(BuildSemanticNameKey(child));
+                }
+                break;
+        }
+
+        cached = UniqueNameSession.HashHex(builder.ToString(), 20);
+        _semanticNameKeyCache.Add(operation, cached);
+        return cached;
+    }
+
+    private static void AppendSemanticNameType(StringBuilder builder, ITypeSymbol? type)
+    {
+        builder.Append("|type=");
+        builder.Append(type is null
+            ? "<null>"
+            : type.OriginalDefinition.ToDisplayString(Format.NameFormat));
+    }
+
+    private static void AppendSemanticNameConstant(StringBuilder builder, Optional<object?> constantValue)
+    {
+        if (!constantValue.HasValue)
+            return;
+
+        builder.Append("|const=");
+        builder.Append(FormatSemanticConstant(constantValue.Value));
+    }
+
+    private static string FormatSemanticConstant(object? value)
+    {
+        if (value is null)
+            return "<null>";
+
+        return value switch
+        {
+            string text => "\"" + text + "\"",
+            char c => "'" + c.ToString() + "'",
+            bool flag => flag ? "true" : "false",
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => value.ToString() ?? value.GetType().FullName ?? "<unknown>"
+        };
+    }
+
+    private static string DescribeStableSymbol(ISymbol? symbol)
+        => symbol is null
+            ? "<null>"
+            : symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+
+    private static List<Statement> MaterializeScopedStatements(SenseArgument context, IEnumerable<Statement> pendingStatements)
+    {
+        var statements = new List<Statement>();
+        if (context.HasVarDeclarator)
+        {
+            var declarators = context.FlushVarDeclarator();
+            if (declarators.Count > 0)
+                statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+        }
+
+        statements.AddRange(pendingStatements);
+        return statements;
     }
 
     /// <summary>

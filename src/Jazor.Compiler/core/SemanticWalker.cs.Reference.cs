@@ -165,8 +165,7 @@ public partial class SemanticWalker
 
 			queue.Push(name!);
 
-			type = SymbolEqualityComparer.Default.Equals(type, symbol.ContainingType)
-				? null : symbol.ContainingType;
+			type = type.ContainingType;
 		}
 
 		Expression? expr = null;
@@ -1327,7 +1326,7 @@ public partial class SemanticWalker
 	{
 		// 如果是白名单方法调用，需要生成本地代理方法
 		// 生成代理方法参数
-		var name = GetUniqueName(operation);
+		var name = AllocateUniqueName(operation, argument, LoweringSite.MethodReferenceProxy());
 		var count = operation.Method.Parameters.Length + (operation.Method.IsStatic ? 0 : 1);
 		var args = Enumerable.Range(0, count)
 			.Select(i => new Identifier($"{name}${i}") as Expression)
@@ -1538,7 +1537,7 @@ public partial class SemanticWalker
 			if (refs.Count > 0)
 			{
 				// 如果存在ref参数，需要生成逗号表达式，方法调用存临时变量，然后返写参数
-				var tempId = new Identifier(GetUniqueName(operation));
+				var tempId = new Identifier(AllocateUniqueName(operation, ctx, LoweringSite.ReferenceTemp()));
 				var declarator = new VariableDeclarator(tempId, null);
 				ctx.AddVarDeclarator(declarator, _recursionDepth);
 

@@ -19,7 +19,7 @@ public sealed class SemanticWalkerReferenceTest
 	/// <param name="code"></param>
 	/// <returns></returns>
 	/// <exception cref="InvalidOperationException"></exception>
-	private static IBlockOperation GetBlockOperation(string code)
+	private static IBlockOperation GetBlockOperation(string code, string assemblyName = "TestAssembly")
 	{
 		var usings = @"
         global using System;
@@ -32,7 +32,7 @@ public sealed class SemanticWalkerReferenceTest
 		var references = Basic.Reference.Assemblies.Net100.References.All
 			.Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
 		var compilation = CSharpCompilation.Create(
-			assemblyName: "TestAssembly",
+			assemblyName: assemblyName,
 			syntaxTrees: [
 			  CSharpSyntaxTree.ParseText(usings),
 			  CSharpSyntaxTree.ParseText(code)
@@ -3786,10 +3786,43 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+	Assert.AreEqual(@"{
   let field = A.Field;
   let property = A.Value;
   let result = A.GetNumbers();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_EcmascriptStaticNestedTypeMembers_PreserveFullNestedHostChain()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int result = Host.Middle.Inner.Value;
+                }
+
+                public static class Host
+                {
+                    public static class Middle
+                    {
+                        public static class Inner
+                        {
+                            public static int Value = 1;
+                        }
+                    }
+                }
+            }
+        ", assemblyName: "ECMAScript");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let result = TestClass.Host.Middle.Inner.Value;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

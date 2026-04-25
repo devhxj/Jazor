@@ -1,11 +1,9 @@
 <Project>
   <PropertyGroup>
     <AcornimaVersion>1.6.0</AcornimaVersion>
-    <DenoHostVersion>2.7.12</DenoHostVersion>
-    <JsonNetVersion>10.0.6</JsonNetVersion>
-    <!-- analyzer/source generator 不能高于目标 SDK 内置 Roslyn，否则 NuGet 包消费侧会被 CS9057 拒载。 -->
+    <DenoHostVersion>2.7.13</DenoHostVersion>
+    <JsonNetVersion>10.0.7</JsonNetVersion>
     <CodeAnalysisVersion>5.3.0</CodeAnalysisVersion>
-    <CodeAnalysisAnalyzersVersion>5.3.0</CodeAnalysisAnalyzersVersion>
     <Net100AssembliesVersion>1.8.5</Net100AssembliesVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
   </PropertyGroup>
