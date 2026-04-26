@@ -1,17 +1,19 @@
 # `Op.Compile` 设计约定
 
-## 与实现原则的关系
+前置阅读：[实现原则](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
-阅读本文件前，建议先看：
+## 目录
 
-- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-
-那份文档已经把 `Compile` 的路线地位定义为“高于 `Inline` 的高阶宿主语义出口”；本文件在这个前提下，继续约束 `Op.Compile` 当前 contract、分发顺序与适用边界。
-
-如果二者出现张力，应按下面方式理解：
-
-- `ImplementationPrinciples.md` 负责回答“为什么复杂宿主语义应优先升级到 `Compile`”；
-- 本文件负责回答“当前 `Compile_*` 签名、返回语义和分发表到底长什么样”。
+- [定位](#定位)
+- [当前事实](#当前事实)
+- [目标职责](#目标职责)
+- [当前主分发顺序](#当前主分发顺序)
+- [`handler` / `args` 契约](#handler--args-契约)
+- [返回语义](#返回语义)
+- [与 `Inline` 的边界](#与-inline-的边界)
+- [接线后仍需保持的约束](#接线后仍需保持的约束)
+- [当前建议](#当前建议)
+- [相关文档](#相关文档)
 
 ## 定位
 

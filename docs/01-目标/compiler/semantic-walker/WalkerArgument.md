@@ -1,5 +1,16 @@
 # `SenseArgument`（原 `WalkerArgument`）
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型用法](#现状与典型用法)
+- [当前边界](#当前边界)
+- [与旧 WalkerArgument 的关系](#与旧-walkerargument-的关系)
+- [相关测试与使用面](#相关测试与使用面)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 文档文件名仍叫 `WalkerArgument.md`，但当前真实实现已经是：
@@ -212,16 +223,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 - `src/Jazor.CompilerTest/AstConverterTests.cs`
   - 间接覆盖 import / flush / 方法体上下文传播
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [WalkerArgument.md](./WalkerArgument.md)
-3. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-4. [AstConverter.md](../AstConverter.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)

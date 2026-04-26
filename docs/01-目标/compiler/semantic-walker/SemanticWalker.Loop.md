@@ -1,5 +1,15 @@
 # `SemanticWalker.cs.Loop.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.Loop.cs` 负责循环语句相关 lowering。
@@ -251,16 +261,7 @@ do {
 - 空 `for`
 - 多初始化变量
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.Loop.md](./SemanticWalker.Loop.md)
-3. [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
-4. [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)

@@ -152,20 +152,11 @@ WriteInterpolated($"Hello {name}");
 
 ## 当前边界
 
-这份文件当前并不提供：
-
-- 自动 polyfill
-- 运行时仿真层
-- “尽量翻译”的降级输出
-- 为 unsupported 特性偷偷改写成语义近似物
-
 当前提供的是：
 
 - 明确拒绝
 - 失败点集中化
 - 边界可读性
-
-这和整个编译器当前方向一致：宁可清晰失败，也不制造运行时语义错配。
 
 ## 相关测试
 
@@ -180,16 +171,7 @@ WriteInterpolated($"Hello {name}");
 - `src/Jazor.CompilerTest/SemanticWalkerInvalidTest.cs`
   - 当前以说明性注释为主，反映 `IInvalidOperation` 不应进入正常路径
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)
-3. [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
-4. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)

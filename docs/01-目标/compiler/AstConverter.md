@@ -1,5 +1,15 @@
 # `AstConverter`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `AstConverter` 负责把一个带 `[ECMAScriptModule]` 约束的顶层类型转换成模块级 ESTree `Module`。
@@ -415,16 +425,7 @@ export class NestedClass extends BaseClass {
 - `Convert_ClassWithNestedClassBaseConstructorInitializer_GeneratesSuperCall`
 - `Convert_ClassWithNestedClassBaseMethodCall_GeneratesSuperInvocation`
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
-2. [AstConverter.md](./AstConverter.md)
-3. [WalkerArgument.md](./semantic-walker/WalkerArgument.md)
-4. [ESGenerator.md](./ESGenerator.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
 - [WalkerArgument.md](./semantic-walker/WalkerArgument.md)

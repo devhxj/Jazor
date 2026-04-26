@@ -1,17 +1,21 @@
 # `SemanticWalker`
 
-## 与实现原则的关系
+## 目录
 
-阅读本文件前，建议先看：
+- [定位](#定位)
+- [当前职责边界](#当前职责边界)
+- [核心设计原则](#核心设计原则)
+- [当前已固定的语义边界](#当前已固定的语义边界)
+- [上下文模型](#上下文模型)
+- [分文件组织](#分文件组织)
+- [当前主线能力](#当前主线能力)
+- [与 AstConverter 的分工](#与-astconverter-的分工)
+- [与白名单的关系](#与白名单的关系)
+- [与 sourcemap 的关系](#与-sourcemap-的关系)
+- [当前边界](#当前边界)
+- [延伸阅读](#延伸阅读)
 
-- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-
-那份文档定义的是 compiler 的总路线与价值排序；本文件讨论的是 `SemanticWalker` 作为语义级 lowering 核心时，具体承担哪些职责。
-
-如果二者出现张力，应按下面方式理解：
-
-- `ImplementationPrinciples.md` 负责回答“为什么这么做”和“优先保什么”；
-- 本文件负责回答“`SemanticWalker` 这一层具体做什么、不做什么”。
+前置阅读：[实现原则](../../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
 ## 定位
 
@@ -311,35 +315,18 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 
 ## 当前边界
 
-`SemanticWalker` 当前并不承诺这些事情：
-
-- 完整 CLR 运行时仿真
 - 对所有 C# 语法无条件支持
 - 不插入任何临时变量
 - 生成最短或最漂亮的 JS
 
-它当前的优先级更接近：
+当前优先级：结果等价 > host/member 协议正确 > 规则统一可维护 > 输出风格优化。
 
-1. 结果等价
-2. host / member 协议尽量正确
-3. 规则统一、可维护
-4. 输出风格与后续优化可再改进
-
-## 推荐阅读顺序
-
-如果要从总览进入细节，建议顺序是：
-
-1. [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
-2. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-3. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
-4. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-5. [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 - [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
 - [WalkerExtensionSpec.md](../WalkerExtensionSpec.md)
 - [InlineAstTemplateSpec.md](../InlineAstTemplateSpec.md)

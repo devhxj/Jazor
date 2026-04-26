@@ -1,5 +1,16 @@
 # `SemanticWalker` 与白名单消费
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前入口](#当前入口)
+- [Op 在当前消费侧的含义](#op-在当前消费侧的含义)
+- [内联模板当前实现](#内联模板当前实现)
+- [与运行时宿主解析的关系](#与运行时宿主解析的关系)
+- [当前边界](#当前边界)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 这份文档说明 `SemanticWalker` 如何消费白名单规则，而不是说明白名单数据本身如何生成。
@@ -250,29 +261,10 @@ console.log("x");
 
 ## 当前边界
 
-这套白名单消费逻辑当前没有承诺这些事情：
-
-- `Op.Compile` 已全面接管复杂宿主
-- 所有宿主问题都只靠白名单解决
-- 只要命中白名单，就一定不再需要语义域协同判断
-
-当前更准确的说法是：
-
 - `Op.Compile` 已接入主分发，但当前 contract 仍限于自包含表达式级钩子
-- import 主链已经接通“发现 -> 收集 -> 合并 -> 模块头输出”，当前重点是继续巩固别名、去重和排序稳定性
 - 白名单是主要的宿主映射事实来源，但最终宿主选择仍需要 `Reference` 等语义域配合
 
-## 推荐阅读
-
-建议按这个顺序一起看：
-
-1. [WhiteList.md](../WhiteList.md)
-2. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
-5. [InlineAstTemplateSpec.md](../InlineAstTemplateSpec.md)
-
-## 相关文档
+## 延伸阅读
 
 - [WhiteList.md](../WhiteList.md)
 - [SemanticWalker.md](./SemanticWalker.md)

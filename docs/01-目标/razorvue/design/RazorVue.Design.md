@@ -28,14 +28,32 @@
 3. 在实现开始之前修复职责
 4. 为后续 `DenoHost` 集成提供稳定的契约
 
-相关文档：
+> 延伸阅读：[RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md) | [RazorVue.HardRules.md](./RazorVue.HardRules.md) | [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md) | [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md) | [RazorVue.Authoring.ProductDefinition.md](./RazorVue.Authoring.ProductDefinition.md) | [RazorVue.LibraryAuthoring.Design.md](./RazorVue.LibraryAuthoring.Design.md)
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
-- [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
-- [RazorVue.Authoring.ProductDefinition.md](./RazorVue.Authoring.ProductDefinition.md)
-- [RazorVue.LibraryAuthoring.Design.md](./RazorVue.LibraryAuthoring.Design.md)
+## 目录
+
+- [0-项目拆分](#0-项目拆分)
+- [1-目标](#1-目标)
+- [2-非目标](#2-非目标)
+- [3-定位](#3-定位)
+- [4-入口模型](#4-入口模型)
+- [5-基础类层次结构](#5-基础类层次结构)
+- [6-为什么-razorvue-不解析-razor](#6-为什么-razorvue-不解析-razor)
+- [7-编译时入口策略](#7-编译时入口策略)
+- [8-为什么-razor-组件需要自己的降低](#8-为什么-razor-组件需要自己的降低)
+- [9-高层管道](#9-高层管道)
+- [10-组件契约提取](#10-组件契约提取)
+- [11-逻辑提取](#11-逻辑提取)
+- [12-渲染树提取](#12-渲染树提取)
+- [13-模板语义](#13-模板语义)
+- [14-生命周期语义](#14-生命周期语义)
+- [15-vue-输出模型](#15-vue-输出模型)
+- [16-生态系统扩展](#16-生态系统扩展)
+- [17-工件和清单模型](#17-工件和清单模型)
+- [18-hmr-和-sourcemap-保留](#18-hmr-和-sourcemap-保留)
+- [19-denohost-边界](#19-denohost-边界)
+- [20-第一阶段范围](#20-第一阶段范围)
+- [21-设计结论](#21-设计结论)
 
 ## 0. 项目拆分
 

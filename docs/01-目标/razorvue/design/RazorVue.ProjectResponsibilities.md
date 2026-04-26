@@ -15,11 +15,18 @@
 1. 哪个项目应该拥有每个职责
 2. 哪些窄接口应该连接这些项目
 
-相关文档：
+> 延伸阅读：[RazorVue.Design.md](./RazorVue.Design.md) | [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md) | [RazorVue.Review.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Review.md)
 
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
-- [RazorVue.Review.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Review.md)
+## 目录
+
+- [1-最终定位](#1-最终定位)
+- [2-职责矩阵](#2-职责矩阵)
+- [3-硬规则](#3-硬规则)
+- [4-最小接口方案](#4-最小接口方案)
+- [5-分阶段代码移动计划](#5-分阶段代码移动计划)
+- [6-审查第一轮](#6-审查第一轮)
+- [7-审查第二轮](#7-审查第二轮)
+- [8-最终结果](#8-最终结果)
 
 ## 1. 最终定位
 

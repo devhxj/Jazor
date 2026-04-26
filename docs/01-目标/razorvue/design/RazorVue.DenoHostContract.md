@@ -12,11 +12,22 @@
 本文档有意比 `RazorVue.Design.md` 更窄。
 它仅涵盖面向主机的工件和清单期望。
 
-相关文档：
+> 延伸阅读：[RazorVue.Design.md](./RazorVue.Design.md) | [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md) | [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
-- [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
+## 目录
+
+- [1-目的](#1-目的)
+- [2-核心边界](#2-核心边界)
+- [3-工件模型](#3-工件模型)
+- [4-必需的工件字段](#4-必需的工件字段)
+- [5-清单模型](#5-清单模型)
+- [6-依赖解析规则](#6-依赖解析规则)
+- [7-物理化规则](#7-物理化规则)
+- [8-hmr-契约保留](#8-hmr-契约保留)
+- [9-sourcemap-契约保留](#9-sourcemap-契约保留)
+- [10-验证期望](#10-验证期望)
+- [11-第一阶段最小契约](#11-第一阶段最小契约)
+- [12-结论](#12-结论)
 
 ## 2. 核心边界
 

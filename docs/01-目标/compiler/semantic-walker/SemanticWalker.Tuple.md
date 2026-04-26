@@ -1,5 +1,18 @@
 # `SemanticWalker.cs.Tuple.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前规则](#当前规则)
+- [已覆盖的 tuple 边界](#已覆盖的-tuple-边界)
+- [核心实现点](#核心实现点)
+- [解构规则](#解构规则)
+- [比较规则](#比较规则)
+- [当前实现的明确取舍](#当前实现的明确取舍)
+- [测试关注点](#测试关注点)
+- [与 SourceMap 的关系](#与-sourcemap-的关系)
+- [结论](#结论)
+
 ## 定位
 
 `SemanticWalker.cs.Tuple.cs` 负责把 C# tuple 相关语法糖 lower 成 JavaScript AST。

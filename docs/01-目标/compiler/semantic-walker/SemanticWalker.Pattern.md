@@ -1,5 +1,18 @@
 # `SemanticWalker.cs.Pattern.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前核心前提](#当前核心前提)
+- [当前职责](#当前职责)
+- [PatternInput 的作用](#patterninput-的作用)
+- [switch 表达式与 switch 语句](#switch-表达式与-switch-语句)
+- [当前模式类型概览](#当前模式类型概览)
+- [当前生成风格](#当前生成风格)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.Pattern.cs` 负责模式匹配相关语义节点的 lowering。
@@ -259,17 +272,8 @@ value is Person("John", 18)
 
 ## 当前边界
 
-这份文件当前不承诺这些事情：
-
 - 把所有模式匹配都压缩成最短 JS
-- 用统一运行时 helper 封装所有模式逻辑
 - 完整复刻 CLR 内部模式匹配实现细节
-
-它当前更偏向：
-
-- 把 pattern lowering 展开成显式、可验证的 AST 条件结构
-- 通过 `PatternInput` 统一上下文模型
-- 让声明模式、guard、列表模式、递归模式共用同一套基础规则
 
 ## 相关测试
 
@@ -286,16 +290,7 @@ value is Person("John", 18)
 - 模式 `switch` 表达式
 - 模式 `switch` 语句
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-3. [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
-4. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)

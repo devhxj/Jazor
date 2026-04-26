@@ -1,5 +1,17 @@
 # `SemanticWalker.cs.Reference.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [名称与宿主选择顺序](#名称与宿主选择顺序)
+- [运行时宿主归一化](#运行时宿主归一化)
+- [导入式宿主](#导入式宿主)
+- [特殊字段与边界值](#特殊字段与边界值)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.Reference.cs` 负责把“引用类” `IOperation` 转成对应的 JavaScript AST。
@@ -290,7 +302,7 @@ console.log("x");
 - `Visit_Reference_TypedArrayAliasHost_UsesConcreteRuntimeHost`
 - `Visit_Reference_RuntimeStaticProperty_UsesImplicitEcmascriptMemberName`
 
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)

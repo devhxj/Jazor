@@ -1,17 +1,18 @@
 # `WhiteList`
 
-## 与实现原则的关系
+前置阅读：[实现原则](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
-阅读本文件前，建议先看：
+## 目录
 
-- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-
-那份文档定义的是 compiler 的总路线、失败策略和宿主语义边界；本文件只讨论 `WhiteList` 作为“宿主映射事实层”本身的模型与消费方式。
-
-如果二者出现张力，应按下面方式理解：
-
-- `ImplementationPrinciples.md` 负责回答“什么样的宿主语义应该存在边界，为什么不能静默 fallback”；
-- 本文件负责回答“已有宿主映射规则现在以什么数据结构存在、由哪些 lowering 路径消费”。
+- [定位](#定位)
+- [它解决什么问题](#它解决什么问题)
+- [当前数据模型](#当前数据模型)
+- [当前 `Op` 语义](#当前-op-语义)
+- [生成来源](#生成来源)
+- [当前消费方](#当前消费方)
+- [与 `SemanticWalker` 的关系](#与-semanticwalker-的关系)
+- [当前边界](#当前边界)
+- [延伸阅读](#延伸阅读)
 
 ## 定位
 
@@ -200,33 +201,16 @@ Console.WriteLine("x");
 
 ## 当前边界
 
-`WhiteList` 当前不属于以下范畴：
-
-- 完整的 CLR 语义数据库
-- 自动保证所有映射都闭环的验证器
-- 最终 JavaScript 生成器
-- 模块头 `import` 声明生成器
-
-更确切而言，它现在是：
+`WhiteList` 当前是：
 
 - 编译器宿主映射规则的静态事实源
 - 由生成器维护的查询表
 - 供 `SemanticWalker` 等组件消费的基础设施
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
-2. [WhiteList.md](./WhiteList.md)
-3. [SemanticWalker.WhiteList.md](./semantic-walker/SemanticWalker.WhiteList.md)
-4. [SemanticWalker.Reference.md](./semantic-walker/SemanticWalker.Reference.md)
-5. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
 - [SemanticWalker.WhiteList.md](./semantic-walker/SemanticWalker.WhiteList.md)
-- [OpCompileSpec.md](./OpCompileSpec.md)
 - [SemanticWalker.Reference.md](./semantic-walker/SemanticWalker.Reference.md)
+- [OpCompileSpec.md](./OpCompileSpec.md)
 - [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)

@@ -1,5 +1,16 @@
 # `SemanticWalker.cs.Creation.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [初始化器展开方式](#初始化器展开方式)
+- [何时直接变成对象字面量](#何时直接变成对象字面量)
+- [当前边界](#当前边界)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.Creation.cs` 负责“创建类”语义节点的 lowering。
@@ -265,30 +276,11 @@ let anonymous = { Name: "Test", Value: 42 };
 
 ## 当前边界
 
-这份文件当前不承诺这些事情：
-
-- 还原完整 CLR 对象模型
 - 保证所有集合类型都能落成最优 JS 宿主
 - 让所有初始化器都不用 IIFE
 - 保持和 CLR 匿名类型/record 运行时细节完全一致
 
-它当前更偏向：
-
-- 结果等价
-- 对象/容器协议尽量贴近 JS 宿主
-- 创建路径与 tuple / 白名单 / 引用路径规则保持一致
-
-## 推荐阅读
-
-建议结合下面这些文档一起看：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.Creation.md](./SemanticWalker.Creation.md)
-3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
-5. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)

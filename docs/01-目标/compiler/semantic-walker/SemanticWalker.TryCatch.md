@@ -1,5 +1,15 @@
 # `SemanticWalker.cs.TryCatch.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.TryCatch.cs` 负责把 `try` / `catch` / `finally` / `throw` 相关 `IOperation` lower 成 JavaScript AST。
@@ -334,16 +344,7 @@ try {
 
 这些测试基本覆盖了当前文件最重要的结构性行为。
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.TryCatch.md](./SemanticWalker.TryCatch.md)
-3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)

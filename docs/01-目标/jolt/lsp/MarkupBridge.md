@@ -7,6 +7,18 @@
 
 本文档描述标记组件桥接服务，用于解析 Razor/Vue 组件标签到 Vue 文件，并提供跨文档的引用查找、重命名和补全功能。
 
+## 目录
+
+- [1-文档定位](#1-文档定位)
+- [2-核心类型](#2-核心类型)
+- [3-核心算法](#3-核心算法)
+- [4-jazorlspdocumentservice](#4-jazorlspdocumentservice)
+- [5-线程安全模型](#5-线程安全模型)
+- [6-错误处理](#6-错误处理)
+- [7-配置选项](#7-配置选项)
+- [8-与其他子系统的交互](#8-与其他子系统的交互)
+- [9-设计权衡](#9-设计权衡)
+
 **相关文件**：
 - `src/Jolt/Lsp/Coordination/MarkupComponentBridgeService.cs` (842行) - 标记组件桥接服务
 - `src/Jolt/Lsp/JazorLspDocumentService.cs` (822行) - Jazor LSP 文档服务

@@ -14,12 +14,27 @@
 本文档有意比 `RazorVue.Design.md` 更窄。
 它只关注组件契约形状和解析行为。
 
-相关文档：
+> 延伸阅读：[RazorVue.Design.md](./RazorVue.Design.md) | [RazorVue.HardRules.md](./RazorVue.HardRules.md) | [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md) | [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
 
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
-- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+## 目录
+
+- [1-目的](#1-目的)
+- [2-设计目标](#2-设计目标)
+- [3-描述符范围](#3-描述符范围)
+- [4-顶级描述符模型](#4-顶级描述符模型)
+- [5-prop-描述符](#5-prop-描述符)
+- [6-emit-描述符](#6-emit-描述符)
+- [7-插槽描述符](#7-插槽描述符)
+- [8-组件标志](#8-组件标志)
+- [9-用户组件的描述符生成规则](#9-用户组件的描述符生成规则)
+- [10-内置组件的描述符规则](#10-内置组件的描述符规则)
+- [11-库组件的描述符规则](#11-库组件的描述符规则)
+- [12-组件注册表模型](#12-组件注册表模型)
+- [13-解析规则](#13-解析规则)
+- [14-严格性规则](#14-严格性规则)
+- [15-描述符标识和-hmrsourcemap](#15-描述符标识和-hmrsourcemap)
+- [16-第一阶段范围](#16-第一阶段范围)
+- [17-结论](#17-结论)
 
 ## 2. 设计目标
 

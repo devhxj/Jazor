@@ -7,6 +7,20 @@
 
 本文档描述 Jolt LSP 的三车道架构，用于协调 Jazor、C# (Roslyn) 和 Vue (Volar) 三种语言服务的提供。
 
+## 目录
+
+- [1-文档定位](#1-文档定位)
+- [2-核心类型](#2-核心类型)
+- [3-jazorlaneservice](#3-jazorlaneservice)
+- [4-roslynlaneservice](#4-roslynlaneservice)
+- [5-volarlaneservice](#5-volarlaneservice)
+- [6-核心算法](#6-核心算法)
+- [7-线程安全模型](#7-线程安全模型)
+- [8-错误处理](#8-错误处理)
+- [9-配置选项](#9-配置选项)
+- [10-与其他子系统的交互](#10-与其他子系统的交互)
+- [11-设计权衡](#11-设计权衡)
+
 **相关文件**：
 - `src/Jolt/Lsp/Lanes/ILspLane.cs` (96行) - 车道接口定义
 - `src/Jolt/Lsp/Lanes/JazorLaneService.cs` (103行) - Jazor 车道实现

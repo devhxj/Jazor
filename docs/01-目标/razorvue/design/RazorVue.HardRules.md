@@ -5,12 +5,37 @@
 它不重复所有设计讨论。
 它存在是为了锁定后续实现和审查不得不断重新协商的边界。
 
-相关文档：
+> 延伸阅读：[RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md) | [RazorVue.Design.md](./RazorVue.Design.md) | [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md) | [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
-- [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
+## 目录
+
+- [1-范围](#1-范围)
+- [2-规则-1-razorvue-是-vue-优先](#2-规则-1-razorvue-是-vue-优先)
+- [3-规则-2-ecmascriptmodule-统一入口而非降低](#3-规则-2-ecmascriptmodule-统一入口而非降低)
+- [4-规则-3-razorvue-组件必须继承-jazorcomponent](#4-规则-3-razorvue-组件必须继承-jazorcomponent)
+- [5-规则-4-jazorcomponent-必须继承-componentbase](#5-规则-4-jazorcomponent-必须继承-componentbase)
+- [6-规则-5-jazorcomponent-必须保持瘦](#6-规则-5-jazorcomponent-必须保持瘦)
+- [7-规则-6-vuecomponent-是-vue-优先创作-api-的必需主机](#7-规则-6-vuecomponent-是-vue-优先创作-api-的必需主机)
+- [8-规则-7-阶段一不解析-razor](#8-规则-7-阶段一不解析-razor)
+- [9-规则-8-不依赖源生成器排序](#9-规则-8-不依赖源生成器排序)
+- [10-规则-9-生成代码分析是必需的](#10-规则-9-生成代码分析是必需的)
+- [11-规则-10-分析器模式拆分是必需的](#11-规则-10-分析器模式拆分是必需的)
+- [12-规则-11-razor-组件不重用静态模块降低](#12-规则-11-razor-组件不重用静态模块降低)
+- [13-规则-12-语义载体必须是显式的](#13-规则-12-语义载体必须是显式的)
+- [14-规则-13-vue-定义运行时生命周期语义](#14-规则-13-vue-定义运行时生命周期语义)
+- [15-规则-14-statehaschangedshouldrender-和-setparametersasync-保持在主模型之外](#15-规则-14-statehaschangedshouldrender-和-setparametersasync-保持在主模型之外)
+- [16-规则-15-组件契约必须在渲染降低之前提取](#16-规则-15-组件契约必须在渲染降低之前提取)
+- [17-规则-16-组件解析必须是-using-驱动和显式的](#17-规则-16-组件解析必须是-using-驱动和显式的)
+- [18-规则-17-内置组件名称保留](#18-规则-17-内置组件名称保留)
+- [19-规则-18-组件属性匹配是严格的](#19-规则-18-组件属性匹配是严格的)
+- [20-规则-19-输出必须是标准-vue-esm](#20-规则-19-输出必须是标准-vue-esm)
+- [21-规则-20-编译器和-denohost-职责必须保持分离](#21-规则-20-编译器和-denohost-职责必须保持分离)
+- [22-规则-21-当前主机集成需要显式迁移路径](#22-规则-21-当前主机集成需要显式迁移路径)
+- [23-规则-22-阶段一必须保持最小](#23-规则-22-阶段一必须保持最小)
+- [24-规则-23-从阶段一开始必须保留源始元数据](#24-规则-23-从阶段一开始必须保留源始元数据)
+- [25-规则-24-工件标识必须是稳定和分离的](#25-规则-24-工件标识必须是稳定和分离的)
+- [26-规则-25-hmr-和-sourcemap-架构上包含而非静默延迟](#26-规则-25-hmr-和-sourcemap-架构上包含而非静默延迟)
+- [27-结论](#27-结论)
 
 ## 1. 范围
 

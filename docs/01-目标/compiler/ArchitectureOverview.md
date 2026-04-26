@@ -1,5 +1,22 @@
 # Architecture Overview
 
+## 目录
+
+- [1. Overview](#1-overview)
+- [2. End-to-End Pipeline](#2-end-to-end-pipeline)
+- [3. Inputs And Metadata](#3-inputs-and-metadata)
+- [4. Compile-Time Guard](#4-compile-time-guard)
+- [5. Rule Generation](#5-rule-generation)
+- [6. Conversion Core](#6-conversion-core)
+- [7. Internal Responsibility Boundary](#7-internal-responsibility-boundary)
+- [8. Sequence From Annotation To Output](#8-sequence-from-annotation-to-output)
+- [9. Closure Status And Extension Points](#9-closure-status-and-extension-points)
+- [10. Extension Decision Tree](#10-extension-decision-tree)
+- [11. Key Engineering Principles](#11-key-engineering-principles)
+- [12. Recommended Reading Order](#12-recommended-reading-order)
+- [13. Preferred Terms](#13-preferred-terms)
+- [14. Related Documents](#14-related-documents)
+
 ## 1. Overview
 
 Jazor 当前整体方案是一条“输入域 + 宿主映射 + 转换核心 + 输出闭环”的链路：

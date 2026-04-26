@@ -86,15 +86,7 @@
 - 一个明确的失败点
 - 一个清晰的设计信号：`IInvalidOperation` 不在受支持 lowering 面内
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)
-3. [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)

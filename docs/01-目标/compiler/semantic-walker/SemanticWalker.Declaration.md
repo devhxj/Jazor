@@ -1,5 +1,15 @@
 # `SemanticWalker.cs.Declaration.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.Declaration.cs` 负责声明和初始化器相关 lowering。
@@ -229,16 +239,7 @@ private (string first, int years) person = (name: "John", age: 30);
 - `DirectVisit_PropertyInitializer_TupleRemapByTargetType`
 - `DirectVisit_VariableDeclarator_TupleRemapByTargetType`
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md)
-3. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
-4. [WalkerArgument.md](./WalkerArgument.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)

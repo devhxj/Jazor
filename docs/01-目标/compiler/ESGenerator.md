@@ -1,5 +1,15 @@
 # `ESGenerator`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `ESGenerator` 是当前的 Roslyn 增量源生成器入口。
@@ -197,8 +207,6 @@ public static partial class ModuleCatalog
 
 - 直接向项目输出物目录写 `.mjs`
 - 直接发出独立磁盘文件
-- 建立运行时模块加载器
-- 在生成器层做更深的 AST 优化
 
 文件物化责任仍在：
 
@@ -216,16 +224,7 @@ public static partial class ModuleCatalog
 - sourcemap 生成失败时会降级为仅 JS catalog，并报告 warning
 - source map catalog 不会反向污染普通 `ModuleCatalog` 形状
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [AstConverter.md](./AstConverter.md)
-2. [ESGenerator.md](./ESGenerator.md)
-3. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
-4. [emit/Emit.Pipeline.Overview.md](./emit/Emit.Pipeline.Overview.md)
-
-## 相关文档
+## 延伸阅读
 
 - [AstConverter.md](./AstConverter.md)
 - [SemanticWalker.md](./semantic-walker/SemanticWalker.md)

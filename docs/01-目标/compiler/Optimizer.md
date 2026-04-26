@@ -1,5 +1,15 @@
 # `Optimizer`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `Optimizer` 是一个范围较小的 AST 优化器。
@@ -211,15 +221,7 @@ a && foo()
 - `OptimizeLogical_NestedDifferentOperators_PreservesStructure`
 - `OptimizeLogical_ComplexNestedExpression_OptimizesCorrectly`
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.Pattern.md](./semantic-walker/SemanticWalker.Pattern.md)
-2. [Optimizer.md](./Optimizer.md)
-3. [SemanticWalker.Ordinary.md](./semantic-walker/SemanticWalker.Ordinary.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.Pattern.md](./semantic-walker/SemanticWalker.Pattern.md)
 - [SemanticWalker.Ordinary.md](./semantic-walker/SemanticWalker.Ordinary.md)

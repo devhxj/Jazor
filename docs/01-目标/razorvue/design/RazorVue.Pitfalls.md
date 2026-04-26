@@ -4,12 +4,29 @@
 
 其目的是阻止未来工作漂移回感觉熟悉但对已选择的设计结构上错误的路径。
 
-相关文档：
+> 延伸阅读：[RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md) | [RazorVue.Design.md](./RazorVue.Design.md) | [RazorVue.HardRules.md](./RazorVue.HardRules.md) | [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
+## 目录
+
+- [1-重新扩展为通用-ui-抽象](#1-重新扩展为通用-ui-抽象)
+- [2-假设-ecmascriptmodule-意味着一条降低路径](#2-假设-ecmascriptmodule-意味着一条降低路径)
+- [3-对抗-componentbase](#3-对抗-componentbase)
+- [4-将-jazorcomponent-变成第二个框架核心](#4-将-jazorcomponent-变成第二个框架核心)
+- [5-使-vuecomponent-api-对来说足够通用](#5-使-vuecomponent-api-对来说足够通用)
+- [6-在源生成器排序上构建主管道](#6-在源生成器排序上构建主管道)
+- [7-将生成的-razor-代码视为普通用户方法体](#7-将生成的-razor-代码视为普通用户方法体)
+- [8-直接从-buildrendertree-操作生成-vue-代码](#8-直接从-buildrendertree-操作生成-vue-代码)
+- [9-按需猜测组件契约](#9-按需猜测组件契约)
+- [10-让未知组件属性静默传递](#10-让未知组件属性静默传递)
+- [11-让继承的-componentbase-成员重新定义模型](#11-让继承的-componentbase-成员重新定义模型)
+- [12-完全延迟-hmr-和-sourcemap-思考](#12-完全延迟-hmr-和-sourcemap-思考)
+- [13-让-hmr-或-sourcemap-驱动整个阶段一形状](#13-让-hmr-或-sourcemap-驱动整个阶段一形状)
+- [14-在编译器和-denohost-之间拆分依赖所有权](#14-在编译器和-denohost-之间拆分依赖所有权)
+- [15-过早深度集成生态系统包](#15-过早深度集成生态系统包)
+- [16-在阶段一中过度支持-razor-语法](#16-在阶段一中过度支持-razor-语法)
+- [17-仅使用端到端测试](#17-仅使用端到端测试)
+- [18-在实现时让阶段一范围扩展](#18-在实现时让阶段一范围扩展)
+- [19-最后提醒](#19-最后提醒)
 
 ## 1. 重新扩展为通用 UI 抽象
 

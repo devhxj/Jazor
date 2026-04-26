@@ -1,5 +1,16 @@
 # `SemanticWalker.cs.String.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前关键规则](#当前关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [和其他字符串映射的边界](#和其他字符串映射的边界)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.String.cs` 当前主要负责“插值字符串”相关 lowering。
@@ -233,18 +244,9 @@ let formatted = `Pi: ${pi}`;
 
 ## 当前边界
 
-这部分当前没有处理这些事情：
-
 - 插值格式说明符的运行时实现
 - `CultureInfo` / 本地化格式化
 - 全部 `string` 实例方法和静态方法映射
-- 所有字符串相关优化
-
-它当前聚焦的是：
-
-- 正确构造 JS `TemplateLiteral`
-- 维护 quasi / expression 结构合法性
-- 在可退化时输出更直接的 `StringLiteral`
 
 ## 相关测试
 
@@ -273,16 +275,7 @@ let formatted = `Pi: ${pi}`;
 
 但这些测试不应被误读为全部由本文件独立负责。
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.String.md](./SemanticWalker.String.md)
-3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)

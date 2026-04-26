@@ -1,5 +1,15 @@
 # `SemanticWalker.cs.Ordinary.cs`
 
+## 目录
+
+- [定位](#定位)
+- [当前职责](#当前职责)
+- [当前几个关键规则](#当前几个关键规则)
+- [现状与典型结果](#现状与典型结果)
+- [当前边界](#当前边界)
+- [相关测试](#相关测试)
+- [延伸阅读](#延伸阅读)
+
 ## 定位
 
 `SemanticWalker.cs.Ordinary.cs` 负责一组“基础但分布很广”的语义 lowering。
@@ -259,18 +269,8 @@ let methodName = 'TestMethod';
 
 ## 当前边界
 
-这份文件当前不承诺这些事情：
-
-- 模拟 CLR 的完整 conversion 语义
 - 精确复刻 `checked/unchecked` 溢出行为
 - 最小化所有括号或生成最短表达式
-- 让所有普通语义都只依赖一个统一 helper 层
-
-它当前更偏向：
-
-- 让基础语义节点稳定落成 JS AST
-- 在 tuple / setter / runtime numeric conversion 这些关键边界上补足语义差异
-- 为其他语法域提供公共 block / return / lambda / literal 支撑
 
 ## 相关测试
 
@@ -287,17 +287,7 @@ let methodName = 'TestMethod';
 - setter 映射赋值
 - lambda / await / return
 
-## 推荐阅读
-
-建议按以下顺序阅读：
-
-1. [SemanticWalker.md](./SemanticWalker.md)
-2. [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
-3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
-5. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-
-## 相关文档
+## 延伸阅读
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
