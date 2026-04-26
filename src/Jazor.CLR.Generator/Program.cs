@@ -49,7 +49,8 @@ var outTypes = new Type[]{
 	typeof(GregorianCalendar),
 	typeof(CultureInfo),
 	typeof(Array),
-	typeof(Guid)
+	typeof(Guid),
+	typeof(Task)
 };
 var operatorNames = new Dictionary<string, string>
 {

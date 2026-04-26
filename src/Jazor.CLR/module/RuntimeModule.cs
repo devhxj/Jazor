@@ -19,6 +19,18 @@ public static class RuntimeModule
 			throw new Error("ArgumentOutOfRangeException: Month must be between 1 and 12.");
 	}
 
+	private static Array<TItem> MaterializeArray<TItem>(IEnumerable<TItem>? collection, string nullMessage)
+	{
+		if (collection is null)
+			throw new Error(nullMessage);
+
+		var result = new Array<TItem>();
+		foreach (var item in collection)
+			result.Push(item);
+
+		return result;
+	}
+
 	public sealed class JDateTime
 	{
 		[Description("@#date")]
@@ -217,6 +229,74 @@ public static class RuntimeModule
 				return ValueOf();
 
 			return ToString();
+		}
+	}
+
+	public sealed class JQueue<T>
+	{
+		[Description("@#kind")]
+		public string Kind { get; }
+
+		[Description("@#items")]
+		public Array<T> Items { get; }
+
+		[Description("@#head")]
+		public Number Head { get; }
+
+		public JQueue()
+		{
+			this.Kind = "queue";
+			this.Items = new Array<T>();
+			this.Head = 0;
+		}
+
+		public JQueue(Number capacity)
+		{
+			EnsureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+			if (capacity < 0)
+				throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+
+			this.Kind = "queue";
+			this.Items = new Array<T>();
+			this.Head = 0;
+		}
+
+		public JQueue(IEnumerable<T> collection)
+		{
+			this.Kind = "queue";
+			this.Items = MaterializeArray(collection, "ArgumentNullException: collection cannot be null.");
+			this.Head = 0;
+		}
+	}
+
+	public sealed class JStack<T>
+	{
+		[Description("@#kind")]
+		public string Kind { get; }
+
+		[Description("@#items")]
+		public Array<T> Items { get; }
+
+		public JStack()
+		{
+			this.Kind = "stack";
+			this.Items = new Array<T>();
+		}
+
+		public JStack(Number capacity)
+		{
+			EnsureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+			if (capacity < 0)
+				throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
+
+			this.Kind = "stack";
+			this.Items = new Array<T>();
+		}
+
+		public JStack(IEnumerable<T> collection)
+		{
+			this.Kind = "stack";
+			this.Items = MaterializeArray(collection, "ArgumentNullException: collection cannot be null.");
 		}
 	}
 
