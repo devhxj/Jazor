@@ -37,7 +37,7 @@
 
 Jazor 不是直接把所有 CLR 类型和成员原样发成 JavaScript。
 
-很多 API 都需要一个“宿主映射事实层”，例如：
+许多 API 都需要一个“宿主映射事实层”，例如：
 
 - `Console.WriteLine` 为什么会变成 `console.log`
 - `System.Math` 为什么会落到 `Math`
@@ -196,18 +196,18 @@ Console.WriteLine("x");
 - `WriteLine -> log` 更多是白名单问题
 - `Console -> console` 更多是运行时宿主归一化问题
 
-也就是说，白名单给出“名字怎么映射”，但“最终挂到哪个宿主上”还要靠语义层决定。
+换言之，白名单给出“名字怎么映射”，但“最终挂到哪个宿主上”还要靠语义层决定。
 
 ## 当前边界
 
-`WhiteList` 当前不是这些东西：
+`WhiteList` 当前不属于以下范畴：
 
 - 完整的 CLR 语义数据库
 - 自动保证所有映射都闭环的验证器
 - 最终 JavaScript 生成器
 - 模块头 `import` 声明生成器
 
-更准确地说，它现在是：
+更确切而言，它现在是：
 
 - 编译器宿主映射规则的静态事实源
 - 由生成器维护的查询表
@@ -215,7 +215,7 @@ Console.WriteLine("x");
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
 2. [WhiteList.md](./WhiteList.md)

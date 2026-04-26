@@ -19,7 +19,7 @@
 - 遇到 `IInvalidOperation` 时直接失败
 - 通过 `HandleTransformationFailure(...)` 抛出不支持转换错误
 
-也就是说，当前实现把 `IInvalidOperation` 视为：
+换言之，当前实现把 `IInvalidOperation` 视为：
 
 - 不应进入正常 lowering 主线的异常输入
 
@@ -88,7 +88,7 @@
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)

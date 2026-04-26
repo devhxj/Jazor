@@ -34,13 +34,13 @@
 
 ## 当前事实
 
-先把“现在已经存在什么”说清楚。
+首先明确当前已存在的内容。
 
 ### 1. 标注入口已经固定
 
 `[Jazor]` 的无参构造会生成 `Op.Compile`。
 
-也就是说，`Compile` 不是运行时动态配置，而是编译期静态声明。
+换言之，`Compile` 不是运行时动态配置，而是编译期静态声明。
 
 ### 2. Generator 基础设施已经存在
 
@@ -109,7 +109,7 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 
 > 表达式级特殊编译钩子，而不是完整语义 lowering 子系统。
 
-也就是说，现阶段不要把它想成“可以承接任何复杂宿主语义”。
+换言之，现阶段不应将其视为“可以承接任何复杂宿主语义”。
 
 另外还要补两条 producer 侧约束：
 
@@ -346,7 +346,7 @@ consumer 侧主分发顺序仍然保持：
 3. 第一阶段只允许 `Compile` 处理“自包含表达式级”改写
 4. 真正需要 temp/import/source-origin 的场景，再升级 hook contract
 
-这样做的好处是：
+这样做的优势在于：
 
 - 不会把 `Compile` 过早宣传成“万能复杂 lowering 入口”
 - 也不会继续把本该脱离模板的逻辑堆回 `Inline`

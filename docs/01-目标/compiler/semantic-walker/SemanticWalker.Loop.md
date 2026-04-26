@@ -221,7 +221,7 @@ do {
 - `do-while`
 - Roslyn lowering 后 update 段的顺序保留
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - `await foreach` 语义建模
 - 为复杂 enumerator 协议额外插入运行时包装
@@ -234,7 +234,7 @@ do {
 
 - `src/Jazor.CompilerTest/SemanticWalkerLoopTest.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `Visit_ForEachLoop`
 - `Visit_ForLoop_Simple`
@@ -253,7 +253,7 @@ do {
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.Loop.md](./SemanticWalker.Loop.md)

@@ -2,13 +2,13 @@
 
 ## 定位
 
-`Optimizer` 当前是一个非常窄的 AST 优化器。
+`Optimizer` 是一个范围较小的 AST 优化器。
 
 对应代码：
 
 - `src/Jazor.Compiler/Optimizer.cs`
 
-它现在只公开一个入口：
+它目前仅公开一个入口：
 
 - `OptimizeLogical(Expression expression)`
 
@@ -78,7 +78,7 @@ a && b
 
 如果输入不是 `LogicalExpression`，当前直接原样返回。
 
-也就是说，这里不负责：
+换言之，这里不负责：
 
 - 常量折叠
 - 算术表达式简化
@@ -108,7 +108,7 @@ a && (b || a)
 
 - `operand.ToKnRECMAScript()`
 
-也就是说，优化器当前不是做结构哈希，而是用规范化后的 JS 文本串去重。
+换言之，优化器当前不是做结构哈希，而是用规范化后的 JS 文本串去重。
 
 这很实用，也足够支撑当前规模，但应被理解为当前实现策略，而不是抽象语义相等判定框架。
 
@@ -189,7 +189,7 @@ a && foo()
 - 基于副作用保护的保守优化
 - 左结合重建
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 常量折叠
 - 死代码消除
@@ -202,7 +202,7 @@ a && foo()
 
 - `src/Jazor.CompilerTest/OptimizerTest.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `OptimizeLogical_SimpleAndDuplicate_ReturnsSingleOperand`
 - `OptimizeLogical_SimpleOrDuplicate_ReturnsSingleOperand`
@@ -213,7 +213,7 @@ a && foo()
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.Pattern.md](./semantic-walker/SemanticWalker.Pattern.md)
 2. [Optimizer.md](./Optimizer.md)

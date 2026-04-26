@@ -6,7 +6,7 @@
 
 - 稳定契约能力
 - 主链已接通能力
-- 仍需继续压实或扩展的能力
+- 仍需继续巩固或扩展的能力
 - 下一阶段建议动作
 
 目标不是重复架构说明，而是为后续迭代提供一个可维护的路线图视图。
@@ -34,9 +34,9 @@
 - `Optimizer` 作为 AST 后处理节点存在
 - 文档体系：总览、简化版、端到端说明、扩展规范
 
-### 2.3 继续压实 / 扩展点
+### 2.3 继续巩固 / 扩展点
 
-- compiler catalog / emit 物化与 sourcemap 稳定契约继续压实
+- compiler catalog / emit 物化与 sourcemap 稳定契约继续巩固
 - `Op.Compile` 复杂宿主语义 contract 继续扩展
 - `Inline` AST 模板边界继续收紧
 - 更完整的泛型、跨模块继承、更深层嵌套类型增强
@@ -45,7 +45,7 @@
 
 ## 3.1 Bucket A: Catalog / Emit Contract
 
-目标：把 compiler 产 catalog 与 emit 物化的边界压实成稳定契约。
+目标：把 compiler 产 catalog 与 emit 物化的边界巩固成稳定契约。
 
 范围：
 
@@ -61,7 +61,7 @@
 
 ## 3.2 Bucket B: Import Stability
 
-目标：把当前已接通的 import 主链路继续压实为稳定契约。
+目标：把当前已接通的 import 主链路继续巩固为稳定契约。
 
 范围：
 

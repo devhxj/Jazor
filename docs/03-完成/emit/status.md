@@ -8,7 +8,7 @@
 
 `Emit` 不是当前仓库里最显眼的专题，但它已经是多个活跃工作流共同的承接层。
 
-说得更直白点：
+更具体而言：
 
 - compiler 负责生成 catalog / artifact / manifest-ready data
 - emit 负责读取、物化、写出和 bundle 承接

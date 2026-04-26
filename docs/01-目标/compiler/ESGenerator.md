@@ -82,7 +82,7 @@
 - 私有 `GeneratedModule` 类型
 - `_modules` 静态数组
 
-也就是说，当前 ESGenerator 的产物是：
+换言之，当前 ESGenerator 的产物是：
 
 - C# 内部可访问的模块 catalog / source map catalog carrier
 
@@ -146,7 +146,7 @@
 - 保留 JS 输出（`ModuleCatalog` 仍生成）
 - 跳过该模块的 sourcemap catalog 记录
 
-也就是说，sourcemap 失败不再把整个模块生成打成 Error。
+换言之，sourcemap 失败不再把整个模块生成打成 Error。
 
 ### 5. 最终 catalog 会排序
 
@@ -193,7 +193,7 @@ public static partial class ModuleCatalog
 - JS 文本和哈希收集
 - 生成稳定排序的 module catalog / source map catalog carrier
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 直接向项目输出物目录写 `.mjs`
 - 直接发出独立磁盘文件
@@ -218,7 +218,7 @@ public static partial class ModuleCatalog
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [AstConverter.md](./AstConverter.md)
 2. [ESGenerator.md](./ESGenerator.md)

@@ -8,7 +8,7 @@
 
 SourceMap 当前不能再用一句"deferred"概括了。
 
-更准确地说：
+更确切而言：
 
 - broad SourceMap programme 仍然偏保守
 - 但由 RazorVue 演进出来、并由 Jolt / Deno 承接的 bundle chaining 已进入 narrower active lane

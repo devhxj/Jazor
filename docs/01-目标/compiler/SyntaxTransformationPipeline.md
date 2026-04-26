@@ -105,7 +105,7 @@ Roslyn IOperation
 当前更准确的状态是：
 
 - `SourceOrigin`、writer 侧 map 生成、emit 侧 `.map` 写出都已经进入主链路
-- 后续重点不是“是否实现”，而是继续压实 temp 名、import alias、synthetic 片段与主锚点的稳定契约
+- 后续重点不是“是否实现”，而是继续巩固 temp 名、import alias、synthetic 片段与主锚点的稳定契约
 
 详见：
 
@@ -339,7 +339,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 - 普通方法重载仍然走 `GetConfigOrSymbolName(...)` 路线，只在确有同名方法重载时追加稳定签名 hash
 - 成员类构造函数重载不走“多个 JS 名字”分裂，因为 JS class 只能有一个真实 `constructor`；它必须走 `$ctor_<hash>` helper + `arguments.length` dispatcher
 
-也就是说，“重载需要稳定区分”不等于“所有重载都靠最终输出名字区分”。
+换言之，“重载需要稳定区分”不等于“所有重载都靠最终输出名字区分”。
 
 配套约束：
 

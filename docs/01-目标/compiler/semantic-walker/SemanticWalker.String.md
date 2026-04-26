@@ -39,7 +39,7 @@ $"Hello {name}!"
 - 它不会主动引入文化区格式化逻辑
 - `{expr:F2}` 这类格式信息当前不会在这里被展开
 
-也就是说，这一层只保留“表达式插入模板字符串”的核心语义。
+换言之，这一层只保留“表达式插入模板字符串”的核心语义。
 
 ### 3. 编译器拆分出来的插值拼接树
 
@@ -252,7 +252,7 @@ let formatted = `Pi: ${pi}`;
 
 - `src/Jazor.CompilerTest/SemanticWalkerStringTest.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `Visit_InterpolatedString_Simple`
 - `Visit_InterpolatedString_TextOnly`
@@ -275,7 +275,7 @@ let formatted = `Pi: ${pi}`;
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.String.md](./SemanticWalker.String.md)

@@ -97,7 +97,7 @@ public Expression? Compile_xxx(Expression? handler, Expression?[] args)
 - “claim and succeed”
 - “claim and fail”
 
-三种路径写得很清楚。
+三种路径已明确。
 
 当前仓库里已经落地的保留样例是 `ECMAScript.Global.TypeOf(object)`。
 

@@ -40,7 +40,7 @@
 - `_specifiers`
 - `_importBindings`
 
-也就是说，它既是“语义上下文”，也是“依赖缓冲区”。
+换言之，它既是“语义上下文”，也是“依赖缓冲区”。
 
 ## 当前关键规则
 
@@ -182,7 +182,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 - 变量声明收集
 - import specifier 收集与稳定别名绑定
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 提供完整不可变持久化集合语义
 - 自动在任意层级隐式 flush
@@ -197,7 +197,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 - 旧职责：上下文 + 收集器
 - 当前状态：这些职责已合并到 `SenseArgument`
 
-也就是说，现在不是“`WalkerArgument` 被另一个类型取代后废弃不用”，而是它的核心职责被直接吸收了。
+换言之，现在不是“`WalkerArgument` 被另一个类型取代后废弃不用”，而是它的核心职责被直接吸收了。
 
 ## 相关测试与使用面
 
@@ -214,7 +214,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [WalkerArgument.md](./WalkerArgument.md)

@@ -136,7 +136,7 @@ value is Person("John", 18)
 3. 再把这个访问表达式作为新的 `PatternInput` 传入子模式
 4. 最终把所有条件用 `&&` 组合起来
 
-也就是说，递归模式不是特殊语法糖层，而是一层“递归构造访问路径 + 递归传递 `PatternInput`”的组合逻辑。
+换言之，递归模式不是特殊语法糖层，而是一层“递归构造访问路径 + 递归传递 `PatternInput`”的组合逻辑。
 
 ### 5. 列表与切片模式
 
@@ -192,7 +192,7 @@ value is Person("John", 18)
 
 ### 当前实现收益
 
-这样做的收益很直接：
+这样做的收益明确：
 
 - 模式本身更容易独立测试
 - `switch expression` / `switch statement` / `is pattern` 可以共用同一套 lowering
@@ -288,7 +288,7 @@ value is Person("John", 18)
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)

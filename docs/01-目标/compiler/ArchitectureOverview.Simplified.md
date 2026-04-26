@@ -142,8 +142,8 @@ flowchart LR
 ### 后续重点
 
 - `Op.Compile` contract 与 AST 模板边界增强
-- catalog -> emit 物化与 sourcemap 稳定性继续压实
-- source-origin / sourcemap 稳定性继续压实
+- catalog -> emit 物化与 sourcemap 稳定性继续巩固
+- source-origin / sourcemap 稳定性继续巩固
 
 ## 6. New Feature Decision Rule
 

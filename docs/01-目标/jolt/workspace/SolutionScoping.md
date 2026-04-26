@@ -75,7 +75,7 @@ Owning project 由 `.slnx` 中的 project entries 决定。
 ## 4. 设计约束
 
 - `.slnx` 是唯一的解决方案边界
-- owning project 必须来自 `.slnx`，不能靠启发式猜测
+- owning project 必须来自 `.slnx`，不应通过启发式方式推断
 - 隐式发现必须保持 project-local
 - 用户可见错误必须是英文
 - 代码注释可以保持中文，不影响错误文案语言要求

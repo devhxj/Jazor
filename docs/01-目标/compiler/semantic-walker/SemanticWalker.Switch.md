@@ -254,7 +254,7 @@ switch (value) {
 - `default`
 - 多 label 共享 body
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 在本文件内部实现完整模式匹配 switch
 - 在本文件内部实现 `switch expression`
@@ -266,7 +266,7 @@ switch (value) {
 
 - `src/Jazor.CompilerTest/SemanticWalkerSwitchTest.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `VisitSwitch_SingleCase`
 - `VisitSwitch_MultipleCases`
@@ -284,7 +284,7 @@ switch (value) {
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.Switch.md](./SemanticWalker.Switch.md)

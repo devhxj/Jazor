@@ -32,7 +32,7 @@
 
 它们都会在适当位置调用 `TranslateTupleForTarget(...)`。
 
-也就是说，这份文件不只是“把右值塞给左值”，还承担了声明边界上的 tuple 视图/对象协议对齐。
+换言之，这份文件不只是“把右值塞给左值”，还承担了声明边界上的 tuple 视图/对象协议对齐。
 
 ### 2. 数组初始化器
 
@@ -204,7 +204,7 @@ private (string first, int years) person = (name: "John", age: 30);
 - `out` 声明表达式收集
 - 声明边界上的 tuple remap
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 在这里处理完整类成员生成
 - 在这里决定所有变量声明最终 flush 位置
@@ -219,7 +219,7 @@ private (string first, int years) person = (name: "John", age: 30);
 
 - `src/Jazor.CompilerTest/SemanticWalkerDeclarationTest.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `Visit_ArrayInitializer`
 - `Visit_VariableDeclaration`
@@ -231,7 +231,7 @@ private (string first, int years) person = (name: "John", age: 30);
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md)

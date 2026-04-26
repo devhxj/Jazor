@@ -83,7 +83,7 @@
 
 当前都直接失败。
 
-原因很直接：
+原因在于：
 
 - 它们不是面向最终 JS 输出的稳定语言语义
 - 而是 Roslyn 内部或分析阶段节点
@@ -182,7 +182,7 @@ WriteInterpolated($"Hello {name}");
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.NotSupport.md](./SemanticWalker.NotSupport.md)

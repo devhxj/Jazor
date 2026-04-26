@@ -83,7 +83,7 @@ Console.WriteLine
 - `Reference` 负责的是“Roslyn 已经绑定好的成员，最终应落成哪个 JS 成员名、挂在哪个 JS 宿主上”
 - 它不负责在运行时重新模拟一次 CLR overload dispatch
 
-也就是说，当前路线是：
+换言之，当前路线是：
 
 - 普通调用场景下，Roslyn 先选中具体 `IMethodSymbol`
 - `Reference` 再根据这个已绑定符号决定成员名和宿主
@@ -194,11 +194,11 @@ ECMAScript 运行时映射场景下，还会额外经过：
 - `NormalizeRuntimeReceiverHostCallee(...)`
 - `TryBuildPreferredRuntimeStaticMemberAccess(...)`
 
-也就是说，`Reference` 最终产出的不是“按 C# 文本直接拼出来的宿主”，而是“在当前规则下最接近真实 JS host / member 形态的宿主”。
+换言之，`Reference` 最终产出的不是“按 C# 文本直接拼出来的宿主”，而是“在当前规则下最接近真实 JS host / member 形态的宿主”。
 
 ## 运行时宿主归一化
 
-当前文件明确处理了一类很常见的割裂来源：C# 为了可书写性必须保留 CLR 风格名称，但 JS 运行时实际是另一个宿主名。
+当前文件明确处理了一类较为常见的割裂来源：C# 为了可书写性必须保留 CLR 风格名称，但 JS 运行时实际是另一个宿主名。
 
 典型例子：
 
@@ -249,7 +249,7 @@ console.log("x");
 
 这份文件当前解决的是“引用与调用如何落成正确 JS 访问路径”。
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 模拟完整 CLR overload dispatch
 - 建立独立的运行时包装宿主层

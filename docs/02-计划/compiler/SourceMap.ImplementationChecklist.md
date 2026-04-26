@@ -34,7 +34,7 @@
 
 - 哪些范围已经具备可用基线
 - 哪些范围仍然只适合在 narrower active lane 中推进
-- 哪些稳定性契约还需要继续压实
+- 哪些稳定性契约还需要继续巩固
 
 如果要继续扩大 sourcemap 覆盖面，仍建议先确认以下条件稳定：
 
@@ -215,7 +215,7 @@
 在已落地基线之上，当前更需要继续推进的是：
 
 1. 扩大覆盖面时继续遵守 source-origin / synthetic 节点边界
-2. 压实 `ESGenerator -> catalog -> Emit` 的真实输出一致性
+2. 巩固 `ESGenerator -> catalog -> Emit` 的真实输出一致性
 3. 把 narrower active lane 中已验证的策略有节制地回灌到广义清单
 4. 持续锁定 tuple / deconstruct / pattern / conditional access 等 lowering 热点的调试体验
 5. 避免在 sourcemap 扩展过程中反向破坏已有 lowering 契约

@@ -153,7 +153,7 @@ Jolt LSP 采用三车道架构（Three-Lane Architecture），将语言功能按
 
 ### 4.2 `.slnx` 解决方案 / 项目作用域
 
-Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只认 `.slnx`。Owning project 必须从 `.slnx` 的 project entries 解析，不能靠 `.sln`、`.csproj` 或目录邻近关系猜测。
+Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只认 `.slnx`。Owning project 必须从 `.slnx` 的 project entries 解析，不应通过 `.sln`、`.csproj` 或目录邻近关系推断。
 
 **关键约束**：
 - 隐式 discovery 只在 owning project 内展开

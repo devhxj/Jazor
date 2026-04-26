@@ -7,7 +7,7 @@
 
 `Jazor.Compiler` 仍然是当前仓库里最成熟的主干资产。
 
-说得更直白点：
+更具体而言：
 
 - 编译器主链路已经接近稳定主干
 - 当前工作重点不是重做架构，而是维持主线闭环、控制边界扩张、给外围能力提供稳定依赖面
@@ -25,7 +25,7 @@
 
 `AstConverter`、`SemanticWalker`、白名单和 generator 主链路已经有稳定参考价值了。
 
-这也是为啥 repo-level 文档应该优先把 compiler deep-dive 当成长期参考入口，而不是把它和阶段性实施材料混成一层。
+因此 repo-level 文档应该优先把 compiler deep-dive 当成长期参考入口，而不是把它和阶段性实施材料混成一层。
 
 ### 2. 当前更像"稳定化与收口"，不是"大规模重构期"
 
@@ -61,13 +61,13 @@
 
 ### 5. 这轮已经补上对称的 compiler 状态入口
 
-之前 repo-level 主要是总项目状态和 RazorVue 状态，导致 compiler 虽然成熟，但在仓库级工作流图里不够显眼。本状态页的作用就是把这条断链补起。
+之前 repo-level 主要是总项目状态和 RazorVue 状态，导致 compiler 虽然成熟，但在仓库级工作流图里不够显眼。本状态页的作用就是把这条断链补全。
 
 ## 下一步行动
 
 ### 1. Catalog / emit contract stability
 
-**目标**：压实 `compiler -> catalog -> emit` 边界与物化契约
+**目标**：巩固 `compiler -> catalog -> emit` 边界与物化契约
 
 **具体行动**：
 - 避免文档把 compiler 产 catalog 和 emit 写文件混成一个未定义阶段
@@ -82,7 +82,7 @@
 **目标**：稳定 `Inline` / `Compile` 分工
 
 **具体行动**：
-- 莫让宿主语义扩张又跑回来破坏 compiler 主线边界
+- 避免宿主语义扩张又跑回来破坏 compiler 主线边界
 - 保持 `Inline` 和 `Compile` 的职责清晰分离
 
 **参考文档**：
@@ -112,6 +112,6 @@
 
 ## 当前缺口
 
-- output / emit / sourcemap 侧还需要继续压实真实构建闭环
+- output / emit / sourcemap 侧还需要继续巩固真实构建闭环
 - 宿主语义扩张仍然可能反向污染 compiler 边界，需要持续约束
 - 还需要继续把 compiler 局部文档里的 active / historical 边界写清楚，避免旧阶段表述回流成“当前事实”

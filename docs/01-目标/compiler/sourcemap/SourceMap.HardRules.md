@@ -21,7 +21,7 @@
 3. tuple / deconstruct 主链路
 4. emit 落盘
 
-也就是说：
+换言之：
 
 1. baseline 已经落地
 2. 文档继续沿用第一阶段边界来固定主线规则

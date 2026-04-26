@@ -142,7 +142,7 @@ catch {
 }
 ```
 
-这样做的目的很直接：不在不需要的时候额外制造 JS 参数名。
+这样做的目的明确：不在不需要的时候额外制造 JS 参数名。
 
 ### 6. 裸 `throw;`
 
@@ -304,7 +304,7 @@ try {
 - `when` 过滤
 - 裸 `throw;` 在 `catch` 内的重抛
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 建立独立的异常运行时层
 - 在 JS 侧模拟 CLR 精确异常类型体系
@@ -319,7 +319,7 @@ try {
 
 - `src/Jazor.CompilerTest/SemanticWalkerTryCatchTest.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `VisitTry_SingleCatch`
 - `VisitTry_MultipleCatches`
@@ -336,7 +336,7 @@ try {
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.TryCatch.md](./SemanticWalker.TryCatch.md)

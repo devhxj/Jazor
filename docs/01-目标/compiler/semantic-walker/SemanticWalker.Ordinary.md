@@ -43,7 +43,7 @@
 - `_declarators` 如何在块顶提升
 - 函数边界如何隔离变量声明但保留 import specifier 传播
 
-也就是说，这份文件里相当一部分代码是在支撑“普通表达式应该落在哪个 block 里”，而不是直接处理表达式本身。
+换言之，这份文件里相当一部分代码是在支撑“普通表达式应该落在哪个 block 里”，而不是直接处理表达式本身。
 
 ### 2. 值与字面量归一化
 
@@ -94,7 +94,7 @@
 - `VisitConditional(...)`
 - `VisitIncrementOrDecrement(...)`
 
-整体风格很直接：
+整体风格直接：
 
 - 一元运算 -> `NonUpdateUnaryExpression`
 - `++/--` -> `UpdateExpression`
@@ -121,7 +121,7 @@
 1. tuple 赋值边界会主动 remap，不依赖 Roslyn 恰好插入 conversion
 2. 属性 setter 赋值会优先尝试 setter 对应的白名单映射
 
-也就是说，`x = y` 这类代码在当前实现里并不总是直接产出 `AssignmentExpression`。
+换言之，`x = y` 这类代码在当前实现里并不总是直接产出 `AssignmentExpression`。
 
 如果命中了：
 
@@ -153,7 +153,7 @@
 
 当前如果返回值的 tuple 当前视图和函数声明返回类型不一致，会在 `VisitReturn(...)` 里显式 remap。
 
-也就是说，tuple 视图/对象协议的边界不只出现在：
+换言之，tuple 视图/对象协议的边界不只出现在：
 
 - 赋值
 - 参数传递
@@ -289,7 +289,7 @@ let methodName = 'TestMethod';
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)

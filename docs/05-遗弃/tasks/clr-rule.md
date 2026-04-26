@@ -372,7 +372,7 @@ public static bool _5dbf54319ebc8dfe(string? value)
 1. `Op.Compile` 虽然已经进入 `SemanticWalker` 主分发主线，但它仍然是编译器内部保留能力，不是常规 producer 选项。
 2. 当前 `Compile` hook 形态本质上更接近“表达式级特殊钩子”，不要把需要临时变量、import 或语句级展开的语义直接挂到这里。
 
-也就是说，现阶段更准确的选择规则是：
+换言之，现阶段更准确的选择规则是：
 
 - 能稳定写成 `Inline`：优先 `Inline`
 - 不能稳定 `Inline`，但更适合作为运行时 helper：优先 `Import`

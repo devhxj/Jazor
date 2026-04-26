@@ -24,7 +24,7 @@
 
 当前共识是：
 
-1. 不再把 sourcemap 描述成“尚未实现”，而是描述成“baseline 已有，后续继续压实”
+1. 不再把 sourcemap 描述成“尚未实现”，而是描述成“baseline 已有，后续继续巩固”
 2. 继续控制范围，优先稳住模块级 map、origin 传播和输出确定性
 3. broad compiler contract 仍以模块级 map 为主，不默认把 bundle chaining 提升成主线义务
 4. 若进入 RazorVue / bundle 相关活跃 lane，应以当前状态页和计划文档为准
@@ -60,7 +60,7 @@
 用途：
 
 - 快速回看已经定下来的方向
-- 不想重新读完整设计时先看它
+- 无需重读完整设计时可先查阅
 
 ### 4.2 完整设计
 
@@ -137,7 +137,7 @@
 
 ## 7. 一句话结论
 
-如果你只是想知道“现在该从哪里继续推进 sourcemap”，就从这里出发：
+若仅需了解“现在该从哪里继续推进 sourcemap”，就从这里出发：
 
 1. 先看 [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
 2. 再看 [SourceMap.HardRules.md](./SourceMap.HardRules.md)

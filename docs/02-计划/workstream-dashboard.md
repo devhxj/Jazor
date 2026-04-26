@@ -9,7 +9,7 @@
 
 | 工作流 | 当前阶段 | 下一步行动 | 状态文档 |
 |--------|---------|-----------|---------|
-| Compiler 主线 | 接近稳定 | 压实 output closure、import closure、host seam | [详情](../03-完成/compiler/status.md) |
+| Compiler 主线 | 接近稳定 | 巩固 output closure、import closure、host seam | [详情](../03-完成/compiler/status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](../03-完成/emit/status.md) |
 | Jolt | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](../03-完成/jolt/status.md) |
 | SourceMap | 局部活跃（narrow lane） | 继续补齐调试消费链路与精度提升 | [详情](../03-完成/sourcemap/status.md) |
@@ -46,7 +46,7 @@
 **下一步行动**：
 
 1. **Output closure**
-   - 压实 `ESGenerator -> catalog -> output` 闭环
+   - 巩固 `ESGenerator -> catalog -> output` 闭环
    - 避免测试链路和真实输出链路继续分裂
    - 参考：[TransformationRoadmap.md](./compiler/TransformationRoadmap.md)
 
@@ -56,7 +56,7 @@
 
 3. **Host semantics seam**
    - 稳定 `Inline` / `Compile` 分工
-   - 莫让宿主语义扩张又跑回来破坏 compiler 主线边界
+   - 避免宿主语义扩张又跑回来破坏 compiler 主线边界
    - 参考：[InlineAstTemplateSpec.md](../01-目标/compiler/InlineAstTemplateSpec.md)
 
 **深度文档**：
@@ -100,7 +100,7 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
    - 将 SourceMap 服务完整接入断点/调用栈映射路径
 
 2. **构建与 LSP 收口（Phase 5/6）**
-   - 继续压实 manifest/css/js/source map 产物一致性
+   - 继续巩固 manifest/css/js/source map 产物一致性
    - 收敛跨 lane supplement 边界，避免“伪造语义结果”
 
 3. **扩展系统启动门槛（Phase 7）**

@@ -65,7 +65,7 @@
 - 这是允许的
 - 它只承担“文档/编译单元隔离盐值”的职责
 
-也就是说，`filepath` 可以用，但只放在 session / document 这一层。
+换言之，`filepath` 可以用，但只放在 session / document 这一层。
 
 ### 2. `EmissionScopeContext`
 
@@ -97,7 +97,7 @@
 - `MultiCatchParameter`
 
 这里的 slot path 不是为了开放成任意字符串协议，而是为了避免把多层 tuple 子槽位再压缩成有碰撞风险的整数。
-也就是说：
+换言之：
 
 - site kind 仍然是固定枚举
 - slot 只在“同 kind 下必须区分多个子槽位”时使用
@@ -130,7 +130,7 @@
 - method reference proxy 看目标方法和实例语义
 - tuple / deconstruct / reference temp 看对应 operation 的语义 key
 
-也就是说，稳定性来自“lowering owner 语义”，不是来自“operation 在树里的编号”。
+换言之，稳定性来自“lowering owner 语义”，不是来自“operation 在树里的编号”。
 
 ### 2. `OperationIdentityIndex` 只做 session 内部区分
 

@@ -323,7 +323,7 @@ flowchart TB
 
 - 更复杂的 `Op.Compile` contract 扩展体系
 - 更稳健的 AST 模板化 Inline 路径
-- output / sourcemap / source-origin 的长期稳定契约继续压实
+- output / sourcemap / source-origin 的长期稳定契约继续巩固
 
 ## 10. Extension Decision Tree
 

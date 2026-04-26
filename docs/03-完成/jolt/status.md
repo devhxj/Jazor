@@ -134,8 +134,8 @@
    - 扩展真实浏览器/CDP 长时压测矩阵
    - 持续补调试可视化与诊断端点
 
-2. **构建持续压实（持续项）**
-   - 继续压实构建产物一致性（manifest/css/js/source map）
+2. **构建持续巩固（持续项）**
+   - 继续巩固构建产物一致性（manifest/css/js/source map）
    - 继续观察 Deno worker 隔离 workspace 长时行为
 
 3. **生态拓展（后续项）**

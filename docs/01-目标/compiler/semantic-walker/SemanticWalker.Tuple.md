@@ -165,7 +165,7 @@ tuple `==` / `!=` 会递归 lower 成逐槽位比较：
 - `Object.freeze`
 - 同时保留 `ItemN` 与别名双写 shape
 
-原因很直接：
+原因在于：
 
 - 会让 `toString` / `toJSON` / 序列化产生额外歧义
 - 会把一个编译期语法糖问题膨胀成运行时类型设计问题
@@ -209,7 +209,7 @@ tuple 是 sourcemap 设计里的重点语法域。
 3. temp 变量和缓存赋值应视为 synthetic，不能主导主要断点位置
 4. tuple projection / deconstruct / swap 的关键子表达式应尽量保留各自源来源
 
-也就是说，tuple 的 sourcemap 标准与 tuple lowering 标准保持一致：
+换言之，tuple 的 sourcemap 标准与 tuple lowering 标准保持一致：
 
 - lowering 追求代码结果等价
 - sourcemap 追求调试结果等价

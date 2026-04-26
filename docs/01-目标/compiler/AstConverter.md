@@ -53,7 +53,7 @@ INamedTypeSymbol + SemanticModel
 
 ### 3. 模块级导出规则
 
-当前导出规则很直接：
+当前导出规则直接：
 
 - `public` / `internal` -> 生成 `ExportNamedDeclaration`
 - 其他访问级别 -> 只生成本地声明，不导出
@@ -158,7 +158,7 @@ INamedTypeSymbol + SemanticModel
 
 在模块成员枚举里，`IPropertySymbol` 当前分支直接 `break`。
 
-也就是说，顶层模块属性的可见行为依赖：
+换言之，顶层模块属性的可见行为依赖：
 
 - backing field
 - getter/setter method
@@ -340,7 +340,7 @@ export class NestedClass extends BaseClass {
 
 当前路线下，模块内 `enum` declaration 本身不再被当成一个独立 JS 输出对象。
 
-也就是说：
+换言之：
 
 - `AstConverter` 不负责为它生成 runtime declaration
 - `SemanticWalker` 负责把使用点改写成底层常量或标量表达式
@@ -371,7 +371,7 @@ export class NestedClass extends BaseClass {
 - 同模块成员类继承的 `extends` / `super(...)` / `super.member` 子集
 - 成员类构造函数重载 dispatcher
 
-它没有试图做这些事情：
+它并未承担以下职责：
 
 - 支持非 `public` 顶层模块类型
 - 支持顶层嵌套模块类型
@@ -394,7 +394,7 @@ export class NestedClass extends BaseClass {
 - `ref/out/in/params` 驱动的构造函数分派
 - 任何仍依赖 CLR metadata identity 的 class runtime 语义
 
-因此当前实现最需要避免的不是“支持少”，而是“把未打通语义伪装成已支持”。对不在支持子集内的成员类继承或构造函数协议，直接失败比生成看似可运行、实际语义错误的 class shape 更正确。
+因此当前实现最需要避免的不是“支持少”，而是“把未打通语义呈现为已支持”。对不在支持子集内的成员类继承或构造函数协议，直接失败比生成看似可运行、实际语义错误的 class shape 更正确。
 
 ## 相关测试
 
@@ -402,7 +402,7 @@ export class NestedClass extends BaseClass {
 
 - `src/Jazor.CompilerTest/AstConverterTests.cs`
 
-建议重点看这些场景：
+建议重点关注以下场景：
 
 - `Convert_SimplePublicClass_ReturnsModule`
 - `Convert_NonPublicClass_ThrowsNotSupportedException`
@@ -417,7 +417,7 @@ export class NestedClass extends BaseClass {
 
 ## 推荐阅读
 
-建议按这个顺序看：
+建议按以下顺序阅读：
 
 1. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
 2. [AstConverter.md](./AstConverter.md)

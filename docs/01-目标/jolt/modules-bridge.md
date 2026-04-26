@@ -5,13 +5,13 @@
 
 ## 目标
 
-本文档负责桥接"模块本地 operational docs"，不是拿来替代深度设计文档的。
+本文档负责桥接"模块本地 operational docs"，并非用于替代深度设计文档的。
 
 它主要回答这些问题：
 
 - 如果我是按项目模块在做事，第一眼该看哪份 README
 - 哪些模块已经有深度局部文档，哪些主要还是靠 operational README
-- 模块 README 和 repo-level 状态/计划文档该咋个衔接
+- 模块 README 和 repo-level 状态/计划文档如何衔接
 
 ## 模块入口
 
@@ -80,8 +80,8 @@
 
 维护规则：
 
-- 新增模块时，优先在模块目录本地补一份薄 README，再决定要不要扩 repo-level bridge
-- 后头如果又出现 discoverability gap，优先继续在本文补，不单独膨胀成新的 repo-level backlog 文档
+- 新增模块时，优先在模块目录本地补充一份简明 README，再决定要不要扩 repo-level bridge
+- 后续若再次出现 discoverability gap，优先继续在本文补，不单独膨胀成新的 repo-level backlog 文档
 
 ## 使用规则
 
@@ -99,4 +99,4 @@
 
 ### 3. 只有 operational README 的模块，通过本文保持可发现性
 
-这类模块没必要为了挤进 repo-level 主阅读路径，就硬把文档搬家。
+这类模块无需为了纳入 repo-level 主阅读路径，就硬把文档搬家。

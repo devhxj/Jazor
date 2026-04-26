@@ -254,7 +254,7 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 
 一个常见混淆点是：`AstConverter` 和 `SemanticWalker` 都在“转换”。
 
-两者分工实际上很清楚：
+两者分工实际上已明确：
 
 ### `AstConverter` 负责
 
@@ -295,7 +295,7 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 
 当前 sourcemap 方案已经独立建档，但它高度依赖 `SemanticWalker` 的 lowering 稳定性。
 
-原因很直接：
+原因在于：
 
 - `SemanticWalker` 会拆分一个源节点到多个 JS 片段
 - 会插入临时变量
