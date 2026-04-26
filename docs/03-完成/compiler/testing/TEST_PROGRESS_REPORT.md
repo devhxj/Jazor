@@ -1,5 +1,8 @@
 # ECMAScript.ComplierTest 测试用例补充进度报告
 
+> Historical snapshot: this progress report records a follow-up patch state around 2026-01-27.
+> “已完成 / 已修复 / 455 通过” and the old source paths below should be read as then-current tracking notes, not as the current repository state.
+
 ## 执行日期
 2026-01-27
 

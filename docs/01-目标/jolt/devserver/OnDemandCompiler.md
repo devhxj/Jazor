@@ -1,7 +1,7 @@
 # On-Demand Compiler
 
-> 状态：已实现
-> 定位：按需编译 .jazor、.vue、.ts、.js、.css 文件，支持 Source Map 链接和 CSS Modules
+> Status: 活跃参考
+> Positioning: 按需编译 .jazor、.vue、.ts、.js、.css 文件，支持 Source Map 链接和 CSS Modules
 
 ## 1. 文档定位
 

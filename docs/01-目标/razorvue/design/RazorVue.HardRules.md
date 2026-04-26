@@ -9,7 +9,7 @@
 
 - [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
 - [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 - [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 
 ## 1. 范围

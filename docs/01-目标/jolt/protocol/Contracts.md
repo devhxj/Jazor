@@ -1,7 +1,7 @@
 # Jolt RPC 协议契约
 
-> 状态：已实现
-> 定位：Jolt RPC 协议的核心数据契约定义，位于 `Jazor.VueContracts.Protocol` 共享命名空间
+> Status: 活跃参考
+> Positioning: Jolt RPC 协议的核心数据契约定义，位于 `Jazor.VueContracts.Protocol` 共享命名空间
 
 ## 1. 文档定位
 

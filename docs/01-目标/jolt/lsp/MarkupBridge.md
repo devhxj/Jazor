@@ -1,7 +1,7 @@
 # 标记桥接 (Markup Bridge)
 
-> 状态：已实现
-> 定位：Jazor LSP 的 Razor/Vue 组件标签桥接服务
+> Status: 活跃参考
+> Positioning: Jazor LSP 的 Razor/Vue 组件标签桥接服务
 
 ## 1. 文档定位
 

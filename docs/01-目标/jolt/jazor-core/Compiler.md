@@ -1,7 +1,7 @@
 # Jazor 编译器（Compiler）
 
-> 状态：已实现
-> 定位：Jazor 核心编译管线的后端，负责将解析后的文档编译为 Vue SFC 和 C# 外部声明
+> Status: 活跃参考
+> Positioning: Jazor 核心编译管线的后端，负责将解析后的文档编译为 Vue SFC 和 C# 外部声明
 
 ## 1. 文档定位
 

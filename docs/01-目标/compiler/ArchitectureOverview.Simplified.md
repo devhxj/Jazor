@@ -14,7 +14,7 @@ Jazor 的整体方案可以压缩成 4 层：
    `Jazor.Analyzer` 先过滤非法输入；`AstConverter` 处理模块级转换；`SemanticWalker` 处理语义级转换。
 
 4. 输出闭环层  
-   转换结果先落到 ESTree，再序列化为 JavaScript，最后由 `Jazor.CompilerTest` 回归验证。
+   转换结果先落到 ESTree，再序列化为 JavaScript / catalog / map carriers，最后由 `Jazor.Emit` 物化文件并由测试回归验证。
 
 ## 2. Simplified Pipeline
 
@@ -56,6 +56,13 @@ flowchart TD
 
 它只处理模块级转换，不解决方法体内部语义。
 
+当前已经固定下来的模块级路线还包括：
+
+- `enum` 声明擦除，不生成 runtime declaration object
+- `interface` 只作为契约存在，不发射 runtime artifact
+- 成员类继承支持同模块 JS-compatible 子集：`extends` / `super(...)` / `super.member`
+- 成员类构造函数重载走单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher
+
 ### 3.3 SemanticWalker
 
 `SemanticWalker` 负责“语义级转换怎么做”：
@@ -71,6 +78,13 @@ flowchart TD
 - 字段/属性/方法引用
 
 它以 Roslyn `IOperation` 为输入，以 ESTree 为输出。
+
+当前已经固定下来的语义级路线包括：
+
+- `tuple` 作为表达式组合 lowering 处理
+- `ref/out` 作为 caller/callee 协议模拟处理
+- `enum` 使用点常量化
+- runtime host / member shape 优先贴近真实 JS 形态
 
 ### 3.4 WhiteList
 
@@ -112,18 +126,24 @@ flowchart LR
 - 白名单生成
 - Analyzer 输入约束
 - SemanticWalker 主链路
+- `Op.Compile` 生成、装配与主分发 baseline
 - 编译测试回归
 
 ### 基本闭环
 
 - AstConverter 模块级转换
 - `Alias` / `Inline` / `Import` 消费
+- import 收集、合并、模块头输出主链
+- enum / interface declaration 擦除
+- 成员类继承子集
+- 成员类构造函数重载 dispatcher
+- compiler catalog -> emit 文件物化链路
 
 ### 后续重点
 
-- `ESGenerator` 真实产物接回
-- `ImportDeclaration` 真正落盘
-- `Op.Compile` 与 AST 模板能力增强
+- `Op.Compile` contract 与 AST 模板边界增强
+- catalog -> emit 物化与 sourcemap 稳定性继续压实
+- source-origin / sourcemap 稳定性继续压实
 
 ## 6. New Feature Decision Rule
 
@@ -146,4 +166,4 @@ Jazor 当前的核心不是“把 C# 拼成 JS 字符串”，而是用 `Analyze
 1. [ArchitectureOverview.md](./ArchitectureOverview.md)：完整版架构图与职责边界
 2. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)：端到端链路
 3. [WhiteList.md](./WhiteList.md)：宿主映射规则
-4. [SemanticWalker.md](./SemanticWalker.md)：主转换器入口
+4. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)：主转换器入口

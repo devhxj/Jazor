@@ -1,7 +1,7 @@
 # Jazor RPC 分析客户端（RPC Analysis Client）
 
-> 状态：已实现
-> 定位：Jolt 分析层的 RPC 客户端，通过子进程与外部分析服务通信
+> Status: 活跃参考
+> Positioning: Jolt 分析层的 RPC 客户端，通过子进程与外部分析服务通信
 
 ## 1. 文档定位
 

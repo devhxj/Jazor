@@ -4,11 +4,12 @@
 
 本文档用于给出 Jazor 当前编译器的 sourcemap 设计方案。
 
-它是实现前设计文档，不是现状说明。当前仓库还没有完整 sourcemap 产物链路，这份文档的目标是：
+它最初来自实现前设计阶段，但当前已经不只是“纯前置设计文档”。
+仓库主线里已有 sourcemap baseline，因此这份文档现在同时承担两件事：
 
 1. 明确 sourcemap 应该解决什么问题。
 2. 明确 sourcemap 不应该在哪一层实现。
-3. 为后续在编译器主体稳定后落地实现提供可执行清单。
+3. 为后续继续扩展覆盖面与稳定性提供一致的分层约束。
 
 本文档以当前代码结构为约束，尤其考虑：
 
@@ -58,23 +59,23 @@ Jazor 的 sourcemap 应该按三层实现：
 4. 让所有 synthetic 节点都可见
 5. 让 sourcemap 参与语义判断或 lowering 决策
 
-## 4. 为什么现在先写设计，不立刻实现
+## 4. 为什么这份设计文档在 baseline 落地后仍然重要
 
 当前编译器仍在持续完善 tuple、pattern、reference、creation 等 lowering 逻辑。
 
-如果 sourcemap 在 lowering 未稳定前就接入，会立刻遇到两个问题：
+这份设计文档最初要解决的问题是：如果 sourcemap 在 lowering 未稳定前就接入，会立刻遇到两个问题：
 
 1. lowering 形状会继续变
    任何 JS AST 结构变化都会连带修改 mapping 行为和测试断言。
 2. sourcemap 会放大未稳定路径的维护成本
    一个语法点一旦既要修 lowering，又要修 map，很容易把主问题掩盖掉。
 
-因此更合理的顺序是：
+这也是当时更合理的顺序：
 
 1. 先把编译器主链路和主要 lowering 行为稳定下来
 2. 再基于稳定 AST 输出模型挂 sourcemap
 
-这也是本文档存在的原因：先定规则，后做实现。
+现在 baseline 已经落地，但本文档仍然需要保留，因为后续每次扩展新的语法域覆盖时，仍然会反复遇到同一类边界问题：source-origin 应挂在哪、synthetic 该如何处理、哪些事情不能下沉到 emit 反推。
 
 ## 5. 现有代码结构约束
 
@@ -91,16 +92,19 @@ Roslyn IOperation
     -> Emit 落盘
 ```
 
-### 5.2 当前没有 sourcemap 的事实
+### 5.2 当前 baseline 已落地的事实
 
-当前仓库中：
+当前仓库中已经存在这些 sourcemap 主链路事实：
 
-- 没有模块级 `.map` 文件产物
-- `ESGenerator` 只记录模块 `Content` 与 `Hash`
-- `ModuleWriter` 只写 `.mjs`
-- `ModuleBundler` 只关心 import rewrite 与 bundle 输出
+- `SourceOrigin` 已作为来源模型接入 compiler 主链路
+- writer 侧已能生成 source map 内容
+- `ESGenerator` 已能记录 `SourceMapRelativePath`、`SourceMapContent`、`MapHash`
+- `Jazor.Emit` 已能写出 `.mjs`、`.mjs.map` 与 `sourceMappingURL`
 
-这意味着 sourcemap 必须新建一条并行产物链路，而不是给现有字符串输出“补一点注释”。
+因此现在更准确的说法不是“要不要新建一条 sourcemap 产物链路”，而是：
+
+- baseline 链路已经存在
+- 后续重点是扩大语法域覆盖、锁定文本与映射一致性、继续压实 compiler / emit 契约
 
 ## 6. 总体架构
 
@@ -437,7 +441,7 @@ internal sealed record GeneratedJavaScriptArtifact(
 
 ### 13.2 `ESGenerator`
 
-建议未来扩展为同时生成：
+当前 `ESGenerator` 已经能同时生成：
 
 - `Content`
 - `SourceMapRelativePath`
@@ -445,11 +449,11 @@ internal sealed record GeneratedJavaScriptArtifact(
 - `JsHash`
 - `MapHash`
 
-这样 sourcemap 不会在从 AST 进入 catalog 这一层时丢失。
+这样 sourcemap 不会在从 AST 进入 catalog 这一层时丢失。后续重点是保持这些字段的稳定消费契约，而不是再次讨论是否需要它们。
 
 ### 13.3 `Emit`
 
-建议 emit 阶段：
+当前 emit 阶段已经负责：
 
 1. 写 `.mjs`
 2. 写 `.mjs.map`
@@ -459,7 +463,7 @@ internal sealed record GeneratedJavaScriptArtifact(
 //# sourceMappingURL=xxx.mjs.map
 ```
 
-注意：
+后续仍要持续锁定：
 
 - `sourceMappingURL` 使用相对文件名
 - hash 逻辑要明确 JS 与 map 是否分离计算
@@ -503,17 +507,15 @@ internal sealed record GeneratedJavaScriptArtifact(
 
 第一阶段不要因为 bundle map 把主链路拖慢。
 
-## 16. 实现顺序建议
+## 16. 后续推进顺序建议
 
-当编译器主体稳定后，建议按以下顺序推进：
+在 baseline 已落地的前提下，建议按以下顺序继续推进：
 
-1. 增加 `SourceOrigin` 与 helper
-2. 给普通引用、赋值、调用、return 挂 origin
-3. 给 tuple / pattern / collection lowering 挂 origin
-4. 新增 `ToKnRECMAScriptWithSourceMap(...)`
-5. 扩 `ESGenerator` catalog 数据结构
-6. 扩 `Jazor.Emit` 的读取与写出
-7. 最后再评估 bundler map
+1. 继续锁定 `SourceOrigin` 与 helper 的传播规则
+2. 给更多普通语法域和高风险 lowering 补 origin / mapping 覆盖
+3. 继续锁定 `ToKnRECMAScriptWithSourceMap(...)` 与普通 writer 的文本一致性
+4. 继续锁定 `ESGenerator` catalog 与 `Jazor.Emit` 物化契约
+5. 最后再评估 bundler map / chaining 是否需要进入更广主线
 
 ## 17. 测试策略
 
@@ -553,8 +555,8 @@ internal sealed record GeneratedJavaScriptArtifact(
 
 当前明确选择：
 
-- 先保证设计清晰，不急于实现
-- 先做模块级 map，不做 bundle map chaining
+- 先保证 baseline 稳定，不急于过度扩张覆盖面
+- broad compiler contract 先做模块级 map，不默认要求 bundle map chaining
 - 先做节点级映射，不做 token 级极限精度
 - sourcemap 不反向影响 lowering 语义
 
@@ -566,9 +568,9 @@ Jazor 的 sourcemap 不应被理解为“给输出 JS 附带一个额外文件�
 2. 输出期对这些来源的标准化编码
 3. 发射期对 `.mjs/.map` 产物的一致落盘
 
-在当前仓库结构下，最合理的路径是：
+在当前仓库结构下，更合理的路径是：
 
-- 先完成编译器主体
-- 再按本文档方案落地 sourcemap
+- 承认 sourcemap baseline 已经进入主链路
+- 继续按本文档约束去扩大覆盖面并压实稳定契约
 
-这样可以避免把 sourcemap 过早耦合进仍在变化的 lowering 细节里，同时又把后续实现的关键边界、职责和风险提前固定下来。
+这样既不会把 sourcemap 再写回成“未实现”，也能避免后续扩展重新耦合进不受控的 lowering 细节里。

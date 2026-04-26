@@ -7,7 +7,7 @@ Jazor 当前整体方案是一条“输入域 + 宿主映射 + 转换核心 + �
 - 用户模块代码通过 `[ECMAScriptModule]` / `[ECMAScript]` 进入编译域
 - 宿主映射通过 `[Jazor(Op.*)]` 提供可消费的外部 API 规则
 - `AstConverter` 与 `SemanticWalker` 构成转换核心
-- 最终产出为 ESTree，再序列化为 JavaScript 文本
+- 最终产出为 ESTree、JavaScript 文本与 catalog/map carriers，随后由 `Jazor.Emit` 物化为文件
 
 其中：
 
@@ -149,6 +149,13 @@ flowchart TD
 
 它解决的是“模块顶层长什么样”的问题，而不是“方法体内部怎么变”。
 
+当前已经固定下来的模块级路线还包括：
+
+- `enum` declaration 擦除，不生成 runtime declaration object
+- `interface` declaration 擦除，只保编译期契约角色
+- 成员类继承支持同模块 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
+- 成员类构造函数重载走“单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher”
+
 ### 6.2 SemanticWalker
 
 `SemanticWalker` 是主转换器，负责语义级转换：
@@ -164,6 +171,13 @@ flowchart TD
 - 字段/属性/方法引用
 
 它以 Roslyn `IOperation` 为输入，以 Acornima ESTree 为输出。
+
+当前已经固定下来的语义级路线还包括：
+
+- `tuple` 视为编译期语法糖，按表达式组合 lowering 处理
+- `ref/out` 视为 caller/callee 协议模拟，而不是 CLR 地址语义复刻
+- `enum` 使用点由 `SemanticWalker` 常量化为底层标量或标量表达式
+- `Reference` 域负责已绑定成员的最终宿主与成员名，不负责 runtime 二次 overload dispatch
 
 ### 6.3 SenseArgument
 
@@ -279,8 +293,8 @@ flowchart TB
     H -.扩展点.-> X1[Op.Compile 复杂宿主语义]
     H -.扩展点.-> X2[AST 模板 Inline]
     G -.扩展点.-> X3[嵌套类 / 泛型 / 继承增强]
-    K -.未完全闭环点.-> X4[ESGenerator 最终产物接回]
-    H -.未完全闭环点.-> X5[ImportDeclaration 真正落盘]
+    K -.持续契约.-> X4[compiler catalog -> emit 物化 / sourcemap 稳定性]
+    I -.持续契约.-> X5[稳定命名 / import 顺序 / source-origin]
 ```
 
 当前状态可分为三类：
@@ -291,20 +305,25 @@ flowchart TB
 - 白名单生成
 - `Analyzer` 输入约束
 - `SemanticWalker` 主语义转换
+- `Op.Compile` 生成、装配与主分发 baseline
 - 编译测试回归
 
 ### 基本闭环
 
 - `AstConverter` 模块级转换主链路
 - `Alias` / `Inline` / `Import` 消费
+- import 收集、合并、模块头输出主链
+- enum / interface declaration 擦除
+- 成员类继承子集
+- 成员类构造函数重载 dispatcher
+- compiler catalog -> emit 文件物化链路
 - `Optimizer` 作为后处理节点存在
 
 ### 未完全闭环
 
-- `ESGenerator` 真实产物回写
-- `ImportDeclaration` 的最终落盘
-- 更复杂的 `Op.Compile` 扩展体系
+- 更复杂的 `Op.Compile` contract 扩展体系
 - 更稳健的 AST 模板化 Inline 路径
+- output / sourcemap / source-origin 的长期稳定契约继续压实
 
 ## 10. Extension Decision Tree
 
@@ -339,7 +358,7 @@ flowchart TD
 1. [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md)
 2. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
 3. [WhiteList.md](./WhiteList.md)
-4. [SemanticWalker.md](./SemanticWalker.md)
+4. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
 5. [ModuleConversionSpec.md](./ModuleConversionSpec.md)
 6. [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
 
@@ -353,10 +372,11 @@ flowchart TD
 - 语义级转换：`SemanticWalker` 负责的 `IOperation -> ESTree`
 - 输出闭环：从 AST 到最终 JavaScript 产物的完整链路
 - 扩展点：设计已预留、实现未完全闭环的能力
+- 持续契约：当前已经接通，但仍需持续保持稳定的输出性质，例如命名、导入顺序和 source-origin
 
 ## 14. Related Documents
 
 - [README.md](./README.md)：文档总索引
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)：端到端链路细节
-- [TransformationClosureChecklist.md](./TransformationClosureChecklist.md)：闭环与欠账清单
+- [TransformationClosureChecklist.md](../../02-计划/compiler/TransformationClosureChecklist.md)：闭环与欠账清单
 - [WalkerExtensionSpec.md](./WalkerExtensionSpec.md)：`SemanticWalker` 扩展约定

@@ -7,7 +7,7 @@
 当前实现不追求 CLR 级语义等价，而追求两点：
 
 1. C# tuple 的代码结果等价。
-2. JavaScript 侧运行时 shape 对业务和第三方可预期。
+2. JavaScript 侧对象协议对业务和第三方可预期。
 
 换句话说，这里的 tuple 不是运行时类型设计问题，而是编译期解糖问题。
 
@@ -54,7 +54,7 @@ v$0 = b, v$1 = a, a = v$0, b = v$1;
 
 ### 3. 名字负责运行时协议
 
-虽然 C# tuple 名字不是强约束的一部分，但当前编译器把“当前静态视图名字”视为 JS 侧运行时协议。
+虽然 C# tuple 名字不是强约束的一部分，但当前编译器把“当前静态视图名字”视为 JS 侧对象协议。
 
 这意味着：
 
@@ -88,7 +88,7 @@ let target = { first: source.name, years: source.age };
 - 对象初始化器赋值
 - `return`
 
-如果边界两边 runtime shape 一致，则直接透传，不额外投影。
+如果边界两边 tuple 视图/对象协议一致，则直接透传，不额外投影。
 
 ## 核心实现点
 
@@ -98,9 +98,9 @@ let target = { first: source.name, years: source.age };
 
 ### `HasSameTupleRuntimeShape`
 
-递归比较 tuple 各槽位名字和嵌套 tuple shape。
+当前实现名虽然叫 `HasSameTupleRuntimeShape`，但它判断的不是 CLR runtime type identity，而是 tuple 当前静态视图对应的对象协议是否一致。
 
-只要任意一层名字不同，就认为 runtime shape 不同，不能直接透传。
+只要任意一层名字不同，就认为 tuple 视图/对象协议不同，不能直接透传。
 
 ### `BuildTupleProjection`
 
@@ -200,9 +200,9 @@ tuple 是 sourcemap 设计里的重点语法域。
 
 - 一个源表达式可能展开成多个 JS 片段
 - 会插入缓存变量和中间赋值
-- 运行时 shape 与源语法视角不完全一致
+- lowered 对象协议与源语法视角不完全一致
 
-因此后续 sourcemap 实现必须遵守这几条：
+因此当前 sourcemap baseline 与后续继续扩展都必须遵守这几条：
 
 1. sourcemap 服务的是源级调试体验，不是还原 lowered object 细节
 2. 一个 tuple 源节点映射到多个 JS 片段是允许的
@@ -216,15 +216,15 @@ tuple 是 sourcemap 设计里的重点语法域。
 
 完整方案见：
 
-- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
-- [SourceMap.Design.md](./SourceMap.Design.md)
+- [SourceMap.DecisionSummary.md](../sourcemap/SourceMap.DecisionSummary.md)
+- [SourceMap.Design.md](../sourcemap/SourceMap.Design.md)
 
 ## 结论
 
 当前 tuple lowering 的核心标准是：
 
 - 语义按位置保持等价
-- 运行时按当前静态名字暴露协议
+- 运行时按当前静态名字暴露对象协议
 - 一旦跨视图就显式 remap
 - 一旦源值复杂就先缓存
 

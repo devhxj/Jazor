@@ -114,7 +114,7 @@
 - 使用带有 `[Description("@#prototype")]` 的 `Prototype` 成员，以便公共 API 仍然像 JavaScript runtime 一样读取，只受正常 C# 大小写规则约束。
 - 不要将 `prototype` 强制到泛型 CLR 投影上，当这会错误暗示每个封闭泛型类型有单独的 runtime 构造函数时。
 
-参见 [ECMAScript-nullish-semantics.md](./ECMAScript-nullish-semantics.md)。
+参见 [ECMAScript-nullish-semantics.md](./nullish-semantics.md)。
 
 ## Intentional Omissions
 

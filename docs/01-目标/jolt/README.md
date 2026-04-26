@@ -1,5 +1,9 @@
 # Jolt — 全功能开发模式
 
+> Status: 活跃参考
+> Positioning: `Jolt` 设计入口，覆盖当前唯一活跃的 `.jazor` 开发时宿主边界。
+> Note: 当前主线宿主就是 `Jolt`；旧的 split-host、Bun 或 `Jazor.VueHost` 路线只保留为历史迁移上下文，不再作为现行设计目标。
+
 > 对应源码：`src/Jolt/`
 
 ## 为什么需要

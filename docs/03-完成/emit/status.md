@@ -30,10 +30,10 @@
 
 当前仓库级导航里，emit 已经可以通过以下入口直接进入：
 
-- `docs/status/compiler-mainline-status.md`（本文件）
-- `docs/architecture/modules/README.md`
+- `docs/03-完成/emit/status.md`（本文件）
+- `docs/01-目标/jolt/modules-bridge.md`
 - `src/Jazor.Emit/README.md`
-- `src/Jazor.Emit/doc/README.md`
+- `docs/01-目标/compiler/emit/Emit.Pipeline.Overview.md`
 - `src/Jazor.EmitTest/README.md`
 
 这比之前只靠测试 README 和相邻专题间接暴露要强得多，但仍需要随着 emit 职责演进持续维护。
@@ -59,8 +59,8 @@
 - 让 writer / bundler 的演进方向和上游需求对齐
 
 **参考文档**：
-- [Jazor.Emit README](../../src/Jazor.Emit/README.md)
-- [Emit.Materialization.Overview.md](../../src/Jazor.Emit/doc/Emit.Materialization.Overview.md)
+- [Jazor.Emit README](../../../src/Jazor.Emit/README.md)
+- [Emit.Materialization.Overview.md](../../01-目标/compiler/emit/Emit.Materialization.Overview.md)
 
 ### 2. 维持 emit test 和真实输出链路的一致性
 
@@ -71,7 +71,7 @@
 - 让测试链路和构建产物路径保持一致
 
 **参考文档**：
-- [Jazor.EmitTest README](../../src/Jazor.EmitTest/README.md)
+- [Jazor.EmitTest README](../../../src/Jazor.EmitTest/README.md)
 
 ### 3. 支撑 RazorVue 和 SourceMap 的活跃需求
 
@@ -82,16 +82,16 @@
 - 跟进 SourceMap module map 和 bundle chaining 需求
 
 **参考文档**：
-- [Emit.BundleAndSourceMap.Overview.md](../../src/Jazor.Emit/doc/Emit.BundleAndSourceMap.Overview.md)
-- [RazorVue.DenoHostContract.md](../../src/Jazor.Compiler/doc/RazorVue.DenoHostContract.md)
+- [Emit.BundleAndSourceMap.Overview.md](../../01-目标/compiler/emit/Emit.BundleAndSourceMap.Overview.md)
+- [RazorVue.DenoHostContract.md](../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
 
 ## 深度文档
 
 - [Modules Bridge](../../01-目标/jolt/modules-bridge.md)
-- [Jazor.Emit README](../../src/Jazor.Emit/README.md)
-- [Jazor.Emit Docs](../../src/Jazor.Emit/doc/README.md)
-- [Emit.Pipeline.Overview.md](../../src/Jazor.Emit/doc/Emit.Pipeline.Overview.md)
-- [Jazor.EmitTest README](../../src/Jazor.EmitTest/README.md)
+- [Jazor.Emit README](../../../src/Jazor.Emit/README.md)
+- [Emit.Pipeline.Overview.md](../../01-目标/compiler/emit/Emit.Pipeline.Overview.md)
+- [Emit.Materialization.Overview.md](../../01-目标/compiler/emit/Emit.Materialization.Overview.md)
+- [Jazor.EmitTest README](../../../src/Jazor.EmitTest/README.md)
 
 ## 当前缺口
 

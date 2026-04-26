@@ -1,7 +1,7 @@
 # Deno Worker 进程管理
 
-> 状态：已实现
-> 定位：Deno 子进程的低级管理器，负责进程启动、stdin/stdout 通信、stderr 捕获和工作区隔离
+> Status: 活跃参考
+> Positioning: Deno 子进程的低级管理器，负责进程启动、stdin/stdout 通信、stderr 捕获和工作区隔离
 
 ## 1. 文档定位
 

@@ -7,22 +7,23 @@
 完整设计见：
 
 - [SourceMap.Design.md](./SourceMap.Design.md)
-- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
+- [SourceMap.ImplementationChecklist.md](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ## 2. 最终决策
 
-### 2.1 现在先不实现
+### 2.1 baseline 已落地，后续重点转向稳定化
 
-原因：
+当前事实：
 
-- 编译器主体还在继续完善
-- tuple / pattern / collection / with 等 lowering 仍可能调整
-- sourcemap 过早接入会放大维护成本
+- `SourceOrigin` baseline 已落地
+- `ToKnRECMAScriptWithSourceMap(...)` 与 writer 侧 map 生成已接入主链路
+- `ESGenerator` / `Jazor.Emit` 已能携带并物化模块级 `.mjs.map`
 
 当前策略：
 
-- 先把方案定下来
-- 等编译器主体稳定后再实现
+- 不再把 sourcemap 描述成“尚未实现”
+- 继续把 temp 名、import alias、synthetic 节点和 map 内容稳定成长期契约
+- 继续按语法域扩展覆盖面，而不是一次性追求全量精细映射
 
 ### 2.2 sourcemap 分三层实现
 
@@ -72,16 +73,16 @@ tuple 在 Jazor 中是语法糖，不是 runtime 类型设计问题。
 - 不强调运行时对象 key 细节
 - temp 变量不应主导调试落点
 
-### 2.7 第一阶段只做模块级 map
+### 2.7 broad compiler contract 仍以模块级 map 为主
 
-第一阶段明确只做：
+当前主线已经做到：
 
 1. 模块级 `.mjs.map`
 2. 普通表达式主链路
 3. tuple / deconstruct 主链路
 4. emit 落盘
 
-第一阶段明确不做：
+broad compiler contract 仍不默认要求：
 
 1. bundle map chaining
 2. token 级极致 mapping
@@ -99,21 +100,20 @@ tuple 在 Jazor 中是语法糖，不是 runtime 类型设计问题。
 3. `IImplicitIndexerReferenceOperation` 受 Roslyn 形态影响，采用条件覆盖（出现即断言）
 4. `IAttributeOperation` 仅在实际产出 decorator 节点时要求附带 `SourceOrigin`
 
-## 3. 实施顺序
+## 3. 后续推进顺序
 
-后续实现时按这个顺序：
+后续继续推进时按这个顺序：
 
-1. 新增 `SourceOrigin` 与 helper
-2. 接入普通引用、赋值、调用、return
-3. 接入 tuple / deconstruct
-4. 新增 `ToKnRECMAScriptWithSourceMap(...)`
-5. 扩 `ESGenerator`
-6. 扩 `Jazor.Emit`
-7. 最后补测试
+1. 继续锁定 `SourceOrigin` 传播与 synthetic 标注规则
+2. 扩展普通引用、赋值、调用之外的语法域覆盖
+3. 补 tuple / pattern / collection / initializer 等高风险 lowering 回归
+4. 继续锁定 `ToKnRECMAScriptWithSourceMap(...)` 与普通 writer 的文本一致性
+5. 继续锁定 `ESGenerator` catalog 与 `Jazor.Emit` 物化协议
+6. 最后补更细粒度结构测试和失败路径测试
 
-## 4. 验收标准
+## 4. 后续扩展验收标准
 
-只有同时满足以下条件，才算 sourcemap 第一阶段完成：
+后续新增覆盖面时，至少应同时满足以下条件：
 
 1. 模块级 `.mjs.map` 能稳定生成
 2. 主要断点与异常位置能映射回 C# 源
@@ -123,4 +123,4 @@ tuple 在 Jazor 中是语法糖，不是 runtime 类型设计问题。
 
 ## 5. 一句话结论
 
-Jazor 的 sourcemap 应该在"编译器主体稳定之后"，按"源来源标注 -> JS 输出建图 -> emit 落盘"三层方案实现，而不是提前混入当前仍在变化的 lowering 细节里。
+Jazor 的 sourcemap 当前已经按“源来源标注 -> JS 输出建图 -> emit 落盘”三层方案落地主线 baseline；后续工作的重点不再是“要不要实现”，而是把覆盖面、稳定性和契约边界继续压实。

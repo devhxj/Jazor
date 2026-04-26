@@ -1,7 +1,7 @@
 # RazorVue HMR 决策摘要
 
-> 状态：活跃参考
-> 定位：未来 RazorVue HMR 工作的预留通道决策摘要；运行时实现仍然延后。
+> Status: 活跃参考
+> Positioning: 未来 RazorVue HMR 工作的预留通道决策摘要；运行时实现仍然延后。
 
 ## 1. 本文档解决的问题
 

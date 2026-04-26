@@ -632,8 +632,8 @@ protected IBlockOperation GetBlockOperation(string code)
 
 ### C. 相关文档
 
-- [CLAUDE.md](../../CLAUDE.md) - 项目整体架构和转换思想
-- [Jazor.CLR/rule.md](../Jazor.CLR/rule.md) - CLR 模块开发规则
+- [Compiler 文档索引](../../01-目标/compiler/README.md) - 当前仓库级 compiler 架构入口
+- [Jazor.CLR README](../../../src/Jazor.CLR/readme.md) - 当前 CLR 模块入口
 
 ---
 

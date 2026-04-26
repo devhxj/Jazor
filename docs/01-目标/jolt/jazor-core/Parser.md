@@ -1,7 +1,7 @@
 # Jazor 解析器（Parser）
 
-> 状态：已实现
-> 定位：Jazor 核心编译管线的前端，负责将 .jazor 源文本解析为结构化文档模型
+> Status: 活跃参考
+> Positioning: Jazor 核心编译管线的前端，负责将 .jazor 源文本解析为结构化文档模型
 
 ## 1. 文档定位
 

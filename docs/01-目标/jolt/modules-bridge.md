@@ -1,6 +1,6 @@
 # Modules Bridge
 
-> Status: active reference
+> Status: 活跃参考
 > Positioning: 模块本地 operational docs 和 README 可用性的仓库级桥接。
 
 ## 目标
@@ -22,7 +22,7 @@
 ### Compiler
 
 - [Jazor.Compiler README](../../../src/Jazor.Compiler/README.md)
-- [Jazor.Compiler 文档索引](../../../src/Jazor.Compiler/doc/README.md)
+- [Jazor.Compiler 文档索引](../compiler/README.md)
 
 ### Compiler generator
 
@@ -48,13 +48,13 @@
 ### Emit / bundle pipeline
 
 - [Jazor.Emit README](../../../src/Jazor.Emit/README.md)
-- [Jazor.Emit Docs](../../../src/Jazor.Emit/doc/README.md)
+- [Emit.Pipeline.Overview.md](../compiler/emit/Emit.Pipeline.Overview.md)
 - [Jazor.EmitTest README](../../../src/Jazor.EmitTest/README.md)
 
 说明：
 
 - `Jazor.Emit` 是 materialisation / manifest / bundling 的入口
-- `src/Jazor.Emit/doc/` 是 emit lane 的局部 deep-doc 入口
+- `docs/01-目标/compiler/emit/` 是 emit lane 的 repo-level deep-doc 入口
 - `Jazor.EmitTest` 保留 emit-side regression coverage 的入口
 
 ### Razor substrate
@@ -95,7 +95,7 @@
 
 目前最典型的是：
 
-- `src/Jazor.Compiler/doc/`
+- `docs/01-目标/compiler/`
 
 ### 3. 只有 operational README 的模块，通过本文保持可发现性
 

@@ -1,7 +1,7 @@
 # Deno 前端协议
 
-> 状态：已实现
-> 定位：Jolt 与 Deno Worker 之间的通信协议定义，包括编译协议和智能感知协议
+> Status: 活跃参考
+> Positioning: Jolt 与 Deno Worker 之间的通信协议定义，包括编译协议和智能感知协议
 
 ## 1. 文档定位
 

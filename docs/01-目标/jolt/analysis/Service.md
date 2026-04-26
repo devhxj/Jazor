@@ -1,7 +1,7 @@
 # Jazor 分析服务（Analysis Service）
 
-> 状态：已实现
-> 定位：Jolt 分析层的核心接口和实现，提供 .jazor 文档的语义分析能力
+> Status: 活跃参考
+> Positioning: Jolt 分析层的核心接口和实现，提供 .jazor 文档的语义分析能力
 
 ## 1. 文档定位
 

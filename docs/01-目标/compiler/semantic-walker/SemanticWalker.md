@@ -1,5 +1,18 @@
 # `SemanticWalker`
 
+## 与实现原则的关系
+
+阅读本文件前，建议先看：
+
+- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+
+那份文档定义的是 compiler 的总路线与价值排序；本文件讨论的是 `SemanticWalker` 作为语义级 lowering 核心时，具体承担哪些职责。
+
+如果二者出现张力，应按下面方式理解：
+
+- `ImplementationPrinciples.md` 负责回答“为什么这么做”和“优先保什么”；
+- 本文件负责回答“`SemanticWalker` 这一层具体做什么、不做什么”。
+
 ## 定位
 
 `SemanticWalker` 是 Jazor 编译器里负责“语义级 lowering”的核心组件。
@@ -27,13 +40,13 @@ C# IOperation
 - 模块级成员拆解
 - 源码输出文件组织
 - 最终 JavaScript 文本写出
-- 完整 sourcemap 产物生成
+- catalog / source map carrier 组装后的文件物化
 
 这些职责分别落在：
 
 - `AstConverter`
 - `ESGenerator`
-- 后续 writer / emit 路径
+- writer 与 `Jazor.Emit`
 
 所以判断一个问题该不该进 `SemanticWalker`，核心看它是不是：
 
@@ -55,7 +68,7 @@ C# IOperation
 
 这也是为什么像“静态运行时宿主选择”这类问题，最终要靠 `SemanticModel` 和类型关系，而不能只看调用点文本。
 
-### 2. 目标是结果等价，不是逐步模拟 CLR
+### 2. 目标是使用点可观察行为等价，不是逐步模拟 CLR
 
 当前设计不追求在 JS 里重建一整套 CLR 运行时。
 
@@ -67,7 +80,7 @@ C# IOperation
 
 只要能在当前映射边界内稳定得到结果等价，`SemanticWalker` 会优先选择更直接的 lowering。
 
-### 3. 优先让输出贴近真实 JS 运行时 shape
+### 3. 优先让输出贴近真实 JS host / member 形态
 
 这条原则在手写映射和 `Reference` 语法域里尤其重要。
 
@@ -93,6 +106,22 @@ C# IOperation
 - 副作用次数正确
 - 求值顺序正确
 - 结果值正确
+
+## 当前已固定的语义边界
+
+站在 `SemanticWalker` 这一层，当前有几条已经不应再反复摇摆的路线：
+
+- `tuple`：按编译期语法糖处理，保 projection / 解构 / 比较 / swap 的使用点行为，不保 `System.ValueTuple` runtime identity
+- `ref/out`：按 caller/callee 协议模拟处理，优先保求值顺序、回写顺序和最终结果
+- `enum`：不把 `enum` 当成运行时对象；`SemanticWalker` 负责把使用点改写成底层常量或标量表达式
+- `interface`：不是 runtime artifact；它只可能以约束、投影或宿主查找前提的形式影响 lowering
+- 运行时宿主映射：优先恢复真实 JS host / member shape，而不是保留 CLR 可书写外观
+
+同时也要明确不属于 `SemanticWalker` 主责任面的内容：
+
+- 成员类继承的 class declaration shape 属于 `AstConverter`
+- 成员类构造函数重载的 dispatcher / `$ctor_<hash>` helper 协议属于 `AstConverter`
+- `SemanticWalker` 只消费这些声明侧协议在表达式/调用位点上已经确定下来的结果
 
 ## 上下文模型
 
@@ -170,10 +199,17 @@ C# IOperation
 - 导入式宿主成员
 - `ref` / `out` 调用回写
 
+这里尤其要分清一条边界：
+
+- `Reference` 负责“已绑定成员最终叫什么、挂在哪个 JS 宿主上”
+- 它不负责 runtime 二次 overload dispatch
+- 普通方法若已在声明/命名侧带稳定签名 hash，引用域只消费那个结果
+- 构造函数若已在类声明侧降成单 `constructor` + helper + dispatcher，引用域也不会再重建一套协议
+
 相关文档：
 
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
 
 ### 3. 创建与初始化器 lowering
 
@@ -231,6 +267,12 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 - 方法体、表达式体、初始化器内部的语义 lowering
 - `IOperation -> ESTree`
 
+再具体一点：
+
+- “成员声明长什么样”看 `AstConverter`
+- “使用点如何落成正确表达式”看 `SemanticWalker`
+- 因而继承、枚举、接口、构造函数重载这些主题，都要先区分是在声明侧定协议，还是在使用侧消费协议
+
 如果一个问题关心的是“模块里应该导出什么”，优先看 `AstConverter`。
 
 如果一个问题关心的是“方法体里一段 C# 应该变成什么 JS AST”，优先看 `SemanticWalker`。
@@ -264,8 +306,8 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 
 相关文档：
 
-- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
-- [SourceMap.Design.md](./SourceMap.Design.md)
+- [SourceMap.DecisionSummary.md](../sourcemap/SourceMap.DecisionSummary.md)
+- [SourceMap.Design.md](../sourcemap/SourceMap.Design.md)
 
 ## 当前边界
 
@@ -279,7 +321,7 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 它当前的优先级更接近：
 
 1. 结果等价
-2. 运行时 shape 尽量正确
+2. host / member 协议尽量正确
 3. 规则统一、可维护
 4. 输出风格与后续优化可再改进
 
@@ -287,17 +329,17 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 
 如果要从总览进入细节，建议顺序是：
 
-1. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+1. [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
 2. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 3. [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
 4. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-5. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+5. [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
 
 ## 相关文档
 
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 - [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-- [WalkerExtensionSpec.md](./WalkerExtensionSpec.md)
-- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+- [WalkerExtensionSpec.md](../WalkerExtensionSpec.md)
+- [InlineAstTemplateSpec.md](../InlineAstTemplateSpec.md)

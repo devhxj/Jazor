@@ -109,7 +109,7 @@
 
 这些路径消费 `WhiteList.Types`。
 
-所以“成员白名单消费”和“类型宿主白名单消费”在实现上是两条不同通路，但目标一致：都在尽量恢复真实 JS runtime shape。
+所以“成员白名单消费”和“类型宿主白名单消费”在实现上是两条不同通路，但目标一致：都在恢复真实 JS host / member surface，而不是回建一层 CLR 运行时对象层。
 
 ## `Op` 在当前消费侧的含义
 
@@ -165,7 +165,7 @@
 
 它的目标分发顺序、`handler/args` 契约、`null` / `throw` 语义，统一见：
 
-- [OpCompileSpec.md](./OpCompileSpec.md)
+- [OpCompileSpec.md](../OpCompileSpec.md)
 
 ### `Op.Allowed` / `Op.Discard`
 
@@ -246,37 +246,37 @@ console.log("x");
 相关文档：
 
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
 
 ## 当前边界
 
 这套白名单消费逻辑当前没有承诺这些事情：
 
 - `Op.Compile` 已全面接管复杂宿主
-- import 已完整落盘成最终 `ImportDeclaration`
 - 所有宿主问题都只靠白名单解决
+- 只要命中白名单，就一定不再需要语义域协同判断
 
 当前更准确的说法是：
 
-- 白名单是主要的宿主映射事实来源
-- `SemanticWalker` 是最主要的消费层
-- 复杂运行时宿主选择仍需要 `Reference` 等语义域配合
+- `Op.Compile` 已接入主分发，但当前 contract 仍限于自包含表达式级钩子
+- import 主链已经接通“发现 -> 收集 -> 合并 -> 模块头输出”，当前重点是继续压实别名、去重和排序稳定性
+- 白名单是主要的宿主映射事实来源，但最终宿主选择仍需要 `Reference` 等语义域配合
 
 ## 推荐阅读
 
 建议按这个顺序一起看：
 
-1. [WhiteList.md](./WhiteList.md)
+1. [WhiteList.md](../WhiteList.md)
 2. [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
 3. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-4. [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
-5. [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+4. [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
+5. [InlineAstTemplateSpec.md](../InlineAstTemplateSpec.md)
 
 ## 相关文档
 
-- [WhiteList.md](./WhiteList.md)
+- [WhiteList.md](../WhiteList.md)
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
-- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
-- [OpCompileSpec.md](./OpCompileSpec.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
+- [InlineAstTemplateSpec.md](../InlineAstTemplateSpec.md)
+- [OpCompileSpec.md](../OpCompileSpec.md)

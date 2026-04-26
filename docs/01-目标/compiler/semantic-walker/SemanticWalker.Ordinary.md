@@ -125,7 +125,7 @@
 
 如果命中了：
 
-- tuple runtime shape 切换
+- tuple 视图/对象协议切换
 - setter 宿主映射
 
 它会先走更高优先级的语义修正路径。
@@ -153,7 +153,7 @@
 
 当前如果返回值的 tuple 当前视图和函数声明返回类型不一致，会在 `VisitReturn(...)` 里显式 remap。
 
-也就是说，tuple runtime shape 的边界不只出现在：
+也就是说，tuple 视图/对象协议的边界不只出现在：
 
 - 赋值
 - 参数传递
@@ -303,4 +303,4 @@ let methodName = 'TestMethod';
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 - [SemanticWalker.Tuple.md](./SemanticWalker.Tuple.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-- [Optimizer.md](./Optimizer.md)
+- [Optimizer.md](../Optimizer.md)

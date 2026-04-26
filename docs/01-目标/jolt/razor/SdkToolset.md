@@ -1,7 +1,7 @@
 # Razor SDK 工具集解析器
 
-> 状态：已实现
-> 定位：Jolt Razor SDK 发现与定位核心服务
+> Status: 活跃参考
+> Positioning: Jolt Razor SDK 发现与定位核心服务
 
 ## 1. 文档定位
 

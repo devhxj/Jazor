@@ -18,7 +18,7 @@
 
 - [RazorVue.Design.md](./RazorVue.Design.md)
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 - [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
 
 ## 2. 设计目标

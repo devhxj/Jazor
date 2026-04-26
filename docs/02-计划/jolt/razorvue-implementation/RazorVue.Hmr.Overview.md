@@ -1,7 +1,7 @@
 # RazorVue HMR 概览
 
-> 状态：活跃参考
-> 定位：未来 RazorVue HMR 工作的预留通道概览；不代表运行时 HMR 已处于活跃实现中。
+> Status: 活跃参考
+> Positioning: 未来 RazorVue HMR 工作的预留通道概览；不代表运行时 HMR 已处于活跃实现中。
 
 ## 1. 文档定位
 
@@ -103,11 +103,11 @@
 
 按此顺序阅读：
 
-1. [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
+1. [RazorVue.DecisionSummary.md](../../../01-目标/razorvue/design/RazorVue.DecisionSummary.md)
 2. [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
 3. [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
-4. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-5. [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
+4. [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
+5. [RazorVue.ComponentDescriptorSpec.md](../../../01-目标/razorvue/design/RazorVue.ComponentDescriptorSpec.md)
 6. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
 7. [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
 8. [RazorVue.Hmr.ImplementationChecklist.md](./RazorVue.Hmr.ImplementationChecklist.md)
@@ -119,7 +119,7 @@
 1. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
 2. [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
 3. [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
-4. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+4. [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
 
 ## 6. 实现前必须重新确认的事项
 

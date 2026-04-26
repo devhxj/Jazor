@@ -143,7 +143,7 @@ let obj = (() => {
 - 数组元素
 - record-like 参数
 
-也就是说，创建路径不会因为“这是 `new`”就绕过 tuple runtime shape 规则。
+也就是说，创建路径不会因为“这是 `new`”就绕过 tuple 视图/对象协议规则。
 
 ### 2. 初始化器成员名优先走 setter / 字段映射
 
@@ -275,7 +275,7 @@ let anonymous = { Name: "Test", Value: 42 };
 它当前更偏向：
 
 - 结果等价
-- runtime shape 尽量贴近 JS
+- 对象/容器协议尽量贴近 JS 宿主
 - 创建路径与 tuple / 白名单 / 引用路径规则保持一致
 
 ## 推荐阅读

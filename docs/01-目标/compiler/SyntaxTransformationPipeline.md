@@ -59,7 +59,7 @@
 | `[Jazor(Op.Alias)]` | 宿主名映射 | `WhiteList`、`SemanticWalker` | 已进入主链路 |
 | `[Jazor(Op.Inline)]` | 简单模板表达式 | `WhiteList`、`SemanticWalker` | 已进入主链路，但有结构性风险 |
 | `[Jazor(Op.Import)]` | 导入式宿主实现 | `SemanticWalker`、`SenseArgument`、`AstConverter` | 已进入主链路 |
-| `[Jazor(Op.Compile)]` | 复杂宿主编译钩子 | Generator 基础设施 | 已生成，未完整接入 |
+| `[Jazor(Op.Compile)]` | 复杂宿主编译钩子 | `Jazor.Compiler.Generator`、`SemanticWalker` | 已接入主分发，当前 contract 仍限于表达式级钩子 |
 
 ## 3. 总体转化流水线
 
@@ -80,19 +80,20 @@ ECMAScript / Jazor.CLR 运行库
                                   └─ Acornima AST
 ```
 
-注意：当前 `ESGenerator` 已经把真实 AST 序列化结果收集进生成的模块目录表，但它输出的是 C# catalog，而不是直接落盘 `.mjs` 文件。
+注意：当前 compiler 侧的稳定边界已经是“生成 AST / 文本 / SourceMap carriers 并写入 catalog”。真正 `.mjs` / `.mjs.map` 的文件物化由 `Jazor.Emit` 负责，不应再把“compiler 产 catalog”和“emit 写文件”混写成一个未定义阶段。
 
-### 3.2 与 SourceMap 的关系
+### 3.1 与 SourceMap 的关系
 
-当前 sourcemap 方案已经确定，但实现明确延后到编译器主体稳定之后。
+当前 sourcemap 基线已经落地，但它仍然依赖整条转化链路的稳定结构。
 
 原因是 sourcemap 在本项目里不是单纯的“文本附属文件”，而是依赖整条转化链路的稳定结构：
 
 ```text
 Roslyn IOperation
-    -> SemanticWalker / AstConverter 给 AST 节点标源来源
-    -> JavaScript writer 输出文本并构建 source map
-    -> ESGenerator / Emit 写出 .mjs 与 .mjs.map
+    -> SemanticWalker / AstConverter 给 AST 节点附着 SourceOrigin
+    -> JavaScript writer 输出文本并构建 source map 内容
+    -> ESGenerator 收集 catalog / module content / map carrier
+    -> Jazor.Emit 写出 .mjs 与 .mjs.map
 ```
 
 这意味着：
@@ -101,18 +102,18 @@ Roslyn IOperation
 2. 也不能等到 emit 阶段再从最终 JS 文本反推
 3. 它必须建立在稳定 lowering 结果之上
 
-当前决策是：
+当前更准确的状态是：
 
-- 先完成编译器主体
-- 再按“三层方案”接入 sourcemap
+- `SourceOrigin`、writer 侧 map 生成、emit 侧 `.map` 写出都已经进入主链路
+- 后续重点不是“是否实现”，而是继续压实 temp 名、import alias、synthetic 片段与主锚点的稳定契约
 
 详见：
 
-- [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
-- [SourceMap.Design.md](./SourceMap.Design.md)
-- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
+- [SourceMap.DecisionSummary.md](./sourcemap/SourceMap.DecisionSummary.md)
+- [SourceMap.Design.md](./sourcemap/SourceMap.Design.md)
+- [SourceMap.ImplementationChecklist.md](../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
-### 3.1 事实优先级
+### 3.2 事实优先级
 
 后续如出现“代码、测试、文档”不一致，建议固定采用以下优先级：
 
@@ -142,7 +143,7 @@ Roslyn IOperation
 - `Alias`：改名
 - `Inline`：按模板展开表达式
 - `Import`：记录导入并生成调用
-- `Compile`：基础设施已生成，但主调用链目前未真正接入
+- `Compile`：`GetWhiteListExpressionCore(...)` 主入口会先尝试 `_whiteListCompiles`；只有返回 `null` 时才继续回落到 `Alias` / `Inline` / `Import`
 - `Allowed`：允许原生转换
 - `Discard`：通常由 Analyzer 或不支持分支兜底
 
@@ -153,7 +154,7 @@ Roslyn IOperation
 - `Inline` 现在的主要风险不再是实现机制本身，而是边界误用：
   - 把需要控制求值顺序、临时变量或参数形状分支的语义继续塞进模板
   - 把应由 `Op.Compile` 接管的逻辑继续停留在声明式模板层
-- `Op.Compile` 的分发基础设施已生成，但主入口尚未优先接入；同时当前 `Compile(handler, args)` contract 仍偏窄，天然更适合表达式级钩子，而不是完整 lowering 子系统。
+- `Op.Compile` 的分发基础设施已经接入主入口；当前真正的限制不在“是否接线”，而在 `Compile(handler, args)` contract 仍偏窄，天然更适合表达式级钩子，而不是完整 lowering 子系统。
 - 已选定的演进策略是：
   1. 保留 `Inline` 的字符串声明方式
   2. 内部持续使用“模板 AST + 占位符替换”
@@ -194,7 +195,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 - 静态属性 -> `get_*/set_*` 函数
 - 静态方法 -> `function`
 - 成员类 -> `class`
-- 枚举 -> `Object.freeze({...})`
+- 枚举 -> “声明擦除 + 使用点常量化”；若旧文档或历史实现仍出现 `Object.freeze({...})`，应视为已废弃的过渡态
 
 当前 `AstConverter` 的处理粒度是“类成员声明”，而不是方法体内部语义；方法体、表达式体、字段初始化器一旦超出简单字面量，就会下沉给 `SemanticWalker`。
 
@@ -301,26 +302,27 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 ## 8. AST 输出与序列化
 
-当前仓库里实际存在两条“AST 之后”的路径：
+当前仓库里实际存在三层“AST 之后”的路径：
 
 - 测试路径：直接调用 `ToKnRECMAScript()` / `ToECMAScript()`，把 Acornima AST 序列化成 JavaScript 文本
-- 生成器路径：`ESGenerator` 把 `AstConverter` 的真实结果收集到 `ModuleCatalog` 生成物中
+- compiler/catalog 路径：`ESGenerator` 把 `AstConverter` 的真实结果、模块文本和 SourceMap carriers 收集到 `ModuleCatalog` 生成物中
+- emit/materialization 路径：`Jazor.Emit` 读取 catalog，写出 `.mjs` / `.mjs.map` 与相关 manifest
 
 另外，`Optimizer.cs` 已存在，但当前主链路没有发现统一接入点。因此应理解为：
 
 - “C# -> ESTree” 是当前已经实现的主能力
-- “ESTree -> 优化 -> 直接 `.mjs` 产物” 仍未被建立为主链路
+- “Optimizer 统一接入主生成链路” 仍未被建立为稳定契约
 
-### 8.1 输出层的未来闭环顺序
+### 8.1 输出层的持续稳定重点
 
-若后续要把整条链路补完整，建议顺序固定为：
+后续更稳妥的重点应固定为：
 
-1. `AstConverter` / `SemanticWalker` 先稳定输出 AST
-2. 接入 `Optimizer`，但只允许做语义保守优化
-3. 统一通过 `ToKnRECMAScript()` 或等价 writer 生成文本
-4. 再把文本生成接回 `ESGenerator`
+1. `AstConverter` / `SemanticWalker` 继续稳定 AST 与 `SourceOrigin`
+2. writer 继续保证文本输出与 source map 内容的确定性
+3. `Jazor.Emit` 继续保持 catalog -> 文件物化的稳定契约
+4. 若未来接入 `Optimizer`，仍只允许做语义保守优化
 
-不建议跳过 AST 层，直接在 `ESGenerator` 中重新拼字符串。
+不建议跳过 AST 层，直接在 `ESGenerator` 或 emit 中重新拼字符串。
 
 ## 9. 名称解析与符号稳定性
 
@@ -332,10 +334,18 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 4. 重载方法哈希后缀
 5. 原始符号名
 
+这里要单独区分两类重载：
+
+- 普通方法重载仍然走 `GetConfigOrSymbolName(...)` 路线，只在确有同名方法重载时追加稳定签名 hash
+- 成员类构造函数重载不走“多个 JS 名字”分裂，因为 JS class 只能有一个真实 `constructor`；它必须走 `$ctor_<hash>` helper + `arguments.length` dispatcher
+
+也就是说，“重载需要稳定区分”不等于“所有重载都靠最终输出名字区分”。
+
 配套约束：
 
 - 白名单匹配统一使用 `Format.NameFormat` 生成稳定签名
 - 隐式字段不能直接使用 Roslyn 生成名，必须转为稳定哈希
+- ECMAScript runtime host 上的方法默认跳过普通方法重载后缀，避免把宿主 API 意外拆成 CLR 风格 overload surface
 - 任何新语法若引入新的“合成符号”，都必须先定义稳定命名规则，再扩展测试
 
 ## 10. 错误处理策略
@@ -365,7 +375,8 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 - `ECMAScriptInlineAttribute` 当前未进入主转换链路
 - `ECMAScriptIgnoreAttribute` 当前未见统一消费入口
-- `Op.Compile` 的生成基础设施已在，但 `SemanticWalker` 主分发尚未优先走该路径
+- 旧文档曾把 `Op.Compile` 写成“未接入主分发”；当前源码已经优先尝试 `_whiteListCompiles`，但 contract 仍偏窄
+- 旧文档曾把 sourcemap 写成“明确延后”；当前 baseline 已落地，后续问题是稳定性而不是有没有
 - `Optimizer` 已存在，但未见稳定接入主生成链路
 - 一些文档仍宣称测试“全部通过”或某模块“完整”，与当前测试状态不一致
 
@@ -422,7 +433,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 - `SemanticWalker.cs.<Feature>.cs`
 - `SemanticWalker<Feature>Test.cs`
-- `doc/SemanticWalker.<Feature>.md`
+- `semantic-walker/SemanticWalker.<Feature>.md`
 
 ## 13. 复核清单
 
@@ -442,8 +453,8 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 - 源码：`Jazor.Common`、`Jazor.Analyzer`、`Jazor.Compiler`、`Jazor.Compiler.Generator`
 - 测试：`AstConverterTests.cs` 与全部 `SemanticWalker*Test.cs`
-- 既有文档：`Jazor.CLR/rule.md`、`Jazor.Compiler/doc/*`
+- 既有文档：`src/Jazor.CLR/doc/*`、`docs/01-目标/compiler/*`、`src/Jazor.Compiler/ImplementationPrinciples.md`
 
 **结论**
 
-Jazor 当前真正可靠的“语法转化主线”是：`[Jazor]` 生成白名单，`[ECMAScriptModule]` 进入编译域，Analyzer 缩小输入集合，`AstConverter` 做模块拆解，`SemanticWalker` 做语义下沉，`ESGenerator` 收集模块目录表。未来要提升健壮性，重点不是继续堆 `Inline` 模板，而是补齐 `Op.Compile`、明确最终模块落盘策略，以及继续保持测试/文档同步。
+Jazor 当前真正可靠的“语法转化主线”是：`[Jazor]` 生成白名单，`[ECMAScriptModule]` 进入编译域，Analyzer 缩小输入集合，`AstConverter` 做模块拆解，`SemanticWalker` 做语义下沉，writer / `ESGenerator` 产出 catalog 与 map carriers，`Jazor.Emit` 负责文件物化。未来要提升健壮性，重点不是继续堆 `Inline` 模板，而是稳住 `Op.Compile` contract、compiler/emit 边界，以及继续保持测试/文档同步。

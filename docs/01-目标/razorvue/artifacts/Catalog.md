@@ -1,5 +1,5 @@
 # RazorVueCatalog - RazorVue 组件目录
-> 状态：已实现
+> Status: 活跃参考
 
 ## 1. 文档定位
 

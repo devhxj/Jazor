@@ -1,7 +1,7 @@
 # File Watching & Configuration
 
-> 状态：已实现
-> 定位：文件变更检测、变更处理、依赖跟踪和配置管理
+> Status: 活跃参考
+> Positioning: 文件变更检测、变更处理、依赖跟踪和配置管理
 
 ## 1. 文档定位
 

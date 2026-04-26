@@ -1,7 +1,7 @@
 # Jolt 打包与静态资产 (Bundle and Static Assets)
 
-> 状态：已实现
-> 定位：协调 Deno bundler 执行、处理 .jazor/.vue 导入重写、生成 import map、复制静态资产
+> Status: 活跃参考
+> Positioning: 协调 Deno bundler 执行、处理 .jazor/.vue 导入重写、生成 import map、复制静态资产
 
 ## 1. 文档定位
 

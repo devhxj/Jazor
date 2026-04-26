@@ -292,12 +292,12 @@ value is Person("John", 18)
 
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-3. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+3. [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
 4. [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 
 ## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
-- [Optimizer.md](./Optimizer.md)
+- [Optimizer.md](../Optimizer.md)

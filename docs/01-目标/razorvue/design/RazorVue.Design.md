@@ -32,7 +32,7 @@
 
 - [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 - [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 - [RazorVue.Authoring.ProductDefinition.md](./RazorVue.Authoring.ProductDefinition.md)
 - [RazorVue.LibraryAuthoring.Design.md](./RazorVue.LibraryAuthoring.Design.md)

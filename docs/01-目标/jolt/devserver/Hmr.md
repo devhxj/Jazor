@@ -1,7 +1,7 @@
 # HMR (Hot Module Replacement)
 
-> 状态：已实现
-> 定位：WebSocket 驱动的热模块替换系统，支持 JavaScript、CSS 和组件级 HMR
+> Status: 活跃参考
+> Positioning: WebSocket 驱动的热模块替换系统，支持 JavaScript、CSS 和组件级 HMR
 
 ## 1. 文档定位
 

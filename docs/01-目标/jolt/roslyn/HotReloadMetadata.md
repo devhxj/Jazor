@@ -1,7 +1,7 @@
 # Jazor Hot Reload 元数据提供器
 
-> 状态：已实现
-> 定位：Jazor HMR 边界检测与签名生成核心服务
+> Status: 活跃参考
+> Positioning: Jazor HMR 边界检测与签名生成核心服务
 
 ## 1. 文档定位
 

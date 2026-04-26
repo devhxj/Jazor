@@ -296,4 +296,4 @@ switch (value) {
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
 - [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)

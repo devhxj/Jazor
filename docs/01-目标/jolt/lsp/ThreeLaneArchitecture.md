@@ -1,7 +1,7 @@
 # 三车道架构 (Three-Lane Architecture)
 
-> 状态：已实现
-> 定位：Jolt LSP 的多语言服务提供层
+> Status: 活跃参考
+> Positioning: Jolt LSP 的多语言服务提供层
 
 ## 1. 文档定位
 

@@ -169,7 +169,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 
 - `FlushImportSpecifiers()`
 - `MergeImports(...)`
-- 生成模块级 `ImportDeclaration`
+- 生成模块头 `ImportDeclaration`
 
 ## 当前边界
 
@@ -219,11 +219,11 @@ argument.MergeImportSpecifier(modulePath, specifier)
 1. [SemanticWalker.md](./SemanticWalker.md)
 2. [WalkerArgument.md](./WalkerArgument.md)
 3. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-4. [AstConverter.md](./AstConverter.md)
+4. [AstConverter.md](../AstConverter.md)
 
 ## 相关文档
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-- [AstConverter.md](./AstConverter.md)
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [AstConverter.md](../AstConverter.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)

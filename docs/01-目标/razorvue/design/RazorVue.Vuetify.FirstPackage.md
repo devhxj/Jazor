@@ -1,7 +1,7 @@
 # RazorVue Vuetify 第一包
 
-> 状态：活跃参考
-> 定位：第一个 RazorVue 库创作包的作用域包设计参考。
+> Status: 活跃参考
+> Positioning: 第一个 RazorVue 库创作包的作用域包设计参考。
 
 ## 1. 文档定位
 
@@ -16,7 +16,7 @@
 - [RazorVue.Design.md](./RazorVue.Design.md)
 - [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 - [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
 ## 2. 目的
 

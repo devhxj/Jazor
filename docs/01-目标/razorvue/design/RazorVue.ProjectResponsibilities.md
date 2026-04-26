@@ -18,8 +18,8 @@
 相关文档：
 
 - [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
-- [RazorVue.Review.md](./RazorVue.Review.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
+- [RazorVue.Review.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Review.md)
 
 ## 1. 最终定位
 

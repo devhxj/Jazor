@@ -12,4 +12,4 @@ Current direction:
 - Virtual `.vue` / `.cs` artifacts are internal bridge projections.
 - `Jazor.Vite`, Bun, and the old split-host arrangement are migration leftovers and should not be used as design guidance.
 
-Use [jolt-single-project.md](D:/repository/own/jazor/Jazor/docs/architecture/jolt-single-project.md) as the active architecture reference.
+Use [jolt/architecture.md](../../01-目标/jolt/architecture.md) as the active architecture reference.

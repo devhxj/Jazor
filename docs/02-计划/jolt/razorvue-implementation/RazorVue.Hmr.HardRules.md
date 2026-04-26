@@ -1,7 +1,7 @@
 # RazorVue HMR 硬性规则
 
-> 状态：活跃参考
-> 定位：未来 RazorVue HMR 工作的预留通道约束参考；不代表运行时 HMR 已处于活跃状态。
+> Status: 活跃参考
+> Positioning: 未来 RazorVue HMR 工作的预留通道约束参考；不代表运行时 HMR 已处于活跃状态。
 
 本文档确定 HMR 实现规则中不可保持模糊的边界。
 

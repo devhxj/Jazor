@@ -1,7 +1,7 @@
 # RazorVue 创作产品定义
 
-> 状态：活跃参考
-> 定位：RazorVue 创作线的活跃产品定义参考。
+> Status: 活跃参考
+> Positioning: RazorVue 创作线的活跃产品定义参考。
 
 ## 1. 目的
 

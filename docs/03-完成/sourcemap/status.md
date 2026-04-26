@@ -67,7 +67,7 @@ SourceMap 当前已经和以下工作流直接耦合：
 1. **完成 RazorVue bundle chaining 实现**
    - 让 module sourcemap 在 bundle chain 中正确传递
    - 确保 source-origin 信息不丢失
-   - 参考：[2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](../superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
+   - 参考：[Phase 2: 编译管道统一 + Source Map](../../02-计划/jolt/phase2-sourcemap.md)
 
 2. **让 writer / manifest 演进就位**
    - 支撑 sourcemap 的写出和持久化
@@ -93,8 +93,8 @@ SourceMap 当前已经和以下工作流直接耦合：
    - 不因为 narrow lane 成功就提前扩大 scope
 
 **参考文档**：
-- [SourceMap.Overview.md](../../src/Jazor.Compiler/doc/SourceMap.Overview.md)
-- [SourceMap.ImplementationChecklist.md](../../src/Jazor.Compiler/doc/SourceMap.ImplementationChecklist.md)
+- [SourceMap.Overview.md](../../01-目标/compiler/sourcemap/SourceMap.Overview.md)
+- [SourceMap.ImplementationChecklist.md](../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ### Broad programme 准备（低优先级）
 
@@ -111,8 +111,8 @@ SourceMap 当前已经和以下工作流直接耦合：
 
 ## 深度文档
 
-- [SourceMap.Overview.md](../../src/Jazor.Compiler/doc/SourceMap.Overview.md)
-- [SourceMap.ImplementationChecklist.md](../../src/Jazor.Compiler/doc/SourceMap.ImplementationChecklist.md)
+- [SourceMap.Overview.md](../../01-目标/compiler/sourcemap/SourceMap.Overview.md)
+- [SourceMap.ImplementationChecklist.md](../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ## 当前缺口
 

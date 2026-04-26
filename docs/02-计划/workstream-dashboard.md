@@ -1,7 +1,9 @@
 # Jazor 工作流总览
 
-> 最后更新：2026-04-16
-> 作用：这是恢复工作的唯一入口，告诉你每个工作流现在在哪个阶段、下一步该做什么。
+> Status: 活跃计划
+> Updated: 2026-04-16
+> Positioning: 仓库级恢复入口，用于查看各工作流当前阶段、依赖顺序与下一步行动。
+> Note: 更窄的 active plan 可以覆盖这里的具体执行切片，但不应反向改写这里对工作流边界和先后依赖的判断。
 
 ## 快速导航
 
@@ -46,7 +48,7 @@
 1. **Output closure**
    - 压实 `ESGenerator -> catalog -> output` 闭环
    - 避免测试链路和真实输出链路继续分裂
-   - 参考：[TransformationRoadmap.md](../src/Jazor.Compiler/doc/TransformationRoadmap.md)
+   - 参考：[TransformationRoadmap.md](./compiler/TransformationRoadmap.md)
 
 2. **Import closure**
    - 让 import 从收集阶段进到稳定落盘阶段
@@ -55,11 +57,11 @@
 3. **Host semantics seam**
    - 稳定 `Inline` / `Compile` 分工
    - 莫让宿主语义扩张又跑回来破坏 compiler 主线边界
-   - 参考：[InlineAstTemplateSpec.md](../src/Jazor.Compiler/doc/InlineAstTemplateSpec.md)
+   - 参考：[InlineAstTemplateSpec.md](../01-目标/compiler/InlineAstTemplateSpec.md)
 
 **深度文档**：
 - [Compiler Architecture Bridge](../01-目标/compiler/architecture.md)
-- [Jazor.Compiler 文档索引](../src/Jazor.Compiler/doc/README.md)
+- [Jazor.Compiler 文档索引](../01-目标/compiler/README.md)
 
 ---
 
@@ -80,8 +82,8 @@ Emit 不是单独的大专题，但确实是多个工作流共同的承接层。
 
 **深度文档**：
 - [Modules Bridge](../01-目标/jolt/modules-bridge.md)
-- [Jazor.Emit README](../src/Jazor.Emit/README.md)
-- [Jazor.Emit Docs](../src/Jazor.Emit/doc/README.md)
+- [Jazor.Emit README](../../src/Jazor.Emit/README.md)
+- [Emit.Pipeline.Overview.md](../01-目标/compiler/emit/Emit.Pipeline.Overview.md)
 
 ---
 
@@ -126,8 +128,8 @@ SourceMap 当前不是“全 deferred”也不是“全 active”。更准确的
    - 保持“稳定上游优先”原则，不提前扩大 broad rollout 范围
 
 **深度文档**：
-- [SourceMap.Overview.md](../src/Jazor.Compiler/doc/SourceMap.Overview.md)
-- [SourceMap.ImplementationChecklist.md](../src/Jazor.Compiler/doc/SourceMap.ImplementationChecklist.md)
+- [SourceMap.Overview.md](../01-目标/compiler/sourcemap/SourceMap.Overview.md)
+- [SourceMap.ImplementationChecklist.md](./compiler/SourceMap.ImplementationChecklist.md)
 
 ---
 

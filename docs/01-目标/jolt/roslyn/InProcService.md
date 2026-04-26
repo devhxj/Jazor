@@ -1,7 +1,7 @@
 # InProc Roslyn 代码服务
 
-> 状态：已实现
-> 定位：Jolt LSP 核心服务层，提供完整的 Roslyn 语义分析能力
+> Status: 活跃参考
+> Positioning: Jolt LSP 核心服务层，提供完整的 Roslyn 语义分析能力
 
 ## 1. 文档定位
 

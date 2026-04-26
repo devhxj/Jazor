@@ -1,7 +1,7 @@
 # Jolt CSS 处理管线 (CSS Pipeline)
 
-> 状态：已实现
-> 定位：从编译结果和 Deno bundle 提取 CSS，计算所有权，重写引用，生成哈希资产
+> Status: 活跃参考
+> Positioning: 从编译结果和 Deno bundle 提取 CSS，计算所有权，重写引用，生成哈希资产
 
 ## 1. 文档定位
 

@@ -6,22 +6,26 @@
 
 前面的设计文档已经说明了方向、分层和实施顺序；本文档只做一件事：
 
-把后续实现时不能再临场决定的规则提前固定下来。
+把已落地 baseline 及其后续扩展时不能再临场决定的规则提前固定下来。
 
 这些规则优先级高于后续实现阶段的局部便利性。
 
 ## 2. 适用范围
 
-本文档适用于 sourcemap 第一阶段实现。
+本文档适用于当前 sourcemap baseline 以及沿该 baseline 继续扩面时的实现约束。
 
-第一阶段的目标仍然是：
+当前 broad compiler contract 仍以第一阶段边界作为主范围：
 
 1. 模块级 `.mjs.map`
 2. 普通表达式主链路
 3. tuple / deconstruct 主链路
 4. emit 落盘
 
-本文档不扩大范围，只固定规则。
+也就是说：
+
+1. baseline 已经落地
+2. 文档继续沿用第一阶段边界来固定主线规则
+3. bundle chaining 等更窄 active lane 不自动并入这里的广义契约
 
 ## 3. 归属边界
 
@@ -271,9 +275,9 @@
 
 本文档固定的不是 sourcemap 的所有实现细节，而是第一阶段不能再模糊处理的规则。
 
-后续真正开工实现时：
+后续继续扩展、评审或校验实现边界时：
 
 - 设计方向以 [SourceMap.Design.md](./SourceMap.Design.md) 为准
-- 实施顺序以 [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md) 为准
+- 实施顺序以 [SourceMap.ImplementationChecklist.md](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md) 为准
 - 风险规避以 [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md) 为准
 - 硬约束以本文档为准

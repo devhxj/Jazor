@@ -78,6 +78,32 @@ Console.WriteLine
 
 这也是为什么“实例调用”和“方法组引用”都能共享同一套 `Console -> console`、`Bytes -> Uint8Array` 归一化逻辑。
 
+但这里要特别澄清一条边界：
+
+- `Reference` 负责的是“Roslyn 已经绑定好的成员，最终应落成哪个 JS 成员名、挂在哪个 JS 宿主上”
+- 它不负责在运行时重新模拟一次 CLR overload dispatch
+
+也就是说，当前路线是：
+
+- 普通调用场景下，Roslyn 先选中具体 `IMethodSymbol`
+- `Reference` 再根据这个已绑定符号决定成员名和宿主
+- 如果该方法在声明侧需要重载区分，就沿用 `Util.GetConfigOrSymbolName(...)` 产出的稳定签名 hash 后缀
+- 如果它属于 ECMAScript runtime host API，则仍优先走白名单别名 / 宿主归一化，并可跳过普通方法重载后缀
+
+方法组引用同样不是“构造一个 CLR 风格 overload object”。
+
+当前它保的是：
+
+- 指向已绑定方法对应的 JS 成员
+- 必要时保留正确宿主
+- 必要时通过局部 arrow / forwarder 保留后续调用语义
+
+它不保的是：
+
+- 基于实参类型的运行时二次重载判别
+- 完整 CLR method-group conversion 面
+- 一个能在 JS 侧继续参与 CLR 式 overload resolution 的运行时对象
+
 ### 4. 运行时静态宿主解析
 
 这是当前 `Reference` 语法域里最重要的特殊逻辑之一。
@@ -121,7 +147,7 @@ let factory = Uint8Array.of;
 
 更完整说明见：
 
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
 
 ### 5. `ref` / `out` 回写
 
@@ -149,6 +175,11 @@ let factory = Uint8Array.of;
 
 这部分和 `Util.GetConfigOrSymbolName(...)`、`GetMethodConfigOrWhiteListName(...)`、`GetInitializerMemberName(...)` 配合完成。
 
+对方法这里还要加一条：
+
+- 若是普通用户方法，最终名可带稳定签名 hash，用来和其他同名 overload 区分
+- 若是 ECMAScript runtime host API，优先保宿主 API 名称与宿主形态，不强行回退到 CLR overload surface
+
 ### 2. 宿主
 
 普通情况下，宿主来源于：
@@ -163,7 +194,7 @@ ECMAScript 运行时映射场景下，还会额外经过：
 - `NormalizeRuntimeReceiverHostCallee(...)`
 - `TryBuildPreferredRuntimeStaticMemberAccess(...)`
 
-也就是说，`Reference` 最终产出的不是“按 C# 文本直接拼出来的宿主”，而是“在当前规则下最接近真实 JS runtime shape 的宿主”。
+也就是说，`Reference` 最终产出的不是“按 C# 文本直接拼出来的宿主”，而是“在当前规则下最接近真实 JS host / member 形态的宿主”。
 
 ## 运行时宿主归一化
 
@@ -224,11 +255,18 @@ console.log("x");
 - 建立独立的运行时包装宿主层
 - 为所有继承问题提供统一 CLR 级语义仿真
 - 让 `ref` / `out` 变成真实引用对象
+- 把成员类构造函数 dispatcher 逻辑搬进引用层
+
+这里再精确一点：
+
+- 普通方法的“重载区分”主要是声明/命名侧契约，`Reference` 只消费那个稳定结果
+- 构造函数重载的“单 `constructor` + `$ctor_<hash>` helper + `arguments.length` 分派”属于 `AstConverter` 的类声明侧协议，不属于引用域
+- `Reference` 真正要做的是：在调用点别把已经选定的方法挂错宿主、叫错名字，或者把 host API 重新污染成 CLR 风格外观
 
 换句话说，这里的目标一直是：
 
 - 保持当前编译器 lowering 结果稳定
-- 尽量恢复真实 JS 运行时 shape
+- 尽量恢复真实 JS host / member 形态与可观察协议
 - 不额外制造 C# / JS 的新割裂
 
 ## 相关测试
@@ -256,5 +294,5 @@ console.log("x");
 
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-- [RuntimeStaticHostResolution.md](./RuntimeStaticHostResolution.md)
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)

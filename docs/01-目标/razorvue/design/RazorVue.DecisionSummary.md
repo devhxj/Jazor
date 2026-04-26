@@ -8,7 +8,7 @@
 
 - [RazorVue.Design.md](./RazorVue.Design.md)
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
 ## 2. 最终决策
 

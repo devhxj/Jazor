@@ -1,7 +1,8 @@
 # Emit Pipeline 概述
 
-> Status: active reference
-> Positioning: 模块本地概述，关于当前 Jazor.Emit pipeline 和边界。
+> Status: 活跃参考
+> Positioning: `Jazor.Emit` pipeline 与职责边界的模块级概述。
+> Note: 本页解释 emit 在当前架构中的承接角色；具体物化、bundle 与 SourceMap 细节请分别进入后续专题。
 
 ## 1. 目的
 
@@ -134,7 +135,7 @@
 - `Jazor.Compiler`
 - `Jazor.RazorVue`
 - `Jazor.RazorVue.Analysis`
-- repo-level `docs/status/` 和 `docs/plans/`
+- repo-level `docs/03-完成/` 和 `docs/02-计划/`
 
 ## 6. 推荐阅读
 
@@ -144,10 +145,9 @@
 2. 本文档
 3. `Emit.Materialization.Overview.md` 或 `Emit.BundleAndSourceMap.Overview.md`
 4. `src/Jazor.EmitTest/README.md`
-5. `docs/status/2026-04-06-emit-host-materialization-status.md`
-6. `docs/plans/emit-materialization-execution-bridge.md`
+5. `docs/03-完成/emit/status.md`
 
 然后仅在需要时进入相邻 lanes：
 
-- `src/Jazor.Compiler/doc/RazorVue.Overview.md`
-- `src/Jazor.Compiler/doc/SourceMap.Overview.md`
+- `docs/01-目标/razorvue/design/RazorVue.Overview.md`
+- `docs/01-目标/compiler/sourcemap/SourceMap.Overview.md`

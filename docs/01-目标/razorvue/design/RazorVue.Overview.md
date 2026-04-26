@@ -1,7 +1,8 @@
 # RazorVue 概述
 
-> 状态：活跃参考
-> 定位：活跃 RazorVue 文档集的主深层文档入口点。
+> Status: 活跃参考
+> Positioning: 活跃 RazorVue 文档集的主深层文档入口。
+> Note: 本页负责桥接长期设计文档与执行级实现计划；设计位于 `01-目标/razorvue/design/`，实施/HMR/评审切片位于 `02-计划/jolt/razorvue-implementation/`。
 
 ## 1. 文档定位
 
@@ -62,7 +63,7 @@ RazorVue 的当前状态是：
 
 当前阶段备忘录：
 
-- [RazorVue 阶段评估（2026-04-06）](../../../docs/status/2026-04-06-razorvue-stage-assessment.md)
+- [RazorVue 阶段评估（2026-04-06）](../../../05-遗弃/obsolete/razorvue-stage-assessment.md)
 
 当前共识是：
 
@@ -111,7 +112,7 @@ RazorVue 的当前状态是：
 
 - [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 - [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-- [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
+- [RazorVue.ImplementationSkeleton.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationSkeleton.md)
 - [RazorVue.LibraryAuthoring.Design.md](./RazorVue.LibraryAuthoring.Design.md)
 - [RazorVue.Vuetify.FirstPackage.md](./RazorVue.Vuetify.FirstPackage.md)
 
@@ -124,7 +125,7 @@ RazorVue 的当前状态是：
 
 ### 4.4 阶段评估
 
-- [RazorVue 阶段评估（2026-04-06）](../../../docs/status/2026-04-06-razorvue-stage-assessment.md)
+- [RazorVue 阶段评估（2026-04-06）](../../../05-遗弃/obsolete/razorvue-stage-assessment.md)
 
 在以下情况下使用它：
 
@@ -134,7 +135,7 @@ RazorVue 的当前状态是：
 
 ### 4.5 审查备忘录
 
-- [RazorVue.Review.md](./RazorVue.Review.md)
+- [RazorVue.Review.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Review.md)
 
 在以下情况下使用它：
 
@@ -143,12 +144,12 @@ RazorVue 的当前状态是：
 
 ### 4.6 HMR 包
 
-- [RazorVue.Hmr.Overview.md](./RazorVue.Hmr.Overview.md)
-- [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
-- [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
-- [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
-- [RazorVue.Hmr.ImplementationChecklist.md](./RazorVue.Hmr.ImplementationChecklist.md)
-- [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
+- [RazorVue.Hmr.Overview.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.Overview.md)
+- [RazorVue.Hmr.DecisionSummary.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.DecisionSummary.md)
+- [RazorVue.Hmr.Design.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.Design.md)
+- [RazorVue.Hmr.HardRules.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.HardRules.md)
+- [RazorVue.Hmr.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.ImplementationChecklist.md)
+- [RazorVue.Hmr.Pitfalls.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.Pitfalls.md)
 
 在以下情况下使用它们：
 
@@ -167,9 +168,9 @@ RazorVue 的当前状态是：
 
 ### 4.8 实现排序
 
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
-- [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
-- [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)（历史上下文）
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationSkeleton.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationSkeleton.md)
+- [RazorVue.FirstPrPlan.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.FirstPrPlan.md)（历史上下文）
 
 在以下情况下使用它们：
 
@@ -188,15 +189,15 @@ RazorVue 的当前状态是：
 ### 4.10 创作产品方向
 
 - [RazorVue.Authoring.ProductDefinition.md](./RazorVue.Authoring.ProductDefinition.md)
-- [2026-04-06-razorvue-v1-authoring-roadmap.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-roadmap.md)
-- [2026-04-06-razorvue-v1-authoring-pr-breakdown.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-pr-breakdown.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
+- [RazorVue.FirstPrPlan.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.FirstPrPlan.md)（早期执行切分上下文）
 
 在以下情况下使用它们：
 
 - 您正在为 RazorVue 定义 C# 创作体验
 - 您正在规划库包装器工作，如 Vuetify
-- 您需要创作车道的分阶段执行计划
-- 您需要创作车道的执行大小的 PR 范围
+- 您需要当前仍在维护的执行级实现清单
+- 您需要早期 PR 切分上下文，而不是一个已失效的独立 authoring roadmap 文件
 
 ## 5. 推荐阅读顺序
 
@@ -215,16 +216,15 @@ RazorVue 的当前状态是：
 2. [RazorVue.Design.md](./RazorVue.Design.md)
 3. [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 4. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-5. [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
-6. [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
-7. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
-8. [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
-9. [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)（历史上下文）
+5. [RazorVue.Hmr.DecisionSummary.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.DecisionSummary.md)
+6. [RazorVue.Hmr.Design.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.Design.md)
+7. [RazorVue.Hmr.HardRules.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.HardRules.md)
+8. [RazorVue.ImplementationSkeleton.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationSkeleton.md)
+9. [RazorVue.FirstPrPlan.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.FirstPrPlan.md)（历史上下文）
 10. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 11. [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
-12. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
-13. [2026-04-06-razorvue-v1-authoring-roadmap.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-roadmap.md)
-14. [2026-04-06-razorvue-v1-authoring-pr-breakdown.md](../../../docs/superpowers/plans/2026-04-06-razorvue-v1-authoring-pr-breakdown.md)
+12. [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
+13. [RazorVue.Authoring.ProductDefinition.md](./RazorVue.Authoring.ProductDefinition.md)（若当前变更涉及创作体验）
 
 ### 5.3 如果您正在审查代码/设计
 
@@ -233,8 +233,8 @@ RazorVue 的当前状态是：
 1. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
 2. [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
 3. [RazorVue.Design.md](./RazorVue.Design.md)
-4. [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
-5. [RazorVue.Hmr.Pitfalls.md](./RazorVue.Hmr.Pitfalls.md)
+4. [RazorVue.Hmr.HardRules.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.HardRules.md)
+5. [RazorVue.Hmr.Pitfalls.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.Pitfalls.md)
 6. [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
 7. [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
 
@@ -255,5 +255,5 @@ RazorVue 的当前状态是：
 
 1. [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
 2. [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-3. [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
-4. [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+3. [RazorVue.Hmr.DecisionSummary.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.Hmr.DecisionSummary.md)
+4. [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)

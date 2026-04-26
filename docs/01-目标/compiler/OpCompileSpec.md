@@ -1,5 +1,18 @@
 # `Op.Compile` 设计约定
 
+## 与实现原则的关系
+
+阅读本文件前，建议先看：
+
+- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+
+那份文档已经把 `Compile` 的路线地位定义为“高于 `Inline` 的高阶宿主语义出口”；本文件在这个前提下，继续约束 `Op.Compile` 当前 contract、分发顺序与适用边界。
+
+如果二者出现张力，应按下面方式理解：
+
+- `ImplementationPrinciples.md` 负责回答“为什么复杂宿主语义应优先升级到 `Compile`”；
+- 本文件负责回答“当前 `Compile_*` 签名、返回语义和分发表到底长什么样”。
+
 ## 定位
 
 这份文档只讨论 `Op.Compile` 在 `Jazor.Compiler` 里的消费契约。
@@ -111,9 +124,9 @@ Expression? Compile_xxx(Expression? handler, Expression?[] args)
 - `Compile` 属于编译器内部保留能力，应该只承接少数必须由编译器直接接管的内建例外
 - 对 tuple、解构、普通表达式组合这类语法糖问题，优先目标应是“生成结果等价”，而不是过早下沉到运行时 helper
 
-## 目标分发顺序
+## 当前主分发顺序
 
-后续接入主分发时，推荐固定为以下顺序：
+当前主分发已经固定为以下顺序：
 
 1. 先根据读/写语义解析真正的成员符号
 2. 先尝试 `Op.Compile`
@@ -341,7 +354,7 @@ consumer 侧主分发顺序仍然保持：
 ## 相关文档
 
 - [WhiteList.md](./WhiteList.md)
-- [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
+- [SemanticWalker.WhiteList.md](./semantic-walker/SemanticWalker.WhiteList.md)
 - [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
-- [TransformationClosureChecklist.md](./TransformationClosureChecklist.md)
+- [TransformationClosureChecklist.md](../../02-计划/compiler/TransformationClosureChecklist.md)

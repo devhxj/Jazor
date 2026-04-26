@@ -1,7 +1,8 @@
 # Jazor SourceMap 文档总览
 
-> Status: active reference
-> Positioning: Main deep-doc entry point for the current SourceMap document set.
+> Status: 活跃参考
+> Positioning: 当前 compiler SourceMap 文档集的总入口。
+> Note: 本页服务于 broad compiler/source-origin/map 主线；若进入更窄的 Jolt 或 RazorVue active lane，应再结合对应状态页和执行计划判断。
 
 ## 1. 文档定位
 
@@ -11,26 +12,28 @@
 
 1. 现在 sourcemap 处于什么状态
 2. 各份文档分别解决什么问题
-3. 后续真正开工时建议按什么顺序阅读
+3. 后续继续扩展与稳定化时建议按什么顺序阅读
 
 ## 2. 当前状态
 
 当前 sourcemap 在项目中的状态是：
 
-- 设计已冻结主方向
-- 通用实现仍然偏保守
-- 但与 RazorVue 相关的 bundle chaining 已进入当前执行层
+- compiler 侧 `SourceOrigin`、writer 侧 map 生成、emit 侧 `.mjs.map` 物化 baseline 已经落地
+- broad sourcemap program 仍然保持保守范围，不把每个扩展点都立即抬成全量契约
+- 与 RazorVue 相关的更窄 bundle / chaining lane 仍需按各自状态页与计划判断
 
 当前共识是：
 
-1. 先完成编译器主体
-2. sourcemap 仍然要控制范围
-3. 第一阶段先以模块级 map 为主
-4. bundle chaining 已有单独执行计划，需要以当前计划为准
+1. 不再把 sourcemap 描述成“尚未实现”，而是描述成“baseline 已有，后续继续压实”
+2. 继续控制范围，优先稳住模块级 map、origin 传播和输出确定性
+3. broad compiler contract 仍以模块级 map 为主，不默认把 bundle chaining 提升成主线义务
+4. 若进入 RazorVue / bundle 相关活跃 lane，应以当前状态页和计划文档为准
 
 相关执行入口：
 
-- [2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](../../../docs/superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
+- [Compiler 当前状态](../../../03-完成/compiler/status.md)
+- [Emit 当前状态](../../../03-完成/emit/status.md)
+- [SourceMap 实施清单](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ## 3. 核心结论
 
@@ -43,10 +46,10 @@
 2. sourcemap 的目标是“源级调试体验”，不是还原 lowered JS
 3. tuple / deconstruct / pattern / with / collection 这类 lowering 允许一源多目标
 4. synthetic 节点不应主导调试体验
-5. 第一阶段不做 bundle map chaining
+5. broad compiler contract 仍不默认要求 bundle map chaining
 
-这条旧结论现在只适用于 broad sourcemap program 的保守范围判断。
-若进入当前 RazorVue 相关 active lane，应以仓库级状态与当前执行计划为准。
+这条结论当前只适用于 broad sourcemap program 的保守范围判断。
+若进入 RazorVue 相关 active lane，应以仓库级状态与当前执行计划为准。
 
 ## 4. 文档分工
 
@@ -70,11 +73,11 @@
 
 ### 4.3 实施顺序
 
-- [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
+- [SourceMap.ImplementationChecklist.md](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 用途：
 
-- 真正开始实现时按步骤推进
+- 继续扩展或收敛实现时按步骤推进
 - 确认先改哪些层、哪些文件、哪些测试
 
 ### 4.4 易踩坑
@@ -104,7 +107,7 @@
 1. [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
 2. [SourceMap.HardRules.md](./SourceMap.HardRules.md)
 
-### 5.2 准备真正开工
+### 5.2 准备继续扩展
 
 按这个顺序：
 
@@ -112,7 +115,7 @@
 2. [SourceMap.Design.md](./SourceMap.Design.md)
 3. [SourceMap.HardRules.md](./SourceMap.HardRules.md)
 4. [SourceMap.Pitfalls.md](./SourceMap.Pitfalls.md)
-5. [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md)
+5. [SourceMap.ImplementationChecklist.md](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ### 5.3 做代码评审
 
@@ -124,7 +127,7 @@
 
 ## 6. 实现前必须再次确认的事项
 
-真正开始实现前，至少要再次确认：
+继续扩展覆盖前，至少要再次确认：
 
 1. tuple / deconstruct lowering 是否已经稳定
 2. `ToKnRECMAScript()` 输出格式是否稳定
@@ -134,8 +137,8 @@
 
 ## 7. 一句话结论
 
-如果你只是想知道“以后从哪里开始继续做 sourcemap”，就从这里出发：
+如果你只是想知道“现在该从哪里继续推进 sourcemap”，就从这里出发：
 
 1. 先看 [SourceMap.DecisionSummary.md](./SourceMap.DecisionSummary.md)
 2. 再看 [SourceMap.HardRules.md](./SourceMap.HardRules.md)
-3. 真开工时按 [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md) 执行
+3. 真正落实施工时按 [SourceMap.ImplementationChecklist.md](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md) 执行

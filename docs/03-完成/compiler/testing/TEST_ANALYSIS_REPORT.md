@@ -1,9 +1,12 @@
 # ECMAScript.ComplierTest 测试用例分析报告
 
+> Historical snapshot: this report records an audit baseline from 2026-01-27.
+> The project name, test counts, pass rate, file paths, and issue list below are preserved as historical evidence and may no longer match the current repository layout or current compiler state.
+
 ## 执行摘要
 
 **分析日期**: 2026-01-27
-**测试项目**: ECMAScript.ComplierTest
+**测试项目**: ECMAScript.ComplierTest（历史项目名保留）
 **分析范围**: 所有 12 个测试文件，约 452 个测试用例
 
 ### 总体评估

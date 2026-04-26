@@ -1,7 +1,7 @@
 # LSP 路由与聚合 (Routing and Aggregation)
 
-> 状态：已实现
-> 定位：Jolt LSP 的请求路由和多车道结果协调层
+> Status: 活跃参考
+> Positioning: Jolt LSP 的请求路由和多车道结果协调层
 
 ## 1. 文档定位
 

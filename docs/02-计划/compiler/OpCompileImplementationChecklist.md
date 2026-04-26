@@ -1,8 +1,8 @@
 # `Op.Compile` 实施清单
 
-> Status: Active phase-one implementation artifact.
-> Positioning: Focused checklist for first-stage `Op.Compile` wiring.
-> Note: Defines the current contract boundary and sequencing for implementation; later contract expansion belongs to a later phase.
+> Status: 活跃计划
+> Positioning: `Op.Compile` contract 边界与扩展顺序的执行清单。
+> Note: 第一阶段基线已经落地，但 `Status` 仅表示该文档仍是活跃计划；已落地边界与后续扩展要求分别放在正文里。
 
 ## 目标
 
@@ -16,11 +16,11 @@
 
 语义定义见：
 
-- [OpCompileSpec.md](./OpCompileSpec.md)
+- [OpCompileSpec.md](../../01-目标/compiler/OpCompileSpec.md)
 
 ## 第一阶段边界
 
-第一阶段只允许 `Op.Compile` 承担：
+当前已落地的第一阶段 `Op.Compile` 仍只允许承担：
 
 - 自包含表达式级改写
 - 不新增声明
@@ -35,11 +35,11 @@
 - 能稳定写成 `Inline` 的，先不要升级成 `Import`
 - 能稳定写成 `Inline` 或作为运行时 helper 落到 `Import` 的，不要升级成 `Compile`
 
-## 第一阶段实施步骤
+## 第一阶段已落地内容
 
-### 1. 接主分发，但不扩 hook
+### 1. 主分发已接入，但未扩 hook
 
-在 `GetWhiteListExpression(...)` 里补上：
+当前 `GetWhiteListExpression(...)` / `GetWhiteListExpressionCore(...)` 已经：
 
 1. 根据成员签名查询 `_whiteListCompiles`
 2. 命中后调用对应 `Compile_*`
@@ -47,9 +47,9 @@
 4. 返回 `null` 继续 `Alias -> Inline -> Import`
 5. 抛异常直接中止，不静默回退
 
-### 2. 固定 `handler/args` 传参规则
+### 2. `handler/args` 传参规则已固定
 
-必须先统一：
+当前约束已经固定为：
 
 - `handler`
   - 实例成员传实例表达式
@@ -58,9 +58,9 @@
   - 只放显式参数
   - 不再把实例宿主重复塞进参数数组
 
-### 3. 先只迁移“表达式安全型”条目
+### 3. 当前仍只承载“表达式安全型”条目
 
-第一阶段只迁移这类候选：
+当前 contract 仍只适合这类候选：
 
 - 返回常量表达式
 - 返回简单宿主 helper 调用
@@ -78,7 +78,7 @@
 - 其实已经能稳定用 `Inline` 表达，只是实现上暂时懒得写模板
 - 更适合作为模块 helper 的运行时逻辑，只是为了少写一个 `Import` 实现而想塞进 `Compile`
 
-### 4. 建立 `Compile_*` 模板样板
+### 4. 首个真实条目已落地，模板样板仍适用
 
 建议固定实现骨架：
 
@@ -98,6 +98,8 @@ public Expression? Compile_xxx(Expression? handler, Expression?[] args)
 - “claim and fail”
 
 三种路径写得很清楚。
+
+当前仓库里已经落地的保留样例是 `ECMAScript.Global.TypeOf(object)`。
 
 ## 第二阶段才考虑的事
 
@@ -197,7 +199,6 @@ producer 侧优先按这个顺序判断：
 
 这类条目现在即便挂成 `Compile`，后面也只能在接线时卡住。
 
-当前仓库里的保留样例是 `ECMAScript.Global.TypeOf(object)`。
 像 `bool.GetTypeCode()` 这种稳定常量已经回落到 `Inline`，不再占用 compile 通道。
 
 ### 也不要直接标 `Import`
@@ -212,16 +213,16 @@ producer 侧优先按这个顺序判断：
 
 ## 推荐推进顺序
 
-1. 先完成主分发接线
-2. 先补返回语义和参数布局测试
-3. 先迁移 1 到 3 个“表达式安全型”条目
+1. 先审计现有 `[Jazor(Op.Compile)]` 条目是否仍符合第一阶段边界
+2. 补强返回语义、参数布局和 fallback 优先级测试
+3. 再迁移 1 到 3 个额外“表达式安全型”条目
 4. 跑一轮白名单回归
-5. 再把“其实应回到 `Inline/Import` 的条目”从 `Compile` 清走
-6. 再评估是否需要 contract 扩展
+5. 把“其实应回到 `Inline/Import` 的条目”继续从 `Compile` 清走
+6. 最后再评估是否需要 contract 扩展
 
 ## 完成标准
 
-第一阶段完成时，应同时满足：
+第一阶段基线当前应满足：
 
 - `GetWhiteListExpression(...)` 已接入 `_whiteListCompiles`
 - 返回语义被测试锁定
@@ -229,9 +230,15 @@ producer 侧优先按这个顺序判断：
 - 至少有一个真实 `Compile_*` 条目不再返回 `null`
 - 没有把需要 temp/import 的逻辑硬塞进当前签名
 
+后续增量工作的完成标准则是：
+
+- 新增条目仍不突破第一阶段 contract
+- producer 侧 `Inline/Import/Compile` 分流继续收敛
+- 是否扩 contract 有单独决策，而不是边做边偷扩
+
 ## 相关文档
 
-- [OpCompileSpec.md](./OpCompileSpec.md)
-- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+- [OpCompileSpec.md](../../01-目标/compiler/OpCompileSpec.md)
+- [InlineAstTemplateSpec.md](../../01-目标/compiler/InlineAstTemplateSpec.md)
 - [TransformationClosureChecklist.md](./TransformationClosureChecklist.md)
 - [TransformationRoadmap.md](./TransformationRoadmap.md)

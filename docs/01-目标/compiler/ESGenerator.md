@@ -12,7 +12,7 @@
 
 - 收集 ECMAScript 模块候选类型
 - 调用 `AstConverter`
-- 把转换结果写进生成的 C# 模块目录表
+- 把转换结果写进生成的 C# module catalog / source map catalog carrier
 
 ## 当前职责
 
@@ -65,7 +65,7 @@
 - `SourceMapContent`（可空）
 - `MapHash`（可空）
 
-### 4. 生成模块目录表
+### 4. 生成 module catalog carrier
 
 当前真正写出的 source 只有一个：
 
@@ -84,11 +84,12 @@
 
 也就是说，当前 ESGenerator 的产物是：
 
-- C# 内部可访问的模块描述目录表
+- C# 内部可访问的模块 catalog / source map catalog carrier
 
 而不是旧文档里说的：
 
 - 直接输出占位 `.mjs` 源码文件
+- 直接负责 emit 文件物化
 
 ### 5. 路径与哈希管理
 
@@ -112,7 +113,7 @@
 
 ## 当前关键规则
 
-### 1. 生成器现在产出的是 C# catalog，不是 `.mjs` 文件
+### 1. 生成器现在产出的是 C# catalog carrier，不是 `.mjs` 文件
 
 这是当前实现与旧文档最大的偏差。
 
@@ -147,7 +148,7 @@
 
 也就是说，sourcemap 失败不再把整个模块生成打成 Error。
 
-### 5. 最终目录表会排序
+### 5. 最终 catalog 会排序
 
 生成前会按：
 
@@ -160,7 +161,7 @@
 
 ## 现状与典型结果
 
-当前生成的 C# 目录表会包含类似结构：
+当前生成的 C# catalog 会包含类似结构：
 
 ```csharp
 public static partial class ModuleCatalog
@@ -190,7 +191,7 @@ public static partial class ModuleCatalog
 - `AstConverter` 接入
 - 相对路径标准化
 - JS 文本和哈希收集
-- 生成稳定排序的模块目录表
+- 生成稳定排序的 module catalog / source map catalog carrier
 
 它没有试图做这些事情：
 
@@ -199,17 +200,21 @@ public static partial class ModuleCatalog
 - 建立运行时模块加载器
 - 在生成器层做更深的 AST 优化
 
+文件物化责任仍在：
+
+- `Jazor.Emit`
+
 ## 相关测试
 
 主要测试在：
 
-- `src/Jazor.CompilerTest/ESGeneratorTests.cs`
+- `src/Jazor.CompilerTest/ESGeneratorSourceMapCatalogTest.cs`
 
 当前已有测试重点验证：
 
-- 引用外部模块程序集时不会产生类型冲突告警
-- 生成的 `ModuleCatalog` 结构正确
-- 内部 `GeneratedModule` 不泄漏为公共顶层类型
+- 生成的 `ModuleCatalog` 与 `ModuleSourceMapCatalog` 结构正确
+- sourcemap 生成失败时会降级为仅 JS catalog，并报告 warning
+- source map catalog 不会反向污染普通 `ModuleCatalog` 形状
 
 ## 推荐阅读
 
@@ -217,10 +222,12 @@ public static partial class ModuleCatalog
 
 1. [AstConverter.md](./AstConverter.md)
 2. [ESGenerator.md](./ESGenerator.md)
-3. [SemanticWalker.md](./SemanticWalker.md)
+3. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
+4. [emit/Emit.Pipeline.Overview.md](./emit/Emit.Pipeline.Overview.md)
 
 ## 相关文档
 
 - [AstConverter.md](./AstConverter.md)
-- [SemanticWalker.md](./SemanticWalker.md)
+- [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [emit/Emit.Pipeline.Overview.md](./emit/Emit.Pipeline.Overview.md)

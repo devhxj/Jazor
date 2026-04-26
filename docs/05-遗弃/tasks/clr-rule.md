@@ -324,7 +324,7 @@ public extern static bool _49c57acefc093fcc();
 - 只是稳定单表达式模板
 - 只是想绕开 Inline/Compile 约束，不是真有运行时需求
 
-当前仓库内已经做过一轮具体复审，建议直接参考 [Inline / Import 复审记录](InlineImportAudit.md) 里的迁移优先级，不要重复把适合 `Inline` 的成员继续实现成 `Import`。
+当前仓库内已经做过一轮具体复审，建议直接参考 [Inline / Import 复审记录](../../01-目标/compiler/InlineImportAudit.md) 里的迁移优先级，不要重复把适合 `Inline` 的成员继续实现成 `Import`。
 
 ```csharp
 [Jazor(Op.Import, "static bool.Parse(string)")]
@@ -410,8 +410,8 @@ public extern static System.TypeCode _eb6a23c2a874fdf1(bool instance);
 
 编译器消费约定与实施顺序，见：
 
-- `src/Jazor.Compiler/doc/OpCompileSpec.md`
-- `src/Jazor.Compiler/doc/OpCompileImplementationChecklist.md`
+- `docs/01-目标/compiler/OpCompileSpec.md`
+- `docs/02-计划/compiler/OpCompileImplementationChecklist.md`
 
 ### 3.8 Op 类型选择决策
 
@@ -1308,8 +1308,8 @@ public static Array<object?> _hash()
 
 ### 13.7 相关文档
 
-- [CLAUDE.md](../../CLAUDE.md) - 项目整体架构和转换思想
-- [Jazor.Name/rule.md](../Jazor.Name/rule.md) - 命名规范详细说明
+- [Compiler 文档索引](../../01-目标/compiler/README.md) - 当前仓库级 compiler 架构入口
+- [Jazor.Name README](../../../src/Jazor.Name/README.md) - 当前命名相关模块入口
 - `doc/BooleanModule.md` / `module/BooleanModule.cs` - 标准参考样板
 
 ---

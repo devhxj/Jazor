@@ -1,8 +1,8 @@
 # RazorVue 评审
 
-> 状态：历史评审产物。
-> 定位：初始 RazorVue 文档集的已归档评审快照。
-> 备注：此文档捕获了该阶段的评审时准备度和风险；将其视为设计历史上下文，而非当前实现状态。
+> Status: 历史资料
+> Positioning: 初始 RazorVue 文档集的已归档评审快照。
+> Note: 此文档捕获了该阶段的评审时准备度和风险；将其视为设计历史上下文，而非当前实现状态。
 
 本文档记录了在 RazorVue 文档集编写完成后进行的两轮评审。
 
@@ -11,9 +11,9 @@
 
 相关文档：
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+- [RazorVue.DecisionSummary.md](../../../01-目标/razorvue/design/RazorVue.DecisionSummary.md)
+- [RazorVue.Design.md](../../../01-目标/razorvue/design/RazorVue.Design.md)
+- [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
 - [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
 - [RazorVue.FirstPrPlan.md](./RazorVue.FirstPrPlan.md)
 

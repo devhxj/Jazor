@@ -1,8 +1,8 @@
 # RazorVue HMR 实现清单
 
-> 状态：架构已预留，未完全实现。
-> 定位：未来 RazorVue HMR 工作的分阶段清单。
-> 备注：HMR 结构和元数据有意提前预留，但运行时行为和完整实现仍然延后于当前第一阶段通道之外。
+> Status: 活跃计划
+> Positioning: 未来 RazorVue HMR 工作的分阶段清单。
+> Note: HMR 结构和元数据有意提前预留，但运行时行为和完整实现仍然延后于当前第一阶段通道之外。
 
 本文档将 RazorVue HMR 设计转化为执行清单。
 
@@ -14,7 +14,7 @@
 - [RazorVue.Hmr.DecisionSummary.md](./RazorVue.Hmr.DecisionSummary.md)
 - [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
 - [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
-- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
+- [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
 
 ## 1. 前置条件
 

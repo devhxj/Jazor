@@ -1,7 +1,8 @@
 # Emit Bundle And SourceMap 概述
 
-> Status: active reference
-> Positioning: 模块本地概述，关于 `Jazor.Emit` 内部的 bundling 和 SourceMap 继续。
+> Status: 活跃参考
+> Positioning: `Jazor.Emit` bundling 与 emit-side SourceMap 承接的模块级概述。
+> Note: 本页只描述 emit 侧承接边界，不替代 compiler 级 SourceMap 总设计或更窄的执行计划。
 
 ## 1. 目的
 
@@ -88,5 +89,5 @@
 
 - [Emit.Pipeline.Overview.md](./Emit.Pipeline.Overview.md)
 - [Emit.Materialization.Overview.md](./Emit.Materialization.Overview.md)
-- [../../Jazor.Compiler/doc/SourceMap.Overview.md](../../Jazor.Compiler/doc/SourceMap.Overview.md)
-- [../../../docs/plans/sourcemap-execution-bridge.md](../../../docs/plans/sourcemap-execution-bridge.md)
+- [../sourcemap/SourceMap.Overview.md](../sourcemap/SourceMap.Overview.md)
+- [../../../03-完成/emit/status.md](../../../03-完成/emit/status.md)

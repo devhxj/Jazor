@@ -1,8 +1,8 @@
 # RazorVue 实现清单
 
-> 状态：活跃的第一阶段实现产物。
-> 定位：RazorVue 第一阶段通道的主要执行清单。
-> 备注：用作分阶段的实现指导；清单项可能混合已完成、部分完成和仍然开放的切片。
+> Status: 活跃计划
+> Positioning: RazorVue 第一阶段通道的主要执行清单。
+> Note: 用作分阶段的实现指导；清单项可能混合已完成、部分完成和仍然开放的切片。
 
 本文档将 RazorVue 设计分解为执行阶段。
 
@@ -11,10 +11,10 @@
 
 相关文档：
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.Pitfalls.md](./RazorVue.Pitfalls.md)
+- [RazorVue.DecisionSummary.md](../../../01-目标/razorvue/design/RazorVue.DecisionSummary.md)
+- [RazorVue.Design.md](../../../01-目标/razorvue/design/RazorVue.Design.md)
+- [RazorVue.HardRules.md](../../../01-目标/razorvue/design/RazorVue.HardRules.md)
+- [RazorVue.Pitfalls.md](../../../01-目标/razorvue/design/RazorVue.Pitfalls.md)
 
 ## 1. 前置条件
 

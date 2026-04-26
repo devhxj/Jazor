@@ -1,7 +1,7 @@
 # LSP Server and Session
 
-> 状态：已实现
-> 定位：Jolt LSP 子系统的核心消息处理与协议实现层
+> Status: 活跃参考
+> Positioning: Jolt LSP 子系统的核心消息处理与协议实现层
 
 ## 1. 文档定位
 

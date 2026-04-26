@@ -1,7 +1,7 @@
 # Jazor 投影服务（Projection Service）
 
-> 状态：已实现
-> 定位：Jazor 核心系统的投影层，负责将 .jazor 文档投影为虚拟 Vue 和 C# 文档供 LSP 和编译器使用
+> Status: 活跃参考
+> Positioning: Jazor 核心系统的投影层，负责将 .jazor 文档投影为虚拟 Vue 和 C# 文档供 LSP 和编译器使用
 
 ## 1. 文档定位
 

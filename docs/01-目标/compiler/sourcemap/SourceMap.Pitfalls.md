@@ -2,11 +2,11 @@
 
 ## 1. 文档定位
 
-本文档补充 [SourceMap.Design.md](./SourceMap.Design.md) 与 [SourceMap.ImplementationChecklist.md](./SourceMap.ImplementationChecklist.md) 中没有展开的实施细节风险。
+本文档补充 [SourceMap.Design.md](./SourceMap.Design.md) 与 [SourceMap.ImplementationChecklist.md](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md) 中没有展开的实施细节风险。
 
 它只回答一个问题：
 
-后续真正开始实现 sourcemap 时，哪些点最容易做错。
+后续继续扩展 sourcemap 覆盖面与稳定性时，哪些点最容易做错。
 
 ## 2. 总原则
 
@@ -20,12 +20,12 @@
 
 ## 3. 最容易犯的设计错误
 
-### 3.1 过早实现
+### 3.1 过早扩张覆盖面
 
 表现：
 
-- 编译器 lowering 还在频繁改动时就接入 sourcemap
-- 每修一个语法点都连带修 mapping
+- 在 lowering 仍不稳定的语法域上直接承诺高精度 sourcemap
+- 每修一个语法点都连带修 mapping 和结构断言
 
 后果：
 
@@ -34,8 +34,8 @@
 
 规避：
 
-- 先完成编译器主体
-- 再按既定清单实现 sourcemap
+- 先稳住对应 lowering 行为
+- 再按既定清单扩展 sourcemap 覆盖
 
 ### 3.2 在 `SemanticWalker` 里直接拼 `mappings`
 

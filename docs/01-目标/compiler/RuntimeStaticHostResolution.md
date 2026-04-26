@@ -21,7 +21,7 @@
 
 ## 2. 问题本质
 
-Jazor 的目标不是造一层新的 “JsObject / JsArray” 包装世界，而是尽量让 C# 写法和 JS 运行时 shape 对齐。
+Jazor 的目标不是造一层新的 “JsObject / JsArray” 包装世界，而是尽量让 C# 写法和最终 JS host / member 形态对齐。
 
 这会带来一个直接约束：
 
@@ -345,7 +345,7 @@ let factory = Uint8Array.of;
 - 静态方法调用
 - 静态方法组引用
 
-它没有承诺解决所有“继承 + 运行时 shape”问题，例如：
+它没有承诺解决所有“继承 + 最终 JS 宿主形态”问题，例如：
 
 - 用户自定义继承体系的所有语义差异
 - 非 ECMAScript 运行时类型的静态分派

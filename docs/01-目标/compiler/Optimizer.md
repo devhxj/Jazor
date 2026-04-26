@@ -215,12 +215,12 @@ a && foo()
 
 建议按这个顺序看：
 
-1. [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
+1. [SemanticWalker.Pattern.md](./semantic-walker/SemanticWalker.Pattern.md)
 2. [Optimizer.md](./Optimizer.md)
-3. [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
+3. [SemanticWalker.Ordinary.md](./semantic-walker/SemanticWalker.Ordinary.md)
 
 ## 相关文档
 
-- [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-- [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
+- [SemanticWalker.Pattern.md](./semantic-walker/SemanticWalker.Pattern.md)
+- [SemanticWalker.Ordinary.md](./semantic-walker/SemanticWalker.Ordinary.md)
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

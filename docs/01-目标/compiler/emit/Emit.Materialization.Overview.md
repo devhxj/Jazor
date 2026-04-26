@@ -1,7 +1,8 @@
 # Emit Materialization 概述
 
-> Status: active reference
-> Positioning: 模块本地概述，关于 `Jazor.Emit` 内部的 manifest 持久化和文件物化。
+> Status: 活跃参考
+> Positioning: `Jazor.Emit` manifest 持久化与文件物化路径的模块级概述。
+> Note: 本页聚焦非 bundling 的物化主线；如果要看 bundle 或 emit-side SourceMap 继续，请转到相邻专题。
 
 ## 1. 目的
 

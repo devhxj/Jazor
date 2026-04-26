@@ -1,7 +1,7 @@
 # LSP 协调 (Coordination)
 
-> 状态：已实现
-> 定位：Jolt LSP 的跨车道查询协调层
+> Status: 活跃参考
+> Positioning: Jolt LSP 的跨车道查询协调层
 
 ## 1. 文档定位
 

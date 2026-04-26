@@ -1,7 +1,7 @@
 # DevServer HTTP 服务器
 
-> 状态：已实现
-> 定位：开发模式下的核心 HTTP 服务器，负责提供编译服务和 HMR 支持
+> Status: 活跃参考
+> Positioning: 开发模式下的核心 HTTP 服务器，负责提供编译服务和 HMR 支持
 
 ## 1. 文档定位
 

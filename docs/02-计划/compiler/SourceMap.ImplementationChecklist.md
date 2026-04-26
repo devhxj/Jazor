@@ -1,29 +1,49 @@
 # Jazor SourceMap 实施清单
 
-> Status: Design frozen, broad rollout deferred; partial active lane exists.
-> Positioning: Main SourceMap checklist remains conservative, but some RazorVue-related execution slices may proceed earlier.
-> Note: Use this checklist as the stable broad-program reference. When a narrower active plan exists, that plan defines current execution scope.
+> Status: 活跃计划
+> Positioning: compiler SourceMap rollout 与 refinement 的主执行清单。
+> Note: 当前基线已经存在；本页负责组织后续扩展与收敛动作，具体阶段成果应回写状态页或正文。
 
 ## 1. 文档定位
 
-本文档是 [SourceMap.Design.md](./SourceMap.Design.md) 的配套实施清单。
+本文档是 [SourceMap.Design.md](../../01-目标/compiler/sourcemap/SourceMap.Design.md) 的配套实施清单。
 
-目标不是重复设计讨论，而是把 sourcemap 后续落地拆成可执行步骤，方便在编译器主体稳定后按顺序推进。
+目标不是重复设计讨论，而是把 sourcemap 后续 rollout 与 refinement 拆成可执行步骤。
 
 当前 narrower active lane：
 
-- [2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](../../../docs/superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
+- [SourceMap 状态（2026-04-06）](../../03-完成/sourcemap/status.md)
+- [Phase 2: 编译管道统一 + Source Map](../jolt/phase2-sourcemap.md)
 
-## 2. 启动前门槛
+说明：
 
-只有满足以下条件后，才建议开始 sourcemap 实现：
+- 原先单独的 RazorVue sourcemap / bundle chaining 执行计划已不再作为独立入口维护；
+- 当前应以 sourcemap 状态页 + Jolt/Deno 现行实施计划的组合来理解 narrower active lane。
+
+## 2. 当前基线与启动前门槛
+
+当前 compiler/emit 链路里，下面这些基础能力已经存在：
+
+1. `SourceOrigin` 与 `WithOrigin*` helper
+2. `ToKnRECMAScriptWithSourceMap(...)`
+3. `ESGenerator` catalog 中的 `SourceMapContent`
+4. `Jazor.Emit` 对 `.mjs.map` 与 `sourceMappingURL` 的输出
+5. `SemanticWalkerSourceOriginTest`、`SemanticWalkerSourceMapEmissionTest`、`ESGeneratorSourceMapCatalogTest`、`StaticModuleSourceMapTests` 等回归测试
+
+因此当前问题已经不是“能不能开始 sourcemap 实现”，而是：
+
+- 哪些范围已经具备可用基线
+- 哪些范围仍然只适合在 narrower active lane 中推进
+- 哪些稳定性契约还需要继续压实
+
+如果要继续扩大 sourcemap 覆盖面，仍建议先确认以下条件稳定：
 
 1. tuple lowering 主路径稳定
 2. deconstruct / pattern / collection expression 主路径稳定
 3. `ToKnRECMAScript()` 的输出格式短期内不会频繁变化
 4. `ESGenerator -> catalog -> Emit` 主链路字段结构基本稳定
 
-如果这些前提还在频繁变动，应继续优先完成编译器主体。
+如果这些前提重新进入频繁变动期，应先稳住 compiler 主体与输出契约，再继续扩 sourcemap 覆盖。
 
 ## 3. 第一阶段范围
 
@@ -65,13 +85,13 @@
 3. `src/Jazor.CompilerTest/ESGeneratorSourceMapCatalogTest.cs`
 4. `src/Jazor.EmitTest/StaticModuleSourceMapTests.cs`
 
-## 4. 代码改动顺序
+## 4. 历史第一阶段实现顺序（大体已落地）
 
-建议严格按顺序推进，避免一次跨太多层。
+这部分保留为“已落地基线的大致实施顺序”，方便后续理解当前代码为什么分层成现在这样。
 
 ### Step 1. 新增基础类型
 
-新增建议：
+当时新增的基础类型包括：
 
 - `SourceOrigin`
 - `GeneratedJavaScriptArtifact`
@@ -88,7 +108,7 @@
 
 ### Step 2. 在 `SemanticWalker` 加 helper
 
-新增建议：
+当时接入的 helper 包括：
 
 - `CreateOrigin(...)`
 - `WithOrigin(...)`
@@ -102,7 +122,7 @@
 完成标准：
 
 - helper 独立可用
-- 还未大规模接入任何 `Visit`
+- 初始接入阶段还未大规模铺开到所有 `Visit`
 
 ### Step 3. 接入第一批 `Visit`
 
@@ -119,7 +139,7 @@
 
 目标：
 
-- 先让普通表达式主链路具备 origin
+- 先让普通表达式主链路具备 origin 基线
 
 完成标准：
 
@@ -144,7 +164,7 @@
 
 ### Step 5. 新增 JS 输出接口
 
-新增建议：
+当时新增的输出接口包括：
 
 - `ToKnRECMAScriptWithSourceMap(...)`
 - 如有需要，新增 `ToECMAScriptWithSourceMap(...)`
@@ -190,9 +210,19 @@
 
 - 编译器侧与 emit 侧至少各有一组回归测试
 
-## 5. 文件级实施清单
+## 5. 当前剩余动作
 
-### 5.1 `Jazor.Compiler`
+在已落地基线之上，当前更需要继续推进的是：
+
+1. 扩大覆盖面时继续遵守 source-origin / synthetic 节点边界
+2. 压实 `ESGenerator -> catalog -> Emit` 的真实输出一致性
+3. 把 narrower active lane 中已验证的策略有节制地回灌到广义清单
+4. 持续锁定 tuple / deconstruct / pattern / conditional access 等 lowering 热点的调试体验
+5. 避免在 sourcemap 扩展过程中反向破坏已有 lowering 契约
+
+## 6. 文件级实施清单
+
+### 6.1 `Jazor.Compiler`
 
 建议关注文件：
 
@@ -203,7 +233,7 @@
 - [Util.cs](/D:/repository/own/jazor/Jazor/src/Jazor.Compiler/Util.cs)
 - [ESGenerator.cs](/D:/repository/own/jazor/Jazor/src/Jazor.Compiler/ESGenerator.cs)
 
-### 5.2 `Jazor.Emit`
+### 6.2 `Jazor.Emit`
 
 建议关注文件：
 
@@ -212,14 +242,14 @@
 - [ModuleCollector.cs](/D:/repository/own/jazor/Jazor/src/Jazor.Emit/ModuleCollector.cs)
 - [ManifestModel.cs](/D:/repository/own/jazor/Jazor/src/Jazor.Emit/ManifestModel.cs)
 
-### 5.3 测试
+### 6.3 测试
 
-建议新增或扩展：
+建议继续新增或扩展：
 
 - `Jazor.CompilerTest` 中的 sourcemap 结构测试
 - `Jazor.EmitTest` 中的落盘测试
 
-## 6. 第一批必测用例
+## 7. 第一批必测用例
 
 建议至少覆盖这些场景：
 
@@ -233,7 +263,7 @@
 8. `.mjs.map` 落盘
 9. `sourceMappingURL` 正确生成
 
-## 7. synthetic 节点检查清单
+## 8. synthetic 节点检查清单
 
 实现时要专门检查这些节点是否错误进入主 mapping：
 
@@ -248,7 +278,7 @@
 - synthetic 节点可以存在
 - 但不能成为主要断点落点
 
-## 8. 输出一致性检查清单
+## 9. 输出一致性检查清单
 
 实现完成后，应逐项确认：
 
@@ -258,9 +288,9 @@
 4. 不破坏 `ESGenerator` catalog 的消费链路
 5. 不改变 `ModuleBundler` 当前行为边界
 
-## 9. 延后项清单
+## 10. 当前不默认纳入 broad contract 的项
 
-这些能力建议明确延后，不在第一阶段混入：
+这些能力当前仍建议保持为更窄 lane 或后续增量目标，不默认混入 broad compiler SourceMap contract：
 
 1. bundle map chaining
 2. `names` 精细化
@@ -268,9 +298,11 @@
 4. 所有语法点全覆盖
 5. sourcemap 性能优化
 
-## 10. 验收标准
+## 11. 验收标准
 
-只有同时满足以下条件，才算第一阶段完成：
+### 11.1 历史第一阶段基线验收口径
+
+下面这组口径用于解释“为什么当前仓库可以被描述为 baseline 已落地”：
 
 1. 模块级 `.mjs.map` 能稳定生成
 2. DevTools 能把主要断点与异常位置映射回 C# 源
@@ -278,12 +310,22 @@
 4. sourcemap 不改变现有 lowering 结果
 5. 相关测试稳定通过
 
-## 11. 结论
+### 11.2 当前继续扩展时的验收口径
 
-这份清单的作用不是催促尽快实现 sourcemap，而是保证未来真正开始时：
+后续如果继续扩大覆盖面，至少还应同时满足：
+
+1. 新增语法域不会破坏既有模块级 `.mjs.map` 稳定性
+2. `SourceOrigin -> ESGenerator -> Emit` 链路的输出契约继续保持确定性
+3. synthetic 节点与 temp 节点不会反客为主，覆盖主要断点落点
+4. narrower active lane 中验证过的策略，只有在 broad contract 能稳定承受时才回灌
+5. 新增覆盖面对应的回归测试与失败路径测试同步补齐
+
+## 12. 结论
+
+这份清单当前的作用不是从零启动 sourcemap，而是保证后续继续扩覆盖面时：
 
 - 有明确边界
 - 有固定顺序
 - 不会在实现过程中重新讨论同一批设计问题
 
-等编译器主体稳定后，可以直接以本文档为执行入口，再回到 [SourceMap.Design.md](./SourceMap.Design.md) 查看每一项背后的设计理由。
+如果要讨论更大范围的 rollout 或 design 取舍，再回到 [SourceMap.Design.md](../../01-目标/compiler/sourcemap/SourceMap.Design.md) 看每一项背后的设计理由。

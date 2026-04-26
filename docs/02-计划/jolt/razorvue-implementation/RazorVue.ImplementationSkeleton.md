@@ -1,8 +1,8 @@
 # RazorVue 实现骨架
 
-> 状态：活跃的第一阶段实现骨架。
-> 定位：RazorVue 第一阶段实现的仓库级骨架。
-> 备注：这是一个用于建立所有权、类型和着陆顺序的阶段产物，不代表完整管线已经实现。
+> Status: 活跃计划
+> Positioning: RazorVue 第一阶段实现的仓库级骨架。
+> Note: 这是一个用于建立所有权、类型和着陆顺序的阶段产物，不代表完整管线已经实现。
 
 本文档将 RazorVue 设计映射为具体的仓库级实现切片。
 
@@ -16,11 +16,11 @@
 
 相关文档：
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
-- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
+- [RazorVue.DecisionSummary.md](../../../01-目标/razorvue/design/RazorVue.DecisionSummary.md)
+- [RazorVue.Design.md](../../../01-目标/razorvue/design/RazorVue.Design.md)
+- [RazorVue.ComponentDescriptorSpec.md](../../../01-目标/razorvue/design/RazorVue.ComponentDescriptorSpec.md)
+- [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
+- [RazorVue.HardRules.md](../../../01-目标/razorvue/design/RazorVue.HardRules.md)
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 
 ## 1. 项目所有权

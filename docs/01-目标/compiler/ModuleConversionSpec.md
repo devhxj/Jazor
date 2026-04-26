@@ -37,7 +37,8 @@
 | 静态属性 | `get_Name` / `set_Name` 函数 | 自动属性用 backing field |
 | 静态方法 | `function Name(...) {}` | 方法体由 `SemanticWalker` 生成 |
 | 嵌套类 | `class` | 当前仅支持作为成员类输出 |
-| 枚举 | `const X = Object.freeze({...})` | 枚举成员转对象字面量 |
+| 枚举 | 无独立 runtime 声明 | 定义仅保留在编译期；使用点在 `SemanticWalker` 常量化 |
+| 接口 | 无独立 runtime 声明 | 只作为契约参与分析、投影和宿主查找 |
 
 未识别成员当前一般抛 `NotSupportedException`，不应静默忽略。
 
@@ -92,9 +93,10 @@
 
 ### 6.2 参数规则
 
-- 默认参数应转换为 JS 默认参数
+- 默认参数应转换为 JS 默认参数，或在构造函数 dispatcher 命中分支后按该 overload 自身的默认值补齐
 - `ref/out` 参数目前需要与 `SemanticWalker` 的调用约定保持一致
-- 重载方法必须在命名阶段稳定区分
+- 普通方法重载必须在命名阶段稳定区分；当前通过 `Util.GetConfigOrSymbolName(...)` 仅在确有同名方法重载时追加稳定签名 hash
+- 成员类构造函数重载不走“多个 JS 名字”路线，而走“单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` 分派”
 
 ### 6.3 未来规则
 
@@ -108,34 +110,117 @@
 
 ## 7. 嵌套类型规范
 
-当前模块层允许成员类和枚举，但存在明显边界：
+当前模块层允许一层成员类输入；成员枚举和成员接口则只保留编译期角色：
 
 - 模块类自身不支持再作为嵌套模块类处理
-- 多层嵌套类的命名和访问路径尚不稳定
+- 成员类内部再次嵌套 `class` 当前不支持
 - 嵌套类内部再出现复杂成员时，仍依赖 `AstConverter` / `SemanticWalker` 的递归一致性
+- 枚举和接口都不发射模块级 runtime artifact
 
 建议未来统一原则：
 
 1. 模块入口类不嵌套
-2. 普通成员类允许嵌套一层
+2. 普通成员类当前只允许嵌套一层
 3. 超过一层前，先补命名、访问和测试矩阵
+
+### 7.1 枚举路线
+
+模块层枚举当前就应被视为“编译期值域类型声明”，而不是“值域对象声明”。
+
+约束应是：
+
+- 默认不输出 JS 枚举声明对象；
+- 使用点把枚举值降级为底层标量常量或标量表达式；
+- enum typed runtime value 统一按标量处理；
+- `Flags` 只是 bitmask 值域，不引入额外 runtime 包装；
+- 名字语义、`System.Enum` 家族 API、反射和格式化能力默认不保留；如需支持，必须走显式宿主缝或元数据映射；
+- 对超出 JS `Number` 安全范围的底层值，必须升级到精确表示路线或显式拒绝。
+
+这也意味着职责应逐步收敛为：
+
+- `AstConverter` 不把 enum 当成模块级声明输出类型；
+- `SemanticWalker` 负责 `E.A`、`default(E)`、比较、`switch`、位运算等使用点常量化；
+- 若旧文档或历史实现仍出现 `Object.freeze({...})`，应视为已废弃的过渡态，而不是当前规范。
+
+### 7.2 接口路线
+
+接口一律只作为契约存在，不应发射 JS runtime artifact。
+
+因此：
+
+- nested interface declaration 当前直接擦除、不发射 runtime artifact；
+- interface 参与 lowering 的唯一正当理由应是约束、投影或宿主查找；
+- 不能把 interface 当作“以后补一个 JS 产物”的半成品。
+
+### 7.3 继承路线
+
+由于 JavaScript 天然支持 `class extends`，对语义足够接近的 class inheritance，模块层当前已经支持一条受控子集。
+
+当前支持的子集是：
+
+- 同模块成员类之间的单继承
+- 模块输出必须先基类、后派生类，即使源码书写顺序相反
+- 成员类支持 `extends`
+- 显式 `: base(...)` 映射到 `super(...)`
+- 派生类无显式构造函数时合成 `constructor() { super(); }`
+- `base.Method(...)`、`base.Property`、`base.Property = value` 映射到 `super`
+- `base.Method` 方法组引用通过局部 forwarder 保留“调用基类实现”的语义
+- override 依赖 JS prototype dispatch
+
+当前继续显式拒绝的路径是：
+
+- `base.Field`
+- `this(...)` 构造函数链
+- 外部基类
+- 需要额外协议设计的构造函数初始化器能力
+- 任何仍依赖 CLR metadata identity 的继承语义
+
+模块层不得生成丢失继承信息的 class declaration。
+
+### 7.4 成员类构造函数重载路线
+
+成员类构造函数重载不能照搬普通方法重载路线。  
+原因不是签名 hash 不稳定，而是 JS class runtime shape 只允许一个真实 `constructor`。
+
+当前路线固定为：
+
+- 始终只发射一个真实 `constructor`
+- 每个显式实例构造函数 body 下降为一个稳定命名的 `$ctor_<hash>` helper method
+- `constructor` 内按 `arguments.length` 分派
+- optional parameter 的默认值在命中分支后补齐
+- 派生类每个分支各自先执行对应的 `super(...)`，再进入 helper
+- dispatcher / helper 插入位置跟随第一处显式构造函数，不额外重排到 class 顶部
+
+当前支持的 overload 集必须满足：
+
+- 每个 overload 的可接受参数个数区间 `[requiredCount, totalCount]` 两两不重叠
+- 同 arity 重载直接失败
+- optional parameter 导致的区间重叠同样直接失败
+
+当前继续显式拒绝：
+
+- `this(...)`
+- `ref/out/in/params` 参与的构造函数分派
+- 需要按参数类型、命名参数或其他 CLR 规则进一步判别的 overload 集
+- 外部基类上的构造函数协议模拟
 
 ## 8. Import 规范
 
-当前状态：
+当前主链已经接通：
 
 - `SemanticWalker` 可通过白名单 `Op.Import` 收集导入规格
-- `SenseArgument` 里保存了导入分组
-- `AstConverter` 的 `_imports` 还没有真正消费这些分组
+- `SenseArgument.FlushImportSpecifiers()` 负责把方法/表达式转换阶段收集到的导入分组上浮
+- `AstConverter.MergeImports(...)` 负责按模块路径合并并按输出文本去重
+- `AstConverter.BuildImportDeclarations()` 在模块头生成稳定排序的 `ImportDeclaration`
 
-所以目前导入机制只完成了“发现”与“收集”，还没有完成“模块头输出”。
+因此当前导入机制可以被描述为“发现 -> 收集 -> 合并 -> 模块头输出”的主链已接通，但稳定性仍需要继续靠约束与回归测试压实。
 
-未来落地顺序应为：
+当前约束应是：
 
-1. `SenseArgument` 增加导入 flush 能力
-2. `AstConverter` 在模块头生成 `ImportDeclaration`
-3. 合并同路径导入并去重
-4. 为 `Import` 场景补充测试
+1. 同路径导入必须合并
+2. 重复 specifier 必须按输出文本去重
+3. 导入顺序必须稳定，不能受访问遍历偶然性影响
+4. 模块层不允许伪造与白名单/宿主规则不一致的 `import`
 
 ## 9. 错误与拒绝策略
 
@@ -144,7 +229,7 @@
 - 输入前提不满足 -> 立即失败
 - 成员类型未知 -> 立即失败
 - 复杂初始化器不会写 -> 下沉到 `SemanticWalker`
-- 导入未闭环 -> 不伪造错误的 `import`
+- 导入主链虽然已接通，但若白名单/宿主规则无法给出一致结果，仍应立即失败，不伪造错误的 `import`
 
 也就是说，模块层的鲁棒性来自“边界清晰”，而不是“兜底吞掉不支持成员”。
 
@@ -167,3 +252,5 @@
 4. 是否错误复用了单一 `SemanticModel`
 5. 是否补了对应的 `AstConverterTests`
 6. 若涉及导入，是否同步补了模块头输出链路
+7. 若涉及普通方法重载，是否保持稳定签名 hash 规则
+8. 若涉及构造函数重载，是否仍满足“单 `constructor` + 唯一 arity 分派”约束

@@ -1,7 +1,7 @@
 # RazorVue HMR 设计
 
-> 状态：活跃参考
-> 定位：RazorVue HMR 的预留通道设计参考；不是活跃的实现计划。
+> Status: 活跃参考
+> Positioning: RazorVue HMR 的预留通道设计参考；不是活跃的实现计划。
 
 本文档定义 RazorVue HMR 的设计。
 
@@ -17,9 +17,9 @@
 
 相关文档：
 
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.DenoHostContract.md](./RazorVue.DenoHostContract.md)
-- [RazorVue.ComponentDescriptorSpec.md](./RazorVue.ComponentDescriptorSpec.md)
+- [RazorVue.Design.md](../../../01-目标/razorvue/design/RazorVue.Design.md)
+- [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
+- [RazorVue.ComponentDescriptorSpec.md](../../../01-目标/razorvue/design/RazorVue.ComponentDescriptorSpec.md)
 - [RazorVue.Hmr.HardRules.md](./RazorVue.Hmr.HardRules.md)
 
 ## 1. 目标

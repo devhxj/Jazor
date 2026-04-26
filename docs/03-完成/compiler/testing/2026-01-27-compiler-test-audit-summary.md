@@ -1,5 +1,8 @@
 # 2026-01-27 Compiler Test Audit Summary
 
+> Historical snapshot: this summary only reflects the audit view around 2026-01-27.
+> Any project names, test counts, pass rates, and “已修复 / 已完成” conclusions below should be interpreted in that time context, not as today's repository truth.
+
 ## 来源
 本摘要合并以下历史文档：
 - `TEST_ANALYSIS_REPORT.md`
@@ -22,4 +25,4 @@
 
 ## 当前使用方式
 - 把这组文档视为历史测试审计，而不是当前权威状态页
-- 如果要判断今天的仓库状态，优先看 `docs/status/` 和当前测试运行结果
+- 如果要判断今天的仓库状态，优先看 `docs/03-完成/compiler/status.md`、当前计划文档和实际测试运行结果

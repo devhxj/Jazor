@@ -1,5 +1,8 @@
 # 测试用例添加完成总结
 
+> Historical snapshot: this summary preserves a one-time test-addition result from 2026-01-27.
+> The test totals, pass rate, and rollback notes below reflect that moment's workspace and should not be read as the current compiler test status.
+
 ## 任务完成情况
 
 | 任务 | 状态 | 新增测试数 | 说明 |

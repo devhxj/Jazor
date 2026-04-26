@@ -1,7 +1,7 @@
 # Jolt 文档类型系统
 
-> 状态：已实现
-> 定位：Jolt 内部文档版本管理和文本操作的核心类型，位于 `Jolt.Protocol.Documents` 命名空间
+> Status: 活跃参考
+> Positioning: Jolt 内部文档版本管理和文本操作的核心类型，位于 `Jolt.Protocol.Documents` 命名空间
 
 ## 1. 文档定位
 

@@ -13,6 +13,12 @@
 - 当前工作重点不是重做架构，而是维持主线闭环、控制边界扩张、给外围能力提供稳定依赖面
 - 仓库级文档应该把 compiler 当成"稳定核心"，而不是"当前最混沌的探索区"
 
+更具体地说，当前 compiler 主线已经不是“很多能力还没定路线”，而是：
+
+- 关键 runtime 边界已经明确
+- 若干以前容易摇摆的语义已经从“目标路线”收口为“当前契约”
+- 后续增量工作应优先遵守这些契约，而不是重新打开基础语义形态
+
 ## 当前状态判断
 
 ### 1. 主链路成熟度高
@@ -29,36 +35,49 @@
 - 控制新增能力对主链路的扰动
 - 给 RazorVue、SourceMap、Emit 这些下游 lane 提供稳定上游
 
-### 3. 这轮已经补上对称的 compiler 状态入口
+### 3. 当前已收口的关键路线
+
+这一轮明确下来的，不只是“支持了更多测试”，而是几条长期容易反复的路线已经固定：
+
+- `tuple`：走表达式组合 lowering，保使用点行为，不保 `System.ValueTuple` runtime identity
+- `ref/out`：走 caller/callee 协议模拟，保求值顺序、回写顺序和结果形态
+- `enum`：声明擦除，使用点常量化，运行时按底层标量处理
+- `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact
+- 成员类继承：支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
+- 成员类构造函数重载：单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher
+
+这意味着 compiler 主线现在已经有一套更清晰的“什么必须保、什么可以擦除、什么必须显式失败”的规则，而不是继续在“尽量长得像手写 JS”上摇摆。
+
+### 4. Import 与模块头链路已闭环
+
+之前 import 还是“收集多、落盘少”的风险点。当前这部分已经进入稳定状态：
+
+- `SemanticWalker` 收集 import specifier
+- `SenseArgument` 上浮导入分组
+- `AstConverter` 合并、去重并稳定排序
+- 模块头生成 `ImportDeclaration`
+
+所以 import 不再是当前 compiler 的核心缺口，后续重点更多是保持确定性，不是重新打通主链。
+
+### 5. 这轮已经补上对称的 compiler 状态入口
 
 之前 repo-level 主要是总项目状态和 RazorVue 状态，导致 compiler 虽然成熟，但在仓库级工作流图里不够显眼。本状态页的作用就是把这条断链补起。
 
 ## 下一步行动
 
-### 1. Output closure
+### 1. Catalog / emit contract stability
 
-**目标**：压实 `ESGenerator -> catalog -> output` 闭环
-
-**具体行动**：
-- 避免测试链路和真实输出链路继续分裂
-- 让 generator 输出路径和真实构建产物路径保持一致
-
-**参考文档**：
-- [TransformationRoadmap.md](../../src/Jazor.Compiler/doc/TransformationRoadmap.md)
-- [TransformationClosureChecklist.md](../../src/Jazor.Compiler/doc/TransformationClosureChecklist.md)
-
-### 2. Import closure
-
-**目标**：让 import 从收集阶段进到稳定落盘阶段
+**目标**：压实 `compiler -> catalog -> emit` 边界与物化契约
 
 **具体行动**：
-- 保持 import 命名、去重和顺序稳定
-- 确保 import 语句生成的确定性
+- 避免文档把 compiler 产 catalog 和 emit 写文件混成一个未定义阶段
+- 让 catalog、模块文本与最终物化产物的关系保持一致
 
 **参考文档**：
-- [TransformationRoadmap.md](../../src/Jazor.Compiler/doc/TransformationRoadmap.md)
+- [TransformationRoadmap.md](../../02-计划/compiler/TransformationRoadmap.md)
+- [TransformationClosureChecklist.md](../../02-计划/compiler/TransformationClosureChecklist.md)
 
-### 3. Host semantics seam
+### 2. Host semantics seam
 
 **目标**：稳定 `Inline` / `Compile` 分工
 
@@ -67,18 +86,32 @@
 - 保持 `Inline` 和 `Compile` 的职责清晰分离
 
 **参考文档**：
-- [InlineAstTemplateSpec.md](../../src/Jazor.Compiler/doc/InlineAstTemplateSpec.md)
-- [OpCompileSpec.md](../../src/Jazor.Compiler/doc/OpCompileSpec.md)
-- [OpCompileImplementationChecklist.md](../../src/Jazor.Compiler/doc/OpCompileImplementationChecklist.md)
+- [InlineAstTemplateSpec.md](../../01-目标/compiler/InlineAstTemplateSpec.md)
+- [OpCompileSpec.md](../../01-目标/compiler/OpCompileSpec.md)
+- [OpCompileImplementationChecklist.md](../../02-计划/compiler/OpCompileImplementationChecklist.md)
+
+### 3. Source origin / sourcemap stability
+
+**目标**：把“稳定 emission”从测试便利提升为持续契约
+
+**具体行动**：
+- 保持 temp 名、import alias、source-origin 锚点稳定
+- 避免 traversal-order 影响输出
+- 让 SourceMap 与真实输出链继续对齐，而不是只在测试链路里成立
+
+**参考文档**：
+- [SourceMap.Design.md](../../01-目标/compiler/sourcemap/SourceMap.Design.md)
+- [SourceMap.Overview.md](../../01-目标/compiler/sourcemap/SourceMap.Overview.md)
 
 ## 深度文档
 
 - [Compiler Architecture Bridge](../../01-目标/compiler/architecture.md)
-- [Jazor.Compiler 文档索引](../../src/Jazor.Compiler/doc/README.md)
-- [Jazor.Compiler README](../../src/Jazor.Compiler/README.md)
+- [Compiler 文档索引](../../01-目标/compiler/README.md)
+- [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+- [Jazor.Compiler README](../../../src/Jazor.Compiler/README.md)
 
 ## 当前缺口
 
-- Repo-level 虽然已经新增 compiler 状态快照，但还缺更细的执行镜像
-- 执行导航之前主要由 RazorVue 文档拉动，compiler 的"稳定核心"角色才开始变得显式
-- 还需要持续把 compiler 局部索引里的 active / historical 边界写清楚
+- output / emit / sourcemap 侧还需要继续压实真实构建闭环
+- 宿主语义扩张仍然可能反向污染 compiler 边界，需要持续约束
+- 还需要继续把 compiler 局部文档里的 active / historical 边界写清楚，避免旧阶段表述回流成“当前事实”

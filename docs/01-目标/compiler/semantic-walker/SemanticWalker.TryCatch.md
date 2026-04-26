@@ -348,4 +348,4 @@ try {
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)

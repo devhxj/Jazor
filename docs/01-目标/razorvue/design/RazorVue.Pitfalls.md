@@ -9,7 +9,7 @@
 - [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
 - [RazorVue.Design.md](./RazorVue.Design.md)
 - [RazorVue.HardRules.md](./RazorVue.HardRules.md)
-- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationChecklist.md](../../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
 ## 1. 重新扩展为通用 UI 抽象
 

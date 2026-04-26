@@ -28,7 +28,7 @@
 - `Compile` 只保留给编译器内部必须直接接管的少数特例
 - 能稳定写成 `Inline` 的，不要继续挂 `Import`
 - 但不要为了“去 Import”而手写脆弱模板
-- 只要涉及 tuple 运行时形状、复杂校验、循环、多步副作用、模块 helper 复用，就不要强行塞回 `Inline`
+- 只要涉及 tuple 对象协议/投影规则、复杂校验、循环、多步副作用、模块 helper 复用，就不要强行塞回 `Inline`
 
 ## 判定规则
 
@@ -41,7 +41,7 @@
 - 不需要循环
 - 不需要显式 `throw`
 - 不需要临时变量保存中间状态
-- 不需要手写 tuple 运行时对象形状
+- 不需要手写 tuple 对象协议
 - 不会改变 `toString` / `toJSON` / 第三方可观察语义
 
 补充说明：
@@ -340,7 +340,7 @@
 原因：
 
 - 当前 tuple 在 Jazor 中是编译期语法糖
-- 不能在 `Inline` 模板里手写 tuple 运行时对象形状
+- 不能在 `Inline` 模板里手写 tuple 对象协议
 - 这会把 tuple lowering 规则复制到白名单模板里，后续极难维护
 - 这类成员应该保留 `Import`，或者等 `Compile` 接管 tuple 构造后再迁移
 
@@ -511,7 +511,7 @@
 - `Op.Compile` 主分发已经接入
 - 第一阶段真实条目和测试已经落地
 - 浮点 / 整型 magnitude 家族里，`SingleModule` / `DoubleModule` / `Int16Module` 已按“稳定优先”提前落地为 `Import` helper，并补了针对 `NaN` / `±0` / tie-break 的刻画测试
-- 第二批剩余阻塞点不是“还没接线”，而是 contract 还不能稳定承载带 `throw` / temp / tuple 形状的表达式
+- 第二批剩余阻塞点不是“还没接线”，而是 contract 还不能稳定承载带 `throw` / temp / tuple 对象协议的表达式
 
 ## 当前结论
 

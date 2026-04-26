@@ -1,8 +1,8 @@
 # Transformation Closure Checklist
 
-> Status: Active phase-one implementation artifact.
-> Positioning: Closure checklist for compiler transformation work.
-> Note: Tracks prioritized closure items for the current implementation lane and should be read as execution guidance, not completion proof.
+> Status: 活跃计划
+> Positioning: 编译器转换收口清单，面向当前实现 lane 的执行闭环项。
+> Note: 本页是执行清单，不代表专题已经收束；阶段性进展应写入正文或状态页，而不是借 `Status` 表达完成度。
 
 ## 1. 目标
 
@@ -29,18 +29,18 @@
 
 ## 3. P0 清单
 
-### P0-1 明确 `ESGenerator` 的最终产物策略
+### P0-1 明确 compiler catalog 与 emit 物化边界
 
 现状：
 
-- `AstConverter` 已能生成 AST
-- `ESGenerator` 已生成包含模块内容的 `ModuleCatalog`
-- 但是否直接落盘 `.mjs` 仍不是当前主链路
+- compiler 侧已经稳定产出 AST、模块文本和 `ModuleCatalog`
+- `Jazor.Emit` 已负责 `.mjs` / `.mjs.map` 物化
+- 但旧文档仍会把“compiler 产 catalog”与“emit 写文件”混写成一层
 
 目标：
 
-- 明确 catalog 模式是否就是最终设计
-- 如果不是，则定义 catalog -> 文件产物 的后续闭环层
+- 明确 compiler 的终点是 catalog / carriers，emit 的终点是文件物化
+- 把职责边界写进文档、测试和术语中
 
 完成标准：
 
@@ -83,22 +83,22 @@
 
 ## 4. P1 清单
 
-### P1-1 接入 `Op.Compile` 主分发
+### P1-1 稳定 `Op.Compile` 已接入主分发后的 contract
 
 现状：
 
 - Generator 已生成 `Compile_*` 接口和装配字典
-- `SemanticWalker` 主流程未优先调用 `_whiteListCompiles`
+- `SemanticWalker` 主流程已经优先调用 `_whiteListCompiles`
 - 当前 `Compile(handler, args)` contract 仍偏窄，只适合表达式级钩子
 
 目标：
 
-- 先让表达式级复杂宿主映射脱离模板
+- 锁定“已接入主分发”的真实边界
 - 不把需要 temp/import/source-origin 的 lowering 误塞进当前 contract
 
 完成标准：
 
-- `GetWhiteListExpression` 先尝试 `Compile`
+- `GetWhiteListExpression` 继续先尝试 `Compile`
 - `Compile` 的返回语义和 fallback 语义被测试锁定
 - 至少迁移 1 个真实表达式级条目
 - 需要更强上下文的场景被显式留给下一阶段 contract 扩展
@@ -110,22 +110,22 @@
 - `throw` 不能静默 fallback
 - 详细实施顺序见 [OpCompileImplementationChecklist.md](./OpCompileImplementationChecklist.md)
 
-### P1-2 约束 `Inline` 使用边界
+### P1-2 约束 `Inline` AST 模板使用边界
 
 现状：
 
-- `Inline` 可处理简单映射
-- 复杂参数结构会因“先字符串化再 parse”而脆弱
+- `Inline` 已升级为“模板 AST + 占位符替换 + 缓存复用”
+- 当前主要风险不再是实现机制，而是边界误用
 
 目标：
 
-- 把 `Inline` 升级为 AST 模板实现，并把它限制为简单纯表达式模板
+- 保持 AST 模板实现稳定，并把它限制为简单纯表达式模板
 
 完成标准：
 
-- 旧字符串替换逻辑被移除
+- 旧字符串替换逻辑不再回流
 - 文档中定义禁区
-- 高风险条目迁移到 `Compile`
+- 高风险条目迁移到 `Compile` 或保留 `Import`
 - 有专项测试覆盖对象字面量、逗号表达式、tuple 参数
 
 ### P1-3 修正 `SemanticWalker` 中已确认的语义错位点
@@ -219,15 +219,15 @@
 
 ## 6. 建议执行顺序
 
-### 第一阶段：先闭主链路
+### 第一阶段：先压实主链路与稳定契约
 
-1. `ESGenerator` 真实输出
-2. `Op.Import` 导入闭环
+1. compiler/emit 边界与物化契约
+2. `Op.Import` 导入稳定性
 3. 模块类输入契约强制化
 
 ### 第二阶段：先拆脆弱点
 
-1. 接入 `Op.Compile`
+1. 稳定 `Op.Compile` contract
 2. 收紧 `Inline`
 3. 修复已确认语义错位点
 
@@ -253,11 +253,16 @@
 
 当以下条件同时成立时，才可以说“转化链路基本闭环”：
 
-- 模块入口能真实产出 JavaScript 文件
+- compiler catalog 能被 emit 确定性物化成 JavaScript 文件
 - 白名单的 `Alias` / `Inline` / `Import` / `Compile` 都有清晰边界
 - 复杂宿主映射不再依赖脆弱字符串模板
 - `AstConverter` 与 `SemanticWalker` 的职责边界稳定
 - 新语法加入时有固定落地流程，而不是靠临时特判
+
+补充说明：
+
+- `Import` 的“是否能输出模块头”在当前实现里已经不是待打通问题，而是待稳定问题
+- enum/interface 擦除、成员类继承子集、成员类构造函数 dispatcher 这些能力当前已经进入现状契约，不应再在闭环清单里被表述成“尚未开始”
 
 ---
 

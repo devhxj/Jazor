@@ -1,7 +1,7 @@
 # Razor 设计时代码投影服务
 
-> 状态：已实现
-> 定位：Jazor 文件的 Razor 语法投影与源映射生成核心服务
+> Status: 活跃参考
+> Positioning: Jazor 文件的 Razor 语法投影与源映射生成核心服务
 
 ## 1. 文档定位
 

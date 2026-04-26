@@ -96,7 +96,7 @@
 
 - `SemanticWalker` 只负责收集 import 规格
 - 不应在方法体内部直接伪造 `import`
-- 真正的 `ImportDeclaration` 输出属于模块层闭环
+- `ImportDeclaration` 的模块头输出属于模块层主链，不属于 `SemanticWalker` 责任面
 
 ## 6. 白名单扩展规则
 
@@ -221,4 +221,4 @@
 4. 是否错误使用了字符串模板代替 AST 结构
 5. 是否把“不支持”与“未实现”区分清楚
 6. 是否同步补了对应 `SemanticWalker*Test`
-7. 是否需要新增或更新对应 `doc/SemanticWalker.*.md`
+7. 是否需要新增或更新对应 `semantic-walker/SemanticWalker.*.md`

@@ -1,7 +1,7 @@
 # RazorVue HMR 陷阱
 
-> 状态：活跃参考
-> 定位：未来 RazorVue HMR 工作的预留通道风险参考；不是当前实现进展文档。
+> Status: 活跃参考
+> Positioning: 未来 RazorVue HMR 工作的预留通道风险参考；不是当前实现进展文档。
 
 本文档收集最有可能使 RazorVue HMR 偏离轨道的错误。
 

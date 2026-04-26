@@ -1,8 +1,8 @@
 # RazorVue 首次 PR 计划
 
-> 状态：历史规划产物。
-> 定位：已归档的首次 PR 规划切片，用于早期 RazorVue 推进。
-> 备注：保留本文档作为规划上下文和排序历史；请使用较新的实施状态文档了解当前进展。
+> Status: 历史资料
+> Positioning: 已归档的首次 PR 规划切片，用于早期 RazorVue 推进。
+> Note: 保留本文档作为规划上下文和排序历史；请使用较新的实施状态文档了解当前进展。
 
 本文档将 RazorVue 实现骨架转化为首次交付计划。
 
@@ -11,9 +11,9 @@
 
 相关文档：
 
-- [RazorVue.DecisionSummary.md](./RazorVue.DecisionSummary.md)
-- [RazorVue.Design.md](./RazorVue.Design.md)
-- [RazorVue.HardRules.md](./RazorVue.HardRules.md)
+- [RazorVue.DecisionSummary.md](../../../01-目标/razorvue/design/RazorVue.DecisionSummary.md)
+- [RazorVue.Design.md](../../../01-目标/razorvue/design/RazorVue.Design.md)
+- [RazorVue.HardRules.md](../../../01-目标/razorvue/design/RazorVue.HardRules.md)
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 

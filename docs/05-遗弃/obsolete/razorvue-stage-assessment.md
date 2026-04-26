@@ -123,12 +123,12 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 1. **完成 layering 实现**
    - 收口 phase-one 边界
    - 验证两层级联 helper composition
-   - 参考：[2026-04-05-razorvue-layering-implementation.md](../superpowers/plans/2026-04-05-razorvue-layering-implementation.md)
+   - 后续执行参考已并入：[RazorVue.ImplementationSkeleton.md](../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationSkeleton.md)
 
 2. **完成 lifecycle safe subset 实现**
    - 补齐边界案例
    - 确保生命周期语义在 Vue 侧有安全映射
-   - 参考：[2026-04-05-razorvue-lifecycle-safe-subset-implementation.md](../superpowers/plans/2026-04-05-razorvue-lifecycle-safe-subset-implementation.md)
+   - 后续执行参考已并入：[RazorVue.ImplementationChecklist.md](../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
 **验证标准**：
 - Phase-one 核心场景全部有测试覆盖
@@ -145,7 +145,7 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
    - Library metadata extraction
    - Default library discovery
    - First Vuetify package
-   - 参考：[2026-04-06-razorvue-v1-authoring-roadmap.md](../superpowers/plans/2026-04-06-razorvue-v1-authoring-roadmap.md)
+   - 后续执行参考已并入：[RazorVue.Authoring.ProductDefinition.md](../../01-目标/razorvue/design/RazorVue.Authoring.ProductDefinition.md)
 
 2. **跨过 mid-authoring review gate**
    - 确认 stub-as-truth-source 仍然成立
@@ -164,15 +164,15 @@ RazorVue 当前不是"在编译器里顺手多加一点 Vue 支持"，而是一�
 **具体行动**：
 - 完成 RazorVue bundle chaining 实现
 - 让 writer / manifest / bundler 演进就位
-- 参考：[2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md](../superpowers/plans/2026-04-06-razorvue-sourcemap-bundle-chaining-implementation.md)
+- 后续执行参考已并入：[Phase 2: 编译管道统一 + Source Map](../../02-计划/jolt/phase2-sourcemap.md)
 
 ## 5. 深度文档
 
-- [RazorVue.Overview.md](../../src/Jazor.Compiler/doc/RazorVue.Overview.md)
-- [RazorVue.Design.md](../../src/Jazor.Compiler/doc/RazorVue.Design.md)
-- [RazorVue.ComponentDescriptorSpec.md](../../src/Jazor.Compiler/doc/RazorVue.ComponentDescriptorSpec.md)
-- [RazorVue.DenoHostContract.md](../../src/Jazor.Compiler/doc/RazorVue.DenoHostContract.md)
-- [RazorVue.ImplementationChecklist.md](../../src/Jazor.Compiler/doc/RazorVue.ImplementationChecklist.md)
+- [RazorVue.Overview.md](../../01-目标/razorvue/design/RazorVue.Overview.md)
+- [RazorVue.Design.md](../../01-目标/razorvue/design/RazorVue.Design.md)
+- [RazorVue.ComponentDescriptorSpec.md](../../01-目标/razorvue/design/RazorVue.ComponentDescriptorSpec.md)
+- [RazorVue.DenoHostContract.md](../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
+- [RazorVue.ImplementationChecklist.md](../../02-计划/jolt/razorvue-implementation/RazorVue.ImplementationChecklist.md)
 
 ## 6. 当前风险
 

@@ -1,7 +1,7 @@
 # 扩展 Worker 进程
 
-> 状态：已实现
-> 定位：进程隔离扩展的 JSON-RPC 宿主服务器
+> Status: 活跃参考
+> Positioning: 进程隔离扩展的 JSON-RPC 宿主服务器
 
 ## 1. 文档定位
 

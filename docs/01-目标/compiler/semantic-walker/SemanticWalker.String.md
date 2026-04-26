@@ -287,4 +287,4 @@ let formatted = `Pi: ${pi}`;
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 - [SemanticWalker.WhiteList.md](./SemanticWalker.WhiteList.md)
-- [InlineAstTemplateSpec.md](./InlineAstTemplateSpec.md)
+- [InlineAstTemplateSpec.md](../InlineAstTemplateSpec.md)

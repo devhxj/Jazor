@@ -1,7 +1,7 @@
 # Virtual Documents - Model and Registry
 
-> 状态：已实现
-> 定位：Jolt LSP 服务器的核心抽象，用于处理源文档（如 .jazor）到投影文档（如 .cs、.vue）的多文档映射
+> Status: 活跃参考
+> Positioning: Jolt LSP 服务器的核心抽象，用于处理源文档（如 .jazor）到投影文档（如 .cs、.vue）的多文档映射
 
 ## 1. 文档定位
 

@@ -194,4 +194,4 @@ WriteInterpolated($"Hello {name}");
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Invalid.md](./SemanticWalker.Invalid.md)
 - [SemanticWalker.Pattern.md](./SemanticWalker.Pattern.md)
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)

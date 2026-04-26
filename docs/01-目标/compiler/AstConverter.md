@@ -14,7 +14,8 @@
 INamedTypeSymbol + SemanticModel
     -> AstConverter
     -> Acornima Module
-    -> ESGenerator 收集为模块目录表
+    -> ESGenerator 收集为 module catalog / source map carriers
+    -> Jazor.Emit 物化为文件
 ```
 
 所以 `AstConverter` 不直接负责增量生成器生命周期，也不负责方法体内部细节 lowering；后者主要委托给 `SemanticWalker`。
@@ -85,10 +86,11 @@ INamedTypeSymbol + SemanticModel
 
 ### 5. 嵌套成员类 / 枚举
 
-当前 `AstConverter` 支持把模块内部的非静态成员类和枚举转换出来：
+当前 `AstConverter` 支持把模块内部的非静态成员类转换出来；枚举和接口则按“只保编译期角色，不发射 runtime declaration”处理：
 
 - 成员类 -> `ClassDeclaration`
-- 成员枚举 -> `const` + `Object.freeze(...)`
+- 成员枚举 -> 不发射模块级声明对象，使用点由 `SemanticWalker` 常量化
+- 成员接口 -> 不发射 runtime declaration
 
 成员类内部又支持：
 
@@ -96,8 +98,15 @@ INamedTypeSymbol + SemanticModel
 - 属性（拆成 backing field + getter/setter）
 - 构造函数
 - 普通方法
+- 同模块成员类继承的受控子集：`extends`、显式 `: base(...)` 到 `super(...)`、无显式构造函数时合成 `super()`
+- 构造函数重载的受控子集：单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` 分派
 
 这和旧文档里“不支持嵌套类扁平化”的说法也不同。当前实现不是扁平化，而是直接生成模块内类声明。
+
+但这里必须额外强调两个方向约束：
+
+- interface 一律不应发射 runtime artifact，它只是一种契约；
+- 继承如果要支持，必须真的输出 `extends` / `super` 相关语义，不能静默擦除。
 
 ### 6. `ref` / `out` 返回协议包装
 
@@ -132,7 +141,7 @@ INamedTypeSymbol + SemanticModel
 - 嵌入资源
 - 运行时模块对象
 
-最终如何收集和暴露模块内容，由 `ESGenerator` 负责。
+后续如何把 AST 序列化为文本、收集进 catalog，并最终物化为文件，分别由 writer / `ESGenerator` / `Jazor.Emit` 负责。
 
 ### 2. import 由 walker 收集、由 converter 提升
 
@@ -141,9 +150,9 @@ INamedTypeSymbol + SemanticModel
 1. `SemanticWalker` 在方法 / 表达式转换中登记 import specifier
 2. `SenseArgument.FlushImportSpecifiers()`
 3. `AstConverter.MergeImports(...)`
-4. `BuildImportDeclarations()` 生成模块级 `ImportDeclaration`
+4. `BuildImportDeclarations()` 生成模块头 `ImportDeclaration`
 
-这说明 import 收集不是旧文档里说的“未实际使用”，当前已经接通。
+这说明 import 收集不是旧文档里说的“未实际使用”，当前主链已经接通；后续重点是稳定去重、排序和别名策略。
 
 ### 3. 顶层属性不直接走 `IPropertySymbol`
 
@@ -156,17 +165,40 @@ INamedTypeSymbol + SemanticModel
 
 而不是单独的“模块属性转换器”。
 
-### 4. 成员类支持实例构造函数，但不支持静态构造函数
+### 4. 成员类方法重载与构造函数重载走不同路线
+
+普通成员方法仍然可以通过“不同 JS 成员名”展开：
+
+- 默认名字统一走 `Util.GetConfigOrSymbolName(...)`
+- 只有在确实存在同名方法重载时，才追加稳定签名 hash
+- ECMAScript runtime host 上的方法默认跳过重载后缀，避免把宿主 API 人为拆裂
+
+构造函数不能这样处理，因为 JS class 运行时只允许一个真实 `constructor`。
+
+因此当前成员类构造函数重载固定为：
+
+- 一个真实 `constructor`
+- 零个或多个 `$ctor_<hash>` helper method
+- `constructor` 内按 `arguments.length` 分派
+- 命中分支后补齐该 overload 自身的 optional 默认值
+- 派生类分支里先 `super(...)`，再调用 helper
+
+### 5. 成员类支持实例构造函数，但不支持静态构造函数
 
 当前代码显式支持成员类实例构造函数：
 
 - `ConvertMemberConstructor(...)`
+- `ConvertMemberConstructorDispatcher(...)`
+- `ConvertMemberConstructorHelper(...)`
 
 但显式拒绝：
 
 - 模块静态构造函数
 - 成员类静态构造函数
-- 带 constructor initializer 的成员类构造函数
+- `this(...)` 构造函数链
+- 不能按参数个数唯一分派的构造函数 overload 集
+- `ref/out/in/params` 参与的构造函数分派
+- 外部基类上的构造函数协议模拟
 
 ## 现状与典型结果
 
@@ -226,25 +258,118 @@ export class NestedClass {
 }
 ```
 
-### 枚举
+### 构造函数重载
 
-当前模块内枚举会生成：
-
-```js
-const EnumName = Object.freeze({ ... });
+```csharp
+public static class TestClass
+{
+    public class NestedClass
+    {
+        public int Value;
+        public NestedClass() { }
+        public NestedClass(int value) { Value = value; }
+    }
+}
 ```
 
-必要时再包上 named export。
+```js
+export class NestedClass {
+  Value;
+  constructor() {
+    let $args = arguments;
+    if ($args.length === 0) {
+      this.$ctor_<hash0>();
+      return;
+    }
+    if ($args.length === 1) {
+      let value = $args[0];
+      this.$ctor_<hash1>(value);
+      return;
+    }
+    throw new Error("No matching constructor overload for NestedClass.");
+  }
+  $ctor_<hash0>() { }
+  $ctor_<hash1>(value) {
+    this.Value = value;
+  }
+}
+```
+
+这里的 `<hash0>` / `<hash1>` 表示基于构造函数签名生成的稳定后缀。  
+重点不是 helper 的外观，而是：
+
+- 真实 `constructor` 始终只有一个
+- helper 名稳定
+- overload 选择结果稳定
+- 默认值补齐与 `super(...)` 调用都留在明确分支里
+
+### 成员类继承
+
+```csharp
+public static class TestClass
+{
+    public class BaseClass
+    {
+        public virtual int Value() => 1;
+    }
+
+    public class NestedClass : BaseClass
+    {
+        public override int Value() => base.Value() + 1;
+    }
+}
+```
+
+```js
+export class BaseClass {
+  Value() {
+    return 1;
+  }
+}
+export class NestedClass extends BaseClass {
+  constructor() {
+    super();
+  }
+  Value() {
+    return super.Value() + 1;
+  }
+}
+```
+
+### 枚举
+
+当前路线下，模块内 `enum` declaration 本身不再被当成一个独立 JS 输出对象。
+
+也就是说：
+
+- `AstConverter` 不负责为它生成 runtime declaration
+- `SemanticWalker` 负责把使用点改写成底层常量或标量表达式
+- 任何依赖名字语义、反射语义或 `System.Enum` 家族 API 的能力都必须单独建模
+
+因此 `enum` 的长期和当前实现方向现在是一致的：
+
+- enum declaration = 编译期值域类型声明
+- enum member usage = 底层常量
+- enum typed runtime value = 标量值
+
+这条路线的直接含义是：
+
+- `AstConverter` 不承担 enum runtime declaration 发射；
+- `SemanticWalker` 应承担 `E.A`、`default(E)`、比较、`switch`、`Flags` 位运算等使用点 lowering；
+- 任何依赖枚举名字语义的能力，例如 `System.Enum` 家族 API、按名字格式化、反射式取值，都必须显式建模，否则默认失败。
 
 ## 当前边界
 
 这部分当前已经解决的是：
 
 - 顶层模块类型转 `Module`
-- 字段、方法、成员类、枚举
+- 字段、方法、成员类
+- enum / interface declaration 擦除
 - import 提升
 - 自动属性 getter/setter 生成
 - `ref` / `out` 返回协议
+- 同模块成员类继承的 `extends` / `super(...)` / `super.member` 子集
+- 成员类构造函数重载 dispatcher
 
 它没有试图做这些事情：
 
@@ -253,6 +378,23 @@ const EnumName = Object.freeze({ ... });
 - 支持模块静态构造函数
 - 支持所有成员种类（例如事件、委托等）
 - 直接产出最终 `.mjs` 文件
+
+文件物化边界仍然是：
+
+- `AstConverter` 负责模块级 AST
+- writer / `ESGenerator` 负责文本与 catalog carriers
+- `Jazor.Emit` 负责 `.mjs` / `.mjs.map` 与 manifest 物化
+
+它当前仍然显式拒绝这些路径：
+
+- `this(...)` 构造函数链
+- `base.Field`
+- 外部基类
+- 不能按参数个数唯一分派的构造函数 overload
+- `ref/out/in/params` 驱动的构造函数分派
+- 任何仍依赖 CLR metadata identity 的 class runtime 语义
+
+因此当前实现最需要避免的不是“支持少”，而是“把未打通语义伪装成已支持”。对不在支持子集内的成员类继承或构造函数协议，直接失败比生成看似可运行、实际语义错误的 class shape 更正确。
 
 ## 相关测试
 
@@ -268,19 +410,23 @@ const EnumName = Object.freeze({ ... });
 - `Convert_ClassWithMethod_GeneratesFunctionDeclaration`
 - `Convert_ClassWithProperty_GeneratesPropertyMethods`
 - `Convert_ClassWithNestedClass_GeneratesClassDeclaration`
+- `Convert_ClassWithNestedClassMultipleInstanceConstructors_GeneratesDispatcher`
+- `Convert_ClassWithNestedClassConstructorOverloadsWithOptionalParameterOverlap_ThrowsNotSupportedException`
+- `Convert_ClassWithNestedClassBaseConstructorInitializer_GeneratesSuperCall`
+- `Convert_ClassWithNestedClassBaseMethodCall_GeneratesSuperInvocation`
 
 ## 推荐阅读
 
 建议按这个顺序看：
 
-1. [SemanticWalker.md](./SemanticWalker.md)
+1. [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
 2. [AstConverter.md](./AstConverter.md)
-3. [WalkerArgument.md](./WalkerArgument.md)
+3. [WalkerArgument.md](./semantic-walker/WalkerArgument.md)
 4. [ESGenerator.md](./ESGenerator.md)
 
 ## 相关文档
 
-- [SemanticWalker.md](./SemanticWalker.md)
-- [WalkerArgument.md](./WalkerArgument.md)
+- [SemanticWalker.md](./semantic-walker/SemanticWalker.md)
+- [WalkerArgument.md](./semantic-walker/WalkerArgument.md)
 - [ESGenerator.md](./ESGenerator.md)
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)

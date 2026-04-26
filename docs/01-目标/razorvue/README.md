@@ -1,5 +1,9 @@
 # RazorVue — 库模式
 
+> Status: 活跃参考
+> Positioning: `RazorVue` 库模式设计入口，覆盖当前编译时 Razor-to-JS 路线及其库创作边界。
+> Note: `RazorVue` 是库模式，不是当前主线宿主；如果你关注开发时边界、HMR、LSP、调试或构建宿主，请切到 `Jolt` 文档组。
+
 > 对应源码：`src/Jazor.RazorVue/`、`src/Jazor.RazorVue.Analysis/`、`src/Jazor.RazorVue.Vuetify/`
 
 ## 为什么需要

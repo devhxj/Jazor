@@ -1,7 +1,7 @@
 # RazorVue 库创作设计
 
-> 状态：活跃参考
-> 定位：RazorVue 中活跃库创作车道的设计参考。
+> Status: 活跃参考
+> Positioning: RazorVue 中活跃库创作车道的设计参考。
 
 ## 1. 目的
 

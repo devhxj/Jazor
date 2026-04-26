@@ -265,4 +265,4 @@ do {
 - [SemanticWalker.md](./SemanticWalker.md)
 - [SemanticWalker.Ordinary.md](./SemanticWalker.Ordinary.md)
 - [SemanticWalker.Declaration.md](./SemanticWalker.Declaration.md)
-- [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
+- [SyntaxTransformationPipeline.md](../SyntaxTransformationPipeline.md)
