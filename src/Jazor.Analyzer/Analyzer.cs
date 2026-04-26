@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using Jazor.Common;
 using Jazor.Compiler;
 using Jazor.RazorVue;
 using Jazor.Name;
@@ -15,9 +16,10 @@ namespace Jazor.Analyzer;
 /// </summary>
 /// <remarks>
 /// 约定“ES特性”包括 <b>[ECMAScript]</b>、<b>[ECMAScriptModule]</b>，同时约定只诊断被“ES特性”标记的类，不考虑“ES特性”的来源
-/// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型，白名单只是检查名称，忽略泛型</para>
-/// <para>2、支持成员：被ES特性标注的类型的成员都可以使用，其余需要匹配白名单中的构造函数、字段、属性、方法、索引器</para>
-/// <para>3、成员白名单中的属性匹配，只是检查属性名，get和set不检查，不限制，方法名称检查忽略泛型，只检查纯名称</para>
+/// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型</para>
+/// <para>2、分析器对泛型实参、数组元素类型、局部推断类型、集合表达式等擦除位置做严格入口诊断；若出现闭合的外部具体类型，要求该类型本身受支持</para>
+/// <para>3、分析器不追踪类型参数 T 的真实来源；类型参数本身允许通过，等到具体运行时敏感的类型或成员用法再诊断</para>
+/// <para>4、支持成员：被ES特性标注的类型的成员都可以使用，其余需要匹配白名单中的构造函数、字段、属性、方法、索引器</para>
 /// <para>4、“ES特性”只能标记最外层的类、接口、枚举、委托等</para>
 /// <para>5、“ES特性”标记的类中不能使用事件</para>
 /// <para>6、“ES特性”标记的类中不能使用析构函数</para>
@@ -29,11 +31,11 @@ namespace Jazor.Analyzer;
 public partial class Analyzer : DiagnosticAnalyzer
 {
 	private const string Attribute = "Attribute";
-	private const string ECMAScriptAttribute = "ECMAScriptAttribute";
-	private const string ECMAScriptModuleAttribute = "ECMAScriptModuleAttribute";
 	private const string DiagnosticId = "JAZOR001";
+	private const string AmbiguousRuntimeTypeFilterDiagnosticId = "JAZOR002";
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
+	private const string AmbiguousRuntimeTypeFilterMessageFormat = "[{0}] cannot be used for {1} because runtime alias '{2}' is shared with incompatible supported types: {3}";
 	private const string Category = "Security";
 
 	/// <summary>
@@ -50,10 +52,18 @@ public partial class Analyzer : DiagnosticAnalyzer
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
 
+	private static readonly DiagnosticDescriptor AmbiguousRuntimeTypeFilterRule = new(
+		AmbiguousRuntimeTypeFilterDiagnosticId,
+		Title,
+		AmbiguousRuntimeTypeFilterMessageFormat,
+		Category,
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
 	/// <summary>
 	/// <inheritdoc/>
 	/// </summary>
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule];
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, AmbiguousRuntimeTypeFilterRule];
 
 	public override void Initialize(AnalysisContext context)
 	{
@@ -92,21 +102,30 @@ public partial class Analyzer : DiagnosticAnalyzer
 				OperationKind.FieldInitializer,//obj.myField = 1
 				OperationKind.PropertyInitializer, //obj.MyProperty = 1
 				OperationKind.ParameterInitializer,//obj.MyMethod(myParam = 1)
+				OperationKind.VariableDeclarationGroup,//var value = expr
 				OperationKind.ObjectCreation,//new MyClass()
 				OperationKind.ArrayCreation,//new MyType[10]
+				OperationKind.CollectionExpression,//[]
 				OperationKind.DelegateCreation,//new Action(MyMethod)
 				OperationKind.Invocation,//obj.MyMethod()
 				OperationKind.FieldReference,//obj.myField
 				OperationKind.PropertyReference,//obj.MyProperty
 				OperationKind.MethodReference,//Action myAction = obj.MyMethod;
+				OperationKind.IsType,//value is SomeType
+				OperationKind.IsPattern,//value is SomePattern
+				OperationKind.Switch,//switch with pattern cases
+				OperationKind.SwitchExpression,//value switch { SomePattern => ... }
+				OperationKind.CatchClause,//catch (SomeType ex)
 				OperationKind.TypeOf,//typeof(MyClass)
 				OperationKind.Conversion,//(MyType)obj
 				OperationKind.ConditionalAccess,//obj?.MyMethod()
+				OperationKind.DefaultValue,//default(MyType)
 				OperationKind.Await,//await task
 				OperationKind.Using, //using var obj = new MyDisposable()
 				OperationKind.EventReference,// obj.MyEvent += MyHandler
 				OperationKind.EventAssignment,// obj.MyEvent = MyHandler
-				OperationKind.AnonymousFunction);// 注册 Lambda
+				OperationKind.AnonymousFunction,// Lambda
+				OperationKind.LocalFunction);// local function
 
 			// 检查类成员定义中使用的类型
 			startContext.RegisterSymbolEndAction(AnalysisSymbolEndAction);
@@ -132,30 +151,249 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 		return current
 			.GetAttributes()
-			.Any(a => a.AttributeClass?.Name == ECMAScriptAttribute || a.AttributeClass?.Name == ECMAScriptModuleAttribute);
+			.Any(a => Util.IsECMAScriptSupportMarkerAttribute(a.AttributeClass));
 	}
 
 	private static bool HasECMAScriptAttribute(ITypeSymbol typeSymbol)
 		=> typeSymbol.GetAttributes()
-			.Any(a => a.AttributeClass?.Name == ECMAScriptAttribute || a.AttributeClass?.Name == ECMAScriptModuleAttribute);
+			.Any(a => Util.IsECMAScriptSupportMarkerAttribute(a.AttributeClass));
+
+	private static bool IsWhiteListedType(ITypeSymbol typeSymbol)
+		=> WhiteListLookup.TryGetValue(
+			WhiteList.Types,
+			typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat),
+			out _,
+			out _);
+
+	private static bool IsWhiteListedMember(ISymbol symbol)
+		=> WhiteListLookup.TryGetValue(WhiteList.Members, symbol, out _, out _);
 
 	private static bool IsWhiteListedProperty(IPropertySymbol property)
 	{
-		if (WhiteList.Members.ContainsKey(property.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+		if (IsWhiteListedMember(property))
 			return true;
 
-		if (property.GetMethod is not null &&
-			WhiteList.Members.ContainsKey(property.GetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+		if (property.GetMethod is not null && IsWhiteListedMember(property.GetMethod))
 			return true;
 
-		if (property.SetMethod is not null &&
-			WhiteList.Members.ContainsKey(property.SetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+		if (property.SetMethod is not null && IsWhiteListedMember(property.SetMethod))
 			return true;
 
 		return false;
 	}
-	
-	private static void CheckType(Action<Diagnostic> report, ITypeSymbol? typeSymbol,Location location)
+
+	private static bool TryGetClassLikeRuntimeAlias(ITypeSymbol typeSymbol, out string runtimeAlias)
+	{
+		if (typeSymbol is null ||
+			!WhiteListLookup.TryGetValue(
+				WhiteList.Types,
+				typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat),
+				out _,
+				out var entry) ||
+			entry.Op != Op.Alias ||
+			string.IsNullOrWhiteSpace(entry.Value))
+		{
+			runtimeAlias = string.Empty;
+			return false;
+		}
+
+		runtimeAlias = entry.Value!;
+		return runtimeAlias is not ("String" or "Object" or "Array" or "Number" or "Date" or "BigInt" or "Map" or "Set" or "Boolean");
+	}
+
+	private static void CheckAmbiguousRuntimeTypeFilter(
+		Action<Diagnostic> report,
+		Compilation compilation,
+		ITypeSymbol? typeSymbol,
+		Location location,
+		string usage)
+	{
+		if (typeSymbol is null ||
+			!TryGetClassLikeRuntimeAlias(typeSymbol, out var runtimeAlias))
+			return;
+
+		var targetDisplayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		var targetErasedDisplayName = EraseGenericDisplayArguments(targetDisplayName);
+		var conflicts = WhiteList.Types
+			.Where(static pair => pair.Value.Op == Op.Alias)
+			.Where(pair => string.Equals(pair.Value.Value, runtimeAlias, StringComparison.Ordinal))
+			.Where(pair => !string.Equals(pair.Key, targetDisplayName, StringComparison.Ordinal))
+			.Where(pair => !string.Equals(EraseGenericDisplayArguments(pair.Key), targetErasedDisplayName, StringComparison.Ordinal))
+			.Where(pair =>
+			{
+				var candidateType = TryResolveWhiteListAliasType(compilation, pair.Key);
+				return candidateType is null || !IsRuntimeAliasAssignableToTarget(candidateType, typeSymbol);
+			})
+			.Select(static pair => pair.Key)
+			.OrderBy(static name => name, StringComparer.Ordinal)
+			.ToArray();
+
+		if (conflicts.Length == 0)
+			return;
+
+		report(Diagnostic.Create(
+			AmbiguousRuntimeTypeFilterRule,
+			location,
+			targetDisplayName,
+			usage,
+			runtimeAlias,
+			string.Join(", ", conflicts)));
+	}
+
+	private static void CheckAmbiguousRuntimePattern(
+		Action<Diagnostic> report,
+		Compilation compilation,
+		IPatternOperation? pattern,
+		Location location)
+	{
+		if (pattern is null)
+			return;
+
+		switch (pattern)
+		{
+			case IDeclarationPatternOperation declarationPattern:
+				CheckAmbiguousRuntimeTypeFilter(report, compilation, declarationPattern.MatchedType, location, "type checks");
+				break;
+			case ITypePatternOperation typePattern:
+				CheckAmbiguousRuntimeTypeFilter(report, compilation, typePattern.MatchedType, location, "type checks");
+				break;
+			case IRecursivePatternOperation recursivePattern:
+				if (recursivePattern.MatchedType is ITypeSymbol matchedType &&
+					!matchedType.IsAnonymousType &&
+					!matchedType.IsTupleType &&
+					matchedType.SpecialType != SpecialType.System_Object)
+				{
+					CheckAmbiguousRuntimeTypeFilter(report, compilation, matchedType, location, "type checks");
+				}
+
+				foreach (var subpattern in recursivePattern.DeconstructionSubpatterns)
+					CheckAmbiguousRuntimePattern(report, compilation, subpattern, location);
+
+				foreach (var subpattern in recursivePattern.PropertySubpatterns)
+					CheckAmbiguousRuntimePattern(report, compilation, subpattern.Pattern, location);
+				break;
+			case IBinaryPatternOperation binaryPattern:
+				CheckAmbiguousRuntimePattern(report, compilation, binaryPattern.LeftPattern, location);
+				CheckAmbiguousRuntimePattern(report, compilation, binaryPattern.RightPattern, location);
+				break;
+			case INegatedPatternOperation negatedPattern:
+				CheckAmbiguousRuntimePattern(report, compilation, negatedPattern.Pattern, location);
+				break;
+			case IListPatternOperation listPattern:
+				foreach (var subpattern in listPattern.Patterns)
+					CheckAmbiguousRuntimePattern(report, compilation, subpattern, location);
+				break;
+			case ISlicePatternOperation slicePattern:
+				CheckAmbiguousRuntimePattern(report, compilation, slicePattern.Pattern, location);
+				break;
+		}
+	}
+
+	private static ITypeSymbol? TryResolveWhiteListAliasType(Compilation compilation, string displayName)
+	{
+		return displayName switch
+		{
+			"bool" => compilation.GetSpecialType(SpecialType.System_Boolean),
+			"byte" => compilation.GetSpecialType(SpecialType.System_Byte),
+			"char" => compilation.GetSpecialType(SpecialType.System_Char),
+			"decimal" => compilation.GetSpecialType(SpecialType.System_Decimal),
+			"double" => compilation.GetSpecialType(SpecialType.System_Double),
+			"float" => compilation.GetSpecialType(SpecialType.System_Single),
+			"int" => compilation.GetSpecialType(SpecialType.System_Int32),
+			"long" => compilation.GetSpecialType(SpecialType.System_Int64),
+			"object" => compilation.GetSpecialType(SpecialType.System_Object),
+			"sbyte" => compilation.GetSpecialType(SpecialType.System_SByte),
+			"short" => compilation.GetSpecialType(SpecialType.System_Int16),
+			"string" => compilation.GetSpecialType(SpecialType.System_String),
+			"uint" => compilation.GetSpecialType(SpecialType.System_UInt32),
+			"ulong" => compilation.GetSpecialType(SpecialType.System_UInt64),
+			"ushort" => compilation.GetSpecialType(SpecialType.System_UInt16),
+			_ => compilation.GetTypeByMetadataName(displayName)
+		};
+	}
+
+	private static bool IsRuntimeAliasAssignableToTarget(ITypeSymbol candidateType, ITypeSymbol targetType)
+	{
+		if (SymbolEqualityComparer.Default.Equals(candidateType.OriginalDefinition, targetType.OriginalDefinition))
+			return true;
+
+		if (candidateType is not INamedTypeSymbol namedCandidate)
+			return false;
+
+		for (var current = namedCandidate.BaseType; current is not null; current = current.BaseType)
+		{
+			if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, targetType.OriginalDefinition))
+				return true;
+		}
+
+		foreach (var @interface in namedCandidate.AllInterfaces)
+		{
+			if (SymbolEqualityComparer.Default.Equals(@interface.OriginalDefinition, targetType.OriginalDefinition))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static string EraseGenericDisplayArguments(string displayName)
+	{
+		if (displayName.IndexOf('<') < 0)
+			return displayName;
+
+		var builder = new System.Text.StringBuilder(displayName.Length);
+		var depth = 0;
+		foreach (var ch in displayName)
+		{
+			if (ch == '<')
+			{
+				depth++;
+				continue;
+			}
+
+			if (ch == '>')
+			{
+				if (depth > 0)
+					depth--;
+				continue;
+			}
+
+			if (depth == 0)
+				builder.Append(ch);
+		}
+
+		return builder.ToString();
+	}
+
+	private static void CheckDirectType(Action<Diagnostic> report, ITypeSymbol typeSymbol, Location location)
+	{
+		var fullName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (IsWhiteListedType(typeSymbol))
+			return;
+
+		if (!InECMAScriptAttribute(typeSymbol.OriginalDefinition))
+			report(Diagnostic.Create(Rule, location, fullName));
+	}
+
+	private static void CheckMethodSignature(Action<Diagnostic> report, IMethodSymbol method, Location location)
+	{
+		if (method.MethodKind != MethodKind.Constructor)
+			CheckType(report, method.ReturnType, location);
+
+		foreach (var param in method.Parameters)
+			CheckType(report, param.Type, GetLocation(param.Locations));
+
+		foreach (var typeParam in method.TypeParameters)
+			foreach (var constraint in typeParam.ConstraintTypes)
+				CheckType(report, constraint, GetLocation(typeParam.Locations));
+	}
+
+	private static void CheckTypeArguments(Action<Diagnostic> report, ImmutableArray<ITypeSymbol> typeArguments, Location location)
+	{
+		foreach (var typeArgument in typeArguments)
+			CheckType(report, typeArgument, location);
+	}
+
+	private static void CheckType(Action<Diagnostic> report, ITypeSymbol? typeSymbol, Location location)
 	{
 		// 允许枚举、接口、委托、匿名类型、抽象类、特性、类型参数
 		if (typeSymbol is null ||
@@ -164,8 +402,6 @@ public partial class Analyzer : DiagnosticAnalyzer
 			typeSymbol.TypeKind == TypeKind.Delegate ||
 			typeSymbol.IsAnonymousType ||
 			typeSymbol.IsAbstract ||
-			typeSymbol.Name == ECMAScriptAttribute ||
-			typeSymbol.Name == ECMAScriptModuleAttribute ||
 			IsAttribute(typeSymbol) ||
 			typeSymbol is ITypeParameterSymbol)
 			return;
@@ -173,11 +409,11 @@ public partial class Analyzer : DiagnosticAnalyzer
 		if (typeSymbol is IArrayTypeSymbol arrayType)
 		{
 			// 默认支持数组类型，不检查数组类型，只递归检查其元素类型
-			// 只检查元素类型
 			CheckType(report, arrayType.ElementType, location);
 			return;
 		}
-		else if (typeSymbol is INamedTypeSymbol namedType)
+
+		if (typeSymbol is INamedTypeSymbol namedType)
 		{
 			if (namedType.IsTupleType)
 			{
@@ -187,10 +423,11 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 				return;
 			}
-			else if (namedType.IsGenericType)
+
+			if (namedType.IsGenericType)
 			{
-				// 泛型需要检查所有参数的类型，如果类型也是泛型，会在CheckType递归中检查
-				// 如果是泛型类型，检查所有泛型参数类型，此处不需要检查嵌套的外层类型
+				CheckDirectType(report, namedType.OriginalDefinition, location);
+
 				foreach (var typeArg in namedType.TypeArguments)
 					CheckType(report, typeArg, location);
 
@@ -198,15 +435,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			}
 		}
 
-		// 允许白名单中的类型
-		var fullName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Types.ContainsKey(fullName))
-			return;
-
-		// 只要是被[ECMAScript]标记的类型就允许使用
-		// 不用再判断自身类型，因为肯定是被标记的类型
-		if (!InECMAScriptAttribute(typeSymbol.OriginalDefinition))
-			report(Diagnostic.Create(Rule, location, fullName));
+		CheckDirectType(report, typeSymbol.OriginalDefinition, location);
 	}
 
 	private static void AnalysisOperationAction(OperationAnalysisContext ctx)
@@ -237,22 +466,34 @@ public partial class Analyzer : DiagnosticAnalyzer
 					CheckType(ctx.ReportDiagnostic, initializer.Value.Type, initializer.Syntax.GetLocation());
 				}
 				break;
+			case OperationKind.VariableDeclarationGroup:
+				{
+					var group = (IVariableDeclarationGroupOperation)ctx.Operation;
+					foreach (var declaration in group.Declarations)
+					{
+						foreach (var declarator in declaration.Declarators)
+						{
+							if (declarator.Symbol is not null)
+								CheckType(ctx.ReportDiagnostic, declarator.Symbol.Type, GetLocation(declarator.Symbol.Locations));
+						}
+					}
+				}
+				break;
 			case OperationKind.ObjectCreation:
 				{
 					var creation = (IObjectCreationOperation)ctx.Operation;
 					var type = creation.Type!;
+					var location = creation.Syntax.GetLocation();
+					CheckType(ctx.ReportDiagnostic, type, location);
 					// 特性和[ECMAScript]标注类型不需要检查
 					if (!IsAttribute(type) && !InECMAScriptAttribute(type))
 					{
-						var location = creation.Syntax.GetLocation();
-						CheckType(ctx.ReportDiagnostic, type, location);
 						// 添加构造函数检查
 						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(Format.NameFormat);
-						if (!WhiteList.Members.ContainsKey(ctorKey))
+						if (!IsWhiteListedMember(creation.Constructor))
 							ctx.ReportDiagnostic(Diagnostic.Create(Rule,
 								location,
 								ctorKey));
-								//creation.Constructor!.ToDisplayString()));
 					}
 				}
 				break;
@@ -261,6 +502,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var creation = (IArrayCreationOperation)ctx.Operation;
 					if (creation.Type is IArrayTypeSymbol arrayType)
 						CheckType(ctx.ReportDiagnostic, arrayType.ElementType, creation.Syntax.GetLocation());
+				}
+				break;
+			case OperationKind.CollectionExpression:
+				{
+					var collection = (ICollectionExpressionOperation)ctx.Operation;
+					CheckType(ctx.ReportDiagnostic, collection.Type, collection.Syntax.GetLocation());
 				}
 				break;
 			//case OperationKind.DelegateCreation:
@@ -278,11 +525,13 @@ public partial class Analyzer : DiagnosticAnalyzer
 						invocation.TargetMethod.ContainingType.TypeKind == TypeKind.Delegate)
 						return;
 
+					CheckTypeArguments(ctx.ReportDiagnostic, invocation.TargetMethod.TypeArguments, invocation.Syntax.GetLocation());
+
 					if (InECMAScriptAttribute(invocation.TargetMethod.ContainingType))
 						return;
 
 					var key = invocation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
-					if (WhiteList.Members.ContainsKey(key))
+					if (IsWhiteListedMember(invocation.TargetMethod))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -296,7 +545,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 枚举字段、特性、白名单内不检查
 					if (operation.Field.ContainingType.TypeKind == TypeKind.Enum ||
 						InECMAScriptAttribute(operation.Field.ContainingType) ||
-						WhiteList.Members.ContainsKey(operation.Field.OriginalDefinition.ToDisplayString(Format.NameFormat)))
+						IsWhiteListedMember(operation.Field))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -327,7 +576,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 
 					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-					if (WhiteList.Members.ContainsKey(key))
+					if (IsWhiteListedMember(operation.Method))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -335,11 +584,78 @@ public partial class Analyzer : DiagnosticAnalyzer
 						key));
 				}
 				break;
+			case OperationKind.IsType:
+				{
+					var operation = (IIsTypeOperation)ctx.Operation;
+					CheckAmbiguousRuntimeTypeFilter(
+						ctx.ReportDiagnostic,
+						ctx.Compilation,
+						operation.TypeOperand,
+						operation.Syntax.GetLocation(),
+						"type checks");
+				}
+				break;
+			case OperationKind.IsPattern:
+				{
+					var operation = (IIsPatternOperation)ctx.Operation;
+					CheckAmbiguousRuntimePattern(
+						ctx.ReportDiagnostic,
+						ctx.Compilation,
+						operation.Pattern,
+						operation.Syntax.GetLocation());
+				}
+				break;
+			case OperationKind.Switch:
+				{
+					var operation = (ISwitchOperation)ctx.Operation;
+					foreach (var @case in operation.Cases)
+					{
+						foreach (var clause in @case.Clauses.OfType<IPatternCaseClauseOperation>())
+						{
+							CheckAmbiguousRuntimePattern(
+								ctx.ReportDiagnostic,
+								ctx.Compilation,
+								clause.Pattern,
+								clause.Syntax.GetLocation());
+						}
+					}
+				}
+				break;
+			case OperationKind.SwitchExpression:
+				{
+					var operation = (ISwitchExpressionOperation)ctx.Operation;
+					foreach (var arm in operation.Arms)
+					{
+						CheckAmbiguousRuntimePattern(
+							ctx.ReportDiagnostic,
+							ctx.Compilation,
+							arm.Pattern,
+							arm.Syntax.GetLocation());
+					}
+				}
+				break;
+			case OperationKind.CatchClause:
+				{
+					var operation = (ICatchClauseOperation)ctx.Operation;
+					if (operation.ExceptionType is null)
+						return;
+
+					CheckAmbiguousRuntimeTypeFilter(
+						ctx.ReportDiagnostic,
+						ctx.Compilation,
+						operation.ExceptionType,
+						operation.Syntax.GetLocation(),
+						"catch type filtering");
+				}
+				break;
 			case OperationKind.TypeOf:
 				{
 					var operation = (ITypeOfOperation)ctx.Operation;
 					CheckType(ctx.ReportDiagnostic, operation.TypeOperand, operation.Syntax.GetLocation());
 				}
+				break;
+			case OperationKind.DefaultValue:
+				CheckType(ctx.ReportDiagnostic, ctx.Operation.Type, ctx.Operation.Syntax.GetLocation());
 				break;
 			case OperationKind.Conversion:
 				CheckType(ctx.ReportDiagnostic, ctx.Operation.Type, ctx.Operation.Syntax.GetLocation());
@@ -372,6 +688,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var operation = (IAnonymousFunctionOperation)ctx.Operation;
 					foreach (var param in operation.Symbol.Parameters)
 						CheckType(ctx.ReportDiagnostic, param.Type, GetLocation(param.Locations));
+				}
+				break;
+			case OperationKind.LocalFunction:
+				{
+					var operation = (ILocalFunctionOperation)ctx.Operation;
+					CheckMethodSignature(ctx.ReportDiagnostic, operation.Symbol, operation.Syntax.GetLocation());
 				}
 				break;
 		}
@@ -411,15 +733,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 				if (method.MethodKind == MethodKind.Destructor)
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule, GetLocation(method.Locations), "Destructor"));
 				else
-				{
-					// 检查返回类型，跳过构造函数
-					if (method.MethodKind != MethodKind.Constructor)
-						CheckType(ctx.ReportDiagnostic, method.ReturnType, GetLocation(method.Locations));
-
-					// 检查参数类型
-					foreach (var param in method.Parameters)
-						CheckType(ctx.ReportDiagnostic, param.Type, GetLocation(param.Locations));
-				}
+					CheckMethodSignature(ctx.ReportDiagnostic, method, GetLocation(method.Locations));
 			}
 
 			//else if (member is INamedTypeSymbol nestedType)
@@ -456,5 +770,3 @@ public partial class Analyzer : DiagnosticAnalyzer
 		return false;
 	}
 }
-
-

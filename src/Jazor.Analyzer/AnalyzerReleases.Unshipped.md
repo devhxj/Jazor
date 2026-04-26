@@ -6,6 +6,7 @@
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 JAZOR001 | Security | Error | CodeAnalyzer
+JAZOR002 | Security | Error | Ambiguous runtime type filter
 JAZORVUE001 | RazorVue | Error | Invalid RazorVue component inheritance
 JAZORVUE002 | RazorVue | Error | Direct ComponentBase entry is not allowed
 JAZORVUE004 | RazorVue | Error | StateHasChanged is not part of RazorVue semantics
