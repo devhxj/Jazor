@@ -52,7 +52,10 @@ public sealed class SemanticWalkerTupleTest
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
-        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+        var methodDeclaration = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+            ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
         if (methodDeclaration?.Body is not null)
         {
             var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -364,6 +367,35 @@ public sealed class SemanticWalkerTupleTest
   bbb = tuple.aaa, ccc = tuple.Item2;
 }", script);
 
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_WithFieldTargets()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                private int _bbb;
+                private int _ccc;
+
+                void TestMethod()
+                {
+                    var tuple = (aaa:1,2);
+                    (this._bbb, this._ccc) = tuple;
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var ctx = SenseArgument.Default;
+        var node = walker.Visit(block, ctx);
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let tuple = { aaa: 1, Item2: 2 };
+  this._bbb = tuple.aaa, this._ccc = tuple.Item2;
+}", script);
     }
 
     [TestMethod]
@@ -931,6 +963,54 @@ public sealed class SemanticWalkerTupleTest
   v$0 = point.Deconstruct(x, y), x = v$0[0], y = v$0[1];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_DeconstructMethodFieldTargets()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                private int _x;
+                private int _y;
+
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    (this._x, this._y) = point;
+                }
+                
+                class Point
+                {
+                    public int X { get; }
+                    public int Y { get; }
+                    
+                    public Point(int x, int y)
+                    {
+                        X = x;
+                        Y = y;
+                    }
+                    
+                    public void Deconstruct(out int x, out int y)
+                    {
+                        x = X;
+                        y = Y;
+                    }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var ctx = SenseArgument.Default;
+        var node = walker.Visit(block, ctx);
+        var script = node?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"{
+  let v$0, v$1, v$2;
+  let point = new Point(1, 2);
+  v$2 = point.Deconstruct(v$0, v$1), this._x = v$2[0], this._y = v$2[1];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     [TestMethod]

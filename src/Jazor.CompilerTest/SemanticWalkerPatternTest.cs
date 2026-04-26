@@ -77,7 +77,10 @@ public sealed class SemanticWalkerPatternTest
     var root = syntaxTree.GetRoot();
 
     // 查找第一个方法体
-    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+    var methodDeclaration = root.DescendantNodes()
+      .OfType<MethodDeclarationSyntax>()
+      .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+      ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
     if (methodDeclaration?.Body is not null)
     {
       var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -100,6 +103,13 @@ public sealed class SemanticWalkerPatternTest
   private static void AssertScriptEqual(string expected, string? actual)
   {
     Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
+  }
+
+  private static void AssertContainsCount(string? actual, string expected, int count)
+  {
+    Assert.IsNotNull(actual);
+    var actualCount = actual!.Split([expected], StringSplitOptions.None).Length - 1;
+    Assert.AreEqual(count, actualCount, $"Expected '{expected}' to appear {count} time(s), but found {actualCount}.{Environment.NewLine}{actual}");
   }
 
   /// <summary>
@@ -738,6 +748,33 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("value > 0 && value < 10", script);
   }
 
+  [TestMethod]
+  public void Visit_BinaryPattern_And_CachesInvocationInput()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int GetValue()
+                    {
+                        return 5;
+                    }
+
+                    bool result = GetValue() is > 0 and < 10;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValue(),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValue(), v$0 > 0 && v$0 < 10);", StringComparison.Ordinal);
+  }
+
   /// <summary>
   /// 测试 Visit - BinaryPattern or 模式
   /// </summary>
@@ -1321,6 +1358,138 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual("Array.isArray(array) && array.length >= 2 && array[0] === 1 && array[1] === 2", script);
   }
 
+  [TestMethod]
+  public void Visit_ListPattern_CachesInvocationInput()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] GetValues()
+                    {
+                        return [1, 2, 3];
+                    }
+
+                    bool result = GetValues() is [1, 2, 3];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValues(),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValues(), Array.isArray(v$0) && v$0.length === 3 && v$0[0] === 1 && v$0[1] === 2 && v$0[2] === 3);", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
+  public void Visit_ListPattern_ListCarrier_UsesWhitelistIndexerHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    List<int> list = [1, 2, 3];
+                    bool result = list is [1, 2, 3];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let result = Array.isArray(list) && list.length === 3", StringComparison.Ordinal);
+    AssertContainsCount(script, "_d389c31d59037b42(list, ", 3);
+    AssertContainsCount(script, "list[0]", 0);
+    AssertContainsCount(script, "list[1]", 0);
+    AssertContainsCount(script, "list[2]", 0);
+  }
+
+  [TestMethod]
+  public void Visit_ListPattern_ReadOnlyCollectionCarrier_UsesWhitelistIndexerHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new System.Collections.ObjectModel.ReadOnlyCollection<int>(new List<int> { 1, 2, 3 });
+                    bool result = list is [1, 2, 3];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let result = Array.isArray(list) && list.length === 3", StringComparison.Ordinal);
+    AssertContainsCount(script, "_b8c9d0e1f2a3b4c5(list, ", 3);
+    AssertContainsCount(script, "list[0]", 0);
+    AssertContainsCount(script, "list[1]", 0);
+    AssertContainsCount(script, "list[2]", 0);
+  }
+
+  [TestMethod]
+  public void Visit_ListPattern_StringCarrier_UsesStringRuntimeIndexer()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string text = ""ab"";
+                    bool result = text is ['a', 'b'];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let result = typeof text === \"string\" && text.length === 2", StringComparison.Ordinal);
+    AssertContainsCount(script, "_5ad63706a889c294(text, ", 2);
+    AssertContainsCount(script, "text[0]", 0);
+    AssertContainsCount(script, "text[1]", 0);
+  }
+
+  [TestMethod]
+  public void Visit_ListPattern_ListCarrier_WithSliceCapture_UsesSliceSymbol()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    List<int> list = [1, 2, 3, 4];
+                    if (list is [var first, .. var rest, var last])
+                    {
+                        Console.WriteLine(first);
+                        Console.WriteLine(rest.Count);
+                        Console.WriteLine(last);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let first, rest, last;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "if (Array.isArray(list) && list.length >= 2 &&", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(first = _d389c31d59037b42(list, 0), true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(rest = list.slice(1, 1 + (list.length - 2)), true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "(last = _d389c31d59037b42(list, list.length - 1), true)", StringComparison.Ordinal);
+    AssertContainsCount(script, "list.slice(1, -1)", 0);
+  }
+
   /// <summary>
   /// 测试 Visit - SlicePattern 切片模式
   /// </summary>
@@ -1736,6 +1905,33 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"typeof obj === ""number"" && (value = obj, true)", script);
   }
 
+  [TestMethod]
+  public void Visit_DeclarationPattern_CachesInvocationInput()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string GetText()
+                    {
+                        return ""hello"";
+                    }
+
+                    bool result = GetText() is string text;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let v$0, text;", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetText(),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetText(), typeof v$0 === \"string\" && (text = v$0, true));", StringComparison.Ordinal);
+  }
+
   /// <summary>
   /// 测试复杂模式匹配 - switch 表达式
   /// </summary>
@@ -1884,12 +2080,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let data = { Inner: { Value: 42 } };
-  let result = data != null && (""Inner"" in data && (data.Inner != null && (""Value"" in data.Inner && data.Inner.Value > 0)));
-}", script);
-
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Inner", 1);
+    StringAssert.Contains(script, "v$0 = data.Inner", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"Value\" in v$0 && v$0.Value > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2091,9 +2285,105 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = _ee9dd166a34a2fa5();
-  let result = obj instanceof Date;
+  let result = obj !== null && typeof obj === ""object"" && (obj.date instanceof Date && typeof obj.kind === ""number"" && typeof obj.subMillisecondTicks === ""bigint"");
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
+  }
+
+  /// <summary>
+  /// 测试 Visit - IsType Task&lt;T&gt; 类型检查（映射为 Promise）
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_TaskOfT()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = System.Threading.Tasks.Task.FromResult(42);
+                    bool result = obj is System.Threading.Tasks.Task<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = Promise.resolve(42);
+  let result = obj instanceof Promise;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试共享 Error 运行时别名的 CLR 异常类型不会在 is-type 中静默退化成 instanceof Error
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_InvalidOperationException_SharedRuntimeAlias_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object obj)
+                {
+                    bool result = obj is InvalidOperationException;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() =>
+    {
+      _ = walker.Visit(block, new());
+    });
+  }
+
+  /// <summary>
+  /// 测试共享 Error 运行时别名的声明模式不会静默退化成 instanceof Error
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsPattern_InvalidOperationExceptionDeclaration_SharedRuntimeAlias_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object obj)
+                {
+                    bool result = obj is InvalidOperationException ex && ex.Message.Length >= 0;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() =>
+    {
+      _ = walker.Visit(block, new());
+    });
+  }
+
+  /// <summary>
+  /// 测试未标记且不在白名单的外部类型不会在 is-type 中静默退化成 instanceof
+  /// </summary>
+  [TestMethod]
+  public void Visit_IsType_UnsupportedExternalType_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object obj)
+                {
+                    bool result = obj is Random;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() =>
+    {
+      _ = walker.Visit(block, new());
+    });
   }
 
   /// <summary>
@@ -2226,11 +2516,13 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let x, s;
-  let tuple = { Item1: 1, Item2: ""hello"" };
-  let result = typeof tuple.Item1 === ""number"" && (x = tuple.Item1, true) && (typeof tuple.Item2 === ""string"" && (s = tuple.Item2, true));
-}", script);
+    StringAssert.Contains(script, "let v$0, x, v$1, s;", StringComparison.Ordinal);
+    AssertContainsCount(script, "tuple.Item1", 1);
+    AssertContainsCount(script, "tuple.Item2", 1);
+    StringAssert.Contains(script, "v$0 = tuple.Item1", StringComparison.Ordinal);
+    StringAssert.Contains(script, "typeof v$0 === \"number\" && (x = v$0, true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "v$1 = tuple.Item2", StringComparison.Ordinal);
+    StringAssert.Contains(script, "typeof v$1 === \"string\" && (s = v$1, true)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2254,11 +2546,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let x, s;
-  let tuple = { Item1: 1, Item2: ""hello"" };
-  let result = typeof tuple.Item1 === ""number"" && (x = tuple.Item1, true) && (typeof tuple.Item2 === ""string"" && (s = tuple.Item2, true)) && x > 0;
-}", script);
+    StringAssert.Contains(script, "let v$0, x, v$1, s;", StringComparison.Ordinal);
+    AssertContainsCount(script, "tuple.Item1", 1);
+    AssertContainsCount(script, "tuple.Item2", 1);
+    StringAssert.Contains(script, "typeof v$0 === \"number\" && (x = v$0, true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "typeof v$1 === \"string\" && (s = v$1, true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "&& x > 0;", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2632,7 +2925,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = _5f8053a9657a0844();
-  let result = obj instanceof Date;
+  let result = obj !== null && typeof obj === ""object"" && (typeof obj.year === ""number"" && typeof obj.month === ""number"" && (typeof obj.day === ""number"" && typeof obj.dayNumber === ""number""));
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
@@ -2659,15 +2952,90 @@ public sealed class SemanticWalkerPatternTest
 
     AssertScriptEqual(@"{
   let obj = _12b4f3f1dc14bea9();
-  let result = obj !== null && typeof obj === ""object"" && (obj.utcDateTime instanceof Date && typeof obj.offsetTicks === ""bigint"");
+  let result = obj !== null && typeof obj === ""object"" && (obj.utcDateTime instanceof Date && typeof obj.offsetTicks === ""bigint"" && typeof obj.utcSubMillisecondTicks === ""bigint"");
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_IsType_DateTimeOffset_CachesInvocationInput()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DateTimeOffset GetValue()
+                    {
+                        return new DateTimeOffset();
+                    }
+
+                    bool result = GetValue() is DateTimeOffset;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValue(),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValue(), v$0 !== null && typeof v$0 === \"object\" && (v$0.utcDateTime instanceof Date && typeof v$0.offsetTicks === \"bigint\" && typeof v$0.utcSubMillisecondTicks === \"bigint\"));", StringComparison.Ordinal);
+  }
+
+  [TestMethod]
+  public void Visit_IsType_Queue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new System.Collections.Generic.Queue<int>();
+                    bool result = obj is System.Collections.Generic.Queue<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = _ea05a56d08fbd4f9();
+  let result = obj !== null && typeof obj === ""object"" && (obj.kind === ""queue"" && (Array.isArray(obj.items) && typeof obj.head === ""number""));
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_IsType_Stack()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new System.Collections.Generic.Stack<int>();
+                    bool result = obj is System.Collections.Generic.Stack<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = _7d15fcc03d17599b();
+  let result = obj !== null && typeof obj === ""object"" && (obj.kind === ""stack"" && Array.isArray(obj.items));
 }", script);
   }
 
   /// <summary>
-  /// 测试 Visit - IsType timestamp 类型检查 (BigInt)
+  /// 测试 Visit - IsType TimeSpan 类型检查
   /// </summary>
   [TestMethod]
-  public void Visit_IsType_Timestamp()
+  public void Visit_IsType_TimeSpan()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -2686,7 +3054,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = _5af0f6ad850e6702();
-  let result = typeof obj === ""bigint"";
+  let result = obj !== null && typeof obj === ""object"" && typeof obj.ticks === ""bigint"";
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
@@ -2768,7 +3136,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(
 @"{
   let obj = _9f78f92d0753f4cf();
-  let result = typeof obj === ""bigint"";
+  let result = obj !== null && typeof obj === ""object"" && typeof obj.ticks === ""bigint"";
 }".Replace("\r\n", "\n"),
         script?.Replace("\r\n", "\n"));
 
@@ -2887,10 +3255,13 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let nested = [[1, 2], [3, 4]];
-  let result = Array.isArray(nested) && nested.length === 2 && (Array.isArray(nested[0]) && nested[0].length === 2 && nested[0][0] === 1 && nested[0][1] === 2) && (Array.isArray(nested[1]) && nested[1].length === 2 && nested[1][0] === 3 && nested[1][1] === 4);
-}", script);
+    StringAssert.Contains(script, "let v$0, v$1;", StringComparison.Ordinal);
+    AssertContainsCount(script, "nested[0]", 1);
+    AssertContainsCount(script, "nested[1]", 1);
+    StringAssert.Contains(script, "v$0 = nested[0]", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Array.isArray(v$0) && v$0.length === 2 && v$0[0] === 1 && v$0[1] === 2", StringComparison.Ordinal);
+    StringAssert.Contains(script, "v$1 = nested[1]", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Array.isArray(v$1) && v$1.length === 2 && v$1[0] === 3 && v$1[1] === 4", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2914,10 +3285,11 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
-  let nested = [[1, 2, 3], [4, 5, 6]];
-  let result = Array.isArray(nested) && nested.length === 2 && (Array.isArray(nested[0]) && nested[0].length >= 1 && nested[0][0] === 1) && (Array.isArray(nested[1]) && nested[1].length >= 1 && nested[1][0] === 4);
-}", script);
+    StringAssert.Contains(script, "let v$0, v$1;", StringComparison.Ordinal);
+    AssertContainsCount(script, "nested[0]", 1);
+    AssertContainsCount(script, "nested[1]", 1);
+    StringAssert.Contains(script, "Array.isArray(v$0) && v$0.length >= 1 && v$0[0] === 1", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Array.isArray(v$1) && v$1.length >= 1 && v$1[0] === 4", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3076,12 +3448,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let data = { Inner: { Value: 42 } };
-  let result = data != null && (""Inner"" in data && (data.Inner != null && (""Value"" in data.Inner && data.Inner.Value === 42)));
-}", script);
-
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Inner", 1);
+    StringAssert.Contains(script, "v$0 = data.Inner", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"Value\" in v$0 && v$0.Value === 42", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3372,12 +3742,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let value = ""hello"";
-  let result = typeof value === ""string"" && (value != null && (""length"" in value && (value.length > 0 && value.length < 10)));
-}", script);
-
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "value.length", 1);
+    StringAssert.Contains(script, "\"length\" in value && (v$0 = value.length, v$0 > 0 && v$0 < 10)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3694,9 +4061,10 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let point = new Point(1, 2);
-  let result = point instanceof Point && point.X === 1 && point.Y === 2;
-}", script);
+  let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] === 1 && v$0[1] === 2;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   /// <summary>
@@ -3723,9 +4091,10 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let point = new Point(1, 2);
-  let result = point instanceof Point && point.X > 0 && point.Y > 0;
-}", script);
+  let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] > 0 && v$0[1] > 0;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   /// <summary>
@@ -3755,12 +4124,55 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let x, y;
+  let v$0, x, y;
   let point = new Point(1, 2);
-  if (point instanceof Point && (x = point.X, true) && (y = point.Y, true)) {
+  if (point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && (x = v$0[0], true) && (y = v$0[1], true)) {
     console.log(`(${x}, ${y})`);
   }
-}", script);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  }
+
+  [TestMethod]
+  public void Visit_RecursivePattern_PositionalCustomDeconstructClass_UsesDeconstructOutputs()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    bool result = point is (2, 3);
+                }
+
+                class Point
+                {
+                    public int X { get; }
+                    public int Y { get; }
+
+                    public Point(int x, int y)
+                    {
+                        X = x;
+                        Y = y;
+                    }
+
+                    public void Deconstruct(out int x, out int y)
+                    {
+                        x = X + 1;
+                        y = Y + 1;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let v$0;
+  let point = new Point(1, 2);
+  let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] === 2 && v$0[1] === 3;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   #endregion
@@ -3973,12 +4385,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let obj = ""hello"";
-  let result = typeof obj === ""string"" && (obj != null && (""length"" in obj && (obj.length > 0 && obj.length < 100)));
-}", script);
-
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.length", 1);
+    StringAssert.Contains(script, "\"length\" in obj && (v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4002,12 +4411,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let data = { Outer: { Middle: { Inner: 42 } } };
-  let result = data != null && (""Outer"" in data && (data.Outer != null && (""Middle"" in data.Outer && (data.Outer.Middle != null && (""Inner"" in data.Outer.Middle && data.Outer.Middle.Inner > 0)))));
-}", script);
-
+    StringAssert.Contains(script, "let v$0, v$1;", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Outer", 1);
+    StringAssert.Contains(script, "v$0 = data.Outer", StringComparison.Ordinal);
+    AssertContainsCount(script, "v$0.Middle", 1);
+    StringAssert.Contains(script, "v$1 = v$0.Middle", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"Inner\" in v$1 && v$1.Inner > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4031,13 +4440,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let first;
-  let obj = { Items: [1, 2, 3] };
-  let result = obj != null && (""Items"" in obj && (Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true) && (Array.isArray(obj.Items) && (obj.Items != null && (""length"" in obj.Items && obj.Items.length > 0)))));
-}", script);
-
+    StringAssert.Contains(script, "let v$0, first;", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.Items", 1);
+    StringAssert.Contains(script, "v$0 = obj.Items", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Array.isArray(v$0) && v$0.length >= 1 && (first = v$0[0], true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"length\" in v$0 && v$0.length > 0", StringComparison.Ordinal);
   }
 
   #endregion
@@ -4094,13 +4501,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let v;
-  let obj = { Inner: { Value: 42 } };
-  let result = obj != null && (""Inner"" in obj && (obj.Inner != null && (""Value"" in obj.Inner && (v = obj.Inner.Value, true))));
-}", script);
-
+    StringAssert.Contains(script, "let v$0, v;", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.Inner", 1);
+    StringAssert.Contains(script, "v$0 = obj.Inner", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"Value\" in v$0 && (v = v$0.Value, true)", StringComparison.Ordinal);
   }
 
   #endregion
@@ -4417,12 +4821,14 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let data = { Level1: { Level2: { Level3: { Value: 42 } } } };
-  let result = data != null && (""Level1"" in data && (data.Level1 != null && (""Level2"" in data.Level1 && (data.Level1.Level2 != null && (""Level3"" in data.Level1.Level2 && (data.Level1.Level2.Level3 != null && (""Value"" in data.Level1.Level2.Level3 && data.Level1.Level2.Level3.Value > 0)))))));
-}", script);
-
+    StringAssert.Contains(script, "let v$0, v$1, v$2;", StringComparison.Ordinal);
+    AssertContainsCount(script, "data.Level1", 1);
+    StringAssert.Contains(script, "v$0 = data.Level1", StringComparison.Ordinal);
+    AssertContainsCount(script, "v$0.Level2", 1);
+    StringAssert.Contains(script, "v$1 = v$0.Level2", StringComparison.Ordinal);
+    AssertContainsCount(script, "v$1.Level3", 1);
+    StringAssert.Contains(script, "v$2 = v$1.Level3", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"Value\" in v$2 && v$2.Value > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4446,12 +4852,10 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
-@"{
-  let obj = ""test"";
-  let result = typeof obj === ""string"" && (obj != null && (""length"" in obj && (obj.length > 0 && obj.length < 100))) || typeof obj === ""number"";
-}", script);
-
+    StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.length", 1);
+    StringAssert.Contains(script, "\"length\" in obj && (v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "|| typeof obj === \"number\";", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4625,26 +5029,12 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertScriptEqual(@"{
-  let list = [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15
-  ];
-  let match = Array.isArray(list) && list.length === 15 && list[0] === 1 && list[1] === 2 && list[2] === 3 && list[3] === 4 && list[4] === 5 && list[5] === 6 && list[6] === 7 && list[7] === 8 && list[8] === 9 && list[9] === 10 && list[10] === 11 && list[11] === 12 && list[12] === 13 && list[13] === 14 && list[14] === 15;
-}", script);
+    StringAssert.Contains(script, "let match = Array.isArray(list) && list.length === 15", StringComparison.Ordinal);
+    AssertContainsCount(script, "_d389c31d59037b42(list, ", 15);
+    AssertContainsCount(script, "list[0] === 1", 0);
+    AssertContainsCount(script, "list[14] === 15", 0);
+    StringAssert.Contains(script, "_d389c31d59037b42(list, 0) === 1", StringComparison.Ordinal);
+    StringAssert.Contains(script, "_d389c31d59037b42(list, 14) === 15", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4694,13 +5084,14 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    // 验证生成包含完整的嵌套 hasOwnProperty 检查
-    Assert.AreEqual(
-@"{
-  let obj = { A: { B: { C: { D: { E: { F: 42 } } } } } };
-  let match = obj != null && (""A"" in obj && (obj.A != null && (""B"" in obj.A && (obj.A.B != null && (""C"" in obj.A.B && (obj.A.B.C != null && (""D"" in obj.A.B.C && (obj.A.B.C.D != null && (""E"" in obj.A.B.C.D && (obj.A.B.C.D.E != null && (""F"" in obj.A.B.C.D.E && obj.A.B.C.D.E.F === 42)))))))))));
-}", script);
-
+    StringAssert.Contains(script, "let v$0, v$1, v$2, v$3, v$4;", StringComparison.Ordinal);
+    AssertContainsCount(script, "obj.A", 1);
+    StringAssert.Contains(script, "v$0 = obj.A", StringComparison.Ordinal);
+    StringAssert.Contains(script, "v$1 = v$0.B", StringComparison.Ordinal);
+    StringAssert.Contains(script, "v$2 = v$1.C", StringComparison.Ordinal);
+    StringAssert.Contains(script, "v$3 = v$2.D", StringComparison.Ordinal);
+    StringAssert.Contains(script, "v$4 = v$3.E", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"F\" in v$4 && v$4.F === 42", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5172,6 +5563,9 @@ line2"";
     var block = GetBlockOperation(@"
             class TestClass
             {
+                class Person { public Address Address { get; set; } }
+                class Address { public string City { get; set; } }
+
                 void TestMethod()
                 {
                     var person = new Person { Address = new Address { City = ""NYC"" } };
@@ -5181,26 +5575,47 @@ line2"";
                     }
                 }
             }
-
-            class Person { public Address Address { get; set; } }
-            class Address { public string City { get; set; } }
             ");
 
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertScriptEqual(@"{
-  let person = (() => {
-    let v$0 = new Person;
-    v$0.Address = new Address;
-    v$0.Address.City = ""NYC"";
-    return v$0;
-  })();
-  if (person instanceof Person && (person != null && (""Address"" in person && (person.Address instanceof Address && (person.Address != null && (""City"" in person.Address && person.Address.City === ""NYC"")))))) {
-    console.log(""New Yorker"");
+    StringAssert.Contains(script, "let v$1;", StringComparison.Ordinal);
+    AssertContainsCount(script, "person.Address", 1);
+    StringAssert.Contains(script, "v$1 = person.Address", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"City\" in v$1 && v$1.City === \"NYC\"", StringComparison.Ordinal);
+    StringAssert.Contains(script, "console.log(\"New Yorker\");", StringComparison.Ordinal);
   }
-}", script);
+
+  [TestMethod]
+  public void Visit_IsPattern_NestedProperty_CachesIntermediateMemberInput()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                class Person { public Address Address { get; set; } }
+                class Address { public string City { get; set; } public int Zip { get; set; } }
+
+                void TestMethod()
+                {
+                    var person = new Person { Address = new Address { City = ""NYC"", Zip = 10001 } };
+                    if (person is { Address: { City: ""NYC"", Zip: > 0 } })
+                    {
+                        Console.WriteLine(""New Yorker"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertContainsCount(script, "person.Address", 1);
+    StringAssert.Contains(script, "v$1 = person.Address", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"City\" in v$1 && v$1.City === \"NYC\"", StringComparison.Ordinal);
+    StringAssert.Contains(script, "\"Zip\" in v$1 && v$1.Zip > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5212,6 +5627,8 @@ line2"";
     var block = GetBlockOperation(@"
             class TestClass
             {
+                class Point { public int X { get; set; } public int Y { get; set; } }
+
                 void TestMethod()
                 {
                     var point = new Point { X = 10, Y = 20 };
@@ -5221,8 +5638,6 @@ line2"";
                     }
                 }
             }
-
-            class Point { public int X { get; set; } public int Y { get; set; } }
             ");
 
     var walker = new SemanticWalker(true);
@@ -5418,8 +5833,8 @@ line2"";
 
     Assert.IsNotNull(script);
     StringAssert.Contains(script, "let result = (async () => {", StringComparison.Ordinal);
-    StringAssert.Contains(script, "await Task.FromResult(10);", StringComparison.Ordinal);
-    StringAssert.Contains(script, "await Task.FromResult(20);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "await Promise.resolve(10);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "await Promise.resolve(20);", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5756,6 +6171,8 @@ line2"";
     var block = GetBlockOperation(@"
             class TestClass
             {
+                class Person { public string Name { get; set; } }
+
                 void TestMethod()
                 {
                     var person = new Person { Name = ""John"" };
@@ -5765,8 +6182,6 @@ line2"";
                     }
                 }
             }
-
-            class Person { public string Name { get; set; } }
             ");
 
     var walker = new SemanticWalker(true);
@@ -5794,6 +6209,8 @@ line2"";
     var block = GetBlockOperation(@"
             class TestClass
             {
+                class Point { public int X { get; set; } public int Y { get; set; } }
+
                 void TestMethod()
                 {
                     var point = new Point { X = 0, Y = 0 };
@@ -5803,8 +6220,6 @@ line2"";
                     }
                 }
             }
-
-            class Point { public int X { get; set; } public int Y { get; set; } }
             ");
 
     var walker = new SemanticWalker(true);
@@ -5822,6 +6237,65 @@ line2"";
     console.log(""origin"");
   }
 }", script);
+  }
+
+  /// <summary>
+  /// 测试白名单运行时属性模式会复用 getter helper，而不是回退成原始成员名
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertyPattern_DateTimeProperty_UsesRuntimeHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DateTime now = DateTime.Now;
+                    if (now is { Year: 2024 })
+                    {
+                        Console.WriteLine(""match"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let now = _ee9dd166a34a2fa5();
+  if (now !== null && typeof now === ""object"" && (now.date instanceof Date && typeof now.kind === ""number"" && typeof now.subMillisecondTicks === ""bigint"") && (now != null && _9d56b09432f81c05(now) === 2024)) {
+    console.log(""match"");
+  }
+}", script);
+  }
+
+  /// <summary>
+  /// 测试白名单运行时类型上未进入支持表的属性模式不会静默回退
+  /// </summary>
+  [TestMethod]
+  public void Visit_PropertyPattern_UnmappedRuntimeProperty_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int>();
+                    if (list is { Capacity: 0 })
+                    {
+                        Console.WriteLine(""match"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() =>
+    {
+      _ = walker.Visit(block, new());
+    });
   }
 
   #endregion

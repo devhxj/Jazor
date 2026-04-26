@@ -52,7 +52,10 @@ public sealed class SemanticWalkerDeclarationTest
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
-        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+        var methodDeclaration = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+            ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
         if (methodDeclaration?.Body is not null)
         {
             var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -331,16 +334,16 @@ public sealed class SemanticWalkerDeclarationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class TestClassWithFields
+                {
+                    public int Field = 42;
+                    private string _name = ""default"";
+                }
+
                 void TestMethod()
                 {
                     var obj = new TestClassWithFields();
                 }
-            }
-            
-            class TestClassWithFields
-            {
-                public int Field = 42;
-                private string _name = ""default"";
             }
             ");
 

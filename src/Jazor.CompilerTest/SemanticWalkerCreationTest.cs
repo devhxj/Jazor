@@ -51,7 +51,10 @@ public sealed class SemanticWalkerCreationTest
         var root = syntaxTree.GetRoot();
 
         // 查找第一个方法体
-        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+        var methodDeclaration = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+            ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
         if (methodDeclaration?.Body is not null)
         {
             var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -205,6 +208,72 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_UnsupportedExternalType_Throws()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var random = new Random();
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+
+        Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.VisitObjectCreation(operation, new());
+        });
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_WhitelistContainerWithErasedUnsupportedTypeArgument_Allows()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<Random>();
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual("[]", script);
+    }
+
+    [TestMethod]
+    public void VisitTypeParameterObjectCreation_Throws()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                T Create<T>() where T : new()
+                {
+                    var value = new T();
+                    return value;
+                }
+            }
+            ");
+
+        var operation = GetTypeParameterObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+
+        Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.VisitTypeParameterObjectCreation(operation, new());
+        });
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_AnonymousType()
     {
         var block = GetBlockOperation(@"
@@ -269,6 +338,27 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         Assert.AreEqual("[1,2,3]", script);
+    }
+
+    [TestMethod]
+    public void VisitArrayCreation_ErasedUnsupportedElementType_Allows()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var items = new Random[1];
+                }
+            }
+            ");
+
+        var operation = GetArrayCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitArrayCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        Assert.AreEqual("new Array(1)", script);
     }
 
     [TestMethod]
@@ -464,14 +554,19 @@ public sealed class SemanticWalkerCreationTest
 
                 class A
                 {
-                    public B? A1 { get; set; }
+                    public B A1 { get; } = new();
                     public string? A2 { get; set; }
                 }
 
                 class B
                 {
+                    public B()
+                    {
+                        B2 = new C();
+                    }
+
                     public string? B1 { get; set; }
-                    public C? B2 { get; set; }
+                    public C B2 { get; }
                 }
 
                 class C
@@ -490,11 +585,41 @@ public sealed class SemanticWalkerCreationTest
         Assert.AreEqual(
 @"(() => {
   let v$0 = new A;
-  v$0.A1 = { B1: ""Test"", B2: { C1: ""a"", C2: 9 } };
+  v$0.A1.B1 = ""Test"";
+  v$0.A1.B2.C1 = ""a"";
+  v$0.A1.B2.C2 = 9;
   v$0.A2 = ""value"";
   return v$0;
 })()", script);
 
+    }
+
+    [TestMethod]
+    public void Visit_ObjectInitializer_NestedUnsupportedExternalProperty_Throws()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var holder = new Holder
+                    {
+                        StartInfo = { FileName = ""cmd.exe"" }
+                    };
+                }
+
+                class Holder
+                {
+                    public System.Diagnostics.ProcessStartInfo StartInfo { get; } = new();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.Visit(block, new());
+        });
     }
 
     [TestMethod]
@@ -1734,7 +1859,7 @@ public sealed class SemanticWalkerCreationTest
 
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let obj = (async () => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "await Task.FromResult(42);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "await Promise.resolve(42);", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -2058,20 +2183,20 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class OuterClass
+                {
+                    public InnerClass Inner { get; set; }
+                }
+
+                class InnerClass
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod()
                 {
                     var outer = new OuterClass { Inner = new InnerClass { Value = 100 } };
                 }
-            }
-
-            class OuterClass
-            {
-                public InnerClass Inner { get; set; }
-            }
-
-            class InnerClass
-            {
-                public int Value { get; set; }
             }
             ");
 
@@ -2435,17 +2560,17 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class Point
+                {
+                    public int X { get; }
+                    public int Y { get; }
+                    public Point(int x, int y) { X = x; Y = y; }
+                }
+
                 void TestMethod()
                 {
                     var point = new Point(10, 20);
                 }
-            }
-
-            class Point
-            {
-                public int X { get; }
-                public int Y { get; }
-                public Point(int x, int y) { X = x; Y = y; }
             }
             ");
 
@@ -2467,14 +2592,14 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class OuterClass { public InnerClass Inner { get; set; } }
+                class InnerClass { public int Value { get; set; } }
+
                 void TestMethod()
                 {
                     var obj = new OuterClass { Inner = new InnerClass { Value = 42 } };
                 }
             }
-
-            class OuterClass { public InnerClass Inner { get; set; } }
-            class InnerClass { public int Value { get; set; } }
             ");
 
         var walker = new SemanticWalker(true);
@@ -2736,7 +2861,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
         AssertScriptEqual(@"{
-  let stack = new Stack;
+  let stack = _7d15fcc03d17599b();
 }", script);
     }
 
@@ -2760,7 +2885,49 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
         AssertScriptEqual(@"{
-  let queue = new Queue;
+  let queue = _ea05a56d08fbd4f9();
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_ObjectCreation_Queue_WithCapacity()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var queue = new System.Collections.Generic.Queue<int>(4);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+        AssertScriptEqual(@"{
+  let queue = _7fc2b76467c43db9(4);
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_ObjectCreation_Stack_FromEnumerable()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var stack = new System.Collections.Generic.Stack<int>(new[] { 1, 2, 3 });
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+        AssertScriptEqual(@"{
+  let stack = _60d564060ac5fb0f([1, 2, 3]);
 }", script);
     }
 
@@ -2987,16 +3154,16 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class Person
+                {
+                    public string Name { get; set; }
+                    public int Age { get; set; }
+                }
+
                 void TestMethod()
                 {
                     var person = new Person { Name = ""John"", Age = 30 };
                 }
-            }
-
-            class Person
-            {
-                public string Name { get; set; }
-                public int Age { get; set; }
             }
             ");
 
@@ -3022,14 +3189,14 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class Outer { public Inner Inner { get; set; } }
+                class Inner { public int Value { get; set; } }
+
                 void TestMethod()
                 {
                     var outer = new Outer { Inner = new Inner { Value = 42 } };
                 }
             }
-
-            class Outer { public Inner Inner { get; set; } }
-            class Inner { public int Value { get; set; } }
             ");
 
         var walker = new SemanticWalker(true);
@@ -3051,17 +3218,17 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             class TestClass
             {
+                class Box
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod()
                 {
                     var obj = new Box { Value = GetTuple() == (1, 2) ? 1 : 0 };
                 }
 
                 (int, int) GetTuple() => (1, 2);
-            }
-
-            class Box
-            {
-                public int Value { get; set; }
             }
             ");
 

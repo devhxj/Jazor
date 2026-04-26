@@ -53,8 +53,11 @@ public sealed class SemanticWalkerReferenceTest
 		var semanticModel = compilation.GetSemanticModel(syntaxTree);
 		var root = syntaxTree.GetRoot();
 
-		// 查找第一个方法体
-		var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+		// 优先定位约定的 TestMethod，并跳过接口/抽象等无方法体声明，避免误取辅助成员。
+		var methodDeclaration = root.DescendantNodes()
+			.OfType<MethodDeclarationSyntax>()
+			.FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+			?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
 		if (methodDeclaration?.Body is not null)
 		{
 			var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -68,6 +71,27 @@ public sealed class SemanticWalkerReferenceTest
 	// 锁定完整 JS 输出，避免弱断言漏掉引号、换行和调用形态回退。
 	private static void AssertScriptEqual(string expected, string? actual)
 		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+
+	private static TOperation GetFirstOperation<TOperation>(string code)
+		where TOperation : class, IOperation
+	{
+		var block = GetBlockOperation(code);
+		var operation = EnumerateOperations(block).OfType<TOperation>().FirstOrDefault();
+		if (operation is null)
+			throw new InvalidOperationException($"未找到可分析的操作 {typeof(TOperation).Name}");
+
+		return operation;
+	}
+
+	private static IEnumerable<IOperation> EnumerateOperations(IOperation root)
+	{
+		yield return root;
+		foreach (var child in root.ChildOperations)
+		{
+			foreach (var nested in EnumerateOperations(child))
+				yield return nested;
+		}
+	}
 	
 	#region VisitLocalReference - 局部变量引用
 
@@ -137,6 +161,7 @@ public sealed class SemanticWalkerReferenceTest
 	public void Visit_Reference_DescriptionBasedNamespaceAliasType_TranslatesToWebIdlNames()
 	{
 		var block = GetBlockOperation(@"
+            using System;
             using System.ComponentModel;
             using console = ECMAScript.Console.Console;
 
@@ -148,9 +173,18 @@ public sealed class SemanticWalkerReferenceTest
                 }
             }
 
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptAttribute : Attribute
+                {
+                }
+            }
+
             namespace ECMAScript.Console
             {
                 [Description(""@#console"")]
+                [ECMAScript.ECMAScript]
                 public static class Console
                 {
                     [Description(""@#log"")]
@@ -1583,6 +1617,55 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_FieldReference_InstanceField_UsesConfiguredAlias()
+	{
+		var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                [Description(""@#count"")]
+                public int Value;
+
+                void TestMethod()
+                {
+                    TestClass obj = new TestClass();
+                    int x = obj.Value;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let obj = new TestClass;
+  let x = obj.count;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_FieldReference_UnsupportedExternalConstField_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var tab = System.CodeDom.Compiler.IndentedTextWriter.DefaultTabString;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
 	#endregion
 
 	#region VisitPropertyReference - 属性引用
@@ -2355,7 +2438,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let slice = array.slice(1, 3 + 1);
+  let slice = array.slice(1, 3);
 }", script);
 	}
 
@@ -2413,7 +2496,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let slice = array.slice(0, 3 + 1);
+  let slice = array.slice(0, 3);
 }", script);
 	}
 
@@ -2449,7 +2532,7 @@ public sealed class SemanticWalkerReferenceTest
 	/// <summary>
 	/// 测试 VisitArrayElementReference - 范围操作从末尾 [^3..^1]
 	/// C# 示例：array[^3..^1]
-	/// 转换结果：array.slice(array.length - 3, array.length - 1 + 1)
+	/// 转换结果：array.slice(array.length - 3, array.length - 1)
 	/// </summary>
 	[TestMethod]
 	public void Visit_ArrayElementReference_RangeFromEnd()
@@ -2471,7 +2554,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
-  let slice = array.slice(array.length - 3, array.length - 1 + 1);
+  let slice = array.slice(array.length - 3, array.length - 1);
 }", script);
 	}
 
@@ -2506,6 +2589,32 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_ArrayElementReference_NestedImplicitIndexer_PreservesOuterArrayTarget()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] array = [10, 20, 30];
+                    var indexes = new List<int> { 1, 2 };
+                    int x = array[indexes[^1]];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let array = [10, 20, 30];
+  let indexes = [1, 2];
+  let x = array[_d389c31d59037b42(indexes, indexes.length - 1)];
+}", script);
+	}
+
 	#endregion
 
 	#region VisitImplicitIndexerReference - 隐式索引器引用
@@ -2536,6 +2645,137 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let array = [1, 2, 3];
   let x = array[array.length - 1];
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_ImplicitIndexerReference_StringFromEnd_UsesWhitelistLengthAndIndexer()
+	{
+		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>(@"
+            class TestClass
+            {
+                char M(string text)
+                {
+                    return text[^1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(operation, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"_5ad63706a889c294(text, text.length - 1)", script);
+	}
+
+	[TestMethod]
+	public void Visit_ImplicitIndexerReference_StringRange_UsesExclusiveEndSubstring()
+	{
+		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>(@"
+            class TestClass
+            {
+                string M(string text)
+                {
+                    return text[1..^1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(operation, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"text.substring(1, 1 + (text.length - 1 - 1))", script);
+	}
+
+	[TestMethod]
+	public void Visit_ImplicitIndexerReference_StringFromEnd_ComplexReceiver_EvaluatesReceiverOnce()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string text = ""abc"";
+                    Func<string> next = () => text;
+                    char last = next()[^1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let text = ""abc"";
+  let next = () => {
+    return text;
+  };
+  let last = (v$0 = next(), _5ad63706a889c294(v$0, v$0.length - 1));
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_ArrayElementReference_FromEndAndRange_ComplexReceiver_EvaluatesReceiverOnce()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] values = [1, 2, 3];
+                    Func<int[]> next = () => values;
+                    int last = next()[^1];
+                    int[] middle = next()[1..^1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0, v$1;
+  let values = [1, 2, 3];
+  let next = () => {
+    return values;
+  };
+  let last = (v$0 = next(), v$0[v$0.length - 1]);
+  let middle = (v$1 = next(), v$1.slice(1, v$1.length - 1));
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_ArrayElementAssignment_FromEnd_ComplexReceiver_EvaluatesReceiverOnce()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] values = [1, 2, 3];
+                    Func<int[]> next = () => values;
+                    next()[^1] = 4;
+                    next()[^1] += 5;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0, v$1;
+  let values = [1, 2, 3];
+  let next = () => {
+    return values;
+  };
+  v$0 = next(), v$0[v$0.length - 1] = 4;
+  v$1 = next(), v$1[v$1.length - 1] += 5;
 }", script);
 	}
 
@@ -2611,9 +2851,9 @@ public sealed class SemanticWalkerReferenceTest
   let array = [1, 2, 3, 4, 5];
   let first = array[0];
   let last = array[array.length - 1];
-  let middle = array.slice(1, 4 + 1);
+  let middle = array.slice(1, 4);
   let fromTwo = array.slice(2);
-  let uptoThree = array.slice(0, 3 + 1);
+  let uptoThree = array.slice(0, 3);
   let copy = array.slice();
 }", script);
 	}
@@ -2921,6 +3161,36 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	/// <summary>
+	/// 测试复杂 receiver 的实例方法引用只求值一次
+	/// </summary>
+	[TestMethod]
+	public void Visit_MethodReference_BoundMethod_ComplexReceiver_EvaluatesReceiverOnce()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Action action = Create().DoSomething;
+                }
+
+                TestClass Create() => new TestClass();
+
+                void DoSomething() { }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$1;
+  let action = (v$1 = this.Create(), v$1.DoSomething.bind(v$1));
+}", script);
+	}
+
+	/// <summary>
 	/// 测试带参数方法引用
 	/// </summary>
 	[TestMethod]
@@ -3154,6 +3424,325 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	/// <summary>
+	/// 测试多参数索引器在 JavaScript fallback 下不会静默误编译
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_MultiParameterIndexer_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class Matrix
+            {
+                public int this[int row, int column]
+                {
+                    get => row + column;
+                    set { }
+                }
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var matrix = new Matrix();
+                    int value = matrix[1, 2];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	/// <summary>
+	/// 测试白名单运行时类型上未进入支持表的属性 getter 不会静默回退成普通 JS 访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_UnmappedRuntimePropertyGetter_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int>();
+                    int capacity = list.Capacity;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	/// <summary>
+	/// 测试白名单运行时类型上未进入支持表的属性 setter 不会静默回退成普通 JS 赋值
+	/// </summary>
+	[TestMethod]
+	public void Visit_SimpleAssignment_UnmappedRuntimePropertySetter_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int>();
+                    list.Capacity = 8;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	/// <summary>
+	/// 测试白名单运行时类型上未进入支持表的方法不会静默回退成普通 JS 调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Invocation_UnmappedRuntimeMethod_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int>();
+                    var enumerator = list.GetEnumerator();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_UnmappedArrayRuntimeMethod_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] values = [1, 2, 3];
+                    var enumerator = values.GetEnumerator();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	/// <summary>
+	/// 测试未标记且不在白名单的外部静态属性不会静默回退成普通 JS 访问
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_UnsupportedExternalStaticProperty_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var shared = Random.Shared;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	[TestMethod]
+	public void Visit_Reference_WhitelistPropertyOnErasedUnsupportedGenericHost_Allows()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(List<Random> list)
+                {
+                    var count = list.Count;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+	Assert.AreEqual(@"{
+  let count = list.length;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试未标记且不在白名单的外部静态方法不会静默回退成普通 JS 调用
+	/// </summary>
+	[TestMethod]
+	public void Visit_Invocation_UnsupportedExternalStaticMethod_Throws()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var total = GC.GetTotalMemory(false);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_FakeSupportMarkerOnExternalHost_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = Fake.Helper.DoWork();
+                }
+            }
+
+            namespace Fake
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                }
+
+                [ECMAScriptModule]
+                public static class Helper
+                {
+                    public static int DoWork() => 1;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_WhitelistStaticGenericMethodWithErasedUnsupportedTypeArgument_Allows()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var items = Array.Empty<Random>();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+	Assert.AreEqual(@"{
+  let items = [];
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_VoidMethodWithMultipleRefParameters_UsesDistinctPackedReturnIndexes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1;
+                    int b = 2;
+                    Update(ref a, ref b);
+                }
+
+                void Update(ref int a, ref int b)
+                {
+                    a++;
+                    b += 10;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+	Assert.AreEqual(@"{
+  let v$0;
+  let a = 1;
+  let b = 2;
+  v$0 = this.Update(a, b), a = v$0[0], b = v$0[1];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_NonVoidMethodWithMultipleRefParameters_UsesReturnThenDistinctRefIndexes()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int a = 1;
+                    int b = 2;
+                    int result = Update(ref a, ref b);
+                }
+
+                int Update(ref int a, ref int b)
+                {
+                    a++;
+                    b += 10;
+                    return a + b;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let v$0;
+  let a = 1;
+  let b = 2;
+  let result = (v$0 = this.Update(a, b), a = v$0[1], b = v$0[2], v$0[0]);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	/// <summary>
 	/// 测试只读字典索引器 getter 必须保留运行时 helper 语义
 	/// </summary>
 	[TestMethod]
@@ -3241,6 +3830,60 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_ImplicitIndexerReference_ListFromEnd_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    List<int> list = null;
+                    int? value = list?[^1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = null;
+  let value = (v$0 = list, v$0 == null ? undefined : _d389c31d59037b42(v$0, v$0.length - 1));
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_ArrayElementReference_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int[] values = null;
+                    int? first = values?[0];
+                    int? last = values?[^1];
+                    int[] middle = values?[1..^1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0, v$1, v$2;
+  let values = null;
+  let first = (v$0 = values, v$0 == null ? undefined : v$0[0]);
+  let last = (v$1 = values, v$1 == null ? undefined : v$1[v$1.length - 1]);
+  let middle = (v$2 = values, v$2 == null ? undefined : v$2.slice(1, v$2.length - 1));
+}", script);
+	}
+
 	/// <summary>
 	/// 测试可选链 + 字典索引器 getter 不能丢掉短路语义
 	/// </summary>
@@ -3294,6 +3937,270 @@ public sealed class SemanticWalkerReferenceTest
   let v$0;
   let list = null;
   let removed = (v$0 = list, v$0 == null ? undefined : _562f832fd220e768(v$0, 1));
+}", script);
+	}
+
+	/// <summary>
+	/// 测试列表索引器复合赋值会保留 getter/setter helper 语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_CompoundAssignment_ListIndexer_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3 };
+                    list[0] += 5;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = [1, 2, 3];
+  v$0 = _d389c31d59037b42(list, 0) + 5, list[0] = v$0, v$0;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_SimpleAssignment_ListImplicitIndexer_FromEnd_UsesSingleReceiverEvaluation()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3 };
+                    Func<List<int>> next = () => list;
+                    next()[^1] = 4;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = [1, 2, 3];
+  let next = () => {
+    return list;
+  };
+  v$0 = next(), v$0[v$0.length - 1] = 4;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_CompoundAssignment_ListImplicitIndexer_FromEnd_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3 };
+                    Func<List<int>> next = () => list;
+                    next()[^1] += 5;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0, v$1, v$2;
+  let list = [1, 2, 3];
+  let next = () => {
+    return list;
+  };
+  v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1) + 5, v$0[v$1] = v$2, v$2;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试列表索引器后缀递增会保留 getter/setter helper 语义和返回旧值
+	/// </summary>
+	[TestMethod]
+	public void Visit_IncrementOrDecrement_ListIndexer_Postfix_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3 };
+                    int before = list[0]++;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = [1, 2, 3];
+  let before = (v$0 = _d389c31d59037b42(list, 0), list[0] = v$0 + 1, v$0);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_IncrementOrDecrement_ListImplicitIndexer_FromEnd_Postfix_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<int> { 1, 2, 3 };
+                    Func<List<int>> next = () => list;
+                    int before = next()[^1]++;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0, v$1, v$2;
+  let list = [1, 2, 3];
+  let next = () => {
+    return list;
+  };
+  let before = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), v$0[v$1] = v$2 + 1, v$2);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试字典索引器复合赋值会保留 getter/setter helper 语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_CompoundAssignment_DictionaryIndexer_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new Dictionary<string, int>();
+                    dict[""key""] = 1;
+                    dict[""key""] += 5;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let dict = new Map;
+  dict.set(""key"", 1);
+  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5, dict.set(""key"", v$0), v$0;
+}", script);
+	}
+
+	/// <summary>
+	/// 测试列表索引器空合并赋值会保留 getter/setter helper 语义
+	/// </summary>
+	[TestMethod]
+	public void Visit_CoalesceAssignment_ListIndexer_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<string?> { null };
+                    string value = list[0] ??= ""fallback"";
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let list = [null];
+  let value = (v$0 = _d389c31d59037b42(list, 0), v$0 == null ? (v$0 = ""fallback"", list[0] = v$0, v$0) : v$0);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_CoalesceAssignment_ListImplicitIndexer_FromEnd_UsesGetterAndSetterHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var list = new List<string?> { ""a"", null };
+                    Func<List<string?>> next = () => list;
+                    string value = next()[^1] ??= ""fallback"";
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0, v$1, v$2;
+  let list = [""a"", null];
+  let next = () => {
+    return list;
+  };
+  let value = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), v$2 == null ? (v$2 = ""fallback"", v$0[v$1] = v$2, v$2) : v$2);
+}", script);
+	}
+
+	/// <summary>
+	/// 测试列表索引器 read-modify-write 只计算一次索引表达式
+	/// </summary>
+	[TestMethod]
+	public void Visit_CompoundAssignment_ListIndexer_EvaluatesIndexExpressionOnce()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int index = 0;
+                    Func<int> nextIndex = () => index++;
+                    var list = new List<int> { 1, 2, 3 };
+                    list[nextIndex()] += 5;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
+
+		AssertScriptEqual(@"{
+  let v$0, v$1;
+  let index = 0;
+  let nextIndex = () => {
+    return index++;
+  };
+  let list = [1, 2, 3];
+  v$0 = nextIndex(), v$1 = _d389c31d59037b42(list, v$0) + 5, list[v$0] = v$1, v$1;
 }", script);
 	}
 
@@ -3364,17 +4271,17 @@ public sealed class SemanticWalkerReferenceTest
             {
                 public InnerClass Inner { get; set; }
 
+                public class InnerClass
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod()
                 {
                     TestClass obj = new TestClass();
                     obj.Inner = new InnerClass();
                     int x = obj.Inner.Value;
                 }
-            }
-
-            class InnerClass
-            {
-                public int Value { get; set; }
             }
         ");
 
@@ -4190,12 +5097,12 @@ public sealed class SemanticWalkerReferenceTest
 	public void Visit_Reference_WeakCollections_RequireObjectTargets()
 	{
 		var block = GetBlockOperation(@"
-            class Box
-            {
-            }
-
             class TestClass
             {
+                class Box
+                {
+                }
+
                 void TestMethod()
                 {
                     var key = new Box();
@@ -4401,6 +5308,47 @@ public sealed class SemanticWalkerReferenceTest
 			Assert.AreEqual("Inline", op, $"unexpected op for {pair.Key}");
 			Assert.AreEqual(pair.Value, template, $"unexpected inline template for {pair.Key}");
 		}
+	}
+
+	[TestMethod]
+	public void WhiteList_GenericSignatureEquivalence_MatchesDeclaredParametersOnly()
+	{
+		var method = typeof(SemanticWalker).GetMethod(
+			"TryGetGenericParameterEquivalentWhiteListValue",
+			BindingFlags.NonPublic | BindingFlags.Static);
+
+		Assert.IsNotNull(method);
+
+		var genericMethod = method!.MakeGenericMethod(typeof(int));
+		var mappings = new Dictionary<string, int>(StringComparer.Ordinal)
+		{
+			["System.Threading.Tasks.Task<TResult>.WaitAsync(System.Threading.CancellationToken)"] = 1,
+			["static bool.Parse(System.ReadOnlySpan<char>)"] = 2,
+		};
+
+		var positiveArguments = new object?[]
+		{
+			mappings,
+			"System.Threading.Tasks.Task<T>.WaitAsync(System.Threading.CancellationToken)",
+			null,
+			0,
+		};
+		var positiveMatched = (bool)(genericMethod.Invoke(null, positiveArguments) ?? false);
+		Assert.IsTrue(positiveMatched);
+		Assert.AreEqual(
+			"System.Threading.Tasks.Task<TResult>.WaitAsync(System.Threading.CancellationToken)",
+			positiveArguments[2]);
+		Assert.AreEqual(1, positiveArguments[3]);
+
+		var negativeArguments = new object?[]
+		{
+			mappings,
+			"static bool.Parse(System.ReadOnlySpan<byte>)",
+			null,
+			0,
+		};
+		var negativeMatched = (bool)(genericMethod.Invoke(null, negativeArguments) ?? false);
+		Assert.IsFalse(negativeMatched);
 	}
 
 	[TestMethod]
@@ -4885,7 +5833,7 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
-	public void Visit_Reference_UserStaticMethod_DoesNotUseImplicitEcmascriptMemberName()
+	public void Visit_Reference_TopLevelSiblingSourceStaticMethod_Throws()
 	{
 		var block = GetBlockOperation(@"
             class TestClass
@@ -4903,12 +5851,10 @@ public sealed class SemanticWalkerReferenceTest
         ");
 
 		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
-
-		Assert.AreEqual(@"{
-  let value = Helper.DoWork();
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
 	}
 
 	/// <summary>

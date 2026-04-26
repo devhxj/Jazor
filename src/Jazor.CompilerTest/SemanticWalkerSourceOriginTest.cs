@@ -686,7 +686,7 @@ public sealed class SemanticWalkerSourceOriginTest
             AssertHasSourceOrigin(new SemanticWalker(true).Visit(memberInitializer, new()), memberInitializer);
 
         var typeParameterCreation = GetFirstOperation<ITypeParameterObjectCreationOperation>(code, methodName: "MakeGeneric");
-        AssertHasSourceOrigin(new SemanticWalker(true).Visit(typeParameterCreation, new()), typeParameterCreation);
+        Assert.Throws<OperationTransformationException>(() => new SemanticWalker(true).Visit(typeParameterCreation, new()));
 
         var fieldInitializer = GetFieldInitializerOperation(code);
         AssertHasSourceOrigin(new SemanticWalker(true).Visit(fieldInitializer, new()), fieldInitializer);
@@ -1125,7 +1125,8 @@ public sealed class SemanticWalkerSourceOriginTest
                 sealed class Buffer
                 {
                     private readonly int[] _values = [1, 2, 3];
-                    public int this[Index index] => _values[index];
+                    public int Length => _values.Length;
+                    public int this[int index] => _values[index];
                 }
 
                 int M(Buffer buffer)

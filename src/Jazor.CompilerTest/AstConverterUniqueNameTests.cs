@@ -862,7 +862,7 @@ public sealed class AstConverterUniqueNameTests
                     {
                         throw new System.Exception();
                     }
-                    catch (System.InvalidOperationException)
+                    catch (System.ArgumentNullException)
                     {
                         return 1;
                     }

@@ -46,7 +46,10 @@ public sealed class SemanticWalkerTryCatchTest
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
         var root = syntaxTree.GetRoot();
 
-        var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+        var methodDeclaration = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+            ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
         if (methodDeclaration?.Body is not null)
         {
             var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -213,13 +216,13 @@ public sealed class SemanticWalkerTryCatchTest
     #region 多 Catch 子句测试
 
     /// <summary>
-    /// 测试多个 catch 子句转换
+    /// 测试多个 catch 子句在运行时别名可区分时正常转换
     /// C# 示例：
     /// try {
     ///     int x = 1;
     /// } catch (ArgumentNullException ex) {
     ///     int y = 2;
-    /// } catch (InvalidOperationException ex) {
+    /// } catch (Exception ex) {
     ///     int z = 3;
     /// }
     /// 转换结果：try { let x = 1; } catch (v$0) {
@@ -248,7 +251,7 @@ public sealed class SemanticWalkerTryCatchTest
                     {
                         int y = 2;
                     }
-                    catch (InvalidOperationException ex)
+                    catch (Exception ex)
                     {
                         int z = 3;
                     }
@@ -274,6 +277,41 @@ public sealed class SemanticWalkerTryCatchTest
     throw v$0;
 }", script);
 
+    }
+
+    /// <summary>
+    /// 测试多个 typed catch 在共享运行时别名时拒绝生成
+    /// </summary>
+    [TestMethod]
+    public void VisitTry_MultipleCatches_WithAmbiguousRuntimeAlias_Throws()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    try
+                    {
+                        int x = 1;
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        int y = 2;
+                    }
+                    catch (DivideByZeroException ex)
+                    {
+                        int z = 3;
+                    }
+                }
+            }
+        ");
+
+        var walker = new SemanticWalker(true);
+        var tryOp = GetOperationAt<ITryOperation>(block, 0);
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.VisitTry(tryOp, new()));
+
+        StringAssert.Contains(exception.Message, "runtime alias 'Error'");
+        StringAssert.Contains(exception.Message, "System.DivideByZeroException");
     }
 
     /// <summary>
@@ -1527,7 +1565,7 @@ catch (ex) {
                     {
                         result = 2;
                     }
-                    catch (InvalidOperationException ex)
+                    catch (Exception ex)
                     {
                         result = 3;
                     }
@@ -1606,10 +1644,10 @@ catch (ex) {
     #region 扩展测试用例 - 更多异常类型
 
     /// <summary>
-    /// 测试 catch InvalidOperationException
+    /// 测试 catch InvalidOperationException 在共享运行时别名时拒绝生成
     /// </summary>
     [TestMethod]
-    public void VisitCatch_InvalidOperationException()
+    public void VisitCatch_InvalidOperationException_SharedRuntimeAlias_Throws()
     {
         var block = GetBlockOperation(@"
             class TestClass
@@ -1629,17 +1667,10 @@ catch (ex) {
         ");
 
         var walker = new SemanticWalker(true);
-        var node = walker.Visit(block, new());
-        var script = node?.ToKnRECMAScript();
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
 
-        AssertScriptEqual(
-@"{
-  try {
-    throw new Error;
-  } catch (ex) {
-    console.log(ex.message);
-  }
-}", script);
+        StringAssert.Contains(exception.Message, "runtime alias 'Error'");
+        StringAssert.Contains(exception.Message, "System.DivideByZeroException");
     }
 
     /// <summary>
@@ -1674,6 +1705,8 @@ catch (ex) {
   try {
     throw new TypeError(""arg"");
   } catch (ex) {
+    if (!(ex instanceof TypeError))
+      throw ex;
     console.log(ex.message);
   }
 }", script);
@@ -1703,17 +1736,10 @@ catch (ex) {
         ");
 
         var walker = new SemanticWalker(true);
-        var node = walker.Visit(block, new());
-        var script = node?.ToKnRECMAScript();
-
-        AssertScriptEqual(
-@"{
-  try {
-    _151ccc6045162f8f(""abc"");
-  } catch (ex) {
-    console.log(""Format error"");
-  }
-}", script);
+        Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.Visit(block, new());
+        });
     }
 
     /// <summary>
@@ -1741,20 +1767,10 @@ catch (ex) {
         ");
 
         var walker = new SemanticWalker(true);
-        var node = walker.Visit(block, new());
-        var script = node?.ToKnRECMAScript();
-
-        AssertScriptEqual(
-@"{
-  let value = 2147483647;
-  try {
-    {
-      value += 1;
-    }
-  } catch {
-    console.log(""Overflow"");
-  }
-}", script);
+        Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.Visit(block, new());
+        });
     }
 
     #endregion

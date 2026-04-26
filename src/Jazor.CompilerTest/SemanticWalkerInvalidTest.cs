@@ -54,7 +54,10 @@ public sealed class SemanticWalkerInvalidTest
     var root = syntaxTree.GetRoot();
 
     // 查找第一个方法体
-    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+    var methodDeclaration = root.DescendantNodes()
+      .OfType<MethodDeclarationSyntax>()
+      .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+      ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
     if (methodDeclaration?.Body is not null)
     {
       var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;

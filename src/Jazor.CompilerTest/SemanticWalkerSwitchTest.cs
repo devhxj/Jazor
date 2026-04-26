@@ -66,8 +66,11 @@ public sealed class SemanticWalkerSwitchTest
 		var semanticModel = compilation.GetSemanticModel(syntaxTree);
 		var root = syntaxTree.GetRoot();
 
-		// 查找第一个方法体
-		var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+		// 优先定位约定的 TestMethod，避免前置辅助方法让测试误取错误的方法体。
+		var methodDeclaration = root.DescendantNodes()
+			.OfType<MethodDeclarationSyntax>()
+			.FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+			?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
 		if (methodDeclaration?.Body is not null)
 		{
 			var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -394,7 +397,7 @@ public sealed class SemanticWalkerSwitchTest
 	/// 测试 switch 语句（带方法调用）
 	/// C# 示例：switch (value) { case 1: DoSomething(); break; }
 	/// 转换结果：JavaScript switch 语句
-	/// 注意：当前实现对方法调用的处理可能有问题
+	/// 注意：实例方法调用应保留在 switch 分支体内
 	/// </summary>
 	[TestMethod]
 	public void VisitSwitch_WithMethodCalls()
@@ -425,9 +428,18 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		// TODO: 当前实现对方法调用的处理存在问题，返回空块
 		Assert.AreEqual(
-			@"{ }", script);
+			@"{
+  let value = 1;
+  switch (value) {
+    case 1:
+      this.DoSomething();
+      break;
+    case 2:
+      this.DoOther();
+      break;
+  }
+}", script);
 	}
 
 	/// <summary>
@@ -610,7 +622,7 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "(async () => {", StringComparison.Ordinal);
-		StringAssert.Contains(script, "await Task.CompletedTask;", StringComparison.Ordinal);
+		StringAssert.Contains(script, "await Promise.resolve();", StringComparison.Ordinal);
 	}
 
 	/// <summary>
@@ -2351,9 +2363,10 @@ public sealed class SemanticWalkerSwitchTest
 	public void VisitSwitch_ExpressionPropertyPattern()
 	{
 		var block = GetBlockOperation(@"
-			class Person { public string Name { get; set; } }
 			class TestClass
 			{
+				class Person { public string Name { get; set; } }
+
 				string TestMethod(Person p)
 				{
 					return p switch

@@ -51,7 +51,10 @@ public sealed class SemanticWalkerStringTest
 		var root = syntaxTree.GetRoot();
 
 		// 查找第一个方法体
-		var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+		var methodDeclaration = root.DescendantNodes()
+			.OfType<MethodDeclarationSyntax>()
+			.FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+			?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
 		if (methodDeclaration?.Body is not null)
 		{
 			var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -1706,6 +1709,56 @@ ${name}!`;
   let v$0;
   let text = null;
   let first = (v$0 = text, v$0 == null ? undefined : _5ad63706a889c294(v$0, 0));
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_ImplicitIndexerFromEnd_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = null;
+					char? last = text?[^1];
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let text = null;
+  let last = (v$0 = text, v$0 == null ? undefined : _5ad63706a889c294(v$0, v$0.length - 1));
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_String_ImplicitRange_ConditionalAccessReceiver_UsesNullishShortCircuit()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					string text = null;
+					string value = text?[1..^1];
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let v$0;
+  let text = null;
+  let value = (v$0 = text, v$0 == null ? undefined : v$0.substring(1, 1 + (v$0.length - 1 - 1)));
 }", script);
 	}
 

@@ -55,7 +55,10 @@ public sealed class UniqueNameAllocatorTests
 
         var syntaxTree = compilation.SyntaxTrees[^1];
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
-        var methodDeclaration = syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First();
+        var methodDeclaration = syntaxTree.GetRoot().DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+            ?? syntaxTree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().First(static method => method.Body is not null);
         return (semanticModel.GetOperation(methodDeclaration.Body!) as IBlockOperation)
             ?? throw new InvalidOperationException("未找到可分析的操作");
     }
@@ -329,13 +332,13 @@ public sealed class UniqueNameAllocatorTests
     public void Visit_ObjectInitializerExpressionStatement_StableAcrossEarlierSameCtorExpressionStatement()
     {
         var baseBlock = GetBlockOperation("""
-            class Box
-            {
-                public int Value { get; set; }
-            }
-
             class TestClass
             {
+                class Box
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod(int value)
                 {
                     _ = value;
@@ -344,13 +347,13 @@ public sealed class UniqueNameAllocatorTests
             }
             """);
         var insertedBlock = GetBlockOperation("""
-            class Box
-            {
-                public int Value { get; set; }
-            }
-
             class TestClass
             {
+                class Box
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod(int value)
                 {
                     _ = value;
@@ -401,13 +404,13 @@ public sealed class UniqueNameAllocatorTests
     public void Visit_ObjectInitializerExpressionStatement_StableAcrossEarlierSiblingInitializerWithDifferentValueSource()
     {
         var baseBlock = GetBlockOperation("""
-            class Box
-            {
-                public int Value { get; set; }
-            }
-
             class TestClass
             {
+                class Box
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod(int value, int seed)
                 {
                     _ = seed;
@@ -416,13 +419,13 @@ public sealed class UniqueNameAllocatorTests
             }
             """);
         var insertedBlock = GetBlockOperation("""
-            class Box
-            {
-                public int Value { get; set; }
-            }
-
             class TestClass
             {
+                class Box
+                {
+                    public int Value { get; set; }
+                }
+
                 void TestMethod(int value, int seed)
                 {
                     new Box { Value = seed };

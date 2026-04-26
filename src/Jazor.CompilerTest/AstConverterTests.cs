@@ -24,6 +24,13 @@ public sealed class AstConverterTests
         return Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat));
     }
 
+    private static string ConstructorHelperName(INamedTypeSymbol containingType, int parameterCount)
+    {
+        var constructor = containingType.InstanceConstructors
+            .Single(ctor => !ctor.IsImplicitlyDeclared && ctor.Parameters.Length == parameterCount);
+        return $"$ctor_{Format.HashName(constructor.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
+    }
+
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(string code)
     {
         var compilation = CSharpCompilation.Create(
@@ -61,6 +68,55 @@ public sealed class AstConverterTests
         return (classSymbol, semanticModel);
     }
 
+    private static async Task AssertCrossModuleStaticFieldMutationThrowsAsync(string fieldDeclaration, string statement)
+    {
+        var code = $$"""
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    {{fieldDeclaration}}
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static void Set()
+                    {
+                        {{statement}}
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "ConsumerModule");
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "Cross-module static field mutation");
+        StringAssert.Contains(exception.Message, "read-only");
+    }
+
     [TestMethod]
     public async Task Convert_SimplePublicClass_ReturnsModule()
     {
@@ -73,7 +129,7 @@ public sealed class AstConverterTests
             }
             """;
 
-        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "TestClass");
         var converter = new AstConverter(classSymbol, semanticModel);
 
         // Act
@@ -99,7 +155,7 @@ export function Method() { }
             }
             """;
 
-        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "TestClass");
         var converter = new AstConverter(classSymbol, semanticModel);
 
         // Act & Assert
@@ -235,7 +291,7 @@ export let PublicField = 24;
 
         AssertScriptEqual(
 @"export async function TestMethodAsync() {
-  await Task.CompletedTask;
+  await Promise.resolve();
 }
 ", script);
     }
@@ -292,7 +348,7 @@ export function set_Property(value) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithEnum_GeneratesEnumObject()
+    public async Task Convert_ClassWithOnlyEnum_ErasesDeclaration()
     {
         // Arrange
         var code = """
@@ -310,13 +366,12 @@ export function set_Property(value) {
         var converter = new AstConverter(classSymbol, semanticModel);
 
         // Act
-        var result = await converter.Convert();
-        var script = result?.ToKnRECMAScript();
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
         // Assert
-        AssertScriptEqual(
-@"export const TestEnum = Object.freeze({ Value1: 0, Value2: 5 });
-", script);
+        Assert.IsNull(module);
+        Assert.IsNull(script);
     }
 
     [TestMethod]
@@ -365,6 +420,36 @@ export function set_Property(value) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithNestedClassImplementingInterface_GeneratesClassWithoutInterfaceArtifact()
+    {
+        var code = """
+            public interface IMarker
+            {
+            }
+
+            public static class TestClass
+            {
+                public class NestedClass : IMarker
+                {
+                    public int Field;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export class NestedClass {
+  Field;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_NestedClassSymbol_ThrowsNotSupportedException()
     {
         var code = """
@@ -406,7 +491,7 @@ export function set_Property(value) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedInterface_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedInterface_ErasesDeclaration()
     {
         var code = """
             public static class TestClass
@@ -420,9 +505,11 @@ export function set_Property(value) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual("Jazor 模块类不支持NamedType:IMarker。", exception.Message);
+        Assert.IsNull(module);
+        Assert.IsNull(script);
     }
 
     [TestMethod]
@@ -518,7 +605,533 @@ export function set_Property(value) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedClassNestedInterface_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedClassMultipleInstanceConstructors_GeneratesDispatcher()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public int Value;
+
+                    public NestedClass()
+                    {
+                    }
+
+                    public NestedClass(int value)
+                    {
+                        Value = value;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var ctor0 = ConstructorHelperName(nestedClass, 0);
+        var ctor1 = ConstructorHelperName(nestedClass, 1);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class NestedClass {{
+  Value;
+  constructor() {{
+    let $args = arguments;
+    if ($args.length === 0) {{
+      this.{ctor0}();
+      return;
+    }}
+    if ($args.length === 1) {{
+      let value = $args[0];
+      this.{ctor1}(value);
+      return;
+    }}
+    throw new Error(""No matching constructor overload for NestedClass."");
+  }}
+  {ctor0}() {{ }}
+  {ctor1}(value) {{
+    this.Value = value;
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassConstructorOverloadsWithSameArity_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public NestedClass(int value)
+                    {
+                    }
+
+                    public NestedClass(string value)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassConstructorOverloadsWithOptionalParameterOverlap_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass
+                {
+                    public NestedClass(int value)
+                    {
+                    }
+
+                    public NestedClass(int value, int increment = 1)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassInheritance_GeneratesExtendsClause()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                }
+
+                public class NestedClass : BaseClass
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class BaseClass { }
+export class NestedClass extends BaseClass {
+  constructor() {
+    super();
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassInheritance_DerivedBeforeBase_EmitsBaseFirst()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class NestedClass : BaseClass
+                {
+                }
+
+                public class BaseClass
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class BaseClass { }
+export class NestedClass extends BaseClass {
+  constructor() {
+    super();
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassBaseConstructorInitializer_GeneratesSuperCall()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public int Field;
+
+                    public BaseClass(int value)
+                    {
+                        Field = value;
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public NestedClass(int value) : base(value + 1)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class BaseClass {
+  Field;
+  constructor(value) {
+    this.Field = value;
+  }
+}
+export class NestedClass extends BaseClass {
+  constructor(value) {
+    super(value + 1);
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassMultipleConstructorsAndBaseInitializers_GeneratesDispatcher()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public int Field;
+
+                    public BaseClass(int value)
+                    {
+                        Field = value;
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public NestedClass() : base(1)
+                    {
+                    }
+
+                    public NestedClass(int value) : base(value + 1)
+                    {
+                        Field = value * 2;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var ctor0 = ConstructorHelperName(nestedClass, 0);
+        var ctor1 = ConstructorHelperName(nestedClass, 1);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class BaseClass {{
+  Field;
+  constructor(value) {{
+    this.Field = value;
+  }}
+}}
+export class NestedClass extends BaseClass {{
+  constructor() {{
+    let $args = arguments;
+    if ($args.length === 0) {{
+      super(1);
+      this.{ctor0}();
+      return;
+    }}
+    if ($args.length === 1) {{
+      let value = $args[0];
+      super(value + 1);
+      this.{ctor1}(value);
+      return;
+    }}
+    throw new Error(""No matching constructor overload for NestedClass."");
+  }}
+  {ctor0}() {{ }}
+  {ctor1}(value) {{
+    this.Field = value * 2;
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassNamedBaseConstructorInitializer_ThrowsNotSupportedException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public BaseClass(int first, int second)
+                    {
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public NestedClass() : base(second: 2, first: 1)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support named constructor initializer arguments.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassBaseMethodCall_GeneratesSuperInvocation()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public virtual int Value()
+                    {
+                        return 1;
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public override int Value()
+                    {
+                        return base.Value() + 1;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class BaseClass {
+  Value() {
+    return 1;
+  }
+}
+export class NestedClass extends BaseClass {
+  constructor() {
+    super();
+  }
+  Value() {
+    return super.Value() + 1;
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassBasePropertyReadWrite_GeneratesSuperPropertyAccess()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public virtual int Value { get; set; }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public int Read()
+                    {
+                        return base.Value;
+                    }
+
+                    public void Write(int value)
+                    {
+                        base.Value = value + 1;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var baseClass = classSymbol.GetTypeMembers("BaseClass").Single();
+        var backingFieldName = PropertyBackingFieldName(baseClass, "Value");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+$@"export class BaseClass {{
+  #{backingFieldName};
+  get Value() {{
+    return this.#{backingFieldName};
+  }}
+  set Value(value) {{
+    this.#{backingFieldName} = value;
+  }}
+}}
+export class NestedClass extends BaseClass {{
+  constructor() {{
+    super();
+  }}
+  Read() {{
+    return super.Value;
+  }}
+  Write(value) {{
+    super.Value = value + 1;
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassBaseMethodReference_GeneratesSuperForwarder()
+    {
+        var code = """
+            using System;
+
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public virtual int Value(int value)
+                    {
+                        return value + 1;
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public Func<int, int> Get()
+                    {
+                        return base.Value;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class BaseClass {
+  Value(value) {
+    return value + 1;
+  }
+}
+export class NestedClass extends BaseClass {
+  constructor() {
+    super();
+  }
+  Get() {
+    return value => super.Value(value);
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassBaseFieldAccess_ThrowsOperationTransformationException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public int Value;
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public int Read()
+                    {
+                        return base.Value;
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+
+        Assert.AreEqual("Base field access 'Value' is not supported because member-class fields lower to instance-owned state rather than prototype members. Use a property or method seam instead.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithExternalBaseType_ThrowsNotSupportedException()
+    {
+        var code = """
+            public class ExternalBase
+            {
+            }
+
+            public static class TestClass
+            {
+                public class NestedClass : ExternalBase
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "TestClass");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+
+        Assert.AreEqual("Jazor member class does not support inheritance NestedClass : ExternalBase.", exception.Message);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassNestedInterface_ErasesDeclaration()
     {
         var code = """
             public static class TestClass
@@ -535,9 +1148,12 @@ export function set_Property(value) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual("Jazor member class does not support NamedType:IMarker.", exception.Message);
+        AssertScriptEqual(
+@"export class NestedClass { }
+", script);
     }
 
     [TestMethod]
@@ -583,7 +1199,7 @@ export function set_Property(value) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedClassNestedEnum_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedClassNestedEnum_ErasesDeclaration()
     {
         var code = """
             public static class TestClass
@@ -601,9 +1217,12 @@ export function set_Property(value) {
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual("Jazor member class does not support NamedType:Kind.", exception.Message);
+        AssertScriptEqual(
+@"export class NestedClass { }
+", script);
     }
 
     [TestMethod]
@@ -870,7 +1489,7 @@ export class NestedClass {{
         AssertScriptEqual(
 @"export class NestedClass {
   async LoadAsync() {
-    await Task.CompletedTask;
+    await Promise.resolve();
   }
 }
 ", script);
@@ -1388,7 +2007,7 @@ export function set_Prop3(value) {
     #region 枚举测试
 
     [TestMethod]
-    public async Task Convert_ClassWithEnum_MultipleValues_GeneratesEnumObject()
+    public async Task Convert_ClassWithOnlyEnum_MultipleValues_ErasesDeclaration()
     {
         // Arrange
         var code = """
@@ -1412,19 +2031,13 @@ export function set_Prop3(value) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
-@"export const Status = Object.freeze({
-  None: 0,
-  Active: 1,
-  Inactive: 2,
-  Pending: 3
-});
-", script);
+        Assert.IsNull(module);
+        Assert.IsNull(script);
 
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithEnum_FlagsAttribute_GeneratesEnumObject()
+    public async Task Convert_ClassWithOnlyFlagsEnum_ErasesDeclaration()
     {
         // Arrange
         var code = """
@@ -1449,19 +2062,13 @@ export function set_Prop3(value) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
-@"export const Permissions = Object.freeze({
-  None: 0,
-  Read: 1,
-  Write: 2,
-  Execute: 4
-});
-", script);
+        Assert.IsNull(module);
+        Assert.IsNull(script);
 
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithPrivateEnum_DoesNotExport()
+    public async Task Convert_ClassWithPrivateEnum_ErasesDeclaration()
     {
         // Arrange
         var code = """
@@ -1482,13 +2089,8 @@ export function set_Prop3(value) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
-@"const InternalEnum = Object.freeze({
-  A: 0,
-  B: 1,
-  C: 2
-});
-", script);
+        Assert.IsNull(module);
+        Assert.IsNull(script);
 
     }
 
@@ -2441,7 +3043,7 @@ export let Value = _12b4f3f1dc14bea9();
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithDefaultTimeSpanField_GeneratesZeroBigInt()
+    public async Task Convert_ClassWithDefaultTimeSpanField_UsesDefaultConstructorHelper()
     {
         var code = """
             using System;
@@ -2459,7 +3061,8 @@ export let Value = _12b4f3f1dc14bea9();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = 0n;
+@"import { _5af0f6ad850e6702 } from ""System/TimeSpanModule.js"";
+export let Value = _5af0f6ad850e6702();
 ", script);
     }
 
@@ -2488,7 +3091,7 @@ export let Value = _5f8053a9657a0844();
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithDefaultTimeOnlyField_GeneratesZeroBigInt()
+    public async Task Convert_ClassWithDefaultTimeOnlyField_UsesDefaultConstructorHelper()
     {
         var code = """
             using System;
@@ -2506,7 +3109,8 @@ export let Value = _5f8053a9657a0844();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = 0n;
+@"import { _9f78f92d0753f4cf } from ""System/TimeOnlyModule.js"";
+export let Value = _9f78f92d0753f4cf();
 ", script);
     }
 
@@ -2579,8 +3183,34 @@ export let Value = _5f8053a9657a0844();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export const Kind = Object.freeze({ None: 0, One: 1 });
-export let Value = 0;
+@"export let Value = 0;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDefaultLongBackedEnumField_GeneratesBigIntZero()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public enum Kind : long
+                {
+                    None = 0L,
+                    One = 9007199254740993L
+                }
+
+                public static Kind Value = default(Kind);
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let Value = 0n;
 ", script);
     }
 
@@ -2628,8 +3258,34 @@ export let Value = 0;
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export const Kind = Object.freeze({ None: 0, One: 1 });
-export const Value = 1;
+@"export const Value = 1;
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithConstLongBackedEnumField_GeneratesBigIntLiteral()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public enum Kind : long
+                {
+                    None = 0L,
+                    One = 9007199254740993L
+                }
+
+                public const Kind Value = Kind.One;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export const Value = 9007199254740993n;
 ", script);
     }
 
@@ -2749,8 +3405,7 @@ export const Value = 1;
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export const Kind = Object.freeze({ None: 0, One: 1 });
-export function Check(value = 1) {
+@"export function Check(value = 1) {
   return value;
 }
 ", script);
@@ -2998,7 +3653,7 @@ export function Increment() {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithMultipleEnumValues_GeneratesCorrectOrder()
+    public async Task Convert_ClassWithOnlyEnum_AutoIncrementValues_ErasesDeclaration()
     {
         // Arrange
         var code = """
@@ -3025,17 +3680,8 @@ export function Increment() {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
-@"export const Days = Object.freeze({
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
-  Sunday: 7
-});
-", script);
+        Assert.IsNull(module);
+        Assert.IsNull(script);
 
     }
 
@@ -4624,6 +5270,44 @@ export function Create() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithTopLevelSiblingSourceHelper_Throws()
+    {
+        // Arrange
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => Helper.Make();
+                }
+
+                public static class Helper
+                {
+                    public static int Make() => 42;
+                }
+            }
+            """;
+
+        var (consumer, semanticModel) = CompileAndGetSymbol(code, "ConsumerModule");
+        var converter = new AstConverter(consumer, semanticModel);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithCrossModuleStaticReferenceViaAlias_GeneratesModuleImport()
     {
         // Arrange
@@ -4853,6 +5537,142 @@ export function Create() {
   return get_Value();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticPropertyAssignment_GeneratesSetterImport()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Value { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static void Set() => RuntimeModule.Value = 7;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { set_Value } from ""System/RuntimeModule.js"";
+export function Set() {
+  set_Value(7);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldAssignment_Throws()
+    {
+        await AssertCrossModuleStaticFieldMutationThrowsAsync(
+            "public static int Value;",
+            "RuntimeModule.Value = 7;");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldAssignment_PrioritizesMutationGuard()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static int Value;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static void Set() => RuntimeModule.Value = Helper.Make();
+                }
+
+                public static class Helper
+                {
+                    public static int Make() => 42;
+                }
+            }
+            """;
+
+        var (consumer, semanticModel) = CompileAndGetSymbol(code, "ConsumerModule");
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "Cross-module static field mutation");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldCompoundAssignment_Throws()
+    {
+        await AssertCrossModuleStaticFieldMutationThrowsAsync(
+            "public static int Value;",
+            "RuntimeModule.Value += 1;");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldCoalesceAssignment_Throws()
+    {
+        await AssertCrossModuleStaticFieldMutationThrowsAsync(
+            "public static string? Value;",
+            "RuntimeModule.Value ??= \"fallback\";");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldIncrement_Throws()
+    {
+        await AssertCrossModuleStaticFieldMutationThrowsAsync(
+            "public static int Value;",
+            "RuntimeModule.Value++;");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleStaticFieldDeconstructionAssignment_Throws()
+    {
+        await AssertCrossModuleStaticFieldMutationThrowsAsync(
+            "public static int Value;",
+            "int local = 0; (RuntimeModule.Value, local) = (1, 2);");
     }
 
     [TestMethod]

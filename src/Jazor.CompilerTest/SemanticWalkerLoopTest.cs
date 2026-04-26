@@ -52,7 +52,10 @@ public sealed class SemanticWalkerLoopTest
     var root = syntaxTree.GetRoot();
 
     // 查找第一个方法体
-    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+    var methodDeclaration = root.DescendantNodes()
+      .OfType<MethodDeclarationSyntax>()
+      .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+      ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
     if (methodDeclaration?.Body is not null)
     {
       var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -132,6 +135,37 @@ public sealed class SemanticWalkerLoopTest
     Assert.IsNotNull(script);
     StringAssert.Contains(script, "for await (let num of", StringComparison.Ordinal);
     StringAssert.Contains(script, "console.log(num);", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 await foreach + Task.WhenEach 保持异步迭代语义
+  /// </summary>
+  [TestMethod]
+  public void Visit_ForEachLoop_TaskWhenEach_UsesForAwait()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task<int> first,
+                    System.Threading.Tasks.Task<int> second)
+                {
+                    await foreach (var task in System.Threading.Tasks.Task.WhenEach(first, second))
+                    {
+                        Console.WriteLine(await task);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "for await (let task of async function*() {", StringComparison.Ordinal);
+    StringAssert.Contains(script, "await Promise.race(", StringComparison.Ordinal);
+    StringAssert.Contains(script, "console.log(await task);", StringComparison.Ordinal);
   }
 
   /// <summary>

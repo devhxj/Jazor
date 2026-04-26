@@ -51,7 +51,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var root = syntaxTree.GetRoot();
 
     // 查找第一个方法体
-    var methodDeclaration = root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault();
+    var methodDeclaration = root.DescendantNodes()
+      .OfType<MethodDeclarationSyntax>()
+      .FirstOrDefault(static method => method.Identifier.ValueText == "TestMethod" && method.Body is not null)
+      ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
     if (methodDeclaration?.Body is not null)
     {
       var operation = semanticModel.GetOperation(methodDeclaration.Body) as IBlockOperation;
@@ -956,14 +959,12 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.IsNotNull(awaited);
     var invocation = awaited.Operation as IInvocationOperation;
     Assert.IsNotNull(invocation);
-    var delayMethodName = $"Task.{Util.GetConfigOrSymbolName(invocation.TargetMethod)}";
-
-    AssertScriptEqual($@"{{
-  let func = async () => {{
-    await {delayMethodName}(1);
+    AssertScriptEqual(@"{
+  let func = async () => {
+    await (1 === -1 ? new Promise(() => { }) : new Promise(resolve => setTimeout(resolve, 1)));
     return;
-  }};
-}}", script);
+  };
+}", script);
   }
 
   /// <summary>
@@ -991,12 +992,973 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.IsNotNull(awaitOperation);
     var invocation = awaitOperation.Operation as IInvocationOperation;
     Assert.IsNotNull(invocation);
-    var delayMethodName = $"Task.{Util.GetConfigOrSymbolName(invocation.TargetMethod)}";
+    AssertScriptEqual(@"{
+  await (100 === -1 ? new Promise(() => { }) : new Promise(resolve => setTimeout(resolve, 100)));
+}", script);
 
-    AssertScriptEqual($@"{{
-  await {delayMethodName}(100);
-}}", script);
+  }
 
+  /// <summary>
+  /// 测试 Task.WhenAll 在 await 下会映射到 Promise.all
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskWhenAll_UsesPromiseAll()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second)
+                {
+                    await System.Threading.Tasks.Task.WhenAll(first, second);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  await Promise.all([first, second]);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.WhenAny 在 await 下会映射到 Promise.race 包装
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskWhenAny_UsesPromiseRaceWrapper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second)
+                {
+                    await System.Threading.Tasks.Task.WhenAny(first, second);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  await Promise.race([first, second].map(task => Promise.resolve(task).then(() => task, () => task)));
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.ConfigureAwait 在 await 下会映射为 Promise.resolve
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskConfigureAwait_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(System.Threading.Tasks.Task first)
+                {
+                    await first.ConfigureAwait(false);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  await Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.WaitAsync(TimeSpan) 在 await 下会映射为 Promise.race 超时语义
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskWaitAsyncTimeSpan_UsesPromiseRaceTimeout()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.TimeSpan timeout)
+                {
+                    await first.WaitAsync(timeout);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "await Promise.race([Promise.resolve(first),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "timeout.ticks === -10000n ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "reject(new Error(\"TimeoutException\"))", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.ContinueWith(Action&lt;Task&gt;) 会映射为 Promise.then 双分支回调
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskContinueWithAction_UsesPromiseThen()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Action<System.Threading.Tasks.Task> continuation)
+                {
+                    return first.ContinueWith(continuation);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  return Promise.resolve(first).then(() => continuation(first), () => continuation(first));
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 DateTime 到 DateTimeOffset 的隐式转换会绑定到 DateTimeOffsetModule helper
+  /// </summary>
+  [TestMethod]
+  public void Visit_Conversion_DateTimeToDateTimeOffset_UsesHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    DateTime value = DateTime.Now;
+                    DateTimeOffset offset = value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = _ee9dd166a34a2fa5();
+  let offset = _31bbd12ed57f4f76(value);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 TimeSpan 一元负号会绑定到 TimeSpanModule helper
+  /// </summary>
+  [TestMethod]
+  public void Visit_UnaryOperator_TimeSpanNegation_UsesTimeSpanHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    TimeSpan value = new TimeSpan(1, 2, 3);
+                    TimeSpan neg = -value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = _6f22e268aec62fe7(1, 2, 3);
+  let neg = _e8e884a7b14ce4b4(value);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 TimeSpan 复合赋值会绑定到 TimeSpanModule helper，而不是静默退化成原生 +=
+  /// </summary>
+  [TestMethod]
+  public void Visit_CompoundAssignment_TimeSpan_UsesTimeSpanHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    TimeSpan value = new TimeSpan(1, 2, 3);
+                    TimeSpan other = new TimeSpan(0, 1, 0);
+                    value += other;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = _6f22e268aec62fe7(1, 2, 3);
+  let other = _6f22e268aec62fe7(0, 1, 0);
+  value = _24670e70abc0feb8(value, other);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.ContinueWith&lt;TResult&gt;(Func&lt;Task, object, TResult&gt;, state) 会映射为 Promise.then
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskContinueWithFuncState_UsesPromiseThen()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                System.Threading.Tasks.Task<int> TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Func<System.Threading.Tasks.Task, object, int> continuation,
+                    object state)
+                {
+                    return first.ContinueWith<int>(continuation, state);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  return Promise.resolve(first).then(() => continuation(first, state), () => continuation(first, state));
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.WaitAll(params Task[]) 会映射到 Promise.all
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWaitAll_UsesPromiseAll()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second)
+                {
+                    System.Threading.Tasks.Task.WaitAll(first, second);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  Promise.all([first, second]);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.WaitAll(Task[], TimeSpan) 会映射为基于 ticks 的 Promise.race(true/false)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWaitAll_WithTimeSpanTimeout_UsesTickBasedTimeoutRace()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second,
+                    System.TimeSpan timeout)
+                {
+                    var completed = System.Threading.Tasks.Task.WaitAll(new[] { first, second }, timeout);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let completed = Promise.race([Promise.all([first, second]).then(() => true),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "timeout.ticks === -10000n ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "setTimeout(() => resolve(false), Number(timeout.ticks / 10000n))", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.WaitAny(params Task[]) 会映射到返回索引的 Promise.race
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWaitAny_UsesPromiseRaceIndex()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second)
+                {
+                    var index = System.Threading.Tasks.Task.WaitAny(first, second);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let index = Promise.race(Array.from([first, second]).map((task, index) => Promise.resolve(task).then(() => index, () => index)));
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.WaitAny(Task[], int) 会在超时时返回 -1（Promise 语义）
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWaitAny_WithMillisecondsTimeout_UsesMinusOneFallback()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second)
+                {
+                    var index = System.Threading.Tasks.Task.WaitAny(new[] { first, second }, 100);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let index = Promise.race([Promise.race(Array.from([first, second]).map((task, index) => Promise.resolve(task).then(() => index, () => index))),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "setTimeout(() => resolve(-1), 100)", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.WaitAny(Task[], TimeSpan) 会映射为基于 ticks 的 Promise.race(-1 回退)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWaitAny_WithTimeSpanTimeout_UsesTickBasedMinusOneFallback()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second,
+                    System.TimeSpan timeout)
+                {
+                    var index = System.Threading.Tasks.Task.WaitAny(new[] { first, second }, timeout);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let index = Promise.race([Promise.race(Array.from([first, second]).map((task, index) => Promise.resolve(task).then(() => index, () => index))),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "timeout.ticks === -10000n ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "setTimeout(() => resolve(-1), Number(timeout.ticks / 10000n))", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.WhenEach(params Task[]) 会映射为异步生成器 + Promise.race
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWhenEach_UsesAsyncGeneratorRace()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(
+                    System.Threading.Tasks.Task first,
+                    System.Threading.Tasks.Task second)
+                {
+                    var sequence = System.Threading.Tasks.Task.WhenEach(first, second);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let sequence = async function*() {", StringComparison.Ordinal);
+    StringAssert.Contains(script, "const pending = Array.from([first, second]);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "const settled = await Promise.race(", StringComparison.Ordinal);
+    StringAssert.Contains(script, "yield settled.task;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.FromException/FromCanceled 会映射到 Promise.reject
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskFromExceptionAndFromCanceled_UsePromiseReject()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Exception ex, System.Threading.CancellationToken cancellationToken)
+                {
+                    var faulted = System.Threading.Tasks.Task.FromException(ex);
+                    var canceled = System.Threading.Tasks.Task.FromCanceled(cancellationToken);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let faulted = Promise.reject(ex);
+  let canceled = Promise.reject(new Error(""TaskCanceledException""));
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task.CompletedTask / Task.Yield 会映射为 Promise.resolve()
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskCompletedTaskAndYield_UsePromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var completed = System.Threading.Tasks.Task.CompletedTask;
+                    var yielded = System.Threading.Tasks.Task.Yield();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let completed = Promise.resolve();
+  let yielded = Promise.resolve();
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 new Task(Action) 会映射为延迟启动任务（等待 Start/RunSynchronously 触发）
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskCtor_Action_UsesPromiseThen()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                System.Threading.Tasks.Task TestMethod(System.Action action)
+                {
+                    return new System.Threading.Tasks.Task(action);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "globalThis.__jazorTaskStarters ??= new WeakMap", StringComparison.Ordinal);
+    StringAssert.Contains(script, "const entry = { started: false, start: null };", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Promise.resolve().then(() => action()).then(resolve, reject);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "return task;", StringComparison.Ordinal);
+    Assert.IsFalse(script.Contains("Promise.resolve().then(action)", StringComparison.Ordinal));
+  }
+
+  /// <summary>
+  /// 测试 new Task(Action&lt;object&gt;, state) 会映射为延迟启动任务并保留 AsyncState
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskCtor_ActionWithState_UsesPromiseThen()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                System.Threading.Tasks.Task TestMethod(System.Action<object> action, object state)
+                {
+                    return new System.Threading.Tasks.Task(action, state);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "globalThis.__jazorTaskStarters ??= new WeakMap", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Promise.resolve().then(() => action(state)).then(resolve, reject);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "__jazorTaskAsyncStates ??= new WeakMap", StringComparison.Ordinal);
+    StringAssert.Contains(script, ".set(task, state)", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 new Task(Action&lt;object&gt;, state) 会将 AsyncState 写入任务状态表
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskCtor_ActionWithState_WritesAsyncState()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Action<object> action, object state)
+                {
+                    var task = new System.Threading.Tasks.Task(action, state);
+                    var asyncState = task.AsyncState;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let task = (() => {", StringComparison.Ordinal);
+    StringAssert.Contains(script, "globalThis.__jazorTaskStarters ??= new WeakMap", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Promise.resolve().then(() => action(state)).then(resolve, reject);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "__jazorTaskAsyncStates ??= new WeakMap", StringComparison.Ordinal);
+    StringAssert.Contains(script, ".set(task, state)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let asyncState = globalThis.__jazorTaskAsyncStates?.get(task) ?? globalThis.__jazorTaskStates?.get(task)?.asyncState ?? null;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.Start / RunSynchronously 会触发延迟任务启动器
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskStartAndRunSynchronously_UseDeferredStarter()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first)
+                {
+                    first.Start();
+                    first.RunSynchronously();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    const string starterLookup = "globalThis.__jazorTaskStarters?.get(first)";
+    var firstIndex = script.IndexOf(starterLookup, StringComparison.Ordinal);
+    Assert.IsTrue(firstIndex >= 0);
+    var secondIndex = script.IndexOf(starterLookup, firstIndex + 1, StringComparison.Ordinal);
+    Assert.IsTrue(secondIndex > firstIndex);
+    Assert.IsFalse(script.Contains("Promise.resolve(first)", StringComparison.Ordinal));
+    StringAssert.Contains(script, "if (entry && entry.start)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "entry.start();", StringComparison.Ordinal);
+    StringAssert.Contains(script, "globalThis.__jazorTaskStates?.get(first)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "state.status === \"created\"", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 task.Wait() 会映射到 Promise.resolve(task)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWait_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first)
+                {
+                    first.Wait();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 task.Wait(int) 会映射为 Promise.race(true/false)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWait_WithMillisecondsTimeout_UsesPromiseRaceBool()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first)
+                {
+                    var completed = first.Wait(100);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let completed = Promise.race([Promise.resolve(first).then(() => true),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "100 === -1 ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "setTimeout(() => resolve(false), 100)", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 task.Wait(TimeSpan) 会映射为基于 ticks 的 Promise.race(true/false)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskWait_WithTimeSpanTimeout_UsesPromiseRaceBool()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first, System.TimeSpan timeout)
+                {
+                    var completed = first.Wait(timeout);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let completed = Promise.race([Promise.resolve(first).then(() => true),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "timeout.ticks === -10000n ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "Number(timeout.ticks / 10000n)", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 task.GetAwaiter() 会映射到 Promise.resolve(task)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskGetAwaiter_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first)
+                {
+                    var awaiter = first.GetAwaiter();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let awaiter = Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task&lt;T&gt;.GetAwaiter() 会映射到 Promise.resolve(task)
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskOfTGetAwaiter_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task<int> first)
+                {
+                    var awaiter = first.GetAwaiter();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let awaiter = Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 await Task&lt;T&gt;.ConfigureAwait(false) 会映射到 await Promise.resolve(task)
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskOfTConfigureAwait_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(System.Threading.Tasks.Task<int> first)
+                {
+                    await first.ConfigureAwait(false);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  await Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 await Task&lt;T&gt;.ConfigureAwait(options) 会映射到 await Promise.resolve(task)
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskOfTConfigureAwaitOptions_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task<int> first,
+                    System.Threading.Tasks.ConfigureAwaitOptions options)
+                {
+                    await first.ConfigureAwait(options);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  await Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 await Task&lt;T&gt;.WaitAsync(TimeSpan) 会映射为 Promise.race 超时语义
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskOfTWaitAsyncTimeSpan_UsesPromiseRaceTimeout()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task<int> first,
+                    System.TimeSpan timeout)
+                {
+                    await first.WaitAsync(timeout);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "await Promise.race([Promise.resolve(first),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "timeout.ticks === -10000n ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "reject(new Error(\"TimeoutException\"))", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 await Task&lt;T&gt;.WaitAsync(CancellationToken) 会映射到 Promise.resolve(task)
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskOfTWaitAsyncCancellationToken_UsesPromiseResolve()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task<int> first,
+                    System.Threading.CancellationToken cancellationToken)
+                {
+                    await first.WaitAsync(cancellationToken);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  await Promise.resolve(first);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 await Task&lt;T&gt;.WaitAsync(TimeSpan, TimeProvider) 会映射为 Promise.race 超时语义
+  /// </summary>
+  [TestMethod]
+  public void Visit_Await_TaskOfTWaitAsyncTimeSpanWithTimeProvider_UsesPromiseRaceTimeout()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                async System.Threading.Tasks.Task TestMethod(
+                    System.Threading.Tasks.Task<int> first,
+                    System.TimeSpan timeout,
+                    System.TimeProvider timeProvider)
+                {
+                    await first.WaitAsync(timeout, timeProvider);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "await Promise.race([Promise.resolve(first),", StringComparison.Ordinal);
+    StringAssert.Contains(script, "timeout.ticks === -10000n ? new Promise(() => { })", StringComparison.Ordinal);
+    StringAssert.Contains(script, "reject(new Error(\"TimeoutException\"))", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task&lt;TResult&gt;.Result 被 Discard 映射拒绝
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskOfTResult_Discard_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                int TestMethod(System.Threading.Tasks.Task<int> first)
+                {
+                    return first.Result;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+  }
+
+  /// <summary>
+  /// 测试 task.Dispose() 会降级为 no-op
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskDispose_UsesUndefinedNoOp()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first)
+                {
+                    first.Dispose();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  undefined;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Task 状态属性会映射到 Promise 状态跟踪 helper
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskStateProperties_UseStateTrackingHelper()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(System.Threading.Tasks.Task first)
+                {
+                    var id = first.Id;
+                    var status = first.Status;
+                    var isCanceled = first.IsCanceled;
+                    var isCompleted = first.IsCompleted;
+                    var isCompletedSuccessfully = first.IsCompletedSuccessfully;
+                    var isFaulted = first.IsFaulted;
+                    var exception = first.Exception;
+                    var creationOptions = first.CreationOptions;
+                    var asyncState = first.AsyncState;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let id = (globalThis.__jazorTaskEnsureState ??=", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let status = (s => s.status === \"fulfilled\" ? 5", StringComparison.Ordinal);
+    StringAssert.Contains(script, "s.status === \"created\" ? 0", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let isCanceled = (s => s.status === \"rejected\" &&", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let isCompleted = (s => s.status === \"fulfilled\" || s.status === \"rejected\")", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let isCompletedSuccessfully = (globalThis.__jazorTaskEnsureState ??=", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let isFaulted = (s => s.status === \"rejected\" &&", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let exception = (s => s.status === \"rejected\" ? s.error : null)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "const starterEntry = globalThis.__jazorTaskStarters?.get(task);", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let creationOptions = 0;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let asyncState = globalThis.__jazorTaskAsyncStates?.get(first) ?? globalThis.__jazorTaskStates?.get(first)?.asyncState ?? null;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Task.CurrentId / Task.Factory 会映射为 null 回退
+  /// </summary>
+  [TestMethod]
+  public void Visit_TaskStaticProperties_UseNullFallback()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var currentId = System.Threading.Tasks.Task.CurrentId;
+                    var factory = System.Threading.Tasks.Task.Factory;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let currentId = null;
+  let factory = null;
+}", script);
   }
 
   /// <summary>
@@ -1158,10 +2120,101 @@ public sealed class SemanticWalkerOrdinaryTest
   let dt = _bfa8ee5dd46e2005();
   let dto = _12b4f3f1dc14bea9();
   let day = _5f8053a9657a0844();
-  let time = 0n;
-  let span = 0n;
+  let time = _9f78f92d0753f4cf();
+  let span = _5af0f6ad850e6702();
   let big = 0n;
 }", script);
+  }
+
+  [TestMethod]
+  public void Visit_DefaultValue_TupleValueType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    (int Count, string Name, (bool Flag, long Total) Meta) tuple = default((int Count, string Name, (bool Flag, long Total) Meta));
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let tuple = {
+    Count: 0,
+    Name: null,
+    Meta: { Flag: false, Total: 0n }
+  };
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_DefaultValue_Guid()
+  {
+    var block = GetBlockOperation(@"
+            using System;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Guid id = default(Guid);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let id = _0e58e51018e846d2();
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_DefaultValue_CustomStruct_Throws()
+  {
+    var block = GetBlockOperation(@"
+            public struct Counter
+            {
+                public int Value;
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Counter counter = default(Counter);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+  }
+
+  [TestMethod]
+  public void Visit_DefaultValue_UnsupportedExternalConcreteReferenceType_Throws()
+  {
+    var block = GetBlockOperation(@"
+            using System;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Uri uri = default(Uri);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
   }
 
   /// <summary>
@@ -1253,21 +2306,21 @@ public sealed class SemanticWalkerOrdinaryTest
     var block = GetBlockOperation(@"
             class TestClass
             {
+                record Person((string first, int years) Info);
+
                 void TestMethod()
                 {
                     var person = new Person((first: ""John"", years: 30));
                     var newPerson = person with { Info = (name: ""Jane"", age: 40) };
                 }
             }
-
-            record Person((string first, int years) Info);
             ");
 
     var walker = new SemanticWalker(true);
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+  Assert.AreEqual(@"{
   let person = new Person({ first: ""John"", years: 30 });
   let newPerson = { ...person, Info: { first: ""Jane"", years: 40 } };
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -1318,6 +2371,28 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let array = [{ first: ""John"", years: 30 }];
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+  }
+
+  [TestMethod]
+  public void Visit_CollectionExpression_ErasedUnsupportedElementType_Allows()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    List<Random> list = [];
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let list = [];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
