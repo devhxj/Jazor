@@ -138,7 +138,7 @@ public partial class SemanticWalker
 	public override Node? VisitIsType(IIsTypeOperation operation, SenseArgument argument)
 	{
 		var value = Translate<Expression>(operation.ValueOperand, argument);
-		var result = CreateTypeMatchExpr(operation, operation.TypeOperand, value);
+		var result = CreateTypeMatchExpr(operation, operation.TypeOperand, value, context: argument);
 		if (operation.IsNegated)
 			return new NonUpdateUnaryExpression(Operator.LogicalNot, result);
 
@@ -331,38 +331,45 @@ public partial class SemanticWalker
 	{
 		var conditions = new List<Expression>();
 		var targetExpr = GetPatternRefrence(operation, argument);
+		var patternArgument = argument;
+		targetExpr = StabilizePatternExpression(operation, targetExpr, argument, "recursive", out var targetInitialization);
+		if (targetInitialization is not null)
+			patternArgument = argument.WithPatternInput(targetExpr);
 
 		// 类型匹配条件（排除匿名类型、元组类型、object）
 		if (!operation.MatchedType.IsAnonymousType &&
 			!operation.MatchedType.IsTupleType &&
 			operation.MatchedType.SpecialType != SpecialType.System_Object)
 		{
-			var typeCheck = CreateTypeMatchExpr(operation, operation.MatchedType, targetExpr);
+			var typeCheck = CreateTypeMatchExpr(operation, operation.MatchedType, targetExpr, context: patternArgument);
 			conditions.Add(typeCheck);
 		}
 
 		// 属性子模式（命名属性，如 { Name: "John" }）
 		if (operation.PropertySubpatterns.Length > 0)
 		{
-			// 为属性子模式传递 targetExpr 作为 PatternInput
-			var propertyArg = argument.WithPatternInput(targetExpr);
 			foreach (var propertySubpattern in operation.PropertySubpatterns)
 			{
-				var right = Translate<Expression>(propertySubpattern, propertyArg);
-
-				// todo：需要完善判断是否检测属性存在，比如有些固定属性不需要检测
 				if (propertySubpattern.Member is IMemberReferenceOperation m)
 				{
-					var symbol = GetWhiteListSymbol(m);
-					var _ = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias);
-					var name = alias ?? Util.GetConfigOrSymbolName(m.Member);
-					var left = new NonLogicalBinaryExpression(Operator.In, new StringLiteral(name, $"\"{name}\""), targetExpr);
-					var condition = new LogicalExpression(Operator.LogicalAnd, left, right);
+					var propertyAccess = BuildPatternMemberAccess(m, targetExpr, patternArgument, out var existencePropertyName);
+					var propertyArg = patternArgument.WithPatternInput(propertyAccess);
+					var right = Translate<Expression>(propertySubpattern.Pattern, propertyArg);
 					var notNull = new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
+					Expression condition = right;
+					if (!string.IsNullOrEmpty(existencePropertyName))
+					{
+						var exists = new NonLogicalBinaryExpression(
+							Operator.In,
+							new StringLiteral(existencePropertyName!, $"\"{existencePropertyName!}\""),
+							targetExpr);
+						condition = new LogicalExpression(Operator.LogicalAnd, exists, right);
+					}
+
 					conditions.Add(new LogicalExpression(Operator.LogicalAnd, notNull, condition));
 				}
 				else
-					conditions.Add(right);
+					conditions.Add(Translate<Expression>(propertySubpattern, patternArgument.WithPatternInput(targetExpr)));
 			}
 		}
 
@@ -372,7 +379,7 @@ public partial class SemanticWalker
 			if (operation.InputType is not INamedTypeSymbol namedType)
 				return HandleTransformationFailure<Node>(operation, $"Input type '{operation.InputType}' is not a named type for deconstruction pattern.");
 
-			ProcessPositionalSubpatterns(operation, namedType, targetExpr, conditions, argument);
+			ProcessPositionalSubpatterns(operation, namedType, targetExpr, conditions, patternArgument);
 		}
 
 		// 组合所有条件
@@ -381,11 +388,11 @@ public partial class SemanticWalker
 			var result = conditions[0];
 			for (int i = 1; i < conditions.Count; i++)
 				result = new LogicalExpression(Operator.LogicalAnd, result, conditions[i]);
-			return result;
+			return PrependEvaluation(targetInitialization, result);
 		}
 
 		// 空模式总是匹配
-		return new BooleanLiteral(true, "true");
+		return PrependEvaluation(targetInitialization, new BooleanLiteral(true, "true"));
 	}
 
 	/// <summary>
@@ -466,31 +473,49 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitPropertySubpattern(IPropertySubpatternOperation operation, SenseArgument argument)
 	{
-		// 属性子模式的条件判断转换
-		// C# 示例：obj is { Name: "John" } 中的 Name: "John" 部分
-		//         转换为 obj.Name === "John" 的JavaScript表达式
-		// 转换结果：生成属性访问和比较的组合表达式
-
-		// 必须提供 PatternInput（来自父级递归模式）
 		var obj = GetPatternRefrence(operation, argument);
-		// 构建属性访问表达式作为新的 PatternInput
-		Expression propertyAccess;
-		if (operation.Member is IMemberReferenceOperation m)
+		if (operation.Member is not IMemberReferenceOperation memberReference)
 		{
-			var symbol = GetWhiteListSymbol(m);
-			var _ = GetWhiteListExpression(symbol, argument, [], obj, out var alias);
-			var name = alias ?? Util.GetConfigOrSymbolName(m.Member);
-			propertyAccess = new MemberExpression(obj, new Identifier(name), computed: false, optional: false);
-		}
-		else
-		{
-			throw new InvalidOperationException(
+			return HandleTransformationFailure<Node>(
+				operation,
 				$"属性子模式的成员不是有效的成员引用：{operation.Member?.Kind}");
 		}
 
-		// 用属性访问作为新的 PatternInput 传递给子模式
+		var propertyAccess = BuildPatternMemberAccess(memberReference, obj, argument, out _);
 		var patternArg = argument.WithPatternInput(propertyAccess);
 		return Translate<Expression>(operation.Pattern, patternArg);
+	}
+
+	private Expression BuildPatternMemberAccess(
+		IMemberReferenceOperation memberReference,
+		Expression targetExpr,
+		SenseArgument argument,
+		out string? existencePropertyName)
+	{
+		existencePropertyName = null;
+		var symbol = GetWhiteListSymbol(memberReference);
+		var mapperExpr = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
+		if (!string.IsNullOrEmpty(alias))
+		{
+			if (memberReference is IPropertyReferenceOperation propertyReference)
+			{
+				var invoke = ShouldInvokeAliasedPropertyGetter(propertyReference, alias!);
+				if (!invoke)
+					existencePropertyName = alias!;
+
+				return BuildAliasedPropertyAccess(targetExpr, alias!, optional: false, invoke);
+			}
+
+			existencePropertyName = alias!;
+			return new MemberExpression(targetExpr, new Identifier(alias!), computed: false, optional: false);
+		}
+
+		RejectUnsupportedRuntimeFallback(memberReference, symbol, "pattern property access", memberReference.Instance?.Type ?? memberReference.Member.ContainingType);
+		existencePropertyName = Util.GetConfigOrSymbolName(memberReference.Member);
+		return new MemberExpression(targetExpr, new Identifier(existencePropertyName), computed: false, optional: false);
 	}
 
 	/// <summary>
@@ -539,8 +564,17 @@ public partial class SemanticWalker
 		// 转换结果：生成相应的JavaScript逻辑表达式
 
 		// 访问左右两个子模式
-		var left = Translate<Expression>(operation.LeftPattern, argument);
-		var right = Translate<Expression>(operation.RightPattern, argument);
+		var patternArgument = argument;
+		Expression? patternInitialization = null;
+		if (argument.PatternInput is not null)
+		{
+			var stabilizedInput = StabilizePatternExpression(operation, argument.PatternInput, argument, "binary", out patternInitialization);
+			if (patternInitialization is not null)
+				patternArgument = argument.WithPatternInput(stabilizedInput);
+		}
+
+		var left = Translate<Expression>(operation.LeftPattern, patternArgument);
+		var right = Translate<Expression>(operation.RightPattern, patternArgument);
 
 		// 检查模式的类型来确定操作符
 		var @operator = operation.OperatorKind switch
@@ -553,7 +587,7 @@ public partial class SemanticWalker
 		if (@operator == Operator.Unknown)
 			return HandleTransformationFailure<Node>(operation, "Unsupported binary operator in pattern.");
 
-		return new LogicalExpression(@operator, left, right);
+		return PrependEvaluation(patternInitialization, new LogicalExpression(@operator, left, right));
 	}
 
 	/// <summary>
@@ -617,17 +651,19 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitListPattern(IListPatternOperation operation, SenseArgument argument)
 	{
-		// 获取目标名称，在节点内构建表达式
 		var obj = GetPatternRefrence(operation, argument);
-		var lengthProp = new Identifier("length");
-		var lengthExpr = new MemberExpression(obj, lengthProp, computed: false, optional: false);
-
-		// 检查是数组 Array.isArray(target)
-		Expression result = new CallExpression(
-			callee: IsArrayExpr,
-			args: NodeList.From(obj),
-			optional: false
-		);
+		obj = StabilizePatternExpression(operation, obj, argument, "list", out var listInitialization);
+		var hostType = operation.InputType ?? operation.NarrowedType;
+		var isIntrinsicArrayCarrier = hostType?.TypeKind == TypeKind.Array;
+		Expression result = BuildListPatternCarrierCheck(operation, obj, argument);
+		var lengthExpr = BuildListPatternLengthAccess(operation, obj, argument, isIntrinsicArrayCarrier, hostType);
+		var usesLengthMultipleTimes = ListPatternUsesLengthMultipleTimes(operation);
+		var shouldCacheLength = usesLengthMultipleTimes && !IsPureListPatternLengthAccess(operation, isIntrinsicArrayCarrier);
+		Expression? lengthInitialization;
+		if (shouldCacheLength)
+			lengthExpr = StabilizePatternExpression(operation, lengthExpr, argument, "listlen", out lengthInitialization);
+		else
+			lengthInitialization = null;
 
 		if (operation.Patterns.IsEmpty)
 		{
@@ -671,15 +707,15 @@ public partial class SemanticWalker
 				else if (pattern.Kind == OperationKind.ConstantPattern || pattern.Kind == OperationKind.DeclarationPattern)
 				{
 					// 切片前直接使用索引，切片后需要计算反向索引
-					Expression prop = new NumericLiteral(i, i.ToString());
+					Expression indexExpr = new NumericLiteral(i, i.ToString());
 					if (hasSlice && i > sliceIndex)
 					{
 						var offset = operation.Patterns.Length - i;
 						var subExpr = new NumericLiteral(offset, offset.ToString());
-						prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+						indexExpr = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
 					}
 
-					var indexAccess = new MemberExpression(obj, prop, computed: true, optional: false);
+					var indexAccess = BuildListPatternIndexerAccess(operation, obj, indexExpr, argument, isIntrinsicArrayCarrier, hostType);
 					Expression? expr;
 					if (pattern is IDeclarationPatternOperation declarationPatternOp)
 						expr = BuildDeclarationPattern(declarationPatternOp, indexAccess, argument);
@@ -704,42 +740,26 @@ public partial class SemanticWalker
 					if (slicePattern.Pattern is null)
 						continue;
 
-					// slice 方法调用
-					var sliceMethod = new MemberExpression(obj, new Identifier("slice"), computed: false, optional: false);
-
-					// 计算切片参数
-					int startIndex = sliceIndex;
-
-					// 判断切片后面是否还有元素
-					bool hasElementsAfterSlice = sliceIndex < operation.Patterns.Length - 1;
-					int elementsAfterSlice = operation.Patterns.Length - sliceIndex - 1;
-
-					// 构建 slice 调用
-					CallExpression sliceCall;
-					if (!hasElementsAfterSlice)
-					{
-						// 切片后面没有元素: slice(startIndex)
-						sliceCall = new CallExpression(sliceMethod, NodeList.From<Expression>(new NumericLiteral(startIndex, startIndex.ToString())), optional: false);
-					}
-					else
-					{
-						// 切片后面有元素: slice(startIndex, -elementsAfterSlice)
-						// 例如后面有 1 个元素: slice(2, -1)
-						// 例如后面有 2 个元素: slice(2, -2)
-						int endIndex = -elementsAfterSlice;
-						sliceCall = new CallExpression(sliceMethod, NodeList.From<Expression>(new NumericLiteral(startIndex, startIndex.ToString()), new NumericLiteral(endIndex, endIndex.ToString())), optional: false);
-					}
+					var sliceExpr = BuildListPatternSliceAccess(
+						operation,
+						slicePattern,
+						obj,
+						lengthExpr,
+						sliceIndex,
+						argument,
+						isIntrinsicArrayCarrier,
+						hostType);
 
 					// 处理切片模式的子模式（通常是声明模式）
 					Expression? expr;
 					if (slicePattern.Pattern is IDeclarationPatternOperation declarationPatternOp)
 					{
-						expr = BuildDeclarationPattern(declarationPatternOp, sliceCall, argument);
+						expr = BuildDeclarationPattern(declarationPatternOp, sliceExpr, argument);
 					}
 					else
 					{
 						// 其他情况：传递切片表达式作为 PatternInput
-						var patternArg = argument.WithPatternInput(sliceCall);
+						var patternArg = argument.WithPatternInput(sliceExpr);
 						expr = Translate<Expression>(slicePattern.Pattern, patternArg);
 					}
 
@@ -750,15 +770,15 @@ public partial class SemanticWalker
 				{
 					// 嵌套列表模式或其他模式
 					// 计算索引访问表达式作为 PatternInput
-					Expression prop = new NumericLiteral(i, i.ToString());
+					Expression indexExpr = new NumericLiteral(i, i.ToString());
 					if (hasSlice && i > sliceIndex)
 					{
 						var offset = operation.Patterns.Length - i;
 						var subExpr = new NumericLiteral(offset, offset.ToString());
-						prop = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
+						indexExpr = new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, subExpr);
 					}
 
-					var indexAccess = new MemberExpression(obj, prop, computed: true, optional: false);
+					var indexAccess = BuildListPatternIndexerAccess(operation, obj, indexExpr, argument, isIntrinsicArrayCarrier, hostType);
 					var patternArg = argument.WithPatternInput(indexAccess);
 					var expr = Translate<Expression>(pattern, patternArg);
 					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
@@ -766,7 +786,456 @@ public partial class SemanticWalker
 			}
 		}
 
-		return result;
+		return PrependEvaluation(listInitialization, PrependEvaluation(lengthInitialization, result));
+	}
+
+	private Expression BuildListPatternCarrierCheck(IListPatternOperation operation, Expression targetExpr, SenseArgument argument)
+	{
+		var carrierType = operation.InputType ?? operation.NarrowedType;
+		if (carrierType is null)
+			return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
+
+		var mapper = GetMapperType(carrierType).Mapper;
+		if (mapper is TypeMapper.Array or TypeMapper.String)
+			return CreateTypeMatchExpr(operation, carrierType, targetExpr, nullable: false, context: argument);
+
+		return new NonLogicalBinaryExpression(Operator.Inequality, targetExpr, Null);
+	}
+
+	private static bool ListPatternUsesLengthMultipleTimes(IListPatternOperation operation)
+	{
+		var sliceIndex = -1;
+		for (var i = 0; i < operation.Patterns.Length; i++)
+		{
+			if (operation.Patterns[i].Kind == OperationKind.SlicePattern)
+			{
+				sliceIndex = i;
+				break;
+			}
+		}
+
+		if (sliceIndex < 0)
+			return false;
+
+		if (sliceIndex < operation.Patterns.Length - 1)
+			return true;
+
+		var slicePattern = (ISlicePatternOperation)operation.Patterns[sliceIndex];
+		return slicePattern.Pattern is not null &&
+			slicePattern.Pattern.Kind != OperationKind.DiscardPattern;
+	}
+
+	private bool IsPureListPatternLengthAccess(IListPatternOperation operation, bool isIntrinsicArrayCarrier)
+	{
+		if (isIntrinsicArrayCarrier)
+			return true;
+
+		if (operation.LengthSymbol is null)
+			return false;
+
+		var lookupSymbol = operation.LengthSymbol is IPropertySymbol { GetMethod: not null } property
+			? (ISymbol)property.GetMethod!
+			: operation.LengthSymbol;
+
+		return TryGetWhiteListValue(WhiteList.Members, lookupSymbol, out _, out var entry) &&
+			entry.Op == Jazor.Common.Op.Alias &&
+			string.Equals(entry.Value, "length", StringComparison.Ordinal);
+	}
+
+	private Expression BuildListPatternLengthAccess(
+		IListPatternOperation operation,
+		Expression targetExpr,
+		SenseArgument argument,
+		bool isIntrinsicArrayCarrier,
+		ITypeSymbol? hostType)
+	{
+		if (isIntrinsicArrayCarrier)
+			return new MemberExpression(targetExpr, new Identifier("length"), computed: false, optional: false);
+
+		if (operation.LengthSymbol is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"List pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported length/count symbol.");
+		}
+
+		return BuildListPatternBoundAccess(
+			operation,
+			operation.LengthSymbol,
+			targetExpr,
+			[],
+			argument,
+			"list pattern length access",
+			hostType ?? operation.LengthSymbol.ContainingType);
+	}
+
+	private Expression BuildListPatternIndexerAccess(
+		IListPatternOperation operation,
+		Expression targetExpr,
+		Expression indexExpr,
+		SenseArgument argument,
+		bool isIntrinsicArrayCarrier,
+		ITypeSymbol? hostType)
+	{
+		if (isIntrinsicArrayCarrier)
+			return new MemberExpression(targetExpr, indexExpr, computed: true, optional: false);
+
+		if (operation.IndexerSymbol is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"List pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer symbol.");
+		}
+
+		return BuildListPatternBoundAccess(
+			operation,
+			operation.IndexerSymbol,
+			targetExpr,
+			[indexExpr],
+			argument,
+			"list pattern index access",
+			hostType ?? operation.IndexerSymbol.ContainingType);
+	}
+
+	private Expression BuildListPatternSliceAccess(
+		IListPatternOperation listPattern,
+		ISlicePatternOperation slicePattern,
+		Expression targetExpr,
+		Expression lengthExpr,
+		int sliceIndex,
+		SenseArgument argument,
+		bool isIntrinsicArrayCarrier,
+		ITypeSymbol? hostType)
+	{
+		var startExpr = new NumericLiteral(sliceIndex, sliceIndex.ToString());
+		var elementsAfterSlice = listPattern.Patterns.Length - sliceIndex - 1;
+
+		if (isIntrinsicArrayCarrier)
+			return BuildIntrinsicArraySliceAccess(targetExpr, startExpr, elementsAfterSlice);
+
+		if (slicePattern.SliceSymbol is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				slicePattern,
+				$"Slice pattern on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported slice symbol.");
+		}
+
+		if (slicePattern.SliceSymbol is IMethodSymbol method &&
+			method.AssociatedSymbol is IPropertySymbol property)
+		{
+			var propertySliceArguments = BuildListPatternSlicePropertyArguments(
+				slicePattern,
+				property,
+				startExpr,
+				lengthExpr,
+				sliceIndex,
+				elementsAfterSlice);
+			return BuildListPatternBoundAccess(
+				slicePattern,
+				method,
+				targetExpr,
+				propertySliceArguments,
+				argument,
+				"list pattern slice access",
+				hostType ?? property.ContainingType);
+		}
+
+		if (slicePattern.SliceSymbol is IPropertySymbol sliceProperty)
+		{
+			var propertySliceArguments = BuildListPatternSlicePropertyArguments(
+				slicePattern,
+				sliceProperty,
+				startExpr,
+				lengthExpr,
+				sliceIndex,
+				elementsAfterSlice);
+			return BuildListPatternBoundAccess(
+				slicePattern,
+				(ISymbol?)sliceProperty.GetMethod ?? sliceProperty,
+				targetExpr,
+				propertySliceArguments,
+				argument,
+				"list pattern slice access",
+				hostType ?? sliceProperty.ContainingType);
+		}
+
+		if (slicePattern.SliceSymbol is not IMethodSymbol sliceMethod)
+		{
+			return HandleTransformationFailure<Expression>(
+				slicePattern,
+				$"Unsupported slice symbol kind '{slicePattern.SliceSymbol.Kind}' in list pattern.");
+		}
+
+		var sliceArguments = BuildListPatternSliceMethodArguments(
+			slicePattern,
+			sliceMethod,
+			startExpr,
+			lengthExpr,
+			sliceIndex,
+			elementsAfterSlice);
+		return BuildMethodCallExpression(
+			slicePattern,
+			sliceMethod,
+			slicePattern.Syntax,
+			slicePattern.SemanticModel,
+			targetExpr,
+			sliceArguments,
+			argument,
+			hostType ?? sliceMethod.ContainingType);
+	}
+
+	private static Expression BuildIntrinsicArraySliceAccess(Expression targetExpr, Expression startExpr, int elementsAfterSlice)
+	{
+		var sliceMethod = new MemberExpression(targetExpr, new Identifier("slice"), computed: false, optional: false);
+		if (elementsAfterSlice == 0)
+		{
+			return new CallExpression(
+				sliceMethod,
+				NodeList.From(startExpr),
+				optional: false);
+		}
+
+		var endExpr = new NumericLiteral(-elementsAfterSlice, (-elementsAfterSlice).ToString());
+		return new CallExpression(
+			sliceMethod,
+			NodeList.From<Expression>(startExpr, endExpr),
+			optional: false);
+	}
+
+	private List<Expression> BuildListPatternSliceMethodArguments(
+		IOperation ownerOperation,
+		IMethodSymbol method,
+		Expression startExpr,
+		Expression lengthExpr,
+		int sliceIndex,
+		int elementsAfterSlice)
+	{
+		if (method.Parameters.Length == 1)
+		{
+			if (IsSystemRangeType(method.Parameters[0].Type))
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Range-based slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in list pattern lowering. Expose a Slice(int, int) member or configure a whitelist mapping.");
+			}
+
+			if (method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters for list pattern lowering.");
+			}
+
+			if (elementsAfterSlice != 0)
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded middle slice in list pattern lowering.");
+			}
+
+			return [startExpr];
+		}
+
+		if (method.Parameters.Length != 2 ||
+			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
+			method.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+		{
+			return HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose Slice(int, int) semantics for list pattern lowering.");
+		}
+
+		return
+		[
+			startExpr,
+			BuildListPatternSliceLengthExpression(lengthExpr, sliceIndex, elementsAfterSlice)
+		];
+	}
+
+	private List<Expression> BuildListPatternSlicePropertyArguments(
+		IOperation ownerOperation,
+		IPropertySymbol property,
+		Expression startExpr,
+		Expression lengthExpr,
+		int sliceIndex,
+		int elementsAfterSlice)
+	{
+		if (!property.IsIndexer || property.Parameters.Length == 0)
+		{
+			return HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Unsupported slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' in list pattern.");
+		}
+
+		if (property.Parameters.Length == 1)
+		{
+			if (IsSystemRangeType(property.Parameters[0].Type))
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Range-based slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in list pattern lowering. Expose a Slice(int, int) member or configure a whitelist mapping.");
+			}
+
+			if (property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters for list pattern lowering.");
+			}
+
+			if (elementsAfterSlice != 0)
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded middle slice in list pattern lowering.");
+			}
+
+			return [startExpr];
+		}
+
+		if (property.Parameters.Length != 2 ||
+			property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
+			property.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+		{
+			return HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Slice property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose two int-compatible parameters for list pattern lowering.");
+		}
+
+		return
+		[
+			startExpr,
+			BuildListPatternSliceLengthExpression(lengthExpr, sliceIndex, elementsAfterSlice)
+		];
+	}
+
+	private Expression BuildListPatternSliceLengthExpression(Expression lengthExpr, int sliceIndex, int elementsAfterSlice)
+	{
+		var fixedElements = sliceIndex + elementsAfterSlice;
+		if (fixedElements == 0)
+			return lengthExpr;
+
+		var fixedExpr = new NumericLiteral(fixedElements, fixedElements.ToString());
+		return new NonLogicalBinaryExpression(Operator.Subtraction, lengthExpr, fixedExpr);
+	}
+
+	private Expression BuildListPatternBoundAccess(
+		IOperation ownerOperation,
+		ISymbol symbol,
+		Expression targetExpr,
+		List<Expression> arguments,
+		SenseArgument argument,
+		string usage,
+		ITypeSymbol? hostType)
+	{
+		var lookupSymbol = symbol is IPropertySymbol { GetMethod: not null } propertyForLookup
+			? (ISymbol)propertyForLookup.GetMethod!
+			: symbol;
+		var mapperExpr = GetWhiteListExpression(lookupSymbol, argument, arguments, targetExpr, out var alias);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
+		if (lookupSymbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol associatedProperty } accessorMethod)
+		{
+			return BuildListPatternPropertyAccess(
+				ownerOperation,
+				accessorMethod,
+				associatedProperty,
+				targetExpr,
+				arguments,
+				alias,
+				usage,
+				hostType ?? associatedProperty.ContainingType);
+		}
+
+		return symbol switch
+		{
+			IPropertySymbol property => BuildListPatternPropertyAccess(
+				ownerOperation,
+				lookupSymbol,
+				property,
+				targetExpr,
+				arguments,
+				alias,
+				usage,
+				hostType ?? property.ContainingType),
+			IMethodSymbol method => BuildMethodCallExpression(
+				ownerOperation,
+				method,
+				ownerOperation.Syntax,
+				ownerOperation.SemanticModel,
+				targetExpr,
+				arguments,
+				argument,
+				hostType ?? method.ContainingType),
+			IFieldSymbol field => BuildListPatternFieldAccess(
+				ownerOperation,
+				field,
+				targetExpr,
+				alias,
+				usage,
+				hostType ?? field.ContainingType),
+			_ => HandleTransformationFailure<Expression>(
+				ownerOperation,
+				$"Unsupported symbol kind '{symbol.Kind}' for {usage}.")
+		};
+	}
+
+	private Expression BuildListPatternPropertyAccess(
+		IOperation ownerOperation,
+		ISymbol lookupSymbol,
+		IPropertySymbol property,
+		Expression targetExpr,
+		List<Expression> arguments,
+		string? alias,
+		string usage,
+		ITypeSymbol? hostType)
+	{
+		if (property.IsIndexer || property.Parameters.Length > 0)
+		{
+			if (arguments.Count != 1)
+			{
+				return HandleTransformationFailure<Expression>(
+					ownerOperation,
+					$"{usage} cannot fall back to raw JavaScript member access because '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' requires {arguments.Count} translated arguments.");
+			}
+
+			if (string.IsNullOrEmpty(alias))
+				RejectUnsupportedRuntimeFallback(ownerOperation, lookupSymbol, usage, hostType ?? property.ContainingType);
+
+			return new MemberExpression(targetExpr, arguments[0], computed: true, optional: false);
+		}
+
+		if (string.IsNullOrEmpty(alias))
+			RejectUnsupportedRuntimeFallback(ownerOperation, lookupSymbol, usage, hostType ?? property.ContainingType);
+
+		var propertyName = string.IsNullOrEmpty(alias)
+			? Util.GetConfigOrSymbolName(property)
+			: alias;
+		return new MemberExpression(targetExpr, new Identifier(propertyName!), computed: false, optional: false);
+	}
+
+	private Expression BuildListPatternFieldAccess(
+		IOperation ownerOperation,
+		IFieldSymbol field,
+		Expression targetExpr,
+		string? alias,
+		string usage,
+		ITypeSymbol? hostType)
+	{
+		if (string.IsNullOrEmpty(alias))
+			RejectUnsupportedRuntimeFallback(ownerOperation, field, usage, hostType ?? field.ContainingType);
+
+		var fieldName = string.IsNullOrEmpty(alias)
+			? Util.GetConfigOrSymbolName(field)
+			: alias;
+		return new MemberExpression(targetExpr, new Identifier(fieldName!), computed: false, optional: false);
+	}
+
+	private List<Expression> HandleUnsupportedSliceArguments(IOperation operation, string message)
+	{
+		HandleTransformationFailure<Node>(operation, message);
+		return [];
 	}
 
 	/// <summary>
@@ -821,7 +1290,7 @@ public partial class SemanticWalker
 		//   - 引用类型映射（Date/Map/Set/Class）
 		//   - 数组类型检查（Array.isArray）
 		//   - 可空类型处理（nullable 包含 null 检查）
-		return CreateTypeMatchExpr(operation, matchedType, targetExpr);
+		return CreateTypeMatchExpr(operation, matchedType, targetExpr, context: argument);
 	}
 
 	private static bool IsNullableType(ITypeSymbol? type)
@@ -849,6 +1318,28 @@ public partial class SemanticWalker
 		return context.PatternInput;
 	}
 
+	private Expression StabilizePatternExpression(
+		IOperation ownerOperation,
+		Expression expression,
+		SenseArgument argument,
+		string slot,
+		out Expression? initialization)
+	{
+		initialization = null;
+		if (!NeedsSingleEvaluationCaching(expression))
+			return expression;
+
+		var tempId = new Identifier(AllocateUniqueName(ownerOperation, argument, LoweringSite.PatternInputCache(slot)));
+		argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
+		initialization = new AssignmentExpression(Operator.Assignment, tempId, expression);
+		return tempId;
+	}
+
+	private static Expression PrependEvaluation(Expression? initialization, Expression expression)
+		=> initialization is null
+			? expression
+			: new SequenceExpression(NodeList.From<Expression>(initialization, expression));
+
 	/// <summary>
 	/// 
 	/// </summary>
@@ -857,8 +1348,12 @@ public partial class SemanticWalker
 	/// <param name="value"></param>
 	/// <param name="nullable"></param>
 	/// <returns></returns>
-	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, bool? nullable = null)
+	private Expression CreateTypeMatchExpr(IOperation operation, ITypeSymbol typeSymbol, Expression value, bool? nullable = null, SenseArgument? context = null)
 	{
+		Expression? initialization = null;
+		if (context is SenseArgument cacheContext)
+			value = StabilizePatternExpression(operation, value, cacheContext, "type", out initialization);
+
 		Expression? result;
 		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
 			result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
@@ -866,10 +1361,11 @@ public partial class SemanticWalker
 		else
 		{
 			var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
-			if (displayName == "System.DateTimeOffset")
+			if (displayName == "System.DateTime")
 			{
-				var utcDateTime = new MemberExpression(value, new Identifier("utcDateTime"), computed: false, optional: false);
-				var offsetTicks = new MemberExpression(value, new Identifier("offsetTicks"), computed: false, optional: false);
+				var date = new MemberExpression(value, new Identifier("date"), computed: false, optional: false);
+				var kind = new MemberExpression(value, new Identifier("kind"), computed: false, optional: false);
+				var subMillisecondTicks = new MemberExpression(value, new Identifier("subMillisecondTicks"), computed: false, optional: false);
 				result = new LogicalExpression(
 					Operator.LogicalAnd,
 					new LogicalExpression(
@@ -878,8 +1374,109 @@ public partial class SemanticWalker
 						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
 					new LogicalExpression(
 						Operator.LogicalAnd,
-						InstanceOfExpr(utcDateTime, new Identifier("Date")),
-						TypeOfExpr(offsetTicks, new StringLiteral("bigint", "\"bigint\""))));
+						new LogicalExpression(
+							Operator.LogicalAnd,
+							InstanceOfExpr(date, new Identifier("Date")),
+							TypeOfExpr(kind, new StringLiteral("number", "\"number\""))),
+						TypeOfExpr(subMillisecondTicks, new StringLiteral("bigint", "\"bigint\""))));
+			}
+			else if (displayName == "System.DateOnly")
+			{
+				var year = new MemberExpression(value, new Identifier("year"), computed: false, optional: false);
+				var month = new MemberExpression(value, new Identifier("month"), computed: false, optional: false);
+				var day = new MemberExpression(value, new Identifier("day"), computed: false, optional: false);
+				var dayNumber = new MemberExpression(value, new Identifier("dayNumber"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new LogicalExpression(
+							Operator.LogicalAnd,
+							TypeOfExpr(year, new StringLiteral("number", "\"number\"")),
+							TypeOfExpr(month, new StringLiteral("number", "\"number\""))),
+						new LogicalExpression(
+							Operator.LogicalAnd,
+							TypeOfExpr(day, new StringLiteral("number", "\"number\"")),
+							TypeOfExpr(dayNumber, new StringLiteral("number", "\"number\"")))));
+			}
+			else if (displayName == "System.DateTimeOffset")
+			{
+				var utcDateTime = new MemberExpression(value, new Identifier("utcDateTime"), computed: false, optional: false);
+				var offsetTicks = new MemberExpression(value, new Identifier("offsetTicks"), computed: false, optional: false);
+				var utcSubMillisecondTicks = new MemberExpression(value, new Identifier("utcSubMillisecondTicks"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new LogicalExpression(
+							Operator.LogicalAnd,
+							InstanceOfExpr(utcDateTime, new Identifier("Date")),
+							TypeOfExpr(offsetTicks, new StringLiteral("bigint", "\"bigint\""))),
+						TypeOfExpr(utcSubMillisecondTicks, new StringLiteral("bigint", "\"bigint\""))));
+			}
+			else if (displayName == "System.TimeOnly")
+			{
+				var ticks = new MemberExpression(value, new Identifier("ticks"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					TypeOfExpr(ticks, new StringLiteral("bigint", "\"bigint\"")));
+			}
+			else if (displayName == "System.TimeSpan")
+			{
+				var ticks = new MemberExpression(value, new Identifier("ticks"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					TypeOfExpr(ticks, new StringLiteral("bigint", "\"bigint\"")));
+			}
+			else if (displayName == "System.Collections.Generic.Queue<T>")
+			{
+				var kind = new MemberExpression(value, new Identifier("kind"), computed: false, optional: false);
+				var items = new MemberExpression(value, new Identifier("items"), computed: false, optional: false);
+				var head = new MemberExpression(value, new Identifier("head"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, new StringLiteral("queue", "\"queue\"")),
+						new LogicalExpression(
+							Operator.LogicalAnd,
+							new CallExpression(IsArrayExpr, NodeList.From<Expression>(items), optional: false),
+							TypeOfExpr(head, new StringLiteral("number", "\"number\"")))));
+			}
+			else if (displayName == "System.Collections.Generic.Stack<T>")
+			{
+				var kind = new MemberExpression(value, new Identifier("kind"), computed: false, optional: false);
+				var items = new MemberExpression(value, new Identifier("items"), computed: false, optional: false);
+				result = new LogicalExpression(
+					Operator.LogicalAnd,
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+						TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
+					new LogicalExpression(
+						Operator.LogicalAnd,
+						new NonLogicalBinaryExpression(Operator.StrictEquality, kind, new StringLiteral("stack", "\"stack\"")),
+						new CallExpression(IsArrayExpr, NodeList.From<Expression>(items), optional: false)));
 			}
 			else
 			{
@@ -895,7 +1492,7 @@ public partial class SemanticWalker
 				TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
 				TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
 				TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
-				TypeMapper.Class => InstanceOfExpr(value, new Identifier(typeName)),
+				TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
 				_ => null
 			};
 			}
@@ -911,7 +1508,7 @@ public partial class SemanticWalker
 		if (result is null)
 			return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
 
-		return result;
+		return PrependEvaluation(initialization, result);
 
 		static NonLogicalBinaryExpression TypeOfExpr(Expression target, Literal literal)
 		{
@@ -928,6 +1525,19 @@ public partial class SemanticWalker
 		}
 	}
 
+	private Expression BuildClassTypeMatch(
+		IOperation operation,
+		ITypeSymbol typeSymbol,
+		Expression value,
+		string typeName,
+		SenseArgument? context)
+	{
+		RejectUnsupportedTypeFallback(operation, typeSymbol, "type checks");
+		RejectAmbiguousRuntimeTypeFilter(operation, typeSymbol, "type checks");
+		var runtimeType = BuildFullTypeName(typeSymbol, context) ?? new Identifier(typeName);
+		return new NonLogicalBinaryExpression(Operator.InstanceOf, value, runtimeType);
+	}
+
 	/// <summary>
 	/// 处理位置式解构子模式
 	/// </summary>
@@ -938,6 +1548,32 @@ public partial class SemanticWalker
 		List<Expression> conditions,
 		SenseArgument argument)
 	{
+		Identifier? deconstructResultId = null;
+		if (!namedType.IsTupleType &&
+			operation.DeconstructSymbol is IMethodSymbol deconstructMethod)
+		{
+			deconstructResultId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.DeconstructResult()));
+			argument.AddVarDeclarator(new VariableDeclarator(deconstructResultId, null), _recursionDepth);
+
+			var deconstructArguments = new List<Expression>(deconstructMethod.Parameters.Length);
+			for (var i = 0; i < deconstructMethod.Parameters.Length; i++)
+				deconstructArguments.Add(new Identifier("undefined"));
+
+			var callExpr = BuildMethodCallExpression(
+				operation,
+				deconstructMethod,
+				operation.Syntax,
+				operation.SemanticModel,
+				targetExpr,
+				deconstructArguments,
+				argument,
+				operation.InputType ?? deconstructMethod.ContainingType);
+
+			conditions.Add(new SequenceExpression(NodeList.From<Expression>(
+				new AssignmentExpression(Operator.Assignment, deconstructResultId, callExpr),
+				new BooleanLiteral(true, "true"))));
+		}
+
 		for (int i = 0; i < operation.DeconstructionSubpatterns.Length; i++)
 		{
 			var subpattern = operation.DeconstructionSubpatterns[i];
@@ -946,8 +1582,13 @@ public partial class SemanticWalker
 			if (subpattern.Kind == OperationKind.DiscardPattern)
 				continue;
 
-			// 获取位置对应的属性表达式
-			var propertyExpr = GetPositionalPropertyExpression(operation, namedType, targetExpr, i);
+			Expression? propertyExpr = deconstructResultId is not null
+				? new MemberExpression(
+					deconstructResultId,
+					new NumericLiteral(i, i.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+					computed: true,
+					optional: false)
+				: GetPositionalPropertyExpression(operation, namedType, targetExpr, i);
 			if (propertyExpr is null)
 				return;
 
@@ -1179,10 +1820,14 @@ public partial class SemanticWalker
 		var obj = GetPatternRefrence(operation, argument);
 
 		Expression? typeMatchExpr = null, declaredExpr = null;
+		var assignValueExpr = value ?? obj;
+		Expression? assignmentInitialization = null;
+		if (operation.MatchedType is not null && operation.DeclaredSymbol is not null)
+			assignValueExpr = StabilizePatternExpression(operation, assignValueExpr, argument, "declaration", out assignmentInitialization);
 
 		// 存在赋值对象使用赋值对象
 		if (operation.MatchedType is not null)
-			typeMatchExpr = CreateTypeMatchExpr(operation, operation.MatchedType, value ?? obj);
+			typeMatchExpr = CreateTypeMatchExpr(operation, operation.MatchedType, assignValueExpr, context: argument);
 
 		if (operation.DeclaredSymbol is not null)
 		{
@@ -1191,9 +1836,6 @@ public partial class SemanticWalker
 			var declarator = new VariableDeclarator(id, null);
 			argument.AddVarDeclarator(declarator, _recursionDepth);
 
-			// 赋值表达式：使用提供的 value 或 PatternInput
-			var assignValueExpr = value ?? obj;
-
 			var assignmentExpr = new AssignmentExpression(Operator.Assignment, id, assignValueExpr);
 			var exprs = NodeList.From<Expression>(assignmentExpr, new BooleanLiteral(true, "true"));
 
@@ -1201,11 +1843,11 @@ public partial class SemanticWalker
 		}
 
 		if (typeMatchExpr is not null && declaredExpr is not null)
-			return new LogicalExpression(Operator.LogicalAnd, typeMatchExpr, declaredExpr);
+			return PrependEvaluation(assignmentInitialization, new LogicalExpression(Operator.LogicalAnd, typeMatchExpr, declaredExpr));
 		else if (typeMatchExpr is not null)
-			return typeMatchExpr;
+			return PrependEvaluation(assignmentInitialization, typeMatchExpr);
 		else
-			return declaredExpr!;
+			return PrependEvaluation(assignmentInitialization, declaredExpr!);
 	}
 
 }

@@ -347,7 +347,7 @@ public partial class SemanticWalker
 	/// list[2..^2]                        // 列表切片，从索引 2 到倒数第 2 个
 	/// 转换结果：不支持
 	/// 原因：C# Range 操作必须在索引器操作中被消费转换为 slice/splice 调用，单独的 Range 对象在 JavaScript 中无意义
-	/// 替代方案：在 JavaScript 中直接使用 slice 方法：array.slice(1, 5) 或 array.slice(start, end+1)
+	/// 替代方案：在 JavaScript 中直接使用 end-exclusive 的 slice：array.slice(1, 5) 或 array.slice(start, endExclusive)
 	/// </summary>
 	/// <param name="operation">范围操作</param>
 	/// <param name="argument">当前operation所属的父operation</param>

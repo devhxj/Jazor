@@ -1,5 +1,6 @@
 ﻿using Acornima;
 using Acornima.Ast;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
@@ -25,6 +26,8 @@ public partial class SemanticWalker
 			IsEcmascriptRecordLike(namedType))
 			return BuildEcmascriptRecordLiteral(assignObj, operation, argument);
 
+		RejectUnsupportedTypeFallback(operation, operation.Type, "object creation");
+
 		var arguments = new List<Expression>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
@@ -37,7 +40,14 @@ public partial class SemanticWalker
 			arguments.Add(TranslateTupleForTarget(arg.Value, targetType, argument));
 		}
 
-
+		Expression? mappedConstructor = null;
+		if (operation.Constructor is not null)
+		{
+			mappedConstructor = GetWhiteListExpression(operation.Constructor, argument, arguments, null, out _);
+			if (mappedConstructor is null &&
+				!IsIntrinsicObjectCreationFallbackAllowed(operation.Constructor, operation.Type))
+				RejectUnsupportedRuntimeFallback(operation, operation.Constructor, "object creation", operation.Type);
+		}
 
 		// 普通对象创建
 		var (mapper, typeName) = GetMapperType(operation.Type);
@@ -53,13 +63,8 @@ public partial class SemanticWalker
 		else if (mapper == TypeMapper.Array)
 			expr = new ArrayExpression(NodeList.From<Expression?>(arguments));
 
-		// 如果构造函数在白名单中，需要特殊处理
-		if (operation.Constructor is not null)
-		{
-			var mapperExpr = GetWhiteListExpression(operation.Constructor, argument, arguments, null, out _);
-			if (mapperExpr is not null)
-				expr = mapperExpr;
-		}			
+		if (mappedConstructor is not null)
+			expr = mappedConstructor;
 		
 		if (assignObj is not null)
 			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
@@ -91,6 +96,40 @@ public partial class SemanticWalker
 		}
 
 		return expr;
+	}
+
+	private bool IsIntrinsicObjectCreationFallbackAllowed(IMethodSymbol constructor, ITypeSymbol constructedType)
+	{
+		if (constructor.MethodKind != MethodKind.Constructor)
+			return false;
+
+		var (mapper, typeName) = GetMapperType(constructedType);
+		return mapper switch
+		{
+			TypeMapper.BigInt => constructor.Parameters.Length <= 1 &&
+				constructor.Parameters.All(parameter =>
+				{
+					var mapper = GetMapperType(parameter.Type).Mapper;
+					return mapper is TypeMapper.Number or TypeMapper.BigInt;
+				}),
+			TypeMapper.Class => IsNativeErrorConstructorFallbackAllowed(constructedType, typeName),
+			_ => false
+		};
+	}
+
+	private static bool IsNativeErrorConstructorFallbackAllowed(ITypeSymbol constructedType, string typeName)
+	{
+		if (typeName is not "Error" and not "TypeError")
+			return false;
+
+		for (var current = constructedType.OriginalDefinition; current is not null; current = current.BaseType)
+		{
+			if (current.Name == "Exception" &&
+				current.ContainingNamespace?.ToDisplayString() == "System")
+				return true;
+		}
+
+		return false;
 	}
 
 	private static bool IsEcmascriptRecordLike(ITypeSymbol? typeSymbol)
@@ -218,6 +257,182 @@ public partial class SemanticWalker
 		return true;
 	}
 
+	private string ResolveInitializerAssignmentMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
+	{
+		var validationSymbol = symbol switch
+		{
+			IPropertySymbol { SetMethod: not null } property => (ISymbol)property.SetMethod,
+			_ => symbol
+		};
+
+		if (TryGetWhiteListValue(WhiteList.Members, validationSymbol, out _, out var entry) &&
+			entry.Op == Op.Alias &&
+			!string.IsNullOrEmpty(entry.Value))
+			return entry.Value!;
+
+		RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
+		return Util.GetConfigOrSymbolName(symbol);
+	}
+
+	private string ResolveInitializerAccessMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
+	{
+		var validationSymbol = symbol switch
+		{
+			IPropertySymbol { GetMethod: not null } property => (ISymbol)property.GetMethod,
+			_ => symbol
+		};
+
+		if (TryGetWhiteListValue(WhiteList.Members, validationSymbol, out _, out var entry) &&
+			entry.Op == Op.Alias &&
+			!string.IsNullOrEmpty(entry.Value))
+			return entry.Value!;
+
+		RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
+		return Util.GetConfigOrSymbolName(symbol);
+	}
+
+	private Expression BuildMemberInitializerReceiver(
+		IMemberInitializerOperation operation,
+		Expression? fallbackInstance,
+		SenseArgument argument)
+	{
+		switch (operation.InitializedMember)
+		{
+			case IPropertyReferenceOperation propertyReference:
+			{
+				if (propertyReference.Property.GetMethod is null)
+				{
+					return HandleTransformationFailure<Expression>(
+						operation,
+						$"Member initializer target '{propertyReference.Property.ToDisplayString(Jazor.Name.Format.NameFormat)}' must have an accessible getter.");
+				}
+
+				var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance;
+				var arguments = new List<Expression>(propertyReference.Arguments.Length);
+				foreach (var propertyArgument in propertyReference.Arguments)
+				{
+					var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+						? argument.With(Sense.OutParameter)
+						: argument;
+					arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
+				}
+
+				var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out var alias);
+				if (mapperExpr is not null)
+					return mapperExpr;
+
+				if (instance is not null &&
+					arguments.Count > 0 &&
+					(propertyReference.Property.IsIndexer || propertyReference.Property.Parameters.Length > 0))
+				{
+					if (arguments.Count != 1)
+					{
+						return HandleTransformationFailure<Expression>(
+							operation,
+							"JavaScript fallback for indexer member initializers only supports a single translated index argument.");
+					}
+
+					if (string.IsNullOrEmpty(alias))
+					{
+						ResolveInitializerAccessMemberName(
+							operation,
+							propertyReference.Property,
+							"member initializer access",
+							propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
+					}
+
+					return new MemberExpression(instance, arguments[0], computed: true, optional: false);
+				}
+
+				var propertyName = string.IsNullOrEmpty(alias)
+					? ResolveInitializerAccessMemberName(
+						operation,
+						propertyReference.Property,
+						"member initializer access",
+						propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType)
+					: alias!;
+
+				if (instance is not null)
+				{
+					return BuildAliasedPropertyAccess(
+						instance,
+						propertyName,
+						optional: false,
+						ShouldInvokeAliasedPropertyGetter(propertyReference, propertyName));
+				}
+
+				if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
+				{
+					if (TryBuildImportedModulePropertyAccess(propertyReference.Property, argument, out var importedProperty) &&
+						importedProperty is not null)
+						return importedProperty;
+
+					if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel, propertyName, out var preferredStaticProperty) &&
+						preferredStaticProperty is not null)
+						return preferredStaticProperty;
+
+					var containing = BuildFullTypeName(propertyReference.Property.ContainingType, argument);
+					if (containing is not null)
+						return new MemberExpression(containing, new Identifier(propertyName), computed: false, optional: false);
+				}
+
+				return new Identifier(propertyName);
+			}
+
+			case IFieldReferenceOperation fieldReference:
+			{
+				var instance = Translate<Expression>(fieldReference.Instance, argument, null) ?? fallbackInstance;
+				var mapperExpr = GetWhiteListExpression(fieldReference.Field, argument, [], instance, out var alias);
+				if (mapperExpr is not null)
+					return mapperExpr;
+
+				var fieldName = string.IsNullOrEmpty(alias)
+					? ResolveInitializerAccessMemberName(
+						operation,
+						fieldReference.Field,
+						"member initializer access",
+						fieldReference.Instance?.Type ?? fieldReference.Field.ContainingType)
+					: alias!;
+
+				if (instance is not null)
+					return new MemberExpression(instance, new Identifier(fieldName), computed: false, optional: false);
+
+				if (fieldReference.Field.IsStatic && fieldReference.Field.ContainingType is not null)
+				{
+					if (TryBuildImportedModuleMember(fieldReference.Field.ContainingType, fieldName, argument, out var importedMember) &&
+						importedMember is not null)
+						return importedMember;
+
+					var containing = BuildFullTypeName(fieldReference.Field.ContainingType, argument);
+					if (containing is not null)
+						return new MemberExpression(containing, new Identifier(fieldName), computed: false, optional: false);
+				}
+
+				return new Identifier(fieldName);
+			}
+
+			default:
+				return HandleTransformationFailure<Expression>(operation, "Member initializer target could not be translated to a JavaScript receiver.");
+		}
+	}
+
+	private Expression MaterializeMemberInitializerReceiver(
+		Expression receiver,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		List<Expression> initializations)
+	{
+		if (CanDuplicateReadWriteTarget(receiver))
+			return receiver;
+
+		if (!NeedsSingleEvaluationCaching(receiver))
+			return receiver;
+
+		var tempId = CreatePropertyMutationTemp(ownerOperation, argument, "init");
+		initializations.Add(new AssignmentExpression(Operator.Assignment, tempId, receiver));
+		return tempId;
+	}
+
 	/// <summary>
 	/// 处理对象创建初始化器
 	/// </summary>
@@ -250,7 +465,12 @@ public partial class SemanticWalker
 					}
 					else
 					{
-						var property = new Identifier(GetInitializerMemberName(propertyReferenceOp.Property));
+						var propertyName = ResolveInitializerAssignmentMemberName(
+							simpleAssignmentOp,
+							propertyReferenceOp.Property,
+							"object initializer property assignment",
+							propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType);
+						var property = new Identifier(propertyName);
 						left = propertyInstance is null
 							? property
 							: new MemberExpression(propertyInstance, property, computed: false, optional: false);
@@ -259,7 +479,12 @@ public partial class SemanticWalker
 				else if (simpleAssignmentOp.Target is IFieldReferenceOperation fieldReferenceOp)
 				{
 					var fieldInstance = Translate<Expression>(fieldReferenceOp.Instance, argument, null) ?? obj;
-					var field = new Identifier(GetInitializerMemberName(fieldReferenceOp.Field));
+					var fieldName = ResolveInitializerAssignmentMemberName(
+						simpleAssignmentOp,
+						fieldReferenceOp.Field,
+						"object initializer field assignment",
+						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType);
+					var field = new Identifier(fieldName);
 					left = fieldInstance is null
 						? field
 						: new MemberExpression(fieldInstance, field, computed: false, optional: false);
@@ -303,58 +528,30 @@ public partial class SemanticWalker
 						}
 						setterArguments.Add(right);
 
-						var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, propertyInstance, out _);
+						var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, propertyInstance, out var setterAlias);
 						if (mapperExpr is not null)
 						{
 							exprs.Add(mapperExpr);
 							continue;
 						}
+
+						if (string.IsNullOrEmpty(setterAlias))
+							RejectUnsupportedRuntimeFallback(simpleAssignmentOp, propertyReference.Property.SetMethod, "object initializer property assignment", propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
 					}
 
 					var expr = new AssignmentExpression(Operator.Assignment, left, right);
 					exprs.Add(expr);
 				}
 			}
-		else if (initializer is IMemberInitializerOperation memberInitializerOp)
+			else if (initializer is IMemberInitializerOperation memberInitializerOp)
 			{
-				var right = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
-
-				// 检查属性/字段的白名单 Inline/Import 操作
-				ISymbol? memberSymbol = memberInitializerOp.InitializedMember switch
-				{
-					IPropertyReferenceOperation propertyReferenceOp => (ISymbol?)propertyReferenceOp.Property.SetMethod ?? propertyReferenceOp.Property,
-					IFieldReferenceOperation fieldReferenceOp => fieldReferenceOp.Field,
-					_ => null
-				};
-
-				if (memberSymbol is not null && obj is not null)
-				{
-					// 对于属性 setter，需要将 obj 和 value 作为参数
-					var setterArgs = new List<Expression> { right };
-					var mapperExpr = GetWhiteListExpression(memberSymbol, argument, setterArgs, obj, out var alias);
-					if (mapperExpr is not null)
-					{
-						exprs.Add(mapperExpr);
-						continue;
-					}
-				}
-
-				// 普通属性/字段赋值
-				var target = memberInitializerOp.InitializedMember switch
-				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
-					_ => null
-				};
-
-				if (target is null)
+				if (obj is null)
 					return HandleTransformationFailure<List<Expression>>(initializer, "Member initializer target could not be translated to JavaScript.");
 
-				Expression left = obj is null
-					 ? target
-					 : new MemberExpression(obj, target, computed: false, optional: false);
-				var expr = new AssignmentExpression(Operator.Assignment, left, right);
-				exprs.Add(expr);
+				var receiver = BuildMemberInitializerReceiver(memberInitializerOp, obj, argument);
+				receiver = MaterializeMemberInitializerReceiver(receiver, memberInitializerOp, argument, exprs);
+				var nestedExprs = BuildObjectCreationInitializer(receiver, memberInitializerOp.Initializer, argument);
+				exprs.AddRange(nestedExprs);
 			}
 			else if (initializer is IInvocationOperation invocationOp)
 			{
@@ -375,6 +572,9 @@ public partial class SemanticWalker
 					exprs.Add(mapperExpr);
 					continue;
 				}
+
+				if (string.IsNullOrEmpty(alias))
+					RejectUnsupportedRuntimeFallback(invocationOp, invocationOp.TargetMethod, "initializer method invocation", invocationOp.Instance?.Type ?? invocationOp.TargetMethod.ContainingType);
 
 				// 普通方法调用
 				var methodName = alias ?? GetMethodConfigOrWhiteListName(invocationOp.TargetMethod);
@@ -410,8 +610,16 @@ public partial class SemanticWalker
 			{
 				target = simpleAssignmentOp.Target switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+						simpleAssignmentOp,
+						propertyReferenceOp.Property,
+						"object literal member initialization",
+						propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+						simpleAssignmentOp,
+						fieldReferenceOp.Field,
+						"object literal member initialization",
+						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
 					_ => Translate<Expression>(simpleAssignmentOp.Target, argument)
 				};
 				value = TranslateTupleForTarget(simpleAssignmentOp.Value, simpleAssignmentOp.Target.Type, argument);
@@ -420,8 +628,16 @@ public partial class SemanticWalker
 			{
 				target = memberInitializerOp.InitializedMember switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
+					IPropertyReferenceOperation propertyReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+						memberInitializerOp,
+						propertyReferenceOp.Property,
+						"object literal member initialization",
+						propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
+					IFieldReferenceOperation fieldReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+						memberInitializerOp,
+						fieldReferenceOp.Field,
+						"object literal member initialization",
+						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
 					_ => null
 				};
 
@@ -568,19 +784,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitTypeParameterObjectCreation(ITypeParameterObjectCreationOperation operation, SenseArgument argument)
 	{
-		if (operation.Type is null)
-			return HandleTransformationFailure<Node>(operation, "Type parameter object creation type could not be translated to JavaScript.");
-
-		// 泛型类型参数对象创建，忽略泛型参数，当作普通对象创建
-		// 使用白名单检查获取类型名称
-		var typeName = GetTypeConfigOrWhiteListName(operation.Type);
-		if (string.IsNullOrEmpty(typeName))
-			return HandleTransformationFailure<Node>(operation, $"Type '{operation.Type.ToDisplayString()}' is not in whitelist and cannot be used for object creation.");
-
-		var callee = new Identifier(typeName!);
-
-		// 泛型类型参数对象通常使用无参数构造函数
-		return new NewExpression(callee, NodeList.From<Expression>());
+		return HandleTransformationFailure<Node>(
+			operation,
+			"Type-parameter object creation ('new T()') is not supported. JavaScript output has no runtime constructor binding for C# generic type parameters, so emitting 'new T()' would be semantically invalid.");
 	}
 
 	/// <summary>
@@ -596,6 +802,9 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitArrayCreation(IArrayCreationOperation operation, SenseArgument argument)
 	{
+		if (operation.Type is not null)
+			RejectUnsupportedTypeFallback(operation, operation.Type, "array creation");
+
 		if (operation.Type is IArrayTypeSymbol arrayType && arrayType.Rank > 1)
 		{
 			if (operation.Initializer is not null)
@@ -692,8 +901,16 @@ public partial class SemanticWalker
 	{
 		var target = operation.InitializedMember switch
 		{
-			IPropertyReferenceOperation propertyReferenceOp => new Identifier(GetInitializerMemberName(propertyReferenceOp.Property)),
-			IFieldReferenceOperation fieldReferenceOp => new Identifier(GetInitializerMemberName(fieldReferenceOp.Field)),
+			IPropertyReferenceOperation propertyReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+				operation,
+				propertyReferenceOp.Property,
+				"member initializer assignment",
+				propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
+			IFieldReferenceOperation fieldReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+				operation,
+				fieldReferenceOp.Field,
+				"member initializer assignment",
+				fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
 			_ => null
 		};
 		if (target is null)

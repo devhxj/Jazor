@@ -54,7 +54,7 @@ public partial class SemanticWalker
 
 		// 先查询白名单
 		var displayName = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
+		if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
 			entry.Op == Op.Alias &&
 			!string.IsNullOrEmpty(entry.Value))
 			name = entry.Value!;
@@ -493,7 +493,7 @@ public partial class SemanticWalker
 
 	private static string? TryGetTypeAliasFromWhiteList(string displayName)
 	{
-		if (WhiteList.Types.TryGetValue(displayName, out var entry) &&
+		if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
 			entry.Op == Op.Alias &&
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value;
@@ -620,6 +620,21 @@ public partial class SemanticWalker
 			return false;
 
 		expression = new CallExpression(getter, NodeList.Empty<Expression>(), optional: false);
+		return true;
+	}
+
+	private bool TryBuildImportedModulePropertySetterCall(IPropertySymbol property, SenseArgument? context, Expression value, out Expression? expression)
+	{
+		expression = null;
+		if (!property.IsStatic || property.SetMethod is null)
+			return false;
+
+		var setterName = GetMethodConfigOrWhiteListName(property.SetMethod);
+		if (!TryBuildImportedModuleMember(property.ContainingType, setterName, context, out var setter) ||
+			setter is null)
+			return false;
+
+		expression = new CallExpression(setter, NodeList.From(value), optional: false);
 		return true;
 	}
 
@@ -1032,108 +1047,755 @@ public partial class SemanticWalker
 		if (operation.Indices.Length == 0)
 			return HandleTransformationFailure<Node>(operation, "Array access requires at least one index.");
 
+		var initializations = new List<Expression>();
+		var expr = BuildArrayElementReadAccess(operation, argument, initializations);
+		if (initializations.Count == 0)
+			return WithOriginIfMissing(expr, operation);
+
+		var expressions = new List<Expression>(initializations.Count + 1);
+		expressions.AddRange(initializations);
+		expressions.Add(expr);
+		return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
+	}
+
+	private Expression BuildArrayElementReadAccess(
+		IArrayElementReferenceOperation operation,
+		SenseArgument argument,
+		List<Expression> initializations)
+	{
 		Expression expr = Translate<Expression>(operation.ArrayReference, argument);
 		for (var i = 0; i < operation.Indices.Length; i++)
 		{
 			var indexOperation = operation.Indices[i];
 			if (indexOperation is IRangeOperation && i != operation.Indices.Length - 1)
-				return HandleTransformationFailure<Node>(operation, "Range indexing is only supported on the final array dimension.");
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					"Range indexing is only supported on the final array dimension.");
+			}
 
-			expr = BuildArrayIndexAccess(expr, indexOperation);
+			expr = BuildArrayIndexAccess(operation, expr, indexOperation, argument, initializations, allowRange: true);
 		}
+
 		return expr;
+	}
 
-		Expression BuildArrayIndexAccess(Expression target, IOperation indexOperation)
+	private Expression BuildArrayElementMutationTarget(
+		IArrayElementReferenceOperation operation,
+		SenseArgument argument,
+		List<Expression> initializations)
+	{
+		if (operation.Indices.Length == 0)
+			return HandleTransformationFailure<Expression>(operation, "Array assignment requires at least one index.");
+
+		Expression expr = Translate<Expression>(operation.ArrayReference, argument);
+		for (var i = 0; i < operation.Indices.Length; i++)
 		{
-			if (indexOperation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
+			var indexOperation = operation.Indices[i];
+			if (indexOperation is IRangeOperation)
 			{
-				var lengthAccess = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
-				var innerIndex = Translate<Expression>(unary.Operand, argument);
-				var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
-				return new MemberExpression(target, indexCalculation, computed: true, optional: false);
+				return HandleTransformationFailure<Expression>(
+					operation,
+					"Array range access is not assignable in JavaScript lowering.");
 			}
-			else if (indexOperation is IImplicitIndexerReferenceOperation implicitIndexer)
-			{
-				var instance = Translate<Expression>(implicitIndexer.Instance, argument);
-				var indexArgument = Translate<Expression>(implicitIndexer.Argument, argument);
-				var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
-				if (implicitIndexer.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat)
-					indexArgument = Translate<Expression>(indexUnaryOp.Operand, argument);
-				var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
-				return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
-			}
-			else if (indexOperation is IRangeOperation range)
-			{
-				var start = range.LeftOperand is IUnaryOperation leftUnary && leftUnary.OperatorKind == UnaryOperatorKind.Hat
-					? UnaryHat(target, leftUnary)
-					: Translate<Expression>(range.LeftOperand, argument, null);
 
-				var end = range.RightOperand is IUnaryOperation rightUnary && rightUnary.OperatorKind == UnaryOperatorKind.Hat
-					? UnaryHat(target, rightUnary)
-					: Translate<Expression>(range.RightOperand, argument, null);
-
-				var slice = new MemberExpression(target, new Identifier("slice"), computed: false, optional: false);
-				var args = NodeList.Empty<Expression>();
-				if (start is not null && end is not null)
-				{
-					var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
-					args = NodeList.From(start, adjustedEnd);
-				}
-				else if (start is not null)
-				{
-					args = NodeList.From(start);
-				}
-				else if (end is not null)
-				{
-					var adjustedEnd = new NonLogicalBinaryExpression(Operator.Addition, end, new NumericLiteral(1, "1"));
-					args = NodeList.From<Expression>(new NumericLiteral(0, "0"), adjustedEnd);
-				}
-
-				return new CallExpression(slice, args, optional: false);
-			}
-			else
-			{
-				var indexCalculation = Translate<Expression>(indexOperation, argument);
-				return new MemberExpression(target, indexCalculation, computed: true, optional: false);
-			}
+			expr = BuildArrayIndexAccess(operation, expr, indexOperation, argument, initializations, allowRange: false);
 		}
 
-		Expression UnaryHat(Expression obj, IUnaryOperation unary)
+		return expr;
+	}
+
+	private Expression BuildArrayIndexAccess(
+		IOperation ownerOperation,
+		Expression target,
+		IOperation indexOperation,
+		SenseArgument argument,
+		List<Expression> initializations,
+		bool allowRange)
+	{
+		if (RequiresArrayReceiverCaching(indexOperation))
+			target = MaterializePropertyMutationOperand(target, ownerOperation, argument, initializations, $"array{initializations.Count}");
+
+		if (TryUnwrapArrayFromEndIndex(indexOperation, out var unary))
 		{
-			var left = new MemberExpression(obj, new Identifier("length"), computed: false, optional: false);
-			var right = Translate<Expression>(unary.Operand, argument);
-			return new NonLogicalBinaryExpression(Operator.Subtraction, left, right);
+			var lengthAccess = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
+			var innerIndex = Translate<Expression>(unary.Operand, argument);
+			var fromEndIndex = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, innerIndex);
+			return new MemberExpression(target, fromEndIndex, computed: true, optional: false);
 		}
+
+		if (indexOperation is IRangeOperation range)
+		{
+			if (!allowRange)
+			{
+				return HandleTransformationFailure<Expression>(
+					ownerOperation,
+					"Array range access is not assignable in JavaScript lowering.");
+			}
+
+			var start = TryUnwrapArrayFromEndIndex(range.LeftOperand, out var leftUnary)
+				? BuildArrayFromEndIndex(target, leftUnary, argument)
+				: Translate<Expression>(range.LeftOperand, argument, null);
+
+			var end = TryUnwrapArrayFromEndIndex(range.RightOperand, out var rightUnary)
+				? BuildArrayFromEndIndex(target, rightUnary, argument)
+				: Translate<Expression>(range.RightOperand, argument, null);
+
+			var slice = new MemberExpression(target, new Identifier("slice"), computed: false, optional: false);
+			var args = NodeList.Empty<Expression>();
+			if (start is not null && end is not null)
+				args = NodeList.From(start, end);
+			else if (start is not null)
+				args = NodeList.From(start);
+			else if (end is not null)
+				args = NodeList.From<Expression>(new NumericLiteral(0, "0"), end);
+
+			return new CallExpression(slice, args, optional: false);
+		}
+
+		var indexCalculation = Translate<Expression>(indexOperation, argument);
+		return new MemberExpression(target, indexCalculation, computed: true, optional: false);
+	}
+
+	private static bool RequiresArrayReceiverCaching(IOperation indexOperation)
+	{
+		if (TryUnwrapArrayFromEndIndex(indexOperation, out _))
+			return true;
+
+		return indexOperation is IRangeOperation range &&
+			(TryUnwrapArrayFromEndIndex(range.LeftOperand, out _) ||
+			 TryUnwrapArrayFromEndIndex(range.RightOperand, out _));
+	}
+
+	private static bool TryUnwrapArrayFromEndIndex(IOperation? operation, out IUnaryOperation unary)
+	{
+		if (operation is IUnaryOperation { OperatorKind: UnaryOperatorKind.Hat } hat)
+		{
+			unary = hat;
+			return true;
+		}
+
+		if (operation is IConversionOperation conversion)
+			return TryUnwrapArrayFromEndIndex(conversion.Operand, out unary);
+
+		unary = null!;
+		return false;
+	}
+
+	private Expression BuildArrayFromEndIndex(Expression target, IUnaryOperation unary, SenseArgument argument)
+	{
+		var left = new MemberExpression(target, new Identifier("length"), computed: false, optional: false);
+		var right = Translate<Expression>(unary.Operand, argument);
+		return new NonLogicalBinaryExpression(Operator.Subtraction, left, right);
 	}
 
 	/// <summary>
-	/// 处理隐式索引器引用操作
-	/// C# 示例：
-	/// array[^1]                           // 从末尾开始的索引
-	/// array[^n]                           // 从末尾开始的第n个位置
-	/// array[^0]                           // 从末尾开始的第0个位置（等同于array.length）
-	/// 转换结果：直接生成最简单的 array[array.length - n] 表达式
-	/// 利用C#强类型系统，避免不必要的运行时检测，生成高效简洁的代码
+	/// 处理非数组类型上的隐式 System.Index/System.Range 索引器引用。
+	/// 这里不能裸写 JavaScript length/index/slice 语义，而要基于 Roslyn 提供的
+	/// LengthSymbol / IndexerSymbol 做受控 lowering：
+	/// - Index: 归一化为真实 int 偏移后，再走底层 indexer/read helper
+	/// - Range: 归一化为 start/end-exclusive，再走底层 slice/indexer helper
+	/// - 仅支持可直接归一化的语言级写法（如 `^1`、`1..^1`、隐式 int -> Index）
+	/// - 显式的 System.Index/System.Range 值对象若不能在当前节点直接归一化，则拒绝生成
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitImplicitIndexerReference(IImplicitIndexerReferenceOperation operation, SenseArgument argument)
 	{
-		// 隐式索引器引用的直接AST转换，生成最简洁的代码
-		var instance = Translate<Expression>(operation.Instance, argument);
-		var indexArgument = operation.Argument is IUnaryOperation indexUnaryOp && indexUnaryOp.OperatorKind == UnaryOperatorKind.Hat
-			? Translate<Expression>(indexUnaryOp.Operand, argument)
-			: Translate<Expression>(operation.Argument, argument);
-		// 生成 array.length 访问
-		var lengthAccess = new MemberExpression(instance, new Identifier("length"), computed: false, optional: false);
-		// 处理从末尾开始的索引（^n），转换为 length - n
-		// 普通索引计算，不是从末尾开始的索引
-		// 这种情况可能出现在显式使用 Index.FromEnd() 等场景
-		var indexCalculation = new NonLogicalBinaryExpression(Operator.Subtraction, lengthAccess, indexArgument);
+		PrepareImplicitIndexerAccess(
+			operation,
+			operation,
+			argument,
+			cacheForRepeatedReadWrite: false,
+			out var initializations,
+			out var instance,
+			out var arguments,
+			out var hostType);
 
-		// 直接返回数组访问表达式：array[array.length - n]
-		return new MemberExpression(instance, indexCalculation, computed: true, optional: false);
+		var expr = BuildImplicitIndexerReadExpression(operation, instance, arguments, argument, hostType);
+		if (initializations.Count == 0)
+			return WithOriginIfMissing(expr, operation);
+
+		var expressions = new List<Expression>(initializations.Count + 1);
+		expressions.AddRange(initializations);
+		expressions.Add(expr);
+		return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
+	}
+
+	private void PrepareImplicitIndexerAccess(
+		IImplicitIndexerReferenceOperation operation,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		bool cacheForRepeatedReadWrite,
+		out List<Expression> initializations,
+		out Expression instance,
+		out List<Expression> arguments,
+		out ITypeSymbol? hostType)
+	{
+		initializations = [];
+		var resolvedHostType = operation.Instance.Type ?? operation.IndexerSymbol?.ContainingType ?? operation.LengthSymbol?.ContainingType;
+		var translatedInstance = Translate<Expression>(operation.Instance, argument);
+
+		if (cacheForRepeatedReadWrite || RequiresImplicitIndexerLengthAccess(operation.Argument))
+			translatedInstance = MaterializePropertyMutationOperand(translatedInstance, ownerOperation, argument, initializations, "iinst");
+
+		Expression? lengthExpr = null;
+		Expression GetLengthExpr()
+		{
+			if (lengthExpr is not null)
+				return lengthExpr;
+
+			if (operation.LengthSymbol is null)
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Implicit index access on '{resolvedHostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported Length/Count symbol.");
+			}
+
+			lengthExpr = BuildImplicitIndexerLengthAccess(operation, operation.LengthSymbol, translatedInstance, argument, resolvedHostType);
+			return lengthExpr;
+		}
+
+		if (TryGetRangeArgument(operation.Argument, out var rangeArgument))
+		{
+			if (operation.IndexerSymbol is null)
+			{
+				arguments =
+				[
+					HandleTransformationFailure<Expression>(
+						operation,
+						$"Implicit range access on '{resolvedHostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer or slice symbol.")
+				];
+				hostType = resolvedHostType;
+				instance = translatedInstance;
+				return;
+			}
+
+			var startExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.LeftOperand, GetLengthExpr, argument)
+				?? new NumericLiteral(0, "0");
+			var endExpr = BuildImplicitRangeBoundaryExpression(rangeArgument.RightOperand, GetLengthExpr, argument)
+				?? GetLengthExpr();
+			arguments = BuildImplicitRangeArguments(operation, operation.IndexerSymbol, startExpr, endExpr, GetLengthExpr);
+		}
+		else
+		{
+			var lengthForIndex = RequiresImplicitIndexerLengthAccess(operation.Argument)
+				? GetLengthExpr()
+				: null;
+			arguments =
+			[
+				BuildImplicitIndexArgumentExpression(operation, operation.Argument, lengthForIndex, argument)
+			];
+		}
+
+		if (!cacheForRepeatedReadWrite)
+		{
+			hostType = resolvedHostType;
+			instance = translatedInstance;
+			return;
+		}
+
+		for (var i = 0; i < arguments.Count; i++)
+			arguments[i] = MaterializePropertyMutationOperand(arguments[i], ownerOperation, argument, initializations, $"iarg{i}");
+
+		hostType = resolvedHostType;
+		instance = translatedInstance;
+	}
+
+	private Expression BuildImplicitIndexerReadExpression(
+		IImplicitIndexerReferenceOperation operation,
+		Expression instance,
+		List<Expression> arguments,
+		SenseArgument argument,
+		ITypeSymbol? hostType)
+	{
+		if (operation.IndexerSymbol is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Implicit index access on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer symbol.");
+		}
+
+		var usage = TryGetRangeArgument(operation.Argument, out _)
+			? "implicit range access"
+			: "implicit indexer access";
+		return BuildListPatternBoundAccess(
+			operation,
+			operation.IndexerSymbol,
+			instance,
+			arguments,
+			argument,
+			usage,
+			hostType ?? operation.IndexerSymbol.ContainingType);
+	}
+
+	private void PrepareImplicitIndexerSetterAccess(
+		IImplicitIndexerReferenceOperation operation,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		bool cacheForRepeatedReadWrite,
+		out List<Expression> initializations,
+		out Expression instance,
+		out List<Expression> arguments,
+		out IPropertySymbol property,
+		out ITypeSymbol? hostType)
+	{
+		PrepareImplicitIndexerAccess(
+			operation,
+			ownerOperation,
+			argument,
+			cacheForRepeatedReadWrite,
+			out initializations,
+			out instance,
+			out arguments,
+			out hostType);
+
+		property = ResolveImplicitIndexerProperty(operation);
+		if (property.SetMethod is null)
+		{
+			property = HandleTransformationFailure<IPropertySymbol>(
+				operation,
+				$"Implicit indexer target '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not assignable because it has no setter.");
+		}
+	}
+
+	private void PrepareImplicitIndexerMutationAccess(
+		IImplicitIndexerReferenceOperation operation,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		out List<Expression> initializations,
+		out Expression readExpression,
+		out Expression instance,
+		out List<Expression> arguments,
+		out IPropertySymbol property)
+	{
+		PrepareImplicitIndexerSetterAccess(
+			operation,
+			ownerOperation,
+			argument,
+			cacheForRepeatedReadWrite: true,
+			out initializations,
+			out instance,
+			out arguments,
+			out property,
+			out var hostType);
+
+		if (property.GetMethod is null)
+		{
+			property = HandleTransformationFailure<IPropertySymbol>(
+				operation,
+				$"Implicit indexer target '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not readable because it has no getter.");
+		}
+
+		readExpression = BuildImplicitIndexerReadExpression(operation, instance, arguments, argument, hostType);
+	}
+
+	private static bool RequiresImplicitIndexerLengthAccess(IOperation argumentOperation)
+	{
+		if (TryGetRangeArgument(argumentOperation, out var rangeArgument))
+		{
+			return rangeArgument.RightOperand is null ||
+				IsFromEndIndexArgument(rangeArgument.LeftOperand) ||
+				IsFromEndIndexArgument(rangeArgument.RightOperand);
+		}
+
+		return IsFromEndIndexArgument(argumentOperation);
+	}
+
+	private static bool IsFromEndIndexArgument(IOperation? operation)
+	{
+		if (operation is null)
+			return false;
+
+		if (operation is IUnaryOperation { OperatorKind: UnaryOperatorKind.Hat })
+			return true;
+
+		return operation is IConversionOperation conversion &&
+			IsFromEndIndexArgument(conversion.Operand);
+	}
+
+	private IPropertySymbol ResolveImplicitIndexerProperty(IImplicitIndexerReferenceOperation operation)
+	{
+		return operation.IndexerSymbol switch
+		{
+			IPropertySymbol property => property,
+			IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => property,
+			IMethodSymbol method => HandleTransformationFailure<IPropertySymbol>(
+				operation,
+				$"Implicit indexer symbol '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not assignable because it does not lower to a property-style setter."),
+			_ => HandleTransformationFailure<IPropertySymbol>(
+				operation,
+				$"Implicit indexer target on '{operation.Instance.Type?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' does not expose a property-style setter.")
+		};
+	}
+
+	private Expression BuildImplicitIndexerSetterAssignment(
+		IImplicitIndexerReferenceOperation operation,
+		SenseArgument argument,
+		IPropertySymbol property,
+		Expression instance,
+		List<Expression> arguments,
+		Expression value)
+	{
+		if (property.SetMethod is not null)
+		{
+			var setterArguments = new List<Expression>(arguments.Count + 1);
+			setterArguments.AddRange(arguments);
+			setterArguments.Add(value);
+
+			var mapperExpr = GetWhiteListExpression(property.SetMethod, argument, setterArguments, instance, out var setterAlias);
+			if (mapperExpr is not null)
+				return mapperExpr;
+
+			if (string.IsNullOrEmpty(setterAlias))
+				RejectUnsupportedRuntimeFallback(operation, property.SetMethod, "implicit indexer assignment", operation.Instance.Type ?? property.ContainingType);
+		}
+
+		var target = BuildImplicitIndexerWriteTarget(operation, instance, arguments, property);
+		return new AssignmentExpression(Operator.Assignment, target, value);
+	}
+
+	private Expression BuildImplicitIndexerWriteTarget(
+		IImplicitIndexerReferenceOperation operation,
+		Expression instance,
+		List<Expression> arguments,
+		IPropertySymbol property)
+	{
+		if (arguments.Count != 1)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"JavaScript fallback for implicit indexer assignment requires a single translated index argument, but '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' produced {arguments.Count} arguments.");
+		}
+
+		return new MemberExpression(instance, arguments[0], computed: true, optional: false);
+	}
+
+	private Expression BuildImplicitIndexIndexerAccess(
+		IImplicitIndexerReferenceOperation operation,
+		Expression instance,
+		SenseArgument argument,
+		ITypeSymbol? hostType)
+	{
+		if (operation.IndexerSymbol is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Implicit index access on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer symbol.");
+		}
+
+		var lengthExpr = operation.LengthSymbol is not null
+			? BuildImplicitIndexerLengthAccess(operation, operation.LengthSymbol, instance, argument, hostType)
+			: null;
+		var indexExpr = BuildImplicitIndexArgumentExpression(operation, operation.Argument, lengthExpr, argument);
+		return BuildListPatternBoundAccess(
+			operation,
+			operation.IndexerSymbol,
+			instance,
+			[indexExpr],
+			argument,
+			"implicit indexer access",
+			hostType ?? operation.IndexerSymbol.ContainingType);
+	}
+
+	private Expression BuildImplicitRangeIndexerAccess(
+		IImplicitIndexerReferenceOperation operation,
+		Expression instance,
+		IRangeOperation rangeOperation,
+		SenseArgument argument,
+		ITypeSymbol? hostType)
+	{
+		if (operation.IndexerSymbol is null)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Implicit range access on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported indexer or slice symbol.");
+		}
+
+		Expression? lengthExpr = null;
+
+		Expression GetLengthExpr()
+		{
+			if (lengthExpr is not null)
+				return lengthExpr;
+
+			if (operation.LengthSymbol is null)
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Implicit range access on '{hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>"}' requires a supported Length/Count symbol when using '^' or an open-ended range.");
+			}
+
+			lengthExpr = BuildImplicitIndexerLengthAccess(operation, operation.LengthSymbol, instance, argument, hostType);
+			return lengthExpr;
+		}
+
+		var startExpr = BuildImplicitRangeBoundaryExpression(rangeOperation.LeftOperand, GetLengthExpr, argument)
+			?? new NumericLiteral(0, "0");
+		var endExpr = BuildImplicitRangeBoundaryExpression(rangeOperation.RightOperand, GetLengthExpr, argument)
+			?? GetLengthExpr();
+		var sliceArguments = BuildImplicitRangeArguments(operation, operation.IndexerSymbol, startExpr, endExpr, GetLengthExpr);
+		return BuildListPatternBoundAccess(
+			operation,
+			operation.IndexerSymbol,
+			instance,
+			sliceArguments,
+			argument,
+			"implicit range access",
+			hostType ?? operation.IndexerSymbol.ContainingType);
+	}
+
+	private Expression BuildImplicitIndexerLengthAccess(
+		IOperation ownerOperation,
+		ISymbol lengthSymbol,
+		Expression instance,
+		SenseArgument argument,
+		ITypeSymbol? hostType)
+	{
+		return BuildListPatternBoundAccess(
+			ownerOperation,
+			lengthSymbol,
+			instance,
+			[],
+			argument,
+			"implicit indexer length access",
+			hostType ?? lengthSymbol.ContainingType);
+	}
+
+	private Expression BuildImplicitIndexArgumentExpression(
+		IOperation ownerOperation,
+		IOperation argumentOperation,
+		Expression? lengthExpr,
+		SenseArgument argument)
+	{
+		if (TryBuildFromEndIndexExpression(argumentOperation, lengthExpr, argument, out var fromEndExpr))
+			return fromEndExpr;
+
+		if (TryUnwrapFromStartIndexArgument(argumentOperation, out var fromStartOperand))
+			return Translate<Expression>(fromStartOperand, argument);
+
+		return HandleTransformationFailure<Expression>(
+			ownerOperation,
+			"Implicit System.Index access requires a direct numeric index expression or '^' expression. Standalone System.Index values are not supported in JavaScript lowering.");
+	}
+
+	private static bool TryGetRangeArgument(IOperation operation, out IRangeOperation rangeOperation)
+	{
+		if (operation is IRangeOperation range)
+		{
+			rangeOperation = range;
+			return true;
+		}
+
+		if (operation is IConversionOperation conversion &&
+			IsSystemRangeType(conversion.Type) &&
+			TryGetRangeArgument(conversion.Operand, out range))
+		{
+			rangeOperation = range;
+			return true;
+		}
+
+		rangeOperation = null!;
+		return false;
+	}
+
+	private bool TryBuildFromEndIndexExpression(
+		IOperation operation,
+		Expression? lengthExpr,
+		SenseArgument argument,
+		out Expression expr)
+	{
+		if (operation is IUnaryOperation unary && unary.OperatorKind == UnaryOperatorKind.Hat)
+		{
+			if (lengthExpr is null)
+			{
+				expr = HandleTransformationFailure<Expression>(
+					operation,
+					"From-end index '^' requires a supported Length/Count symbol.");
+				return true;
+			}
+
+			expr = new NonLogicalBinaryExpression(
+				Operator.Subtraction,
+				lengthExpr,
+				Translate<Expression>(unary.Operand, argument));
+			return true;
+		}
+
+		if (operation is IConversionOperation conversion &&
+			IsSystemIndexType(conversion.Type))
+		{
+			return TryBuildFromEndIndexExpression(conversion.Operand, lengthExpr, argument, out expr);
+		}
+
+		expr = null!;
+		return false;
+	}
+
+	private static bool TryUnwrapFromStartIndexArgument(IOperation operation, out IOperation operand)
+	{
+		if (operation is IConversionOperation conversion &&
+			IsSystemIndexType(conversion.Type) &&
+			!IsSystemIndexType(conversion.Operand.Type))
+		{
+			operand = conversion.Operand;
+			return true;
+		}
+
+		if (!IsSystemIndexType(operation.Type))
+		{
+			operand = operation;
+			return true;
+		}
+
+		operand = null!;
+		return false;
+	}
+
+	private Expression? BuildImplicitRangeBoundaryExpression(
+		IOperation? boundaryOperation,
+		Func<Expression> getLengthExpr,
+		SenseArgument argument)
+	{
+		if (boundaryOperation is null)
+			return null;
+
+		if (TryBuildFromEndIndexExpression(boundaryOperation, getLengthExpr(), argument, out var fromEndExpr))
+			return fromEndExpr;
+
+		return Translate<Expression>(boundaryOperation, argument);
+	}
+
+	private List<Expression> BuildImplicitRangeArguments(
+		IOperation ownerOperation,
+		ISymbol indexerSymbol,
+		Expression startExpr,
+		Expression endExpr,
+		Func<Expression> getLengthExpr)
+	{
+		return indexerSymbol switch
+		{
+			IPropertySymbol property => BuildImplicitRangePropertyArguments(ownerOperation, property, startExpr, endExpr, getLengthExpr),
+			IMethodSymbol method when method.AssociatedSymbol is IPropertySymbol property => BuildImplicitRangePropertyArguments(ownerOperation, property, startExpr, endExpr, getLengthExpr),
+			IMethodSymbol method => BuildImplicitRangeMethodArguments(ownerOperation, method, startExpr, endExpr, getLengthExpr),
+			_ => HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Unsupported implicit range indexer symbol '{indexerSymbol.Kind}' for '{indexerSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}'.")
+		};
+	}
+
+	private List<Expression> BuildImplicitRangeMethodArguments(
+		IOperation ownerOperation,
+		IMethodSymbol method,
+		Expression startExpr,
+		Expression endExpr,
+		Func<Expression> getLengthExpr)
+	{
+		if (method.Parameters.Length == 1)
+		{
+			if (IsSystemRangeType(method.Parameters[0].Type))
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Range-based slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in implicit range lowering. Expose an int-based Slice/Substring overload or configure a whitelist mapping.");
+			}
+
+			if (method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Implicit range slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters.");
+			}
+
+			if (!ReferenceEquals(endExpr, getLengthExpr()))
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded range because it only accepts a single int parameter.");
+			}
+
+			return [startExpr];
+		}
+
+		if (method.Parameters.Length != 2 ||
+			method.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
+			method.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+		{
+			return HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Implicit range slice method '{method.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose int-compatible Slice(start, length) semantics.");
+		}
+
+		return
+		[
+			startExpr,
+			BuildImplicitRangeLengthExpression(startExpr, endExpr)
+		];
+	}
+
+	private List<Expression> BuildImplicitRangePropertyArguments(
+		IOperation ownerOperation,
+		IPropertySymbol property,
+		Expression startExpr,
+		Expression endExpr,
+		Func<Expression> getLengthExpr)
+	{
+		if (!property.IsIndexer || property.Parameters.Length == 0)
+		{
+			return HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Unsupported implicit range property '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}'.");
+		}
+
+		if (property.Parameters.Length == 1)
+		{
+			if (IsSystemRangeType(property.Parameters[0].Type))
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Range-based indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported in implicit range lowering. Expose an int-based slice member or configure a whitelist mapping.");
+			}
+
+			if (property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Implicit range indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must take int-compatible parameters.");
+			}
+
+			if (!ReferenceEquals(endExpr, getLengthExpr()))
+			{
+				return HandleUnsupportedSliceArguments(
+					ownerOperation,
+					$"Indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot represent a bounded range because it only accepts a single int parameter.");
+			}
+
+			return [startExpr];
+		}
+
+		if (property.Parameters.Length != 2 ||
+			property.Parameters[0].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32 ||
+			property.Parameters[1].Type.OriginalDefinition.SpecialType != SpecialType.System_Int32)
+		{
+			return HandleUnsupportedSliceArguments(
+				ownerOperation,
+				$"Implicit range indexer '{property.OriginalDefinition.ToDisplayString(Format.NameFormat)}' must expose int-compatible start/length semantics.");
+		}
+
+		return
+		[
+			startExpr,
+			BuildImplicitRangeLengthExpression(startExpr, endExpr)
+		];
+	}
+
+	private Expression BuildImplicitRangeLengthExpression(Expression startExpr, Expression endExpr)
+	{
+		if (startExpr is NumericLiteral { Raw: "0" })
+			return endExpr;
+
+		return new NonLogicalBinaryExpression(Operator.Subtraction, endExpr, startExpr);
 	}
 
 	/// <summary>
@@ -1182,11 +1844,21 @@ public partial class SemanticWalker
 		// 处理字段的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
 
+		if (IsBaseInstanceReference(operation.Instance))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Base field access '{operation.Field.Name}' is not supported because member-class fields lower to instance-owned state rather than prototype members. Use a property or method seam instead.");
+		}
+
 		// 检查白名单映射
 		// 字段没有 GetMethod/SetMethod，直接使用字段符号进行白名单查询
 		var mapperExpr = GetWhiteListExpression(operation.Field, argument, [], instance, out var alias);
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
+
+		if (string.IsNullOrEmpty(alias))
+			RejectUnsupportedRuntimeFallback(operation, operation.Field, "field access", operation.Instance?.Type ?? operation.Field.ContainingType);
 
 		// 对于实例字段访问，需要创建成员访问表达式
 		// ImplicitReceiver 指那些语法上不需要、也不能写 this 的隐式实例引用
@@ -1201,7 +1873,7 @@ public partial class SemanticWalker
 
 		// 获取字段名称（支持别名）
 		var fieldName = string.IsNullOrEmpty(alias)
-			? operation.Field.Name
+			? Util.GetConfigOrSymbolName(operation.Field)
 			: alias;
 
 		var property = new Identifier(fieldName!);
@@ -1270,10 +1942,16 @@ public partial class SemanticWalker
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
 
+		if (string.IsNullOrEmpty(alias))
+			RejectUnsupportedRuntimeFallback(operation, operation.Property.GetMethod!, "property access", operation.Instance?.Type ?? operation.Property.ContainingType);
+
 		if (instance is not null &&
 			arguments.Count > 0 &&
 			(operation.Property.IsIndexer || operation.Property.Parameters.Length > 0))
 		{
+			if (arguments.Count != 1)
+				return HandleTransformationFailure<Node>(operation, "JavaScript fallback for indexers only supports a single translated index argument.");
+
 			var indexerOptional = operation.Instance is IConditionalAccessInstanceOperation;
 			return WithOriginIfMissing(new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional), operation);
 		}
@@ -1349,10 +2027,34 @@ public partial class SemanticWalker
 			return func;
 		}
 
+		if (string.IsNullOrEmpty(alias))
+			RejectUnsupportedRuntimeFallback(operation, whiteListMethod, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
+
 		var instance = Translate<Expression>(operation.Instance, argument, null);
 		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.Method) : alias;
+		var initializations = new List<Expression>();
 		if (instance is not null)
+		{
+			if (IsBaseInstanceReference(operation.Instance))
+			{
+				var forwardedParameters = operation.Method.Parameters
+					.Select(static parameter => new Identifier(parameter.Name))
+					.ToList();
+				var forwardedArguments = forwardedParameters
+					.Select(static parameter => (Expression)parameter)
+					.ToList();
+				var baseMethod = new MemberExpression(new Super(), new Identifier(methodName!), computed: false, optional: false);
+				return new ArrowFunctionExpression(
+					NodeList.From<Node>(forwardedParameters),
+					new CallExpression(baseMethod, NodeList.From(forwardedArguments), optional: false),
+					expression: true,
+					async: false);
+			}
+
 			instance = NormalizeRuntimeReceiverHostInstance(instance, operation.Method);
+			if (!operation.Method.IsStatic)
+				instance = MaterializeMethodReferenceReceiver(instance, operation, argument, initializations);
+		}
 		var property = new Identifier(methodName!);
 		
 		Expression callee = property;
@@ -1402,7 +2104,30 @@ public partial class SemanticWalker
 		}
 
 		callee = NormalizeRuntimeReceiverHostCallee(callee, operation.Method);
+		if (initializations.Count > 0)
+		{
+			var expressions = new List<Expression>(initializations.Count + 1);
+			expressions.AddRange(initializations);
+			expressions.Add(callee);
+			return new SequenceExpression(NodeList.From(expressions));
+		}
+
 		return callee;
+	}
+
+	private Expression MaterializeMethodReferenceReceiver(
+		Expression receiver,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		List<Expression> initializations)
+	{
+		if (!NeedsSingleEvaluationCaching(receiver))
+			return receiver;
+
+		var tempId = new Identifier(AllocateUniqueName(ownerOperation, argument, LoweringSite.MethodReferenceReceiver()));
+		argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
+		initializations.Add(new AssignmentExpression(Operator.Assignment, tempId, receiver));
+		return tempId;
 	}
 
 	/// <summary>
@@ -1423,11 +2148,21 @@ public partial class SemanticWalker
 		// PatternInput - 语言特性：模式匹配
 		// InterpolatedStringHandler - 语言特性：内插字符串 
 
+		if (IsBaseInstanceReference(operation))
+			return WithOrigin(new Super(), operation);
+
 		if (operation.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
 			return new ThisExpression();
 
 		return null;
 	}
+
+	private static bool IsBaseInstanceReference(IOperation? operation)
+		=> operation is IInstanceReferenceOperation
+		{
+			ReferenceKind: InstanceReferenceKind.ContainingTypeInstance,
+			Syntax: BaseExpressionSyntax
+		};
 
 	/// <summary>
 	/// 处理方法调用操作
@@ -1475,61 +2210,17 @@ public partial class SemanticWalker
 			// 当作普通参数传入
 			arguments.Add(right);
 		}
-
-		// 检查白名单映射
-		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.TargetMethod, operation.Syntax, operation.SemanticModel);
-		if (TryBuildIntrinsicMethodInvocation(operation, whiteListMethod, instance, arguments, out var intrinsicExpr) &&
-			intrinsicExpr is not null)
-			return WithOriginIfMissing(BuildInvExpr(hasReturn, intrinsicExpr, refParas, argument), operation);
-
-		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias);
-		if (mapperExpr is not null)
-			return WithOriginIfMissing(BuildInvExpr(hasReturn, mapperExpr, refParas, argument), operation);
-
-		// 判断方法调用的类型
-		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.TargetMethod) : alias;
-		if (instance is not null)
-			instance = NormalizeRuntimeReceiverHostInstance(instance, operation.TargetMethod);
-		var property = new Identifier(methodName!);
-		Expression callee = property;
-		var extensionHost = TryBuildExtensionHostTarget(operation.TargetMethod, argument);
-		if (instance is null)
-		{
-			if (operation.TargetMethod.IsStatic)
-			{
-				if (TryBuildPreferredRuntimeStaticMemberAccess(operation.TargetMethod, operation.Syntax, operation.SemanticModel, methodName!, out var preferredStaticCallee) &&
-					preferredStaticCallee is not null)
-					callee = preferredStaticCallee;
-				else if (extensionHost is not null)
-					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
-				else if (TryBuildImportedModuleMember(operation.TargetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
-					importedMethod is not null)
-					callee = importedMethod;
-				else
-				{
-					var containing = BuildFullTypeName(operation.TargetMethod.ContainingType, argument);
-					if (containing is not null)
-						callee = new MemberExpression(containing, property, computed: false, optional: false);
-					else if (!Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod))
-					{
-						var qualified = TryBuildStaticQualifiedMemberFromSyntax(operation.Syntax, methodName!);
-						if (qualified is not null)
-							callee = qualified;
-					}
-				}
-			}
-		}
-		else
-		{
-			callee = operation.TargetMethod.IsStatic && extensionHost is not null
-				? new MemberExpression(extensionHost, property, computed: false, optional: false)
-				: operation.TargetMethod.MethodKind != MethodKind.DelegateInvoke
-				? new MemberExpression(instance, property, computed: false, optional: false)
-				: instance;
-		}
-
-		callee = NormalizeRuntimeReceiverHostCallee(callee, operation.TargetMethod);
-		var callExpr = new CallExpression(callee, NodeList.From(arguments), optional: false);
+		var callExpr = BuildMethodCallExpression(
+			operation,
+			operation.TargetMethod,
+			operation.Syntax,
+			operation.SemanticModel,
+			instance,
+			arguments,
+			argument,
+			operation.Instance?.Type ?? operation.TargetMethod.ContainingType,
+			allowIntrinsic: true,
+			invocationOperation: operation);
 		return WithOriginIfMissing(BuildInvExpr(hasReturn, callExpr, refParas, argument), operation);
 
 		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression> refs, in SenseArgument ctx)
@@ -1545,7 +2236,7 @@ public partial class SemanticWalker
 				expressions.Add(new AssignmentExpression(Operator.Assignment, tempId, expr));
 				for (var i = 0; i < refs.Count; i++)
 				{
-					var index = hasReturns ? i + 1 : 0;
+					var index = hasReturns ? i + 1 : i;
 					var indexer = new NumericLiteral(index, index.ToString());
 					var member = new MemberExpression(tempId, indexer, computed: true, optional: false);
 					var assignExpr = new AssignmentExpression(Operator.Assignment, refs[i], member);
@@ -1563,5 +2254,77 @@ public partial class SemanticWalker
 
 			return expr;
 		}
+	}
+
+	private Expression BuildMethodCallExpression(
+		IOperation ownerOperation,
+		IMethodSymbol targetMethod,
+		SyntaxNode syntax,
+		SemanticModel? semanticModel,
+		Expression? instance,
+		List<Expression> arguments,
+		SenseArgument argument,
+		ITypeSymbol? hostType = null,
+		bool allowIntrinsic = false,
+		IInvocationOperation? invocationOperation = null)
+	{
+		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(targetMethod, syntax, semanticModel);
+		if (allowIntrinsic &&
+			invocationOperation is not null &&
+			TryBuildIntrinsicMethodInvocation(invocationOperation, whiteListMethod, instance, arguments, out var intrinsicExpr) &&
+			intrinsicExpr is not null)
+			return intrinsicExpr;
+
+		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias);
+		if (mapperExpr is not null)
+			return mapperExpr;
+
+		if (string.IsNullOrEmpty(alias))
+			RejectUnsupportedRuntimeFallback(ownerOperation, whiteListMethod, "method invocation", hostType ?? targetMethod.ContainingType);
+
+		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(targetMethod) : alias;
+		if (instance is not null)
+			instance = NormalizeRuntimeReceiverHostInstance(instance, targetMethod);
+
+		var property = new Identifier(methodName!);
+		Expression callee = property;
+		var extensionHost = TryBuildExtensionHostTarget(targetMethod, argument);
+		if (instance is null)
+		{
+			if (targetMethod.IsStatic)
+			{
+				if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel, methodName!, out var preferredStaticCallee) &&
+					preferredStaticCallee is not null)
+					callee = preferredStaticCallee;
+				else if (extensionHost is not null)
+					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
+				else if (TryBuildImportedModuleMember(targetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
+					importedMethod is not null)
+					callee = importedMethod;
+				else
+				{
+					var containing = BuildFullTypeName(targetMethod.ContainingType, argument);
+					if (containing is not null)
+						callee = new MemberExpression(containing, property, computed: false, optional: false);
+					else if (!Util.IsECMAScriptRuntimeSymbol(targetMethod))
+					{
+						var qualified = TryBuildStaticQualifiedMemberFromSyntax(syntax, methodName!);
+						if (qualified is not null)
+							callee = qualified;
+					}
+				}
+			}
+		}
+		else
+		{
+			callee = targetMethod.IsStatic && extensionHost is not null
+				? new MemberExpression(extensionHost, property, computed: false, optional: false)
+				: targetMethod.MethodKind != MethodKind.DelegateInvoke
+				? new MemberExpression(instance, property, computed: false, optional: false)
+				: instance;
+		}
+
+		callee = NormalizeRuntimeReceiverHostCallee(callee, targetMethod);
+		return new CallExpression(callee, NodeList.From(arguments), optional: false);
 	}
 }

@@ -19,7 +19,7 @@ namespace Jazor.Compiler;
 /// <para><b>转换器功能范围</b></para>
 /// 支持将方法体、静态字段初始值、属性 getter/setter、构造函数初始值设定项、局部函数、匿名函数/Lambda 转换为 Acornima AST。
 /// <para><b>核心转换原则</b></para>
-/// 1. <b>语义等价性</b>：确保 C# 和 JavaScript 之间的语义完全等价，禁止任何形式的简化处理
+/// 1. <b>行为保真优先</b>：优先保证使用点可观察行为；当完整 CLR/runtime 结构等价不可得时，允许擦除或协议模拟
 /// 2. <b>直接AST构造</b>：必须直接构造目标AST节点，禁止使用Parser进行解析
 /// 3. <b>空值安全处理</b>：构造AST节点时必须先检查输入值是否为null，避免NullReferenceException
 /// 4. <b>编译时优化</b>：利用C#强类型系统的编译时信息直接生成最简AST，避免不必要的运行时检测
@@ -53,10 +53,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         // object、匿名类型、元组类型 -> js object
         // string -> js string
         // byte、sbyte、short、ushort、int、uint、decimal、double、float -> js Number
-        // long、ulong、Int128、UInt128、timestamp、BigInteger ->js BigInt
+        // long、ulong、Int128、UInt128、BigInteger ->js BigInt
         // DateOnly、DateTime -> js Date
         // DateTimeOffset -> js Object wrapper
-        // TimeOnly -> js BigInt（ticks）
+        // TimeOnly -> js Object wrapper
+        // TimeSpan -> js Object wrapper
         // Array -> js array
         // IDictionary -> js Map
         // IEnumerable(非IDictionary) -> js Set
@@ -113,14 +114,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                         return (TypeMapper.Number, "Number");
 
                     else if (displayName == "System.TimeOnly")
-                        return (TypeMapper.BigInt, "BigInt");
+                        return (TypeMapper.Object, "Object");
 
                     // BigInt 相关类型（SpecialType 只包含 Int64/UInt64）
                     else if (displayName == "System.Int128" ||
                         displayName == "System.UInt128" ||
-                        displayName == "System.TimeSpan" ||
                         displayName == "System.Numerics.BigInteger")
                         return (TypeMapper.BigInt, "BigInt");
+
+                    else if (displayName == "System.TimeSpan")
+                        return (TypeMapper.Object, "Object");
 
                     else if (
                         displayName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
@@ -143,7 +146,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     // 对于自定义类型，使用instanceof检查（优先于接口检查）
                     else if (typeSymbol.TypeKind == TypeKind.Struct || typeSymbol.TypeKind == TypeKind.Class)
                     {
-                        if (WhiteList.Types.TryGetValue(displayName, out var entry))
+                        if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry))
                         {
                             // 白名单中的类型
                             if (entry.Op == Common.Op.Alias && !string.IsNullOrEmpty(entry.Value))
@@ -204,6 +207,402 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
         => GetWhiteListExpressionCore(symbol, context, arguments, instance, out alias);
 
+    private void RejectUnsupportedTypeFallback(IOperation operation, ITypeSymbol typeSymbol, string usage)
+    {
+        var unsupportedType = FindFirstUnsupportedExternalType(operation, typeSymbol);
+        if (unsupportedType is null)
+            return;
+
+        HandleTransformationFailure<Node>(
+            operation,
+            $"External type '{unsupportedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot be used for {usage}. Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported.");
+    }
+
+    private void RejectAmbiguousRuntimeTypeFilter(IOperation operation, ITypeSymbol typeSymbol, string usage)
+    {
+        if (GetMapperType(typeSymbol).Mapper != TypeMapper.Class ||
+            !TryGetWhiteListTypeAlias(typeSymbol, out var runtimeAlias))
+            return;
+
+        var conflicts = FindIncompatibleWhiteListAliasTypes(operation, typeSymbol, runtimeAlias);
+        if (conflicts.Count == 0)
+            return;
+
+        HandleTransformationFailure<Node>(
+            operation,
+            $"Type '{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' cannot be used for {usage} because its runtime alias '{runtimeAlias}' is shared with incompatible supported types: {string.Join(", ", conflicts)}. Configure distinct runtime types in Jazor.CLR if precise runtime filtering is required.");
+    }
+
+    private void RejectUnsupportedRuntimeFallback(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
+    {
+        if (IsSupportedExternalMember(operation, symbol, hostType))
+            return;
+
+        var unsupportedType = FindFirstUnsupportedExternalType(operation, hostType) ?? FindFirstUnsupportedConstructedMemberType(operation, symbol);
+        if (unsupportedType is not null)
+        {
+            HandleTransformationFailure<Node>(
+                operation,
+                $"External type '{unsupportedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot be used for {usage}. Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported.");
+        }
+
+        HandleTransformationFailure<Node>(
+            operation,
+            $"External member '{symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot fall back to raw JavaScript {usage}. Only whitelist members or members declared on [ECMAScript]/[ECMAScriptModule] types are supported.");
+    }
+
+    private bool IsSupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
+        => FindFirstUnsupportedExternalType(operation, typeSymbol) is null;
+
+    private ITypeSymbol? FindFirstUnsupportedConstructedMemberType(IOperation operation, ISymbol? symbol)
+    {
+        return symbol switch
+        {
+            null => null,
+            IMethodSymbol method => FindFirstUnsupportedExternalType(operation, method.ContainingType),
+            IPropertySymbol property => FindFirstUnsupportedExternalType(operation, property.ContainingType),
+            IFieldSymbol field => FindFirstUnsupportedExternalType(operation, field.ContainingType),
+            INamedTypeSymbol namedType => FindFirstUnsupportedExternalType(operation, (ITypeSymbol)namedType),
+            _ => null
+        };
+    }
+
+    private ITypeSymbol? FindFirstUnsupportedExternalType(IOperation operation, ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+            return null;
+
+        return IsDirectlySupportedExternalType(operation, typeSymbol) ? null : typeSymbol;
+    }
+
+    private bool IsDirectlySupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
+    {
+        var original = typeSymbol.OriginalDefinition;
+        if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter || typeSymbol.IsTupleType)
+            return true;
+
+        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, typeSymbol))
+            return true;
+
+        if (HasEcmascriptSupportMarker(typeSymbol))
+            return true;
+
+        return TryGetWhiteListValue(WhiteList.Types, original.ToDisplayString(Format.NameFormat), out _, out _);
+    }
+
+    private static bool TryGetWhiteListTypeAlias(ITypeSymbol typeSymbol, out string runtimeAlias)
+    {
+        var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) &&
+            entry.Op == Op.Alias &&
+            !string.IsNullOrWhiteSpace(entry.Value))
+        {
+            runtimeAlias = entry.Value!;
+            return true;
+        }
+
+        runtimeAlias = string.Empty;
+        return false;
+    }
+
+    private List<string> FindIncompatibleWhiteListAliasTypes(IOperation operation, ITypeSymbol targetType, string runtimeAlias)
+    {
+        var conflicts = new List<string>();
+        var targetDisplayName = targetType.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        var targetErasedDisplayName = EraseGenericDisplayArguments(targetDisplayName);
+        var compilation = operation.SemanticModel?.Compilation;
+
+        foreach (var pair in WhiteList.Types)
+        {
+            var candidateDisplayName = pair.Key;
+            var entry = pair.Value;
+            if (entry.Op != Op.Alias ||
+                !string.Equals(entry.Value, runtimeAlias, StringComparison.Ordinal) ||
+                string.Equals(candidateDisplayName, targetDisplayName, StringComparison.Ordinal))
+                continue;
+
+            if (string.Equals(EraseGenericDisplayArguments(candidateDisplayName), targetErasedDisplayName, StringComparison.Ordinal))
+                continue;
+
+            if (compilation is not null &&
+                TryResolveWhiteListAliasType(compilation, candidateDisplayName) is ITypeSymbol candidateType &&
+                IsRuntimeAliasAssignableToTarget(candidateType, targetType))
+                continue;
+
+            conflicts.Add(candidateDisplayName);
+        }
+
+        conflicts.Sort(StringComparer.Ordinal);
+        return conflicts;
+    }
+
+    private static string EraseGenericDisplayArguments(string displayName)
+    {
+        if (displayName.IndexOf('<') < 0)
+            return displayName;
+
+        var builder = new StringBuilder(displayName.Length);
+        var depth = 0;
+        foreach (var ch in displayName)
+        {
+            if (ch == '<')
+            {
+                depth++;
+                continue;
+            }
+
+            if (ch == '>')
+            {
+                if (depth > 0)
+                    depth--;
+                continue;
+            }
+
+            if (depth == 0)
+                builder.Append(ch);
+        }
+
+        return builder.ToString();
+    }
+
+    private static ITypeSymbol? TryResolveWhiteListAliasType(Compilation compilation, string displayName)
+    {
+        return displayName switch
+        {
+            "bool" => compilation.GetSpecialType(SpecialType.System_Boolean),
+            "byte" => compilation.GetSpecialType(SpecialType.System_Byte),
+            "char" => compilation.GetSpecialType(SpecialType.System_Char),
+            "decimal" => compilation.GetSpecialType(SpecialType.System_Decimal),
+            "double" => compilation.GetSpecialType(SpecialType.System_Double),
+            "float" => compilation.GetSpecialType(SpecialType.System_Single),
+            "int" => compilation.GetSpecialType(SpecialType.System_Int32),
+            "long" => compilation.GetSpecialType(SpecialType.System_Int64),
+            "object" => compilation.GetSpecialType(SpecialType.System_Object),
+            "sbyte" => compilation.GetSpecialType(SpecialType.System_SByte),
+            "short" => compilation.GetSpecialType(SpecialType.System_Int16),
+            "string" => compilation.GetSpecialType(SpecialType.System_String),
+            "uint" => compilation.GetSpecialType(SpecialType.System_UInt32),
+            "ulong" => compilation.GetSpecialType(SpecialType.System_UInt64),
+            "ushort" => compilation.GetSpecialType(SpecialType.System_UInt16),
+            _ => compilation.GetTypeByMetadataName(displayName)
+        };
+    }
+
+    private static bool IsRuntimeAliasAssignableToTarget(ITypeSymbol candidateType, ITypeSymbol targetType)
+    {
+        if (SymbolEqualityComparer.Default.Equals(candidateType.OriginalDefinition, targetType.OriginalDefinition))
+            return true;
+
+        if (candidateType is not INamedTypeSymbol namedCandidate)
+            return false;
+
+        for (var current = namedCandidate.BaseType; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, targetType.OriginalDefinition))
+                return true;
+        }
+
+        foreach (var @interface in namedCandidate.AllInterfaces)
+        {
+            if (SymbolEqualityComparer.Default.Equals(@interface.OriginalDefinition, targetType.OriginalDefinition))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool IsSupportedExternalMember(IOperation operation, ISymbol symbol, ITypeSymbol? hostType = null)
+    {
+        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, symbol))
+            return true;
+
+        if (HasEcmascriptSupportMarker(symbol))
+            return true;
+
+        if (TryGetWhiteListValue(_whiteListCompiles, symbol, out _, out _))
+            return true;
+
+        if (TryGetWhiteListValue(WhiteList.Members, symbol, out _, out _))
+            return true;
+
+        if (symbol is IFieldSymbol field && IsIntrinsicFieldFallbackAllowed(field, hostType))
+            return true;
+
+        if ((symbol is IMethodSymbol or IPropertySymbol) && IsIntrinsicCallableOrPropertyFallbackAllowed(hostType))
+            return true;
+
+        return !RequiresExplicitExternalMemberSupport(operation, symbol, hostType);
+    }
+
+    private static bool HasEcmascriptSupportMarker(ISymbol symbol)
+    {
+        foreach (var candidate in EnumerateSupportMarkerCandidates(symbol))
+        {
+            for (ISymbol? current = candidate; current is not null; current = GetSupportContainingSymbol(current))
+            {
+                if (current.GetAttributes().Any(static attribute =>
+                    Util.IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass)))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static IEnumerable<ISymbol> EnumerateSupportMarkerCandidates(ISymbol symbol)
+    {
+        for (ISymbol? current = symbol.OriginalDefinition; current is not null; current = GetWhiteListFallbackSymbol(current))
+            yield return current;
+    }
+
+    private static ISymbol? GetSupportContainingSymbol(ISymbol symbol)
+        => symbol is ITypeSymbol typeSymbol ? typeSymbol.ContainingType : symbol.ContainingType;
+
+    private static bool IsSymbolDeclaredInSource(ISymbol symbol)
+    {
+        foreach (var candidate in EnumerateSupportMarkerCandidates(symbol))
+        {
+            if (candidate.Locations.Any(static location => location.IsInSource))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool IsSymbolDeclaredInCurrentSourceBoundary(IOperation operation, ISymbol symbol)
+    {
+        var boundaryType = TryGetCurrentSourceBoundaryType(operation);
+        if (boundaryType is null)
+            return false;
+
+        foreach (var candidate in EnumerateSupportMarkerCandidates(symbol))
+        {
+            if (!candidate.Locations.Any(static location => location.IsInSource))
+                continue;
+
+            if (IsSymbolWithinBoundary(candidate, boundaryType))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static INamedTypeSymbol? TryGetCurrentSourceBoundaryType(IOperation operation)
+    {
+        var semanticModel = operation.SemanticModel;
+        if (semanticModel is null)
+            return null;
+
+        var enclosingSymbol = semanticModel.GetEnclosingSymbol(operation.Syntax.SpanStart);
+        return GetTopMostContainingType(enclosingSymbol);
+    }
+
+    private static INamedTypeSymbol? GetTopMostContainingType(ISymbol? symbol)
+    {
+        var current = symbol as INamedTypeSymbol ?? symbol?.ContainingType;
+        while (current?.ContainingType is INamedTypeSymbol containingType)
+            current = containingType;
+
+        return current;
+    }
+
+    private static bool IsSymbolWithinBoundary(ISymbol symbol, INamedTypeSymbol boundaryType)
+    {
+        var currentType = symbol as ITypeSymbol ?? symbol.ContainingType;
+        while (currentType is not null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(currentType.OriginalDefinition, boundaryType.OriginalDefinition))
+                return true;
+
+            currentType = currentType.ContainingType;
+        }
+
+        return false;
+    }
+
+    private bool RequiresExplicitExternalMemberSupport(IOperation operation, ISymbol symbol, ITypeSymbol? hostType)
+    {
+        var effectiveHost = hostType ?? symbol.ContainingType;
+        if (effectiveHost is null)
+            return false;
+
+        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, effectiveHost))
+            return false;
+
+        if (HasEcmascriptSupportMarker(effectiveHost))
+            return false;
+
+        if (effectiveHost.IsAnonymousType)
+            return false;
+
+        var original = effectiveHost.OriginalDefinition;
+        if (original.TypeKind is TypeKind.TypeParameter or TypeKind.Delegate)
+            return false;
+
+        return true;
+    }
+
+    private static bool IsIntrinsicFieldFallbackAllowed(IFieldSymbol field, ITypeSymbol? hostType)
+    {
+        var effectiveHost = hostType ?? field.ContainingType;
+        if (effectiveHost is null)
+            return false;
+
+        if (field.IsConst && !IsConcreteMetadataInteropHost(effectiveHost))
+            return true;
+
+        return IsTupleLikeHost(effectiveHost);
+    }
+
+    private static bool IsIntrinsicCallableOrPropertyFallbackAllowed(ITypeSymbol? hostType)
+    {
+        if (hostType is null)
+            return false;
+
+        var original = hostType.OriginalDefinition;
+        return original.TypeKind == TypeKind.TypeParameter ||
+            original.TypeKind == TypeKind.Delegate;
+    }
+
+    private static bool IsConcreteMetadataInteropHost(ITypeSymbol typeSymbol)
+    {
+        var original = typeSymbol.OriginalDefinition;
+        if (original.TypeKind == TypeKind.TypeParameter ||
+            original.TypeKind == TypeKind.Array ||
+            original.TypeKind == TypeKind.Delegate ||
+            original.TypeKind == TypeKind.Enum ||
+            original.IsAnonymousType ||
+            original.SpecialType != SpecialType.None)
+            return false;
+
+        if (IsTupleLikeHost(original))
+            return false;
+
+        return true;
+    }
+
+    private static bool IsTupleLikeHost(ITypeSymbol typeSymbol)
+    {
+        var original = typeSymbol.OriginalDefinition;
+        if (original.IsTupleType)
+            return true;
+
+        return original is INamedTypeSymbol namedType &&
+            namedType.Name == "ValueTuple" &&
+            namedType.ContainingNamespace?.ToDisplayString() == "System";
+    }
+
+    private bool IsPassThroughCustomOperatorFallbackAllowed(IMethodSymbol method)
+    {
+        if (TryGetWhiteListValue(_whiteListCompiles, method, out _, out _))
+            return true;
+
+        if (TryGetWhiteListValue(WhiteList.Members, method, out _, out var entry))
+            return entry.Op is Op.Allowed or Op.Alias;
+
+        return HasEcmascriptSupportMarker(method);
+    }
+
     /// <summary>
     /// 统一消费白名单成员映射。
     ///
@@ -262,6 +661,23 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return compile(handler, explicitArgs);
     }
 
+    private static bool TryGetWhiteListValue<T>(Dictionary<string, T> mappings, string lookupKey, out string displayString, out T value)
+        where T : notnull
+    {
+        displayString = lookupKey;
+        if (mappings.TryGetValue(lookupKey, out value))
+            return true;
+
+        if (TryGetGenericParameterEquivalentWhiteListValue(mappings, lookupKey, out var matchedKey, out value))
+        {
+            displayString = matchedKey;
+            return true;
+        }
+
+        value = default!;
+        return false;
+    }
+
     private static bool TryGetWhiteListValue<T>(Dictionary<string, T> mappings, ISymbol symbol, out string displayString, out T value)
         where T : notnull
     {
@@ -270,8 +686,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             var rawDisplayString = candidate.OriginalDefinition.ToDisplayString(Format.NameFormat);
             foreach (var lookupKey in EnumerateWhiteListLookupKeys(rawDisplayString))
             {
-                displayString = lookupKey;
-                if (mappings.TryGetValue(lookupKey, out value))
+                if (TryGetWhiteListValue(mappings, lookupKey, out displayString, out value))
                     return true;
             }
 
@@ -282,8 +697,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 var staticDisplayString = extensionSource.ToDisplayString(Format.StaticExtensionNameFormat);
                 foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticDisplayString))
                 {
-                    displayString = lookupKey;
-                    if (mappings.TryGetValue(lookupKey, out value))
+                    if (TryGetWhiteListValue(mappings, lookupKey, out displayString, out value))
                         return true;
                 }
             }
@@ -295,8 +709,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 {
                     foreach (var lookupKey in EnumerateWhiteListLookupKeys(synthesizedStaticKey!))
                     {
-                        displayString = lookupKey;
-                        if (mappings.TryGetValue(lookupKey, out value))
+                        if (TryGetWhiteListValue(mappings, lookupKey, out displayString, out value))
                             return true;
                     }
                 }
@@ -306,6 +719,141 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         value = default!;
         return false;
+    }
+
+    private static bool TryGetGenericParameterEquivalentWhiteListValue<T>(Dictionary<string, T> mappings, string lookupKey, out string matchedKey, out T value)
+        where T : notnull
+    {
+        matchedKey = null!;
+        value = default!;
+
+        if (!TryBuildGenericParameterOrdinalMap(lookupKey, out var lookupGenericParameters))
+            return false;
+
+        foreach (var candidate in mappings)
+        {
+            if (!TryBuildGenericParameterOrdinalMap(candidate.Key, out var candidateGenericParameters))
+                continue;
+
+            if (!string.Equals(
+                    RewriteDeclaredGenericParameters(lookupKey, lookupGenericParameters),
+                    RewriteDeclaredGenericParameters(candidate.Key, candidateGenericParameters),
+                    StringComparison.Ordinal))
+                continue;
+
+            matchedKey = candidate.Key;
+            value = candidate.Value;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryBuildGenericParameterOrdinalMap(string text, out Dictionary<string, int> genericParameters)
+    {
+        genericParameters = new Dictionary<string, int>(StringComparer.Ordinal);
+        var declarationSegment = GetGenericParameterDeclarationSegment(text);
+        if (string.IsNullOrEmpty(declarationSegment))
+            return false;
+
+        for (var index = 0; index < declarationSegment.Length;)
+        {
+            if (!IsIdentifierStart(declarationSegment[index]))
+            {
+                index++;
+                continue;
+            }
+
+            var tokenStart = index++;
+            while (index < declarationSegment.Length && IsIdentifierPart(declarationSegment[index]))
+                index++;
+
+            var token = declarationSegment.Substring(tokenStart, index - tokenStart);
+            var previous = GetPreviousMeaningfulChar(declarationSegment, tokenStart - 1);
+            var next = GetNextMeaningfulChar(declarationSegment, index);
+            if ((previous is '<' or ',') &&
+                next is '>' or ',')
+            {
+                if (!genericParameters.ContainsKey(token))
+                    genericParameters[token] = genericParameters.Count;
+            }
+        }
+
+        return genericParameters.Count > 0;
+    }
+
+    private static string RewriteDeclaredGenericParameters(string text, IReadOnlyDictionary<string, int> genericParameters)
+    {
+        var builder = new StringBuilder(text.Length);
+        for (var index = 0; index < text.Length;)
+        {
+            if (!IsIdentifierStart(text[index]))
+            {
+                builder.Append(text[index]);
+                index++;
+                continue;
+            }
+
+            var tokenStart = index++;
+            while (index < text.Length && IsIdentifierPart(text[index]))
+                index++;
+
+            var token = text.Substring(tokenStart, index - tokenStart);
+            var previous = GetPreviousMeaningfulChar(text, tokenStart - 1);
+            var next = GetNextMeaningfulChar(text, index);
+            if (genericParameters.TryGetValue(token, out var ordinal) &&
+                previous != '.' &&
+                next != '.')
+                builder.Append("{generic_parameter_").Append(ordinal).Append('}');
+            else
+                builder.Append(token);
+        }
+
+        return builder.ToString();
+    }
+
+    private static string GetGenericParameterDeclarationSegment(string text)
+    {
+        var end = text.IndexOf('(');
+        if (end < 0)
+            end = text.Length;
+
+        foreach (var accessor in new[] { ".get", ".set", ".add", ".remove" })
+        {
+            var accessorIndex = text.LastIndexOf(accessor, StringComparison.Ordinal);
+            if (accessorIndex >= 0 && accessorIndex < end)
+                end = accessorIndex;
+        }
+
+        return end <= 0 ? string.Empty : text.Substring(0, end);
+    }
+
+    private static bool IsIdentifierStart(char ch)
+        => char.IsLetter(ch) || ch == '_';
+
+    private static bool IsIdentifierPart(char ch)
+        => char.IsLetterOrDigit(ch) || ch == '_';
+
+    private static char? GetPreviousMeaningfulChar(string text, int index)
+    {
+        for (var current = index; current >= 0; current--)
+        {
+            if (!char.IsWhiteSpace(text[current]))
+                return text[current];
+        }
+
+        return null;
+    }
+
+    private static char? GetNextMeaningfulChar(string text, int index)
+    {
+        for (var current = index; current < text.Length; current++)
+        {
+            if (!char.IsWhiteSpace(text[current]))
+                return text[current];
+        }
+
+        return null;
     }
 
     private static string? TryBuildMethodWhiteListKey(IMethodSymbol method)
@@ -430,6 +978,10 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         for (var i = 0; i < source.Parameters.Length; i++)
         {
+            if (source.Parameters[i].RefKind != candidate.Parameters[i].RefKind ||
+                source.Parameters[i].IsParams != candidate.Parameters[i].IsParams)
+                return false;
+
             if (!SymbolEqualityComparer.Default.Equals(
                     source.Parameters[i].Type.OriginalDefinition,
                     candidate.Parameters[i].Type.OriginalDefinition))
@@ -448,6 +1000,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         for (var i = 0; i < source.Parameters.Length; i++)
         {
+            if (source.Parameters[i].RefKind != candidate.Parameters[i].RefKind)
+                return false;
+
             if (!SymbolEqualityComparer.Default.Equals(
                     source.Parameters[i].Type.OriginalDefinition,
                     candidate.Parameters[i].Type.OriginalDefinition))
@@ -788,6 +1343,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     builder.Append(BuildSemanticNameKey(@switch.Value));
                 else
                     builder.Append(BuildSemanticNameKey(operation));
+                break;
+
+            case LoweringSiteKind.PatternInputCache:
+                builder.Append("patcache|").Append(site.Slot).Append('|');
+                builder.Append(BuildSemanticNameKey(operation));
                 break;
 
             case LoweringSiteKind.MethodReferenceProxy:

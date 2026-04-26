@@ -317,7 +317,7 @@ public partial class SemanticWalker
 			if (child is IAnonymousFunctionOperation or ILocalFunctionOperation)
 				continue;
 
-			if (ContainsYieldOperation(child))
+			if (ContainsOperation(child, predicate))
 				return true;
 		}
 
@@ -385,6 +385,11 @@ public partial class SemanticWalker
 		// 类型信息缺失时报告错误
 		if (type is null)
 			return null;
+
+		if (type.TypeKind == TypeKind.Enum &&
+			type is INamedTypeSymbol enumType &&
+			enumType.EnumUnderlyingType is not null)
+			return BuildValueLiteral(enumType.EnumUnderlyingType, value);
 
 		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
 		var (mapper, _) = GetMapperType(type);
@@ -666,6 +671,19 @@ public partial class SemanticWalker
 		// }
 		var expr = Translate<Expression>(operation.Operand, argument);
 
+		if (operation.OperatorMethod is not null)
+		{
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [expr], out _);
+			if (mapped is not null)
+				return mapped;
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod) &&
+				!CanPassThroughIntrinsicConversion(operation))
+				return HandleTransformationFailure<Node>(
+					operation,
+					$"Conversion operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript conversion.");
+		}
+
 		// 处理 Number 与 BigInt 之间的显式转换
 		if (operation.Type is not null && operation.Operand.Type is not null)
 		{
@@ -685,6 +703,36 @@ public partial class SemanticWalker
 		// 包括：装箱/拆箱、引用类型转换、as 转换等
 		return expr;
 	}
+
+	private bool CanPassThroughIntrinsicConversion(IConversionOperation operation)
+	{
+		if (operation.Type is null || operation.Operand.Type is null)
+			return false;
+
+		if (IsSystemIndexType(operation.Type) ||
+			IsSystemIndexType(operation.Operand.Type) ||
+			IsSystemRangeType(operation.Type) ||
+			IsSystemRangeType(operation.Operand.Type))
+			return true;
+
+		var targetType = GetMapperType(operation.Type);
+		var operandType = GetMapperType(operation.Operand.Type);
+		if (targetType.Mapper == operandType.Mapper)
+			return targetType.Mapper is not TypeMapper.Class and not TypeMapper.Unknown;
+
+		return (operandType.Mapper == TypeMapper.Number && targetType.Mapper == TypeMapper.BigInt) ||
+			(operandType.Mapper == TypeMapper.BigInt && targetType.Mapper == TypeMapper.Number);
+	}
+
+	private static bool IsSystemIndexType(ITypeSymbol? type)
+		=> type?.OriginalDefinition is INamedTypeSymbol namedType &&
+			namedType.Name == "Index" &&
+			namedType.ContainingNamespace?.ToDisplayString() == "System";
+
+	private static bool IsSystemRangeType(ITypeSymbol? type)
+		=> type?.OriginalDefinition is INamedTypeSymbol namedType &&
+			namedType.Name == "Range" &&
+			namedType.ContainingNamespace?.ToDisplayString() == "System";
 
 	/// <summary>
 	/// 处理条件访问操作（可选链操作符）
@@ -724,6 +772,12 @@ public partial class SemanticWalker
 				break;
 
 			case IInvocationOperation invocation when invocation.Instance is IConditionalAccessInstanceOperation:
+				break;
+
+			case IImplicitIndexerReferenceOperation implicitIndexer when implicitIndexer.Instance is IConditionalAccessInstanceOperation:
+				break;
+
+			case IArrayElementReferenceOperation arrayElementReference when arrayElementReference.ArrayReference is IConditionalAccessInstanceOperation:
 				break;
 
 			default:
@@ -793,6 +847,18 @@ public partial class SemanticWalker
 	public override Node? VisitUnaryOperator(IUnaryOperation operation, SenseArgument argument)
 	{
 		var operand = Translate<Expression>(operation.Operand, argument);
+		if (operation.OperatorMethod is not null)
+		{
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [operand], out _);
+			if (mapped is not null)
+				return mapped;
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+				return HandleTransformationFailure<Node>(
+					operation,
+					$"Unary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript unary semantics.");
+		}
+
 		if (operation.OperatorKind == UnaryOperatorKind.BitwiseNegation ||
 			operation.OperatorKind == UnaryOperatorKind.Not ||
 			operation.OperatorKind == UnaryOperatorKind.Plus ||
@@ -866,6 +932,11 @@ public partial class SemanticWalker
 			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _);
 			if (mapped is not null)
 				return mapped;
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+				return HandleTransformationFailure<Node>(
+					operation,
+					$"Binary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript binary semantics.");
 		}
 
 		var @operator = operation.OperatorKind switch
@@ -1026,32 +1097,91 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitSimpleAssignment(ISimpleAssignmentOperation operation, SenseArgument argument)
 	{
+		if (operation.Target is IDiscardOperation)
+		{
+			// tuple 赋值不依赖 Roslyn 恰好插入 conversion。
+			// 只要目标静态类型是另一套 tuple 视图，这里就按目标协议主动重映射。
+			// 这样：
+			//   target = source;
+			// 不会因为 IOperation 树里缺少显式 conversion 而漏掉 tuple remap。
+			var discardValue = TranslateTupleForTarget(operation.Value, operation.Target.Type, argument);
+			return WithOriginIfMissing(discardValue, operation);
+		}
+
+		if (operation.Target is IFieldReferenceOperation importedFieldReference &&
+			IsImportedModuleStaticFieldMutation(importedFieldReference, argument))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+		}
+
 		// tuple 赋值不依赖 Roslyn 恰好插入 conversion。
 		// 只要目标静态类型是另一套 tuple 视图，这里就按目标协议主动重映射。
 		// 这样：
 		//   target = source;
 		// 不会因为 IOperation 树里缺少显式 conversion 而漏掉 tuple remap。
 		var value = TranslateTupleForTarget(operation.Value, operation.Target.Type, argument);
-		if (operation.Target is IDiscardOperation)
-			return WithOriginIfMissing(value, operation);
 
 		if (operation.Target is IPropertyReferenceOperation propertyReference &&
 			propertyReference.Property.SetMethod is not null)
 		{
 			var instance = Translate<Expression>(propertyReference.Instance, argument, null);
-			var setterArguments = new List<Expression>(propertyReference.Arguments.Length + 1);
+			var propertyArguments = new List<Expression>(propertyReference.Arguments.Length);
 			foreach (var propertyArgument in propertyReference.Arguments)
 			{
 				var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
 					? argument.With(Sense.OutParameter)
 					: argument;
-				setterArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
+				propertyArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
 			}
-			setterArguments.Add(value);
 
-			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out _);
-			if (mapperExpr is not null)
-				return WithOriginIfMissing(mapperExpr, operation);
+			return WithOriginIfMissing(
+				BuildPropertySetterAssignment(propertyReference, argument, instance, propertyArguments, value),
+				operation);
+		}
+
+		if (operation.Target is IImplicitIndexerReferenceOperation implicitIndexer)
+		{
+			PrepareImplicitIndexerSetterAccess(
+				implicitIndexer,
+				operation,
+				argument,
+				cacheForRepeatedReadWrite: false,
+				out var implicitInitializations,
+				out var indexerInstance,
+				out var indexerArguments,
+				out var indexerProperty,
+				out _);
+
+			var assignment = BuildImplicitIndexerSetterAssignment(
+				implicitIndexer,
+				argument,
+				indexerProperty,
+				indexerInstance,
+				indexerArguments,
+				value);
+			if (implicitInitializations.Count == 0)
+				return WithOrigin(assignment, operation);
+
+			var implicitExpressions = new List<Expression>(implicitInitializations.Count + 1);
+			implicitExpressions.AddRange(implicitInitializations);
+			implicitExpressions.Add(assignment);
+			return WithOrigin(new SequenceExpression(NodeList.From(implicitExpressions)), operation);
+		}
+
+		if (operation.Target is IArrayElementReferenceOperation arrayReference)
+		{
+			var arrayInitializations = new List<Expression>();
+			var arrayTarget = BuildArrayElementMutationTarget(arrayReference, argument, arrayInitializations);
+			var assignment = new AssignmentExpression(Operator.Assignment, arrayTarget, value);
+			if (arrayInitializations.Count == 0)
+				return WithOrigin(assignment, operation);
+
+			var arrayExpressions = new List<Expression>(arrayInitializations.Count + 1);
+			arrayExpressions.AddRange(arrayInitializations);
+			arrayExpressions.Add(assignment);
+			return WithOrigin(new SequenceExpression(NodeList.From(arrayExpressions)), operation);
 		}
 
 		var target = Translate<Expression>(operation.Target, argument);
@@ -1079,28 +1209,169 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitCompoundAssignment(ICompoundAssignmentOperation operation, SenseArgument argument)
 	{
-		var left = Translate<Expression>(operation.Target, argument);
-		var right = Translate<Expression>(operation.Value, argument);
-		var @operator = operation.OperatorKind switch
+		if (operation.Target is IFieldReferenceOperation importedFieldReference &&
+			IsImportedModuleStaticFieldMutation(importedFieldReference, argument))
 		{
-			BinaryOperatorKind.Add => Operator.AdditionAssignment,
-			BinaryOperatorKind.Subtract => Operator.SubtractionAssignment,
-			BinaryOperatorKind.Multiply => Operator.MultiplicationAssignment,
-			BinaryOperatorKind.Divide => Operator.DivisionAssignment,
-			BinaryOperatorKind.Remainder => Operator.RemainderAssignment,
-			BinaryOperatorKind.And => Operator.BitwiseAndAssignment,
-			BinaryOperatorKind.Or => Operator.BitwiseOrAssignment,
-			BinaryOperatorKind.ExclusiveOr => Operator.BitwiseXorAssignment,
-			BinaryOperatorKind.LeftShift => Operator.LeftShiftAssignment,
-			BinaryOperatorKind.RightShift => Operator.RightShiftAssignment,
-			BinaryOperatorKind.UnsignedRightShift => Operator.UnsignedRightShiftAssignment,
-			_ => Operator.Unknown
-		};
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+		}
 
-		if (@operator == Operator.Unknown)
+		if (operation.Target is IPropertyReferenceOperation propertyReference &&
+			TryPreparePropertyMutationAccess(propertyReference, operation, argument, out var initializations, out var readExpression, out var propertyInstance, out var propertyArguments))
+		{
+			var rhsExpression = Translate<Expression>(operation.Value, argument);
+			if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out _))
+				return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+
+			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+			var expressions = new List<Expression>(initializations.Count + 3);
+			expressions.AddRange(initializations);
+			expressions.Add(new AssignmentExpression(
+				Operator.Assignment,
+				currentId,
+				BuildCompoundAssignmentValue(operation, argument, readExpression, rhsExpression)));
+			expressions.Add(BuildPropertySetterAssignment(propertyReference, argument, propertyInstance, propertyArguments, currentId));
+			expressions.Add(currentId);
+			return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
+		}
+
+		if (operation.Target is IImplicitIndexerReferenceOperation implicitIndexer)
+		{
+			PrepareImplicitIndexerMutationAccess(
+				implicitIndexer,
+				operation,
+				argument,
+				out var implicitInitializations,
+				out var implicitReadExpression,
+				out var indexerInstance,
+				out var indexerArguments,
+				out var indexerProperty);
+
+			var rhsExpression = Translate<Expression>(operation.Value, argument);
+			if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out _))
+				return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+
+			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+			var implicitExpressions = new List<Expression>(implicitInitializations.Count + 3);
+			implicitExpressions.AddRange(implicitInitializations);
+			implicitExpressions.Add(new AssignmentExpression(
+				Operator.Assignment,
+				currentId,
+				BuildCompoundAssignmentValue(operation, argument, implicitReadExpression, rhsExpression)));
+			implicitExpressions.Add(BuildImplicitIndexerSetterAssignment(
+				implicitIndexer,
+				argument,
+				indexerProperty,
+				indexerInstance,
+				indexerArguments,
+				currentId));
+			implicitExpressions.Add(currentId);
+			return WithOrigin(new SequenceExpression(NodeList.From(implicitExpressions)), operation);
+		}
+
+		List<Expression>? targetInitializations = null;
+		Expression left;
+		if (operation.Target is IArrayElementReferenceOperation arrayReference)
+		{
+			targetInitializations = [];
+			left = BuildArrayElementMutationTarget(arrayReference, argument, targetInitializations);
+		}
+		else
+		{
+			left = Translate<Expression>(operation.Target, argument);
+		}
+
+		var right = Translate<Expression>(operation.Value, argument);
+		Expression WrapTarget(Expression expression)
+		{
+			if (targetInitializations is null || targetInitializations.Count == 0)
+				return expression;
+
+			var expressions = new List<Expression>(targetInitializations.Count + 1);
+			expressions.AddRange(targetInitializations);
+			expressions.Add(expression);
+			return new SequenceExpression(NodeList.From(expressions));
+		}
+
+		if (operation.OperatorMethod is not null)
+		{
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _);
+			if (mapped is not null)
+			{
+				if (!CanDuplicateReadWriteTarget(left))
+					return HandleTransformationFailure<Node>(
+						operation,
+						"Compound assignment with a custom operator requires a stable assignable target. Use a local/field/property target without side-effecting receiver/index expressions.");
+
+				return WithOrigin(WrapTarget(new AssignmentExpression(Operator.Assignment, left, mapped)), operation);
+			}
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+				return HandleTransformationFailure<Node>(
+					operation,
+					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript compound semantics.");
+		}
+
+		if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out var @operator, out _))
 			return HandleTransformationFailure<Node>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
 
-		return new AssignmentExpression(@operator, left, right);
+		return WithOrigin(WrapTarget(new AssignmentExpression(@operator, left, right)), operation);
+	}
+
+	private static bool TryGetCompoundAssignmentOperators(BinaryOperatorKind operatorKind, out Operator assignmentOperator, out Operator binaryOperator)
+	{
+		switch (operatorKind)
+		{
+			case BinaryOperatorKind.Add:
+				assignmentOperator = Operator.AdditionAssignment;
+				binaryOperator = Operator.Addition;
+				return true;
+			case BinaryOperatorKind.Subtract:
+				assignmentOperator = Operator.SubtractionAssignment;
+				binaryOperator = Operator.Subtraction;
+				return true;
+			case BinaryOperatorKind.Multiply:
+				assignmentOperator = Operator.MultiplicationAssignment;
+				binaryOperator = Operator.Multiplication;
+				return true;
+			case BinaryOperatorKind.Divide:
+				assignmentOperator = Operator.DivisionAssignment;
+				binaryOperator = Operator.Division;
+				return true;
+			case BinaryOperatorKind.Remainder:
+				assignmentOperator = Operator.RemainderAssignment;
+				binaryOperator = Operator.Remainder;
+				return true;
+			case BinaryOperatorKind.And:
+				assignmentOperator = Operator.BitwiseAndAssignment;
+				binaryOperator = Operator.BitwiseAnd;
+				return true;
+			case BinaryOperatorKind.Or:
+				assignmentOperator = Operator.BitwiseOrAssignment;
+				binaryOperator = Operator.BitwiseOr;
+				return true;
+			case BinaryOperatorKind.ExclusiveOr:
+				assignmentOperator = Operator.BitwiseXorAssignment;
+				binaryOperator = Operator.BitwiseXor;
+				return true;
+			case BinaryOperatorKind.LeftShift:
+				assignmentOperator = Operator.LeftShiftAssignment;
+				binaryOperator = Operator.LeftShift;
+				return true;
+			case BinaryOperatorKind.RightShift:
+				assignmentOperator = Operator.RightShiftAssignment;
+				binaryOperator = Operator.RightShift;
+				return true;
+			case BinaryOperatorKind.UnsignedRightShift:
+				assignmentOperator = Operator.UnsignedRightShiftAssignment;
+				binaryOperator = Operator.UnsignedRightShift;
+				return true;
+			default:
+				assignmentOperator = Operator.Unknown;
+				binaryOperator = Operator.Unknown;
+				return false;
+		}
 	}
 
 	/// <summary>
@@ -1115,9 +1386,91 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitCoalesceAssignment(ICoalesceAssignmentOperation operation, SenseArgument argument)
 	{
-		var left = Translate<Expression>(operation.Target, argument);
+		if (operation.Target is IFieldReferenceOperation importedFieldReference &&
+			IsImportedModuleStaticFieldMutation(importedFieldReference, argument))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+		}
+
+		if (operation.Target is IPropertyReferenceOperation propertyReference &&
+			TryPreparePropertyMutationAccess(propertyReference, operation, argument, out var initializations, out var readExpression, out var propertyInstance, out var propertyArguments))
+		{
+			var rhsExpression = Translate<Expression>(operation.Value, argument);
+			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+			var assignIfNull = new SequenceExpression(NodeList.From<Expression>(
+				new AssignmentExpression(Operator.Assignment, currentId, rhsExpression),
+				BuildPropertySetterAssignment(propertyReference, argument, propertyInstance, propertyArguments, currentId),
+				currentId));
+
+			var expressions = new List<Expression>(initializations.Count + 2);
+			expressions.AddRange(initializations);
+			expressions.Add(new AssignmentExpression(Operator.Assignment, currentId, readExpression));
+			expressions.Add(new ConditionalExpression(
+				new NonLogicalBinaryExpression(Operator.Equality, currentId, Null),
+				assignIfNull,
+				currentId));
+
+			return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
+		}
+
+		if (operation.Target is IImplicitIndexerReferenceOperation implicitIndexer)
+		{
+			PrepareImplicitIndexerMutationAccess(
+				implicitIndexer,
+				operation,
+				argument,
+				out var implicitInitializations,
+				out var implicitReadExpression,
+				out var indexerInstance,
+				out var indexerArguments,
+				out var indexerProperty);
+
+			var rhsExpression = Translate<Expression>(operation.Value, argument);
+			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+			var assignIfNull = new SequenceExpression(NodeList.From<Expression>(
+				new AssignmentExpression(Operator.Assignment, currentId, rhsExpression),
+				BuildImplicitIndexerSetterAssignment(
+					implicitIndexer,
+					argument,
+					indexerProperty,
+					indexerInstance,
+					indexerArguments,
+					currentId),
+				currentId));
+
+			var implicitExpressions = new List<Expression>(implicitInitializations.Count + 2);
+			implicitExpressions.AddRange(implicitInitializations);
+			implicitExpressions.Add(new AssignmentExpression(Operator.Assignment, currentId, implicitReadExpression));
+			implicitExpressions.Add(new ConditionalExpression(
+				new NonLogicalBinaryExpression(Operator.Equality, currentId, Null),
+				assignIfNull,
+				currentId));
+
+			return WithOrigin(new SequenceExpression(NodeList.From(implicitExpressions)), operation);
+		}
+
+		List<Expression>? targetInitializations = null;
+		Expression left;
+		if (operation.Target is IArrayElementReferenceOperation arrayReference)
+		{
+			targetInitializations = [];
+			left = BuildArrayElementMutationTarget(arrayReference, argument, targetInitializations);
+		}
+		else
+		{
+			left = Translate<Expression>(operation.Target, argument);
+		}
+
 		var right = Translate<Expression>(operation.Value, argument);
-		return new AssignmentExpression(Operator.NullishCoalescingAssignment, left, right);
+		if (targetInitializations is null || targetInitializations.Count == 0)
+			return WithOrigin(new AssignmentExpression(Operator.NullishCoalescingAssignment, left, right), operation);
+
+		var wrappedExpressions = new List<Expression>(targetInitializations.Count + 1);
+		wrappedExpressions.AddRange(targetInitializations);
+		wrappedExpressions.Add(new AssignmentExpression(Operator.NullishCoalescingAssignment, left, right));
+		return WithOrigin(new SequenceExpression(NodeList.From(wrappedExpressions)), operation);
 	}
 
 	/// <summary>
@@ -1176,13 +1529,46 @@ public partial class SemanticWalker
 	{
 		var type = operation.Type;
 		if (type is null)
-			return new NullLiteral("null");
+			return WithOrigin(Null, operation);
+
+		var expression = BuildDefaultValueExpression(operation, type, argument);
+		return WithOrigin(expression, operation);
+	}
+
+	private Expression BuildDefaultValueExpression(IOperation operation, ITypeSymbol type, SenseArgument argument)
+	{
+		RejectUnsupportedDefaultValueTypeIfNeeded(operation, type);
+
+		if (type is ITypeParameterSymbol typeParameter)
+		{
+			if (typeParameter.HasReferenceTypeConstraint)
+				return Null;
+
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"default({typeParameter.Name}) is not supported because the runtime type parameter may be a value type and Jazor cannot synthesize CLR default semantics safely.");
+		}
 
 		if (type.TypeKind == TypeKind.Enum)
+		{
+			if (type is INamedTypeSymbol enumType &&
+				enumType.EnumUnderlyingType is not null)
+			{
+				var zeroValue = CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType);
+				return BuildValueLiteral(enumType.EnumUnderlyingType, zeroValue) ?? new NumericLiteral(0, "0");
+			}
+
 			return new NumericLiteral(0, "0");
+		}
 
 		if (!type.IsValueType)
-			return new NullLiteral("null");
+			return Null;
+
+		if (type is INamedTypeSymbol tupleType && tupleType.IsTupleType)
+			return BuildTupleDefaultValueExpression(operation, tupleType, argument);
+
+		if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+			return Null;
 
 		if (IsSystemHalfType(type))
 			return new NumericLiteral(0, "0");
@@ -1191,7 +1577,7 @@ public partial class SemanticWalker
 		{
 			SpecialType.System_Boolean => new BooleanLiteral(false, "false"),
 			SpecialType.System_Char => new StringLiteral("\0", "\"\\0\""),
-			SpecialType.System_String => new NullLiteral("null"),
+			SpecialType.System_String => Null,
 			SpecialType.System_SByte or
 			SpecialType.System_Byte or
 			SpecialType.System_Int16 or
@@ -1203,12 +1589,47 @@ public partial class SemanticWalker
 			SpecialType.System_Decimal => new NumericLiteral(0, "0"),
 			SpecialType.System_Int64 or
 			SpecialType.System_UInt64 => new BigIntLiteral(new System.Numerics.BigInteger(0), "0n"),
-			_ => GetDefaultValueTypeExpression(type, argument)
-				?? new NullLiteral("null")
+			_ => GetDefaultValueTypeExpression(operation, type, argument)
 		};
 	}
 
-	private Expression? GetDefaultValueTypeExpression(ITypeSymbol type, SenseArgument argument)
+	private static object CreateEnumUnderlyingZeroValue(ITypeSymbol underlyingType)
+	{
+		return underlyingType.SpecialType switch
+		{
+			SpecialType.System_SByte => (sbyte)0,
+			SpecialType.System_Byte => (byte)0,
+			SpecialType.System_Int16 => (short)0,
+			SpecialType.System_UInt16 => (ushort)0,
+			SpecialType.System_Int32 => 0,
+			SpecialType.System_UInt32 => 0u,
+			SpecialType.System_Int64 => 0L,
+			SpecialType.System_UInt64 => 0UL,
+			_ => 0
+		};
+	}
+
+	private void RejectUnsupportedDefaultValueTypeIfNeeded(IOperation operation, ITypeSymbol type)
+	{
+		if (type is ITypeParameterSymbol or IArrayTypeSymbol)
+			return;
+
+		var (mapper, _) = GetMapperType(type);
+		if (mapper is TypeMapper.Number or TypeMapper.BigInt or TypeMapper.Boolean or TypeMapper.String)
+			return;
+
+		if (type.IsTupleType ||
+			type.IsAnonymousType ||
+			type.TypeKind is TypeKind.Interface or TypeKind.Delegate)
+			return;
+
+		if (!type.IsValueType && type.IsAbstract)
+			return;
+
+		RejectUnsupportedTypeFallback(operation, type, "default value");
+	}
+
+	private Expression GetDefaultValueTypeExpression(IOperation operation, ITypeSymbol type, SenseArgument argument)
 	{
 		var (mapper, _) = GetMapperType(type);
 		if (mapper == TypeMapper.Number)
@@ -1217,14 +1638,58 @@ public partial class SemanticWalker
 		if (mapper == TypeMapper.BigInt)
 			return new BigIntLiteral(new System.Numerics.BigInteger(0), "0n");
 
-		if (type is not INamedTypeSymbol namedType)
-			return null;
+		if (TryBuildKnownDefaultConstructorExpression(type, argument, out var knownDefault) &&
+			knownDefault is not null)
+			return knownDefault;
+
+		return HandleTransformationFailure<Expression>(
+			operation,
+			$"Value type '{type.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' does not have a safe JavaScript lowering for default(...). Only intrinsic value types, tuples, nullable values, and known CLR runtime shims can be emitted without changing CLR semantics.");
+	}
+
+	private static bool IsKnownDefaultConstructorType(ITypeSymbol type)
+	{
+		var displayName = type.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
+		return displayName is
+			"System.DateOnly" or
+			"System.DateTime" or
+			"System.DateTimeOffset" or
+			"System.TimeOnly" or
+			"System.TimeSpan" or
+			"System.Guid";
+	}
+
+	private bool TryBuildKnownDefaultConstructorExpression(ITypeSymbol type, SenseArgument argument, out Expression? expression)
+	{
+		expression = null;
+		if (!IsKnownDefaultConstructorType(type) ||
+			type is not INamedTypeSymbol namedType)
+			return false;
 
 		var ctor = namedType.InstanceConstructors.FirstOrDefault(static x => x.Parameters.Length == 0);
 		if (ctor is null)
-			return null;
+			return false;
 
-		return GetWhiteListExpression(ctor, argument, [], out _);
+		expression = GetWhiteListExpression(ctor, argument, [], out _);
+		return expression is not null;
+	}
+
+	private Expression BuildTupleDefaultValueExpression(IOperation operation, INamedTypeSymbol tupleType, SenseArgument argument)
+	{
+		var nodes = new List<Node>(tupleType.TupleElements.Length);
+		for (var index = 0; index < tupleType.TupleElements.Length; index++)
+		{
+			var element = tupleType.TupleElements[index];
+			nodes.Add(new ObjectProperty(
+				PropertyKind.Init,
+				key: new Identifier(element.Name),
+				value: BuildDefaultValueExpression(operation, element.Type, argument),
+				computed: false,
+				shorthand: false,
+				method: false));
+		}
+
+		return new ObjectExpression(NodeList.From(nodes));
 	}
 
 	/// <summary>
@@ -1241,13 +1706,384 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitIncrementOrDecrement(IIncrementOrDecrementOperation operation, SenseArgument argument)
 	{
-		var target = Translate<Expression>(operation.Target, argument);
+		if (operation.Target is IFieldReferenceOperation importedFieldReference &&
+			IsImportedModuleStaticFieldMutation(importedFieldReference, argument))
+		{
+			return HandleTransformationFailure<Node>(
+				operation,
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+		}
+
+		if (operation.Target is IPropertyReferenceOperation propertyReference &&
+			TryPreparePropertyMutationAccess(propertyReference, operation, argument, out var initializations, out var readExpression, out var propertyInstance, out var propertyArguments))
+		{
+			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+			var expressions = new List<Expression>(initializations.Count + 3);
+			expressions.AddRange(initializations);
+
+			if (operation.IsPostfix)
+			{
+				expressions.Add(new AssignmentExpression(Operator.Assignment, currentId, readExpression));
+				expressions.Add(BuildPropertySetterAssignment(
+					propertyReference,
+					argument,
+					propertyInstance,
+					propertyArguments,
+					BuildIncrementOrDecrementValue(operation, argument, currentId)));
+				expressions.Add(currentId);
+			}
+			else
+			{
+				expressions.Add(new AssignmentExpression(
+					Operator.Assignment,
+					currentId,
+					BuildIncrementOrDecrementValue(operation, argument, readExpression)));
+				expressions.Add(BuildPropertySetterAssignment(propertyReference, argument, propertyInstance, propertyArguments, currentId));
+				expressions.Add(currentId);
+			}
+
+			return WithOrigin(new SequenceExpression(NodeList.From(expressions)), operation);
+		}
+
+		if (operation.Target is IImplicitIndexerReferenceOperation implicitIndexer)
+		{
+			PrepareImplicitIndexerMutationAccess(
+				implicitIndexer,
+				operation,
+				argument,
+				out var implicitInitializations,
+				out var implicitReadExpression,
+				out var indexerInstance,
+				out var indexerArguments,
+				out var indexerProperty);
+
+			var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+			var implicitExpressions = new List<Expression>(implicitInitializations.Count + 3);
+			implicitExpressions.AddRange(implicitInitializations);
+
+			if (operation.IsPostfix)
+			{
+				implicitExpressions.Add(new AssignmentExpression(Operator.Assignment, currentId, implicitReadExpression));
+				implicitExpressions.Add(BuildImplicitIndexerSetterAssignment(
+					implicitIndexer,
+					argument,
+					indexerProperty,
+					indexerInstance,
+					indexerArguments,
+					BuildIncrementOrDecrementValue(operation, argument, currentId)));
+				implicitExpressions.Add(currentId);
+			}
+			else
+			{
+				implicitExpressions.Add(new AssignmentExpression(
+					Operator.Assignment,
+					currentId,
+					BuildIncrementOrDecrementValue(operation, argument, implicitReadExpression)));
+				implicitExpressions.Add(BuildImplicitIndexerSetterAssignment(
+					implicitIndexer,
+					argument,
+					indexerProperty,
+					indexerInstance,
+					indexerArguments,
+					currentId));
+				implicitExpressions.Add(currentId);
+			}
+
+			return WithOrigin(new SequenceExpression(NodeList.From(implicitExpressions)), operation);
+		}
+
+		List<Expression>? targetInitializations = null;
+		Expression preparedTarget;
+		if (operation.Target is IArrayElementReferenceOperation arrayReference)
+		{
+			targetInitializations = [];
+			preparedTarget = BuildArrayElementMutationTarget(arrayReference, argument, targetInitializations);
+		}
+		else
+		{
+			preparedTarget = Translate<Expression>(operation.Target, argument);
+		}
+
+		Expression WrapTarget(Expression expression)
+		{
+			if (targetInitializations is null || targetInitializations.Count == 0)
+				return expression;
+
+			var expressions = new List<Expression>(targetInitializations.Count + 1);
+			expressions.AddRange(targetInitializations);
+			expressions.Add(expression);
+			return new SequenceExpression(NodeList.From(expressions));
+		}
+
+		if (operation.OperatorMethod is not null)
+		{
+			var assignmentTarget = preparedTarget;
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [assignmentTarget], out _);
+			if (mapped is not null)
+			{
+				if (!CanDuplicateReadWriteTarget(assignmentTarget))
+					return HandleTransformationFailure<Node>(
+						operation,
+						"Increment/decrement with a custom operator requires a stable assignable target. Use a local/field/property target without side-effecting receiver/index expressions.");
+
+				var currentId = CreatePropertyMutationTemp(operation, argument, "current");
+				var expressions = new List<Expression>(3);
+				if (operation.IsPostfix)
+				{
+					expressions.Add(new AssignmentExpression(Operator.Assignment, currentId, assignmentTarget));
+					expressions.Add(new AssignmentExpression(Operator.Assignment, assignmentTarget, GetWhiteListExpression(operation.OperatorMethod, argument, [currentId], out _) ?? mapped));
+					expressions.Add(currentId);
+				}
+				else
+				{
+					expressions.Add(new AssignmentExpression(Operator.Assignment, currentId, GetWhiteListExpression(operation.OperatorMethod, argument, [assignmentTarget], out _) ?? mapped));
+					expressions.Add(new AssignmentExpression(Operator.Assignment, assignmentTarget, currentId));
+					expressions.Add(currentId);
+				}
+
+				return WithOrigin(WrapTarget(new SequenceExpression(NodeList.From(expressions))), operation);
+			}
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+				return HandleTransformationFailure<Node>(
+					operation,
+					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript update semantics.");
+		}
+
 		var @operator = operation.Kind == OperationKind.Increment
 			? Operator.Increment
 			: Operator.Decrement;
 		var prefix = !operation.IsPostfix; // 前缀当IsPostfix为false时
 
-		return new UpdateExpression(@operator, target, prefix: prefix);
+		return WithOrigin(WrapTarget(new UpdateExpression(@operator, preparedTarget, prefix: prefix)), operation);
+	}
+
+	private Expression BuildCompoundAssignmentValue(
+		ICompoundAssignmentOperation operation,
+		SenseArgument argument,
+		Expression left,
+		Expression right)
+	{
+		if (operation.OperatorMethod is not null)
+		{
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _);
+			if (mapped is not null)
+				return mapped;
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript compound semantics.");
+		}
+
+		if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out var binaryOperator))
+			return HandleTransformationFailure<Expression>(operation, $"Compound assignment operator {operation.OperatorKind} is not supported");
+
+		return new NonLogicalBinaryExpression(binaryOperator, left, right);
+	}
+
+	private Expression BuildIncrementOrDecrementValue(
+		IIncrementOrDecrementOperation operation,
+		SenseArgument argument,
+		Expression operand)
+	{
+		if (operation.OperatorMethod is not null)
+		{
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [operand], out _);
+			if (mapped is not null)
+				return mapped;
+
+			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript update semantics.");
+		}
+
+		var one = new NumericLiteral(1, "1");
+		return new NonLogicalBinaryExpression(
+			operation.Kind == OperationKind.Increment ? Operator.Addition : Operator.Subtraction,
+			operand,
+			one);
+	}
+
+	private bool TryPreparePropertyMutationAccess(
+		IPropertyReferenceOperation propertyReference,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		out List<Expression> initializations,
+		out Expression readExpression,
+		out Expression? instance,
+		out List<Expression> arguments)
+	{
+		initializations = [];
+		readExpression = null!;
+		instance = null;
+		arguments = [];
+
+		if (!RequiresPropertyMutationBridge(propertyReference) ||
+			propertyReference.Property.GetMethod is null)
+			return false;
+
+		instance = MaterializePropertyMutationOperand(
+			Translate<Expression>(propertyReference.Instance, argument, null),
+			ownerOperation,
+			argument,
+			initializations,
+			"instance");
+
+		for (var i = 0; i < propertyReference.Arguments.Length; i++)
+		{
+			var propertyArgument = propertyReference.Arguments[i];
+			var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+				? argument.With(Sense.OutParameter)
+				: argument;
+			var rawArgument = Translate<Expression>(propertyArgument.Value, argContext);
+			arguments.Add(MaterializePropertyMutationOperand(rawArgument, ownerOperation, argument, initializations, $"arg{i}"));
+		}
+
+		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out _);
+		if (getterExpression is null)
+			return false;
+
+		readExpression = getterExpression;
+		return true;
+	}
+
+	private bool RequiresPropertyMutationBridge(IPropertyReferenceOperation propertyReference)
+	{
+		if (propertyReference.Property.SetMethod is null ||
+			propertyReference.Property.GetMethod is null)
+			return false;
+
+		if (TryGetWhiteListValue(_whiteListCompiles, propertyReference.Property.GetMethod, out _, out _))
+			return true;
+
+		if (!TryGetWhiteListValue(WhiteList.Members, propertyReference.Property.GetMethod, out _, out var entry))
+			return false;
+
+		if (entry.Op != Op.Alias)
+			return true;
+
+		return propertyReference.Arguments.Length > 0 ||
+			(!string.IsNullOrEmpty(entry.Value) && ShouldInvokeAliasedPropertyGetter(propertyReference, entry.Value!));
+	}
+
+	private Expression MaterializePropertyMutationOperand(
+		Expression? expression,
+		IOperation ownerOperation,
+		SenseArgument argument,
+		List<Expression> initializations,
+		string slot)
+	{
+		if (expression is null)
+			return null!;
+
+		if (!NeedsSingleEvaluationCaching(expression))
+			return expression;
+
+		var tempId = CreatePropertyMutationTemp(ownerOperation, argument, slot);
+		initializations.Add(new AssignmentExpression(Operator.Assignment, tempId, expression));
+		return tempId;
+	}
+
+	private static bool NeedsSingleEvaluationCaching(Expression expression)
+		=> expression is not Identifier
+			and not Literal
+			and not ThisExpression
+			and not Super;
+
+	private static bool CanDuplicateReadWriteTarget(Expression expression)
+		=> expression switch
+		{
+			Identifier or ThisExpression or Super => true,
+			MemberExpression member when !member.Optional &&
+				CanDuplicateReadWriteTarget((Expression)member.Object) &&
+				((!member.Computed && member.Property is Identifier) ||
+				 (member.Computed && member.Property is Literal)) => true,
+			_ => false
+		};
+
+	private bool IsImportedModuleStaticFieldMutation(IFieldReferenceOperation fieldReference, SenseArgument argument)
+	{
+		if (!fieldReference.Field.IsStatic ||
+			fieldReference.Instance is not null ||
+			fieldReference.Field.ContainingType is null)
+			return false;
+
+		var fieldName = Util.GetConfigOrSymbolName(fieldReference.Field);
+		return TryBuildImportedModuleMember(fieldReference.Field.ContainingType, fieldName, argument, out var importedMember) &&
+			importedMember is not null;
+	}
+
+	private Identifier CreatePropertyMutationTemp(IOperation ownerOperation, SenseArgument argument, string slot)
+	{
+		var tempId = new Identifier(AllocateUniqueName(ownerOperation, argument, LoweringSite.PropertyMutationTemp(slot)));
+		argument.AddVarDeclarator(new VariableDeclarator(tempId, null), _recursionDepth);
+		return tempId;
+	}
+
+	private Expression BuildPropertySetterAssignment(
+		IPropertyReferenceOperation propertyReference,
+		SenseArgument argument,
+		Expression? instance,
+		List<Expression> arguments,
+		Expression value)
+	{
+		if (propertyReference.Property.SetMethod is not null)
+		{
+			var setterArguments = new List<Expression>(arguments.Count + 1);
+			setterArguments.AddRange(arguments);
+			setterArguments.Add(value);
+
+			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out var setterAlias);
+			if (mapperExpr is not null)
+				return mapperExpr;
+
+			if (TryBuildImportedModulePropertySetterCall(propertyReference.Property, argument, value, out var importedSetterCall) &&
+				importedSetterCall is not null)
+				return importedSetterCall;
+
+			if (string.IsNullOrEmpty(setterAlias))
+				RejectUnsupportedRuntimeFallback(propertyReference, propertyReference.Property.SetMethod, "property assignment", propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType);
+		}
+
+		var target = BuildPropertyWriteTarget(propertyReference, argument, instance, arguments);
+		return new AssignmentExpression(Operator.Assignment, target, value);
+	}
+
+	private Expression BuildPropertyWriteTarget(
+		IPropertyReferenceOperation propertyReference,
+		SenseArgument argument,
+		Expression? instance,
+		List<Expression> arguments)
+	{
+		if (instance is not null &&
+			arguments.Count > 0 &&
+			(propertyReference.Property.IsIndexer || propertyReference.Property.Parameters.Length > 0))
+		{
+			if (arguments.Count != 1)
+				return HandleTransformationFailure<Expression>(propertyReference, "JavaScript fallback for indexers only supports a single translated index argument.");
+
+			return new MemberExpression(instance, arguments[0], computed: true, optional: false);
+		}
+
+		var propertyName = GetInitializerMemberName(propertyReference.Property);
+		var property = new Identifier(propertyName!);
+		if (instance is not null)
+			return new MemberExpression(instance, property, computed: false, optional: false);
+
+		if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
+		{
+			if (TryBuildPreferredRuntimeStaticMemberAccess(propertyReference.Property, propertyReference.Syntax, propertyReference.SemanticModel, propertyName!, out var preferredStaticProperty) &&
+				preferredStaticProperty is not null)
+				return preferredStaticProperty;
+
+			var containing = BuildFullTypeName(propertyReference.Property.ContainingType, argument);
+			if (containing is not null)
+				return new MemberExpression(containing, property, computed: false, optional: false);
+		}
+
+		return property;
 	}
 
 	/// <summary>
@@ -1327,12 +2163,20 @@ public partial class SemanticWalker
 				ITypeSymbol? targetType;
 				if (memberInit.InitializedMember is IFieldSymbol f)
 				{
-					memberName = Util.GetConfigOrSymbolName(f);
+					memberName = ResolveInitializerAssignmentMemberName(
+						memberInit,
+						f,
+						"with-expression member assignment",
+						f.ContainingType);
 					targetType = f.Type;
 				}
 				else if (memberInit.InitializedMember is IPropertySymbol p)
 				{
-					memberName = Util.GetConfigOrSymbolName(p);
+					memberName = ResolveInitializerAssignmentMemberName(
+						memberInit,
+						p,
+						"with-expression member assignment",
+						p.ContainingType);
 					targetType = p.Type;
 				}
 				else
@@ -1504,13 +2348,30 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitCollectionExpression(ICollectionExpressionOperation operation, SenseArgument argument)
 	{
-		var elements = new List<Expression?>();
 		var elementTargetType = GetCollectionElementTargetType(operation.Type);
+		if (operation.Type is not null)
+		{
+			if (!IsCollectionExpressionCarrierType(operation.Type))
+			{
+				RejectUnsupportedTypeFallback(operation, operation.Type, "collection expression");
+			}
+		}
+
+		var elements = new List<Expression?>();
 		foreach (var element in operation.Elements)
 		{
 			elements.Add(TranslateTupleForTarget(element, elementTargetType, argument));
 		}
 		return new ArrayExpression(NodeList.From(elements));
+	}
+
+	private static bool IsCollectionExpressionCarrierType(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol is not INamedTypeSymbol namedType)
+			return false;
+
+		var displayName = namedType.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
+		return displayName is "System.ReadOnlySpan<T>" or "System.Span<T>";
 	}
 
 	/// <summary>

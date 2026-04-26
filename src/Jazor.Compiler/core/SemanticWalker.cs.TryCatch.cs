@@ -69,6 +69,7 @@ public partial class SemanticWalker
         if (operation.Catches.Length == 1)
         {
             var @catch = operation.Catches[0];
+            RejectUnsupportedSingleCatchTypeIfNeeded(@catch);
             if (Visit(@catch, argument) is not CatchClause node)
                 return HandleTransformationFailure<Node>(@catch, "Try statement catch clause could not be translated to JavaScript.");
 
@@ -79,12 +80,14 @@ public partial class SemanticWalker
             var mergedCatchArg = scopedArgument.EnterScope(operation, ScopeSite.CatchBody());
             var tryParam = new Identifier(AllocateUniqueName(operation, mergedCatchArg, LoweringSite.MultiCatchParameter()));
             var sharedCatchParam = TryExtractSharedCatchParam(operation.Catches);
-            var groups = new List<(string TypeName, List<ICatchClauseOperation> Clauses)>();
+            var groups = new List<(string TypeKey, ITypeSymbol ExceptionType, List<ICatchClauseOperation> Clauses)>();
             foreach (var @catch in operation.Catches)
             {
+                RejectUnsupportedTypeFallback(@catch, @catch.ExceptionType, "catch type filtering");
                 var (_, typeName) = GetMapperType(@catch.ExceptionType);
+                var typeKey = $"{@catch.ExceptionType.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}|{typeName}";
 
-                if (groups.Count > 0 && groups[groups.Count - 1].TypeName == typeName)
+                if (groups.Count > 0 && groups[groups.Count - 1].TypeKey == typeKey)
                 {
                     var last = groups[groups.Count - 1];
                     last.Clauses.Add(@catch);
@@ -92,7 +95,7 @@ public partial class SemanticWalker
                 }
                 else
                 {
-                    groups.Add((typeName, new List<ICatchClauseOperation> { @catch }));
+                    groups.Add((typeKey, @catch.ExceptionType, new List<ICatchClauseOperation> { @catch }));
                 }
             }
 
@@ -176,7 +179,7 @@ public partial class SemanticWalker
                 var group = groups[index];
                 var fallback = chain;
                 var body = BuildGroupBody(group.Clauses, fallback, sharedCatchParam, !hoistSharedCatchParamOutsideGroups);
-                var test = new NonLogicalBinaryExpression(Operator.InstanceOf, tryParam, new Identifier(group.TypeName));
+                var test = CreateTypeMatchExpr(operation, group.ExceptionType, tryParam, nullable: false, context: mergedCatchArg);
                 // 同一 JS 运行时类型的多个 catch 需要先聚合到一个分支里，
                 // 这样 when 过滤失败时才能继续尝试同组后续 catch，而不是提前 rethrow。
                 chain = new IfStatement(test, body, fallback);
@@ -292,9 +295,50 @@ public partial class SemanticWalker
     }
 
     private static bool RequiresCatchBinding(ICatchClauseOperation operation)
-        => operation.Filter is not null
+        => RequiresCatchTypeFilter(operation)
+        || operation.Filter is not null
         || operation.ExceptionDeclarationOrExpression is not null
         || ContainsBareRethrow(operation.Handler);
+
+    private static bool RequiresCatchTypeFilter(ICatchClauseOperation operation)
+        => HasDeclaredCatchType(operation)
+        && operation.ExceptionType is not null
+        && !IsCatchAllExceptionType(operation.ExceptionType);
+
+    private static bool HasDeclaredCatchType(ICatchClauseOperation operation)
+        => operation.Syntax is CatchClauseSyntax { Declaration: not null };
+
+    private static bool IsCatchAllExceptionType(ITypeSymbol? typeSymbol)
+        => typeSymbol?.OriginalDefinition is INamedTypeSymbol namedType
+        && namedType.Name == "Exception"
+        && namedType.ContainingNamespace?.ToDisplayString() == "System";
+
+    private void RejectUnsupportedSingleCatchTypeIfNeeded(ICatchClauseOperation operation)
+    {
+        if (!RequiresCatchTypeFilter(operation) || operation.ExceptionType is null)
+            return;
+
+        RejectUnsupportedTypeFallback(operation, operation.ExceptionType, "catch type filtering");
+        RejectAmbiguousRuntimeTypeFilter(operation, operation.ExceptionType, "catch type filtering");
+    }
+
+    private IfStatement? BuildCatchTypeGuard(ICatchClauseOperation operation, SenseArgument argument, Identifier? exceptionParam)
+    {
+        if (!RequiresCatchTypeFilter(operation) || operation.ExceptionType is null)
+            return null;
+
+        if (exceptionParam is null)
+            throw new InvalidOperationException("Typed catch filtering requires an exception binding.");
+
+        var test = CreateTypeMatchExpr(
+            operation,
+            operation.ExceptionType,
+            exceptionParam,
+            nullable: false,
+            context: argument);
+        var notMatch = new NonUpdateUnaryExpression(Operator.LogicalNot, test);
+        return new IfStatement(notMatch, new ThrowStatement(exceptionParam), null);
+    }
 
     /// <summary>
     /// 从ExceptionDeclarationOrExpression中提取异常变量名
@@ -306,6 +350,10 @@ public partial class SemanticWalker
     private List<Statement> ExtractCatchClauseBody(ICatchClauseOperation operation, SenseArgument argument, Identifier? exceptionParam)
     {
         var bodyStatements = new List<Statement>();
+
+        var typeGuard = BuildCatchTypeGuard(operation, argument, exceptionParam);
+        if (typeGuard is not null)
+            bodyStatements.Add(typeGuard);
 
         // 处理 when 条件过滤器
         // C# 示例：
@@ -367,6 +415,7 @@ public partial class SemanticWalker
     public override Node? VisitCatchClause(ICatchClauseOperation operation, SenseArgument argument)
     {
         // 此处不用担心多个catch，多catch会在 VisitTry中处理
+        RejectUnsupportedSingleCatchTypeIfNeeded(operation);
         var catchScope = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.CatchBody());
         var param = RequiresCatchBinding(operation)
             ? ExtractCatchClauseParam(operation) ?? new Identifier(AllocateUniqueName(operation, catchScope, LoweringSite.SyntheticCatchParameter()))

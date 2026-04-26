@@ -416,6 +416,98 @@ public partial class SemanticWalker
 				: parentSlot + "." + segment;
 		}
 
+		Identifier CreateDeconstructSlotPlaceholder(string slot)
+		{
+			var id = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.TupleNestedArgument(slot)));
+			argument.AddVarDeclarator(new VariableDeclarator(id, null), _recursionDepth);
+			return id;
+		}
+
+		Expression BuildDeconstructionFieldWriteTarget(IFieldReferenceOperation fieldReference)
+		{
+			if (IsImportedModuleStaticFieldMutation(fieldReference, argument))
+			{
+				return HandleTransformationFailure<Expression>(
+					fieldReference,
+					$"Cross-module static field mutation '{fieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+			}
+
+			var instance = Translate<Expression>(fieldReference.Instance, argument, null);
+			var fieldName = ResolveInitializerAssignmentMemberName(
+				fieldReference,
+				fieldReference.Field,
+				"deconstruction assignment",
+				fieldReference.Instance?.Type ?? fieldReference.Field.ContainingType);
+			var property = new Identifier(fieldName);
+			if (instance is not null)
+				return new MemberExpression(instance, property, computed: false, optional: false);
+
+			if (fieldReference.Field.IsStatic && fieldReference.Field.ContainingType is not null)
+			{
+				var containing = BuildFullTypeName(fieldReference.Field.ContainingType, argument);
+				if (containing is not null)
+					return new MemberExpression(containing, property, computed: false, optional: false);
+			}
+
+			return property;
+		}
+
+		void AppendDeconstructionWrite(IOperation target, Expression right, List<Expression> exprs, bool declareTarget = false)
+		{
+			switch (target)
+			{
+				case IDiscardOperation:
+					return;
+
+				case IDeclarationExpressionOperation declarationExpression:
+				{
+					var left = Translate<Expression>(declarationExpression.Expression, argument);
+					if (declareTarget)
+						argument.AddVarDeclarator(new VariableDeclarator(left, null), _recursionDepth);
+
+					exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
+					return;
+				}
+
+				case ILocalReferenceOperation localReference:
+				{
+					var left = Translate<Expression>(localReference, argument);
+					if (declareTarget)
+						argument.AddVarDeclarator(new VariableDeclarator(left, null), _recursionDepth);
+
+					exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
+					return;
+				}
+
+				case IFieldReferenceOperation fieldReference:
+				{
+					var left = BuildDeconstructionFieldWriteTarget(fieldReference);
+					exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
+					return;
+				}
+
+				case IPropertyReferenceOperation propertyReference:
+				{
+					var instance = Translate<Expression>(propertyReference.Instance, argument, null);
+					var propertyArguments = new List<Expression>(propertyReference.Arguments.Length);
+					foreach (var propertyArgument in propertyReference.Arguments)
+					{
+						var argContext = propertyArgument.Parameter?.RefKind is RefKind.Out
+							? argument.With(Sense.OutParameter)
+							: argument;
+						propertyArguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
+					}
+
+					exprs.Add(BuildPropertySetterAssignment(propertyReference, argument, instance, propertyArguments, right));
+					return;
+				}
+
+				default:
+					HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+					return;
+			}
+		}
+
 		void Deconstruct(IOperation target, ITypeSymbol valueType, object value, List<Expression> exprs, bool declareTargets = false, string tupleSlot = "")
 		{
 			if (valueType.IsTupleType && target is ITupleOperation or IDeclarationExpressionOperation)
@@ -495,23 +587,8 @@ public partial class SemanticWalker
 					{
 						Deconstruct(element, field.Type, right, exprs, declareTargets, ComposeTupleSlot(tupleSlot, index));
 					}
-					else if (declareTargets || element is IDeclarationExpressionOperation)
-					{
-						var id = Translate<Node>(element, argument);
-						var declarator = new VariableDeclarator(id, null);
-						argument.AddVarDeclarator(declarator, _recursionDepth);
-						exprs.Add(new AssignmentExpression(Operator.Assignment, id, right));
-					}
-					else if (element is ILocalReferenceOperation localRef)
-					{
-						var left = Translate<Node>(localRef, argument);
-						exprs.Add(new AssignmentExpression(Operator.Assignment, left, right));
-					}
 					else
-					{
-						HandleTransformationFailure<Node>(element, $"The {element.Kind} operation is not supported in DeconstructionAssignment.");
-						return;
-					}
+						AppendDeconstructionWrite(element, right, exprs, declareTargets || element is IDeclarationExpressionOperation);
 				}
 			}
 			else if (valueType.TypeKind == TypeKind.Class && value is IOperation expr)
@@ -537,42 +614,58 @@ public partial class SemanticWalker
 
 				List<Expression> args = [];
 				List<(int Index, Identifier Id)> nestedRefs = [];
+				var assignmentTargets = new IOperation?[tupleResult.Elements.Length];
+				var nestedAssignmentIds = new Identifier?[tupleResult.Elements.Length];
+				var skipAssignments = new bool[tupleResult.Elements.Length];
 				var tupleType = (INamedTypeSymbol)tupleResult.Type!;
 				for (var index = 0; index < tupleResult.Elements.Length; index++)
 				{
 					var element = tupleResult.Elements[index];
-					if (element is ILocalReferenceOperation localRef && isDeclarationExpressionTarget)
+					if (element is IDiscardOperation)
+					{
+						args.Add(CreateDeconstructSlotPlaceholder(ComposeTupleSlot(tupleSlot, index)));
+						skipAssignments[index] = true;
+					}
+					else if (element is ILocalReferenceOperation localRef && isDeclarationExpressionTarget)
 					{
 						var name = localRef.Local.Name;
 						var id = new Identifier(name);
 						var declarator = new VariableDeclarator(id, null);
 
 						args.Add(id);
+						assignmentTargets[index] = localRef;
+						argument.AddVarDeclarator(declarator, _recursionDepth);
+					}
+					else if (element is IDeclarationExpressionOperation declarationExpression)
+					{
+						var id = Translate<Expression>(declarationExpression.Expression, argument);
+						var declarator = new VariableDeclarator(id, null);
+
+						args.Add(id);
+						assignmentTargets[index] = declarationExpression;
 						argument.AddVarDeclarator(declarator, _recursionDepth);
 					}
 					else if (element is ITupleOperation subTuple)
 					{
 						// 如果是一个元组，需要创建一个临时变量，被自定义Deconstruct方法调用后
 						// 再解构出元组里面变量定义或引用
-						var name = AllocateUniqueName(operation, argument, LoweringSite.TupleNestedArgument(ComposeTupleSlot(tupleSlot, index)));
-						var id = new Identifier(name);
-						var declarator = new VariableDeclarator(id, null);
+						var id = CreateDeconstructSlotPlaceholder(ComposeTupleSlot(tupleSlot, index));
 
 						args.Add(id);
+						nestedAssignmentIds[index] = id;
 						nestedRefs.Add((index, id));
-						argument.AddVarDeclarator(declarator, _recursionDepth);
+					}
+					else if (element is ILocalReferenceOperation localReference)
+					{
+						var id = new Identifier(localReference.Local.Name);
+						args.Add(id);
+						assignmentTargets[index] = localReference;
 					}
 					else
 					{
-						var name = tupleType.TupleElements[index].Name;
-						var id = new Identifier(name);
-						// 处理声明表达式
-						if (element is IDeclarationExpressionOperation)
-						{
-							var declarator = new VariableDeclarator(id, null);
-							argument.AddVarDeclarator(declarator, _recursionDepth);
-						}
+						var id = CreateDeconstructSlotPlaceholder(ComposeTupleSlot(tupleSlot, index));
 						args.Add(id);
+						assignmentTargets[index] = element;
 					}
 				}
 
@@ -594,10 +687,19 @@ public partial class SemanticWalker
 				// 从返回数组中取值，再回写到目标变量或临时嵌套 tuple 引用。
 				for (var i = 0; i < args.Count; i++)
 				{
+					if (skipAssignments[i])
+						continue;
+
 					var indexer = new NumericLiteral(i, i.ToString());
 					var member = new MemberExpression(deconstructId, indexer, computed: true, optional: false);
-					var assignExpr = new AssignmentExpression(Operator.Assignment, args[i], member);
-					exprs.Add(assignExpr);
+					if (nestedAssignmentIds[i] is { } nestedAssignmentId)
+					{
+						exprs.Add(new AssignmentExpression(Operator.Assignment, nestedAssignmentId, member));
+						continue;
+					}
+
+					if (assignmentTargets[i] is { } assignmentTarget)
+						AppendDeconstructionWrite(assignmentTarget, member, exprs);
 				}
 
 				IMethodSymbol method;

@@ -17,8 +17,8 @@ namespace Jazor.Compiler;
 public static class Util
 {
     private const string ECMAScriptAssemblyName = "ECMAScript";
-    private const string ECMAScriptAttributeName = "ECMAScriptAttribute";
-    private const string ECMAScriptModuleAttributeName = "ECMAScriptModuleAttribute";
+    public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
+    public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
 
     private enum JsNameConfigKind
     {
@@ -193,12 +193,20 @@ public static class Util
         if (!string.IsNullOrEmpty(name))
             return name!;
 
-        // roslyn生成的隐式字段是 <PropName>k__BackingField 格式，不符合命名规范，需要处理一下
-        if (symbol.Kind == SymbolKind.Field && symbol.IsImplicitlyDeclared)
+        // Roslyn 生成的自动属性 backing field 形如 <PropName>k__BackingField，
+        // 这里需要收敛成稳定哈希名；但不能把所有隐式字段都当成 backing field，
+        // 例如 tuple 元素字段同样是隐式声明，仍应保留其运行时成员名。
+        if (symbol is IFieldSymbol fieldSymbol && fieldSymbol.IsImplicitlyDeclared)
         {
-            var prop = ((IFieldSymbol)symbol).AssociatedSymbol!;
-            var displayString = prop.OriginalDefinition.ToDisplayString(Format.NameFormat);
-            return Format.HashName(displayString);
+            if (fieldSymbol.AssociatedSymbol is IPropertySymbol propertySymbol)
+            {
+                var displayString = propertySymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+                return Format.HashName(displayString);
+            }
+
+            if (fieldSymbol.CorrespondingTupleField is IFieldSymbol tupleField &&
+                !SymbolEqualityComparer.Default.Equals(tupleField, fieldSymbol))
+                return tupleField.Name;
         }
 
         return AppendMethodOverloadSuffixIfNeeded(symbol, symbol.Name);
@@ -224,12 +232,11 @@ public static class Util
         return name;
     }
 
-    private static bool HasAttribute(ISymbol? symbol, string attributeName)
-        => symbol?.GetAttributes().Any(attr => attr.AttributeClass?.Name == attributeName) == true;
+    public static bool IsECMAScriptSupportMarkerAttribute(INamedTypeSymbol? symbol)
+        => symbol?.ToDisplayString() is ECMAScriptAttributeMetadataName or ECMAScriptModuleAttributeMetadataName;
 
     private static bool IsRuntimeMarkerType(ISymbol? symbol)
-        => HasAttribute(symbol, ECMAScriptAttributeName) ||
-           HasAttribute(symbol, ECMAScriptModuleAttributeName);
+        => symbol?.GetAttributes().Any(attr => IsECMAScriptSupportMarkerAttribute(attr.AttributeClass)) == true;
 
     /// <summary>
     /// 判断一个类型是否属于 ECMAScript 运行时映射类型。

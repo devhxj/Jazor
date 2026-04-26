@@ -4,10 +4,13 @@ internal enum LoweringSiteKind
 {
     CreationTemp,
     ConditionalAccessInput,
+    MethodReferenceReceiver,
+    PropertyMutationTemp,
     MethodReferenceProxy,
     ReferenceTemp,
     SwitchExpressionInput,
     SwitchPatternInput,
+    PatternInputCache,
     MultiCatchParameter,
     SyntheticCatchParameter,
     TupleProjectionSource,
@@ -25,10 +28,13 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
         {
             LoweringSiteKind.CreationTemp => "creation",
             LoweringSiteKind.ConditionalAccessInput => "cacc",
+            LoweringSiteKind.MethodReferenceReceiver => "mrecv",
+            LoweringSiteKind.PropertyMutationTemp => "pmut",
             LoweringSiteKind.MethodReferenceProxy => "mref",
             LoweringSiteKind.ReferenceTemp => "ref",
             LoweringSiteKind.SwitchExpressionInput => "swexpr",
             LoweringSiteKind.SwitchPatternInput => "swpat",
+            LoweringSiteKind.PatternInputCache => "patin",
             LoweringSiteKind.MultiCatchParameter => "mcatch",
             LoweringSiteKind.SyntheticCatchParameter => "scatch",
             LoweringSiteKind.TupleProjectionSource => "tproj",
@@ -46,6 +52,12 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
     public static LoweringSite ConditionalAccessInput()
         => new(LoweringSiteKind.ConditionalAccessInput);
 
+    public static LoweringSite MethodReferenceReceiver()
+        => new(LoweringSiteKind.MethodReferenceReceiver);
+
+    public static LoweringSite PropertyMutationTemp(string slot)
+        => new(LoweringSiteKind.PropertyMutationTemp, slot);
+
     public static LoweringSite MethodReferenceProxy()
         => new(LoweringSiteKind.MethodReferenceProxy);
 
@@ -57,6 +69,9 @@ internal readonly record struct LoweringSite(LoweringSiteKind Kind, string Slot 
 
     public static LoweringSite SwitchPatternInput()
         => new(LoweringSiteKind.SwitchPatternInput);
+
+    public static LoweringSite PatternInputCache(string slot)
+        => new(LoweringSiteKind.PatternInputCache, slot);
 
     public static LoweringSite MultiCatchParameter()
         => new(LoweringSiteKind.MultiCatchParameter);
