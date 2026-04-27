@@ -17,6 +17,12 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>","Map")]
 public static class DictionaryT2Module<TKey, TValue>
 {
+	private static void EnsureInstance(Map<TKey, TValue> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
 	/// <summary>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;()
 	/// JS: new Map()
@@ -104,6 +110,8 @@ public static class DictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Add(TKey, TValue)")]
 	public static void _39d6e632c4c102f9(Map<TKey,TValue> instance, TKey key, TValue value)
 	{
+		EnsureInstance(instance);
+
 		// .NET Dictionary 在键已存在时会抛出异常
 		if (instance.Has(key))
 			throw new Error("ArgumentException: An item with the same key has already been added.");
@@ -160,6 +168,8 @@ public static class DictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.Remove(TKey, out TValue)")]
 	public static Array<object?> _d6ac89338dff5e3b(Map<TKey,TValue> instance, TKey key)
 	{
+		EnsureInstance(instance);
+
 		if (instance.Has(key))
 		{
 			var value = instance.Get(key);
@@ -176,6 +186,8 @@ public static class DictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
 	public static Array<object?> _7db4d9112b4ba3c4(Map<TKey,TValue> instance, TKey key)
 	{
+		EnsureInstance(instance);
+
 		if (instance.Has(key))
 			return [true, instance.Get(key)];
 		return [false, default(TValue)];
@@ -188,6 +200,8 @@ public static class DictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.TryAdd(TKey, TValue)")]
 	public static bool _61b63b2c7b14f06a(Map<TKey,TValue> instance, TKey key, TValue value)
 	{
+		EnsureInstance(instance);
+
 		if (instance.Has(key))
 			return false;
 		instance.Set(key, value);

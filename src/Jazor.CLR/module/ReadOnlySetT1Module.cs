@@ -7,15 +7,24 @@ public static class ReadOnlySetT1Module<T>
 	// ReadOnlySet shares the same JS backing type as HashSet, so subset/superset logic can
 	// delegate to the HashSet helpers instead of duplicating set traversal code here.
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlySet`1" /> class that is a wrapper around the specified set.</summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)", "__arg1")]
-	public extern static Set<T> _aede400efbd05842(Set<T> set);
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)")]
+	public static Set<T> _aede400efbd05842(IEnumerable<T> set)
+	{
+		if (set == null)
+			throw new Error("ArgumentNullException: set is null");
+
+		// Snapshot from IEnumerable so any iterable-backed ISet projection can flow through here.
+		var snapshot = new Set<T>(set);
+		return SetCarrierRuntime.MarkAsReadOnlyCarrier(snapshot);
+	}
 
 	/// <summary>
 	/// C#: ReadOnlySet.Empty
 	/// JS: new Set()
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get", "new Set()")]
-	public extern static System.Collections.ObjectModel.ReadOnlySet<T> _843cd8664672a9f8();
+	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get")]
+	public static System.Collections.ObjectModel.ReadOnlySet<T> _843cd8664672a9f8()
+		=> (System.Collections.ObjectModel.ReadOnlySet<T>)(object)SetCarrierRuntime.MarkAsReadOnlyCarrier(new Set<T>());
 
 	/// <summary>
 	/// C#: instance.Count

@@ -97,6 +97,46 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertMemberOp(typeof(Jazor.CLR.ISetT1Module<>), "System.Collections.Generic.ISet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", Op.Import);
 	}
 
+	[TestMethod]
+	public void ReadOnlySetMappings_UseImportForReadOnlyCarrierSemantics()
+	{
+		var typeAttribute = typeof(Jazor.CLR.ReadOnlySetT1Module<>).GetCustomAttribute<JazorAttribute>();
+		Assert.IsNotNull(typeAttribute);
+		Assert.AreEqual(Op.Alias, typeAttribute.Op);
+		Assert.AreEqual("System.Collections.ObjectModel.ReadOnlySet<T>", typeAttribute.Member);
+		Assert.AreEqual("Set", typeAttribute.Value);
+
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.Contains(T)", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.IsSubsetOf(System.Collections.Generic.IEnumerable<T>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlySetT1Module<>), "System.Collections.ObjectModel.ReadOnlySet<T>.SetEquals(System.Collections.Generic.IEnumerable<T>)", Op.Import);
+	}
+
+	[TestMethod]
+	public void ReadOnlyCollectionMappings_UseImportForReadOnlyCarrierAndCopySemantics()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>", "Array");
+
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[])", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[], int)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ReadOnlyCollectionT1Module<>), "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(int, T[], int, int)", Op.Import);
+	}
+
+	[TestMethod]
+	public void ListMappings_UseImportForRangeSensitiveOperations()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>", "Array");
+
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.GetRange(int, int)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Reverse(int, int)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Sort(int, int, System.Collections.Generic.IComparer<T>)", Op.Import);
+	}
+
 	private static void AssertMemberOp(Type type, string member, Op expectedOp)
 	{
 		var attribute = type

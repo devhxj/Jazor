@@ -13,6 +13,12 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.IList", "Array")]
 public static class IListModule
 {
+	private static void EnsureWholeNumber(Number value, string parameterName)
+	{
+		if (IsNaN(value) || Math.Floor_(value) != value)
+			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
+	}
+
 	/// <summary>
 	/// C#: list[index]
 	/// JS: array[index]
@@ -22,6 +28,7 @@ public static class IListModule
 	{
 		if (instance is null)
 			throw new Error("NullReferenceException: instance is null.");
+		EnsureWholeNumber(index, nameof(index));
 		if (index < 0 || index >= instance.Length)
 			throw new Error("ArgumentOutOfRangeException: index is out of range.");
 

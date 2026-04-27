@@ -14,6 +14,12 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.ICollection<T>", "Array")]
 public static class ICollectionT1Module<T>
 {
+	private static void EnsureWholeNumber(Number value, string parameterName)
+	{
+		if (IsNaN(value) || Math.Floor_(value) != value)
+			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
+	}
+
 	/// <summary>
 	/// C#: collection.Count
 	/// JS: array.length
@@ -56,6 +62,7 @@ public static class ICollectionT1Module<T>
 			throw new Error("NullReferenceException: instance is null.");
 		if (array is null)
 			throw new Error("ArgumentNullException: array is null");
+		EnsureWholeNumber(arrayIndex, nameof(arrayIndex));
 		if (arrayIndex < 0 || arrayIndex > array.Length)
 			throw new Error("ArgumentOutOfRangeException: arrayIndex is out of range.");
 		if (arrayIndex + instance.Length > array.Length)

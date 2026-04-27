@@ -5,30 +5,69 @@ namespace Jazor.CLR;
 ///
 /// C# ReadOnlyCollection&lt;T&gt; 与 JavaScript Array 的对应关系：
 /// - ReadOnlyCollection&lt;T&gt; 映射为 JavaScript Array（只读视图）
-/// - 底层数组不变，只是语义上只读
+/// - 运行时通过快照 + freeze 保持只读语义，不依赖调用方约束
 ///
 /// Op 类型选择原则：
 /// - Alias: JS Array 有同名方法/属性
-/// - Inline: 简单表达式
+/// - Import: 需要只读语义或完整参数校验的成员
 /// - Discard: ReadOnlyCollection 特有的但 JS Array 不完全支持的功能
 /// </summary>
 [ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>","Array")]
 public static class ReadOnlyCollectionT1Module<T>
 {
+	private static void EnsureWholeNumber(Number value, string parameterName)
+	{
+		if (IsNaN(value) || Math.Floor_(value) != value)
+			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
+	}
+
+	private static void EnsureSource(Array<T> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static void EnsureTarget(Array<T> array)
+	{
+		if (array is null)
+			throw new Error("ArgumentNullException: array is null");
+	}
+
+	private static void EnsureTargetIndex(Array<T> array, Number arrayIndex)
+	{
+		EnsureWholeNumber(arrayIndex, nameof(arrayIndex));
+		if (arrayIndex < 0 || arrayIndex > array.Length)
+			throw new Error("ArgumentOutOfRangeException: arrayIndex is out of range.");
+	}
+
+	private static void EnsureCopyCapacity(Array<T> array, Number arrayIndex, Number copyCount)
+	{
+		if (arrayIndex + copyCount > array.Length)
+			throw new Error("ArgumentException: Not enough space in destination array.");
+	}
+
 	/// <summary>
 	/// C#: new ReadOnlyCollection&lt;T&gt;(list)
-	/// JS: list (直接使用原数组)
+	/// JS: Object.freeze(Array.from(list))
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)", "__arg1")]
-	public extern static Array<T> _d4e5f6a7b8c9d0e1(Array<T> list);
+	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)")]
+	public static Array<T> _d4e5f6a7b8c9d0e1(IEnumerable<T> list)
+	{
+		if (list == null)
+			throw new Error("ArgumentNullException: list is null");
+
+		var snapshot = Array<T>.From(list);
+		return Object.Freeze(snapshot);
+	}
 
 	/// <summary>
 	/// C#: ReadOnlyCollection.Empty
-	/// JS: []
+	/// JS: Object.freeze([])
 	/// </summary>
-	[Jazor(Op.Inline, "static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get", "[]")]
-	public extern static Array<T> _e5f6a7b8c9d0e1f2();
+	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get")]
+	public static Array<T> _e5f6a7b8c9d0e1f2()
+		=> Object.Freeze(new Array<T>());
 
 	/// <summary>
 	/// C#: collection.Count
@@ -51,6 +90,8 @@ public static class ReadOnlyCollectionT1Module<T>
 	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get")]
 	public static T _b8c9d0e1f2a3b4c5(Array<T> instance, Number index)
 	{
+		EnsureSource(instance);
+		EnsureWholeNumber(index, nameof(index));
 		if (index < 0 || index >= instance.Length)
 			throw new Error("ArgumentOutOfRangeException: index is out of range.");
 		return instance[index];
@@ -70,8 +111,12 @@ public static class ReadOnlyCollectionT1Module<T>
 	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[])")]
 	public static void _d0e1f2a3b4c5d6e7(Array<T> instance, Array<T> array)
 	{
+		EnsureSource(instance);
+		EnsureTarget(array);
+		EnsureCopyCapacity(array, 0, instance.Length);
+
 		for (uint i = 0; i < instance.Length; i++)
-			array.Push(instance[i]);
+			array[i] = instance[i];
 	}
 
 	/// <summary>
@@ -81,6 +126,11 @@ public static class ReadOnlyCollectionT1Module<T>
 	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[], int)")]
 	public static void _e1f2a3b4c5d6e7f8(Array<T> instance, Array<T> array, Number arrayIndex)
 	{
+		EnsureSource(instance);
+		EnsureTarget(array);
+		EnsureTargetIndex(array, arrayIndex);
+		EnsureCopyCapacity(array, arrayIndex, instance.Length);
+
 		for (uint i = 0; i < instance.Length; i++)
 			array[(uint)arrayIndex + i] = instance[i];
 	}
@@ -92,6 +142,20 @@ public static class ReadOnlyCollectionT1Module<T>
 	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(int, T[], int, int)")]
 	public static void _f2a3b4c5d6e7f8a9(Array<T> instance, Number index, Array<T> array, Number arrayIndex, Number count)
 	{
+		EnsureSource(instance);
+		EnsureTarget(array);
+		EnsureWholeNumber(index, nameof(index));
+		EnsureWholeNumber(count, nameof(count));
+		EnsureTargetIndex(array, arrayIndex);
+
+		if (index < 0 || index > instance.Length)
+			throw new Error("ArgumentOutOfRangeException: index is out of range.");
+		if (count < 0)
+			throw new Error("ArgumentOutOfRangeException: count is out of range.");
+		if (index + count > instance.Length)
+			throw new Error("ArgumentException: source index and count are out of range.");
+		EnsureCopyCapacity(array, arrayIndex, count);
+
 		for (uint i = 0; i < (uint)count; i++)
 			array[(uint)arrayIndex + i] = instance[(uint)index + i];
 	}

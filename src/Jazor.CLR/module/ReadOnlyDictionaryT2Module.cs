@@ -4,6 +4,12 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","Map")]
 public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnull
 {
+	private static void EnsureInstance(Map<TKey, TValue> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
 	// Keep TryGetValue in an import so the out-value contract is expressed directly in Jazor
 	// rather than hidden in a conditional JS expression.
 	///<summary>Initializes a new instance of the <see cref="T:System.Collections.ObjectModel.ReadOnlyDictionary`2" /> class that is a wrapper around the specified dictionary.</summary>
@@ -46,6 +52,8 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
 	public static Array<object?> _19af957975f1546f(Map<TKey,TValue> instance, object key, object value)
 	{
+		EnsureInstance(instance);
+
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
 			return [false, default(TValue)];
@@ -60,6 +68,8 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 	[Jazor(Op.Import, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get")]
 	public static TValue _ed4a7913b74bfd87(Map<TKey,TValue> instance, object key)
 	{
+		EnsureInstance(instance);
+
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
 			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");

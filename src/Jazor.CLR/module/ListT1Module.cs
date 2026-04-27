@@ -17,14 +17,40 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.List<T>","Array")]
 public static class ListT1Module<T>
 {
+	private static void EnsureInstance(Array<T> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
 	private static void EnsureWholeNumber(Number value, string message)
 	{
 		if (IsNaN(value) || Math.Floor_(value) != value)
 			throw new Error(message);
 	}
 
+	private static void EnsureTargetArray(Array<T> array)
+	{
+		if (array is null)
+			throw new Error("ArgumentNullException: array is null");
+	}
+
+	private static void EnsureTargetIndex(Array<T> array, Number arrayIndex)
+	{
+		EnsureWholeNumber(arrayIndex, "ArgumentOutOfRangeException: arrayIndex must be a whole number.");
+		if (arrayIndex < 0 || arrayIndex > array.Length)
+			throw new Error("ArgumentOutOfRangeException: arrayIndex is out of range.");
+	}
+
+	private static void EnsureCopyCapacity(Array<T> array, Number arrayIndex, Number copyCount)
+	{
+		if (arrayIndex + copyCount > array.Length)
+			throw new Error("ArgumentException: Not enough space in destination array.");
+	}
+
 	private static void EnsureInsertIndex(Array<T> instance, Number index)
 	{
+		EnsureInstance(instance);
 		EnsureWholeNumber(index, "ArgumentOutOfRangeException: index must be a whole number.");
 		if (index < 0 || index > instance.Length)
 			throw new Error("ArgumentOutOfRangeException: index is out of range.");
@@ -32,6 +58,7 @@ public static class ListT1Module<T>
 
 	private static void EnsureExistingIndex(Array<T> instance, Number index)
 	{
+		EnsureInstance(instance);
 		EnsureWholeNumber(index, "ArgumentOutOfRangeException: index must be a whole number.");
 		if (index < 0 || index >= instance.Length)
 			throw new Error("ArgumentOutOfRangeException: index is out of range.");
@@ -49,6 +76,10 @@ public static class ListT1Module<T>
 	// instead of being hidden inside JS string templates.
 	private static void AppendRange(Array<T> instance, IEnumerable<T> collection)
 	{
+		EnsureInstance(instance);
+		if (collection is null)
+			throw new Error("ArgumentNullException: collection is null");
+
 		foreach (var item in collection)
 			instance.Push(item);
 	}
@@ -96,8 +127,7 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.this[int].get")]
 	public static T _d389c31d59037b42(Array<T> instance, Number index)
 	{
-		if (index < 0 || index >= instance.Length)
-			throw new Error("ArgumentOutOfRangeException: index is out of range.");
+		EnsureExistingIndex(instance, index);
 		return instance[index];
 	}
 
@@ -159,8 +189,12 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.CopyTo(T[])")]
 	public static void _9a3a4817585dded1(Array<T> instance, Array<T> array)
 	{
+		EnsureInstance(instance);
+		EnsureTargetArray(array);
+		EnsureCopyCapacity(array, 0, instance.Length);
+
 		for (uint i = 0; i < instance.Length; i++)
-			array.Push(instance[i]);
+			array[i] = instance[i];
 	}
 
 	/// <summary>
@@ -170,6 +204,19 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.CopyTo(int, T[], int, int)")]
 	public static void _0fdf1627d283f8ae(Array<T> instance, Number index, Array<T> array, Number arrayIndex, Number count)
 	{
+		EnsureInstance(instance);
+		EnsureTargetArray(array);
+		EnsureWholeNumber(index, "ArgumentOutOfRangeException: index must be a whole number.");
+		EnsureWholeNumber(count, "ArgumentOutOfRangeException: count must be a whole number.");
+		EnsureTargetIndex(array, arrayIndex);
+		if (index < 0 || index > instance.Length)
+			throw new Error("ArgumentOutOfRangeException: index is out of range.");
+		if (count < 0)
+			throw new Error("ArgumentOutOfRangeException: count is out of range.");
+		if (index + count > instance.Length)
+			throw new Error("ArgumentException: source index and count are out of range.");
+		EnsureCopyCapacity(array, arrayIndex, count);
+
 		for (uint i = 0; i < (uint)count; i++)
 			array[(uint)arrayIndex + i] = instance[(uint)index + i];
 	}
@@ -181,6 +228,11 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.CopyTo(T[], int)")]
 	public static void _3559b1ff2a643922(Array<T> instance, Array<T> array, Number arrayIndex)
 	{
+		EnsureInstance(instance);
+		EnsureTargetArray(array);
+		EnsureTargetIndex(array, arrayIndex);
+		EnsureCopyCapacity(array, arrayIndex, instance.Length);
+
 		for (uint i = 0; i < instance.Length; i++)
 			array[(uint)arrayIndex + i] = instance[i];
 	}
@@ -323,8 +375,12 @@ public static class ListT1Module<T>
 	/// C#: list.GetRange(index, count)
 	/// JS: array.slice(index, index + count)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.GetRange(int, int)", "__arg1.slice(__arg2, __arg2 + __arg3)")]
-	public extern static Array<T> _c35c9c99a23ff96a(Array<T> instance, Number index, Number count);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.GetRange(int, int)")]
+	public static Array<T> _c35c9c99a23ff96a(Array<T> instance, Number index, Number count)
+	{
+		EnsureRemoveRange(instance, index, count);
+		return instance.Slice(index, index + count);
+	}
 
 	/// <summary>
 	/// C#: list.Slice(start, length)
@@ -382,6 +438,8 @@ public static class ListT1Module<T>
 	public static void _56ef9aefabac7c09(Array<T> instance, Number index, IEnumerable<T> collection)
 	{
 		EnsureInsertIndex(instance, index);
+		if (collection is null)
+			throw new Error("ArgumentNullException: collection is null");
 
 		var insertionIndex = index;
 		foreach (var item in collection)
@@ -495,6 +553,10 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Reverse(int, int)")]
 	public static void _56dc1af8af32e484(Array<T> instance, Number index, Number count)
 	{
+		EnsureRemoveRange(instance, index, count);
+		if (count <= 1)
+			return;
+
 		uint start = (uint)index;
 		uint end = (uint)((int)index + (int)count - 1);
 		while (start < end)
@@ -528,6 +590,10 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Sort(int, int, System.Collections.Generic.IComparer<T>)")]
 	public static void _19207851b52a5287(Array<T> instance, Number index, Number count, IComparer<T>? comparer)
 	{
+		EnsureRemoveRange(instance, index, count);
+		if (count <= 1)
+			return;
+
 		var subArray = instance.Slice((int)index, (int)index + (int)count);
 		if (comparer != null)
 			subArray.Sort((a, b) => comparer.Compare(a, b));

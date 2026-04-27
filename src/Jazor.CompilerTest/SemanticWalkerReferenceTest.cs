@@ -4099,6 +4099,64 @@ public sealed class SemanticWalkerReferenceTest
 }", script);
 	}
 
+	[TestMethod]
+	public void Visit_Reference_ReadOnlySet_ConstructionAndEmpty_UseRuntimeHelpers()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new System.Collections.Generic.HashSet<int>();
+                    source.Add(1);
+                    var readOnly = new System.Collections.ObjectModel.ReadOnlySet<int>(source);
+                    var empty = System.Collections.ObjectModel.ReadOnlySet<int>.Empty;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let source = new Set;
+  _e1d2ba750a2788cb(source, 1);
+  let readOnly = _aede400efbd05842(source);
+  let empty = _843cd8664672a9f8();
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ReadOnlySet_AsISetAdd_UsesGuardedISetHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new System.Collections.Generic.HashSet<int>();
+                    source.Add(1);
+                    var readOnly = new System.Collections.ObjectModel.ReadOnlySet<int>(source);
+                    System.Collections.Generic.ISet<int> set = readOnly;
+                    bool added = set.Add(2);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let source = new Set;
+  _e1d2ba750a2788cb(source, 1);
+  let readOnly = _aede400efbd05842(source);
+  let set = readOnly;
+  let added = _fa512a510bd763de(set, 2);
+}", script);
+	}
+
 	/// <summary>
 	/// 测试只读集合索引器 getter 必须保留运行时 helper 语义
 	/// </summary>
@@ -4123,8 +4181,54 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let source = [1, 2, 3];
-  let list = source;
+  let list = _d4e5f6a7b8c9d0e1(source);
   let value = _b8c9d0e1f2a3b4c5(list, 1);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ReadOnlyCollection_Empty_UsesRuntimeHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var empty = System.Collections.ObjectModel.ReadOnlyCollection<int>.Empty;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let empty = _e5f6a7b8c9d0e1f2();
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ListGetRange_UsesRuntimeHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var values = new List<int> { 1, 2, 3 };
+                    var segment = values.GetRange(1, 2);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [1, 2, 3];
+  let segment = _c35c9c99a23ff96a(values, 1, 2);
 }", script);
 	}
 

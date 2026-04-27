@@ -17,10 +17,24 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>","Set")]
 public static class HashSetT1Module<T>
 {
+	private static void EnsureInstance(Set<T> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
+	private static void EnsureOther(IEnumerable<T> other)
+	{
+		if (other is null)
+			throw new Error("ArgumentNullException: other is null");
+	}
+
 	// Keep set-comparison logic in imports so the emitted whitelist stays tree-shakeable
 	// without embedding multi-branch JS snippets in string templates.
 	internal static Set<T> CreateLookupSet(IEnumerable<T> values)
 	{
+		EnsureOther(values);
+
 		var lookup = new Set<T>();
 		foreach (var value in values)
 			lookup.Add(value);
@@ -29,12 +43,16 @@ public static class HashSetT1Module<T>
 
 	internal static void UnionWithCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
+		EnsureOther(other);
+
 		foreach (var item in other)
 			instance.Add(item);
 	}
 
 	internal static void IntersectWithCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
 		var lookup = CreateLookupSet(other);
 		foreach (var item in instance)
 		{
@@ -46,12 +64,16 @@ public static class HashSetT1Module<T>
 
 	internal static void ExceptWithCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
+		EnsureOther(other);
+
 		foreach (var item in other)
 			instance.Delete(item);
 	}
 
 	internal static void SymmetricExceptWithCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
 		var lookup = CreateLookupSet(other);
 		foreach (var item in lookup)
 		{
@@ -65,6 +87,7 @@ public static class HashSetT1Module<T>
 
 	internal static bool IsSubsetOfCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
 		var lookup = CreateLookupSet(other);
 		foreach (var item in instance)
 		{
@@ -78,6 +101,7 @@ public static class HashSetT1Module<T>
 
 	internal static bool IsProperSubsetOfCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
 		var lookup = CreateLookupSet(other);
 		if (instance.Size >= lookup.Size)
 			return false;
@@ -94,6 +118,9 @@ public static class HashSetT1Module<T>
 
 	internal static bool IsSupersetOfCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
+		EnsureOther(other);
+
 		foreach (var item in other)
 		{
 			if (!instance.Has(item))
@@ -105,6 +132,7 @@ public static class HashSetT1Module<T>
 
 	internal static bool IsProperSupersetOfCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
 		var lookup = CreateLookupSet(other);
 		if (instance.Size <= lookup.Size)
 			return false;
@@ -121,6 +149,9 @@ public static class HashSetT1Module<T>
 
 	internal static bool OverlapsCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
+		EnsureOther(other);
+
 		foreach (var item in other)
 		{
 			if (instance.Has(item))
@@ -132,6 +163,7 @@ public static class HashSetT1Module<T>
 
 	internal static bool SetEqualsCore(Set<T> instance, IEnumerable<T> other)
 	{
+		EnsureInstance(instance);
 		var lookup = CreateLookupSet(other);
 		if (instance.Size != lookup.Size)
 			return false;
@@ -234,6 +266,8 @@ public static class HashSetT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.HashSet<T>.Add(T)")]
 	public static bool _e1d2ba750a2788cb(Set<T> instance, T item)
 	{
+		EnsureInstance(instance);
+
 		var size = instance.Size;
 		instance.Add(item);
 		return instance.Size > size;  // Returns true if item was added (not already present)

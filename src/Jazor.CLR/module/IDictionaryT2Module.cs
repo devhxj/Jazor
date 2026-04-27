@@ -28,6 +28,9 @@ public static class IDictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set")]
 	public static void _f3b177bfce76ed5c(Map<TKey, TValue> instance, TKey key, TValue value)
 	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+
 		// ReadOnlyDictionary 运行时 carrier 共享 Map；接口写入口必须守住只读边界。
 		if (DictionaryCarrierRuntime.IsReadOnlyCarrier(instance))
 			throw new Error("NotSupportedException: Collection is read-only.");
@@ -77,6 +80,9 @@ public static class IDictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
 	public static Array<object?> _ebaafc4d4a520807(Map<TKey, TValue> instance, TKey key)
 	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+
 		if (instance.Has(key))
 			return [true, instance.Get(key)];
 		return [false, default(TValue)];

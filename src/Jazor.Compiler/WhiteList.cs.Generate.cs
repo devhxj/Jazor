@@ -1139,7 +1139,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.List<T>.FindLastIndex(int, System.Predicate<T>)"] = new(Op.Import, "_081aa9ae0b09d058", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.FindLastIndex(int, int, System.Predicate<T>)"] = new(Op.Import, "_58cc54dc07e440c4", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.ForEach(System.Action<T>)"] = new(Op.Alias, "forEach");
-		members["System.Collections.Generic.List<T>.GetRange(int, int)"] = new(Op.Inline, "__arg1.slice(__arg2, __arg2 + __arg3)");
+		members["System.Collections.Generic.List<T>.GetRange(int, int)"] = new(Op.Import, "_c35c9c99a23ff96a", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.Slice(int, int)"] = new(Op.Inline, "__arg1.slice(__arg2, __arg2 + __arg3)");
 		members["System.Collections.Generic.List<T>.IndexOf(T)"] = new(Op.Alias, "indexOf");
 		members["System.Collections.Generic.List<T>.IndexOf(T, int)"] = new(Op.Alias, "indexOf");
@@ -1268,8 +1268,8 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.Queue<T>.Queue()"] = new(Op.Import, "_ea05a56d08fbd4f9", "System/Collections/Generic/QueueT1Module.js");
 		members["System.Collections.Generic.Queue<T>.Queue(int)"] = new(Op.Import, "_7fc2b76467c43db9", "System/Collections/Generic/QueueT1Module.js");
 		members["System.Collections.Generic.Queue<T>.Queue(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_5eae085d83bbe242", "System/Collections/Generic/QueueT1Module.js");
-		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)"] = new(Op.Inline, "__arg1");
-		members["static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get"] = new(Op.Inline, "[]");
+		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.ReadOnlyCollection(System.Collections.Generic.IList<T>)"] = new(Op.Import, "_d4e5f6a7b8c9d0e1", "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js");
+		members["static System.Collections.ObjectModel.ReadOnlyCollection<T>.Empty.get"] = new(Op.Import, "_e5f6a7b8c9d0e1f2", "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.Count.get"] = new(Op.Alias, "length");
 		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.Contains(T)"] = new(Op.Alias, "includes");
 		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.this[int].get"] = new(Op.Import, "_b8c9d0e1f2a3b4c5", "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js");
@@ -1283,8 +1283,8 @@ internal static partial class WhiteList
 		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_19af957975f1546f", "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Import, "_ed4a7913b74bfd87", "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Count.get"] = new(Op.Inline, "__arg1.size");
-		members["System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)"] = new(Op.Inline, "__arg1");
-		members["static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get"] = new(Op.Inline, "new Set()");
+		members["System.Collections.ObjectModel.ReadOnlySet<T>.ReadOnlySet(System.Collections.Generic.ISet<T>)"] = new(Op.Import, "_aede400efbd05842", "System/Collections/ObjectModel/ReadOnlySetT1Module.js");
+		members["static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get"] = new(Op.Import, "_843cd8664672a9f8", "System/Collections/ObjectModel/ReadOnlySetT1Module.js");
 		members["System.Collections.ObjectModel.ReadOnlySet<T>.Count.get"] = new(Op.Inline, "__arg1.size");
 		members["System.Collections.ObjectModel.ReadOnlySet<T>.Contains(T)"] = new(Op.Inline, "__arg1.has(__arg2)");
 		members["System.Collections.ObjectModel.ReadOnlySet<T>.IsProperSubsetOf(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_8745918ab865b9f0", "System/Collections/ObjectModel/ReadOnlySetT1Module.js");
