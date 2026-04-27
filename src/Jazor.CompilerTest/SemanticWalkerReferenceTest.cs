@@ -3749,7 +3749,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let dict = new Map;
-  dict.set(""key"", 42);
+  _f3b177bfce76ed5c(dict, ""key"", 42);
   let value = ((__m, __k) => {
     if (__m.has(__k))
       return __m.get(__k);
@@ -3791,7 +3791,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		AssertScriptEqual(@"{
   let dict = new Map;
-  dict.set(""key"", 42);
+  _f3b177bfce76ed5c(dict, ""key"", 42);
   let value = ((__m, __k) => {
     if (__m.has(__k))
       return __m.get(__k);
@@ -4061,8 +4061,41 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let source = new Map;
   source.set(""key"", 42);
-  let dict = source;
+  let dict = _b22e987e1be225aa(source);
   let value = _ed4a7913b74bfd87(dict, ""key"");
+}", script);
+	}
+
+	/// <summary>
+	/// 只读字典经 IDictionary 写入口时必须走 helper 并保留只读约束。
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerReference_ReadOnlyDictionary_AsIDictionarySet_UsesReadOnlyGuardedHelper()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new Dictionary<string, int>();
+                    source[""key""] = 1;
+                    var readOnly = new System.Collections.ObjectModel.ReadOnlyDictionary<string, int>(source);
+                    System.Collections.Generic.IDictionary<string, int> dict = readOnly;
+                    dict[""key""] = 2;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let source = new Map;
+  source.set(""key"", 1);
+  let readOnly = _b22e987e1be225aa(source);
+  let dict = readOnly;
+  _f3b177bfce76ed5c(dict, ""key"", 2);
 }", script);
 	}
 

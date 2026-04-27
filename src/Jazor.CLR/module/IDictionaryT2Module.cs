@@ -25,8 +25,14 @@ public static class IDictionaryT2Module<TKey, TValue>
 	/// C#: dict[key] = value
 	/// JS: map.set(key, value)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set", "__arg1.set(__arg2, __arg3)")]
-	public extern static void _f3b177bfce76ed5c(Map<TKey, TValue> instance, TKey key, TValue value);
+	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set")]
+	public static void _f3b177bfce76ed5c(Map<TKey, TValue> instance, TKey key, TValue value)
+	{
+		// ReadOnlyDictionary 运行时 carrier 共享 Map；接口写入口必须守住只读边界。
+		if (DictionaryCarrierRuntime.IsReadOnlyCarrier(instance))
+			throw new Error("NotSupportedException: Collection is read-only.");
+		instance.Set(key, value);
+	}
 
 	/// <summary>
 	/// C#: dict.Keys

@@ -1004,7 +1004,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.ICollection<T>.Contains(T)"] = new(Op.Alias, "includes");
 		members["System.Collections.Generic.ICollection<T>.CopyTo(T[], int)"] = new(Op.Import, "_03c4a0ae3554065f", "System/Collections/Generic/ICollectionT1Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Inline, "((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw new Error('KeyNotFoundException: The given key was not present in the dictionary.'); })(__arg1, __arg2)");
-		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set"] = new(Op.Inline, "__arg1.set(__arg2, __arg3)");
+		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set"] = new(Op.Import, "_f3b177bfce76ed5c", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Keys.get"] = new(Op.Inline, "Array.from(__arg1.keys())");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Values.get"] = new(Op.Inline, "Array.from(__arg1.values())");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.ContainsKey(TKey)"] = new(Op.Alias, "has");
@@ -1277,8 +1277,8 @@ internal static partial class WhiteList
 		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[])"] = new(Op.Import, "_d0e1f2a3b4c5d6e7", "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(T[], int)"] = new(Op.Import, "_e1f2a3b4c5d6e7f8", "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyCollection<T>.CopyTo(int, T[], int, int)"] = new(Op.Import, "_f2a3b4c5d6e7f8a9", "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js");
-		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)"] = new(Op.Inline, "__arg1");
-		members["static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Empty.get"] = new(Op.Inline, "new Map()");
+		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ReadOnlyDictionary(System.Collections.Generic.IDictionary<TKey, TValue>)"] = new(Op.Import, "_b22e987e1be225aa", "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js");
+		members["static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Empty.get"] = new(Op.Import, "_43b396f1b8e0a68f", "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey)"] = new(Op.Inline, "__arg1.has(__arg2)");
 		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_19af957975f1546f", "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js");
 		members["System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Import, "_ed4a7913b74bfd87", "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js");
