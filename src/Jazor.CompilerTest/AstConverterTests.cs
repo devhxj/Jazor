@@ -3718,7 +3718,7 @@ export function LogValue() {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithLinqWhereAndToList_ImportsEnumerableHelpers()
+    public async Task Convert_ClassWithLinqWhereAndToListOnIEnumerable_UsesArrayMethodsWithoutImport()
     {
         var code = """
             using System.Collections.Generic;
@@ -3736,18 +3736,15 @@ export function LogValue() {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"import { _6293e95141f14a55, _a0d3305d7a8d4c01 } from ""System/Linq/EnumerableModule.js"";
-export function Filter(source) {
-  return _6293e95141f14a55(_a0d3305d7a8d4c01(source, x => {
-    return x > 1;
-  }));
-}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithLinqSelectIndexAndToArray_ImportsEnumerableHelpers()
+    public async Task Convert_ClassWithLinqSelectIndexAndToArrayOnIEnumerable_UsesArrayMethodsWithoutImport()
     {
         var code = """
             using System.Collections.Generic;
@@ -3765,14 +3762,11 @@ export function Filter(source) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"import { _aab4dc2444d44402, _ea56f0fe56c44ae7 } from ""System/Linq/EnumerableModule.js"";
-export function Project(source) {
-  return _ea56f0fe56c44ae7(_aab4dc2444d44402(source, (x, index) => {
-    return x + index;
-  }));
-}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+        StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
     }
 
     [TestMethod]
@@ -3794,13 +3788,11 @@ export function Project(source) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"export function Filter(source) {
-  return source.filter(x => {
-    return x > 1;
-  });
-}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "return __src.filter(__callback);");
     }
 
     [TestMethod]
@@ -3822,13 +3814,11 @@ export function Project(source) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"export function Project(source) {
-  return source.map((x, index) => {
-    return x + index;
-  });
-}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+        StringAssert.Contains(script, "return __src.map(__callback);");
     }
 
     [TestMethod]
@@ -3850,17 +3840,15 @@ export function Project(source) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"export function Filter(source) {
-  return source.filter(x => {
-    return x > 1;
-  });
-}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "return __src.filter(__callback);");
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithLinqSelectAndToArrayOnICollection_UsesArrayMethodsWithoutImport()
+    public async Task Convert_ClassWithLinqSelectAndToArrayOnICollection_UsesArrayFromFastPath()
     {
         var code = """
             using System.Collections.Generic;
@@ -3878,13 +3866,11 @@ export function Project(source) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
-@"export function Project(source) {
-  return source.map(x => {
-    return x * 2;
-  });
-}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("System/Linq/EnumerableModule.js", StringComparison.Ordinal));
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+        StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
     }
 
     [TestMethod]

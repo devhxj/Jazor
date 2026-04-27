@@ -6183,12 +6183,130 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
-  let list = [1, 2, 3];
-  let doubled = list.map(x => {
-    return x * 2;
-  });
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "let list = [1, 2, 3];");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: selector is null\");");
+		StringAssert.Contains(script, "return __src.map(__callback);");
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ExtensionMethod_OnCustomIList_UsesDirectArrayFastPath()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T source) where T : System.Collections.Generic.IList<int>
+                {
+                    var filtered = source.Where(x => x > 1).ToList();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "return __src.filter(__callback);");
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ExtensionMethod_OnCustomIEnumerable_UsesArrayFromFastPath()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T source) where T : System.Collections.Generic.IEnumerable<int>
+                {
+                    var filtered = source.Where(x => x > 1).ToList();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ExtensionMethod_OnCustomICollection_UsesArrayFromFastPath()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod<T>(T source) where T : System.Collections.Generic.ICollection<int>
+                {
+                    var filtered = source.Where(x => x > 1).ToList();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ExtensionMethod_OnHashSet_UsesArrayFromFastPath()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new System.Collections.Generic.HashSet<int>();
+                    var filtered = source.Where(x => x > 1).ToList();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "let source = new Set;");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ExtensionMethod_OnDictionary_UsesArrayFromFastPath()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var source = new System.Collections.Generic.Dictionary<string, int>();
+                    var filtered = source.Where(_ => true).ToList();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "let source = new Map;");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+		StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+		StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
 	}
 
 	#endregion

@@ -1550,13 +1550,11 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertScriptEqual(
-@"{
-  let list = [1, 2, 3];
-  let filtered = list.filter(x => {
-    return x > 1;
-  });
-}", script);
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let list = [1, 2, 3];");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: source is null\");");
+        StringAssert.Contains(script, "throw new Error(\"ArgumentNullException: predicate is null\");");
+        StringAssert.Contains(script, "return __src.filter(__callback);");
     }
 
     #endregion
