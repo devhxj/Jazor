@@ -13,9 +13,9 @@ namespace Jazor.CLR;
 /// - Import: 需要完整实现的复杂逻辑
 /// - Discard: 不支持或极少使用
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/HashSetModule.js")]
+[ECMAScriptModule("System/Collections/Generic/HashSetT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.HashSet<T>","Set")]
-public static class HashSetModule<T>
+public static class HashSetT1Module<T>
 {
 	// Keep set-comparison logic in imports so the emitted whitelist stays tree-shakeable
 	// without embedding multi-branch JS snippets in string templates.

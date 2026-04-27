@@ -20,7 +20,7 @@ public sealed class TaskModuleWhitelistTests
     [TestMethod]
     public void TaskOfTTypeAlias_IsPromise()
     {
-        var attribute = typeof(Jazor.CLR.TaskModule<>).GetCustomAttribute<JazorAttribute>();
+        var attribute = typeof(Jazor.CLR.TaskT1Module<>).GetCustomAttribute<JazorAttribute>();
 
         Assert.IsNotNull(attribute);
         Assert.AreEqual(Op.Alias, attribute.Op);
@@ -160,7 +160,7 @@ public sealed class TaskModuleWhitelistTests
 
     private static IReadOnlyDictionary<string, JazorAttribute> GetTaskGenericMethodMappings()
     {
-        return typeof(Jazor.CLR.TaskModule<>)
+        return typeof(Jazor.CLR.TaskT1Module<>)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Select(method => method.GetCustomAttribute<JazorAttribute>())
             .OfType<JazorAttribute>()

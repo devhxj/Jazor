@@ -3329,7 +3329,11 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = _e73dbdff85c46ddc(dict, ""key"");
+  let value = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(dict, ""key"");
 }", script);
 	}
 
@@ -3419,7 +3423,11 @@ public sealed class SemanticWalkerReferenceTest
   let person = null;
   let dict = new Map;
   dict.set(person?.Name, 42);
-  let value = _e73dbdff85c46ddc(dict, person?.Name);
+  let value = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(dict, person?.Name);
 }", script);
 	}
 
@@ -3547,6 +3555,291 @@ public sealed class SemanticWalkerReferenceTest
 		{
 			_ = walker.Visit(block, new());
 		});
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_InterfaceGetEnumerator_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IEnumerable<int> values = new List<int>();
+                    var enumerator = values.GetEnumerator();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_NonGenericInterfaceGetEnumerator_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections;
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IEnumerable values = new List<int>();
+                    var enumerator = values.GetEnumerator();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ICollectionContains_UsesArrayIncludesAlias()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    ICollection<int> values = [1, 2, 3];
+                    bool found = values.Contains(2);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [1, 2, 3];
+  let found = values.includes(2);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ICollectionCount_UsesArrayLengthAlias()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    ICollection<int> values = [1, 2, 3];
+                    int count = values.Count;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [1, 2, 3];
+  let count = values.length;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_IListIndexOf_UsesArrayIndexOfAlias()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IList<int> values = [10, 20, 30];
+                    int index = values.IndexOf(20);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [10, 20, 30];
+  let index = values.indexOf(20);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IListIndexerGet_UsesImportHelper()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IList<int> values = [10, 20, 30];
+                    int item = values[1];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [10, 20, 30];
+  let item = _8b52bea1dfb9f9ba(values, 1);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_IDictionaryContainsKey_UsesMapHasAlias()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IDictionary<string, int> dict = new Dictionary<string, int>();
+                    bool found = dict.ContainsKey(""key"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let dict = new Map;
+  let found = dict.has(""key"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IDictionaryIndexerGetSet_UsesSetAndGetMappings()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IDictionary<string, int> dict = new Dictionary<string, int>();
+                    dict[""key""] = 42;
+                    int value = dict[""key""];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let dict = new Map;
+  dict.set(""key"", 42);
+  let value = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(dict, ""key"");
+}", script);
+	}
+
+	/// <summary>
+	/// 索引器 getter 的 key 实参必须只求值一次，不能因为 inline 展开重复执行副作用。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_IDictionaryIndexerGet_SideEffectingKey_EvaluatedOnce()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                int _keyCalls;
+
+                string NextKey()
+                {
+                    _keyCalls++;
+                    return ""key"";
+                }
+
+                void TestMethod()
+                {
+                    IDictionary<string, int> dict = new Dictionary<string, int>();
+                    dict[""key""] = 42;
+                    int value = dict[NextKey()];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let dict = new Map;
+  dict.set(""key"", 42);
+  let value = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(dict, this.NextKey());
+}", script);
+	}
+
+	/// <summary>
+	/// 索引器 getter 的 receiver 实参必须只求值一次，不能因为 inline 展开重复执行副作用。
+	/// </summary>
+	[TestMethod]
+	public void Visit_Reference_DictionaryIndexerGet_SideEffectingReceiver_EvaluatedOnce()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                int _dictCalls;
+
+                Dictionary<string, int> Pick(Dictionary<string, int> dict)
+                {
+                    _dictCalls++;
+                    return dict;
+                }
+
+                void TestMethod()
+                {
+                    var dict = new Dictionary<string, int>();
+                    dict[""key""] = 42;
+                    int value = Pick(dict)[""key""];
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let dict = new Map;
+  dict.set(""key"", 42);
+  let value = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(this.Pick(dict), ""key"");
+}", script);
 	}
 
 	/// <summary>
@@ -3908,7 +4201,11 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let v$0;
   let dict = null;
-  let value = (v$0 = dict, v$0 == null ? undefined : _e73dbdff85c46ddc(v$0, ""key""));
+  let value = (v$0 = dict, v$0 == null ? undefined : ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(v$0, ""key""));
 }", script);
 	}
 
@@ -4109,7 +4406,11 @@ public sealed class SemanticWalkerReferenceTest
   let v$0;
   let dict = new Map;
   dict.set(""key"", 1);
-  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5, dict.set(""key"", v$0), v$0;
+  v$0 = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(dict, ""key"") + 5, dict.set(""key"", v$0), v$0;
 }", script);
 	}
 
@@ -4546,7 +4847,11 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = _e73dbdff85c46ddc(dict, ""key"");
+  let value = ((__m, __k) => {
+    if (__m.has(__k))
+      return __m.get(__k);
+    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
+  })(dict, ""key"");
 }", script);
 	}
 

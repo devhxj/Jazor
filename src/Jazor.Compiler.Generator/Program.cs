@@ -12,8 +12,11 @@ const string Split = $@"
 var repoRoot = FindRepositoryRoot();
 var references = Basic.Reference.Assemblies.Net100.References.All
 	.Add(MetadataReference.CreateFromFile(typeof(JazorAttribute).Assembly.Location));
-var syntaxTrees = GetSourceFiles(Path.Combine(repoRoot, "src", "ECMAScript"))
+var sourceFiles = GetSourceFiles(Path.Combine(repoRoot, "src", "ECMAScript"))
 	.Concat(GetSourceFiles(Path.Combine(repoRoot, "src", "Jazor.CLR")))
+	.OrderBy(path => path, StringComparer.Ordinal)
+	.ToArray();
+var syntaxTrees = sourceFiles
 	.Select(CreateSyntaxTree)
 	.ToArray();
 var compilation = CSharpCompilation.Create(
@@ -23,6 +26,8 @@ var compilation = CSharpCompilation.Create(
 	new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 var types = new List<(string Op, string Member, string? Value, string? ModulePath)>();
 var members = new List<(string TypeName, string Op, string Member, string? Value, string? ModulePath)>();
+var seenTypes = new HashSet<string>(StringComparer.Ordinal);
+var seenMembers = new HashSet<string>(StringComparer.Ordinal);
 
 // 语法读取 attribute，语义只用于拿声明 symbol，避免被项目本身的语义错误卡死。
 foreach (var syntaxTree in syntaxTrees)
@@ -49,7 +54,8 @@ foreach (var syntaxTree in syntaxTrees)
 		if (typeOp != nameof(Op.Compile))
 		{
 			var memberName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
-			types.Add((typeOp, memberName, typeValue, modulePath));
+			if (seenTypes.Add(memberName))
+				types.Add((typeOp, memberName, typeValue, modulePath));
 		}
 
 		foreach (var memberDeclaration in typeDeclaration.Members)
@@ -81,16 +87,18 @@ foreach (var syntaxTree in syntaxTrees)
 				if (property.GetMethod is not null)
 				{
 					var getMemberName = FormatSymbolName(property.GetMethod);
-					members.Add((typeName, op, getMemberName, value, modulePath));
+					if (seenMembers.Add(getMemberName))
+						members.Add((typeName, op, getMemberName, value, modulePath));
 				}
 
 				if (property.SetMethod is not null)
 				{
 					var setMemberName = FormatSymbolName(property.SetMethod);
-					members.Add((typeName, op, setMemberName, value, modulePath));
+					if (seenMembers.Add(setMemberName))
+						members.Add((typeName, op, setMemberName, value, modulePath));
 				}
 			}
-			else if (memberName is not null)
+			else if (memberName is not null && seenMembers.Add(memberName))
 				members.Add((typeName, op, memberName, value, modulePath));
 		}
 	}

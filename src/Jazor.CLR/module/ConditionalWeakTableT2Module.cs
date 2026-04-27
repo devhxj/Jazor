@@ -1,8 +1,8 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("System/Runtime/CompilerServices/ConditionalWeakTableModule.js")]
+[ECMAScriptModule("System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js")]
 [Jazor(Op.Alias, "System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>","WeakMap")]
-public static class ConditionalWeakTableModule<TKey, TValue> where TKey : class
+public static class ConditionalWeakTableT2Module<TKey, TValue> where TKey : class
 {
 	/// <summary>
 	/// C#: new ConditionalWeakTable()
@@ -20,7 +20,7 @@ public static class ConditionalWeakTableModule<TKey, TValue> where TKey : class
 	{
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
-			return [false, null];
+			return [false, default(TValue)];
 
 		return [true, instance.Get(typedKey)];
 	}
@@ -79,7 +79,7 @@ public static class ConditionalWeakTableModule<TKey, TValue> where TKey : class
 	{
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
-			return [false, null];
+			return [false, default(TValue)];
 
 		var currentValue = instance.Get(typedKey);
 		instance.Delete(typedKey);

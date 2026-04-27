@@ -1,8 +1,8 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("System/Threading/Tasks/TaskModule.js")]
+[ECMAScriptModule("System/Threading/Tasks/TaskT1Module.js")]
 [Jazor(Op.Alias, "System.Threading.Tasks.Task<TResult>", "Promise")]
-public static class TaskModule<TResult>
+public static class TaskT1Module<TResult>
 {
 	///<summary>Gets the result value of this <see cref="T:System.Threading.Tasks.Task`1" />.</summary>
 	[Jazor(Op.Discard, "System.Threading.Tasks.Task<TResult>.Result.get")]

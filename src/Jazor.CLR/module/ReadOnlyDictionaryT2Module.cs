@@ -1,8 +1,8 @@
 namespace Jazor.CLR;
 
-[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyDictionaryModule.js")]
+[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js")]
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>","Map")]
-public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
+public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnull
 {
 	// Keep TryGetValue in an import so the out-value contract is expressed directly in Jazor
 	// rather than hidden in a conditional JS expression.
@@ -39,7 +39,7 @@ public static class ReadOnlyDictionaryModule<TKey, TValue> where TKey : notnull
 	{
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
-			return [false, null];
+			return [false, default(TValue)];
 
 		return [true, instance.Get(typedKey)];
 	}

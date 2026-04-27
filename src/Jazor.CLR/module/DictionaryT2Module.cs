@@ -13,9 +13,9 @@ namespace Jazor.CLR;
 /// - Import: 需要额外逻辑的方法
 /// - Discard: Dictionary 特有但 JS Map 不完全支持的功能
 /// </summary>
-[ECMAScriptModule("System/Collections/Generic/DictionaryModule.js")]
+[ECMAScriptModule("System/Collections/Generic/DictionaryT2Module.js")]
 [Jazor(Op.Alias, "System.Collections.Generic.Dictionary<TKey, TValue>","Map")]
-public static class DictionaryModule<TKey, TValue>
+public static class DictionaryT2Module<TKey, TValue>
 {
 	/// <summary>
 	/// C#: new Dictionary&lt;TKey, TValue&gt;()
@@ -82,17 +82,11 @@ public static class DictionaryModule<TKey, TValue>
 
 	/// <summary>
 	/// C#: dict[key]
-	/// JS: map.get(key) (缺失时抛出 KeyNotFoundException)
-	/// 当前仍保留 Import：存在性检查后的 throw 仍属于第二阶段 Compile contract 问题，
-	/// 不是简单的 `map.get(key)` 别名映射。
+	/// JS: ((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw KeyNotFoundException; })(map, key)
+	/// 用参数化 IIFE 保证 receiver / key 只求值一次，避免内联模板重复求值导致副作用次数错误。
 	/// </summary>
-	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get")]
-	public static TValue _e73dbdff85c46ddc(Map<TKey,TValue> instance, TKey key)
-	{
-		if (!instance.Has(key))
-			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
-		return instance.Get(key)!;
-	}
+	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", "((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw new Error('KeyNotFoundException: The given key was not present in the dictionary.'); })(__arg1, __arg2)")]
+	public extern static TValue _e73dbdff85c46ddc(Map<TKey,TValue> instance, TKey key);
 
 	/// <summary>
 	/// C#: dict[key] = value

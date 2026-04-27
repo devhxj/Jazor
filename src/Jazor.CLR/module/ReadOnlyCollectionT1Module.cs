@@ -12,9 +12,9 @@ namespace Jazor.CLR;
 /// - Inline: 简单表达式
 /// - Discard: ReadOnlyCollection 特有的但 JS Array 不完全支持的功能
 /// </summary>
-[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyCollectionModule.js")]
+[ECMAScriptModule("System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js")]
 [Jazor(Op.Alias, "System.Collections.ObjectModel.ReadOnlyCollection<T>","Array")]
-public static class ReadOnlyCollectionModule<T>
+public static class ReadOnlyCollectionT1Module<T>
 {
 	/// <summary>
 	/// C#: new ReadOnlyCollection&lt;T&gt;(list)

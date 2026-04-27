@@ -42,6 +42,31 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static MemberExpression IsArrayExpr
         => new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
 
+    private static bool TryMapKnownWhiteListAlias(ITypeSymbol typeSymbol, out (TypeMapper Mapper, string TypeName) mapped)
+    {
+        mapped = default;
+        var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        if (!TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) ||
+            entry.Op != Common.Op.Alias ||
+            string.IsNullOrWhiteSpace(entry.Value))
+            return false;
+
+        mapped = entry.Value! switch
+        {
+            "String" => (TypeMapper.String, "String"),
+            "Object" => (TypeMapper.Object, "Object"),
+            "Array" => (TypeMapper.Array, "Array"),
+            "Number" => (TypeMapper.Number, "Number"),
+            "Date" => (TypeMapper.Date, "Date"),
+            "BigInt" => (TypeMapper.BigInt, "BigInt"),
+            "Map" => (TypeMapper.Map, "Map"),
+            "Set" => (TypeMapper.Set, "Set"),
+            _ => default
+        };
+
+        return mapped != default;
+    }
+
     /// <summary>
     /// 
     /// </summary>
@@ -125,9 +150,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     else if (displayName == "System.TimeSpan")
                         return (TypeMapper.Object, "Object");
 
-                    else if (
-                        displayName == "System.Collections.Generic.Dictionary<TKey, TValue>" ||
-                        displayName == "System.Collections.Generic.IDictionary<TKey, TValue>")
+                    else if (displayName == "System.Collections.Generic.Dictionary<TKey, TValue>")
                         return (TypeMapper.Map, "Map");
 
 
@@ -135,13 +158,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                         return (TypeMapper.Set, "Set");
 
                     // 集合类型检查
-                    else if (displayName == "System.Collections.Generic.List<T>" ||
-                        displayName == "System.Collections.Generic.IList" ||
-                        displayName == "System.Collections.Generic.IList<T>" ||
-                        displayName == "System.Collections.Generic.IEnumerable" ||
-                        displayName == "System.Collections.Generic.IEnumerable<T>" ||
-                        displayName == "System.Collections.Generic.ICollection<T>")
+                    else if (displayName == "System.Collections.Generic.List<T>")
                         return (TypeMapper.Array, "Array");
+
+                    else if (TryMapKnownWhiteListAlias(typeSymbol, out var whiteListAlias))
+                        return whiteListAlias;
 
                     // 对于自定义类型，使用instanceof检查（优先于接口检查）
                     else if (typeSymbol.TypeKind == TypeKind.Struct || typeSymbol.TypeKind == TypeKind.Class)

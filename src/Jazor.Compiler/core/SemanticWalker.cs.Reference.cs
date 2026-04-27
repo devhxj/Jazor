@@ -806,10 +806,6 @@ public partial class SemanticWalker
 		if (typeSymbol is null)
 			return false;
 
-		var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (displayName is "System.Collections.Generic.IEnumerable" or "System.Collections.Generic.IEnumerable<T>")
-			return false;
-
 		return GetMapperType(typeSymbol).Mapper == TypeMapper.Array;
 	}
 
