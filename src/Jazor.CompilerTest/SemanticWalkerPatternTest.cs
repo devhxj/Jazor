@@ -4103,9 +4103,10 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    Assert.Throws<OperationTransformationException>(
-      () => walker.Visit(block, new()),
-      "Unsupported type in is-type operation.");
+    var ex = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+    Assert.IsNotNull(ex);
+    StringAssert.Contains(ex.Message, "source static type 'object'", StringComparison.Ordinal);
+    StringAssert.Contains(ex.Message, "System.IComparable", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -4559,6 +4560,99 @@ line2"";
                 {
                     var obj = new { Value = (object)""x"" };
                     bool result = obj is { Value: IComparable };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - switch 表达式中的接口 TypePattern 可从 discriminant 源静态折叠
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpression_InterfaceTypePattern_FromDiscriminant_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""hello"";
+                    string result = obj switch
+                    {
+                        IComparable => ""yes"",
+                        _ => ""no""
+                    };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "if (true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "return \"yes\";", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Visit - switch case 中的接口 TypePattern 可从 discriminant 源静态折叠
+  /// </summary>
+  [TestMethod]
+  public void Visit_Switch_InterfaceTypePattern_FromDiscriminant_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""hello"";
+                    switch (obj)
+                    {
+                        case IComparable:
+                            Console.WriteLine(""yes"");
+                            break;
+                        default:
+                            Console.WriteLine(""no"");
+                            break;
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "if (true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "console.log(\"yes\");", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Visit - switch 表达式中的接口 TypePattern 在不可证明场景保持显式不支持
+  /// </summary>
+  [TestMethod]
+  public void Visit_SwitchExpression_InterfaceTypePattern_FromUnknownDiscriminant_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                object GetValue() => new object();
+
+                void TestMethod()
+                {
+                    object obj = GetValue();
+                    string result = obj switch
+                    {
+                        IComparable => ""yes"",
+                        _ => ""no""
+                    };
                 }
             }
             ");

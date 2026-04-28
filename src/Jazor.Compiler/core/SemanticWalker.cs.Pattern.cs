@@ -1498,7 +1498,7 @@ public partial class SemanticWalker
 						};
 					}
 					else
-						return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
+						return HandleTransformationFailure<Expression>(operation, BuildUnsupportedErasedInterfaceIsTypeCheckMessage(operation, typeSymbol));
 				}
 				else
 				{
@@ -1652,6 +1652,19 @@ public partial class SemanticWalker
 			if (current is IIsPatternOperation isPatternOperation)
 				return isPatternOperation.Value;
 
+			// switch-expression arms and switch statement case-clauses also have a single
+			// discriminant source that can be used for compile-time provability.
+			if (current is ISwitchExpressionArmOperation switchExpressionArm)
+				return switchExpressionArm.Parent is ISwitchExpressionOperation switchExpression
+					? switchExpression.Value
+					: null;
+
+			if (current is IPatternCaseClauseOperation patternCaseClause)
+				return patternCaseClause.Parent is ISwitchCaseOperation switchCase &&
+					   switchCase.Parent is ISwitchOperation switchOperation
+					? switchOperation.Value
+					: null;
+
 			return null;
 		}
 
@@ -1666,6 +1679,22 @@ public partial class SemanticWalker
 			IIsTypeOperation isTypeOperation => isTypeOperation.ValueOperand.Type,
 			_ => operation.Type
 		};
+	}
+
+	private string BuildUnsupportedErasedInterfaceIsTypeCheckMessage(IOperation operation, ITypeSymbol interfaceType)
+	{
+		var sourceOperation = ResolveIsTypeSourceOperation(operation);
+		var resolvedSource = sourceOperation is null
+			? null
+			: ResolveSingleAssignmentValueSource(sourceOperation, operation);
+		var sourceType = resolvedSource?.Type ?? ResolvePatternInputStaticType(operation);
+		var interfaceTypeName = interfaceType.ToDisplayString(Jazor.Name.Format.NameFormat);
+
+		if (sourceType is null)
+			return $"Unsupported interface is-type operation: cannot statically prove source assignability to '{interfaceTypeName}' because the source type is unknown.";
+
+		var sourceTypeName = sourceType.ToDisplayString(Jazor.Name.Format.NameFormat);
+		return $"Unsupported interface is-type operation: source static type '{sourceTypeName}' cannot be statically proven assignable to '{interfaceTypeName}'.";
 	}
 
 	private bool TryResolveDeterministicRuntimeValue(
