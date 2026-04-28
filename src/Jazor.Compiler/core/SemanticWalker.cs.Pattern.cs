@@ -602,18 +602,8 @@ public partial class SemanticWalker
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
 	/// <returns>Acornima的ESTree的Node</returns>
-	public override Node? VisitRelationalPattern(IRelationalPatternOperation operation, SenseArgument argument)
+		public override Node? VisitRelationalPattern(IRelationalPatternOperation operation, SenseArgument argument)
 	{
-		// 关系模式的条件判断转换
-		// C# 示例：value is > 0 是一个布尔条件表达式
-		//         age is >= 18 检查年龄是否满足条件
-		// 转换结果：生成相应的JavaScript关系比较表达式
-		// 从参考操作中提取名称构建目标表达式
-		var left = GetPatternRefrence(operation, argument);
-
-		// 获取右操作数（比较值）
-		var right = Translate<Expression>(operation.Value, argument);
-
 		// 根据编译时优化原则，直接生成最简洁的JavaScript关系比较表达式
 		// 将C#的关系操作符映射到JavaScript的操作符
 		// 如果在取反模式中，需要反转操作符（如 Equals 变为 StrictInequality）
@@ -631,9 +621,15 @@ public partial class SemanticWalker
 		if (@operator == Operator.Unknown)
 			return HandleTransformationFailure<Node>(operation, "Unsupported relational operator in pattern.");
 
-		// 根据AST节点构造规范，使用LogicalExpression表示比较操作
-		// 使用实际的目标表达式而不是占位符
-		return new NonLogicalBinaryExpression(@operator, left, right);
+		// 稳定化 PatternInput 以避免副作用表达式重复求值
+		var targetExpr = GetPatternRefrence(operation, argument);
+		targetExpr = StabilizePatternExpression(operation, targetExpr, argument, "relational", out var initialization);
+
+		// 获取右操作数（比较值）
+		var right = Translate<Expression>(operation.Value, argument);
+
+		var result = new NonLogicalBinaryExpression(@operator, targetExpr, right);
+		return PrependEvaluation(initialization, result);
 	}
 
 	/// <summary>
@@ -1284,13 +1280,17 @@ public partial class SemanticWalker
 		var matchedType = operation.MatchedType;
 		var targetExpr = GetPatternRefrence(operation, argument);
 
+		// 稳定化 PatternInput 以避免副作用表达式重复求值
+		targetExpr = StabilizePatternExpression(operation, targetExpr, argument, "typepattern", out var initialization);
+
 		// 复用已有的类型匹配表达式生成方法
 		// CreateTypeMatchExpr 已正确处理：
 		//   - 基本类型映射（string/number/boolean/bigint）
 		//   - 引用类型映射（Date/Map/Set/Class）
 		//   - 数组类型检查（Array.isArray）
 		//   - 可空类型处理（nullable 包含 null 检查）
-		return CreateTypeMatchExpr(operation, matchedType, targetExpr, context: argument);
+		var result = CreateTypeMatchExpr(operation, matchedType, targetExpr, context: argument);
+		return PrependEvaluation(initialization, result);
 	}
 
 	private static bool IsNullableType(ITypeSymbol? type)
@@ -1318,6 +1318,17 @@ public partial class SemanticWalker
 		return context.PatternInput;
 	}
 
+	private static bool IsPurePropertyAccessChain(Expression expression)
+		=> expression switch
+		{
+			Identifier or ThisExpression or Super => true,
+			MemberExpression member when !member.Optional &&
+				IsPurePropertyAccessChain((Expression)member.Object) &&
+				((!member.Computed && member.Property is Identifier) ||
+				 (member.Computed && member.Property is Literal)) => true,
+			_ => false
+		};
+
 	private Expression StabilizePatternExpression(
 		IOperation ownerOperation,
 		Expression expression,
@@ -1326,7 +1337,9 @@ public partial class SemanticWalker
 		out Expression? initialization)
 	{
 		initialization = null;
-		if (!NeedsSingleEvaluationCaching(expression))
+		// Only cache expressions that may have side effects.
+		// Pure property access chains (obj, obj.Property, obj.Property.Nested) are safe to evaluate multiple times.
+		if (!NeedsSingleEvaluationCaching(expression) || IsPurePropertyAccessChain(expression))
 			return expression;
 
 		var tempId = new Identifier(AllocateUniqueName(ownerOperation, argument, LoweringSite.PatternInputCache(slot)));
@@ -1605,13 +1618,48 @@ public partial class SemanticWalker
 		if (interfaceType.TypeKind != TypeKind.Interface)
 			return false;
 
+		// Direct interface match
 		if (SymbolEqualityComparer.Default.Equals(runtimeType, interfaceType))
 			return true;
 
+		// Handle constructed generic types with variance (e.g., IEnumerable<string> is IEnumerable<object>)
+		// For covariant interfaces like IEnumerable<out T>, a more specific type argument is assignable
+		if (runtimeType is INamedTypeSymbol namedRuntime && interfaceType is INamedTypeSymbol namedInterface)
+		{
+			if (namedInterface.IsGenericType && namedRuntime.IsGenericType)
+			{
+				var runtimeTypeArgs = namedRuntime.TypeArguments;
+				var interfaceTypeArgs = namedInterface.TypeArguments;
+
+				if (runtimeTypeArgs.Length == interfaceTypeArgs.Length)
+				{
+					// Check if runtime type implements this interface considering variance
+					foreach (var iface in namedRuntime.AllInterfaces)
+					{
+						// Skip if already constructed (cannot construct again)
+						if (iface.IsGenericType && !iface.IsUnboundGenericType)
+						{
+							// For already-constructed interfaces, check direct equality
+							if (SymbolEqualityComparer.Default.Equals(iface, interfaceType))
+								return true;
+						}
+						else if (iface.IsUnboundGenericType && iface.TypeArguments.Length == runtimeTypeArgs.Length)
+						{
+							// For unbound generic interfaces, construct with runtime type arguments
+							var constructed = iface.Construct(runtimeTypeArgs.ToArray());
+							if (SymbolEqualityComparer.Default.Equals(constructed, interfaceType))
+								return true;
+						}
+					}
+				}
+			}
+		}
+
+		// Fallback: check AllInterfaces with strict equality
 		return runtimeType switch
 		{
-			INamedTypeSymbol namedRuntimeType => namedRuntimeType.AllInterfaces.Any(@interface =>
-				SymbolEqualityComparer.Default.Equals(@interface, interfaceType)),
+			INamedTypeSymbol n => n.AllInterfaces.Any(i =>
+				SymbolEqualityComparer.Default.Equals(i, interfaceType)),
 			_ => false
 		};
 	}
