@@ -3430,6 +3430,15 @@ public sealed class SemanticWalkerReferenceTest
 	public void Visit_IndexerReference_MultiParameterIndexer_Throws()
 	{
 		var block = GetBlockOperation(@"
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptAttribute : Attribute
+                {
+                }
+            }
+
+            [ECMAScript.ECMAScript]
             class Matrix
             {
                 public int this[int row, int column]
@@ -3441,19 +3450,63 @@ public sealed class SemanticWalkerReferenceTest
 
             class TestClass
             {
-                void TestMethod()
+                void TestMethod(Matrix matrix)
                 {
-                    var matrix = new Matrix();
                     int value = matrix[1, 2];
                 }
             }
         ");
 
 		var walker = new SemanticWalker(true);
-		Assert.Throws<OperationTransformationException>(() =>
+		var exception = Assert.Throws<OperationTransformationException>(() =>
 		{
 			_ = walker.Visit(block, new());
 		});
+		Assert.AreEqual(OperationKind.PropertyReference, exception.Kind);
+		StringAssert.Contains(exception.Message, "single translated index argument");
+	}
+
+	/// <summary>
+	/// 测试多参数索引器赋值在 JavaScript fallback 下会明确拒绝
+	/// </summary>
+	[TestMethod]
+	public void Visit_IndexerAssignment_MultiParameterIndexer_Throws()
+	{
+		var block = GetBlockOperation(@"
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptAttribute : Attribute
+                {
+                }
+            }
+
+            [ECMAScript.ECMAScript]
+            class Matrix
+            {
+                public int this[int row, int column]
+                {
+                    get => row + column;
+                    set { }
+                }
+            }
+
+            class TestClass
+            {
+                void TestMethod(Matrix matrix)
+                {
+                    matrix[1, 2] = 7;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+		Assert.AreEqual(OperationKind.PropertyReference, exception.Kind);
+		StringAssert.Contains(exception.Message, "single translated index argument");
 	}
 
 	/// <summary>

@@ -361,6 +361,30 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
+  /// 测试 VisitBranch - Goto 操作应显式拒绝
+  /// </summary>
+  [TestMethod]
+  public void Visit_Branch_Goto_ThrowsOperationTransformationException()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    goto Label1;
+                    Label1:
+                    Console.WriteLine(""Reached"");
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+    Assert.AreEqual(OperationKind.Branch, exception.Kind);
+    StringAssert.Contains(exception.Message ?? string.Empty, "Goto statements are not supported");
+  }
+
+  /// <summary>
   /// 测试 VisitEmpty - 空语句操作
   /// </summary>
   [TestMethod]
@@ -2066,6 +2090,58 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToECMAScript();
 
     Assert.AreEqual(@"{let name=""TestMethod""}", script);
+  }
+
+  [TestMethod]
+  public void Visit_NameOf_PropertyAndTypeMember()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                int Count { get; set; }
+
+                void TestMethod()
+                {
+                    string propertyName = nameof(Count);
+                    string nestedTypeName = nameof(System.Collections.Generic.List<int>.Count);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let propertyName = ""Count"";
+  let nestedTypeName = ""Count"";
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_CheckedUncheckedExpression_ErasesOverflowContext()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = 2147483647;
+                    int checkedResult = checked(value + 1);
+                    int uncheckedResult = unchecked(value + 1);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let value = 2147483647;
+  let checkedResult = value + 1;
+  let uncheckedResult = value + 1;
+}", script);
   }
 
   /// <summary>

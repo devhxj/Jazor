@@ -2,6 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Diagnostics;
 using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
@@ -805,6 +806,130 @@ public sealed class SemanticWalkerSourceMapEmissionTest
         var sourceMap = parsed.RootElement;
         Assert.AreEqual("default-writer.js", sourceMap.GetProperty("file").GetString());
         Assert.AreNotEqual(string.Empty, sourceMap.GetProperty("mappings").GetString());
+    }
+
+    [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_CRLFSource_MapsReturnLine()
+    {
+        const string sourcePath = "Demo/CrLfCase.cs";
+        const string sourceLf = """
+            class TestClass
+            {
+                int M(int p)
+                {
+                    var x = p + 1;
+                    return x;
+                }
+            }
+            """;
+        var source = sourceLf.Replace("\n", "\r\n", StringComparison.Ordinal);
+
+        var block = GetBlockOperation(source, sourcePath);
+        var node = new SemanticWalker(true).Visit(block, new());
+        Assert.IsNotNull(node);
+
+        var artifact = node.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "crlf.mjs",
+            includeSourcesContent: false);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        var sourceMap = parsed.RootElement;
+        var sourceIndex = FindSourceIndexContaining(sourceMap, "CrLfCase.cs");
+        var decoded = DecodeGeneratedLineToSourceLocation(sourceMap);
+        var generatedReturnLine = GetLineIndexContaining(artifact.Content, "return x;");
+        var sourceReturnLine = GetLineIndexContaining(source, "return x;");
+
+        Assert.IsTrue(
+            decoded.TryGetValue(generatedReturnLine, out var mapped),
+            "Expected generated return line to have source-map mapping.");
+        Assert.AreEqual(sourceIndex, mapped.SourceIndex);
+        Assert.AreEqual(sourceReturnLine, mapped.SourceLine);
+    }
+
+    [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_LargeMethod_MapsTailStatementAndReturn()
+    {
+        const string sourcePath = "Demo/LargeMethod.cs";
+        const int statementCount = 900;
+        var source = BuildLargeMethodSource(statementCount);
+
+        var block = GetBlockOperation(source, sourcePath);
+        var node = new SemanticWalker(true).Visit(block, new());
+        Assert.IsNotNull(node);
+
+        var artifact = node.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "large-method.mjs",
+            includeSourcesContent: false);
+
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        var sourceMap = parsed.RootElement;
+        var sourceIndex = FindSourceIndexContaining(sourceMap, "LargeMethod.cs");
+        var segments = DecodeSegments(sourceMap);
+        var tailSourceLine = GetLineIndexContaining(source, $"sum += {statementCount - 1};");
+        var returnSourceLine = GetLineIndexContaining(source, "return sum;");
+
+        AssertSourceLinesHaveSegments(segments, sourceIndex, tailSourceLine, returnSourceLine);
+
+        var mappedLineCoverage = segments
+            .Where(segment => segment.SourceIndex == sourceIndex)
+            .Select(segment => segment.SourceLine)
+            .Distinct()
+            .Count();
+        Assert.IsTrue(
+            mappedLineCoverage > statementCount / 2,
+            $"Expected broad source-map coverage for a large method body. Actual mapped source-line count: {mappedLineCoverage}.");
+    }
+
+    [TestMethod]
+    public void ToKnRECMAScriptWithSourceMap_LargeMethod_PerformanceBaselineWithinBudget()
+    {
+        const string sourcePath = "Demo/LargeMethodPerformance.cs";
+        const int statementCount = 2500;
+        var source = BuildLargeMethodSource(statementCount);
+
+        var block = GetBlockOperation(source, sourcePath);
+        var node = new SemanticWalker(true).Visit(block, new());
+        Assert.IsNotNull(node);
+
+        _ = node.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "large-method-perf-warmup.mjs",
+            includeSourcesContent: false);
+
+        var stopwatch = Stopwatch.StartNew();
+        var artifact = node.ToKnRECMAScriptWithSourceMap(
+            generatedFileName: "large-method-perf.mjs",
+            includeSourcesContent: false);
+        stopwatch.Stop();
+
+        Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.SourceMapContent));
+        using var parsed = JsonDocument.Parse(artifact.SourceMapContent!);
+        var sourceMap = parsed.RootElement;
+        var sourceIndex = FindSourceIndexContaining(sourceMap, "LargeMethodPerformance.cs");
+        var segments = DecodeSegments(sourceMap);
+        var tailSourceLine = GetLineIndexContaining(source, $"sum += {statementCount - 1};");
+        var returnSourceLine = GetLineIndexContaining(source, "return sum;");
+        AssertSourceLinesHaveSegments(segments, sourceIndex, tailSourceLine, returnSourceLine);
+
+        var elapsedBudget = TimeSpan.FromSeconds(10);
+        Assert.IsTrue(
+            stopwatch.Elapsed <= elapsedBudget,
+            $"SourceMap generation for {statementCount} statements exceeded budget {elapsedBudget.TotalMilliseconds}ms; actual {stopwatch.Elapsed.TotalMilliseconds:F2}ms.");
+    }
+
+    private static string BuildLargeMethodSource(int statementCount)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("class TestClass");
+        builder.AppendLine("{");
+        builder.AppendLine("    int M()");
+        builder.AppendLine("    {");
+        builder.AppendLine("        int sum = 0;");
+        for (var index = 0; index < statementCount; index++)
+            builder.AppendLine($"        sum += {index};");
+        builder.AppendLine("        return sum;");
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+        return builder.ToString();
     }
 
     private static IBlockOperation GetBlockOperation(string code, string sourcePath, string methodName = "M")

@@ -1649,6 +1649,25 @@ public sealed class SemanticWalkerDeclarationTest
 }", script);
     }
 
+    [TestMethod]
+    public void Visit_VarDeclaration_InferredUnsupportedExternalType_Throws()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var stream = new System.IO.MemoryStream();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+        StringAssert.Contains(exception.Message ?? string.Empty, "System.IO.MemoryStream");
+        StringAssert.Contains(exception.Message ?? string.Empty, "is not supported");
+    }
+
     /// <summary>
     /// 测试变量声明 - 可空类型
     /// </summary>

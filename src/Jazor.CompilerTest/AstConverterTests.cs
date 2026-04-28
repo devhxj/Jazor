@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Threading;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.Name;
@@ -683,7 +684,10 @@ $@"export class NestedClass {{
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
-        Assert.AreEqual("Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.", exception.Message);
+        StringAssert.Contains(exception.Message, "Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.");
+        StringAssert.Contains(exception.Message, "Conflict at argument count 1");
+        StringAssert.Contains(exception.Message, "NestedClass(int value) [args:1]");
+        StringAssert.Contains(exception.Message, "NestedClass(string value) [args:1]");
     }
 
     [TestMethod]
@@ -710,7 +714,10 @@ $@"export class NestedClass {{
 
         var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
 
-        Assert.AreEqual("Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.", exception.Message);
+        StringAssert.Contains(exception.Message, "Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.");
+        StringAssert.Contains(exception.Message, "Conflict at argument count 1");
+        StringAssert.Contains(exception.Message, "NestedClass(int value) [args:1]");
+        StringAssert.Contains(exception.Message, "NestedClass(int value, int increment = <default>) [args:1..2]");
     }
 
     [TestMethod]
@@ -770,6 +777,47 @@ export class NestedClass extends BaseClass {
         AssertScriptEqual(
 @"export class BaseClass { }
 export class NestedClass extends BaseClass {
+  constructor() {
+    super();
+  }
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassThreeLevelInheritanceOutOfOrder_EmitsBaseChainFirst()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class Level3 : Level2
+                {
+                }
+
+                public class Level1
+                {
+                }
+
+                public class Level2 : Level1
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export class Level1 { }
+export class Level2 extends Level1 {
+  constructor() {
+    super();
+  }
+}
+export class Level3 extends Level2 {
   constructor() {
     super();
   }
@@ -5842,6 +5890,176 @@ export function Create() {{
   return Make() + {rightMakeId}();
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleImportsEncounteredOutOfOrder_EmitsSortedImportDeclarations()
+    {
+        var code = """
+            using System;
+            using Left = Demo.LeftModule;
+            using Right = Demo.RightModule;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/LeftModule.js")]
+                public static class LeftModule
+                {
+                    public static int Make() => 1;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/RightModule.js")]
+                public static class RightModule
+                {
+                    public static int Make() => 2;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static int Create() => Right.Make() + Left.Make();
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        var importLines = script
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static line => line.StartsWith("import ", StringComparison.Ordinal))
+            .ToArray();
+        Assert.AreEqual(2, importLines.Length);
+        StringAssert.Contains(importLines[0], "from \"System/LeftModule.js\";");
+        StringAssert.Contains(importLines[1], "from \"System/RightModule.js\";");
+
+        static string ParseLocalBinding(string importLine)
+        {
+            var leftBrace = importLine.IndexOf('{');
+            var rightBrace = importLine.IndexOf('}');
+            var specifier = importLine[(leftBrace + 1)..rightBrace].Trim();
+            if (specifier.StartsWith("Make as ", StringComparison.Ordinal))
+                return specifier.Substring("Make as ".Length).Trim();
+
+            return specifier;
+        }
+
+        var leftLocal = ParseLocalBinding(importLines[0]);
+        var rightLocal = ParseLocalBinding(importLines[1]);
+        StringAssert.Contains(script, $"return {rightLocal}() + {leftLocal}();");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithEqualityComparerConcreteAndInterface_EmitsStableDedupedImports()
+    {
+        var code = """
+            using System.Collections.Generic;
+
+            public static class TestClass
+            {
+                public static bool EqualsConcrete(int left, int right)
+                    => EqualityComparer<int>.Default.Equals(left, right);
+
+                public static bool EqualsInterface(int left, int right)
+                {
+                    IEqualityComparer<int> comparer = EqualityComparer<int>.Default;
+                    return comparer.Equals(left, right);
+                }
+
+                public static int HashConcrete(int value)
+                    => EqualityComparer<int>.Default.GetHashCode(value);
+
+                public static int HashInterface(int value)
+                {
+                    IEqualityComparer<int> comparer = EqualityComparer<int>.Default;
+                    return comparer.GetHashCode(value);
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "globalThis.__jazorEqualityComparerDefault ??= {}");
+        StringAssert.Contains(script, "System/Collections/Generic/EqualityComparerT1Module.js");
+        StringAssert.Contains(script, "System/Collections/Generic/IEqualityComparerT1Module.js");
+
+        var importLines = script
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static line => line.StartsWith("import ", StringComparison.Ordinal))
+            .ToArray();
+        Assert.AreEqual(2, importLines.Length);
+
+        var modulePaths = importLines
+            .Select(static line =>
+            {
+                var fromStart = line.IndexOf("from \"", StringComparison.Ordinal);
+                var pathStart = fromStart + 6;
+                var pathEnd = line.LastIndexOf("\";", StringComparison.Ordinal);
+                return line[pathStart..pathEnd];
+            })
+            .ToArray();
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "System/Collections/Generic/EqualityComparerT1Module.js",
+                "System/Collections/Generic/IEqualityComparerT1Module.js"
+            },
+            modulePaths);
+
+        foreach (var importLine in importLines)
+        {
+            var leftBrace = importLine.IndexOf('{');
+            var rightBrace = importLine.IndexOf('}');
+            Assert.IsTrue(leftBrace >= 0 && rightBrace > leftBrace, importLine);
+
+            var specifiers = importLine[(leftBrace + 1)..rightBrace]
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            Assert.AreEqual(specifiers.Length, specifiers.Distinct(StringComparer.Ordinal).Count());
+        }
+    }
+
+    [TestMethod]
+    public async Task Convert_WhenCancellationRequested_ThrowsOperationCanceledException()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static int Sum(int left, int right) => left + right;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => converter.Convert(cts.Token));
     }
 
     [TestMethod]
