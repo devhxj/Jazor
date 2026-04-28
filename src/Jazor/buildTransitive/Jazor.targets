@@ -5,6 +5,7 @@
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorEmit)' == 'true' and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
+      <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll'))</JazorEmitToolPath>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest.json</JazorManifestPath>
       <JazorRazorVueManifestPath Condition="'$(JazorRazorVueManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest-razorvue.json</JazorRazorVueManifestPath>
       <JazorRazorVueHostRequirementsModulePath Condition="'$(JazorRazorVueHostRequirementsModulePath)' == '' and '$(JazorRazorJoltRequirementsModulePath)' != ''">$(JazorRazorJoltRequirementsModulePath)</JazorRazorVueHostRequirementsModulePath>
@@ -29,7 +30,7 @@
     <Delete Files="$(JazorPreviousRazorVueManifestSnapshotPath)"
             Condition="'$(JazorBundle)' == 'true' and !Exists('$(JazorRazorVueManifestPath)') and Exists('$(JazorPreviousRazorVueManifestSnapshotPath)')" />
 
-    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorEmitOutDir)&quot; --write-manifest &quot;$(_JazorEmitManifestPath)&quot; --clean &quot;$(JazorCleanEmit)&quot; --fail-on-path-conflict &quot;$(JazorFailOnPathConflict)&quot; @(JazorEmitAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
+    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorEmitOutDir)&quot; --write-manifest &quot;$(_JazorEmitManifestPath)&quot; --clean &quot;$(JazorCleanEmit)&quot; --fail-on-path-conflict &quot;$(JazorFailOnPathConflict)&quot; @(JazorEmitAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
   </Target>
 
   <Target Name="JazorBundle"
@@ -46,8 +47,9 @@
       <JazorPreviousRazorVueManifestSnapshotPath Condition="'$(JazorPreviousRazorVueManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest-razorvue.json'))</JazorPreviousRazorVueManifestSnapshotPath>
       <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
       <_JazorManifestPathForBundle>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorManifestPathForBundle>
+      <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll'))</JazorEmitToolPath>
     </PropertyGroup>
 
-    <Exec Command="dotnet &quot;$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot; --previous-razorvue-manifest &quot;$(JazorPreviousRazorVueManifestSnapshotPath)&quot; --write-razorvue-update-plan &quot;$(JazorBundleRazorVueUpdatePlanPath)&quot;" />
+    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot; --previous-razorvue-manifest &quot;$(JazorPreviousRazorVueManifestSnapshotPath)&quot; --write-razorvue-update-plan &quot;$(JazorBundleRazorVueUpdatePlanPath)&quot;" />
   </Target>
 </Project>
