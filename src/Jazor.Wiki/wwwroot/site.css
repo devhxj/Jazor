@@ -1,0 +1,202 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  --bg: #061016;
+  --bg-soft: #0d1a24;
+  --line: rgba(160, 224, 255, 0.24);
+  --ink: #eef8ff;
+  --ink-soft: #aad2ec;
+  --accent: #5ef4c8;
+  --alert: #ffd48a;
+  --radius: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(94, 244, 200, 0.22), transparent 44%),
+    radial-gradient(circle at 92% 0%, rgba(82, 176, 255, 0.2), transparent 38%),
+    linear-gradient(150deg, var(--bg) 0%, #091520 50%, #071118 100%);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.wiki-page {
+  width: min(1040px, calc(100vw - 40px));
+  margin: 0 auto;
+  padding: 42px 0 56px;
+}
+
+.hero,
+.library-mode,
+.playground,
+.feedback-loop,
+.site-footer {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(7, 19, 29, 0.76);
+  backdrop-filter: blur(8px);
+}
+
+.hero,
+.library-mode,
+.playground,
+.feedback-loop {
+  padding: 28px;
+  margin-bottom: 20px;
+  animation: rise-in 560ms ease both;
+}
+
+.library-mode { animation-delay: 80ms; }
+.playground { animation-delay: 140ms; }
+.feedback-loop { animation-delay: 200ms; }
+
+.hero-kicker {
+  margin: 0 0 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hero-title {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 4.2vw, 3.2rem);
+  line-height: 1.05;
+}
+
+.hero-lead {
+  margin: 0;
+  color: var(--ink-soft);
+  max-width: 68ch;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+}
+
+p,
+li {
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.playground-head {
+  margin-bottom: 16px;
+}
+
+.playground-note {
+  margin: 0;
+  color: var(--alert);
+}
+
+.playground-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.editor-pane {
+  display: grid;
+  gap: 8px;
+}
+
+label {
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.editor-input,
+.editor-output {
+  width: 100%;
+  min-height: 340px;
+  border-radius: 14px;
+  border: 1px solid rgba(160, 224, 255, 0.3);
+  background: var(--bg-soft);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", "Consolas", monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 14px;
+  outline: none;
+}
+
+.editor-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(94, 244, 200, 0.24);
+}
+
+.editor-output {
+  margin: 0;
+  overflow-x: auto;
+}
+
+.playground-footnote {
+  margin: 14px 0 0;
+  font-size: 0.92rem;
+}
+
+.site-footer {
+  padding: 14px 20px;
+  color: rgba(173, 214, 241, 0.9);
+  font-size: 0.9rem;
+  text-align: center;
+  animation: fade-in 640ms ease 260ms both;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .wiki-page {
+    width: min(1040px, calc(100vw - 24px));
+    padding: 24px 0 28px;
+  }
+
+  .hero,
+  .library-mode,
+  .playground,
+  .feedback-loop {
+    padding: 20px;
+  }
+
+  .playground-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-input,
+  .editor-output {
+    min-height: 240px;
+  }
+}
