@@ -1480,21 +1480,27 @@ public partial class SemanticWalker
 			}
 			else
 			{
-			var (mapper, typeName) = GetMapperType(typeSymbol);
-			result = mapper switch
-			{
-				TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
-				TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
-				TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
-				TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
-				TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
-				TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
-				TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
-				TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
-				TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
-				TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
-				_ => null
-			};
+				var (mapper, typeName) = GetMapperType(typeSymbol);
+
+				// Interface types aliased to Object do not carry a reliable runtime discriminator in JS.
+				// Keep this boundary explicit instead of producing unsound type checks.
+				if (typeSymbol.TypeKind == TypeKind.Interface && mapper == TypeMapper.Object)
+					return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
+
+				result = mapper switch
+				{
+					TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
+					TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
+					TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
+					TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
+					TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
+					TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
+					TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
+					TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
+					TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
+					TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
+					_ => null
+				};
 			}
 		}
 

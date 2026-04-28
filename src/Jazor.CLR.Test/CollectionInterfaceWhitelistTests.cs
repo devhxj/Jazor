@@ -94,6 +94,10 @@ public sealed class CollectionInterfaceWhitelistTests
 	[TestMethod]
 	public void EqualityComparerInterfaceMappings_SupportEqualsDispatch()
 	{
+		AssertTypeAlias(typeof(Jazor.CLR.IEqualityComparerModule), "System.Collections.IEqualityComparer", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerModule), "System.Collections.IEqualityComparer.Equals(object, object)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerModule), "System.Collections.IEqualityComparer.GetHashCode(object)", Op.Import);
+
 		AssertTypeAlias(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>", "Object");
 		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)", Op.Import);

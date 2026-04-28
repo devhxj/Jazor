@@ -2515,8 +2515,9 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export function Max(a, b) {
-  return a.CompareTo(b) > 0 ? a : b;
+@"import { _797b5246c9b12c8d } from ""System/IComparableT1Module.js"";
+export function Max(a, b) {
+  return _797b5246c9b12c8d(a, b) > 0 ? a : b;
 }
 ".ReplaceLineEndings(), script?.ReplaceLineEndings());
 

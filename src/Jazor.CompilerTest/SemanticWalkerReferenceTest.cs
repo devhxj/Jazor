@@ -5726,6 +5726,54 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_IEqualityComparerNonGenericEquals_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int left, int right)
+                {
+                    System.Collections.IEqualityComparer comparer = System.Collections.Generic.EqualityComparer<int>.Default;
+                    var same = comparer.Equals(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let same = _eb0a1792ad8b44b7(comparer, left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IEqualityComparerNonGenericGetHashCode_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int value)
+                {
+                    System.Collections.IEqualityComparer comparer = System.Collections.Generic.EqualityComparer<int>.Default;
+                    var hash = comparer.GetHashCode(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let hash = _8f16da840d40722e(comparer, value);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ComparerDefaultCompare_UsesClrModuleMapping()
 	{
 		var block = GetBlockOperation(@"
@@ -6015,6 +6063,39 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual("Import", getHashCodeOp);
 		Assert.AreEqual("_f53ff8f6435182d7", getHashCodeMethod);
 		Assert.AreEqual("System/Collections/Generic/IEqualityComparerT1Module.js", getHashCodePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IEqualityComparerNonGeneric_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.Collections.IEqualityComparer.Equals(object, object)"));
+		Assert.IsTrue(members.Contains("System.Collections.IEqualityComparer.GetHashCode(object)"));
+
+		var equalsValue = members["System.Collections.IEqualityComparer.Equals(object, object)"];
+		Assert.IsNotNull(equalsValue);
+		var equalsValueType = equalsValue.GetType();
+		var equalsOp = equalsValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue)?.ToString();
+		var equalsMethod = (string?)equalsValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
+		var equalsPath = (string?)equalsValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
+		Assert.AreEqual("Import", equalsOp);
+		Assert.AreEqual("_eb0a1792ad8b44b7", equalsMethod);
+		Assert.AreEqual("System/Collections/IEqualityComparerModule.js", equalsPath);
+
+		var getHashCodeValue = members["System.Collections.IEqualityComparer.GetHashCode(object)"];
+		Assert.IsNotNull(getHashCodeValue);
+		var getHashCodeValueType = getHashCodeValue.GetType();
+		var getHashCodeOp = getHashCodeValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue)?.ToString();
+		var getHashCodeMethod = (string?)getHashCodeValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
+		var getHashCodePath = (string?)getHashCodeValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
+		Assert.AreEqual("Import", getHashCodeOp);
+		Assert.AreEqual("_8f16da840d40722e", getHashCodeMethod);
+		Assert.AreEqual("System/Collections/IEqualityComparerModule.js", getHashCodePath);
 	}
 
 	[TestMethod]

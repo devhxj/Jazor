@@ -3886,6 +3886,102 @@ line2"";
       "Unsupported type in is-type operation.");
   }
 
+  /// <summary>
+  /// 测试 Visit - TypePattern 非泛型 IComparable 仍保持不支持（Object 别名接口不可可靠运行时判定）
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_IComparableNonGeneric_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""test"";
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern IEqualityComparer 接口保持不支持（Object 别名接口不可可靠运行时判定）
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_IEqualityComparer_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = System.Collections.Generic.EqualityComparer<int>.Default;
+                    bool result = obj is System.Collections.Generic.IEqualityComparer<int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern IEqualityComparer 接口仍保持不支持（Object 别名接口不可可靠运行时判定）
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_IEqualityComparer_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = System.Collections.Generic.EqualityComparer<int>.Default;
+                    bool result = obj is System.Collections.Generic.IEqualityComparer<int> comparer && comparer.Equals(1, 1);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern IDictionary 接口仍可判定（Map 载体）
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_IDictionaryInterface_RemainsSupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new Dictionary<string, int>();
+                    bool result = obj is IDictionary<string, int>;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = new Map;
+  let result = obj instanceof Map;
+}", script);
+  }
+
   #endregion
 
   #region Nullable 和声明模式测试

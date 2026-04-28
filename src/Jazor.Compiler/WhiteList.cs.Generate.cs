@@ -42,6 +42,7 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.IDictionary<TKey, TValue>"] = new(Op.Alias, "Map");
 		types["System.Collections.IEnumerable"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IEnumerable<T>"] = new(Op.Alias, "Array");
+		types["System.Collections.IEqualityComparer"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.IEqualityComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Collections.IList"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IList<T>"] = new(Op.Alias, "Array");
@@ -1023,6 +1024,8 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Values.get"] = new(Op.Inline, "Array.from(__arg1.values())");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.ContainsKey(TKey)"] = new(Op.Alias, "has");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_ebaafc4d4a520807", "System/Collections/Generic/IDictionaryT2Module.js");
+		members["System.Collections.IEqualityComparer.Equals(object, object)"] = new(Op.Import, "_eb0a1792ad8b44b7", "System/Collections/IEqualityComparerModule.js");
+		members["System.Collections.IEqualityComparer.GetHashCode(object)"] = new(Op.Import, "_8f16da840d40722e", "System/Collections/IEqualityComparerModule.js");
 		members["System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_dae184550b995be1", "System/Collections/Generic/IEqualityComparerT1Module.js");
 		members["System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)"] = new(Op.Import, "_f53ff8f6435182d7", "System/Collections/Generic/IEqualityComparerT1Module.js");
 		members["System.Collections.IList.this[int].get"] = new(Op.Import, "_049fed3e1cad6543", "System/Collections/IListModule.js");
