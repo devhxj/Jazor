@@ -83,6 +83,21 @@ public sealed class CollectionInterfaceWhitelistTests
 	}
 
 	[TestMethod]
+	public void EqualityComparerMappings_SupportDefaultAndEquals()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.EqualityComparerT1Module<>), "System.Collections.Generic.EqualityComparer<T>", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.EqualityComparerT1Module<>), "static System.Collections.Generic.EqualityComparer<T>.Default.get", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.EqualityComparerT1Module<>), "virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)", Op.Import);
+	}
+
+	[TestMethod]
+	public void EqualityComparerInterfaceMappings_SupportEqualsDispatch()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)", Op.Import);
+	}
+
+	[TestMethod]
 	public void ISetInterfaceMappings_DelegateToHashSetSemantics()
 	{
 		var typeAttribute = typeof(Jazor.CLR.ISetT1Module<>).GetCustomAttribute<JazorAttribute>();

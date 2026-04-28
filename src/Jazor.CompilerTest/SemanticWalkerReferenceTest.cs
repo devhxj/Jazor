@@ -5634,6 +5634,52 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_EqualityComparerDefaultEquals_UsesClrModuleMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int left, int right)
+                {
+                    var same = System.Collections.Generic.EqualityComparer<int>.Default.Equals(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let same = _4614e5ce6b42a7ad(globalThis.__jazorEqualityComparerDefault ??= {}, left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IEqualityComparerEquals_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int left, int right)
+                {
+                    System.Collections.Generic.IEqualityComparer<int> comparer = System.Collections.Generic.EqualityComparer<int>.Default;
+                    var same = comparer.Equals(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let same = _dae184550b995be1(comparer, left, right);
+}", script);
+	}
+
+	[TestMethod]
 	public void WhiteList_BooleanGetTypeCode_UsesInlineRule()
 	{
 		var membersField = typeof(SemanticWalker).Assembly
@@ -5745,6 +5791,60 @@ public sealed class SemanticWalkerReferenceTest
 			Assert.AreEqual("Inline", op, $"unexpected op for {pair.Key}");
 			Assert.AreEqual(pair.Value, template, $"unexpected inline template for {pair.Key}");
 		}
+	}
+
+	[TestMethod]
+	public void WhiteList_EqualityComparerDefaultAndEquals_AreMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("static System.Collections.Generic.EqualityComparer<T>.Default.get"));
+		Assert.IsTrue(members.Contains("virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"));
+
+		var defaultValue = members["static System.Collections.Generic.EqualityComparer<T>.Default.get"];
+		Assert.IsNotNull(defaultValue);
+		var defaultValueType = defaultValue.GetType();
+		var defaultOp = defaultValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue)?.ToString();
+		var defaultTemplate = (string?)defaultValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue);
+		Assert.AreEqual("Inline", defaultOp);
+		Assert.AreEqual("(globalThis.__jazorEqualityComparerDefault ??= {})", defaultTemplate);
+
+		var equalsValue = members["virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"];
+		Assert.IsNotNull(equalsValue);
+		var equalsValueType = equalsValue.GetType();
+		var equalsOp = equalsValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue)?.ToString();
+		var equalsMethod = (string?)equalsValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
+		var equalsPath = (string?)equalsValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
+		Assert.AreEqual("Import", equalsOp);
+		Assert.AreEqual("_4614e5ce6b42a7ad", equalsMethod);
+		Assert.AreEqual("System/Collections/Generic/EqualityComparerT1Module.js", equalsPath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IEqualityComparerEquals_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"));
+
+		var equalsValue = members["System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"];
+		Assert.IsNotNull(equalsValue);
+		var equalsValueType = equalsValue.GetType();
+		var equalsOp = equalsValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue)?.ToString();
+		var equalsMethod = (string?)equalsValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
+		var equalsPath = (string?)equalsValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(equalsValue);
+
+		Assert.AreEqual("Import", equalsOp);
+		Assert.AreEqual("_dae184550b995be1", equalsMethod);
+		Assert.AreEqual("System/Collections/Generic/IEqualityComparerT1Module.js", equalsPath);
 	}
 
 	[TestMethod]

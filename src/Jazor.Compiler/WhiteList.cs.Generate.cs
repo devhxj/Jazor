@@ -25,6 +25,7 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.Dictionary<TKey, TValue>"] = new(Op.Alias, "Map");
 		types["double"] = new(Op.Alias, "Number");
 		types["System.Linq.Enumerable"] = new(Op.Alias, "Array");
+		types["System.Collections.Generic.EqualityComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Exception"] = new(Op.Alias, "Error");
 		types["System.InvalidOperationException"] = new(Op.Alias, "Error");
 		types["System.ArgumentNullException"] = new(Op.Alias, "TypeError");
@@ -37,6 +38,7 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.IDictionary<TKey, TValue>"] = new(Op.Alias, "Map");
 		types["System.Collections.IEnumerable"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IEnumerable<T>"] = new(Op.Alias, "Array");
+		types["System.Collections.Generic.IEqualityComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Collections.IList"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IList<T>"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.ISet<T>"] = new(Op.Alias, "Set");
@@ -927,6 +929,8 @@ internal static partial class WhiteList
 		members["static System.Linq.Enumerable.Select<TSource, TResult>(System.Collections.Generic.IEnumerable<TSource>, System.Func<TSource, int, TResult>)"] = new(Op.Import, "_aab4dc2444d44402", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.ToList<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "_6293e95141f14a55", "System/Linq/EnumerableModule.js");
 		members["static System.Linq.Enumerable.ToArray<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "_ea56f0fe56c44ae7", "System/Linq/EnumerableModule.js");
+		members["static System.Collections.Generic.EqualityComparer<T>.Default.get"] = new(Op.Inline, "(globalThis.__jazorEqualityComparerDefault ??= {})");
+		members["virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_4614e5ce6b42a7ad", "System/Collections/Generic/EqualityComparerT1Module.js");
 		members["System.Exception.Exception()"] = new(Op.Inline, "new Error()");
 		members["System.Exception.Exception(string)"] = new(Op.Inline, "new Error(__arg1)");
 		members["virtual System.Exception.Message.get"] = new(Op.Inline, "__arg1.message");
@@ -1009,6 +1013,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Values.get"] = new(Op.Inline, "Array.from(__arg1.values())");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.ContainsKey(TKey)"] = new(Op.Alias, "has");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_ebaafc4d4a520807", "System/Collections/Generic/IDictionaryT2Module.js");
+		members["System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_dae184550b995be1", "System/Collections/Generic/IEqualityComparerT1Module.js");
 		members["System.Collections.IList.this[int].get"] = new(Op.Import, "_049fed3e1cad6543", "System/Collections/IListModule.js");
 		members["System.Collections.IList.Contains(object)"] = new(Op.Alias, "includes");
 		members["System.Collections.IList.IndexOf(object)"] = new(Op.Alias, "indexOf");
