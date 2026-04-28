@@ -13,8 +13,9 @@ public sealed partial class SemanticWalker
     // 外部模板使用 __arg1 / __arg2 ...，
     // 内部会统一规范化成不会与真实参数名混淆的保留前缀。
     private const string InlinePlaceholderPrefix = "__jz_arg";
-    private static readonly Regex LegacyInlinePlaceholderRegex = new(@"@#\{(\d+)\}", RegexOptions.Compiled);
-    private static readonly Regex InlinePlaceholderRegex = new(@"__arg([1-9]\d*)", RegexOptions.Compiled);
+    private static readonly Regex LegacyInlinePlaceholderRegex = new(@"@#\{(\d+)\}");
+    private static readonly Regex InlinePlaceholderRegex = new(@"__arg([1-9]\d*)");
+    private static readonly Regex ZeroBasedInlinePlaceholderRegex = new(@"\b__arg0\d*\b");
 
     // Inline 模板按白名单成员签名缓存。
     // 当前约定下，同一签名对应同一模板；因此可以安全地“一次 parse，多次实例化”。
@@ -61,6 +62,9 @@ public sealed partial class SemanticWalker
         if (LegacyInlinePlaceholderRegex.IsMatch(template))
             throw new InvalidOperationException($"Inline template '{signature}' uses the legacy placeholder syntax. Use __arg1, __arg2, ... instead.");
 
+        if (ZeroBasedInlinePlaceholderRegex.IsMatch(template))
+            throw new InvalidOperationException($"Inline template '{signature}' uses an invalid zero-based placeholder. Placeholders are 1-based: __arg1, __arg2, ...");
+
         var maxPlaceholder = -1;
         var normalized = InlinePlaceholderRegex.Replace(template, match =>
         {
@@ -69,8 +73,17 @@ public sealed partial class SemanticWalker
             return $"{InlinePlaceholderPrefix}{index}";
         });
 
-        var parser = new Parser();
-        return new InlineTemplate(parser.ParseExpression(normalized, null, true), maxPlaceholder + 1);
+        try
+        {
+            var parser = new Parser();
+            return new InlineTemplate(parser.ParseExpression(normalized, null, true), maxPlaceholder + 1);
+        }
+        catch (ParseErrorException exception)
+        {
+            throw new InvalidOperationException(
+                $"Inline template '{signature}' is not a valid JavaScript expression: {exception.Message}",
+                exception);
+        }
     }
 
     /// <summary>

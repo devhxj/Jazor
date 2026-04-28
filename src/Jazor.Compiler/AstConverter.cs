@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Jazor.Compiler;
@@ -49,8 +50,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
     /// </summary>
     /// <returns></returns>
-    public async Task<Module?> Convert()
+    public Task<Module?> Convert() => Convert(CancellationToken.None);
+
+    public async Task<Module?> Convert(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // 检查是否为 public 顶层类型
         if (_classSymbol.DeclaredAccessibility != Accessibility.Public)
             throw new NotSupportedException($"类 {_classSymbol.Name} 不是 public，无法转换");
@@ -62,19 +67,21 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var emittedMemberClasses = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
         foreach (var member in _classSymbol.GetMembers())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             switch (member)
             {
                 case IFieldSymbol field:
-                    await ConvertModuleField(members, field);
+                    await ConvertModuleField(members, field, cancellationToken);
                     break;
                 case IPropertySymbol:
                     break;                    
                 // Property被Field和Method代替了
                 case IMethodSymbol func:
-                    await ConvertModuleMethod(members, func);
+                    await ConvertModuleMethod(members, func, cancellationToken);
                     break;
                 case INamedTypeSymbol @class when @class.TypeKind == TypeKind.Class:
-                    AppendModuleClass(members, @class, emittedMemberClasses);
+                    AppendModuleClass(members, @class, emittedMemberClasses, cancellationToken);
                     break;
                 case INamedTypeSymbol @enum when @enum.TypeKind == TypeKind.Enum:
                     // enum 在模块层走“声明擦除 + 使用点常量化”路线：
@@ -95,16 +102,22 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             : null;
     }
 
-    private void AppendModuleClass(List<Statement> members, INamedTypeSymbol symbol, HashSet<INamedTypeSymbol> emittedMemberClasses)
+    private void AppendModuleClass(
+        List<Statement> members,
+        INamedTypeSymbol symbol,
+        HashSet<INamedTypeSymbol> emittedMemberClasses,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (!emittedMemberClasses.Add(symbol))
             return;
 
         var baseType = GetSupportedMemberBaseType(symbol);
         if (baseType is not null)
-            AppendModuleClass(members, baseType, emittedMemberClasses);
+            AppendModuleClass(members, baseType, emittedMemberClasses, cancellationToken);
 
-        members.Add(ConvertModuleClass(symbol, baseType));
+        members.Add(ConvertModuleClass(symbol, baseType, cancellationToken));
     }
 
     private IEnumerable<ImportDeclaration> BuildImportDeclarations()
@@ -157,9 +170,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <param name="statements"></param>
     /// <param name="symbol"></param>
     /// <returns></returns>
-    private async Task ConvertModuleField(List<Statement> statements, IFieldSymbol symbol)
+    private async Task ConvertModuleField(List<Statement> statements, IFieldSymbol symbol, CancellationToken cancellationToken)
     {
-        var declaration = await ConvertVariableField(symbol);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var declaration = await ConvertVariableField(symbol, cancellationToken);
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             statements.Add(declaration);
         else
@@ -177,8 +192,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <param name="symbol"></param>
     /// <returns></returns>
     /// <exception cref="NotSupportedException"></exception>
-    private async Task ConvertModuleMethod(List<Statement> statements, IMethodSymbol symbol)
+    private async Task ConvertModuleMethod(List<Statement> statements, IMethodSymbol symbol, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
             throw new NotSupportedException($"Jazor 模块类不支持Event:{eventSymbol.Name}。");
 
@@ -194,7 +211,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         {
             foreach (var reference in symbol.DeclaringSyntaxReferences)
             {
-                if (await reference.GetSyntaxAsync() is AccessorDeclarationSyntax accessor &&
+                if (await reference.GetSyntaxAsync(cancellationToken) is AccessorDeclarationSyntax accessor &&
                     accessor.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration))
                     return;
             }
@@ -219,7 +236,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         ExpressionSyntax? expressionSyntax = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
         {
-            var syntax = await reference.GetSyntaxAsync();
+            var syntax = await reference.GetSyntaxAsync(cancellationToken);
             if (syntax is MethodDeclarationSyntax methodDecl)
             {
                 if (methodDecl.Body is not null)
@@ -278,7 +295,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = _classModel.GetOperation(blockSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker(_classSymbol);
+                var walker = new SemanticWalker(_classSymbol, cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.FunctionBody);
                 body = MaterializeFunctionBody(walker.Visit(operation, argument), argument, symbol.ReturnsVoid);
                 MergeImports(argument);
@@ -289,7 +306,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = _classModel.GetOperation(expressionSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker(_classSymbol);
+                var walker = new SemanticWalker(_classSymbol, cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.Any);
                 var visited = walker.Visit(operation, argument);
                 MergeImports(argument);
@@ -321,18 +338,20 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 null,
                 NodeList.From<ImportAttribute>([])));
     }
-    private async Task<VariableDeclaration> ConvertVariableField(IFieldSymbol symbol)
+    private async Task<VariableDeclaration> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         Expression? init = null;
         if (symbol.HasConstantValue)
             init = CreateEqualsValueClauseSyntaxLiteral(symbol.Type.SpecialType, symbol.ConstantValue);
         else
             foreach (var item in symbol.DeclaringSyntaxReferences)
             {
-                var syntax = await item.GetSyntaxAsync() as VariableDeclaratorSyntax;
+                var syntax = await item.GetSyntaxAsync(cancellationToken) as VariableDeclaratorSyntax;
                 if (syntax is not null && syntax.Initializer is not null)
                 {
-                    init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
+                    init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer, cancellationToken);
                     break;
                 }
             }
@@ -356,10 +375,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 foreach (var item in property.DeclaringSyntaxReferences)
                 {
-                    var syntax = await item.GetSyntaxAsync() as PropertyDeclarationSyntax;
+                    var syntax = await item.GetSyntaxAsync(cancellationToken) as PropertyDeclarationSyntax;
                     if (syntax is not null && syntax.Initializer is not null)
                     {
-                        init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer);
+                        init = CreateEqualsValueClauseSyntaxLiteral(syntax.Initializer, cancellationToken);
                         break;
                     }
                 }
@@ -418,9 +437,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return null;
     }
 
-    private FunctionBody? ConvertMemberOperationToFunctionBody(IOperation operation, bool returnsVoid)
+    private FunctionBody? ConvertMemberOperationToFunctionBody(
+        IOperation operation,
+        bool returnsVoid,
+        CancellationToken cancellationToken)
     {
-        var walker = new SemanticWalker();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var walker = new SemanticWalker(cancellationToken);
         var argument = CreateImportAwareArgument(Sense.Any);
         var visited = walker.Visit(operation, argument);
         MergeImports(argument);
@@ -428,8 +452,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return MaterializeFunctionBody(visited, argument, returnsVoid);
     }
 
-    private MethodDefinition ConvertMemberMethod(IMethodSymbol symbol)
+    private MethodDefinition ConvertMemberMethod(IMethodSymbol symbol, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
             throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
 
@@ -482,7 +508,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         FunctionBody body;
         if (operation is not null)
         {
-            body = ConvertMemberOperationToFunctionBody(operation, symbol.ReturnsVoid)
+            body = ConvertMemberOperationToFunctionBody(operation, symbol.ReturnsVoid, cancellationToken)
                 ?? throw new NotSupportedException($"Jazor member class failed to convert body for {symbol.Name}.");
         }
         // Body-less property accessors only map to auto-properties.
@@ -554,8 +580,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
 
-    private List<ClassProperty> ConvertMemberProperty(IPropertySymbol symbol)
+    private List<ClassProperty> ConvertMemberProperty(IPropertySymbol symbol, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if ((symbol.GetMethod?.IsAbstract ?? false) || (symbol.SetMethod?.IsAbstract ?? false))
             throw new NotSupportedException($"Jazor member class does not support abstract property {symbol.Name}.");
 
@@ -575,16 +603,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         // 处理 getter
         if (symbol.GetMethod is not null)
         {
-            var getFuncDecl = ConvertMemberMethod(symbol.GetMethod);
+            var getFuncDecl = ConvertMemberMethod(symbol.GetMethod, cancellationToken);
             properties.Add(getFuncDecl);
         }
 
         // 处理 setter
         if (symbol.SetMethod is not null)
         {
-            if (!IsInitOnlyAccessor(symbol.SetMethod))
-            {
-                var setFuncDecl = ConvertMemberMethod(symbol.SetMethod);
+                if (!IsInitOnlyAccessor(symbol.SetMethod))
+                {
+                var setFuncDecl = ConvertMemberMethod(symbol.SetMethod, cancellationToken);
                 properties.Add(setFuncDecl);
             }
         }
@@ -592,8 +620,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return properties;
     }
 
-    private MethodDefinition ConvertMemberConstructor(MemberConstructorLowering lowering, INamedTypeSymbol? baseType)
+    private MethodDefinition ConvertMemberConstructor(
+        MemberConstructorLowering lowering,
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var parameters = new List<Node>();
         if (lowering.Symbol.Parameters.Length > 0)
         {
@@ -607,7 +640,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var body = baseType is null
             ? lowering.Body
-            : PrependSuperConstructorCall(lowering.Body, lowering.InitializerSyntax);
+            : PrependSuperConstructorCall(lowering.Body, lowering.InitializerSyntax, cancellationToken);
 
         return new MethodDefinition(
             PropertyKind.Method,
@@ -626,8 +659,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private MethodDefinition ConvertMemberConstructorDispatcher(
         INamedTypeSymbol containingType,
         IReadOnlyList<MemberConstructorLowering> lowerings,
-        INamedTypeSymbol? baseType)
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var argsIdentifier = new Identifier("$args");
         var argsLength = new MemberExpression(argsIdentifier, new Identifier("length"), computed: false, optional: false);
         var statements = new List<Statement>
@@ -646,7 +682,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 branchStatements.Add(binding);
 
             if (baseType is not null)
-                branchStatements.Add(CreateSuperConstructorCallStatement(dispatch.Value.InitializerSyntax));
+                branchStatements.Add(CreateSuperConstructorCallStatement(dispatch.Value.InitializerSyntax, cancellationToken));
 
             branchStatements.Add(new NonSpecialExpressionStatement(
                 new CallExpression(
@@ -713,20 +749,27 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             decorators: NodeList.Empty<Decorator>());
     }
 
-    private ClassDeclaration ConvertMemberClass(INamedTypeSymbol symbol, INamedTypeSymbol? baseType)
+    private ClassDeclaration ConvertMemberClass(
+        INamedTypeSymbol symbol,
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (baseType is null &&
             symbol.BaseType is INamedTypeSymbol unresolvedBaseType &&
             unresolvedBaseType.SpecialType != SpecialType.System_Object)
             throw new NotSupportedException($"Jazor member class does not support inheritance {symbol.Name} : {unresolvedBaseType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}.");
 
         var nodes = new List<Node>();
-        var constructorLowerings = GetMemberConstructorLowerings(symbol, baseType);
+        var constructorLowerings = GetMemberConstructorLowerings(symbol, baseType, cancellationToken);
         var hasExplicitConstructor = constructorLowerings.Count > 0;
         var constructorsEmitted = false;
 
         foreach (var member in symbol.GetMembers())
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             switch (member)
             {
                 case IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol && field.IsImplicitlyDeclared:
@@ -735,7 +778,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     nodes.Add(ConvertMemberField(field));
                     break;
                 case IPropertySymbol prop:
-                    nodes.AddRange(ConvertMemberProperty(prop));
+                    nodes.AddRange(ConvertMemberProperty(prop, cancellationToken));
                     break;
                 case IMethodSymbol accessor when accessor.AssociatedSymbol is IPropertySymbol:
                     break;
@@ -744,11 +787,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     {
                         if (constructorLowerings.Count == 1)
                         {
-                            nodes.Add(ConvertMemberConstructor(constructorLowerings[0], baseType));
+                            nodes.Add(ConvertMemberConstructor(constructorLowerings[0], baseType, cancellationToken));
                         }
                         else if (constructorLowerings.Count > 1)
                         {
-                            nodes.Add(ConvertMemberConstructorDispatcher(symbol, constructorLowerings, baseType));
+                            nodes.Add(ConvertMemberConstructorDispatcher(symbol, constructorLowerings, baseType, cancellationToken));
                             foreach (var lowering in constructorLowerings)
                                 nodes.Add(ConvertMemberConstructorHelper(lowering));
                         }
@@ -763,7 +806,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case IMethodSymbol accessor when accessor.AssociatedSymbol is IEventSymbol eventSymbol:
                     throw new NotSupportedException($"Jazor member class does not support Event:{eventSymbol.Name}.");
                 case IMethodSymbol func when func.MethodKind == MethodKind.Ordinary:
-                    nodes.Add(ConvertMemberMethod(func));
+                    nodes.Add(ConvertMemberMethod(func, cancellationToken));
                     break;
                 case INamedTypeSymbol nestedEnum when nestedEnum.TypeKind == TypeKind.Enum:
                     // enum 在成员类内同样仅保留编译期值域角色，运行时声明擦除。
@@ -792,12 +835,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return declaration;
     }
 
-    private List<MemberConstructorLowering> GetMemberConstructorLowerings(INamedTypeSymbol symbol, INamedTypeSymbol? baseType)
+    private List<MemberConstructorLowering> GetMemberConstructorLowerings(
+        INamedTypeSymbol symbol,
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var lowerings = symbol.InstanceConstructors
             .Where(static ctor => !ctor.IsImplicitlyDeclared)
             .OrderBy(static ctor => ctor.DeclaringSyntaxReferences.FirstOrDefault()?.Span.Start ?? int.MaxValue)
-            .Select(constructor => PrepareMemberConstructorLowering(constructor, baseType))
+            .Select(constructor => PrepareMemberConstructorLowering(constructor, baseType, cancellationToken))
             .ToList();
 
         if (lowerings.Count <= 1)
@@ -812,8 +860,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return lowerings;
     }
 
-    private MemberConstructorLowering PrepareMemberConstructorLowering(IMethodSymbol symbol, INamedTypeSymbol? baseType)
+    private MemberConstructorLowering PrepareMemberConstructorLowering(
+        IMethodSymbol symbol,
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (symbol.MethodKind != MethodKind.Constructor)
             throw new NotSupportedException($"Jazor member class does not support constructor kind {symbol.MethodKind}:{symbol.Name}.");
 
@@ -845,7 +898,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (operation is null)
             throw new NotSupportedException($"Jazor member class constructor {symbol.Name} requires a body.");
 
-        var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true)
+        var body = ConvertMemberOperationToFunctionBody(operation, returnsVoid: true, cancellationToken)
             ?? throw new NotSupportedException($"Jazor member class failed to convert constructor body for {symbol.Name}.");
 
         return new MemberConstructorLowering(
@@ -866,14 +919,39 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         {
             for (var argumentCount = lowering.RequiredParameterCount; argumentCount <= lowering.TotalParameterCount; argumentCount++)
             {
-                if (dispatch.ContainsKey(argumentCount))
-                    throw new NotSupportedException($"Jazor member class constructor overloads are not uniquely dispatchable by argument count {containingType.Name}.");
+                if (dispatch.TryGetValue(argumentCount, out var existing))
+                {
+                    var existingSignature = DescribeConstructorDispatchSignature(existing);
+                    var incomingSignature = DescribeConstructorDispatchSignature(lowering);
+                    throw new NotSupportedException(
+                        $"Jazor member class constructor overloads are not uniquely dispatchable by argument count {containingType.Name}. " +
+                        $"Conflict at argument count {argumentCount}: '{existingSignature}' vs '{incomingSignature}'.");
+                }
 
                 dispatch.Add(argumentCount, lowering);
             }
         }
 
         return dispatch;
+    }
+
+    private static string DescribeConstructorDispatchSignature(MemberConstructorLowering lowering)
+    {
+        var argumentRange = lowering.RequiredParameterCount == lowering.TotalParameterCount
+            ? lowering.RequiredParameterCount.ToString(CultureInfo.InvariantCulture)
+            : $"{lowering.RequiredParameterCount}..{lowering.TotalParameterCount}";
+
+        var parameters = string.Join(
+            ", ",
+            lowering.Symbol.Parameters.Select(parameter =>
+            {
+                var parameterType = parameter.Type.ToDisplayString(Format.NameFormat);
+                return parameter.HasExplicitDefaultValue
+                    ? $"{parameterType} {parameter.Name} = <default>"
+                    : $"{parameterType} {parameter.Name}";
+            }));
+
+        return $"{lowering.Symbol.ContainingType.Name}({parameters}) [args:{argumentRange}]";
     }
 
     private IEnumerable<Statement> BuildConstructorDispatcherParameterBindings(
@@ -901,13 +979,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         yield return new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(declarators));
     }
 
-    private Statement CreateSuperConstructorCallStatement(ConstructorInitializerSyntax? initializerSyntax)
+    private Statement CreateSuperConstructorCallStatement(
+        ConstructorInitializerSyntax? initializerSyntax,
+        CancellationToken cancellationToken)
         => new NonSpecialExpressionStatement(
             new CallExpression(
                 new Super(),
                 initializerSyntax?.ArgumentList is null
                     ? NodeList.Empty<Expression>()
-                    : NodeList.From(initializerSyntax.ArgumentList.Arguments.Select(ConvertConstructorInitializerArgument)),
+                    : NodeList.From(initializerSyntax.ArgumentList.Arguments.Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken))),
                 optional: false));
 
     private static string GetMemberConstructorHelperName(IMethodSymbol symbol)
@@ -949,12 +1029,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return method.IsInitOnly;
     }
 
-    private Declaration ConvertModuleClass(INamedTypeSymbol symbol, INamedTypeSymbol? baseType)
+    private Declaration ConvertModuleClass(
+        INamedTypeSymbol symbol,
+        INamedTypeSymbol? baseType,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (symbol.IsStatic)
             throw new NotSupportedException($"Jazor 模块类中不支持静态成员类{symbol.Name}。");
             
-        var declaration = ConvertMemberClass(symbol, baseType);
+        var declaration = ConvertMemberClass(symbol, baseType, cancellationToken);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             return declaration;
@@ -1003,11 +1088,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             decorators: NodeList.Empty<Decorator>());
     }
 
-    private FunctionBody PrependSuperConstructorCall(FunctionBody body, ConstructorInitializerSyntax? initializerSyntax)
+    private FunctionBody PrependSuperConstructorCall(
+        FunctionBody body,
+        ConstructorInitializerSyntax? initializerSyntax,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var arguments = initializerSyntax?.ArgumentList is null
             ? NodeList.Empty<Expression>()
-            : NodeList.From(initializerSyntax.ArgumentList.Arguments.Select(ConvertConstructorInitializerArgument));
+            : NodeList.From(initializerSyntax.ArgumentList.Arguments.Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken)));
 
         var statements = new List<Statement>
         {
@@ -1022,15 +1112,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return new FunctionBody(NodeList.From(statements), body.Strict);
     }
 
-    private Expression ConvertConstructorInitializerArgument(ArgumentSyntax argumentSyntax)
+    private Expression ConvertConstructorInitializerArgument(ArgumentSyntax argumentSyntax, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (argumentSyntax.NameColon is not null)
             throw new NotSupportedException("Jazor member class does not support named constructor initializer arguments.");
 
         if (argumentSyntax.RefKindKeyword.Kind() is Microsoft.CodeAnalysis.CSharp.SyntaxKind.RefKeyword or Microsoft.CodeAnalysis.CSharp.SyntaxKind.OutKeyword)
             throw new NotSupportedException("Jazor member class does not support ref/out constructor initializer arguments.");
 
-        return ConvertExpressionSyntax(argumentSyntax.Expression);
+        return ConvertExpressionSyntax(argumentSyntax.Expression, cancellationToken);
     }
 
     private Expression ConvertParameter(IParameterSymbol parameter)
@@ -1069,22 +1161,26 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return CreateLiteralExpression(value);
     }
 
-    private Expression CreateEqualsValueClauseSyntaxLiteral(EqualsValueClauseSyntax syntax)
+    private Expression CreateEqualsValueClauseSyntaxLiteral(EqualsValueClauseSyntax syntax, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var value = syntax.Value;
 
-        return ConvertExpressionSyntax(value);
+        return ConvertExpressionSyntax(value, cancellationToken);
     }
 
-    private Expression ConvertExpressionSyntax(ExpressionSyntax value)
+    private Expression ConvertExpressionSyntax(ExpressionSyntax value, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (value is LiteralExpressionSyntax lit)
             return CreateLiteralExpression(lit.Token.Value);
 
         var operation = _classModel.GetOperation(value);
         if (operation is not null)
         {
-            var walker = new SemanticWalker(_classSymbol);
+            var walker = new SemanticWalker(_classSymbol, cancellationToken);
             var argument = CreateImportAwareArgument(Sense.Any);
             var expr = walker.Visit(operation, argument) as Expression;
             MergeImports(argument);

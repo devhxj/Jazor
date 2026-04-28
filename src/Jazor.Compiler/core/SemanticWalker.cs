@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 
 namespace Jazor.Compiler;
 
@@ -1172,6 +1173,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private readonly Dictionary<string, Func<Expression?, Expression?[], Expression?>> _whiteListCompiles;
 
+    private readonly CancellationToken _cancellationToken;
+
     private UniqueNameSession? _uniqueNameSession;
 
     public SemanticWalker()
@@ -1180,11 +1183,19 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         Generate(ref _whiteListCompiles);
 	}
 
+    public SemanticWalker(CancellationToken cancellationToken) : this() => _cancellationToken = cancellationToken;
+
     public SemanticWalker(ITypeSymbol moduleRootType) : this() => _moduleRootType = moduleRootType;
+
+    public SemanticWalker(ITypeSymbol moduleRootType, CancellationToken cancellationToken) : this(cancellationToken) => _moduleRootType = moduleRootType;
 
     public SemanticWalker(bool test) : this() => _test = test;
 
+    public SemanticWalker(bool test, CancellationToken cancellationToken) : this(cancellationToken) => _test = test;
+
     public SemanticWalker(Action<Location, string?> report):this() => _report = report;
+
+    public SemanticWalker(Action<Location, string?> report, CancellationToken cancellationToken) : this(cancellationToken) => _report = report;
 
 	private static SourceOrigin CreateOrigin(IOperation operation, bool isSynthetic = false, string? name = null)
 	{
@@ -1263,6 +1274,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// <returns>Acornima的ESTree的Node</returns>
     public override Node? Visit(IOperation? operation, SenseArgument argument)
     {
+        _cancellationToken.ThrowIfCancellationRequested();
+
         if (operation is null)
             return null;
 
@@ -1673,6 +1686,42 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return statements;
     }
 
+    private static OperationTransformationException CreateOperationTransformationException(IOperation operation, string? message)
+    {
+        var exception = new OperationTransformationException(operation.Kind, message);
+        AttachLocationMetadata(exception, operation.Syntax.GetLocation());
+        return exception;
+    }
+
+    private static SyntaxNodeTransformationException CreateSyntaxNodeTransformationException(SyntaxNode node, string? message)
+    {
+        var exception = new SyntaxNodeTransformationException(node.Kind(), message);
+        AttachLocationMetadata(exception, node.GetLocation());
+        return exception;
+    }
+
+    private static void AttachLocationMetadata(Exception exception, Location? location)
+    {
+        if (location is null)
+        {
+            exception.Data["location.path"] = "<unknown>";
+            return;
+        }
+
+        var lineSpan = location.GetLineSpan();
+        var path = !string.IsNullOrWhiteSpace(lineSpan.Path)
+            ? lineSpan.Path
+            : location.SourceTree?.FilePath;
+        if (string.IsNullOrWhiteSpace(path))
+            path = "<unknown>";
+
+        exception.Data["location.path"] = path;
+        exception.Data["location.startLine"] = lineSpan.StartLinePosition.Line + 1;
+        exception.Data["location.startColumn"] = lineSpan.StartLinePosition.Character + 1;
+        exception.Data["location.endLine"] = lineSpan.EndLinePosition.Line + 1;
+        exception.Data["location.endColumn"] = lineSpan.EndLinePosition.Character + 1;
+    }
+
     /// <summary>
     /// 操作无法转换时的兜底方法，提供详细的错误信息，包括操作类型
     /// </summary>
@@ -1684,7 +1733,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     {
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
-        throw new OperationTransformationException(operation.Kind, message);
+        throw CreateOperationTransformationException(operation, message);
     }
 
     /// <summary>
@@ -1698,7 +1747,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     {
         var location = node.GetLocation();
         _report?.Invoke(location, message);
-        throw new SyntaxNodeTransformationException(node.Kind(), message);
+        throw CreateSyntaxNodeTransformationException(node, message);
     }
 
     /// <summary>
@@ -1719,7 +1768,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
 
-        throw new OperationTransformationException(operation.Kind, message);
+        throw CreateOperationTransformationException(operation, message);
     }
 
     /// <summary>
@@ -1744,7 +1793,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var location = operation.Syntax.GetLocation();
         _report?.Invoke(location, message);
 
-        throw new OperationTransformationException(operation.Kind, message);
+        throw CreateOperationTransformationException(operation, message);
     }
 
     /// <summary>
