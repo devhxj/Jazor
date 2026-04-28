@@ -268,7 +268,12 @@ public record struct SenseArgument
         if (_importBindings.TryGetValue(key, out var localName))
             return new Identifier(localName);
 
+        // `default` 作为 import binding 名称在 JS 里不合法，必须走别名导入：
+        // import { default as localName } from "...";
+        var requiresAlias = string.Equals(importedName, "default", System.StringComparison.Ordinal);
+
         var preferRawImportName =
+            !requiresAlias &&
             (_reservedImportNames is null || !_reservedImportNames.Contains(importedName)) &&
             (_importLocalBindings is null || !_importLocalBindings.TryGetValue(importedName, out var existingKey) || existingKey == key);
 
@@ -329,6 +334,14 @@ public record struct SenseArgument
 
     private static ImportDeclarationSpecifier CreateAliasedImportSpecifier(string importedName, string localName)
     {
+        if (string.Equals(importedName, "default", System.StringComparison.Ordinal))
+        {
+            var defaultImportScript = $"import {localName} from \"__jazor_internal__\";";
+            var defaultImportDeclaration = new Parser().ParseModule(defaultImportScript).Body.Single() as ImportDeclaration;
+            return defaultImportDeclaration?.Specifiers.Single()
+                ?? throw new InvalidOperationException($"Jazor 无法生成默认导入别名：{importedName} -> {localName}");
+        }
+
         if (string.Equals(importedName, localName, System.StringComparison.Ordinal))
             return new ImportSpecifier(new Identifier(importedName));
 

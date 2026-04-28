@@ -124,11 +124,48 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         foreach (var pair in _imports.OrderBy(static pair => pair.Key, System.StringComparer.Ordinal))
         {
-            var specifierList = string.Join(", ", pair.Value
+            var uniqueSpecifiers = pair.Value
+                .GroupBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
+                .Select(static group => group.First())
+                .ToArray();
+
+            var defaultSpecifier = uniqueSpecifiers
+                .OfType<ImportDefaultSpecifier>()
+                .OrderBy(static specifier => specifier.Local.Name, System.StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            var namespaceSpecifier = uniqueSpecifiers
+                .OfType<ImportNamespaceSpecifier>()
+                .OrderBy(static specifier => specifier.Local.Name, System.StringComparer.Ordinal)
+                .FirstOrDefault();
+
+            var namedSpecifiers = uniqueSpecifiers
+                .OfType<ImportSpecifier>()
                 .OrderBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
-                .Select(static specifier => specifier.ToECMAScript()));
+                .Select(static specifier =>
+                {
+                    var imported = specifier.Imported.ToECMAScript();
+                    var local = specifier.Local.Name;
+                    return string.Equals(imported, local, System.StringComparison.Ordinal)
+                        ? imported
+                        : $"{imported} as {local}";
+                })
+                .ToArray();
+
+            var importClauseParts = new List<string>();
+            if (defaultSpecifier is not null)
+                importClauseParts.Add(defaultSpecifier.Local.Name);
+            if (namespaceSpecifier is not null)
+                importClauseParts.Add("* as " + namespaceSpecifier.Local.Name);
+            if (namedSpecifiers.Length > 0)
+                importClauseParts.Add("{ " + string.Join(", ", namedSpecifiers) + " }");
+
+            if (importClauseParts.Count == 0)
+                continue;
+
             var modulePath = EscapeJavaScriptString(pair.Key);
-            var importScript = $"import {{ {specifierList} }} from \"{modulePath}\";";
+            var importClause = string.Join(", ", importClauseParts);
+            var importScript = $"import {importClause} from \"{modulePath}\";";
             var importStatement = new Parser().ParseModule(importScript).Body.Single() as ImportDeclaration;
             if (importStatement is null)
                 throw new NotSupportedException($"Jazor 无法生成模块导入：{pair.Key}");

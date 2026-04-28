@@ -69,6 +69,33 @@ public sealed class AstConverterTests
         return (classSymbol, semanticModel);
     }
 
+    private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(
+        string code,
+        string className,
+        params MetadataReference[] additionalReferences)
+    {
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            [CSharpSyntaxTree.ParseText(code)],
+            Net100.References.All.Concat(additionalReferences),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var diagnostics = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.IsFalse(diagnostics.Length > 0, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+
+        var syntaxTree = compilation.SyntaxTrees.First();
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var classDeclaration = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Single(node => node.Identifier.Text == className);
+        var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+
+        Assert.IsNotNull(classSymbol);
+        return (classSymbol, semanticModel);
+    }
+
     private static async Task AssertCrossModuleStaticFieldMutationThrowsAsync(string fieldDeclaration, string statement)
     {
         var code = $$"""
@@ -5245,6 +5272,290 @@ export function Min(left, right) {
 export function Create() {
   return Make();
 }
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingEcmaScriptVueProxy_GeneratesVueImportsFromNameAttributes()
+    {
+        var code = """
+            using ECMAScript;
+            using ECMAScript.Vue;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static object Mount(object component)
+                    {
+                        var app = Vue.CreateApp(component);
+                        return app.Mount("#app");
+                    }
+
+                    public static int ReadRef()
+                    {
+                        var count = Vue.Ref(1);
+                        return count.Value;
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "AppModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.Vue).Assembly.Location));
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { createApp, ref } from ""vue"";
+export function Mount(component) {
+  let app = createApp(component);
+  return app.mount(""#app"");
+}
+export function ReadRef() {
+  let count = ref(1);
+  return count.value;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ModuleStaticDomFieldInstancePropertyAccess_DoesNotDuplicateReceiver()
+    {
+        var code = """
+            using ECMAScript;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    private static HTMLTextAreaElement? _input;
+                    private static HTMLElement? _output;
+
+                    public static void RenderPreview()
+                    {
+                        if (_input is null || _output is null)
+                            return;
+
+                        var normalized = _input.Value;
+                        _output.TextContent = normalized;
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "AppModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"let _input;
+let _output;
+export function RenderPreview() {
+  if (_input === null || _output === null)
+    return;
+  let normalized = _input.value;
+  _output.textContent = normalized;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleDefaultExportReference_GeneratesAliasedDefaultImport()
+    {
+        var code = """
+            using System;
+            using System.ComponentModel;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
+                public static class WikiHomeModule
+                {
+                    [Description("@#default")]
+                    public static object Component = null!;
+                }
+
+                [ECMAScript.ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static object Boot() => WikiHomeModule.Component;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "AppModule");
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
+
+        Assert.AreEqual(
+$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
+export function Boot() {{
+  return {defaultBinding};
+}}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleDefaultExportReferenceFromProxyClass_GeneratesDefaultImport()
+    {
+        var code = """
+            using System;
+            using System.ComponentModel;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
+                public sealed class WikiHomeModule
+                {
+                    [Description("@#default")]
+                    public static object Component = null!;
+                }
+
+                [ECMAScript.ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static object Boot() => WikiHomeModule.Component;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "AppModule");
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
+
+        Assert.AreEqual(
+$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
+export function Boot() {{
+  return {defaultBinding};
+}}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleDefaultAccessorReference_GeneratesDefaultImport()
+    {
+        var code = """
+            using System;
+            using System.ComponentModel;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
+                public static class WikiHomeModule
+                {
+                    public static object Component
+                    {
+                        [Description("@#default")]
+                        get;
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static object Boot() => WikiHomeModule.Component;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "AppModule");
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
+
+        Assert.AreEqual(
+$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
+export function Boot() {{
+  return {defaultBinding};
+}}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
