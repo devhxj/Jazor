@@ -1561,11 +1561,12 @@ public partial class SemanticWalker
 			return false;
 
 		var sourceOperation = ResolveIsTypeSourceOperation(operation);
-		if (sourceOperation is null)
-			return false;
+		var resolvedSource = sourceOperation is null
+			? null
+			: ResolveSingleAssignmentValueSource(sourceOperation, operation);
 
-		var resolvedSource = ResolveSingleAssignmentValueSource(sourceOperation, operation);
-		if (TryResolveDeterministicRuntimeValue(resolvedSource, out var runtimeType, out var definitelyNonNull))
+		if (resolvedSource is not null &&
+			TryResolveDeterministicRuntimeValue(resolvedSource, out var runtimeType, out var definitelyNonNull))
 		{
 			// null is never an instance of interface types.
 			if (runtimeType is null)
@@ -1587,7 +1588,9 @@ public partial class SemanticWalker
 			return true;
 		}
 
-		var staticType = resolvedSource.Type;
+		// If deterministic runtime value is unavailable, fall back to statically-known
+		// input type only. Unprovable scenarios stay explicit unsupported.
+		var staticType = resolvedSource?.Type ?? ResolvePatternInputStaticType(operation);
 		if (staticType is null || !IsRuntimeTypeAssignableToInterface(staticType, interfaceType))
 			return false;
 
@@ -1638,12 +1641,31 @@ public partial class SemanticWalker
 		if (operation is IIsTypeOperation isTypeOperation)
 			return isTypeOperation.ValueOperand;
 
-		// Declaration/type patterns in `expr is pattern` can recover the source from parent.
-		if (operation.Parent is IIsPatternOperation isPatternOperation &&
-			operation is ITypePatternOperation or IDeclarationPatternOperation)
-			return isPatternOperation.Value;
+		// Only walk through wrappers that preserve the same pattern input (`not` / `and` / `or`).
+		// Do not cross recursive/property/list/positional pattern boundaries because they can
+		// change the effective input value for child patterns.
+		for (var current = operation.Parent; current is not null; current = current.Parent)
+		{
+			if (current is INegatedPatternOperation or IBinaryPatternOperation)
+				continue;
+
+			if (current is IIsPatternOperation isPatternOperation)
+				return isPatternOperation.Value;
+
+			return null;
+		}
 
 		return null;
+	}
+
+	private static ITypeSymbol? ResolvePatternInputStaticType(IOperation operation)
+	{
+		return operation switch
+		{
+			IPatternOperation patternOperation => patternOperation.InputType,
+			IIsTypeOperation isTypeOperation => isTypeOperation.ValueOperand.Type,
+			_ => operation.Type
+		};
 	}
 
 	private bool TryResolveDeterministicRuntimeValue(

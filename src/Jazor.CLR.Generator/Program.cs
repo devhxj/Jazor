@@ -48,6 +48,8 @@ var outTypes = new Type[]{
 	typeof(ConditionalWeakTable<,>),
 	typeof(GregorianCalendar),
 	typeof(CultureInfo),
+	typeof(Queue<>),
+	typeof(Stack<>),
 	typeof(Array),
 	typeof(Guid),
 	typeof(Task)
@@ -193,6 +195,7 @@ var coreLibXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.
 var numericsXml = XmlDocumentationProvider.CreateFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "System.Runtime.Numerics.xml"));
 var compilation = CSharpCompilation.Create("Jazor", references: [
 	MetadataReference.CreateFromFile(typeof(object).Assembly.Location, documentation: coreLibXml),
+	MetadataReference.CreateFromFile(typeof(Stack<>).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),

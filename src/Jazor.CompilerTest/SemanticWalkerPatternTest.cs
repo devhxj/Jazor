@@ -4055,6 +4055,521 @@ line2"";
   }
 
   /// <summary>
+  /// 测试 Visit - Interface TypePattern 在方法返回可赋值静态类型时降级为非空判断
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_FromAssignableMethodReturn_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                string? GetValue() => null;
+
+                void TestMethod()
+                {
+                    object obj = GetValue();
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = this.GetValue();
+  let result = obj !== null;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 在不可证明场景仍保持显式不支持
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_FromUnknownObject_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                object GetValue() => new object();
+
+                void TestMethod()
+                {
+                    object obj = GetValue();
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 在局部变量发生重赋值时不做静态折叠
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_WithLocalReassignment_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(bool pick)
+                {
+                    object obj = ""a"";
+                    if (pick)
+                    {
+                        obj = 1;
+                    }
+
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 折叠为 true 时仍保留被测表达式单次求值
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_FoldTrue_PreservesSingleEvaluation()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                sealed class ComparableValue : IComparable
+                {
+                    public int CompareTo(object? obj) => 0;
+                }
+
+                void TestMethod()
+                {
+                    bool result = new ComparableValue() is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = (v$0 = new ComparableValue, true);", StringComparison.Ordinal);
+    AssertContainsCount(script, "new ComparableValue", 1);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 折叠为 false 时仍保留被测表达式单次求值
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_FoldFalse_PreservesSingleEvaluation()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                sealed class NonComparable
+                {
+                }
+
+                void TestMethod()
+                {
+                    bool result = new NonComparable() is System.Collections.IEqualityComparer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = (v$0 = new NonComparable, false);", StringComparison.Ordinal);
+    AssertContainsCount(script, "new NonComparable", 1);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对 null 字面量折叠为 false
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_NullLiteral_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = null;
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = null;
+  let result = false;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对 default(object) 折叠为 false
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_DefaultObject_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = default(object);
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = null;
+  let result = false;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对 default(interface) 折叠为 false
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_DefaultInterface_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = default(System.Collections.IEqualityComparer);
+                    bool result = obj is System.Collections.IEqualityComparer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let obj = null;
+  let result = false;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对 default(int) 折叠为 true
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_DefaultInt_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int value = default;
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let value = 0;", StringComparison.Ordinal);
+    StringAssert.Contains(script, "let result = true;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对 default(int?) 折叠为 false
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_DefaultNullableInt_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    int? value = default;
+                    bool result = value is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = null;
+  let result = false;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对局部别名链可证明场景折叠为 true
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_LocalAliasChain_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object a = ""x"";
+                    object b = a;
+                    object c = b;
+                    bool result = c is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = true;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 对局部别名链不可证明场景保持不支持
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_LocalAliasChain_FromUnknownObject_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                object GetValue() => new object();
+
+                void TestMethod()
+                {
+                    object a = GetValue();
+                    object b = a;
+                    object c = b;
+                    bool result = c is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 在 out 参数写入后不做静态折叠
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_WithOutWrite_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void Rewrite(out object value)
+                {
+                    value = new object();
+                }
+
+                void TestMethod()
+                {
+                    object obj = ""x"";
+                    Rewrite(out obj);
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 在 ref 参数写入后不做静态折叠
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_WithRefWrite_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void Rewrite(ref object value)
+                {
+                    value = new object();
+                }
+
+                void TestMethod()
+                {
+                    object obj = ""x"";
+                    Rewrite(ref obj);
+                    bool result = obj is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
+  /// 测试 Visit - is not 接口判定在可静态证明 true 分支时正确取反
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_NotPattern_FromTrue_FoldsToFalse()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""x"";
+                    bool result = obj is not IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = !true;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Visit - is not 接口判定在可静态证明 false 分支时正确取反
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_NotPattern_FromFalse_FoldsToTrue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = null;
+                    bool result = obj is not IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = !false;", StringComparison.Ordinal);
+  }
+
+  /// <summary>
+  /// 测试 Visit - Interface TypePattern 在可赋值调用表达式上降级为非空判断并保持单次求值
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_CallExpressionAssignable_FoldsToNonNullCheckWithSingleEvaluation()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                string? GetValue() => null;
+
+                void TestMethod()
+                {
+                    bool result = GetValue() is IComparable;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let result = (v$0 = this.GetValue(), v$0 !== null);", StringComparison.Ordinal);
+    AssertContainsCount(script, "this.GetValue()", 1);
+  }
+
+  /// <summary>
+  /// 测试 Visit - 属性子模式中的接口 TypePattern 使用子模式输入类型静态折叠，而非误用外层 is 输入
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_PropertySubpattern_UsesInnerInputType()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Name = ""x"" };
+                    bool result = obj is { Name: IComparable };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "\"Name\" in obj", StringComparison.Ordinal);
+    StringAssert.Contains(script, "!== null", StringComparison.Ordinal);
+    Assert.IsFalse(script.Contains("&& false", StringComparison.Ordinal));
+    AssertContainsCount(script, "obj.Name", 1);
+  }
+
+  /// <summary>
+  /// 测试 Visit - 属性子模式接口 TypePattern 在不可证明输入类型时保持显式不支持
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_Interface_PropertySubpattern_WithObjectInput_ThrowsUnsupported()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new { Value = (object)""x"" };
+                    bool result = obj is { Value: IComparable };
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    Assert.Throws<OperationTransformationException>(
+      () => walker.Visit(block, new()),
+      "Unsupported type in is-type operation.");
+  }
+
+  /// <summary>
   /// 测试 Visit - TypePattern IDictionary 接口仍可判定（Map 载体）
   /// </summary>
   [TestMethod]
