@@ -96,12 +96,33 @@ public static class StringModule
 	public extern static Number _dc789454b6ef6bcb(string? strA, Number indexA, string? strB, Number indexB, Number length);
 
 	///<summary>Compares this instance with a specified <see cref="T:System.Object" /> and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified <see cref="T:System.Object" />.</summary>
-	[Jazor(Op.Discard ,"string.CompareTo(object)")]
-	public extern static Number _629b0613344d82e7(string instance, object? value);
+	[Jazor(Op.Import ,"string.CompareTo(object)")]
+	public static Number _629b0613344d82e7(string instance, object? value)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+		if (value == null)
+			return 1;
+		if (TypeOf(value) != "string")
+			throw new Error("ArgumentException: Object must be of type String.");
+
+		return _380e7c7649d703f0(instance, (string)value);
+	}
 
 	///<summary>Compares this instance with a specified <see cref="T:System.String" /> object and indicates whether this instance precedes, follows, or appears in the same position in the sort order as the specified string.</summary>
-	[Jazor(Op.Discard ,"string.CompareTo(string)")]
-	public extern static Number _380e7c7649d703f0(string instance, string? strB);
+	[Jazor(Op.Import ,"string.CompareTo(string)")]
+	public static Number _380e7c7649d703f0(string instance, string? strB)
+	{
+		if (instance == null)
+			throw new Error("NullReferenceException: instance is null.");
+		if (strB == null)
+			return 1;
+		if (instance < strB)
+			return -1;
+		if (instance > strB)
+			return 1;
+		return 0;
+	}
 
 	/// <summary>
 	/// C#: str.EndsWith(value)

@@ -5680,6 +5680,142 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_EqualityComparerDefaultGetHashCode_UsesClrModuleMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int value)
+                {
+                    var hash = System.Collections.Generic.EqualityComparer<int>.Default.GetHashCode(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let hash = _2c3736bd7d205921(globalThis.__jazorEqualityComparerDefault ??= {}, value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IEqualityComparerGetHashCode_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int value)
+                {
+                    System.Collections.Generic.IEqualityComparer<int> comparer = System.Collections.Generic.EqualityComparer<int>.Default;
+                    var hash = comparer.GetHashCode(value);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let comparer = globalThis.__jazorEqualityComparerDefault ??= {};
+  let hash = _f53ff8f6435182d7(comparer, value);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_ComparerDefaultCompare_UsesClrModuleMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int left, int right)
+                {
+                    var order = System.Collections.Generic.Comparer<int>.Default.Compare(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let order = _a4222c99b516b861(globalThis.__jazorComparerDefault ??= {}, left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IComparerCompare_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int left, int right)
+                {
+                    System.Collections.Generic.IComparer<int> comparer = System.Collections.Generic.Comparer<int>.Default;
+                    var order = comparer.Compare(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let comparer = globalThis.__jazorComparerDefault ??= {};
+  let order = _0289dcf579b8a65e(comparer, left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringCompareToObject_UsesClrModuleMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string left, object right)
+                {
+                    var order = left.CompareTo(right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let order = _629b0613344d82e7(left, right);
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_StringCompareToString_UsesClrModuleMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string left, string right)
+                {
+                    var order = left.CompareTo(right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let order = _380e7c7649d703f0(left, right);
+}", script);
+	}
+
+	[TestMethod]
 	public void WhiteList_BooleanGetTypeCode_UsesInlineRule()
 	{
 		var membersField = typeof(SemanticWalker).Assembly
@@ -5804,6 +5940,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.IsNotNull(members);
 		Assert.IsTrue(members.Contains("static System.Collections.Generic.EqualityComparer<T>.Default.get"));
 		Assert.IsTrue(members.Contains("virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"));
+		Assert.IsTrue(members.Contains("virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)"));
 
 		var defaultValue = members["static System.Collections.Generic.EqualityComparer<T>.Default.get"];
 		Assert.IsNotNull(defaultValue);
@@ -5822,6 +5959,16 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual("Import", equalsOp);
 		Assert.AreEqual("_4614e5ce6b42a7ad", equalsMethod);
 		Assert.AreEqual("System/Collections/Generic/EqualityComparerT1Module.js", equalsPath);
+
+		var getHashCodeValue = members["virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)"];
+		Assert.IsNotNull(getHashCodeValue);
+		var getHashCodeValueType = getHashCodeValue.GetType();
+		var getHashCodeOp = getHashCodeValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue)?.ToString();
+		var getHashCodeMethod = (string?)getHashCodeValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
+		var getHashCodePath = (string?)getHashCodeValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
+		Assert.AreEqual("Import", getHashCodeOp);
+		Assert.AreEqual("_2c3736bd7d205921", getHashCodeMethod);
+		Assert.AreEqual("System/Collections/Generic/EqualityComparerT1Module.js", getHashCodePath);
 	}
 
 	[TestMethod]
@@ -5845,6 +5992,116 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual("Import", equalsOp);
 		Assert.AreEqual("_dae184550b995be1", equalsMethod);
 		Assert.AreEqual("System/Collections/Generic/IEqualityComparerT1Module.js", equalsPath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IEqualityComparerGetHashCode_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)"));
+
+		var getHashCodeValue = members["System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)"];
+		Assert.IsNotNull(getHashCodeValue);
+		var getHashCodeValueType = getHashCodeValue.GetType();
+		var getHashCodeOp = getHashCodeValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue)?.ToString();
+		var getHashCodeMethod = (string?)getHashCodeValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
+		var getHashCodePath = (string?)getHashCodeValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(getHashCodeValue);
+
+		Assert.AreEqual("Import", getHashCodeOp);
+		Assert.AreEqual("_f53ff8f6435182d7", getHashCodeMethod);
+		Assert.AreEqual("System/Collections/Generic/IEqualityComparerT1Module.js", getHashCodePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_ComparerDefaultAndCompare_AreMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("static System.Collections.Generic.Comparer<T>.Default.get"));
+		Assert.IsTrue(members.Contains("virtual System.Collections.Generic.Comparer<T>.Compare(T, T)"));
+
+		var defaultValue = members["static System.Collections.Generic.Comparer<T>.Default.get"];
+		Assert.IsNotNull(defaultValue);
+		var defaultValueType = defaultValue.GetType();
+		var defaultOp = defaultValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue)?.ToString();
+		var defaultTemplate = (string?)defaultValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(defaultValue);
+		Assert.AreEqual("Inline", defaultOp);
+		Assert.AreEqual("(globalThis.__jazorComparerDefault ??= {})", defaultTemplate);
+
+		var compareValue = members["virtual System.Collections.Generic.Comparer<T>.Compare(T, T)"];
+		Assert.IsNotNull(compareValue);
+		var compareValueType = compareValue.GetType();
+		var compareOp = compareValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue)?.ToString();
+		var compareMethod = (string?)compareValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
+		var comparePath = (string?)compareValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
+		Assert.AreEqual("Import", compareOp);
+		Assert.AreEqual("_a4222c99b516b861", compareMethod);
+		Assert.AreEqual("System/Collections/Generic/ComparerT1Module.js", comparePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IComparerCompare_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.Collections.Generic.IComparer<T>.Compare(T, T)"));
+
+		var compareValue = members["System.Collections.Generic.IComparer<T>.Compare(T, T)"];
+		Assert.IsNotNull(compareValue);
+		var compareValueType = compareValue.GetType();
+		var compareOp = compareValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue)?.ToString();
+		var compareMethod = (string?)compareValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
+		var comparePath = (string?)compareValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
+
+		Assert.AreEqual("Import", compareOp);
+		Assert.AreEqual("_0289dcf579b8a65e", compareMethod);
+		Assert.AreEqual("System/Collections/Generic/IComparerT1Module.js", comparePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_StringCompareTo_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("string.CompareTo(object)"));
+		Assert.IsTrue(members.Contains("string.CompareTo(string)"));
+
+		var compareObjectValue = members["string.CompareTo(object)"];
+		Assert.IsNotNull(compareObjectValue);
+		var compareObjectValueType = compareObjectValue.GetType();
+		var compareObjectOp = compareObjectValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareObjectValue)?.ToString();
+		var compareObjectMethod = (string?)compareObjectValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareObjectValue);
+		var compareObjectPath = (string?)compareObjectValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareObjectValue);
+		Assert.AreEqual("Import", compareObjectOp);
+		Assert.AreEqual("_629b0613344d82e7", compareObjectMethod);
+		Assert.AreEqual("System/StringModule.js", compareObjectPath);
+
+		var compareStringValue = members["string.CompareTo(string)"];
+		Assert.IsNotNull(compareStringValue);
+		var compareStringValueType = compareStringValue.GetType();
+		var compareStringOp = compareStringValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareStringValue)?.ToString();
+		var compareStringMethod = (string?)compareStringValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareStringValue);
+		var compareStringPath = (string?)compareStringValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareStringValue);
+		Assert.AreEqual("Import", compareStringOp);
+		Assert.AreEqual("_380e7c7649d703f0", compareStringMethod);
+		Assert.AreEqual("System/StringModule.js", compareStringPath);
 	}
 
 	[TestMethod]

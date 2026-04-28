@@ -88,6 +88,7 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertTypeAlias(typeof(Jazor.CLR.EqualityComparerT1Module<>), "System.Collections.Generic.EqualityComparer<T>", "Object");
 		AssertMemberOp(typeof(Jazor.CLR.EqualityComparerT1Module<>), "static System.Collections.Generic.EqualityComparer<T>.Default.get", Op.Inline);
 		AssertMemberOp(typeof(Jazor.CLR.EqualityComparerT1Module<>), "virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.EqualityComparerT1Module<>), "virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)", Op.Import);
 	}
 
 	[TestMethod]
@@ -95,6 +96,29 @@ public sealed class CollectionInterfaceWhitelistTests
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>", "Object");
 		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.IEqualityComparerT1Module<>), "System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)", Op.Import);
+	}
+
+	[TestMethod]
+	public void ComparerMappings_SupportDefaultAndCompare()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.ComparerT1Module<>), "System.Collections.Generic.Comparer<T>", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.ComparerT1Module<>), "static System.Collections.Generic.Comparer<T>.Default.get", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.ComparerT1Module<>), "virtual System.Collections.Generic.Comparer<T>.Compare(T, T)", Op.Import);
+	}
+
+	[TestMethod]
+	public void ComparerInterfaceMappings_SupportCompareDispatch()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.IComparerT1Module<>), "System.Collections.Generic.IComparer<T>", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.IComparerT1Module<>), "System.Collections.Generic.IComparer<T>.Compare(T, T)", Op.Import);
+	}
+
+	[TestMethod]
+	public void StringCompareToMappings_SupportCompareDispatch()
+	{
+		AssertMemberOp(typeof(Jazor.CLR.StringModule), "string.CompareTo(object)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.StringModule), "string.CompareTo(string)", Op.Import);
 	}
 
 	[TestMethod]

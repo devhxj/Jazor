@@ -15,6 +15,7 @@ internal static partial class WhiteList
 		types["byte"] = new(Op.Alias, "Number");
 		types["System.Globalization.Calendar"] = new(Op.Alias, "Object");
 		types["char"] = new(Op.Alias, "String");
+		types["System.Collections.Generic.Comparer<T>"] = new(Op.Alias, "Object");
 		types["System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>"] = new(Op.Alias, "WeakMap");
 		types["System.Console"] = new(Op.Alias, "console");
 		types["System.Globalization.CultureInfo"] = new(Op.Alias, "String");
@@ -35,6 +36,9 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.HashSet<T>"] = new(Op.Alias, "Set");
 		types["System.Collections.ICollection"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.ICollection<T>"] = new(Op.Alias, "Array");
+		types["System.IComparable"] = new(Op.Alias, "Object");
+		types["System.IComparable<T>"] = new(Op.Alias, "Object");
+		types["System.Collections.Generic.IComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.IDictionary<TKey, TValue>"] = new(Op.Alias, "Map");
 		types["System.Collections.IEnumerable"] = new(Op.Alias, "Array");
 		types["System.Collections.Generic.IEnumerable<T>"] = new(Op.Alias, "Array");
@@ -376,6 +380,8 @@ internal static partial class WhiteList
 		members["static char.ConvertFromUtf32(int)"] = new(Op.Inline, "String.fromCodePoint(__arg1)");
 		members["static char.ConvertToUtf32(char, char)"] = new(Op.Inline, "(((__arg1 - 55296) << 10) + (__arg2 - 56320) + 65536)");
 		members["static char.ConvertToUtf32(string, int)"] = new(Op.Import, "_d9f7c3c03ea64580", "System/CharModule.js");
+		members["static System.Collections.Generic.Comparer<T>.Default.get"] = new(Op.Inline, "(globalThis.__jazorComparerDefault ??= {})");
+		members["virtual System.Collections.Generic.Comparer<T>.Compare(T, T)"] = new(Op.Import, "_a4222c99b516b861", "System/Collections/Generic/ComparerT1Module.js");
 		members["System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.ConditionalWeakTable()"] = new(Op.Inline, "new WeakMap()");
 		members["System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_8360443cbe5b1f88", "System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js");
 		members["System.Runtime.CompilerServices.ConditionalWeakTable<TKey, TValue>.Add(TKey, TValue)"] = new(Op.Import, "_c013f77a250570ce", "System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js");
@@ -931,6 +937,7 @@ internal static partial class WhiteList
 		members["static System.Linq.Enumerable.ToArray<TSource>(System.Collections.Generic.IEnumerable<TSource>)"] = new(Op.Import, "_ea56f0fe56c44ae7", "System/Linq/EnumerableModule.js");
 		members["static System.Collections.Generic.EqualityComparer<T>.Default.get"] = new(Op.Inline, "(globalThis.__jazorEqualityComparerDefault ??= {})");
 		members["virtual System.Collections.Generic.EqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_4614e5ce6b42a7ad", "System/Collections/Generic/EqualityComparerT1Module.js");
+		members["virtual System.Collections.Generic.EqualityComparer<T>.GetHashCode(T)"] = new(Op.Import, "_2c3736bd7d205921", "System/Collections/Generic/EqualityComparerT1Module.js");
 		members["System.Exception.Exception()"] = new(Op.Inline, "new Error()");
 		members["System.Exception.Exception(string)"] = new(Op.Inline, "new Error(__arg1)");
 		members["virtual System.Exception.Message.get"] = new(Op.Inline, "__arg1.message");
@@ -1007,6 +1014,9 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.ICollection<T>.Count.get"] = new(Op.Alias, "length");
 		members["System.Collections.Generic.ICollection<T>.Contains(T)"] = new(Op.Alias, "includes");
 		members["System.Collections.Generic.ICollection<T>.CopyTo(T[], int)"] = new(Op.Import, "_03c4a0ae3554065f", "System/Collections/Generic/ICollectionT1Module.js");
+		members["System.IComparable.CompareTo(object)"] = new(Op.Import, "_7d491b9d00d63609", "System/IComparableModule.js");
+		members["System.IComparable<T>.CompareTo(T)"] = new(Op.Import, "_797b5246c9b12c8d", "System/IComparableT1Module.js");
+		members["System.Collections.Generic.IComparer<T>.Compare(T, T)"] = new(Op.Import, "_0289dcf579b8a65e", "System/Collections/Generic/IComparerT1Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Import, "_371fad9265e864a1", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set"] = new(Op.Import, "_f3b177bfce76ed5c", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Keys.get"] = new(Op.Inline, "Array.from(__arg1.keys())");
@@ -1014,6 +1024,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.ContainsKey(TKey)"] = new(Op.Alias, "has");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)"] = new(Op.Import, "_ebaafc4d4a520807", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)"] = new(Op.Import, "_dae184550b995be1", "System/Collections/Generic/IEqualityComparerT1Module.js");
+		members["System.Collections.Generic.IEqualityComparer<T>.GetHashCode(T)"] = new(Op.Import, "_f53ff8f6435182d7", "System/Collections/Generic/IEqualityComparerT1Module.js");
 		members["System.Collections.IList.this[int].get"] = new(Op.Import, "_049fed3e1cad6543", "System/Collections/IListModule.js");
 		members["System.Collections.IList.Contains(object)"] = new(Op.Alias, "includes");
 		members["System.Collections.IList.IndexOf(object)"] = new(Op.Alias, "indexOf");
@@ -1440,6 +1451,8 @@ internal static partial class WhiteList
 		members["static string.Compare(string, string, System.StringComparison)"] = new(Op.Import, "_9d940114ace1198f", "System/StringModule.js");
 		members["static string.Compare(string, int, string, int, int, System.StringComparison)"] = new(Op.Import, "_d78fb9d76fca75e4", "System/StringModule.js");
 		members["static string.CompareOrdinal(string, string)"] = new(Op.Import, "_a55d307de6e31c7b", "System/StringModule.js");
+		members["string.CompareTo(object)"] = new(Op.Import, "_629b0613344d82e7", "System/StringModule.js");
+		members["string.CompareTo(string)"] = new(Op.Import, "_380e7c7649d703f0", "System/StringModule.js");
 		members["string.EndsWith(string)"] = new(Op.Alias, "endsWith");
 		members["string.EndsWith(string, System.StringComparison)"] = new(Op.Import, "_946b7129a48c8114", "System/StringModule.js");
 		members["string.EndsWith(char)"] = new(Op.Alias, "endsWith");
