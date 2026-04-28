@@ -88,11 +88,16 @@ public static class DictionaryT2Module<TKey, TValue>
 
 	/// <summary>
 	/// C#: dict[key]
-	/// JS: ((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw KeyNotFoundException; })(map, key)
-	/// 用参数化 IIFE 保证 receiver / key 只求值一次，避免内联模板重复求值导致副作用次数错误。
+	/// JS: instance.get(key) (缺失时抛出 KeyNotFoundException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", "((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw new Error('KeyNotFoundException: The given key was not present in the dictionary.'); })(__arg1, __arg2)")]
-	public extern static TValue _e73dbdff85c46ddc(Map<TKey,TValue> instance, TKey key);
+	[Jazor(Op.Import, "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get")]
+	public static TValue _e73dbdff85c46ddc(Map<TKey, TValue> instance, TKey key)
+	{
+		EnsureInstance(instance);
+		if (!instance.Has(key))
+			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
+		return instance.Get(key)!;
+	}
 
 	/// <summary>
 	/// C#: dict[key] = value

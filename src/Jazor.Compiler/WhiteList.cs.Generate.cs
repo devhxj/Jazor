@@ -807,7 +807,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.Dictionary<TKey, TValue>.Count.get"] = new(Op.Alias, "size");
 		members["System.Collections.Generic.Dictionary<TKey, TValue>.Keys.get"] = new(Op.Inline, "Array.from(__arg1.keys())");
 		members["System.Collections.Generic.Dictionary<TKey, TValue>.Values.get"] = new(Op.Inline, "Array.from(__arg1.values())");
-		members["System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get"] = new(Op.Inline, "((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw new Error('KeyNotFoundException: The given key was not present in the dictionary.'); })(__arg1, __arg2)");
+		members["System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get"] = new(Op.Import, "_e73dbdff85c46ddc", "System/Collections/Generic/DictionaryT2Module.js");
 		members["System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].set"] = new(Op.Inline, "__arg1.set(__arg2, __arg3)");
 		members["System.Collections.Generic.Dictionary<TKey, TValue>.Add(TKey, TValue)"] = new(Op.Import, "_39d6e632c4c102f9", "System/Collections/Generic/DictionaryT2Module.js");
 		members["System.Collections.Generic.Dictionary<TKey, TValue>.Clear()"] = new(Op.Alias, "clear");
@@ -1003,7 +1003,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.ICollection<T>.Count.get"] = new(Op.Alias, "length");
 		members["System.Collections.Generic.ICollection<T>.Contains(T)"] = new(Op.Alias, "includes");
 		members["System.Collections.Generic.ICollection<T>.CopyTo(T[], int)"] = new(Op.Import, "_03c4a0ae3554065f", "System/Collections/Generic/ICollectionT1Module.js");
-		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Inline, "((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw new Error('KeyNotFoundException: The given key was not present in the dictionary.'); })(__arg1, __arg2)");
+		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Import, "_371fad9265e864a1", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set"] = new(Op.Import, "_f3b177bfce76ed5c", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Keys.get"] = new(Op.Inline, "Array.from(__arg1.keys())");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.Values.get"] = new(Op.Inline, "Array.from(__arg1.values())");
@@ -1120,7 +1120,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.List<T>.List(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Inline, "Array.from(__arg1)");
 		members["System.Collections.Generic.List<T>.Count.get"] = new(Op.Alias, "length");
 		members["System.Collections.Generic.List<T>.this[int].get"] = new(Op.Import, "_d389c31d59037b42", "System/Collections/Generic/ListT1Module.js");
-		members["System.Collections.Generic.List<T>.this[int].set"] = new(Op.Inline, "(__arg1[__arg2] = __arg3)");
+		members["System.Collections.Generic.List<T>.this[int].set"] = new(Op.Import, "_c16a7960302ea054", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.Add(T)"] = new(Op.Alias, "push");
 		members["System.Collections.Generic.List<T>.AddRange(System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_a2660853a4ebc1f6", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.Clear()"] = new(Op.Inline, "(__arg1.length = 0)");
@@ -1142,12 +1142,12 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.List<T>.GetRange(int, int)"] = new(Op.Import, "_c35c9c99a23ff96a", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.Slice(int, int)"] = new(Op.Inline, "__arg1.slice(__arg2, __arg2 + __arg3)");
 		members["System.Collections.Generic.List<T>.IndexOf(T)"] = new(Op.Alias, "indexOf");
-		members["System.Collections.Generic.List<T>.IndexOf(T, int)"] = new(Op.Alias, "indexOf");
+		members["System.Collections.Generic.List<T>.IndexOf(T, int)"] = new(Op.Import, "_71ee35e0e260eb27", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.IndexOf(T, int, int)"] = new(Op.Import, "_5ee52e4e4fc54e6d", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.Insert(int, T)"] = new(Op.Import, "_0dc538197c677986", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)"] = new(Op.Import, "_56ef9aefabac7c09", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.LastIndexOf(T)"] = new(Op.Alias, "lastIndexOf");
-		members["System.Collections.Generic.List<T>.LastIndexOf(T, int)"] = new(Op.Alias, "lastIndexOf");
+		members["System.Collections.Generic.List<T>.LastIndexOf(T, int)"] = new(Op.Import, "_279befda6399cda5", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.LastIndexOf(T, int, int)"] = new(Op.Import, "_b2f1955b62962812", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.Remove(T)"] = new(Op.Import, "_562f832fd220e768", "System/Collections/Generic/ListT1Module.js");
 		members["System.Collections.Generic.List<T>.RemoveAll(System.Predicate<T>)"] = new(Op.Import, "_b864beda26f186e2", "System/Collections/Generic/ListT1Module.js");

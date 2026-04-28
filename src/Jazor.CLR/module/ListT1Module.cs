@@ -72,6 +72,73 @@ public static class ListT1Module<T>
 			throw new Error("ArgumentException: offset and length were out of bounds for the list.");
 	}
 
+	private static void EnsureMatch(Predicate<T> match)
+	{
+		if (match is null)
+			throw new Error("ArgumentNullException: match is null");
+	}
+
+	private static void EnsureForwardSearchStartIndex(Array<T> instance, Number startIndex)
+	{
+		EnsureInsertIndex(instance, startIndex);
+	}
+
+	private static void EnsureForwardSearchRange(Array<T> instance, Number startIndex, Number count)
+	{
+		EnsureWholeNumber(count, "ArgumentOutOfRangeException: count must be a whole number.");
+		EnsureForwardSearchStartIndex(instance, startIndex);
+		if (count < 0 || startIndex + count > instance.Length)
+			throw new Error("ArgumentOutOfRangeException: count is out of range.");
+	}
+
+	private static void EnsureLastSearchStartIndex(Array<T> instance, Number startIndex, string parameterName)
+	{
+		EnsureInstance(instance);
+		EnsureWholeNumber(startIndex, $"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
+
+		if (instance.Length == 0)
+		{
+			if (startIndex != -1)
+				throw new Error($"ArgumentOutOfRangeException: {parameterName} is out of range.");
+			return;
+		}
+
+		if (startIndex < 0 || startIndex >= instance.Length)
+			throw new Error($"ArgumentOutOfRangeException: {parameterName} is out of range.");
+	}
+
+	private static void EnsureLastSearchRange(Array<T> instance, Number startIndex, Number count, string startIndexName)
+	{
+		EnsureLastSearchStartIndex(instance, startIndex, startIndexName);
+		EnsureWholeNumber(count, "ArgumentOutOfRangeException: count must be a whole number.");
+
+		if (count < 0)
+			throw new Error("ArgumentOutOfRangeException: count is out of range.");
+
+		if (instance.Length == 0)
+		{
+			if (count != 0)
+				throw new Error("ArgumentOutOfRangeException: count is out of range.");
+			return;
+		}
+
+		if (count > startIndex + 1)
+			throw new Error("ArgumentOutOfRangeException: count is out of range.");
+	}
+
+	// Avoid depending on EqualityComparer<T> CLR coverage inside runtime modules.
+	// Keep list search/remove equality aligned to JS SameValueZero-like behavior.
+	private static bool EqualsForListSearch(T left, T right)
+	{
+		if (Object.Is(left, right))
+			return true;
+
+		if (left is Number leftNumber && right is Number rightNumber)
+			return leftNumber == rightNumber;
+
+		return false;
+	}
+
 	// Keep list mutations in imports so index validation and iteration stay visible in Jazor code
 	// instead of being hidden inside JS string templates.
 	private static void AppendRange(Array<T> instance, IEnumerable<T> collection)
@@ -79,6 +146,16 @@ public static class ListT1Module<T>
 		EnsureInstance(instance);
 		if (collection is null)
 			throw new Error("ArgumentNullException: collection is null");
+
+		// .NET List.AddRange supports self-add. Snapshot first to avoid iterating a collection
+		// that is being mutated during the same loop.
+		if (collection is Array<T> source && Object.Is(instance, source))
+		{
+			var originalLength = source.Length;
+			for (uint i = 0; i < originalLength; i++)
+				instance.Push(source[i]);
+			return;
+		}
 
 		foreach (var item in collection)
 			instance.Push(item);
@@ -133,10 +210,14 @@ public static class ListT1Module<T>
 
 	/// <summary>
 	/// C#: list[index] = value
-	/// JS: array[index] = value
+	/// JS: array[index] = value (越界时抛出 ArgumentOutOfRangeException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.List<T>.this[int].set", "(__arg1[__arg2] = __arg3)")]
-	public extern static void _c16a7960302ea054(Array<T> instance, Number index, T value);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.this[int].set")]
+	public static void _c16a7960302ea054(Array<T> instance, Number index, T value)
+	{
+		EnsureExistingIndex(instance, index);
+		instance[index] = value;
+	}
 
 	/// <summary>
 	/// C#: list.Add(item)
@@ -275,6 +356,11 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindIndex(int, System.Predicate<T>)")]
 	public static Number _db9b68fbc73e342b(Array<T> instance, Number startIndex, Predicate<T> match)
 	{
+		EnsureMatch(match);
+		EnsureForwardSearchStartIndex(instance, startIndex);
+		if (startIndex == instance.Length)
+			return -1;
+
 		for (int i = (int)startIndex; i < (int)instance.Length; i++)
 		{
 			if (match(instance[(uint)i]))
@@ -290,7 +376,12 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindIndex(int, int, System.Predicate<T>)")]
 	public static Number _41b337b09c5daf75(Array<T> instance, Number startIndex, Number count, Predicate<T> match)
 	{
-		int end = Math.Min((int)startIndex + (int)count, (int)instance.Length);
+		EnsureMatch(match);
+		EnsureForwardSearchRange(instance, startIndex, count);
+		if (count == 0)
+			return -1;
+
+		int end = (int)startIndex + (int)count;
 		for (int i = (int)startIndex; i < end; i++)
 		{
 			if (match(instance[(uint)i]))
@@ -306,6 +397,9 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindLast(System.Predicate<T>)")]
 	public static T? _de0943e496e36f2d(Array<T> instance, Predicate<T> match)
 	{
+		EnsureInstance(instance);
+		EnsureMatch(match);
+
 		for (uint i = instance.Length; i > 0; i--)
 		{
 			if (match(instance[i - 1]))
@@ -321,6 +415,9 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindLastIndex(System.Predicate<T>)")]
 	public static Number _ae1a0b59c73f2b1a(Array<T> instance, Predicate<T> match)
 	{
+		EnsureInstance(instance);
+		EnsureMatch(match);
+
 		for (uint i = instance.Length; i > 0; i--)
 		{
 			if (match(instance[i - 1]))
@@ -336,6 +433,11 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindLastIndex(int, System.Predicate<T>)")]
 	public static Number _081aa9ae0b09d058(Array<T> instance, Number startIndex, Predicate<T> match)
 	{
+		EnsureMatch(match);
+		EnsureLastSearchStartIndex(instance, startIndex, "startIndex");
+		if (instance.Length == 0)
+			return -1;
+
 		for (int i = (int)startIndex; i >= 0; i--)
 		{
 			if (match(instance[(uint)i]))
@@ -351,8 +453,12 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.FindLastIndex(int, int, System.Predicate<T>)")]
 	public static Number _58cc54dc07e440c4(Array<T> instance, Number startIndex, Number count, Predicate<T> match)
 	{
+		EnsureMatch(match);
+		EnsureLastSearchRange(instance, startIndex, count, "startIndex");
+		if (count == 0)
+			return -1;
+
 		int start = (int)startIndex - (int)count + 1;
-		if (start < 0) start = 0;
 		for (int i = (int)startIndex; i >= start; i--)
 		{
 			if (match(instance[(uint)i]))
@@ -398,10 +504,22 @@ public static class ListT1Module<T>
 
 	/// <summary>
 	/// C#: list.IndexOf(item, index)
-	/// JS: array.indexOf(item, index)
+	/// JS: 从指定起点向后搜索
 	/// </summary>
-	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.IndexOf(T, int)", "indexOf")]
-	public extern static Number _71ee35e0e260eb27(Array<T> instance, T item, Number index);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.IndexOf(T, int)")]
+	public static Number _71ee35e0e260eb27(Array<T> instance, T item, Number index)
+	{
+		EnsureForwardSearchStartIndex(instance, index);
+		if (index == instance.Length)
+			return -1;
+
+		for (uint i = (uint)index; i < instance.Length; i++)
+		{
+			if (EqualsForListSearch(instance[i], item))
+				return (int)i;
+		}
+		return -1;
+	}
 
 	/// <summary>
 	/// C#: list.IndexOf(item, index, count)
@@ -410,10 +528,14 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.IndexOf(T, int, int)")]
 	public static Number _5ee52e4e4fc54e6d(Array<T> instance, T item, Number index, Number count)
 	{
-		uint end = (uint)Math.Min((int)index + (int)count, (int)instance.Length);
+		EnsureForwardSearchRange(instance, index, count);
+		if (count == 0)
+			return -1;
+
+		uint end = (uint)((int)index + (int)count);
 		for (uint i = (uint)index; i < end; i++)
 		{
-			if (EqualityComparer<T>.Default.Equals(instance[i], item))
+			if (EqualsForListSearch(instance[i], item))
 				return (int)i;
 		}
 		return -1;
@@ -441,6 +563,23 @@ public static class ListT1Module<T>
 		if (collection is null)
 			throw new Error("ArgumentNullException: collection is null");
 
+		// .NET List.InsertRange supports self-insert. Snapshot the source sequence first so
+		// insertion does not feed back into the same enumeration stream.
+		if (collection is Array<T> source && Object.Is(instance, source))
+		{
+			var snapshot = new Array<T>();
+			for (uint i = 0; i < source.Length; i++)
+				snapshot.Push(source[i]);
+
+			var selfInsertionIndex = index;
+			for (uint i = 0; i < snapshot.Length; i++)
+			{
+				instance.Splice(selfInsertionIndex, 0, snapshot[i]);
+				selfInsertionIndex++;
+			}
+			return;
+		}
+
 		var insertionIndex = index;
 		foreach (var item in collection)
 		{
@@ -458,10 +597,22 @@ public static class ListT1Module<T>
 
 	/// <summary>
 	/// C#: list.LastIndexOf(item, index)
-	/// JS: array.lastIndexOf(item, index)
+	/// JS: 从指定起点向前搜索
 	/// </summary>
-	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.LastIndexOf(T, int)", "lastIndexOf")]
-	public extern static Number _279befda6399cda5(Array<T> instance, T item, Number index);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.LastIndexOf(T, int)")]
+	public static Number _279befda6399cda5(Array<T> instance, T item, Number index)
+	{
+		EnsureLastSearchStartIndex(instance, index, "index");
+		if (instance.Length == 0)
+			return -1;
+
+		for (int i = (int)index; i >= 0; i--)
+		{
+			if (EqualsForListSearch(instance[(uint)i], item))
+				return i;
+		}
+		return -1;
+	}
 
 	/// <summary>
 	/// C#: list.LastIndexOf(item, index, count)
@@ -470,11 +621,14 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.LastIndexOf(T, int, int)")]
 	public static Number _b2f1955b62962812(Array<T> instance, T item, Number index, Number count)
 	{
+		EnsureLastSearchRange(instance, index, count, "index");
+		if (count == 0)
+			return -1;
+
 		int start = (int)index - (int)count + 1;
-		if (start < 0) start = 0;
 		for (int i = (int)index; i >= start; i--)
 		{
-			if (EqualityComparer<T>.Default.Equals(instance[(uint)i], item))
+			if (EqualsForListSearch(instance[(uint)i], item))
 				return i;
 		}
 		return -1;
@@ -487,11 +641,15 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Remove(T)")]
 	public static bool _562f832fd220e768(Array<T> instance, T item)
 	{
-		Number index = instance.IndexOf(item, null);
-		if ((double)index >= 0)
+		EnsureInstance(instance);
+
+		for (uint i = 0; i < instance.Length; i++)
 		{
-			instance.Splice(index, 1);
-			return true;
+			if (EqualsForListSearch(instance[i], item))
+			{
+				instance.Splice(i, 1);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -503,6 +661,9 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.RemoveAll(System.Predicate<T>)")]
 	public static Number _b864beda26f186e2(Array<T> instance, Predicate<T> match)
 	{
+		EnsureInstance(instance);
+		EnsureMatch(match);
+
 		int count = 0;
 		for (uint i = instance.Length; i > 0; i--)
 		{

@@ -65,7 +65,7 @@ public sealed class CollectionInterfaceWhitelistTests
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>", "Map");
 
-		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get", Op.Inline);
+		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.Keys.get", Op.Inline);
 		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.Values.get", Op.Inline);
 		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.ContainsKey(TKey)", Op.Alias);
@@ -73,6 +73,13 @@ public sealed class CollectionInterfaceWhitelistTests
 		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.Add(TKey, TValue)", Op.Discard);
 		AssertMemberOp(typeof(Jazor.CLR.IDictionaryT2Module<,>), "System.Collections.Generic.IDictionary<TKey, TValue>.Remove(TKey)", Op.Discard);
+	}
+
+	[TestMethod]
+	public void DictionaryMappings_IndexerGetUsesImportForStableThrowSemantics()
+	{
+		AssertTypeAlias(typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>", "Map");
+		AssertMemberOp(typeof(Jazor.CLR.DictionaryT2Module<,>), "System.Collections.Generic.Dictionary<TKey, TValue>.this[TKey].get", Op.Import);
 	}
 
 	[TestMethod]
@@ -131,6 +138,9 @@ public sealed class CollectionInterfaceWhitelistTests
 	{
 		AssertTypeAlias(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>", "Array");
 
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.this[int].set", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.IndexOf(T, int)", Op.Import);
+		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.LastIndexOf(T, int)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.GetRange(int, int)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.InsertRange(int, System.Collections.Generic.IEnumerable<T>)", Op.Import);
 		AssertMemberOp(typeof(Jazor.CLR.ListT1Module<>), "System.Collections.Generic.List<T>.Reverse(int, int)", Op.Import);

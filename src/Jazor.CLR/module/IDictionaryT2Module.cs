@@ -13,13 +13,24 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.IDictionary<TKey, TValue>", "Map")]
 public static class IDictionaryT2Module<TKey, TValue>
 {
+	private static void EnsureInstance(Map<TKey, TValue> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+	}
+
 	/// <summary>
 	/// C#: dict[key]
-	/// JS: ((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw KeyNotFoundException; })(map, key)
-	/// 用参数化 IIFE 保证 receiver / key 只求值一次，避免内联模板重复求值导致副作用次数错误。
+	/// JS: instance.get(key) (缺失时抛出 KeyNotFoundException)
 	/// </summary>
-	[Jazor(Op.Inline, "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get", "((__m, __k) => { if (__m.has(__k)) return __m.get(__k); throw new Error('KeyNotFoundException: The given key was not present in the dictionary.'); })(__arg1, __arg2)")]
-	public extern static TValue _371fad9265e864a1(Map<TKey, TValue> instance, TKey key);
+	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get")]
+	public static TValue _371fad9265e864a1(Map<TKey, TValue> instance, TKey key)
+	{
+		EnsureInstance(instance);
+		if (!instance.Has(key))
+			throw new Error("KeyNotFoundException: The given key was not present in the dictionary.");
+		return instance.Get(key)!;
+	}
 
 	/// <summary>
 	/// C#: dict[key] = value
@@ -28,8 +39,7 @@ public static class IDictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set")]
 	public static void _f3b177bfce76ed5c(Map<TKey, TValue> instance, TKey key, TValue value)
 	{
-		if (instance is null)
-			throw new Error("NullReferenceException: instance is null.");
+		EnsureInstance(instance);
 
 		// ReadOnlyDictionary 运行时 carrier 共享 Map；接口写入口必须守住只读边界。
 		if (DictionaryCarrierRuntime.IsReadOnlyCarrier(instance))
@@ -80,8 +90,7 @@ public static class IDictionaryT2Module<TKey, TValue>
 	[Jazor(Op.Import, "System.Collections.Generic.IDictionary<TKey, TValue>.TryGetValue(TKey, out TValue)")]
 	public static Array<object?> _ebaafc4d4a520807(Map<TKey, TValue> instance, TKey key)
 	{
-		if (instance is null)
-			throw new Error("NullReferenceException: instance is null.");
+		EnsureInstance(instance);
 
 		if (instance.Has(key))
 			return [true, instance.Get(key)];

@@ -3329,11 +3329,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(dict, ""key"");
+  let value = _e73dbdff85c46ddc(dict, ""key"");
 }", script);
 	}
 
@@ -3423,11 +3419,7 @@ public sealed class SemanticWalkerReferenceTest
   let person = null;
   let dict = new Map;
   dict.set(person?.Name, 42);
-  let value = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(dict, person?.Name);
+  let value = _e73dbdff85c46ddc(dict, person?.Name);
 }", script);
 	}
 
@@ -3678,6 +3670,33 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Invocation_ListIndexOfAndLastIndexOf_WithStartIndex_UseImportHelpers()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var values = new List<int> { 10, 20, 30, 20 };
+                    int first = values.IndexOf(20, 1);
+                    int last = values.LastIndexOf(20, 2);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let values = [10, 20, 30, 20];
+  let first = _71ee35e0e260eb27(values, 20, 1);
+  let last = _279befda6399cda5(values, 20, 2);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_IListIndexerGet_UsesImportHelper()
 	{
 		var block = GetBlockOperation(@"
@@ -3750,16 +3769,12 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   _f3b177bfce76ed5c(dict, ""key"", 42);
-  let value = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(dict, ""key"");
+  let value = _371fad9265e864a1(dict, ""key"");
 }", script);
 	}
 
 	/// <summary>
-	/// 索引器 getter 的 key 实参必须只求值一次，不能因为 inline 展开重复执行副作用。
+	/// 索引器 getter 的 key 实参必须只求值一次，不能重复执行副作用。
 	/// </summary>
 	[TestMethod]
 	public void Visit_Reference_IDictionaryIndexerGet_SideEffectingKey_EvaluatedOnce()
@@ -3792,16 +3807,12 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   _f3b177bfce76ed5c(dict, ""key"", 42);
-  let value = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(dict, this.NextKey());
+  let value = _371fad9265e864a1(dict, this.NextKey());
 }", script);
 	}
 
 	/// <summary>
-	/// 索引器 getter 的 receiver 实参必须只求值一次，不能因为 inline 展开重复执行副作用。
+	/// 索引器 getter 的 receiver 实参必须只求值一次，不能重复执行副作用。
 	/// </summary>
 	[TestMethod]
 	public void Visit_Reference_DictionaryIndexerGet_SideEffectingReceiver_EvaluatedOnce()
@@ -3834,11 +3845,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(this.Pick(dict), ""key"");
+  let value = _e73dbdff85c46ddc(this.Pick(dict), ""key"");
 }", script);
 	}
 
@@ -4338,11 +4345,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let v$0;
   let dict = null;
-  let value = (v$0 = dict, v$0 == null ? undefined : ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(v$0, ""key""));
+  let value = (v$0 = dict, v$0 == null ? undefined : _e73dbdff85c46ddc(v$0, ""key""));
 }", script);
 	}
 
@@ -4398,7 +4401,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let v$0;
   let list = [1, 2, 3];
-  v$0 = _d389c31d59037b42(list, 0) + 5, list[0] = v$0, v$0;
+  v$0 = _d389c31d59037b42(list, 0) + 5, _c16a7960302ea054(list, 0, v$0), v$0;
 }", script);
 	}
 
@@ -4427,7 +4430,7 @@ public sealed class SemanticWalkerReferenceTest
   let next = () => {
     return list;
   };
-  v$0 = next(), v$0[v$0.length - 1] = 4;
+  v$0 = next(), _c16a7960302ea054(v$0, v$0.length - 1, 4);
 }", script);
 	}
 
@@ -4456,7 +4459,7 @@ public sealed class SemanticWalkerReferenceTest
   let next = () => {
     return list;
   };
-  v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1) + 5, v$0[v$1] = v$2, v$2;
+  v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1) + 5, _c16a7960302ea054(v$0, v$1, v$2), v$2;
 }", script);
 	}
 
@@ -4484,7 +4487,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let v$0;
   let list = [1, 2, 3];
-  let before = (v$0 = _d389c31d59037b42(list, 0), list[0] = v$0 + 1, v$0);
+  let before = (v$0 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$0 + 1), v$0);
 }", script);
 	}
 
@@ -4513,7 +4516,7 @@ public sealed class SemanticWalkerReferenceTest
   let next = () => {
     return list;
   };
-  let before = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), v$0[v$1] = v$2 + 1, v$2);
+  let before = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), _c16a7960302ea054(v$0, v$1, v$2 + 1), v$2);
 }", script);
 	}
 
@@ -4543,11 +4546,7 @@ public sealed class SemanticWalkerReferenceTest
   let v$0;
   let dict = new Map;
   dict.set(""key"", 1);
-  v$0 = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(dict, ""key"") + 5, dict.set(""key"", v$0), v$0;
+  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5, dict.set(""key"", v$0), v$0;
 }", script);
 	}
 
@@ -4575,7 +4574,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let v$0;
   let list = [null];
-  let value = (v$0 = _d389c31d59037b42(list, 0), v$0 == null ? (v$0 = ""fallback"", list[0] = v$0, v$0) : v$0);
+  let value = (v$0 = _d389c31d59037b42(list, 0), v$0 == null ? (v$0 = ""fallback"", _c16a7960302ea054(list, 0, v$0), v$0) : v$0);
 }", script);
 	}
 
@@ -4604,7 +4603,7 @@ public sealed class SemanticWalkerReferenceTest
   let next = () => {
     return list;
   };
-  let value = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), v$2 == null ? (v$2 = ""fallback"", v$0[v$1] = v$2, v$2) : v$2);
+  let value = (v$0 = next(), v$1 = v$0.length - 1, v$2 = _d389c31d59037b42(v$0, v$1), v$2 == null ? (v$2 = ""fallback"", _c16a7960302ea054(v$0, v$1, v$2), v$2) : v$2);
 }", script);
 	}
 
@@ -4638,7 +4637,7 @@ public sealed class SemanticWalkerReferenceTest
     return index++;
   };
   let list = [1, 2, 3];
-  v$0 = nextIndex(), v$1 = _d389c31d59037b42(list, v$0) + 5, list[v$0] = v$1, v$1;
+  v$0 = nextIndex(), v$1 = _d389c31d59037b42(list, v$0) + 5, _c16a7960302ea054(list, v$0, v$1), v$1;
 }", script);
 	}
 
@@ -4984,11 +4983,7 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
-  let value = ((__m, __k) => {
-    if (__m.has(__k))
-      return __m.get(__k);
-    throw new Error('KeyNotFoundException: The given key was not present in the dictionary.');
-  })(dict, ""key"");
+  let value = _e73dbdff85c46ddc(dict, ""key"");
 }", script);
 	}
 
