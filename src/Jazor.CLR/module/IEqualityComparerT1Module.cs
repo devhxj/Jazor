@@ -14,7 +14,7 @@ public static class IEqualityComparerT1Module<T>
 	/// <summary>
 	/// C#: comparer.Equals(x, y)
 	/// JS: 复用 EqualityComparer&lt;T&gt; 的核心等价逻辑
-	/// 说明：保持实现简洁，不在此重复注入 instance 空检查。
+	/// 说明：保留 receiver 空检查，保证接口调用空接收者语义一致。
 	/// </summary>
 	[Jazor(Op.Import, "System.Collections.Generic.IEqualityComparer<T>.Equals(T, T)")]
 	public static bool _dae184550b995be1(object instance, T x, T y)

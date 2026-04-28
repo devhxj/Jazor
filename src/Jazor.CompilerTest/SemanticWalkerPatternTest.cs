@@ -3864,10 +3864,10 @@ line2"";
   }
 
   /// <summary>
-  /// 测试 Visit - TypePattern 泛型约束与类型检查
+  /// 测试 Visit - TypePattern 泛型接口在可静态证明场景下直接求值为 true
   /// </summary>
   [TestMethod]
-  public void Visit_TypePattern_GenericWithConstraints()
+  public void Visit_TypePattern_GenericInterface_FoldsToTrue_WhenStaticallyProvable()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -3881,16 +3881,20 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    Assert.Throws<OperationTransformationException>(
-      () => walker.Visit(block, new()),
-      "Unsupported type in is-type operation.");
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = ""test"";
+  let result = true;
+}", script);
   }
 
   /// <summary>
-  /// 测试 Visit - TypePattern 非泛型 IComparable 仍保持不支持（Object 别名接口不可可靠运行时判定）
+  /// 测试 Visit - TypePattern 非泛型接口在可静态证明场景下直接求值为 true
   /// </summary>
   [TestMethod]
-  public void Visit_TypePattern_IComparableNonGeneric_ThrowsUnsupported()
+  public void Visit_TypePattern_IComparableNonGeneric_FoldsToTrue_WhenStaticallyProvable()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -3904,16 +3908,47 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    Assert.Throws<OperationTransformationException>(
-      () => walker.Visit(block, new()),
-      "Unsupported type in is-type operation.");
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = ""test"";
+  let result = true;
+}", script);
   }
 
   /// <summary>
-  /// 测试 Visit - TypePattern IEqualityComparer 接口保持不支持（Object 别名接口不可可靠运行时判定）
+  /// 测试 Visit - TypePattern 接口在可静态证明不匹配场景下直接求值为 false
   /// </summary>
   [TestMethod]
-  public void Visit_TypePattern_IEqualityComparer_ThrowsUnsupported()
+  public void Visit_TypePattern_Interface_FoldsToFalse_WhenStaticallyProvable()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = ""test"";
+                    bool result = obj is System.Collections.IEqualityComparer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = ""test"";
+  let result = false;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern IEqualityComparer 接口在可静态证明“仅与 null 相关”时降级为非空判断
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_IEqualityComparer_FoldsToNonNullCheck()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -3927,16 +3962,20 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    Assert.Throws<OperationTransformationException>(
-      () => walker.Visit(block, new()),
-      "Unsupported type in is-type operation.");
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let result = obj !== null;
+}", script);
   }
 
   /// <summary>
-  /// 测试 Visit - DeclarationPattern IEqualityComparer 接口仍保持不支持（Object 别名接口不可可靠运行时判定）
+  /// 测试 Visit - DeclarationPattern IEqualityComparer 接口在可静态证明“仅与 null 相关”时降级为非空判断
   /// </summary>
   [TestMethod]
-  public void Visit_DeclarationPattern_IEqualityComparer_ThrowsUnsupported()
+  public void Visit_DeclarationPattern_IEqualityComparer_FoldsToNonNullCheck()
   {
     var block = GetBlockOperation(@"
             class TestClass
@@ -3950,9 +3989,69 @@ line2"";
             ");
 
     var walker = new SemanticWalker(true);
-    Assert.Throws<OperationTransformationException>(
-      () => walker.Visit(block, new()),
-      "Unsupported type in is-type operation.");
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let comparer;
+  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let result = obj !== null && (comparer = obj, true) && _dae184550b995be1(comparer, 1, 1);
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - TypePattern 非泛型 IEqualityComparer 在可静态证明“仅与 null 相关”时降级为非空判断
+  /// </summary>
+  [TestMethod]
+  public void Visit_TypePattern_IEqualityComparerNonGeneric_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = System.Collections.Generic.EqualityComparer<int>.Default;
+                    bool result = obj is System.Collections.IEqualityComparer;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let result = obj !== null;
+}", script);
+  }
+
+  /// <summary>
+  /// 测试 Visit - DeclarationPattern 非泛型 IEqualityComparer 在可静态证明“仅与 null 相关”时降级为非空判断
+  /// </summary>
+  [TestMethod]
+  public void Visit_DeclarationPattern_IEqualityComparerNonGeneric_FoldsToNonNullCheck()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = System.Collections.Generic.EqualityComparer<int>.Default;
+                    bool result = obj is System.Collections.IEqualityComparer comparer && comparer.Equals(1, 1);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let comparer;
+  let obj = globalThis.__jazorEqualityComparerDefault ??= {};
+  let result = obj !== null && (comparer = obj, true) && _eb0a1792ad8b44b7(comparer, 1, 1);
+}", script);
   }
 
   /// <summary>

@@ -1483,24 +1483,40 @@ public partial class SemanticWalker
 				var (mapper, typeName) = GetMapperType(typeSymbol);
 
 				// Interface types aliased to Object do not carry a reliable runtime discriminator in JS.
-				// Keep this boundary explicit instead of producing unsound type checks.
+				// For these cases, only fold at compile-time when Roslyn metadata can prove the outcome.
+				// If not provable, keep the explicit unsupported boundary instead of producing unsound runtime checks.
 				if (typeSymbol.TypeKind == TypeKind.Interface && mapper == TypeMapper.Object)
-					return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
-
-				result = mapper switch
 				{
-					TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
-					TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
-					TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
-					TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
-					TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
-					TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
-					TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
-					TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
-					TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
-					TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
-					_ => null
-				};
+					if (TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(operation, typeSymbol, out var folded))
+					{
+						result = folded switch
+						{
+							InterfaceTypeCheckFold.AlwaysTrue => new BooleanLiteral(true, "true"),
+							InterfaceTypeCheckFold.AlwaysFalse => new BooleanLiteral(false, "false"),
+							InterfaceTypeCheckFold.NonNullOnly => new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+							_ => null
+						};
+					}
+					else
+						return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
+				}
+				else
+				{
+					result = mapper switch
+					{
+						TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
+						TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
+						TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
+						TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
+						TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
+						TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
+						TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
+						TypeMapper.Set => InstanceOfExpr(value, new Identifier("Set")),
+						TypeMapper.Array => new CallExpression(IsArrayExpr, NodeList.From(value), optional: false),
+						TypeMapper.Class => BuildClassTypeMatch(operation, typeSymbol, value, typeName, context),
+						_ => null
+					};
+				}
 			}
 		}
 
@@ -1529,6 +1545,221 @@ public partial class SemanticWalker
 		{
 			return new NonLogicalBinaryExpression(Operator.InstanceOf, target, expr);
 		}
+	}
+
+	private enum InterfaceTypeCheckFold
+	{
+		AlwaysTrue,
+		AlwaysFalse,
+		NonNullOnly
+	}
+
+	private bool TryEvaluateCompileTimeErasedInterfaceIsTypeCheck(IOperation operation, ITypeSymbol interfaceType, out InterfaceTypeCheckFold result)
+	{
+		result = InterfaceTypeCheckFold.AlwaysFalse;
+		if (interfaceType.TypeKind != TypeKind.Interface)
+			return false;
+
+		var sourceOperation = ResolveIsTypeSourceOperation(operation);
+		if (sourceOperation is null)
+			return false;
+
+		var resolvedSource = ResolveSingleAssignmentValueSource(sourceOperation, operation);
+		if (TryResolveDeterministicRuntimeValue(resolvedSource, out var runtimeType, out var definitelyNonNull))
+		{
+			// null is never an instance of interface types.
+			if (runtimeType is null)
+			{
+				result = InterfaceTypeCheckFold.AlwaysFalse;
+				return true;
+			}
+
+			var assignable = IsRuntimeTypeAssignableToInterface(runtimeType, interfaceType);
+			if (assignable)
+				result = definitelyNonNull
+					? InterfaceTypeCheckFold.AlwaysTrue
+					: InterfaceTypeCheckFold.NonNullOnly;
+			else if (definitelyNonNull)
+				result = InterfaceTypeCheckFold.AlwaysFalse;
+			else
+				return false;
+
+			return true;
+		}
+
+		var staticType = resolvedSource.Type;
+		if (staticType is null || !IsRuntimeTypeAssignableToInterface(staticType, interfaceType))
+			return false;
+
+		result = staticType.IsValueType && !IsNullableType(staticType)
+			? InterfaceTypeCheckFold.AlwaysTrue
+			: InterfaceTypeCheckFold.NonNullOnly;
+		return true;
+	}
+
+	private static bool IsRuntimeTypeAssignableToInterface(ITypeSymbol runtimeType, ITypeSymbol interfaceType)
+	{
+		if (interfaceType.TypeKind != TypeKind.Interface)
+			return false;
+
+		if (SymbolEqualityComparer.Default.Equals(runtimeType, interfaceType))
+			return true;
+
+		return runtimeType switch
+		{
+			INamedTypeSymbol namedRuntimeType => namedRuntimeType.AllInterfaces.Any(@interface =>
+				SymbolEqualityComparer.Default.Equals(@interface, interfaceType)),
+			_ => false
+		};
+	}
+
+	private IOperation ResolveSingleAssignmentValueSource(IOperation sourceOperation, IOperation useSiteOperation)
+	{
+		var current = UnwrapImplicitConversions(sourceOperation);
+		var localCycleGuard = new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default);
+
+		while (current is ILocalReferenceOperation localReference)
+		{
+			var local = localReference.Local;
+			if (local is null || !localCycleGuard.Add(local))
+				break;
+
+			if (!TryResolveSingleAssignmentLocalInitializer(localReference, useSiteOperation, out var initializerValue))
+				break;
+
+			current = UnwrapImplicitConversions(initializerValue);
+		}
+
+		return current;
+	}
+
+	private static IOperation? ResolveIsTypeSourceOperation(IOperation operation)
+	{
+		if (operation is IIsTypeOperation isTypeOperation)
+			return isTypeOperation.ValueOperand;
+
+		// Declaration/type patterns in `expr is pattern` can recover the source from parent.
+		if (operation.Parent is IIsPatternOperation isPatternOperation &&
+			operation is ITypePatternOperation or IDeclarationPatternOperation)
+			return isPatternOperation.Value;
+
+		return null;
+	}
+
+	private bool TryResolveDeterministicRuntimeValue(
+		IOperation sourceOperation,
+		out ITypeSymbol? runtimeType,
+		out bool definitelyNonNull)
+	{
+		runtimeType = null;
+		definitelyNonNull = false;
+		var operation = UnwrapImplicitConversions(sourceOperation);
+
+		// Compile-time null constants (null literal / default of reference-like targets).
+		if (operation.ConstantValue.HasValue && operation.ConstantValue.Value is null)
+			return true;
+
+		switch (operation)
+		{
+			case IObjectCreationOperation objectCreation:
+				runtimeType = objectCreation.Type ?? objectCreation.Constructor?.ContainingType;
+				definitelyNonNull = runtimeType is not null;
+				return runtimeType is not null;
+
+			case IAnonymousObjectCreationOperation anonymousObjectCreation:
+				runtimeType = anonymousObjectCreation.Type;
+				definitelyNonNull = runtimeType is not null;
+				return runtimeType is not null;
+
+			case IArrayCreationOperation arrayCreation:
+				runtimeType = arrayCreation.Type;
+				definitelyNonNull = runtimeType is not null;
+				return runtimeType is not null;
+
+			case ILiteralOperation literal when literal.ConstantValue.HasValue:
+				runtimeType = literal.Type;
+				definitelyNonNull = literal.ConstantValue.Value is not null && runtimeType is not null;
+				return runtimeType is not null;
+
+			case IDefaultValueOperation defaultValue:
+				if (defaultValue.Type is null)
+					return false;
+
+				// default(reference-like) -> null
+				if (defaultValue.Type.IsReferenceType || IsNullableType(defaultValue.Type))
+					return true;
+
+				// default(non-nullable value-type) keeps concrete runtime type.
+				runtimeType = defaultValue.Type;
+				definitelyNonNull = true;
+				return true;
+
+			case IConversionOperation conversion:
+				return TryResolveDeterministicRuntimeValue(conversion.Operand, out runtimeType, out definitelyNonNull);
+		}
+
+		return false;
+	}
+
+	private static bool TryResolveSingleAssignmentLocalInitializer(
+		ILocalReferenceOperation localReference,
+		IOperation useSiteOperation,
+		out IOperation initializerValue)
+	{
+		initializerValue = null!;
+
+		var local = localReference.Local;
+		var semanticModel = localReference.SemanticModel;
+		if (local is null ||
+			semanticModel is null ||
+			local.DeclaringSyntaxReferences.Length != 1)
+			return false;
+
+		if (IsLocalReassignedBeforeUse(local, useSiteOperation))
+			return false;
+
+		var declarationSyntax = local.DeclaringSyntaxReferences[0].GetSyntax();
+		if (semanticModel.GetOperation(declarationSyntax) is not IVariableDeclaratorOperation { Initializer.Value: IOperation initializer } declarator)
+			return false;
+
+		initializerValue = declarator.Initializer.Value;
+		return true;
+	}
+
+	private static bool IsLocalReassignedBeforeUse(ILocalSymbol local, IOperation useSiteOperation)
+	{
+		var root = useSiteOperation;
+		while (root.Parent is not null)
+			root = root.Parent;
+
+		var usePosition = useSiteOperation.Syntax.SpanStart;
+		foreach (var operation in root.Descendants())
+		{
+			if (operation.Syntax.SpanStart >= usePosition)
+				continue;
+
+			if (WritesToLocal(operation, local))
+				return true;
+		}
+
+		return false;
+	}
+
+	private static bool WritesToLocal(IOperation operation, ILocalSymbol local)
+	{
+		static bool IsSameLocal(IOperation? target, ILocalSymbol localSymbol)
+			=> target is ILocalReferenceOperation localReference &&
+			   SymbolEqualityComparer.Default.Equals(localReference.Local, localSymbol);
+
+		return operation switch
+		{
+			ISimpleAssignmentOperation simpleAssignment => IsSameLocal(simpleAssignment.Target, local),
+			ICompoundAssignmentOperation compoundAssignment => IsSameLocal(compoundAssignment.Target, local),
+			IIncrementOrDecrementOperation incrementOrDecrement => IsSameLocal(incrementOrDecrement.Target, local),
+			IDeconstructionAssignmentOperation deconstructionAssignment => IsSameLocal(deconstructionAssignment.Target, local),
+			IArgumentOperation argument when argument.Parameter?.RefKind is RefKind.Out or RefKind.Ref => IsSameLocal(argument.Value, local),
+			_ => false
+		};
 	}
 
 	private Expression BuildClassTypeMatch(
