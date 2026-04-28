@@ -20,6 +20,7 @@
   </Folder>
   <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
   <Project Path="src/ECMAScript/ECMAScript.csproj" />
+  <Project Path="src/ECMAScript.Vue/ECMAScript.Vue.csproj" />
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
   <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
   <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />
@@ -29,5 +30,6 @@
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.Name/Jazor.Name.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />
+  <Project Path="src/Jazor.Wiki/Jazor.Wiki.csproj" />
   <Project Path="src/Jolt/Jolt.csproj" />
 </Solution>

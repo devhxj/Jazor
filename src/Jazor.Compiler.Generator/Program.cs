@@ -12,8 +12,8 @@ const string Split = $@"
 var repoRoot = FindRepositoryRoot();
 var references = Basic.Reference.Assemblies.Net100.References.All
 	.Add(MetadataReference.CreateFromFile(typeof(JazorAttribute).Assembly.Location));
-var sourceFiles = GetSourceFiles(Path.Combine(repoRoot, "src", "ECMAScript"))
-	.Concat(GetSourceFiles(Path.Combine(repoRoot, "src", "Jazor.CLR")))
+var sourceFiles = GetWhiteListSourceRoots(repoRoot)
+	.SelectMany(GetSourceFiles)
 	.OrderBy(path => path, StringComparer.Ordinal)
 	.ToArray();
 var syntaxTrees = sourceFiles
@@ -230,6 +230,24 @@ static IEnumerable<string> GetSourceFiles(string root)
 	return Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
 		.Where(path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
 		.Where(path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+}
+
+static IEnumerable<string> GetWhiteListSourceRoots(string repoRoot)
+{
+	var src = Path.Combine(repoRoot, "src");
+	var roots = new[]
+	{
+		Path.Combine(src, "ECMAScript"),
+		Path.Combine(src, "Jazor.CLR"),
+		Path.Combine(src, "ECMAScript.Vue"),
+		Path.Combine(src, "ECMAScript.Vuetify"),
+	};
+
+	foreach (var root in roots)
+	{
+		if (Directory.Exists(root))
+			yield return root;
+	}
 }
 
 static SyntaxTree CreateSyntaxTree(string path)
