@@ -195,7 +195,7 @@ public partial class SemanticWalker
 		// 这里先把 "名字节点" 提升回完整成员访问节点，后面才能稳定提取宿主。
 		var effectiveSyntax = syntax switch
 		{
-			IdentifierNameSyntax or GenericNameSyntax when syntax.Parent is MemberAccessExpressionSyntax or QualifiedNameSyntax
+			IdentifierNameSyntax or GenericNameSyntax when IsMemberAccessNameSyntax(syntax)
 				=> syntax.Parent,
 			_ => syntax
 		};
@@ -216,6 +216,14 @@ public partial class SemanticWalker
 			target = ConvertFromSyntaxNode(targetSyntax) as Expression;
 		return target;
 	}
+
+	private static bool IsMemberAccessNameSyntax(SyntaxNode syntax)
+		=> syntax.Parent switch
+		{
+			MemberAccessExpressionSyntax memberAccess => ReferenceEquals(memberAccess.Name, syntax),
+			QualifiedNameSyntax qualifiedName => ReferenceEquals(qualifiedName.Right, syntax),
+			_ => false
+		};
 
 	private Expression? TryBuildStaticQualifiedMemberFromSyntax(SyntaxNode syntax, string memberName)
 	{
@@ -388,7 +396,7 @@ public partial class SemanticWalker
 
 		var effectiveSyntax = syntax switch
 		{
-			IdentifierNameSyntax or GenericNameSyntax when syntax.Parent is MemberAccessExpressionSyntax or QualifiedNameSyntax
+			IdentifierNameSyntax or GenericNameSyntax when IsMemberAccessNameSyntax(syntax)
 				=> syntax.Parent,
 			_ => syntax
 		};
@@ -613,6 +621,10 @@ public partial class SemanticWalker
 		expression = null;
 		if (!property.IsStatic || property.GetMethod is null)
 			return false;
+
+		var explicitImportName = Util.GetSymbolConfigName(property.GetMethod) ?? Util.GetSymbolConfigName(property);
+		if (!string.IsNullOrEmpty(explicitImportName))
+			return TryBuildImportedModuleMember(property.ContainingType, explicitImportName!, context, out expression);
 
 		var getterName = GetMethodConfigOrWhiteListName(property.GetMethod);
 		if (!TryBuildImportedModuleMember(property.ContainingType, getterName, context, out var getter) ||
