@@ -135,7 +135,20 @@ public partial class SemanticWalker
 	private static bool IsEcmascriptRecordLike(ITypeSymbol? typeSymbol)
 		=> typeSymbol is INamedTypeSymbol namedType &&
 		   namedType.IsRecord &&
-		   namedType.ContainingAssembly?.Name == "ECMAScript";
+		   (namedType.ContainingAssembly?.Name == "ECMAScript" ||
+			HasEcmascriptSupportMarker(namedType) ||
+			HasEcmascriptSupportMarkerBaseType(namedType));
+
+	private static bool HasEcmascriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
+	{
+		for (var current = typeSymbol.BaseType; current is not null; current = current.BaseType)
+		{
+			if (HasEcmascriptSupportMarker(current))
+				return true;
+		}
+
+		return false;
+	}
 
 	private Expression BuildEcmascriptRecordLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
 	{
