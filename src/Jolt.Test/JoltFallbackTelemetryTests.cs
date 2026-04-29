@@ -2,7 +2,7 @@ using System.Text.Json;
 using Jolt.Analysis;
 using Jolt.DevServer;
 using Jolt.Hosting;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Test;
 

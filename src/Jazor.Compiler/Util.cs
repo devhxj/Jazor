@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Acornima;
 using Acornima.Ast;
-using Jazor.Name;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.Compiler;

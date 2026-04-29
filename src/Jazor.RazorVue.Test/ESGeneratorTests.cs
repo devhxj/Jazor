@@ -1,4 +1,4 @@
-using ECMAScript.Razor;
+using ECMAScript.Contract;
 using ECMAScript.Vuetify;
 using Jazor.Compiler;
 using Jazor.RazorVue.Analysis;
@@ -651,9 +651,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
@@ -707,9 +707,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -772,9 +772,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -825,9 +825,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -906,9 +906,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -973,9 +973,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -1064,9 +1064,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1139,9 +1139,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1210,9 +1210,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1284,9 +1284,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1359,9 +1359,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1436,9 +1436,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1508,9 +1508,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1583,9 +1583,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1665,9 +1665,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -1726,9 +1726,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1801,9 +1801,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -1883,9 +1883,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -1946,9 +1946,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -2006,9 +2006,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -2066,9 +2066,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -2135,9 +2135,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -2204,9 +2204,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -2268,9 +2268,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -2352,9 +2352,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -2436,9 +2436,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -2520,9 +2520,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -2594,9 +2594,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -2656,9 +2656,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -2728,9 +2728,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -2797,9 +2797,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -2857,9 +2857,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -2916,9 +2916,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -2975,9 +2975,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3033,9 +3033,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3093,9 +3093,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -3157,9 +3157,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -3230,9 +3230,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -3304,9 +3304,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -3365,9 +3365,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3428,9 +3428,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var lifecycleDiagnostics = runResult.Results
@@ -3487,9 +3487,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3553,9 +3553,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3621,9 +3621,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3690,9 +3690,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3766,9 +3766,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3843,9 +3843,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3908,9 +3908,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -3973,9 +3973,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4038,9 +4038,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4103,9 +4103,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4169,9 +4169,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4242,9 +4242,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4315,9 +4315,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4388,9 +4388,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4462,9 +4462,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4534,9 +4534,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -4620,9 +4620,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var fallbackDiagnostics = runResult.Results
@@ -4693,9 +4693,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4765,9 +4765,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4838,9 +4838,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4911,9 +4911,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -4983,9 +4983,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5057,9 +5057,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5131,9 +5131,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5203,9 +5203,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5295,9 +5295,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5367,9 +5367,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5440,9 +5440,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5537,9 +5537,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5629,9 +5629,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5716,9 +5716,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5808,9 +5808,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5884,9 +5884,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -5957,9 +5957,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6054,9 +6054,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6141,9 +6141,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6223,9 +6223,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6295,9 +6295,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6367,9 +6367,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6439,9 +6439,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6511,9 +6511,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6583,9 +6583,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6655,9 +6655,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6727,9 +6727,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6799,9 +6799,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6872,9 +6872,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -6959,9 +6959,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7043,9 +7043,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7115,9 +7115,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7189,9 +7189,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7271,9 +7271,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7345,9 +7345,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7419,9 +7419,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7492,9 +7492,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7590,9 +7590,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7664,9 +7664,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7727,9 +7727,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7792,9 +7792,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7865,9 +7865,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -7936,9 +7936,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8007,9 +8007,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8080,9 +8080,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8144,9 +8144,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8209,9 +8209,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8281,9 +8281,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8354,9 +8354,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8425,9 +8425,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8498,9 +8498,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8570,9 +8570,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8643,9 +8643,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8716,9 +8716,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8789,9 +8789,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8863,9 +8863,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -8936,9 +8936,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9007,9 +9007,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9080,9 +9080,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9148,9 +9148,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9219,9 +9219,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9282,9 +9282,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9332,10 +9332,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9392,10 +9392,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9448,10 +9448,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9500,10 +9500,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VIcon).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VIcon).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9562,9 +9562,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9613,10 +9613,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9670,10 +9670,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9727,10 +9727,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9782,10 +9782,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9844,10 +9844,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9901,10 +9901,10 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -9948,9 +9948,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results
@@ -10013,9 +10013,9 @@ public sealed class ESGeneratorTests
                 }
             }
             """,
-            MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
         var diagnostics = runResult.Results

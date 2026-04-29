@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using Jolt.Workspace;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.DevServer;
 

@@ -12,7 +12,7 @@ using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.Razor.Toolset;
 using Jolt.Roslyn.InProc;
@@ -26,7 +26,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using System.Text.Json;
-using SharedJoltRpcMethodNames = ECMAScript.Internal.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = ECMAScript.Contract.VueContracts.Protocol.JoltRpcMethodNames;
 
 var useLsp = args.Any(static arg => string.Equals(arg, "--lsp", StringComparison.OrdinalIgnoreCase));
 var useDev = args.Any(static arg => string.Equals(arg, "--dev", StringComparison.OrdinalIgnoreCase));

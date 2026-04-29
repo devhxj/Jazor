@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Threading;
 using Acornima.Ast;
 using Jazor.Compiler;
-using Jazor.Name;
+using Jazor.Common;
 using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -5306,7 +5306,7 @@ export function Create() {
             code,
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Razor.IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
@@ -5365,7 +5365,7 @@ export function ReadRef() {
             code,
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Razor.IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
@@ -5431,7 +5431,7 @@ export function Boot(component) {
             code,
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Razor.IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(ECMAScript.Vuetify.Vuetify).Assembly.Location));
         var appModule = semanticModel.SyntaxTree

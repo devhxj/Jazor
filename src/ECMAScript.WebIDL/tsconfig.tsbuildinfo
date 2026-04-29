@@ -1,1 +1,0 @@
-{"root":["./app.ts","./types.d.ts","./utils/css.ts","./utils/fs.ts","./utils/map.ts","./utils/record.ts","./webref/css.ts","./webref/elements.ts","./webref/events.ts","./webref/idl.ts","./webref/webref-css.d.ts","./webref/webref-elements.d.ts","./webref/webref-events.d.ts","./webref/webref-idl.d.ts"],"version":"5.8.3"}

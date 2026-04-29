@@ -1,5 +1,5 @@
 using Jazor.Emit.SourceMaps;
-using ECMAScript.Internal.SourceMaps;
+using ECMAScript.Contract.SourceMaps;
 using System.Text;
 using System.Text.Json;
 

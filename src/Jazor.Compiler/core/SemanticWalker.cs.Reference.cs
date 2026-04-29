@@ -1,7 +1,7 @@
-﻿using Acornima;
+using Acornima;
 using Acornima.Ast;
-using ECMAScript.Internal;
-using Jazor.Name;
+using ECMAScript.Contract;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -74,16 +74,21 @@ public partial class SemanticWalker
 		foreach (var attribute in symbol.GetAttributes())
 		{
 			var attributeName = attribute.AttributeClass?.ToDisplayString();
-			if (attribute.ConstructorArguments.Length != 1 ||
-				attribute.ConstructorArguments[0].Value is not string importPath ||
-				string.IsNullOrWhiteSpace(importPath))
+			if (attributeName is not ("ECMAScript.ECMAScriptModuleAttribute" or "ECMAScript.ECMAScriptAttribute"))
 				continue;
 
-			if (attributeName == "ECMAScript.ECMAScriptModuleAttribute")
-				return importPath;
+			if (attribute.ConstructorArguments.Length != 1)
+				continue;
 
-			if (attributeName == "ECMAScript.ECMAScriptAttribute")
-				return importPath;
+			var importArgument = attribute.ConstructorArguments[0];
+			if (importArgument.Kind == TypedConstantKind.Array ||
+				importArgument.Value is not string importPath ||
+				string.IsNullOrWhiteSpace(importPath))
+			{
+				continue;
+			}
+
+			return importPath;
 		}
 
 		return null;

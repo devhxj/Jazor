@@ -1,4 +1,4 @@
-﻿using Acornima;
+using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -429,7 +429,7 @@ public partial class SemanticWalker
 			{
 				return HandleTransformationFailure<Expression>(
 					fieldReference,
-					$"Cross-module static field mutation '{fieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+					$"Cross-module static field mutation '{fieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
 			}
 
 			var instance = Translate<Expression>(fieldReference.Instance, argument, null);

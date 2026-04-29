@@ -8,7 +8,7 @@ public delegate void VueEventHandler<T>(T value);
 [Description("@#")]
 public static class Vue
 {
-    public interface IVueComponent : Razor.IJazorComponent { }
+    public interface IVueComponent : Contract.IUIComponent { }
 
     public interface IVNode { }
 

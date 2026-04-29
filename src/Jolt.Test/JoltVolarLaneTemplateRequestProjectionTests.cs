@@ -3,7 +3,7 @@ using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;

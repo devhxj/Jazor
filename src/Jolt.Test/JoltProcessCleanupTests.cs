@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Analysis;
 
 namespace Jolt.Test;

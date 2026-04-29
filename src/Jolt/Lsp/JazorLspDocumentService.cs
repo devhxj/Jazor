@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Jolt.Analysis;
 using Jolt.Lsp.Coordination;
 using Jolt.Workspace;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jazor.Vue;
 
 namespace Jolt.Lsp;

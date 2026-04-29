@@ -1,4 +1,4 @@
-using ECMAScript.Internal.VueContracts.Documents;
+using ECMAScript.Contract.VueContracts.Documents;
 
 namespace Jolt.Test;
 

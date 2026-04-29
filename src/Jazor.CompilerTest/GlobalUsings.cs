@@ -1,1 +1,1 @@
-global using ECMAScript.Internal.RazorVue;
+global using ECMAScript.Contract.RazorVue;

@@ -1,4 +1,4 @@
-﻿using Acornima;
+using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -85,7 +85,7 @@ public partial class SemanticWalker
             {
                 RejectUnsupportedTypeFallback(@catch, @catch.ExceptionType, "catch type filtering");
                 var (_, typeName) = GetMapperType(@catch.ExceptionType);
-                var typeKey = $"{@catch.ExceptionType.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}|{typeName}";
+                var typeKey = $"{@catch.ExceptionType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}|{typeName}";
 
                 if (groups.Count > 0 && groups[groups.Count - 1].TypeKey == typeKey)
                 {

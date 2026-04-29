@@ -1,5 +1,4 @@
-using ECMAScript.Internal;
-using System.Collections.Generic;
+using ECMAScript.Contract;
 
 namespace Jazor.Compiler;
 

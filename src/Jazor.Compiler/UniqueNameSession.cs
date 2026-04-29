@@ -1,4 +1,4 @@
-using Jazor.Name;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.IO;

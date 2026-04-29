@@ -10,7 +10,7 @@ using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
 using Jolt.VirtualDocuments.Registry;
 using Jolt.Workspace;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Lsp;
 

@@ -27,12 +27,12 @@ public sealed class SdkIntegrationTests
             {
                 "lib/net10.0/ECMAScript.dll",
                 "lib/net10.0/ECMAScript.pdb",
-                "lib/net10.0/ECMAScript.Internal.dll",
-                "lib/net10.0/ECMAScript.Internal.pdb",
+                "lib/net10.0/ECMAScript.Contract.dll",
+                "lib/net10.0/ECMAScript.Contract.pdb",
                 "lib/net10.0/Jazor.Compiler.dll",
                 "lib/net10.0/Jazor.Compiler.pdb",
-                "lib/net10.0/Jazor.Name.dll",
-                "lib/net10.0/Jazor.Name.pdb",
+                "lib/net10.0/Jazor.Common.dll",
+                "lib/net10.0/Jazor.Common.pdb",
                 "lib/net10.0/Jazor.Razor.dll",
                 "lib/net10.0/Jazor.Razor.pdb",
                 "lib/net10.0/ECMAScript.Vuetify.dll",
@@ -46,12 +46,12 @@ public sealed class SdkIntegrationTests
                 "analyzers/dotnet/cs/Acornima.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.pdb",
-                "analyzers/dotnet/cs/ECMAScript.Internal.dll",
-                "analyzers/dotnet/cs/ECMAScript.Internal.pdb",
+                "analyzers/dotnet/cs/ECMAScript.Contract.dll",
+                "analyzers/dotnet/cs/ECMAScript.Contract.pdb",
                 "analyzers/dotnet/cs/Jazor.Compiler.dll",
                 "analyzers/dotnet/cs/Jazor.Compiler.pdb",
-                "analyzers/dotnet/cs/Jazor.Name.dll",
-                "analyzers/dotnet/cs/Jazor.Name.pdb"
+                "analyzers/dotnet/cs/Jazor.Common.dll",
+                "analyzers/dotnet/cs/Jazor.Common.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("analyzers/dotnet/cs/", StringComparison.Ordinal)).ToArray());
     }
@@ -936,7 +936,7 @@ public sealed class SdkIntegrationTests
         var packageVersion = ReadPackageVersion(Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
         var ecmascriptOutput = Path.Combine(repoRoot, "src", "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
-        var internalOutput = Path.Combine(repoRoot, "src", "ECMAScript.Internal", "bin", "Debug", "netstandard2.0", "ECMAScript.Internal.dll");
+        var contractOutput = Path.Combine(repoRoot, "src", "ECMAScript.Contract", "bin", "Debug", "netstandard2.0", "ECMAScript.Contract.dll");
         var vuetifyOutput = Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "bin", "Debug", "net10.0", "ECMAScript.Vuetify.dll");
         var analyzerOutput = Path.Combine(repoRoot, "src", "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
         var emitPublishOutput = Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish", "Jazor.Emit.dll");
@@ -952,8 +952,8 @@ public sealed class SdkIntegrationTests
             ecmascriptOutput);
         await EnsureProjectBuiltAsync(
             repoRoot,
-            Path.Combine(repoRoot, "src", "ECMAScript.Internal", "ECMAScript.Internal.csproj"),
-            internalOutput);
+            Path.Combine(repoRoot, "src", "ECMAScript.Contract", "ECMAScript.Contract.csproj"),
+            contractOutput);
         await EnsureProjectBuiltAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
@@ -1394,7 +1394,7 @@ public sealed class SdkIntegrationTests
     {
         Directory.CreateDirectory(hostRoot);
 
-        var internalProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Internal", "ECMAScript.Internal.csproj");
+        var contractProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Contract", "ECMAScript.Contract.csproj");
         var vuetifyProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj");
         var projectPath = Path.Combine(hostRoot, "RazorVueSample.Host.csproj");
 
@@ -1422,7 +1422,7 @@ public sealed class SdkIntegrationTests
               </ItemGroup>
 
               <ItemGroup>
-                <ProjectReference Include="{{internalProjectPath}}" />
+                <ProjectReference Include="{{contractProjectPath}}" />
                 <ProjectReference Include="{{vuetifyProjectPath}}" />
               </ItemGroup>
             </Project>

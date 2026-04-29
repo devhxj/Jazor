@@ -1,4 +1,4 @@
-using ECMAScript.Internal.SourceMaps;
+using ECMAScript.Contract.SourceMaps;
 
 namespace Jazor.EmitTest;
 

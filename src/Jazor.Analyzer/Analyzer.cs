@@ -4,10 +4,10 @@ using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using ECMAScript.Internal;
+using ECMAScript.Contract;
 using Jazor.Compiler;
 using Jazor.RazorVue;
-using Jazor.Name;
+using Jazor.Common;
 
 namespace Jazor.Analyzer;
 

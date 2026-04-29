@@ -2,13 +2,13 @@ using Jolt.Analysis;
 using Jolt.Volar;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Hosting;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.Rpc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
 using System.Text.RegularExpressions;
-using SharedJoltRpcMethodNames = ECMAScript.Internal.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = ECMAScript.Contract.VueContracts.Protocol.JoltRpcMethodNames;
 using Jazor.Vue;
 
 namespace Jolt.Services;

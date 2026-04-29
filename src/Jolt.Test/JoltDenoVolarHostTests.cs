@@ -1,4 +1,4 @@
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Lsp;
 using Jolt.Volar.Deno.Hosting;
 

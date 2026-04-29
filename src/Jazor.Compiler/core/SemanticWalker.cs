@@ -1,6 +1,6 @@
 using Acornima.Ast;
-using ECMAScript.Internal;
-using Jazor.Name;
+using ECMAScript.Contract;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
@@ -45,7 +45,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         mapped = default;
         var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         if (!TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry) ||
-            entry.Op != ECMAScript.Internal.Op.Alias ||
+            entry.Op != ECMAScript.Contract.Op.Alias ||
             string.IsNullOrWhiteSpace(entry.Value))
             return false;
 
@@ -168,7 +168,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                         if (TryGetWhiteListValue(WhiteList.Types, displayName, out _, out var entry))
                         {
                             // 白名单中的类型
-                            if (entry.Op == ECMAScript.Internal.Op.Alias && !string.IsNullOrEmpty(entry.Value))
+                            if (entry.Op == ECMAScript.Contract.Op.Alias && !string.IsNullOrEmpty(entry.Value))
                             {
                                 var mapper = entry.Value! switch
                                 {

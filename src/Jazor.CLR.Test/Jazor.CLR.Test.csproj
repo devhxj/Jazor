@@ -10,7 +10,7 @@
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
+    <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
   </ItemGroup>
   <ItemGroup>

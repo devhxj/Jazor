@@ -10,7 +10,7 @@ using Jolt.Analysis;
 using Jolt.Lsp;
 using Jolt.Razor.InProc;
 using Jolt.Workspace;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Test;
 

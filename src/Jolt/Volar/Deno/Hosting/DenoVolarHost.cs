@@ -1,7 +1,7 @@
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using System.Text.Json;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Volar.Deno.Hosting;
 

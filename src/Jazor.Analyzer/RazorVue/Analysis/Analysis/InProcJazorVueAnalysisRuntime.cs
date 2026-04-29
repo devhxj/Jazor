@@ -1,5 +1,5 @@
-using ECMAScript.Internal.RazorVue;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.RazorVue;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jazor.Vue;
 

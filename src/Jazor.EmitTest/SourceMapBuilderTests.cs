@@ -1,6 +1,6 @@
 using Jazor.Emit;
 using Jazor.Emit.SourceMaps;
-using ECMAScript.Internal.SourceMaps;
+using ECMAScript.Contract.SourceMaps;
 
 namespace Jazor.EmitTest;
 

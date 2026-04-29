@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Extensions;
 

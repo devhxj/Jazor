@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -18,11 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Jazor.Name\Format.cs" Link="Shared\Format.cs" />
+    <Compile Include="..\Jazor.Common\Format.cs" Link="Shared\Format.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
+    <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
   </ItemGroup>
 
 </Project>

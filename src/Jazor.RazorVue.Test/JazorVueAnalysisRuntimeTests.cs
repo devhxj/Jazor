@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Jazor.Vue;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jazor.RazorVue.Test;
 

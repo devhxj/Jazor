@@ -1,5 +1,5 @@
-using ECMAScript.Internal.VueContracts.Protocol;
-using SharedJoltRpcMethodNames = ECMAScript.Internal.VueContracts.Protocol.JoltRpcMethodNames;
+using ECMAScript.Contract.VueContracts.Protocol;
+using SharedJoltRpcMethodNames = ECMAScript.Contract.VueContracts.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Rpc;
 

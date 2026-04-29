@@ -1,4 +1,5 @@
-﻿using Jazor.Name;
+using Jazor.Common;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.ObjectModel;
@@ -52,7 +53,8 @@ var outTypes = new Type[]{
 	typeof(Stack<>),
 	typeof(Array),
 	typeof(Guid),
-	typeof(Task)
+	typeof(Task),
+	typeof(RenderTreeBuilder)
 };
 var operatorNames = new Dictionary<string, string>
 {
@@ -199,6 +201,7 @@ var compilation = CSharpCompilation.Create("Jazor", references: [
 	MetadataReference.CreateFromFile(typeof(Console).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(Math).Assembly.Location, documentation: coreLibXml),
 	MetadataReference.CreateFromFile(typeof(BigInteger).Assembly.Location, documentation: numericsXml),
+	MetadataReference.CreateFromFile(typeof(RenderTreeBuilder).Assembly.Location, documentation: numericsXml),
 ]);
 string ConvertParamaterName(IParameterSymbol symbol)
 {

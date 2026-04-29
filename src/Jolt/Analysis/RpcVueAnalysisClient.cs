@@ -1,7 +1,7 @@
 using System.Text.Json;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Rpc;
-using SharedVueAnalysisRpcMethodNames = ECMAScript.Internal.VueContracts.Protocol.VueAnalysisRpcMethodNames;
+using SharedVueAnalysisRpcMethodNames = ECMAScript.Contract.VueContracts.Protocol.VueAnalysisRpcMethodNames;
 
 namespace Jolt.Analysis;
 

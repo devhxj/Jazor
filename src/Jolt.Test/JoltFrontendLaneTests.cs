@@ -1,5 +1,5 @@
 using System.Text.Json;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.DevServer;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;

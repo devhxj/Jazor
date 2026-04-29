@@ -1,4 +1,4 @@
-using ECMAScript.Internal.SourceMaps;
+using ECMAScript.Contract.SourceMaps;
 using Jolt.SourceMap;
 using static Jolt.Test.SourceMapTestHelpers;
 

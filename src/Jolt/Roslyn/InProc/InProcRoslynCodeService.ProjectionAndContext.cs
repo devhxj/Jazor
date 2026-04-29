@@ -14,7 +14,7 @@ using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
 using Jazor.Vue;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 

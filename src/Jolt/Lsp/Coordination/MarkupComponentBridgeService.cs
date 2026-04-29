@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using Jazor.Vue;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Lsp.Coordination;

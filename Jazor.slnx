@@ -4,7 +4,11 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/razor/" />
+  <Folder Name="/generator/">
+    <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
+    <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
+    <Project Path="src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj" />
+  </Folder>
   <Folder Name="/test/">
     <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
     <Project Path="src/Jazor.CLR.Test/Jazor.CLR.Test.csproj" />
@@ -13,18 +17,15 @@
     <Project Path="src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj" />
     <Project Path="src/Jolt.Test/Jolt.Test.csproj" />
   </Folder>
-  <Project Path="src/ECMAScript.Internal/ECMAScript.Internal.csproj" />
+  <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
   <Project Path="src/ECMAScript.Vuetify/ECMAScript.Vuetify.csproj" />
-  <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
   <Project Path="src/ECMAScript/ECMAScript.csproj" />
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
-  <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
   <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />
-  <Project Path="src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj" />
   <Project Path="src/Jazor.Compiler/Jazor.Compiler.csproj" />
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
-  <Project Path="src/Jazor.Name/Jazor.Name.csproj" />
-  <Project Path="src/Jazor.Wiki/Jazor.Wiki.csproj" />
+  <Project Path="src/Jazor.Common/Jazor.Common.csproj" />
+  <Project Path="src/Wiki/Wiki.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />
   <Project Path="src/Jolt/Jolt.csproj" />
 </Solution>

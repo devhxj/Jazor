@@ -2,7 +2,7 @@ using Jolt.Analysis;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Services;
 using Jolt.Workspace;
 

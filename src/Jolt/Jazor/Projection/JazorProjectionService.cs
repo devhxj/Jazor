@@ -1,5 +1,5 @@
 using Jazor.Vue;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;

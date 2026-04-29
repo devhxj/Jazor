@@ -1,6 +1,6 @@
-﻿using Acornima;
+using Acornima;
 using Acornima.Ast;
-using ECMAScript.Internal;
+using ECMAScript.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -681,7 +681,7 @@ public partial class SemanticWalker
 				!CanPassThroughIntrinsicConversion(operation))
 				return HandleTransformationFailure<Node>(
 					operation,
-					$"Conversion operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript conversion.");
+					$"Conversion operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript conversion.");
 		}
 
 		// 处理 Number 与 BigInt 之间的显式转换
@@ -856,7 +856,7 @@ public partial class SemanticWalker
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Node>(
 					operation,
-					$"Unary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript unary semantics.");
+					$"Unary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript unary semantics.");
 		}
 
 		if (operation.OperatorKind == UnaryOperatorKind.BitwiseNegation ||
@@ -936,7 +936,7 @@ public partial class SemanticWalker
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Node>(
 					operation,
-					$"Binary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript binary semantics.");
+					$"Binary operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript binary semantics.");
 		}
 
 		var @operator = operation.OperatorKind switch
@@ -1113,7 +1113,7 @@ public partial class SemanticWalker
 		{
 			return HandleTransformationFailure<Node>(
 				operation,
-				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
 		}
 
 		// tuple 赋值不依赖 Roslyn 恰好插入 conversion。
@@ -1214,7 +1214,7 @@ public partial class SemanticWalker
 		{
 			return HandleTransformationFailure<Node>(
 				operation,
-				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
 		}
 
 		if (operation.Target is IPropertyReferenceOperation propertyReference &&
@@ -1310,7 +1310,7 @@ public partial class SemanticWalker
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Node>(
 					operation,
-					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript compound semantics.");
+					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript compound semantics.");
 		}
 
 		if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out var @operator, out _))
@@ -1391,7 +1391,7 @@ public partial class SemanticWalker
 		{
 			return HandleTransformationFailure<Node>(
 				operation,
-				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
 		}
 
 		if (operation.Target is IPropertyReferenceOperation propertyReference &&
@@ -1644,12 +1644,12 @@ public partial class SemanticWalker
 
 		return HandleTransformationFailure<Expression>(
 			operation,
-			$"Value type '{type.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' does not have a safe JavaScript lowering for default(...). Only intrinsic value types, tuples, nullable values, and known CLR runtime shims can be emitted without changing CLR semantics.");
+			$"Value type '{type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not have a safe JavaScript lowering for default(...). Only intrinsic value types, tuples, nullable values, and known CLR runtime shims can be emitted without changing CLR semantics.");
 	}
 
 	private static bool IsKnownDefaultConstructorType(ITypeSymbol type)
 	{
-		var displayName = type.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
+		var displayName = type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat);
 		return displayName is
 			"System.DateOnly" or
 			"System.DateTime" or
@@ -1711,7 +1711,7 @@ public partial class SemanticWalker
 		{
 			return HandleTransformationFailure<Node>(
 				operation,
-				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
+				$"Cross-module static field mutation '{importedFieldReference.Field.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported because ECMAScript imported bindings are read-only. Expose a property setter or helper method on the module host instead.");
 		}
 
 		if (operation.Target is IPropertyReferenceOperation propertyReference &&
@@ -1847,7 +1847,7 @@ public partial class SemanticWalker
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Node>(
 					operation,
-					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript update semantics.");
+					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist mapping and cannot fall back to raw JavaScript update semantics.");
 		}
 
 		var @operator = operation.Kind == OperationKind.Increment
@@ -1873,7 +1873,7 @@ public partial class SemanticWalker
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Expression>(
 					operation,
-					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript compound semantics.");
+					$"Compound assignment operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript compound semantics.");
 		}
 
 		if (!TryGetCompoundAssignmentOperators(operation.OperatorKind, out _, out var binaryOperator))
@@ -1896,7 +1896,7 @@ public partial class SemanticWalker
 			if (!IsPassThroughCustomOperatorFallbackAllowed(operation.OperatorMethod))
 				return HandleTransformationFailure<Expression>(
 					operation,
-					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript update semantics.");
+					$"Increment/decrement operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript update semantics.");
 		}
 
 		var one = new NumericLiteral(1, "1");
@@ -2370,7 +2370,7 @@ public partial class SemanticWalker
 		if (typeSymbol is not INamedTypeSymbol namedType)
 			return false;
 
-		var displayName = namedType.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
+		var displayName = namedType.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat);
 		return displayName is "System.ReadOnlySpan<T>" or "System.Span<T>";
 	}
 

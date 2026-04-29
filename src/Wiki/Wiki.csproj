@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <JazorEmit>true</JazorEmit>
+    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+    <JazorBundle>false</JazorBundle>
+    <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\Jazor.Emit\bin\$(Configuration)\net10.0\Jazor.Emit.dll</JazorEmitToolPath>
+  </PropertyGroup>
+
+  <Import Project="..\Jazor\buildTransitive\Jazor.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
+    <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\Jazor\buildTransitive\Jazor.targets" />
+</Project>

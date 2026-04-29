@@ -1,6 +1,6 @@
 using Jolt.Hosting;
 using Jazor.Vue;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 
 namespace Jolt.Analysis;
 

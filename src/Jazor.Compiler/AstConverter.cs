@@ -1,6 +1,6 @@
 using Acornima;
 using Acornima.Ast;
-using Jazor.Name;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

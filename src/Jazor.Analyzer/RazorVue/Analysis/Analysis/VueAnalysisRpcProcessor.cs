@@ -1,5 +1,5 @@
-using ECMAScript.Internal.VueContracts.Protocol;
-using SharedVueAnalysisRpcMethodNames = ECMAScript.Internal.VueContracts.Protocol.VueAnalysisRpcMethodNames;
+using ECMAScript.Contract.VueContracts.Protocol;
+using SharedVueAnalysisRpcMethodNames = ECMAScript.Contract.VueContracts.Protocol.VueAnalysisRpcMethodNames;
 
 namespace Jazor.Vue;
 

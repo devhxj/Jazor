@@ -12,7 +12,7 @@ namespace Jazor.Compiler.Razor;
 /// The compiler core now consumes a narrow interface so this implementation can
 /// become the primary frontend once cross-target registration/loading is proven.
 /// </summary>
-public sealed class RazorComponentSemanticFrontend : IRazorSemanticFrontend
+internal sealed class RazorComponentSemanticFrontend : IRazorSemanticFrontend
 {
     public string Name => "Jazor.Compiler.Razor";
 
@@ -29,4 +29,3 @@ public sealed class RazorComponentSemanticFrontend : IRazorSemanticFrontend
         => RazorVueCompilationContext.TryCreate(compilation)
            ?? throw new InvalidOperationException("RazorComponentSemanticFrontend could not create a RazorVue compilation context.");
 }
-

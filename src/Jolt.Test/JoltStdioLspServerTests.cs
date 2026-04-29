@@ -2,7 +2,7 @@ using System.IO.Pipelines;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using ECMAScript.Internal.VueContracts.Protocol;
+using ECMAScript.Contract.VueContracts.Protocol;
 using Jolt.Extensions;
 using Jolt.Jazor.Projection;
 using Jolt.Lsp;

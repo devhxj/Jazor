@@ -1,5 +1,5 @@
 using Basic.Reference.Assemblies;
-using ECMAScript.Razor;
+using ECMAScript.Contract;
 using Jazor.Emit;
 using Jazor.RazorVue;
 using Jazor.RazorVue.Analysis;
@@ -588,9 +588,9 @@ namespace Jazor.EmitTest
 
         private static IEnumerable<MetadataReference> CreateRazorVueReferences()
             => CreateBaseReferences().Concat([
-                MetadataReference.CreateFromFile(typeof(IJazorComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
+				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]);
     }
 }

@@ -1,4 +1,4 @@
-﻿/*
+/*
 IPatternOperation  (base: InputType, NarrowedType)
  ├─ 常见的上下文（pattern 可直接出现在这些位置）
  │   ├─ IIsPatternOperation
@@ -115,7 +115,7 @@ IIsPatternOperation
 */
 using Acornima;
 using Acornima.Ast;
-using Jazor.Name;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -834,7 +834,7 @@ public partial class SemanticWalker
 			: operation.LengthSymbol;
 
 		return TryGetWhiteListValue(WhiteList.Members, lookupSymbol, out _, out var entry) &&
-			entry.Op == ECMAScript.Internal.Op.Alias &&
+			entry.Op == ECMAScript.Contract.Op.Alias &&
 			string.Equals(entry.Value, "length", StringComparison.Ordinal);
 	}
 
@@ -1373,7 +1373,7 @@ public partial class SemanticWalker
 
 		else
 		{
-			var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Jazor.Name.Format.NameFormat);
+			var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat);
 			if (displayName == "System.DateTime")
 			{
 				var date = new MemberExpression(value, new Identifier("date"), computed: false, optional: false);
@@ -1736,12 +1736,12 @@ public partial class SemanticWalker
 			? null
 			: ResolveSingleAssignmentValueSource(sourceOperation, operation);
 		var sourceType = resolvedSource?.Type ?? ResolvePatternInputStaticType(operation);
-		var interfaceTypeName = interfaceType.ToDisplayString(Jazor.Name.Format.NameFormat);
+		var interfaceTypeName = interfaceType.ToDisplayString(Jazor.Common.Format.NameFormat);
 
 		if (sourceType is null)
 			return $"Unsupported interface is-type operation: cannot statically prove source assignability to '{interfaceTypeName}' because the source type is unknown.";
 
-		var sourceTypeName = sourceType.ToDisplayString(Jazor.Name.Format.NameFormat);
+		var sourceTypeName = sourceType.ToDisplayString(Jazor.Common.Format.NameFormat);
 		return $"Unsupported interface is-type operation: source static type '{sourceTypeName}' cannot be statically proven assignable to '{interfaceTypeName}'.";
 	}
 

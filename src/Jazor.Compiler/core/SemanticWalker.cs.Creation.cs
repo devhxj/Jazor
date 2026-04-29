@@ -1,6 +1,6 @@
-﻿using Acornima;
+using Acornima;
 using Acornima.Ast;
-using ECMAScript.Internal;
+using ECMAScript.Contract;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -315,7 +315,7 @@ public partial class SemanticWalker
 				{
 					return HandleTransformationFailure<Expression>(
 						operation,
-						$"Member initializer target '{propertyReference.Property.ToDisplayString(Jazor.Name.Format.NameFormat)}' must have an accessible getter.");
+						$"Member initializer target '{propertyReference.Property.ToDisplayString(Jazor.Common.Format.NameFormat)}' must have an accessible getter.");
 				}
 
 				var instance = Translate<Expression>(propertyReference.Instance, argument, null) ?? fallbackInstance;

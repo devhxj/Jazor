@@ -6641,7 +6641,7 @@ public sealed class SemanticWalkerReferenceTest
             {
                 void TestMethod()
                 {
-                    var token = Symbol_(""value"");
+                    var token = SymbolFn(""value"");
                 }
             }
         ");
