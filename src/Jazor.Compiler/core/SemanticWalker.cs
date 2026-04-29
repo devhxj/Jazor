@@ -309,6 +309,10 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (HasEcmascriptSupportMarker(typeSymbol))
             return true;
 
+        if (original is INamedTypeSymbol namedOriginal &&
+            HasEcmascriptSupportMarkerBaseType(namedOriginal))
+            return true;
+
         return TryGetWhiteListValue(WhiteList.Types, original.ToDisplayString(Format.NameFormat), out _, out _);
     }
 
@@ -465,10 +469,6 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                 if (current.GetAttributes().Any(static attribute =>
                     Util.IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass)))
                     return true;
-
-                if (current is INamedTypeSymbol currentType &&
-                    HasEcmascriptSupportMarkerBaseType(currentType))
-                    return true;
             }
         }
 
@@ -556,6 +556,10 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             return false;
 
         if (HasEcmascriptSupportMarker(effectiveHost))
+            return false;
+
+        if (effectiveHost is INamedTypeSymbol namedEffectiveHost &&
+            HasEcmascriptSupportMarkerBaseType(namedEffectiveHost))
             return false;
 
         if (effectiveHost.IsAnonymousType)
