@@ -1,5 +1,6 @@
 using ECMAScript;
 using ECMAScript.Vue;
+using ECMAScript.Vue.Vuetify;
 using System.ComponentModel;
 
 namespace Jazor.Wiki;
@@ -14,6 +15,28 @@ public sealed class WikiHomeModule
 [ECMAScriptModule("app/main.mjs")]
 public static class AppModule
 {
+    private static readonly VuetifyOptions VuetifyConfiguration = new()
+    {
+        Components = new VuetifyComponentRegistry
+        {
+            VBtn = VuetifyComponents.VBtn,
+            VCard = VuetifyComponents.VCard,
+            VTextField = VuetifyComponents.VTextField
+        },
+        Directives = new VuetifyDirectiveRegistry
+        {
+            Ripple = VuetifyDirectives.Ripple
+        },
+        Theme = new VuetifyThemeOptions
+        {
+            DefaultTheme = "light"
+        },
+        Display = new VuetifyDisplayOptions
+        {
+            MobileBreakpoint = "md"
+        }
+    };
+
     private static readonly RegExp VisibilityPattern = Global.RegExp(@"^\s*(?:public|private|protected|internal)\s+", "gm");
     private static readonly RegExp StaticPattern = Global.RegExp(@"^\s*static\s+", "gm");
     private static readonly RegExp TypedLocalPattern = Global.RegExp(@"^(\s*)(?:var|bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|char|object)\s+([A-Za-z_][\w]*)\s*=", "gm");
@@ -33,6 +56,7 @@ public static class AppModule
     public static void Boot()
     {
         var app = Vue.CreateApp(WikiHomeModule.Component);
+        app.Use(Vuetify.CreateVuetify(VuetifyConfiguration));
         app.Mount("#app");
 
         if (Global.Document.GetElementById("cs-input") is not HTMLTextAreaElement input ||

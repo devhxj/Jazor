@@ -59,6 +59,21 @@ If you want to call the local build script first:
 
 The page mounts RazorVue output via Vue runtime and provides a live C# -> JS preview panel.
 
+## Runtime Dependency Notes
+
+`wwwroot/index.html` configures browser-side module resolution for:
+
+- `vue`
+- `vuetify`
+- `vuetify/components`
+- `vuetify/directives`
+
+`AppModule.cs` uses typed `ECMAScript.Vue.Vuetify` proxies and bootstraps Vuetify via:
+
+- `Vuetify.CreateVuetify(VuetifyOptions)`
+- `VuetifyComponentRegistry`
+- `VuetifyDirectiveRegistry`
+
 ## Positioning
 
 This sample is intentionally **RazorVue library-mode only**.

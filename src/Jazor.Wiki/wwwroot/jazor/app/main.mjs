@@ -1,5 +1,18 @@
 import i$e2b55fd24ba846bc from "./components/wiki-home.mjs";
 import { createApp } from "vue";
+import { createVuetify } from "vuetify";
+import { VBtn, VCard, VTextField } from "vuetify/components";
+import { Ripple } from "vuetify/directives";
+let VuetifyConfiguration = {
+  components: {
+    VBtn: VBtn,
+    VCard: VCard,
+    VTextField: VTextField
+  },
+  directives: { Ripple: Ripple },
+  theme: { defaultTheme: "light" },
+  display: { mobileBreakpoint: "md" }
+};
 let VisibilityPattern = RegExp("^\\s*(?:public|private|protected|internal)\\s+", "gm");
 let StaticPattern = RegExp("^\\s*static\\s+", "gm");
 let TypedLocalPattern = RegExp("^(\\s*)(?:var|bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|char|object)\\s+([A-Za-z_][\\w]*)\\s*=", "gm");
@@ -15,6 +28,7 @@ function Initialize() {
 export function Boot() {
   let __patin$df74ae785caa2099bc41e5bf, input, __patin$c7f279c9bde2e257dea34853, output;
   let app = createApp(i$e2b55fd24ba846bc);
+  app.use(createVuetify(VuetifyConfiguration));
   app.mount("#app");
   if (!(__patin$df74ae785caa2099bc41e5bf = document.getElementById("cs-input"), __patin$df74ae785caa2099bc41e5bf instanceof HTMLTextAreaElement && (input = __patin$df74ae785caa2099bc41e5bf, true)) || !(__patin$c7f279c9bde2e257dea34853 = document.getElementById("js-output"), __patin$c7f279c9bde2e257dea34853 instanceof HTMLElement && (output = __patin$c7f279c9bde2e257dea34853, true)))
     return;
