@@ -5,7 +5,7 @@ public static class RuntimeModule
 {
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
 	}
 
@@ -89,7 +89,7 @@ public static class RuntimeModule
 				+ ":"
 				+ Pad2(Date.GetSeconds())
 				+ "."
-				+ Pad7(BigInt_(Date.GetMilliseconds()) * BigInt_(10000) + SubMillisecondTicks);
+				+ Pad7(BigIntFn(Date.GetMilliseconds()) * BigIntFn(10000) + SubMillisecondTicks);
 		}
 
 		[Description("@#valueOf")]
@@ -152,13 +152,13 @@ public static class RuntimeModule
 		[Description("@#toString")]
 		public override string ToString()
 		{
-			var local = new Date(UtcDateTime.GetTime() + Number_(OffsetTicks) / 10000);
+			var local = new Date(UtcDateTime.GetTime() + NumberFn(OffsetTicks) / 10000);
 
 			var negative = OffsetTicks < BigInt.Zero;
 			var absolute = negative ? -OffsetTicks : OffsetTicks;
-			var totalMinutes = absolute / BigInt_(600000000);
-			var hours = Number_(totalMinutes / BigInt_(60));
-			var minutes = Number_(totalMinutes % BigInt_(60));
+			var totalMinutes = absolute / BigIntFn(600000000);
+			var hours = NumberFn(totalMinutes / BigIntFn(60));
+			var minutes = NumberFn(totalMinutes % BigIntFn(60));
 			var offset = (negative ? "-" : "+") + Pad2(hours) + ":" + Pad2(minutes);
 
 			return FormatDateOnlyText(local.GetUTCFullYear(), local.GetUTCMonth() + 1, local.GetUTCDate())
@@ -169,7 +169,7 @@ public static class RuntimeModule
 				+ ":"
 				+ Pad2(local.GetUTCSeconds())
 				+ "."
-				+ Pad7(BigInt_(local.GetUTCMilliseconds()) * BigInt_(10000) + UtcSubMillisecondTicks)
+				+ Pad7(BigIntFn(local.GetUTCMilliseconds()) * BigIntFn(10000) + UtcSubMillisecondTicks)
 				+ offset;
 		}
 
@@ -208,7 +208,7 @@ public static class RuntimeModule
 			this.Day = day;
 			var utcDate = CreateUtcDate(year, month, day);
 			var start = CreateUtcDate(1, 1, 1);
-			DayNumber = Math.Floor_((utcDate.GetTime() - start.GetTime()) / 86400000);
+			DayNumber = Math.FloorFn((utcDate.GetTime() - start.GetTime()) / 86400000);
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
@@ -307,8 +307,8 @@ public static class RuntimeModule
 
 		public JTimeOnly(BigInt ticks)
 		{
-			var normalized = ticks % BigInt_("864000000000");
-			this.Ticks = normalized < BigInt.Zero ? normalized + BigInt_("864000000000") : normalized;
+			var normalized = ticks % BigIntFn("864000000000");
+			this.Ticks = normalized < BigInt.Zero ? normalized + BigIntFn("864000000000") : normalized;
 			Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
 			{
 				Value = (Func<string?, object>)ToPrimitive,
@@ -319,10 +319,10 @@ public static class RuntimeModule
 		[Description("@#toString")]
 		public override string ToString()
 		{
-			var hour = Number_(Ticks / BigInt_("36000000000"));
-			var minute = Number_((Ticks / BigInt_(600000000)) % BigInt_(60));
-			var second = Number_((Ticks / BigInt_(10000000)) % BigInt_(60));
-			var fraction = Ticks % BigInt_(10000000);
+			var hour = NumberFn(Ticks / BigIntFn("36000000000"));
+			var minute = NumberFn((Ticks / BigIntFn(600000000)) % BigIntFn(60));
+			var second = NumberFn((Ticks / BigIntFn(10000000)) % BigIntFn(60));
+			var fraction = Ticks % BigIntFn(10000000);
 
 			return Pad2(hour)
 				+ ":"
@@ -353,7 +353,7 @@ public static class RuntimeModule
 
 		public JTimeSpan(BigInt ticks)
 		{
-			if (ticks < BigInt_("-9223372036854775808") || ticks > BigInt_("9223372036854775807"))
+			if (ticks < BigIntFn("-9223372036854775808") || ticks > BigIntFn("9223372036854775807"))
 				throw new Error("OverflowException: TimeSpan is too long or too short.");
 
 			this.Ticks = ticks;
@@ -369,11 +369,11 @@ public static class RuntimeModule
 		{
 			var negative = Ticks < BigInt.Zero;
 			var absolute = negative ? -Ticks : Ticks;
-			var days = absolute / BigInt_("864000000000");
-			var hours = Number_((absolute / BigInt_("36000000000")) % BigInt_(24));
-			var minutes = Number_((absolute / BigInt_(600000000)) % BigInt_(60));
-			var seconds = Number_((absolute / BigInt_(10000000)) % BigInt_(60));
-			var fraction = absolute % BigInt_(10000000);
+			var days = absolute / BigIntFn("864000000000");
+			var hours = NumberFn((absolute / BigIntFn("36000000000")) % BigIntFn(24));
+			var minutes = NumberFn((absolute / BigIntFn(600000000)) % BigIntFn(60));
+			var seconds = NumberFn((absolute / BigIntFn(10000000)) % BigIntFn(60));
+			var fraction = absolute % BigIntFn(10000000);
 
 			var text = (negative ? "-" : "")
 				+ (days > BigInt.Zero ? days.ToString() + "." : "")
@@ -445,8 +445,8 @@ public static class RuntimeModule
 
 	public static Number GetInt64HashCode(BigInt value)
 	{
-		var low = (int)Number_(BigInt.AsIntN(32, value));
-		var high = (int)Number_(BigInt.AsIntN(32, value >> BigInt_(32)));
+		var low = (int)NumberFn(BigInt.AsIntN(32, value));
+		var high = (int)NumberFn(BigInt.AsIntN(32, value >> BigIntFn(32)));
 		return low ^ high;
 	}
 

@@ -4,13 +4,13 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.TimeSpan", "Object")]
 public static class TimeSpanModule
 {
-	private static BigInt TicksPerMicrosecond => BigInt_("10");
-	private static BigInt TicksPerMillisecond => BigInt_("10000");
-	private static BigInt TicksPerSecond => BigInt_("10000000");
-	private static BigInt TicksPerMinute => BigInt_("600000000");
-	private static BigInt TicksPerHour => BigInt_("36000000000");
-	private static BigInt TicksPerDay => BigInt_("864000000000");
-	private static BigInt MinTimeSpanTicks => BigInt_("-9223372036854775808");
+	private static BigInt TicksPerMicrosecond => BigIntFn("10");
+	private static BigInt TicksPerMillisecond => BigIntFn("10000");
+	private static BigInt TicksPerSecond => BigIntFn("10000000");
+	private static BigInt TicksPerMinute => BigIntFn("600000000");
+	private static BigInt TicksPerHour => BigIntFn("36000000000");
+	private static BigInt TicksPerDay => BigIntFn("864000000000");
+	private static BigInt MinTimeSpanTicks => BigIntFn("-9223372036854775808");
 
 	private static bool IsAsciiDigit(char value)
 		=> value >= '0' && value <= '9';
@@ -31,14 +31,14 @@ public static class TimeSpanModule
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
 	}
 
 	private static BigInt ToWholeBigInt(Number value, string message)
 	{
 		EnsureWholeNumber(value, message);
-		return BigInt_(value);
+		return BigIntFn(value);
 	}
 
 	private static RuntimeModule.JTimeSpan NegateChecked(RuntimeModule.JTimeSpan instance)
@@ -57,11 +57,11 @@ public static class TimeSpanModule
 		if (!DoubleModule._aed2927097617729(value))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
-		var rounded = Math.Round_(value);
+		var rounded = Math.RoundFn(value);
 		if (!DoubleModule._aed2927097617729(rounded))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
-		return new(BigInt_(rounded));
+		return new(BigIntFn(rounded));
 	}
 
 	private static RuntimeModule.JTimeSpan Create(BigInt days, BigInt hours, BigInt minutes, BigInt seconds, BigInt milliseconds, BigInt microseconds)
@@ -85,10 +85,10 @@ public static class TimeSpanModule
 			ToWholeBigInt(microseconds, "ArgumentOutOfRangeException: Microseconds must be a whole number."));
 
 	private static RuntimeModule.JTimeSpan MultiplyByDouble(RuntimeModule.JTimeSpan instance, Number factor)
-		=> CreateFromRoundedTicks(Number_(instance.Ticks) * factor);
+		=> CreateFromRoundedTicks(NumberFn(instance.Ticks) * factor);
 
 	private static RuntimeModule.JTimeSpan DivideByDouble(RuntimeModule.JTimeSpan instance, Number divisor)
-		=> CreateFromRoundedTicks(Number_(instance.Ticks) / divisor);
+		=> CreateFromRoundedTicks(NumberFn(instance.Ticks) / divisor);
 
 	private static RuntimeModule.JTimeSpan ParseCore(string input)
 	{
@@ -149,10 +149,10 @@ public static class TimeSpanModule
 		if (!IsDigits(dayText) || !IsDigits(hourText) || !IsDigits(minuteText) || !IsDigits(secondText))
 			throw new Error($"FormatException: String '{input}' was not recognized as a valid TimeSpan.");
 
-		var days = Number_(dayText);
-		var hours = Number_(hourText);
-		var minutes = Number_(minuteText);
-		var seconds = Number_(secondText);
+		var days = NumberFn(dayText);
+		var hours = NumberFn(hourText);
+		var minutes = NumberFn(minuteText);
+		var seconds = NumberFn(secondText);
 		if (IsNaN(days) || IsNaN(hours) || IsNaN(minutes) || IsNaN(seconds))
 			throw new Error($"FormatException: String '{input}' was not recognized as a valid TimeSpan.");
 		if (days < 0 || hours < 0 || minutes < 0 || seconds < 0)
@@ -171,13 +171,13 @@ public static class TimeSpanModule
 			while (fractionText.Length < 7)
 				fractionText += "0";
 
-			fractionTicks = BigInt_(fractionText);
+			fractionTicks = BigIntFn(fractionText);
 		}
 
-		var totalTicks = BigInt_(days) * TicksPerDay
-			+ BigInt_(hours) * TicksPerHour
-			+ BigInt_(minutes) * TicksPerMinute
-			+ BigInt_(seconds) * TicksPerSecond
+		var totalTicks = BigIntFn(days) * TicksPerDay
+			+ BigIntFn(hours) * TicksPerHour
+			+ BigIntFn(minutes) * TicksPerMinute
+			+ BigIntFn(seconds) * TicksPerSecond
 			+ fractionTicks;
 
 		return new RuntimeModule.JTimeSpan(negative ? -totalTicks : totalTicks);
@@ -241,14 +241,14 @@ public static class TimeSpanModule
 	/// JS: wrapper with max ticks
 	/// </summary>
 	[Jazor(Op.Import, "static readonly System.TimeSpan.MaxValue")]
-	public static RuntimeModule.JTimeSpan _15e7c0dd01e25108() => new(BigInt_("9223372036854775807"));
+	public static RuntimeModule.JTimeSpan _15e7c0dd01e25108() => new(BigIntFn("9223372036854775807"));
 
 	/// <summary>
 	/// C#: TimeSpan.MinValue
 	/// JS: wrapper with min ticks
 	/// </summary>
 	[Jazor(Op.Import, "static readonly System.TimeSpan.MinValue")]
-	public static RuntimeModule.JTimeSpan _3205534506581110() => new(BigInt_("-9223372036854775808"));
+	public static RuntimeModule.JTimeSpan _3205534506581110() => new(BigIntFn("-9223372036854775808"));
 
 	[Jazor(Op.Import ,"System.TimeSpan.TimeSpan()")]
 	public static RuntimeModule.JTimeSpan _5af0f6ad850e6702() => new(BigInt.Zero);
@@ -293,7 +293,7 @@ public static class TimeSpanModule
 	public static Number _a980180cac17c195(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerDay = 864000000000
-		return Number_(instance.Ticks / BigInt_("864000000000"));
+		return NumberFn(instance.Ticks / BigIntFn("864000000000"));
 	}
 
 	/// <summary>
@@ -304,7 +304,7 @@ public static class TimeSpanModule
 	public static Number _e1126ea3789ed210(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerHour = 36000000000, HoursPerDay = 24
-		return Number_((instance.Ticks / BigInt_("36000000000")) % BigInt_("24"));
+		return NumberFn((instance.Ticks / BigIntFn("36000000000")) % BigIntFn("24"));
 	}
 
 	/// <summary>
@@ -315,7 +315,7 @@ public static class TimeSpanModule
 	public static Number _af6dae8b5cdc7078(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerMillisecond = 10000, MillisecondsPerSecond = 1000
-		return Number_((instance.Ticks / BigInt_(10000)) % BigInt_(1000));
+		return NumberFn((instance.Ticks / BigIntFn(10000)) % BigIntFn(1000));
 	}
 
 	/// <summary>
@@ -326,7 +326,7 @@ public static class TimeSpanModule
 	public static Number _b5ff892bced87c7a(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerMicrosecond = 10, MicrosecondsPerSecond = 1000000
-		return Number_((instance.Ticks / BigInt_(10)) % BigInt_(1000000));
+		return NumberFn((instance.Ticks / BigIntFn(10)) % BigIntFn(1000000));
 	}
 
 	/// <summary>
@@ -337,7 +337,7 @@ public static class TimeSpanModule
 	public static Number _95472c42904823fa(RuntimeModule.JTimeSpan instance)
 	{
 		// NanosecondsPerTick = 100, NanosecondsPerSecond = 1000000000
-		return Number_((instance.Ticks * BigInt_(100)) % BigInt_(1000000000));
+		return NumberFn((instance.Ticks * BigIntFn(100)) % BigIntFn(1000000000));
 	}
 
 	/// <summary>
@@ -348,7 +348,7 @@ public static class TimeSpanModule
 	public static Number _f84ed3952defaf6d(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerMinute = 600000000, MinutesPerHour = 60
-		return Number_((instance.Ticks / BigInt_(600000000)) % BigInt_(60));
+		return NumberFn((instance.Ticks / BigIntFn(600000000)) % BigIntFn(60));
 	}
 
 	/// <summary>
@@ -359,7 +359,7 @@ public static class TimeSpanModule
 	public static Number _f3cdc3642c68ede1(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerSecond = 10000000, SecondsPerMinute = 60
-		return Number_((instance.Ticks / BigInt_(10000000)) % BigInt_(60));
+		return NumberFn((instance.Ticks / BigIntFn(10000000)) % BigIntFn(60));
 	}
 
 	/// <summary>
@@ -370,7 +370,7 @@ public static class TimeSpanModule
 	public static Number _3709bd5d7e02854b(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerDay = 864000000000
-		return Number_(instance.Ticks) / 864000000000d;
+		return NumberFn(instance.Ticks) / 864000000000d;
 	}
 
 	/// <summary>
@@ -381,7 +381,7 @@ public static class TimeSpanModule
 	public static Number _b4c8b94ce8b8d996(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerHour = 36000000000
-		return Number_(instance.Ticks) / 36000000000d;
+		return NumberFn(instance.Ticks) / 36000000000d;
 	}
 
 	/// <summary>
@@ -392,7 +392,7 @@ public static class TimeSpanModule
 	public static Number _b73ebb6b17996726(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerMillisecond = 10000
-		return Number_(instance.Ticks) / 10000;
+		return NumberFn(instance.Ticks) / 10000;
 	}
 
 	/// <summary>
@@ -403,7 +403,7 @@ public static class TimeSpanModule
 	public static Number _48066d805fb56409(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerMicrosecond = 10
-		return Number_(instance.Ticks) / 10;
+		return NumberFn(instance.Ticks) / 10;
 	}
 
 	/// <summary>
@@ -414,7 +414,7 @@ public static class TimeSpanModule
 	public static Number _c34f00910f115965(RuntimeModule.JTimeSpan instance)
 	{
 		// NanosecondsPerTick = 100
-		return Number_(instance.Ticks) * 100;
+		return NumberFn(instance.Ticks) * 100;
 	}
 
 	/// <summary>
@@ -425,7 +425,7 @@ public static class TimeSpanModule
 	public static Number _265f245f5ef9d2ed(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerMinute = 600000000
-		return Number_(instance.Ticks) / 600000000;
+		return NumberFn(instance.Ticks) / 600000000;
 	}
 
 	/// <summary>
@@ -436,7 +436,7 @@ public static class TimeSpanModule
 	public static Number _d3a0d6dab09b85a6(RuntimeModule.JTimeSpan instance)
 	{
 		// TicksPerSecond = 10000000
-		return Number_(instance.Ticks) / 10000000;
+		return NumberFn(instance.Ticks) / 10000000;
 	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the sum of the specified <see cref="T:System.TimeSpan" /> object and this instance.</summary>
@@ -629,7 +629,7 @@ public static class TimeSpanModule
 
 	///<summary>Returns a new <see cref="T:System.Double" /> value that's the result of dividing this instance by <paramref name="ts" />.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Divide(System.TimeSpan)")]
-	public static Number _ca7e20ad5bf4a61a(RuntimeModule.JTimeSpan instance, RuntimeModule.JTimeSpan ts) => Number_(instance.Ticks) / Number_(ts.Ticks);
+	public static Number _ca7e20ad5bf4a61a(RuntimeModule.JTimeSpan instance, RuntimeModule.JTimeSpan ts) => NumberFn(instance.Ticks) / NumberFn(ts.Ticks);
 
 	/// <summary>
 	/// C#: TimeSpan.FromTicks(long)
@@ -794,7 +794,7 @@ public static class TimeSpanModule
 	///<summary>Returns a new <xref data-throw-if-not-resolved="true" uid="System.Double"></xref> value that's the result of dividing <code data-dev-comment-type="paramref">t1</code> by <code data-dev-comment-type="paramref">t2</code>.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator /(System.TimeSpan, System.TimeSpan)")]
 	public static Number _f857571e543b3b87(RuntimeModule.JTimeSpan t1, RuntimeModule.JTimeSpan t2)
-		=> Number_(t1.Ticks) / Number_(t2.Ticks);
+		=> NumberFn(t1.Ticks) / NumberFn(t2.Ticks);
 
 	///<summary>Indicates whether two <xref data-throw-if-not-resolved="true" uid="System.TimeSpan"></xref> instances are equal.</summary>
 	[Jazor(Op.Import ,"static System.TimeSpan.operator ==(System.TimeSpan, System.TimeSpan)")]

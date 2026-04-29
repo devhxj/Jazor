@@ -35,15 +35,15 @@ public static class MathModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更大的那个，这里顺带修正 +0 / -0。
-		return Math.Max_(x, y);
+		return Math.MaxFn(x, y);
 	}
 
 	private static Number MinMagnitudeCore(Number x, Number y)
@@ -51,15 +51,15 @@ public static class MathModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更小的那个，这里顺带修正 +0 / -0。
-		return Math.Min_(x, y);
+		return Math.MinFn(x, y);
 	}
 
 	// 常量 - 使用 Op.Inline
@@ -163,7 +163,7 @@ public static class MathModule
 	///<summary>Returns the sine and cosine of the specified angle.</summary>
 	[Jazor(Op.Import, "static System.Math.SinCos(double)")]
 	public static (double Sin, double Cos) _4dcadff583296186(Number x)
-		=> (Sin: Math.Sin_(x), Cos: Math.Cos_(x));
+		=> (Sin: Math.SinFn(x), Cos: Math.CosFn(x));
 
 	///<summary>Returns the hyperbolic sine of the specified angle.</summary>
 	[Jazor(Op.Alias, "static System.Math.Sinh(double)", "sinh")]

@@ -46,8 +46,8 @@ public static class UInt16Module
 				return false;
 		}
 
-		var parsed = Number_(trimmed);
-		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+		var parsed = NumberFn(trimmed);
+		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
 			return false;
 		if (parsed < 0 || parsed > 65535)
 			return false;
@@ -214,7 +214,7 @@ public static class UInt16Module
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
-		var quotient = Math.Floor_(left / right);
+		var quotient = Math.FloorFn(left / right);
 		var remainder = left % right;
 		return ((ushort)quotient, (ushort)remainder);
 	}

@@ -103,10 +103,10 @@ public static class UInt64Module
 		var trimmed = s.Trim();
 		try
 		{
-			var result = BigInt_(trimmed);
+			var result = BigIntFn(trimmed);
 			// Check ulong range: 0 to 18446744073709551615
-			var minValue = BigInt_("0");
-			var maxValue = BigInt_("18446744073709551615");
+			var minValue = BigIntFn("0");
+			var maxValue = BigIntFn("18446744073709551615");
 			if (result < minValue || result > maxValue)
 				throw new Error($"OverflowException: Value '{s}' was either too large or too small for a UInt64.");
 			return result;
@@ -146,10 +146,10 @@ public static class UInt64Module
 		var trimmed = s.Trim();
 		try
 		{
-			var parsed = BigInt_(trimmed);
+			var parsed = BigIntFn(trimmed);
 			// Check ulong range: 0 to 18446744073709551615
-			var minValue = BigInt_("0");
-			var maxValue = BigInt_("18446744073709551615");
+			var minValue = BigIntFn("0");
+			var maxValue = BigIntFn("18446744073709551615");
 			if (parsed < minValue || parsed > maxValue)
 				return [false, BigInt.Zero];
 			return [true, parsed];

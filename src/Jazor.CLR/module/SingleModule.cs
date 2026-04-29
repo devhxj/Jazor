@@ -48,8 +48,8 @@ public static class SingleModule
 			return false;
 
 		// JS Number 没有可直接复用的 float 位级判定，这里退化为判定 log2 是否为整数。
-		var exponent = Math.Log2_(value);
-		return IsFiniteCore(exponent) && Math.Floor_(exponent) == exponent;
+		var exponent = Math.Log2Fn(value);
+		return IsFiniteCore(exponent) && Math.FloorFn(exponent) == exponent;
 	}
 
 	internal static Number SignCore(Number value)
@@ -70,15 +70,15 @@ public static class SingleModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更大的那个，这里顺带修正 +0 / -0。
-		return Math.Max_(x, y);
+		return Math.MaxFn(x, y);
 	}
 
 	private static Number MinMagnitudeCore(Number x, Number y)
@@ -86,15 +86,15 @@ public static class SingleModule
 		if (IsNaN(x) || IsNaN(y))
 			return Number.NaN;
 
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
 			return y;
 
 		// .NET 在同绝对值 tie-break 时会保留数值更小的那个，这里顺带修正 +0 / -0。
-		return Math.Min_(x, y);
+		return Math.MinFn(x, y);
 	}
 
 	private static Number MaxMagnitudeNumberCore(Number x, Number y)
@@ -312,7 +312,7 @@ public static class SingleModule
 		var trimmed = s.Trim();
 		if (trimmed.Length == 0)
 			throw new Error("FormatException: The input string was not in a correct format.");
-		var result = Number_(trimmed);
+		var result = NumberFn(trimmed);
 		if (IsNaN(result))
 			throw new Error($"FormatException: The input string '{s}' was not in a correct format.");
 		return result;
@@ -348,7 +348,7 @@ public static class SingleModule
 			var trimmed = s.Trim();
 			if (trimmed.Length == 0)
 				return [false, 0];
-			var val = Number_(trimmed);
+			var val = NumberFn(trimmed);
 			if (IsNaN(val))
 				return [false, 0];
 			return [true, val];
@@ -732,14 +732,14 @@ public static class SingleModule
 	///<summary>Computes the sine and cosine of a value.</summary>
 	[Jazor(Op.Import ,"static float.SinCos(float)")]
 	public static (float Sin, float Cos) _9905e3952bca67bc(Number x)
-		=> (Sin: Math.Sin_(x), Cos: Math.Cos_(x));
+		=> (Sin: Math.SinFn(x), Cos: Math.CosFn(x));
 
 	///<summary>Computes the sine and cosine of a value.</summary>
 	[Jazor(Op.Import ,"static float.SinCosPi(float)")]
 	public static (float SinPi, float CosPi) _2c792a5d6ef88cd1(Number x)
 	{
 		var angle = x * Math.PI;
-		return (SinPi: Math.Sin_(angle), CosPi: Math.Cos_(angle));
+		return (SinPi: Math.SinFn(angle), CosPi: Math.CosFn(angle));
 	}
 
 	///<summary>Computes the sine of a value that has been multiplied by <code data-dev-comment-type="c">pi</code>.</summary>

@@ -49,8 +49,8 @@ public static class Int32Module
 				return false;
 		}
 
-		var parsed = Number_(trimmed);
-		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+		var parsed = NumberFn(trimmed);
+		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
 			return false;
 		if (parsed < -2147483648 || parsed > 2147483647)
 			return false;
@@ -363,8 +363,8 @@ public static class Int32Module
 	[Jazor(Op.Import, "static int.MaxMagnitude(int, int)")]
 	public static Number _a36b4a6dbd50fa77(Number x, Number y)
 	{
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
@@ -380,8 +380,8 @@ public static class Int32Module
 	[Jazor(Op.Import, "static int.MinMagnitude(int, int)")]
 	public static Number _d0c6a74fd11d24bf(Number x, Number y)
 	{
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)

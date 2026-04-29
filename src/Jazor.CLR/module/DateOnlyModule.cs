@@ -9,7 +9,7 @@ public static class DateOnlyModule
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
 	}
 
@@ -18,7 +18,7 @@ public static class DateOnlyModule
 		EnsureWholeNumber(months, "ArgumentOutOfRangeException: Months value must be a whole number.");
 
 		var monthIndex = (instance.Year - 1) * 12 + (instance.Month - 1) + months;
-		var newYear = Math.Floor_(monthIndex / 12) + 1;
+		var newYear = Math.FloorFn(monthIndex / 12) + 1;
 		var newMonthIndex = monthIndex % 12;
 		if (newMonthIndex < 0)
 			newMonthIndex += 12;
@@ -42,7 +42,7 @@ public static class DateOnlyModule
 
 	private static Number GetDateTimeKind(System.DateTimeKind kind)
 	{
-		var value = Number_((int)kind);
+		var value = NumberFn((int)kind);
 		if (value != 0 && value != 1 && value != 2)
 			throw new Error("ArgumentException: Invalid DateTimeKind value.");
 
@@ -70,9 +70,9 @@ public static class DateOnlyModule
 				return false;
 		}
 
-		year = Number_(text.Substring(0, 4));
-		month = Number_(text.Substring(5, 2));
-		day = Number_(text.Substring(8, 2));
+		year = NumberFn(text.Substring(0, 4));
+		month = NumberFn(text.Substring(5, 2));
+		day = NumberFn(text.Substring(8, 2));
 		if (year < 1 || year > 9999 || month < 1 || month > 12)
 			return false;
 
@@ -101,7 +101,7 @@ public static class DateOnlyModule
 		if (style is Number numberStyle)
 			return numberStyle;
 		if (style is System.Globalization.DateTimeStyles enumStyle)
-			return Number_((int)enumStyle);
+			return NumberFn((int)enumStyle);
 		if (style == null)
 			return 0;
 
@@ -109,7 +109,7 @@ public static class DateOnlyModule
 	}
 
 	private static bool IsSupportedDateTimeStyles(Number style)
-		=> style >= 0 && Math.Floor_(style) == style && (style & ~AllowedDateTimeStylesMask) == 0;
+		=> style >= 0 && Math.FloorFn(style) == style && (style & ~AllowedDateTimeStylesMask) == 0;
 
 	[Jazor(Op.Import ,"System.DateOnly.DateOnly()")]
 	public static RuntimeModule.JDateOnly _5f8053a9657a0844() => new(1, 1, 1);
@@ -196,7 +196,7 @@ public static class DateOnlyModule
 		var start = RuntimeModule.CreateUtcDate(instance.Year, 1, 0);
 		var diff = date.GetTime() - start.GetTime();
 		var oneDay = 1000 * 60 * 60 * 24;
-		return Math.Floor_(diff / oneDay);
+		return Math.FloorFn(diff / oneDay);
 	}
 
 	/// <summary>
@@ -278,11 +278,11 @@ public static class DateOnlyModule
 	[Jazor(Op.Import ,"System.DateOnly.ToDateTime(System.TimeOnly)")]
 	public static RuntimeModule.JDateTime _877770696b013f43(RuntimeModule.JDateOnly instance, RuntimeModule.JTimeOnly time)
 	{
-		var totalMilliseconds = Number_(time.Ticks / BigInt_(10000));
-		var subMillisecondTicks = time.Ticks % BigInt_(10000);
-		var hour = Math.Floor_(totalMilliseconds / 3600000);
-		var minute = Math.Floor_(totalMilliseconds / 60000) % 60;
-		var second = Math.Floor_(totalMilliseconds / 1000) % 60;
+		var totalMilliseconds = NumberFn(time.Ticks / BigIntFn(10000));
+		var subMillisecondTicks = time.Ticks % BigIntFn(10000);
+		var hour = Math.FloorFn(totalMilliseconds / 3600000);
+		var minute = Math.FloorFn(totalMilliseconds / 60000) % 60;
+		var second = Math.FloorFn(totalMilliseconds / 1000) % 60;
 		var millisecond = totalMilliseconds % 1000;
 		return new RuntimeModule.JDateTime(RuntimeModule.CreateLocalDateTime(instance.Year, instance.Month, instance.Day, hour, minute, second, millisecond), 0, subMillisecondTicks);
 	}

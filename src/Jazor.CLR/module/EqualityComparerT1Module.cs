@@ -50,7 +50,7 @@ public static class EqualityComparerT1Module<T>
 			if (IsNaN(numberValue) || numberValue == 0)
 				return 0;
 
-			if (Math.Floor_(numberValue) == numberValue &&
+			if (Math.FloorFn(numberValue) == numberValue &&
 				numberValue >= -2147483648 &&
 				numberValue <= 2147483647)
 				return numberValue | 0;

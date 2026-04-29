@@ -103,10 +103,10 @@ public static class Int64Module
 		var trimmed = s.Trim();
 		try
 		{
-			var result = BigInt_(trimmed);
+			var result = BigIntFn(trimmed);
 			// Check long range: -9223372036854775808 to 9223372036854775807
-			var minValue = BigInt_("-9223372036854775808");
-			var maxValue = BigInt_("9223372036854775807");
+			var minValue = BigIntFn("-9223372036854775808");
+			var maxValue = BigIntFn("9223372036854775807");
 			if (result < minValue || result > maxValue)
 				throw new Error($"OverflowException: Value '{s}' was either too large or too small for an Int64.");
 			return result;
@@ -146,10 +146,10 @@ public static class Int64Module
 		var trimmed = s.Trim();
 		try
 		{
-			var parsed = BigInt_(trimmed);
+			var parsed = BigIntFn(trimmed);
 			// Check long range
-			var minValue = BigInt_("-9223372036854775808");
-			var maxValue = BigInt_("9223372036854775807");
+			var minValue = BigIntFn("-9223372036854775808");
+			var maxValue = BigIntFn("9223372036854775807");
 			if (parsed < minValue || parsed > maxValue)
 				return [false, BigInt.Zero];
 			return [true, parsed];
@@ -213,20 +213,20 @@ public static class Int64Module
 	[Jazor(Op.Import, "static long.RotateLeft(long, int)")]
 	public static BigInt _62ef461b6a515b85(BigInt value, Number rotateAmount)
 	{
-		var amount = BigInt_(rotateAmount % 64);
+		var amount = BigIntFn(rotateAmount % 64);
 		if (amount < BigInt.Zero)
-			amount = amount + BigInt_(64);
-		return (value << amount) | (value >> (BigInt_(64) - amount));
+			amount = amount + BigIntFn(64);
+		return (value << amount) | (value >> (BigIntFn(64) - amount));
 	}
 
 	///<summary>Rotates a value right by a given amount.</summary>
 	[Jazor(Op.Import, "static long.RotateRight(long, int)")]
 	public static BigInt _6a70bc88f689ce73(BigInt value, Number rotateAmount)
 	{
-		var amount = BigInt_(rotateAmount % 64);
+		var amount = BigIntFn(rotateAmount % 64);
 		if (amount < BigInt.Zero)
-			amount = amount + BigInt_(64);
-		return (value >> amount) | (value << (BigInt_(64) - amount));
+			amount = amount + BigIntFn(64);
+		return (value >> amount) | (value << (BigIntFn(64) - amount));
 	}
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>
@@ -234,7 +234,7 @@ public static class Int64Module
 	public static BigInt _df6d7288bc845b53(BigInt value)
 	{
 		if (value == BigInt.Zero)
-			return BigInt_(64);
+			return BigIntFn(64);
 		var count = BigInt.Zero;
 		var v = value;
 		while ((v & BigInt.One) == BigInt.Zero)

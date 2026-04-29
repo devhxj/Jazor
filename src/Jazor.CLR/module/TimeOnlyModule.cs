@@ -7,10 +7,10 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.TimeOnly", "Object")]
 public static class TimeOnlyModule
 {
-	private static BigInt TicksPerDay => BigInt_("864000000000");
-	private static BigInt TicksPerHour => BigInt_("36000000000");
-	private static BigInt TicksPerMinute => BigInt_("600000000");
-	private static BigInt TicksPerSecond => BigInt_("10000000");
+	private static BigInt TicksPerDay => BigIntFn("864000000000");
+	private static BigInt TicksPerHour => BigIntFn("36000000000");
+	private static BigInt TicksPerMinute => BigIntFn("600000000");
+	private static BigInt TicksPerSecond => BigIntFn("10000000");
 	private static Number AllowedDateTimeStylesMask => 7;
 
 	private static bool IsAsciiDigit(char value)
@@ -32,7 +32,7 @@ public static class TimeOnlyModule
 
 	private static void ValidateTimeParts(Number hour, Number minute, Number second, Number millisecond, Number microsecond)
 	{
-		if (Math.Floor_(hour) != hour || Math.Floor_(minute) != minute || Math.Floor_(second) != second || Math.Floor_(millisecond) != millisecond || Math.Floor_(microsecond) != microsecond)
+		if (Math.FloorFn(hour) != hour || Math.FloorFn(minute) != minute || Math.FloorFn(second) != second || Math.FloorFn(millisecond) != millisecond || Math.FloorFn(microsecond) != microsecond)
 			throw new Error("ArgumentOutOfRangeException: TimeOnly components must be whole numbers.");
 		if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59 || millisecond < 0 || millisecond > 999 || microsecond < 0 || microsecond > 999)
 			throw new Error("ArgumentOutOfRangeException: One or more TimeOnly components are out of range.");
@@ -42,11 +42,11 @@ public static class TimeOnlyModule
 	{
 		ValidateTimeParts(hour, minute, second, millisecond, microsecond);
 		return new RuntimeModule.JTimeOnly(
-			BigInt_(hour) * TicksPerHour
-			+ BigInt_(minute) * TicksPerMinute
-			+ BigInt_(second) * TicksPerSecond
-			+ BigInt_(millisecond) * BigInt_("10000")
-			+ BigInt_(microsecond) * BigInt_(10));
+			BigIntFn(hour) * TicksPerHour
+			+ BigIntFn(minute) * TicksPerMinute
+			+ BigIntFn(second) * TicksPerSecond
+			+ BigIntFn(millisecond) * BigIntFn("10000")
+			+ BigIntFn(microsecond) * BigIntFn(10));
 	}
 
 	private static BigInt CreateRoundedTicksFromDouble(Number value)
@@ -57,17 +57,17 @@ public static class TimeOnlyModule
 		if (!DoubleModule._aed2927097617729(value))
 			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
 
-		var rounded = Math.Round_(value);
+		var rounded = Math.RoundFn(value);
 		if (!DoubleModule._aed2927097617729(rounded))
 			throw new Error("ArgumentOutOfRangeException: Value is outside the supported TimeOnly range.");
 
-		return BigInt_(rounded);
+		return BigIntFn(rounded);
 	}
 
 	private static Array<object?> AddWithWrappedDays(RuntimeModule.JTimeOnly instance, BigInt deltaTicks)
 	{
 		var total = instance.Ticks + deltaTicks;
-		var wrapped = Number_(total / TicksPerDay);
+		var wrapped = NumberFn(total / TicksPerDay);
 		var result = total % TicksPerDay;
 		if (result < BigInt.Zero)
 		{
@@ -102,8 +102,8 @@ public static class TimeOnlyModule
 		if (!IsDigits(hourText) || !IsDigits(minuteText))
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
 
-		var hour = Number_(hourText);
-		var minute = Number_(minuteText);
+		var hour = NumberFn(hourText);
+		var minute = NumberFn(minuteText);
 		var secondValue = 0;
 		var fractionTicks = BigInt.Zero;
 
@@ -114,7 +114,7 @@ public static class TimeOnlyModule
 			if (!IsDigits(secondText))
 				throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
 
-			secondValue = Number_(secondText);
+			secondValue = NumberFn(secondText);
 
 			if (fractionIndex >= 0)
 			{
@@ -125,7 +125,7 @@ public static class TimeOnlyModule
 				while (fractionText.Length < 7)
 					fractionText += "0";
 
-				fractionTicks = BigInt_(fractionText);
+				fractionTicks = BigIntFn(fractionText);
 			}
 		}
 
@@ -134,7 +134,7 @@ public static class TimeOnlyModule
 		if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || secondValue < 0 || secondValue > 59)
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid TimeOnly.");
 
-		return new RuntimeModule.JTimeOnly(BigInt_(hour) * TicksPerHour + BigInt_(minute) * TicksPerMinute + BigInt_(secondValue) * TicksPerSecond + fractionTicks);
+		return new RuntimeModule.JTimeOnly(BigIntFn(hour) * TicksPerHour + BigIntFn(minute) * TicksPerMinute + BigIntFn(secondValue) * TicksPerSecond + fractionTicks);
 	}
 
 	private static Number GetDateTimeStylesValue(object style)
@@ -142,7 +142,7 @@ public static class TimeOnlyModule
 		if (style is Number numberStyle)
 			return numberStyle;
 		if (style is System.Globalization.DateTimeStyles enumStyle)
-			return Number_((int)enumStyle);
+			return NumberFn((int)enumStyle);
 		if (style == null)
 			return 0;
 
@@ -150,7 +150,7 @@ public static class TimeOnlyModule
 	}
 
 	private static bool IsSupportedDateTimeStyles(Number style)
-		=> style >= 0 && Math.Floor_(style) == style && (style & ~AllowedDateTimeStylesMask) == 0;
+		=> style >= 0 && Math.FloorFn(style) == style && (style & ~AllowedDateTimeStylesMask) == 0;
 
 	[Jazor(Op.Import ,"System.TimeOnly.TimeOnly()")]
 	public static RuntimeModule.JTimeOnly _9f78f92d0753f4cf() => new(BigInt.Zero);
@@ -167,7 +167,7 @@ public static class TimeOnlyModule
 	/// JS: wrapper with max ticks
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeOnly.MaxValue.get")]
-	public static RuntimeModule.JTimeOnly _b1d0e19d91dbb54a() => new(BigInt_("863999999999"));
+	public static RuntimeModule.JTimeOnly _b1d0e19d91dbb54a() => new(BigIntFn("863999999999"));
 
 	/// <summary>
 	/// C#: new TimeOnly(hour, minute)
@@ -215,7 +215,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.Hour.get")]
 	public static Number _201ef41481f4e3fb(RuntimeModule.JTimeOnly instance)
-		=> Number_((instance.Ticks / TicksPerHour) % BigInt_(24));
+		=> NumberFn((instance.Ticks / TicksPerHour) % BigIntFn(24));
 
 	/// <summary>
 	/// C#: instance.Minute
@@ -223,7 +223,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.Minute.get")]
 	public static Number _009addd612610031(RuntimeModule.JTimeOnly instance)
-		=> Number_((instance.Ticks / TicksPerMinute) % BigInt_(60));
+		=> NumberFn((instance.Ticks / TicksPerMinute) % BigIntFn(60));
 
 	/// <summary>
 	/// C#: instance.Second
@@ -231,7 +231,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.Second.get")]
 	public static Number _b9481eedd6cbeb99(RuntimeModule.JTimeOnly instance)
-		=> Number_((instance.Ticks / TicksPerSecond) % BigInt_(60));
+		=> NumberFn((instance.Ticks / TicksPerSecond) % BigIntFn(60));
 
 	/// <summary>
 	/// C#: instance.Millisecond
@@ -239,7 +239,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.Millisecond.get")]
 	public static Number _3c789a48d39d0010(RuntimeModule.JTimeOnly instance)
-		=> Number_((instance.Ticks / BigInt_(10000)) % BigInt_(1000));
+		=> NumberFn((instance.Ticks / BigIntFn(10000)) % BigIntFn(1000));
 
 	/// <summary>
 	/// C#: instance.Microsecond
@@ -247,7 +247,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.Microsecond.get")]
 	public static Number _a091b803b851e27e(RuntimeModule.JTimeOnly instance)
-		=> Number_((instance.Ticks / BigInt_(10)) % BigInt_(1000));
+		=> NumberFn((instance.Ticks / BigIntFn(10)) % BigIntFn(1000));
 
 	/// <summary>
 	/// C#: instance.Nanosecond
@@ -255,7 +255,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.Nanosecond.get")]
 	public static Number _656df0ee12e92399(RuntimeModule.JTimeOnly instance)
-		=> Number_((instance.Ticks % BigInt_(10)) * BigInt_(100));
+		=> NumberFn((instance.Ticks % BigIntFn(10)) * BigIntFn(100));
 
 	/// <summary>
 	/// C#: instance.Ticks
@@ -283,7 +283,7 @@ public static class TimeOnlyModule
 	public static Array<object?> _31bb07d031379025(RuntimeModule.JTimeOnly instance, RuntimeModule.JTimeSpan value, Number wrappedDays)
 	{
 		var total = instance.Ticks + value.Ticks;
-		var wrapped = Number_(total / TicksPerDay);
+		var wrapped = NumberFn(total / TicksPerDay);
 		var result = total % TicksPerDay;
 		if (result < BigInt.Zero)
 		{
@@ -409,7 +409,7 @@ public static class TimeOnlyModule
 	public static RuntimeModule.JTimeOnly _a305982aa6859677(RuntimeModule.JDateTime dateTime)
 	{
 		var milliseconds = (((dateTime.Date.GetHours() * 60 + dateTime.Date.GetMinutes()) * 60 + dateTime.Date.GetSeconds()) * 1000) + dateTime.Date.GetMilliseconds();
-		return new RuntimeModule.JTimeOnly(BigInt_(milliseconds) * BigInt_("10000") + dateTime.SubMillisecondTicks);
+		return new RuntimeModule.JTimeOnly(BigIntFn(milliseconds) * BigIntFn("10000") + dateTime.SubMillisecondTicks);
 	}
 
 	///<summary>Convert the current <see cref="T:System.TimeOnly" /> instance to a <see cref="T:System.TimeSpan" /> object.</summary>

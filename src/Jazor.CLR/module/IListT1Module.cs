@@ -15,7 +15,7 @@ public static class IListT1Module<T>
 {
 	private static void EnsureWholeNumber(Number value, string parameterName)
 	{
-		if (IsNaN(value) || Math.Floor_(value) != value)
+		if (IsNaN(value) || Math.FloorFn(value) != value)
 			throw new Error($"ArgumentOutOfRangeException: {parameterName} must be a whole number.");
 	}
 

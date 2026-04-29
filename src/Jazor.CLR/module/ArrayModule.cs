@@ -466,7 +466,7 @@ public static class ArrayModule<T>
 		Number right = array.Length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
@@ -498,7 +498,7 @@ public static class ArrayModule<T>
 		Number right = index + length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
@@ -524,7 +524,7 @@ public static class ArrayModule<T>
 		Number right = array.Length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = comparer != null
 				? comparer.Compare(array[mid], value)
 				: string.Compare(array[mid]?.ToString(), value?.ToString());
@@ -558,7 +558,7 @@ public static class ArrayModule<T>
 		Number right = index + length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = comparer != null
 				? comparer.Compare(array[mid], value)
 				: string.Compare(array[mid]?.ToString(), value?.ToString());
@@ -586,7 +586,7 @@ public static class ArrayModule<T>
 		Number right = array.Length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
@@ -612,7 +612,7 @@ public static class ArrayModule<T>
 		Number right = array.Length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = comparer != null
 				? comparer.Compare(array[mid], value)
 				: string.Compare(array[mid]?.ToString(), value?.ToString());
@@ -646,7 +646,7 @@ public static class ArrayModule<T>
 		Number right = index + length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
@@ -678,7 +678,7 @@ public static class ArrayModule<T>
 		Number right = index + length - 1;
 		while (left <= right)
 		{
-			var mid = left + Math.Floor_((right - left) / 2);
+			var mid = left + Math.FloorFn((right - left) / 2);
 			var cmp = comparer != null
 				? comparer.Compare(array[mid], value)
 				: string.Compare(array[mid]?.ToString(), value?.ToString());
@@ -744,11 +744,11 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentNullException: array is null");
 		if (index < BigInt.Zero)
 			throw new Error("ArgumentOutOfRangeException: index is less than zero");
-		if (Number_(index) + instance.Length > array.Length)
+		if (NumberFn(index) + instance.Length > array.Length)
 			throw new Error("ArgumentException: not enough space in destination array");
 
 		for (Number i = 0; i < instance.Length; i++)
-			array[Number_(index) + i] = instance[i];
+			array[NumberFn(index) + i] = instance[i];
 	}
 
 	#endregion

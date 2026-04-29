@@ -16,7 +16,7 @@ public static class GregorianCalendarModule
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.Floor_(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
+		if (IsNaN(value) || Math.FloorFn(value) != value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
 			throw new Error(message);
 	}
 
@@ -25,7 +25,7 @@ public static class GregorianCalendarModule
 		if (type is Number numberType)
 			return numberType;
 		if (type is System.Globalization.GregorianCalendarTypes enumType)
-			return Number_((int)enumType);
+			return NumberFn((int)enumType);
 
 		throw new Error("ArgumentException: Invalid GregorianCalendarTypes value.");
 	}
@@ -149,7 +149,7 @@ public static class GregorianCalendarModule
 		var year = time.Date.GetFullYear();
 		var start = Date.UTC(year, 0, 0);
 		var current = Date.UTC(year, time.Date.GetMonth(), time.Date.GetDate());
-		return Math.Floor_((current - start) / 86400000);
+		return Math.FloorFn((current - start) / 86400000);
 	}
 
 	///<summary>Returns the number of days in the specified month in the specified year in the specified era.</summary>
@@ -274,7 +274,7 @@ public static class GregorianCalendarModule
 		if (year >= 100)
 			return year;
 
-		var century = Math.Floor_(instance.TwoDigitYearMax / 100) * 100;
+		var century = Math.FloorFn(instance.TwoDigitYearMax / 100) * 100;
 		var pivot = instance.TwoDigitYearMax % 100;
 		return year <= pivot ? century + year : century - 100 + year;
 	}

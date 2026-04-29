@@ -25,7 +25,7 @@ public static class ListT1Module<T>
 
 	private static void EnsureWholeNumber(Number value, string message)
 	{
-		if (IsNaN(value) || Math.Floor_(value) != value)
+		if (IsNaN(value) || Math.FloorFn(value) != value)
 			throw new Error(message);
 	}
 

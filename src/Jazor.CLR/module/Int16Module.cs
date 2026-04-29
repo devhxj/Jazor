@@ -47,8 +47,8 @@ public static class Int16Module
 				return false;
 		}
 
-		var parsed = Number_(trimmed);
-		if (IsNaN(parsed) || Math.Floor_(parsed) != parsed)
+		var parsed = NumberFn(trimmed);
+		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
 			return false;
 		if (parsed < -32768 || parsed > 32767)
 			return false;
@@ -59,8 +59,8 @@ public static class Int16Module
 
 	private static Number MaxMagnitudeCore(Number x, Number y)
 	{
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX > absY)
 			return x;
 		if (absX < absY)
@@ -71,8 +71,8 @@ public static class Int16Module
 
 	private static Number MinMagnitudeCore(Number x, Number y)
 	{
-		var absX = Math.Abs_(x);
-		var absY = Math.Abs_(y);
+		var absX = Math.AbsFn(x);
+		var absY = Math.AbsFn(y);
 		if (absX < absY)
 			return x;
 		if (absX > absY)
