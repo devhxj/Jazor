@@ -1,40 +1,127 @@
 namespace ECMAScript.Vue;
 
 [ECMAScriptModule("vue")]
+public abstract class VuePlugin
+{
+    protected VuePlugin()
+    {
+    }
+}
+
+[ECMAScriptModule("vue")]
+public abstract class VueComponent
+{
+    protected VueComponent()
+    {
+    }
+}
+
+[ECMAScriptModule("vue")]
+public abstract class VueDirective
+{
+    protected VueDirective()
+    {
+    }
+}
+
+[ECMAScriptModule]
+[Description("@#")]
+public abstract record VueOptionsBag;
+
+[ECMAScriptModule]
+[Description("@#")]
+public abstract record VueComponentDefinition : VueOptionsBag;
+
+[ECMAScriptModule]
+[Description("@#VueComponentOptions")]
+public sealed record VueComponentOptions : VueComponentDefinition
+{
+    [Description("@#name")]
+    public string? Name { get; init; }
+
+    [Description("@#components")]
+    public VueComponentRegistry? Components { get; init; }
+
+    [Description("@#directives")]
+    public VueDirectiveRegistry? Directives { get; init; }
+
+    [Description("@#render")]
+    public Func<VueVNode>? Render { get; init; }
+}
+
+[ECMAScriptModule]
+[Description("@#")]
+public abstract record VueProps : VueOptionsBag;
+
+[ECMAScriptModule]
+[Description("@#")]
+public abstract record VuePluginOptions : VueOptionsBag;
+
+[ECMAScriptModule]
+[Description("@#")]
+public abstract record VueComponentRegistry : VueOptionsBag;
+
+[ECMAScriptModule]
+[Description("@#")]
+public abstract record VueDirectiveRegistry : VueOptionsBag;
+
+[ECMAScriptModule("vue")]
+public sealed class VueVNode
+{
+    private VueVNode()
+    {
+    }
+}
+
+[ECMAScriptModule("vue")]
+public sealed class VueComponentPublicInstance
+{
+    private VueComponentPublicInstance()
+    {
+    }
+}
+
+[ECMAScriptModule("vue")]
 public static class Vue
 {
     [ECMAScriptName("createApp")]
-    public extern static VueApp CreateApp(object rootComponent);
+    public extern static VueApp CreateApp(VueComponent rootComponent);
 
     [ECMAScriptName("createApp")]
-    public extern static VueApp CreateApp(object rootComponent, object rootProps);
+    public extern static VueApp CreateApp(VueComponent rootComponent, VueProps rootProps);
 
     [ECMAScriptName("createSSRApp")]
-    public extern static VueApp CreateSsrApp(object rootComponent);
+    public extern static VueApp CreateSsrApp(VueComponent rootComponent);
 
     [ECMAScriptName("createSSRApp")]
-    public extern static VueApp CreateSsrApp(object rootComponent, object rootProps);
+    public extern static VueApp CreateSsrApp(VueComponent rootComponent, VueProps rootProps);
 
     [ECMAScriptName("defineComponent")]
-    public extern static object DefineComponent(object options);
+    public extern static VueComponent DefineComponent(VueComponentDefinition options);
 
     [ECMAScriptName("h")]
-    public extern static object H(string type);
+    public extern static VueVNode H(string type);
 
     [ECMAScriptName("h")]
-    public extern static object H(string type, object props);
+    public extern static VueVNode H(string type, Either<string, Number, bool, VueVNode, VueVNode[]> children);
 
     [ECMAScriptName("h")]
-    public extern static object H(string type, object props, object children);
+    public extern static VueVNode H(string type, VueProps props);
 
     [ECMAScriptName("h")]
-    public extern static object H(object component);
+    public extern static VueVNode H(string type, VueProps props, Either<string, Number, bool, VueVNode, VueVNode[]> children);
 
     [ECMAScriptName("h")]
-    public extern static object H(object component, object props);
+    public extern static VueVNode H(VueComponent component);
 
     [ECMAScriptName("h")]
-    public extern static object H(object component, object props, object children);
+    public extern static VueVNode H(VueComponent component, Either<string, Number, bool, VueVNode, VueVNode[]> children);
+
+    [ECMAScriptName("h")]
+    public extern static VueVNode H(VueComponent component, VueProps props);
+
+    [ECMAScriptName("h")]
+    public extern static VueVNode H(VueComponent component, VueProps props, Either<string, Number, bool, VueVNode, VueVNode[]> children);
 
     [ECMAScriptName("reactive")]
     public extern static T Reactive<T>(T value) where T : class;
@@ -74,34 +161,34 @@ public static class Vue
 public class VueApp
 {
     [ECMAScriptName("mount")]
-    public extern object Mount(string selector);
+    public extern VueComponentPublicInstance Mount(string selector);
 
     [ECMAScriptName("mount")]
-    public extern object Mount(Element container);
+    public extern VueComponentPublicInstance Mount(Element container);
 
     [ECMAScriptName("unmount")]
     public extern void Unmount();
 
     [ECMAScriptName("use")]
-    public extern VueApp Use(object plugin);
+    public extern VueApp Use(VuePlugin plugin);
 
     [ECMAScriptName("use")]
-    public extern VueApp Use(object plugin, object options);
+    public extern VueApp Use(VuePlugin plugin, VuePluginOptions options);
 
     [ECMAScriptName("component")]
-    public extern VueApp Component(string name, object component);
+    public extern VueApp Component(string name, VueComponent component);
 
     [ECMAScriptName("component")]
-    public extern object Component(string name);
+    public extern VueComponent Component(string name);
 
     [ECMAScriptName("directive")]
-    public extern VueApp Directive(string name, object directive);
+    public extern VueApp Directive(string name, VueDirective directive);
 
     [ECMAScriptName("directive")]
-    public extern object Directive(string name);
+    public extern VueDirective Directive(string name);
 
     [ECMAScriptName("provide")]
-    public extern VueApp Provide(string key, object value);
+    public extern VueApp Provide<TValue>(string key, TValue value);
 }
 
 [ECMAScriptModule("vue")]
