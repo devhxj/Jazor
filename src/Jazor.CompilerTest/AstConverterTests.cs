@@ -5287,7 +5287,7 @@ export function Create() {
                 [ECMAScriptModule("app/main.mjs")]
                 public static class AppModule
                 {
-                    public static object Mount(object component)
+                    public static VueComponentPublicInstance Mount(VueComponent component)
                     {
                         var app = Vue.CreateApp(component);
                         return app.Mount("#app");
@@ -5329,6 +5329,135 @@ export function Mount(component) {
 export function ReadRef() {
   let count = ref(1);
   return count.value;
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingDerivedVueProps_GeneratesObjectLiteral()
+    {
+        var code = """
+            using ECMAScript;
+            using ECMAScript.Vue;
+            using System.ComponentModel;
+
+            namespace Demo
+            {
+                public sealed record RootProps : VueProps
+                {
+                    [Description("@#message")]
+                    public string? Message { get; init; }
+                }
+
+                [ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static VueApp Boot(VueComponent component)
+                    {
+                        return Vue.CreateApp(component, new RootProps { Message = "Hello" });
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "AppModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.Vue).Assembly.Location));
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { createApp } from ""vue"";
+export function Boot(component) {
+  return createApp(component, { message: ""Hello"" });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingEcmaScriptVueVuetifyProxy_GeneratesVuetifyImportsFromNameAttributes()
+    {
+        var code = """
+            using ECMAScript;
+            using ECMAScript.Vue;
+            using ECMAScript.Vue.Vuetify;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static VueComponentPublicInstance Boot(VueComponent component)
+                    {
+                        var app = Vue.CreateApp(component);
+                        app.Use(Vuetify.CreateVuetify(new VuetifyOptions
+                        {
+                            Components = new VuetifyComponentRegistry
+                            {
+                                VBtn = VuetifyComponents.VBtn
+                            },
+                            Directives = new VuetifyDirectiveRegistry
+                            {
+                                Ripple = VuetifyDirectives.Ripple
+                            },
+                            Theme = new VuetifyThemeOptions
+                            {
+                                DefaultTheme = "jazor"
+                            }
+                        }));
+                        app.Component("v-btn", VuetifyComponents.VBtn);
+                        app.Directive("ripple", VuetifyDirectives.Ripple);
+                        return app.Mount("#app");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "AppModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.Vue).Assembly.Location));
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { createApp } from ""vue"";
+import { createVuetify } from ""vuetify"";
+import { VBtn } from ""vuetify/components"";
+import { Ripple } from ""vuetify/directives"";
+export function Boot(component) {
+  let app = createApp(component);
+  app.use(createVuetify({
+    components: { VBtn: VBtn },
+    directives: { Ripple: Ripple },
+    theme: { defaultTheme: ""jazor"" }
+  }));
+  app.component(""v-btn"", VBtn);
+  app.directive(""ripple"", Ripple);
+  return app.mount(""#app"");
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
