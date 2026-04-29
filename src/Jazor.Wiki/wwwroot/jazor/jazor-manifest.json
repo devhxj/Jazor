@@ -1,6 +1,6 @@
 {
   "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\src\\Jazor.Wiki\\bin\\Debug\\net10.0\\Jazor.Wiki.dll",
-  "GeneratedAtUtc": "2026-04-28T23:20:42.0627321Z",
+  "GeneratedAtUtc": "2026-04-29T01:05:17.7349873Z",
   "Modules": [
     {
       "AssemblyName": "Jazor.Wiki",
@@ -9,7 +9,7 @@
       "RelativePath": "app/main.mjs",
       "Hash": "3C611C9C3329FC1A1A3A059CA6F07E37FB200142BF748D346B703F7EAC56F5E0",
       "SourceMapPath": "app/main.mjs.map",
-      "MapHash": "8C2A2CD33FED7D14022BDB876689D952F6B4B4500302E94EEB992D7F53DF3C28"
+      "MapHash": "6129828A6F6423B91F0844F1EA22D7B3C53CDB121EF6F44C2F24E0B771DF27EA"
     }
   ]
 }

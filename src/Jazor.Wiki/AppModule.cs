@@ -8,7 +8,7 @@ namespace Jazor.Wiki;
 public sealed class WikiHomeModule
 {
     [Description("@#default")]
-    public static object Component = null!;
+    public static VueComponent Component = null!;
 }
 
 [ECMAScriptModule("app/main.mjs")]
