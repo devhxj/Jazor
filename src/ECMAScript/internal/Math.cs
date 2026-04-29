@@ -58,7 +58,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression for which the absolute value is needed.</param>
 		/// <returns></returns>
 		[Description("@#abs")]
-		public extern static Number Abs_(Number x);
+		public extern static Number AbsFn(Number x);
 
 		/// <summary>
 		/// Returns the arc cosine (or inverse cosine) of a number.
@@ -66,7 +66,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#acos")]
-		public extern static Number Acos_(Number x);
+		public extern static Number AcosFn(Number x);
 
 		/// <summary>
 		/// 返回一个数的反双曲余弦值
@@ -74,7 +74,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#acosh")]
-		public extern static Number Acosh_(Number x);
+		public extern static Number AcoshFn(Number x);
 
 		/// <summary>
 		/// Returns the arcsine of a number.
@@ -82,7 +82,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#asin")]
-		public extern static Number Asin_(Number x);
+		public extern static Number AsinFn(Number x);
 
 		/// <summary>
 		/// 返回一个数值的反双曲正弦值
@@ -90,7 +90,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#asinh")]
-		public extern static Number Asinh_(Number x);
+		public extern static Number AsinhFn(Number x);
 
 		/// <summary>
 		/// Returns the arctangent of a number.
@@ -98,7 +98,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression for which the arctangent is needed.</param>
 		/// <returns></returns>
 		[Description("@#atan")]
-		public extern static Number Atan_(Number x);
+		public extern static Number AtanFn(Number x);
 
 		/// <summary>
 		/// Returns the angle (in radians) between the X axis and the line going through both the origin and the given point.
@@ -107,7 +107,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression representing the cartesian x-coordinate.</param>
 		/// <returns></returns>
 		[Description("@#atan2")]
-		public extern static Number Atan2_(Number y, Number x);
+		public extern static Number Atan2Fn(Number y, Number x);
 
 		/// <summary>
 		/// 返回一个数值反双曲正切值
@@ -115,7 +115,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#atanh")]
-		public extern static Number Atanh_(Number x);
+		public extern static Number AtanhFn(Number x);
 
 		/// <summary>
 		/// 返回任意数字的立方根
@@ -123,7 +123,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#cbrt")]
-		public extern static Number Cbrt_(Number x);
+		public extern static Number CbrtFn(Number x);
 
 		/// <summary>
 		/// Returns the smallest integer greater than or equal to its numeric argument.
@@ -131,7 +131,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#ceil")]
-		public extern static Number Ceil_(Number x);
+		public extern static Number CeilFn(Number x);
 
 		/// <summary>
 		/// Returns the number of leading zero bits in the 32-bit binary representation of a number.
@@ -139,7 +139,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#clz32")]
-		public extern static Number Clz32_(Number x);
+		public extern static Number Clz32Fn(Number x);
 
 		/// <summary>
 		/// Returns the cosine of a number.
@@ -147,7 +147,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
 		/// <returns></returns>
 		[Description("@#cos")]
-		public extern static Number Cos_(Number x);
+		public extern static Number CosFn(Number x);
 
 		/// <summary>
 		/// 返回数值的双曲余弦函数
@@ -155,7 +155,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#cosh")]
-		public extern static Number Cosh_(Number x);
+		public extern static Number CoshFn(Number x);
 
 		/// <summary>
 		/// Returns e (the base of natural logarithms) raised to a power.
@@ -163,7 +163,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression representing the power of e.</param>
 		/// <returns></returns>
 		[Description("@#exp")]
-		public extern static Number Exp_(Number x);
+		public extern static Number ExpFn(Number x);
 
 		/// <summary>
 		/// Calculates e^x - 1, where e is the base of natural logarithms.
@@ -175,7 +175,7 @@ public static partial class Global
 		/// Returns <see cref="double.PositiveInfinity"/> if <paramref name="x"/> is positive infinity. Returns -1 if <paramref
 		/// name="x"/> is negative infinity.</returns>
 		[Description("@#expm1")]
-		public extern static Number Expm1_(Number x);
+		public extern static Number Expm1Fn(Number x);
 
 		/// <summary>
 		/// Returns the greatest integer less than or equal to its numeric argument.
@@ -183,7 +183,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#floor")]
-		public extern static Number Floor_(Number x);
+		public extern static Number FloorFn(Number x);
 
 		/// <summary>
 		/// returns the nearest 32-bit single precision float representation of a number.
@@ -196,14 +196,14 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#fround")]
-		public extern static Number Fround_(Number x);
+		public extern static Number FroundFn(Number x);
 
 		/// <summary>
 		/// Returns the nearest IEEE 754 binary16 representation of a number, re-expanded as a JavaScript number.
 		/// This is the direct projection of JavaScript <c>Math.f16round</c>.
 		/// </summary>
 		[Description("@#f16round")]
-		public extern static Number F16round_(Number x);
+		public extern static Number F16roundFn(Number x);
 
 		/// <summary>
 		/// returns the square root of the sum of squares of its arguments.
@@ -211,7 +211,7 @@ public static partial class Global
 		/// <param name="values"></param>
 		/// <returns></returns>
 		[Description("@#hypot")]
-		public extern static Number Hypot_(params Number[] values);
+		public extern static Number HypotFn(params Number[] values);
 
 		/// <summary>
 		/// Sums an iterable of JavaScript numbers using the runtime's precise summation algorithm.
@@ -219,7 +219,7 @@ public static partial class Global
 		/// This is the direct projection of JavaScript <c>Math.sumPrecise</c>.
 		/// </summary>
 		[Description("@#sumPrecise")]
-		public extern static Number SumPrecise_(IEnumerable<Number> items);
+		public extern static Number SumPreciseFn(IEnumerable<Number> items);
 
 		/// <summary>
 		/// Returns the result of the C-like 32-bit multiplication of the two parameters.
@@ -228,7 +228,7 @@ public static partial class Global
 		/// <param name="b">Second number.</param>
 		/// <returns></returns>
 		[Description("@#imul")]
-		public extern static Number Imul_(Number a, Number b);
+		public extern static Number ImulFn(Number a, Number b);
 
 		/// <summary>
 		/// Returns the natural logarithm (base e) of a number.
@@ -236,7 +236,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#log")]
-		public extern static Number Log_(Number x);
+		public extern static Number LogFn(Number x);
 
 		/// <summary>
 		/// Returns the base 10 logarithm of a number. 
@@ -244,7 +244,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#log10")]
-		public extern static Number Log10_(Number x);
+		public extern static Number Log10Fn(Number x);
 
 		/// <summary>
 		/// Returns the natural logarithm (base e) of 1 + x, where x is the argument.
@@ -252,7 +252,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#log1p")]
-		public extern static Number Log1p_(Number x);
+		public extern static Number Log1pFn(Number x);
 
 		/// <summary>
 		/// Returns the base 2 logarithm of a number. 
@@ -260,7 +260,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#log2")]
-		public extern static Number Log2_(Number x);
+		public extern static Number Log2Fn(Number x);
 
 		/// <summary>
 		/// Returns the larger of a set of supplied numeric expressions.
@@ -269,7 +269,7 @@ public static partial class Global
 		/// <param name="val2">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
 		[Description("@#max")]
-		public extern static Number Max_(Number val1, Number val2);
+		public extern static Number MaxFn(Number val1, Number val2);
 
 		/// <summary>
 		/// Returns the larger of a set of supplied numeric expressions.
@@ -277,7 +277,7 @@ public static partial class Global
 		/// <param name="values">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
 		[Description("@#max")]
-		public extern static Number Max_(params Number[] values);
+		public extern static Number MaxFn(params Number[] values);
 
 		/// <summary>
 		/// Returns the smaller of a set of supplied numeric expressions.
@@ -286,7 +286,7 @@ public static partial class Global
 		/// <param name="val2">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
 		[Description("@#min")]
-		public extern static Number Min_(Number val1, Number val2);
+		public extern static Number MinFn(Number val1, Number val2);
 
 		/// <summary>
 		/// Returns the smaller of a set of supplied numeric expressions.
@@ -294,7 +294,7 @@ public static partial class Global
 		/// <param name="values">Numeric expressions to be evaluated.</param>
 		/// <returns></returns>
 		[Description("@#min")]
-		public extern static Number Min_(params Number[] values);
+		public extern static Number MinFn(params Number[] values);
 
 		/// <summary>
 		/// Returns the value of a base expression taken to a specified power.
@@ -303,14 +303,14 @@ public static partial class Global
 		/// <param name="y">The exponent value of the expression.</param>
 		/// <returns></returns>
 		[Description("@#pow")]
-		public extern static Number Pow_(Number x, Number y);
+		public extern static Number PowFn(Number x, Number y);
 
 		/// <summary>
 		/// Returns a pseudorandom number between 0 and 1.
 		/// </summary>
 		/// <returns></returns>
 		[Description("@#random")]
-		public extern static Number Random_();
+		public extern static Number RandomFn();
 		
 		/// <summary>
 		/// Returns a supplied numeric expression rounded to the nearest integer.
@@ -318,7 +318,7 @@ public static partial class Global
 		/// <param name="x">The value to be rounded to the nearest integer.</param>
 		/// <returns></returns>
 		[Description("@#round")]
-		public extern static Number Round_(Number x);
+		public extern static Number RoundFn(Number x);
 
 		/// <summary>
 		/// Returns 1 or -1, indicating the sign of the number passed as argument. If the input is 0 or -0, it will be returned as-is.
@@ -326,7 +326,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#sign")]
-		public extern static Number Sign_(Number x);
+		public extern static Number SignFn(Number x);
 
 		/// <summary>
 		/// Returns the sine of a number.
@@ -334,7 +334,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
 		/// <returns></returns>
 		[Description("@#sin")]
-		public extern static Number Sin_(Number x);
+		public extern static Number SinFn(Number x);
 
 		/// <summary>
 		/// Returns the hyperbolic sine of a number. 
@@ -342,7 +342,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#sinh")]
-		public extern static Number Sinh_(Number x);
+		public extern static Number SinhFn(Number x);
 
 		/// <summary>
 		/// Returns the square root of a number.
@@ -350,7 +350,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression.</param>
 		/// <returns></returns>
 		[Description("@#sqrt")]
-		public extern static Number Sqrt_(Number x);
+		public extern static Number SqrtFn(Number x);
 
 		/// <summary>
 		/// Returns the tangent of a number.
@@ -358,7 +358,7 @@ public static partial class Global
 		/// <param name="x">A numeric expression that contains an angle measured in radians.</param>
 		/// <returns></returns>
 		[Description("@#tan")]
-		public extern static Number Tan_(Number x);
+		public extern static Number TanFn(Number x);
 
 		/// <summary>
 		/// Returns the hyperbolic tangent of a number. 
@@ -366,7 +366,7 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#tanh")]
-		public extern static Number Tanh_(Number x);
+		public extern static Number TanhFn(Number x);
 
 		/// <summary>
 		/// Returns the integer part of a number by removing any fractional digits.
@@ -374,6 +374,6 @@ public static partial class Global
 		/// <param name="x"></param>
 		/// <returns></returns>
 		[Description("@#trunc")]
-		public extern static Number Trunc_(Number x);
+		public extern static Number TruncFn(Number x);
 	}
 }

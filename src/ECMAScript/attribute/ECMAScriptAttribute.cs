@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.Versioning;
 
 namespace ECMAScript;
@@ -8,6 +7,6 @@ namespace ECMAScript;
 /// </summary>
 [AttributeUsage(AttributeTargets.All, Inherited = false)]
 [SupportedOSPlatform("browser")]
-internal sealed class ECMAScriptAttribute : Attribute
+public sealed class ECMAScriptAttribute : Attribute
 {
 }

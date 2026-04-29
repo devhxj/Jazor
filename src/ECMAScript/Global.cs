@@ -50,7 +50,7 @@ public static partial class Global
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Number")]
-	public extern static Number Number_();
+	public extern static Number NumberFn();
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Number(...)</c>.
@@ -58,23 +58,23 @@ public static partial class Global
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Number")]
-	public extern static Number Number_(object? value);
+	public extern static Number NumberFn(object? value);
 
 	[Description("@#Number")]
-	public extern static Number Number_(Number value);
+	public extern static Number NumberFn(Number value);
 
 	[Description("@#Number")]
-	public extern static Number Number_(BigInt value);
+	public extern static Number NumberFn(BigInt value);
 
 	[Description("@#Number")]
-	public extern static Number Number_(string value);
+	public extern static Number NumberFn(string value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>String()</c>.
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#String")]
-	public extern static string String_();
+	public extern static string StringFn();
 
 	/// <summary>
 	/// C# host name for JavaScript <c>String(...)</c>.
@@ -82,14 +82,14 @@ public static partial class Global
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#String")]
-	public extern static string String_(object? value);
+	public extern static string StringFn(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Boolean()</c>.
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Boolean")]
-	public extern static bool Boolean_();
+	public extern static bool BooleanFn();
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Boolean(...)</c>.
@@ -97,21 +97,21 @@ public static partial class Global
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Boolean")]
-	public extern static bool Boolean_(object? value);
+	public extern static bool BooleanFn(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#BigInt")]
-	public extern static BigInt BigInt_(Number value);
+	public extern static BigInt BigIntFn(Number value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
 	/// The trailing underscore only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#BigInt")]
-	public extern static BigInt BigInt_(string value);
+	public extern static BigInt BigIntFn(string value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
@@ -120,21 +120,21 @@ public static partial class Global
 	/// Runtime failures still follow JavaScript <c>BigInt</c> conversion semantics.
 	/// </summary>
 	[Description("@#BigInt")]
-	public extern static BigInt BigInt_(object? value);
+	public extern static BigInt BigIntFn(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Symbol(...)</c>.
 	/// The trailing underscore only avoids naming conflicts with the <see cref="Symbol"/> type.
 	/// </summary>
 	[Description("@#Symbol")]
-	public extern static Symbol Symbol_(string? description = null);
+	public extern static Symbol SymbolFn(string? description = null);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Symbol(...)</c>.
 	/// JavaScript accepts any description value and stringifies it at runtime when it is not <c>undefined</c>.
 	/// </summary>
 	[Description("@#Symbol")]
-	public extern static Symbol Symbol_(object? description);
+	public extern static Symbol SymbolFn(object? description);
 
 	[Description("@#document")]
 	public extern static Document Document { get; }

@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Vue\" />
+  </ItemGroup>
 </Project>
