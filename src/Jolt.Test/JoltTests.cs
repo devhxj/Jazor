@@ -1,9 +1,9 @@
 using Jolt.Analysis;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Rpc;
 using Jolt.Services;
 using Jolt.Workspace;
-using SharedJoltRpcMethodNames = ECMAScript.Contract.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Test;
 

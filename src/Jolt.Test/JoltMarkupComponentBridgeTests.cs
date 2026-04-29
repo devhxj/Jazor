@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Coordination;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Test;

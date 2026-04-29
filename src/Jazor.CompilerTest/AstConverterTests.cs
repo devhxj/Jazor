@@ -5578,6 +5578,53 @@ export function Boot() {{
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithDefaultExportField_GeneratesDefaultExportAlias()
+    {
+        var code = """
+            using System;
+            using System.ComponentModel;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
+                public static class WikiHomeModule
+                {
+                    [Description("@#default")]
+                    public static object Component = null;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "WikiHomeModule");
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "WikiHomeModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"let Component = null;
+export { Component as default };
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithCrossModuleDefaultExportReferenceFromProxyClass_GeneratesDefaultImport()
     {
         var code = """

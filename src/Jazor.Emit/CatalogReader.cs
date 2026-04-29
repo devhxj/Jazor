@@ -90,7 +90,10 @@ internal static class CatalogReader
         if (Path.IsPathRooted(normalized))
             throw new InvalidOperationException($"Module relative path must be relative: '{relativePath}'.");
 
-        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var segments = normalized
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToArray();
         if (segments.Any(static segment => segment == ".."))
             throw new InvalidOperationException($"Module relative path cannot escape output directory: '{relativePath}'.");
 

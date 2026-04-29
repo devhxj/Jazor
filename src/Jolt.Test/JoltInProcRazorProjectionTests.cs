@@ -1,4 +1,4 @@
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Razor.InProc;
 
 namespace Jolt.Test;

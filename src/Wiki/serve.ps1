@@ -10,10 +10,10 @@ $ErrorActionPreference = "Stop"
 
 $sampleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
-$hostProject = Join-Path $sampleRoot "Jazor.Wiki.csproj"
+$hostProject = Join-Path $sampleRoot "Wiki.csproj"
 $hostRoot = $sampleRoot
 $webRoot = Join-Path $hostRoot "wwwroot"
-$modulePath = Join-Path $webRoot "jazor\app\main.mjs"
+$modulePath = Join-Path $webRoot "jazor\main.mjs"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
@@ -47,7 +47,7 @@ if ($BuildLocal) {
 }
 
 if (-not (Test-Path $modulePath)) {
-    throw "Missing emitted module: $modulePath. Run '.\src\Jazor.Wiki\serve.ps1 -Build' or '.\src\Jazor.Wiki\build-local.ps1' first."
+    throw "Missing emitted module: $modulePath. Run '.\src\Wiki\serve.ps1 -Build' or '.\src\Wiki\build-local.ps1' first."
 }
 
 $url = "http://localhost:$Port/index.html"
@@ -63,6 +63,7 @@ if ($DryRun) {
 $runArgs = @(
     "run",
     "--project", $hostProject,
+    "--no-launch-profile",
     "-c", $Configuration
 )
 

@@ -12,6 +12,6 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 
 | 目录 | 对应源码 | 内容 |
 |------|---------|------|
-| `jolt/` | `src/Jolt/` | Phase 1–7 实施计划 + P1 详细实施文档 |
-| `jolt/razorvue-implementation/` | `src/Jazor.RazorVue/` + `src/Jolt/` | RazorVue HMR 实现、评审、骨架 |
+| `jolt/` | `src/Jolt/` | Phase 计划、切片实施文档、运行模式收口 |
+| `jolt/razorvue-implementation/` | RazorVue 线路 + `src/Jolt/` | RazorVue 与 Jolt 的交叉实施、HMR/桥接与迁移材料 |
 | `compiler/` | `src/Jazor.Compiler/` | 编译管线实施清单、转换路线图、SourceMap 实施清单 |

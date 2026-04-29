@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Jazor.Wiki": {
+    "Wiki": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

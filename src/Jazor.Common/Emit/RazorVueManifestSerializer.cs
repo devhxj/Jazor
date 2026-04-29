@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ECMAScript.Contract.Emit;
+namespace Jazor.Common.Emit;
 
 public static class RazorVueManifestSerializer
 {

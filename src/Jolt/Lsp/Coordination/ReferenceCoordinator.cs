@@ -1,7 +1,7 @@
 using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Lsp.Coordination;
 

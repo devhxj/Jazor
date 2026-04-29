@@ -255,6 +255,70 @@ public sealed class StaticModuleSourceMapTests
         }
     }
 
+    [TestMethod]
+    public void ModuleWriter_Write_WhenLegacyManifestUsesDotSegments_PreservesCurrentModule()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var rootAssemblyPath = Path.Combine(root, "Sample.Host.dll");
+        var modulePath = Path.Combine(outputDirectory, "components", "wiki-home.mjs");
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(modulePath)!);
+            File.WriteAllText(modulePath, "stale");
+            File.WriteAllText(
+                manifestPath,
+                """
+                {
+                  "RootAssemblyPath": "legacy.dll",
+                  "GeneratedAtUtc": "2026-04-29T00:00:00Z",
+                  "Modules": [
+                    {
+                      "AssemblyName": "Sample.Host",
+                      "TypeName": "Demo.Modules.WikiHome",
+                      "Id": "Demo.Modules.WikiHome",
+                      "RelativePath": "./components/wiki-home.mjs",
+                      "Hash": "legacy-hash"
+                    }
+                  ]
+                }
+                """);
+
+            var writer = new ModuleWriter();
+            var result = writer.Write(
+                rootAssemblyPath,
+                outputDirectory,
+                manifestPath,
+                [
+                    new EmitModuleRecord(
+                        SourceAssemblyPath: rootAssemblyPath,
+                        AssemblyName: "Sample.Host",
+                        TypeName: "Demo.Modules.WikiHome",
+                        Id: "Demo.Modules.WikiHome",
+                        RelativePath: "components/wiki-home.mjs",
+                        Content: "export default 1;\n",
+                        Hash: "current-hash")
+                ],
+                clean: true);
+
+            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+            Assert.IsTrue(File.Exists(modulePath));
+            Assert.AreEqual("export default 1;\n", File.ReadAllText(modulePath));
+
+            var manifest = ManifestModel.TryLoad(manifestPath);
+            Assert.IsNotNull(manifest);
+            Assert.HasCount(1, manifest.Modules);
+            Assert.AreEqual("components/wiki-home.mjs", manifest.Modules[0].RelativePath);
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     private static Assembly CompileCatalogAssembly(string assemblyName, string source)
     {
         var compilation = CSharpCompilation.Create(

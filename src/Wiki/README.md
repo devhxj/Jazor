@@ -1,18 +1,18 @@
-# jazor.wiki (RazorVue Library Mode)
+# jazor.wiki (Library Mode)
 
-`jazor.wiki` is a real RazorVue sample focused on **library-mode authoring**.
+`jazor.wiki` is a real Jazor sample focused on **library-mode authoring**.
 
 It demonstrates:
 
-- RazorVue component authoring in C# (`IVueComponent` + `BuildRenderTree`)
+- Vue `h()` component authoring in C# through `ECMAScript.Vue`
 - Jazor static module authoring in C# (`ECMAScriptModule`) for page bootstrap logic
 - compile-time emit into `wwwroot/jazor` through `JazorEmit`
 - a browser playground with live C# -> JS preview for fast authoring feedback
 
 ## Project Layout
 
-- `Jazor.Wiki.csproj`: single web host project for this sample.
-- `WikiHome.cs`: RazorVue component source.
+- `Wiki.csproj`: single web host project for this sample.
+- `WikiHomeModule.cs`: default-export Vue component built with `Vue.DefineComponent(...)` and `H(...)`.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `wwwroot/`: static entry (`index.html`, `site.css`) and emitted modules.
 
@@ -21,20 +21,19 @@ It demonstrates:
 From repository root:
 
 ```powershell
-dotnet build .\src\Jazor.Wiki\Jazor.Wiki.csproj
+dotnet build .\src\Wiki\Wiki.csproj
 ```
 
 Generated artifacts:
 
-- `.\src\Jazor.Wiki\wwwroot\jazor\jazor-manifest.json`
-- `.\src\Jazor.Wiki\wwwroot\jazor\jazor-manifest-razorvue.json`
-- `.\src\Jazor.Wiki\wwwroot\jazor\components\wiki-home.mjs`
-- `.\src\Jazor.Wiki\wwwroot\jazor\app\main.mjs`
+- `.\src\Wiki\wwwroot\jazor\jazor-manifest.json`
+- `.\src\Wiki\wwwroot\jazor\components\wiki-home.mjs`
+- `.\src\Wiki\wwwroot\jazor\main.mjs`
 
 ## Local Build Script
 
 ```powershell
-.\src\Jazor.Wiki\build-local.ps1
+.\src\Wiki\build-local.ps1
 ```
 
 The script builds the host against repository project references and runs local `Jazor.Emit` through MSBuild.
@@ -44,7 +43,7 @@ The script builds the host against repository project references and runs local 
 One-command preview:
 
 ```powershell
-.\src\Jazor.Wiki\serve.ps1 -Build
+.\src\Wiki\serve.ps1 -Build
 ```
 
 Then open:
@@ -54,10 +53,10 @@ Then open:
 If you want to call the local build script first:
 
 ```powershell
-.\src\Jazor.Wiki\serve.ps1 -BuildLocal
+.\src\Wiki\serve.ps1 -BuildLocal
 ```
 
-The page mounts RazorVue output via Vue runtime and provides a live C# -> JS preview panel.
+The page mounts the emitted Vue component via Vue runtime and provides a live C# -> JS preview panel.
 
 ## Runtime Dependency Notes
 
@@ -76,5 +75,5 @@ The page mounts RazorVue output via Vue runtime and provides a live C# -> JS pre
 
 ## Positioning
 
-This sample is intentionally **RazorVue library-mode only**.
-Jolt host-mode verification can be developed in a separate project.
+This sample is intentionally **library-mode only**.
+The current page is authored with typed `H()` calls instead of `RenderTreeBuilder`.

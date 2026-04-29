@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Jolt.Lsp;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Extensions;
 

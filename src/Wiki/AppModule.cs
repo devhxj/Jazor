@@ -1,18 +1,10 @@
 using ECMAScript;
 using ECMAScript.Vuetify;
-using System.ComponentModel;
 using static ECMAScript.Vue;
 
 namespace Wiki;
 
-[ECMAScriptModule("./components/wiki-home.mjs")]
-public sealed class WikiHomeModule
-{
-    [Description("@#default")]
-    public static IVueComponent Component = null!;
-}
-
-[ECMAScriptModule("app/main.mjs")]
+[ECMAScriptModule("main.mjs")]
 public static class AppModule
 {
     private static readonly VuetifyOptions VuetifyConfiguration = new()

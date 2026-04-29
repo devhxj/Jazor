@@ -1,4 +1,4 @@
-namespace ECMAScript.Contract.RazorVue;
+namespace Jazor.RazorVue;
 
 public enum RazorVueHmrBoundaryKind
 {

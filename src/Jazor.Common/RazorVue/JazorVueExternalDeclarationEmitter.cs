@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace ECMAScript.Contract.RazorVue;
+namespace Jazor.RazorVue;
 
 internal static class JazorVueExternalDeclarationEmitter
 {

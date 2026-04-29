@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using ECMAScript.Contract.RazorVue;
+using Jazor.RazorVue;
 
-namespace ECMAScript.Contract.Emit;
+namespace Jazor.Common.Emit;
 
 public sealed record RazorVueManifestModel(
     string AssemblyName,

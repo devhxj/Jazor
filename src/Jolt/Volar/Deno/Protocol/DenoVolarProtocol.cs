@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Jolt.Lsp;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Volar.Deno.Protocol;
 

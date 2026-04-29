@@ -4,17 +4,17 @@
 > Positioning: `03-完成` 分类入口，桥接当前状态快照、评审结果和必要的历史审计材料。
 > Note: 目录名“完成”保留历史习惯，不表示对应工作流已经终局完成；优先把各子目录里的 `status.md` 读成当前快照，把 testing / obsolete / audit 类材料读成历史资料。
 
-评审结果、深度分析报告、各工作流的状态快照。每个子目录对应项目中的一个核心模块。
+评审结果、深度分析报告、状态快照与阶段性完成材料。
 
 ## 按项目结构索引
 
 | 目录 | 对应源码 | 内容 |
 |------|---------|------|
-| `jolt/` | `src/Jolt/` | 完成度分析报告 + 状态快照 |
-| `razorvue/` | `src/Jazor.RazorVue/` | 完成度分析报告 |
-| `compiler/` | `src/Jazor.Compiler/` | 状态快照 + 历史测试审计 |
-| `emit/` | `src/Jazor.Emit/` | 状态快照 |
-| `sourcemap/` | 跨模块 SourceMap | 状态快照 |
+| `jolt/` | `src/Jolt/` | 完成度分析、问题清单、状态快照 |
+| `razorvue/` | RazorVue 线路 | 阶段性完成材料；当前物理实现已迁到 `src/Jazor.Common/RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/ECMAScript.Vuetify/` |
+| `compiler/` | `src/Jazor.Compiler/` | 当前状态快照 + 历史测试审计 |
+| `emit/` | `src/Jazor.Emit/` | 当前状态快照 |
+| `sourcemap/` | `src/Jazor.Common/SourceMaps/` + `src/Jazor.Emit/SourceMaps/` | SourceMap 状态快照 |
 
 ## 推荐入口
 

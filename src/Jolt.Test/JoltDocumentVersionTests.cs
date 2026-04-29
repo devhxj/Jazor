@@ -1,4 +1,4 @@
-using ECMAScript.Contract.VueContracts.Documents;
+using Jazor.Common.VueContracts.Documents;
 
 namespace Jolt.Test;
 

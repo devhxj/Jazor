@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Analysis;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;

@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace ECMAScript.Contract.RazorVue;
+namespace Jazor.RazorVue;
 
 public sealed partial class JazorVueParser
 {

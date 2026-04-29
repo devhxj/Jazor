@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 
-namespace ECMAScript.Contract.SourceMaps;
+namespace Jazor.Common.SourceMaps;
 
 public sealed class SourceMapWriter
 {

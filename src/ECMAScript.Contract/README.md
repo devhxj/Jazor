@@ -1,31 +1,32 @@
 # ECMAScript.Contract
 
 > Status: active reference
-> Positioning: Dependency-free contract assembly for the smallest shared declaration surface.
+> Positioning: dependency-free contract assembly for the smallest shared declaration surface.
 
-`ECMAScript.Contract` holds the minimal primitives that producer-side declaration code and consumer-side compiler/analyzer/generator code need to agree on without pulling Roslyn, JSON, or other higher-level dependencies into the `ECMAScript` namespace.
+`ECMAScript.Contract` 只保留编译器链路里最小、最稳定、最不应该携带依赖的契约。它的目标不是承载功能实现，而是把必须被多个消费者共享的最低层声明固定下来，同时避免把 Roslyn、JSON、emit、RazorVue 等依赖带进 `ECMAScript.*` 命名空间。
 
 ## Responsibilities
 
-- Define `JazorAttribute` as the producer-side whitelist declaration primitive.
-- Define `Op` as the declaration-side operation vocabulary.
-- Keep the contract assembly dependency-free.
-- Expose only the minimal marker/base contract surface needed by internal producer/consumer layers.
+- 定义 producer 侧白名单声明原语 `JazorAttribute`。
+- 定义白名单操作词汇 `Op`。
+- 提供最小 UI/Razor 标记契约 `IUIComponent`。
+- 维持零外部依赖。
 
 ## Boundaries
 
-- `ECMAScript.Contract` does not own RazorVue authoring implementation, source maps, emit helpers, or Vue/Jolt protocol DTOs; those live in `Jazor.Common`.
-- `ECMAScript.Contract` does not implement compiler lowering or analyzer policy.
-- `JazorAttribute` and `Op` are internal to the repo and are shared with the required assemblies through `InternalsVisibleTo`.
+- `ECMAScript.Contract` 不承载 SourceMap、emit 共享模型、Vue/Jolt 协议 DTO、RazorVue 语义实现。
+- 这些共享实现统一放在 `Jazor.Common`。
+- `JazorAttribute` 和 `Op` 当前都是 `internal`，通过 `InternalsVisibleTo` 在仓库内共享，不作为广义公共 API 扩散。
 
 ## Key Files
 
-- `JazorAttribute.cs`: producer-side whitelist declaration attribute.
-- `Op.cs`: shared declaration-side operation enum.
-- `IComponent.cs`: minimal Razor component marker contract.
+- `JazorAttribute.cs`: 白名单 producer 侧声明特性。
+- `Op.cs`: 共享的声明端操作枚举。
+- `IUIComponent.cs`: 最小 UI 组件标记契约。
+- `GlobalUsings.cs`, `IsExternalInit.cs`: 低层共享辅助。
 
 ## Read Next
 
 - [../Jazor.Common/README.md](../Jazor.Common/README.md)
 - [../Jazor.Compiler.Generator/README.md](../Jazor.Compiler.Generator/README.md)
-- [../Jazor.CLR/readme.md](../Jazor.CLR/readme.md)
+- [../Jazor.CLR/README.md](../Jazor.CLR/README.md)

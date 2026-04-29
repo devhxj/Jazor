@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Jolt.DevServer;
-using ECMAScript.Contract.SourceMaps;
+using Jazor.Common.SourceMaps;
 
 namespace Jolt.Build;
 

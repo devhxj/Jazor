@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Jolt.Lsp;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.Roslyn.InProc;
 using Microsoft.CodeAnalysis;

@@ -1,61 +1,64 @@
 # Jazor.Emit
 
 > Status: active reference
-> Positioning: Module-local operational entry for emit, manifest materialization, bundling, and SourceMap output handoff.
+> Positioning: host-facing materialization, bundle, and RazorVue diff layer.
 
-`Jazor.Emit` is the host-facing materialization tool in the Jazor pipeline.
-
-It takes compiler-generated module catalogs from built assemblies, writes concrete output files and manifests, and can bundle the emitted graph into a final artifact through `DenoHost`.
+`Jazor.Emit` 负责把编译阶段已经生成好的 catalog、SourceMap carrier 和 RazorVue artifact 真正写成文件系统中的产物。它不拥有 lowering 语义，只拥有物化、清理、打包与差分输出。
 
 ## Responsibilities
 
-- Load the root assembly and referenced assemblies for emit.
-- Collect generated ECMAScript and RazorVue catalogs from compiled assemblies.
-- Materialize module files and manifests into an output directory.
-- Materialize RazorVue output, including sidecar manifest and module-level SourceMap files.
-- Bundle emitted modules into a final output artifact.
+- 载入 root assembly 和被引用程序集。
+- 收集 ECMAScript module catalog 与 RazorVue catalog。
+- 物化 `.mjs`、manifest、RazorVue sidecar manifest 与 `.map` 文件。
+- 通过 `DenoHost` 执行 bundle。
+- 生成 RazorVue manifest diff / update plan。
 
 ## Boundaries
 
-- `Jazor.Compiler` and `Jazor.RazorVue` own compile-time semantics and generated catalog shape.
-- `Jazor.Emit` owns filesystem materialization, manifest persistence, and bundle orchestration.
-- `DenoHost` is the runtime carrier used by the bundling path.
+- `Jazor.Compiler` 负责 AST、文本、catalog 和 source-origin/source-map carriers。
+- `Jazor.Common.Emit` 与 `Jazor.Common.SourceMaps` 提供跨模块共享模型。
+- `Jazor.Emit` 只负责 host-facing 文件输出与 bundle orchestration。
 
 ## Key Files
 
-- `Program.cs`: CLI entry for `emit` and `bundle` flows.
-- `ModuleCollector.cs`: collects module catalogs from assemblies.
-- `ModuleWriter.cs`: writes ECMAScript module output and manifest data.
-- `RazorVueCatalogReader.cs`: reads generated RazorVue catalog payloads via reflection.
-- `RazorVueModuleWriter.cs`: writes RazorVue modules, manifests, and module-level `.map` files.
-- `ModuleBundler.cs`: orchestrates final bundle output.
-- `SourceMaps/`: emit-side SourceMap builder and writer types.
+- `Program.cs`: CLI 入口。
+- `ModuleCollector.cs`: 汇总程序集中的发射 catalog。
+- `ModuleWriter.cs`: 写出 ECMAScript 模块和 manifest。
+- `RazorVueCatalogReader.cs`: 读取 RazorVue catalog。
+- `RazorVueModuleWriter.cs`: 写出 RazorVue 模块、manifest 和 `.map`。
+- `ModuleBundler.cs`: bundle 编排。
+- `RazorVueUpdatePlanWriter.cs`: 生成 RazorVue diff/update plan。
 
-## CLI Surface
+## CLI
 
-Emit flow:
+发射：
 
 ```powershell
 dotnet run --project src/Jazor.Emit -- --root <root.dll> --assembly <ref.dll> --out <dir> --write-manifest <manifest.json>
 ```
 
-Bundle flow:
+打包：
 
 ```powershell
 dotnet run --project src/Jazor.Emit -- bundle --in <dir> --manifest <manifest.json> --out <bundle.mjs>
 ```
 
+RazorVue diff：
+
+```powershell
+dotnet run --project src/Jazor.Emit -- razorvue-diff --previous <old.json> --current <new.json> --out <plan.json>
+```
+
 ## Verification
 
-- [Jazor.EmitTest README](../Jazor.EmitTest/README.md)
-- `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj`
+```powershell
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
+```
 
 ## Read Next
 
-- [doc/README.md](./doc/README.md)
-- [doc/Emit.Pipeline.Overview.md](./doc/Emit.Pipeline.Overview.md)
-- [doc/Emit.Materialization.Overview.md](./doc/Emit.Materialization.Overview.md)
-- [doc/Emit.BundleAndSourceMap.Overview.md](./doc/Emit.BundleAndSourceMap.Overview.md)
-- [docs/plans/emit-materialization-execution-bridge.md](../../docs/plans/emit-materialization-execution-bridge.md)
-- [docs/status/2026-04-06-emit-host-materialization-status.md](../../docs/status/2026-04-06-emit-host-materialization-status.md)
-- [docs/plans/sourcemap-execution-bridge.md](../../docs/plans/sourcemap-execution-bridge.md)
+- [../Jazor.EmitTest/README.md](../Jazor.EmitTest/README.md)
+- [../../docs/01-目标/compiler/emit/Emit.Pipeline.Overview.md](../../docs/01-目标/compiler/emit/Emit.Pipeline.Overview.md)
+- [../../docs/01-目标/compiler/emit/Emit.Materialization.Overview.md](../../docs/01-目标/compiler/emit/Emit.Materialization.Overview.md)
+- [../../docs/01-目标/compiler/emit/Emit.BundleAndSourceMap.Overview.md](../../docs/01-目标/compiler/emit/Emit.BundleAndSourceMap.Overview.md)
+- [../../docs/03-完成/emit/status.md](../../docs/03-完成/emit/status.md)

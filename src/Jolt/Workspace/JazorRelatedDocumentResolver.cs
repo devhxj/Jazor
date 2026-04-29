@@ -1,5 +1,5 @@
 using Jazor.Vue;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Workspace;
 

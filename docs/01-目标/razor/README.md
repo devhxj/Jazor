@@ -4,39 +4,35 @@
 
 ## 为什么需要
 
-RazorVue 和 Jolt 都需要在 Razor 组件模型上构建。但 ASP.NET Core 的 Razor 组件系统（Blazor）与 Jazor 的编译目标（JavaScript/Vue）有根本差异——Blazor 生成 .NET 运行时代码，Jazor 生成 JavaScript。需要一层薄薄的适配层把 Razor 语法树桥接到 Jazor 编译管线。
+Jazor 需要接入 Razor 语法，但又不能把 Razor 基础层和更高层的 RazorVue 语义、Jolt 宿主逻辑或编译器入口混在一起。`Razor` 这一层的职责，就是把“Razor authoring 入口”与“具体怎样提取语义、怎样生成产物”拆开。
 
 ## 解决什么问题
 
-1. **Razor 组件接入**：为 Razor 组件提供 Jazor 特有的基类（`JazorComponent`），替代 Blazor 的 `ComponentBase` 语义
-2. **语义信息提取**：从 Razor 编译结果中提取类型信息和语义快照，供下游编译管线使用
-3. **编译器扩展点**：定义 `IRazorSemanticFrontend` 接口，让 Jazor.Compiler 能处理 Razor 语法
+1. **最小 Razor 标记**：提供 Razor authoring 的最低层契约，而不是直接耦合到某个具体产品线基类。
+2. **编译器侧前端桥接**：把 Razor 编译结果转成 `Jazor.Compiler` / RazorVue 能消费的语义快照。
+3. **避免边界塌陷**：不把 Razor 基础层和 RazorVue/Jolt 的更高层实现揉在一起。
 
-## 大致实现思路
+## 当前分工
 
 ### Jazor.Razor
 
-提供 Razor 语法到 Jazor 编译管线的薄基底：
-
-- 定义 Razor 组件在 Jazor 生态系统中的基本抽象
-- 为 RazorVue 提供 Razor 语法解析和处理的共享基础设施
+- 只保留最薄的 Razor 标记层。
+- 当前核心是 `IJazorComponent` 最小接口。
 
 ### Jazor.Compiler.Razor
 
-编译器侧的 Razor 集成，核心只有两个类：
+- 提供编译器侧的 `JazorComponent` 基类。
+- 提供 `RazorComponentSemanticFrontend`，把 Razor 编译结果桥接到 `IRazorSemanticFrontend`。
 
-1. **JazorComponent**：继承 `ComponentBase` 的抽象基类，作为 Razor 管线的入口点
-2. **RazorComponentSemanticFrontend**：实现 `IRazorSemanticFrontend`，从 Razor 编译结果中：
-   - 分类入口类型
-   - 创建 `RazorVueSemanticSnapshot` 对象
-   - 将 ASP.NET Core Razor 组件模型桥接到 Jazor 分析管线
+## 当前链路
 
-```
-Razor 源码 (.razor)
+```text
+Razor 源码
      ↓ ASP.NET Core Razor 编译器
 Razor 编译结果（C# 语义）
      ↓ RazorComponentSemanticFrontend
-RazorVueSemanticSnapshot
-     ↓ Jazor.Compiler
-JavaScript / Vue SFC 输出
+RazorVueCompilationContext / SemanticSnapshot
+     ↓ 下游消费（Compiler / RazorVue / Jolt）
 ```
+
+这里的输出边界不是固定的 `.vue SFC`。具体产物形态取决于下游消费者：可以是 RazorVue 的编译时 JS artifact，也可以是 Jolt 的投影和工具工件。

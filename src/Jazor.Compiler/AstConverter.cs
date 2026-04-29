@@ -20,7 +20,7 @@ namespace Jazor.Compiler;
 /// INamedTypeSymbol 的 TypeKind 是 TypeKind.Class
 /// 当前classSymbol 对应的代码是一个public static 类，最终对应一个 Acornima es6 module
 /// 内部发成员有公开的、私有的，有静态字段、静态属性、静态方法、类（非静态）、枚举（非静态）、接口、没有构造函数
-/// 内部发成员若是非private的，均需要具名导出，禁止使用 export default
+/// 内部发成员若是非private的，默认走具名导出；显式配置为 @#default 的成员发射 default export
 /// 静态字段 转换为 Acornima变量
 /// 静态属性 转换为 Acornima方法（考虑get、set）
 /// 静态方法 转换为 Acornima方法
@@ -211,9 +211,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var declaration = await ConvertVariableField(symbol, cancellationToken);
+        var (declaration, localName) = await ConvertVariableField(symbol, cancellationToken);
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             statements.Add(declaration);
+        else if (ShouldUseDefaultExport(symbol))
+        {
+            statements.Add(declaration);
+            statements.Add(CreateDefaultExport(localName));
+        }
         else
             statements.Add(new ExportNamedDeclaration(
                 declaration,
@@ -356,7 +361,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (refParas.Count > 0)
             body = ApplyRefOutReturnProtocol(body, refParas, hasReturn);
 
-        var name = Util.GetConfigOrSymbolName(symbol);
+        var localName = ShouldUseDefaultExport(symbol)
+            ? GetDefaultExportLocalName(symbol)
+            : Util.GetConfigOrSymbolName(symbol);
+        var name = localName;
         var identifier = new Identifier(name);
         // todo:分析使用ArrowFunctionExpression的可能性
         var declaration = new FunctionDeclaration(
@@ -368,6 +376,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             statements.Add(declaration);
+        else if (ShouldUseDefaultExport(symbol))
+        {
+            statements.Add(declaration);
+            statements.Add(CreateDefaultExport(localName));
+        }
         else
             statements.Add(new ExportNamedDeclaration(
                 declaration,
@@ -375,7 +388,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 null,
                 NodeList.From<ImportAttribute>([])));
     }
-    private async Task<VariableDeclaration> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
+    private async Task<(VariableDeclaration Declaration, string LocalName)> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -393,6 +406,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 }
             }
 
+        var defaultExport = ShouldUseDefaultExport(symbol);
         string name;
         bool isPropertyInitOnly = false;
         if (symbol.AssociatedSymbol is IPropertySymbol property)
@@ -403,6 +417,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .Any(static p => p.AccessorList?.Accessors.Any(a => a.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration)) == true);
             if (symbol.IsImplicitlyDeclared)
                 name = Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
+            else if (defaultExport)
+                name = property.Name;
             else
                 name = Util.GetConfigOrSymbolName(symbol);
 
@@ -422,7 +438,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
         else
-            name = Util.GetConfigOrSymbolName(symbol);
+            name = defaultExport ? symbol.Name : Util.GetConfigOrSymbolName(symbol);
 
         var identifier = new Identifier(name);
         var kind = symbol.IsConst || isPropertyInitOnly
@@ -431,8 +447,26 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var declarator = new VariableDeclarator(identifier, init);
         var declaration = new VariableDeclaration(kind, NodeList.From([declarator]));
 
-        return declaration;
+        return (declaration, name);
     }
+
+    private static bool ShouldUseDefaultExport(ISymbol symbol)
+        => string.Equals(Util.GetSymbolConfigName(symbol), "default", System.StringComparison.Ordinal);
+
+    private static string GetDefaultExportLocalName(ISymbol symbol)
+        => symbol switch
+        {
+            IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => property.Name,
+            IFieldSymbol { AssociatedSymbol: IPropertySymbol property } when !symbol.IsImplicitlyDeclared => property.Name,
+            _ => symbol.Name
+        };
+
+    private static ExportNamedDeclaration CreateDefaultExport(string localName)
+        => new ExportNamedDeclaration(
+            null!,
+            NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier("default"))]),
+            null,
+            NodeList.From<ImportAttribute>([]));
 
     private PropertyDefinition ConvertMemberField(IFieldSymbol symbol)
     {

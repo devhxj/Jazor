@@ -252,7 +252,10 @@ internal static class RazorVueCatalogReader
         if (Path.IsPathRooted(normalized))
             throw new InvalidOperationException($"RazorVue artifact relative path must be relative: '{relativePath}'.");
 
-        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var segments = normalized
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToArray();
         if (segments.Any(static segment => segment == ".."))
             throw new InvalidOperationException($"RazorVue artifact relative path cannot escape output directory: '{relativePath}'.");
 

@@ -4,35 +4,53 @@
 
 ## 为什么需要
 
-Jazor 的 C# 到 JavaScript 转换有明确的边界——只支持白名单中的类型和成员。如果不在编译时拦截非法调用，错误会在运行时才暴露（生成的 JS 代码缺失或语义错误），调试成本极高。Analyzer 在编写代码的瞬间就给出诊断提示，把问题推到最早可修复的时间点。
+Jazor 的编译器并不接受任意 .NET 语义。很多错误如果等到 lowering 阶段才暴露，定位成本会很高。`Jazor.Analyzer` 的目标就是把这类错误尽可能提前到 IDE 和编译入口处，同时为 RazorVue 提供编译时分析与增量生成器宿主。
 
 ## 解决什么问题
 
-1. **白名单守门**：编译时验证用户代码只使用了 `[WhiteList]` 标注的类型和成员
-2. **即时反馈**：在 IDE 中实时显示诊断（波浪线 + 错误列表），无需等到运行
-3. **迁移引导**：对旧指令（如 `@import`）发出迁移诊断（JAZORVUE020），引导用户使用新语法
+1. **白名单守门**：对 `ECMAScript` 标注代码做类型和成员入口诊断。
+2. **更早的 erased-position 诊断**：对泛型实参、数组元素、局部推断、集合表达式等位置做更严格的入口检查。
+3. **RazorVue 编译时分析**：对组件 authoring、旧指令迁移、库组件声明等做专项诊断。
+4. **RazorVue catalog 生成**：在编译时生成 RazorVue catalog。
 
 ## 大致实现思路
 
-Analyzer 基于 Roslyn DiagnosticAnalyzer 框架：
+### ECMAScript 主线分析
 
-1. **注册语法/语义分析**：监听 `CompilationStartAnalysisContext`，在编译初始化阶段收集白名单
-2. **类型检查**：对每个 `IOperation` 检查其类型符号是否在 `WhiteList.Types` 中
-3. **成员检查**：对方法调用、属性访问等检查成员全名是否在 `WhiteList.Members` 中
-4. **诊断输出**：不合规的用法生成 `DiagnosticDescriptor`，附带修复建议
-
-### 诊断规则编号
-
-- JAZORVUE020：检测 `@import` 旧指令，建议迁移到新语法
-
-## 与白名单系统的关系
-
-```
-Jazor.CLR（标注 [WhiteList]）
-       ↓ Generator 生成
-WhiteList.cs（HashSet<string>）
-       ↓ Analyzer 引用
-编译时验证（用户代码合规检查）
+```text
+Jazor.CLR / ECMAScript / ECMAScript.Vue / ECMAScript.Vuetify
+    └── [Jazor(...)] producer 侧声明
+            ↓
+Jazor.Compiler.Generator
+    └── 生成 WhiteList.cs.*
+            ↓
+Jazor.Compiler
+    └── 暴露 WhiteList / WhiteListLookup
+            ↓
+Jazor.Analyzer
+    └── 在编译入口处做更早、更严格的诊断
 ```
 
-Analyzer 是白名单机制的"第一道防线"，与 Jazor.CLR（声明层）和 Generator（生成层）构成三层协作。
+这里的分析器可以比编译器更严格，但最终 runtime-sensitive 拒绝点仍然在 `Jazor.Compiler` 的实际 lowering 现场。
+
+### RazorVue 分析与生成
+
+`Jazor.Analyzer` 现在同时承载原 `Jazor.RazorVue.Analysis` 的职责：
+
+- RazorVue authoring 诊断
+- 增量生成器
+- 兼容分析 RPC 的进程内/stdio 宿主
+
+对外命名空间仍保留 `Jazor.RazorVue.Analysis`，但物理程序集已经是 `Jazor.Analyzer`。
+
+## 关键约束
+
+- 分析器负责 **尽早报错**，编译器负责 **最终使用点裁决**。
+- erased positions 上允许分析器更严格，编译器不必机械追平。
+- RazorVue 共享语义不在这里定义，而在 `src/Jazor.Common/RazorVue/`。
+
+## 诊断面
+
+- `JAZOR001` / `JAZOR002`：ECMAScript 主线白名单与 runtime alias 歧义
+- `JAZORVUE*`：RazorVue authoring / 旧指令迁移
+- `JAZORVGA*`：RazorVue generator / catalog / library component 规则

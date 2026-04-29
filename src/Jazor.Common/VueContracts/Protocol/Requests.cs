@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ECMAScript.Contract.VueContracts.Protocol;
+namespace Jazor.Common.VueContracts.Protocol;
 
 public sealed class AnalyzeJazorRequest(
 	DocumentSnapshot jazorDocument,

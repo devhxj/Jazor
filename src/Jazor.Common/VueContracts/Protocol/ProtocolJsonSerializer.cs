@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ECMAScript.Contract.VueContracts.Protocol;
+namespace Jazor.Common.VueContracts.Protocol;
 
 public static class ProtocolJsonSerializer
 {

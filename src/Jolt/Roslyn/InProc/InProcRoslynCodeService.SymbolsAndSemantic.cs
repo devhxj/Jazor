@@ -13,7 +13,7 @@ using Jolt.Lsp.Routing;
 using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
-using ECMAScript.Contract.VueContracts.Protocol;
+using Jazor.Common.VueContracts.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 

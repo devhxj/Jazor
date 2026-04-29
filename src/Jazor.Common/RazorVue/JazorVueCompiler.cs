@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using ECMAScript.Contract.SourceMaps;
+using Jazor.Common.SourceMaps;
 
-namespace ECMAScript.Contract.RazorVue;
+namespace Jazor.RazorVue;
 
 public sealed partial class JazorVueCompiler
 {

@@ -1,3 +1,3 @@
-global using ECMAScript.Contract.Emit;
-global using ECMAScript.Contract.RazorVue;
-global using ECMAScript.Contract.SourceMaps;
+global using Jazor.Common.Emit;
+global using Jazor.RazorVue;
+global using Jazor.Common.SourceMaps;

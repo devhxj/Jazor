@@ -1,4 +1,4 @@
-namespace ECMAScript.Contract.VueContracts.Documents;
+namespace Jazor.Common.VueContracts.Documents;
 
 public readonly record struct DocumentVersion
 {

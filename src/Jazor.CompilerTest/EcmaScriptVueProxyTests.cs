@@ -62,7 +62,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(exportedComponents.Length > 0);
         foreach (var property in exportedComponents)
         {
-            Assert.IsTrue(typeof(IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
+            Assert.IsTrue(typeof(ECMAScript.Vue.IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.IsTrue(typeof(IVuetifyComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.AreEqual(property.PropertyType, registryProperties[property.Name].PropertyType.UnwrapNullable(), property.Name);
         }

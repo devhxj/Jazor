@@ -351,7 +351,10 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static string NormalizeRelativePath(string path)
     {
         var normalized = path.Replace('\\', '/').TrimStart('/');
-        var segments = normalized.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+        var segments = normalized
+            .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries)
+            .Where(static segment => segment != ".")
+            .ToArray();
         if (segments.Length == 0)
             throw new InvalidOperationException("ECMAScriptModule import path cannot be empty.");
 

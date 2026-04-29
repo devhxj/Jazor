@@ -66,7 +66,7 @@ public static class BooleanModule
 `Jazor.CLR` 成员方法名使用 `_xxxxxxxxxxxxxxxx` 形式（`_` + 16 位十六进制）。
 
 - 生成规则来自 `Format.HashName(...)`：对成员签名做 SHA256，取前 8 字节。
-- 实际签名文本应使用 Jazor.Name 统一格式（与白名单 lookup 一致）。
+- 实际签名文本应使用 `Jazor.Common.Format` 的统一格式（与白名单 lookup 一致）。
 - 现有签名可参考 `src/Jazor.CLR/doc/*.md`，避免手写漂移。
 
 ## 关键实现约束

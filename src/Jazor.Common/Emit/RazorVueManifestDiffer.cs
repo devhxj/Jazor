@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using ECMAScript.Contract.RazorVue;
+using Jazor.RazorVue;
 
-namespace ECMAScript.Contract.Emit;
+namespace Jazor.Common.Emit;
 
 public static class RazorVueManifestDiffer
 {

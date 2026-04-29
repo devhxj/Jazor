@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ECMAScript.Contract.SourceMaps;
+namespace Jazor.Common.SourceMaps;
 
 public sealed record SourceMapDocument(
     string File,

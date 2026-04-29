@@ -1,4 +1,4 @@
-namespace ECMAScript.Contract.VueContracts.Protocol;
+namespace Jazor.Common.VueContracts.Protocol;
 
 public static class VueAnalysisRpcMethodNames
 {
