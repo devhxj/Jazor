@@ -63,9 +63,13 @@ The page mounts the emitted Vue component via Vue runtime and provides a live C#
 `wwwroot/index.html` configures browser-side module resolution for:
 
 - `vue`
+- `npm:vue@3`
 - `vuetify`
+- `npm:vuetify`
 - `vuetify/components`
 - `vuetify/directives`
+
+The emitted Jazor modules keep the original ECMAScript package specifiers, so the browser import map must include those exact `npm:` keys. At the same time, the Vuetify CDN ESM entry still imports bare `vue`, and the component/directive entry points live under `.js` paths rather than the non-existent `.mjs` paths.
 
 `AppModule.cs` uses typed `ECMAScript.Vue.Vuetify` proxies and bootstraps Vuetify via:
 
@@ -77,3 +81,4 @@ The page mounts the emitted Vue component via Vue runtime and provides a live C#
 
 This sample is intentionally **library-mode only**.
 The current page is authored with typed `H()` calls instead of `RenderTreeBuilder`.
+The live preview state now lives inside the emitted Vue component module instead of `AppModule` DOM event wiring.

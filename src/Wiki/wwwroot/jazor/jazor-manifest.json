@@ -1,24 +1,24 @@
 {
   "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\src\\Wiki\\bin\\Debug\\net10.0\\Wiki.dll",
-  "GeneratedAtUtc": "2026-04-29T13:02:59.4754146Z",
+  "GeneratedAtUtc": "2026-04-29T15:18:33.1073368Z",
   "Modules": [
     {
       "AssemblyName": "Wiki",
       "TypeName": "Wiki.WikiHomeModule",
       "Id": "Wiki.WikiHomeModule",
       "RelativePath": "components/wiki-home.mjs",
-      "Hash": "4F69458D1439862D7E5784E4A5DA789BA6E21D659EC22E7014182904F245DC66",
+      "Hash": "FAD0CE966D5CD42594AF75881F8CF0A5BAA5D70D0C70751198223C7A8C11C586",
       "SourceMapPath": "components/wiki-home.mjs.map",
-      "MapHash": "1749EC96DBC6B2A223F93C044EFF77BD6D17DB1D32A17DA54BDA8E0851F23167"
+      "MapHash": "0EB18B944AD061F56C9419FEC3ED0D9557F372700F4689C80DA6658171BB9703"
     },
     {
       "AssemblyName": "Wiki",
       "TypeName": "Wiki.AppModule",
       "Id": "Wiki.AppModule",
       "RelativePath": "main.mjs",
-      "Hash": "F818C3FF116BD056AAD9B1BB0BF8430636577A16175524E7861D63F3EE40B46C",
+      "Hash": "C05C37529A92EADA81F616856B9CA961412C8DD8BC2375270B6BDEDBFF79A74D",
       "SourceMapPath": "main.mjs.map",
-      "MapHash": "6F402138A64F2D858B5390EFBC08FB7950B45874566F597BBB9B590E3E718049"
+      "MapHash": "A11B5E1AB3083B60406FA2399D1F8045DB7694D2F98D3535E5BA59BF1EAB8807"
     }
   ]
 }

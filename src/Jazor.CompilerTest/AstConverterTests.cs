@@ -5279,6 +5279,7 @@ export function Create() {
     public async Task Convert_ClassUsingEcmaScriptVueProxy_GeneratesVueImportsFromNameAttributes()
     {
         var code = """
+            using System;
             using ECMAScript;
             using static ECMAScript.Vue;
 
@@ -5384,6 +5385,271 @@ export function ReadRef() {
 @"import { createApp } from ""npm:vue@3"";
 export function Boot(component) {
   return createApp(component, { message: ""Hello"" });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueComponentSetup_GeneratesSetupFunction()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/counter.mjs")]
+                public static class CounterModule
+                {
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "CounterView",
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup()
+                    {
+                        var count = Vue.Ref(1);
+                        return () => H("button", count.Value == 1);
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "CounterModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h, ref } from ""npm:vue@3"";
+export let Component = defineComponent({ name: ""CounterView"", setup: Setup });
+function Setup() {
+  let count = ref(1);
+  return () => {
+    return h(""button"", count.value === 1);
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingTypedVueComponentSetup_GeneratesPropsEmitsAndContextAwareSetup()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public sealed record CounterProps : VueProps;
+
+                [ECMAScriptModule("components/counter.mjs")]
+                public static class CounterModule
+                {
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
+                    {
+                        Name = "CounterView",
+                        PropNames = ["message"],
+                        EmitNames = ["ready"],
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
+                    {
+                        context.Emit("ready", true);
+                        return () => H("button", "ready");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "CounterModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Component = defineComponent({
+  name: ""CounterView"",
+  props: [""message""],
+  emits: [""ready""],
+  setup: Setup
+});
+function Setup(props, context) {
+  context.emit(""ready"", true);
+  return () => {
+    return h(""button"", ""ready"");
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingTypedVueComponentSetup_InferPropsFromTypedProps()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public abstract record BaseCounterProps : VueProps
+                {
+                    [Description("@#id")]
+                    public int Id { get; init; }
+                }
+
+                public sealed record CounterProps : BaseCounterProps
+                {
+                    [Description("@#message")]
+                    public string? Message { get; init; }
+                }
+
+                [ECMAScriptModule("components/counter.mjs")]
+                public static class CounterModule
+                {
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<CounterProps>
+                    {
+                        Name = "CounterView",
+                        EmitNames = ["ready"],
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
+                    {
+                        context.Emit("ready", props.Message);
+                        return () => H("button", props.Id == 1 && props.Message == "ready");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "CounterModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Component = defineComponent({
+  name: ""CounterView"",
+  props: [""id"", ""message""],
+  emits: [""ready""],
+  setup: Setup
+});
+function Setup(props, context) {
+  context.emit(""ready"", props.message);
+  return () => {
+    return h(""button"", props.id === 1 && props.message === ""ready"");
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingTypedVueComponentSetup_EmitsEmptyPropsArrayWhenTypedPropsIsEmpty()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public sealed record EmptyProps : VueProps;
+
+                [ECMAScriptModule("components/empty.mjs")]
+                public static class EmptyModule
+                {
+                    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions<EmptyProps>
+                    {
+                        Name = "EmptyView",
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup(EmptyProps props, VueSetupContext context)
+                    {
+                        return () => H("div", "empty");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "EmptyModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "EmptyModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Component = defineComponent({
+  name: ""EmptyView"",
+  props: [],
+  setup: Setup
+});
+function Setup(props, context) {
+  return () => {
+    return h(""div"", ""empty"");
+  };
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }

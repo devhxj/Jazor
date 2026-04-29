@@ -4,6 +4,13 @@ public delegate void VueWatchHandle();
 
 public delegate void VueEventHandler<T>(T value);
 
+public delegate Vue.IVNode VueRenderCallback();
+
+public delegate VueRenderCallback VueSetupCallback();
+
+public delegate VueRenderCallback VueTypedSetupCallback<TProps>(TProps props, Vue.VueSetupContext context)
+	where TProps : Vue.VueProps;
+
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
 public static class Vue
@@ -47,8 +54,39 @@ public static class Vue
 		[Description("@#directives")]
 		public VueDirectiveRegistry? Directives { get; init; }
 
+		[Description("@#emits")]
+		[Emits]
+		public string[]? EmitNames { get; init; }
+
+		[Description("@#setup")]
+		public VueSetupCallback? Setup { get; init; }
+
 		[Description("@#render")]
-		public Func<IVNode>? Render { get; init; }
+		public VueRenderCallback? Render { get; init; }
+	}
+
+	[Description("@#VueComponentOptions")]
+	public sealed record VueComponentOptions<TProps> : VueComponentDefinition
+		where TProps : VueProps
+	{
+		[Description("@#name")]
+		public string? Name { get; init; }
+
+		[Description("@#components")]
+		public VueComponentRegistry? Components { get; init; }
+
+		[Description("@#directives")]
+		public VueDirectiveRegistry? Directives { get; init; }
+
+		[Description("@#props")]
+		[Props]
+		public string[]? PropNames { get; init; }
+
+		[Description("@#emits")]
+		public string[]? EmitNames { get; init; }
+
+		[Description("@#setup")]
+		public VueTypedSetupCallback<TProps>? Setup { get; init; }
 	}
 
 	public class VueReadonlyRef<T>
@@ -60,6 +98,41 @@ public static class Vue
 	public sealed class VueComponentPublicInstance
 	{
 		private VueComponentPublicInstance()
+		{
+		}
+	}
+
+	public abstract class VueSetupContext
+	{
+		[Description("@#attrs")]
+		public extern VueAttributeBag Attrs { get; }
+
+		[Description("@#slots")]
+		public extern VueSlotBag Slots { get; }
+
+		[Description("@#emit")]
+		public extern void Emit(string eventName);
+
+		[Description("@#emit")]
+		public extern void Emit<TValue>(string eventName, TValue value);
+
+		[Description("@#emit")]
+		public extern void Emit<T0, T1>(string eventName, T0 value0, T1 value1);
+
+		[Description("@#expose")]
+		public extern void Expose<TValue>(TValue exposed) where TValue : class;
+	}
+
+	public abstract class VueAttributeBag
+	{
+		protected VueAttributeBag()
+		{
+		}
+	}
+
+	public abstract class VueSlotBag
+	{
+		protected VueSlotBag()
 		{
 		}
 	}

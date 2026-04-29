@@ -16,19 +16,32 @@ public static int Sum(int a, int b)
 var total = Sum(3, 5);
 """;
 
+    private static readonly RegExp VisibilityPattern = Global.RegExp(@"^\s*(?:public|private|protected|internal)\s+", "gm");
+    private static readonly RegExp StaticPattern = Global.RegExp(@"^\s*static\s+", "gm");
+    private static readonly RegExp TypedLocalPattern = Global.RegExp(@"^(\s*)(?:var|bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|char|object)\s+([A-Za-z_][\w]*)\s*=", "gm");
+    private static readonly RegExp TypedMethodPattern = Global.RegExp(@"^(\s*)([A-Za-z_][\w<>,\[\]\?]*)\s+([A-Za-z_][\w]*)\s*\(([^)]*)\)(\s*\{?)", "gm");
+    private static readonly RegExp EmptyLinePattern = Global.RegExp(@"\n{3,}", "g");
+
     [Description("@#default")]
     public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
     {
         Name = "WikiHome",
-        Render = Render
+        Setup = Setup
     });
 
-    private static IVNode Render()
+    private static VueRenderCallback Setup()
+    {
+        var source = Vue.Ref(SampleSnippet);
+        var preview = Vue.Computed(() => BuildPreviewText(source.Value));
+        return () => Render(source, preview, @event => OnSourceInput(source, @event));
+    }
+
+    private static IVNode Render(IVueRef<string> source, VueReadonlyRef<string> preview, HandleEventCallback onSourceInput)
         => H("main", new WikiElementProps { ClassName = "wiki-page" }, new[]
         {
             Hero(),
             LibraryMode(),
-            Playground(),
+            Playground(source, preview, onSourceInput),
             FeedbackLoop(),
             Footer()
         });
@@ -54,7 +67,7 @@ var total = Sum(3, 5);
             })
         });
 
-    private static IVNode Playground()
+    private static IVNode Playground(IVueRef<string> source, VueReadonlyRef<string> preview, HandleEventCallback onSourceInput)
         => H("section", new WikiElementProps { ClassName = "playground" }, new[]
         {
             H("div", new WikiElementProps { ClassName = "playground-head" }, new[]
@@ -72,8 +85,10 @@ var total = Sum(3, 5);
                         Id = "cs-input",
                         ClassName = "editor-input",
                         Spellcheck = false,
-                        Rows = 18
-                    }, SampleSnippet)
+                        Rows = 18,
+                        Value = source.Value,
+                        OnInput = onSourceInput
+                    })
                 }),
                 H("div", new WikiElementProps { ClassName = "editor-pane" }, new[]
                 {
@@ -82,7 +97,7 @@ var total = Sum(3, 5);
                     {
                         Id = "js-output",
                         ClassName = "editor-output"
-                    }, "// Output appears here")
+                    }, preview.Value)
                 })
             }),
             H("p", new WikiElementProps { ClassName = "playground-footnote" }, "Preview mode focuses on fast feedback for syntax shape and intent; compiler-accurate lowering remains the build-time contract.")
@@ -102,6 +117,42 @@ var total = Sum(3, 5);
 
     private static IVNode Footer()
         => H("footer", new WikiElementProps { ClassName = "site-footer" }, "jazor.wiki | H function | compile-time first");
+
+    private static void OnSourceInput(IVueRef<string> source, Event @event)
+    {
+        if (@event.Target is not HTMLTextAreaElement input)
+            return;
+
+        source.Value = input.Value;
+    }
+
+    private static string BuildPreviewText(string source)
+    {
+        var normalized = NormalizeInput(source);
+        if (normalized.Length == 0)
+            return "// Input is empty.";
+
+        var body = ConvertPreviewSource(normalized);
+        return
+            "// jazor.wiki live preview\n" +
+            "// This is a fast browser-side preview for authoring feedback.\n" +
+            body;
+    }
+
+    private static string NormalizeInput(string value)
+        => value.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
+
+    private static string ConvertPreviewSource(string source)
+    {
+        var text = source;
+        text = text.Replace(VisibilityPattern, string.Empty);
+        text = text.Replace(StaticPattern, string.Empty);
+        text = text.Replace("Console.WriteLine", "console.log");
+        text = text.Replace(TypedLocalPattern, "$1let $2 =");
+        text = text.Replace(TypedMethodPattern, "$1function $3($4)$5");
+        text = text.Replace(EmptyLinePattern, "\n\n");
+        return text;
+    }
 }
 
 [ECMAScript]
@@ -122,4 +173,10 @@ public sealed record WikiElementProps : VueProps
 
     [Description("@#rows")]
     public int Rows { get; init; }
+
+    [Description("@#value")]
+    public string? Value { get; init; }
+
+    [Description("@#onInput")]
+    public HandleEventCallback? OnInput { get; init; }
 }

@@ -13,7 +13,7 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_CoreProxyMethods_DoNotExposeObject()
     {
-        var proxyTypes = new[] { typeof(Vue), typeof(VueApp) };
+        var proxyTypes = new[] { typeof(Vue), typeof(VueApp), typeof(VueSetupContext) };
 
         foreach (var method in proxyTypes.SelectMany(static type =>
             type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly)
@@ -46,6 +46,40 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(typeof(VuePlugin).IsAssignableFrom(typeof(VuetifyPlugin)));
         Assert.IsTrue(typeof(VuePluginOptions).IsAssignableFrom(typeof(VuetifyOptions)));
+    }
+
+    [TestMethod]
+    public void Vue_ComponentOptions_UseNamedRenderAndSetupDelegates()
+    {
+        var setup = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.Setup), BindingFlags.Public | BindingFlags.Instance);
+        var render = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.Render), BindingFlags.Public | BindingFlags.Instance);
+        var emits = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.EmitNames), BindingFlags.Public | BindingFlags.Instance);
+
+        Assert.IsNotNull(setup);
+        Assert.IsNotNull(render);
+        Assert.IsNotNull(emits);
+        Assert.AreEqual(typeof(VueSetupCallback), setup.PropertyType);
+        Assert.AreEqual(typeof(VueRenderCallback), render.PropertyType);
+        Assert.AreEqual(typeof(string[]), emits.PropertyType);
+    }
+
+    [TestMethod]
+    public void Vue_GenericComponentOptions_UseTypedSetupAndExplicitContracts()
+    {
+        var componentOptions = typeof(VueComponentOptions<>).MakeGenericType(typeof(TestVueProps));
+        var setup = componentOptions.GetProperty("Setup", BindingFlags.Public | BindingFlags.Instance);
+        var propNames = componentOptions.GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance);
+        var emitNames = componentOptions.GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance);
+
+        Assert.IsNotNull(setup);
+        Assert.IsNotNull(propNames);
+        Assert.IsNotNull(emitNames);
+        Assert.AreEqual(typeof(VueTypedSetupCallback<TestVueProps>), setup.PropertyType);
+        Assert.AreEqual(typeof(string[]), propNames.PropertyType);
+        Assert.AreEqual(typeof(string[]), emitNames.PropertyType);
+        CollectionAssert.Contains(
+            propNames.CustomAttributes.Select(static attribute => attribute.AttributeType.FullName).ToArray(),
+            "ECMAScript.Contract.PropsAttribute");
     }
 
     [TestMethod]
@@ -135,5 +169,7 @@ internal static class TypeTestExtensions
     public static Type UnwrapNullable(this Type type)
         => Nullable.GetUnderlyingType(type) ?? type;
 }
+
+public sealed record TestVueProps : VueProps;
 
 #pragma warning restore CA1416

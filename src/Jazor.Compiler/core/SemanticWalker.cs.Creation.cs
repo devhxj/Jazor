@@ -1,7 +1,9 @@
 using Acornima;
 using Acornima.Ast;
 using ECMAScript.Contract;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
@@ -153,7 +155,8 @@ public partial class SemanticWalker
 		if (operation.Type is not INamedTypeSymbol namedType)
 			return HandleTransformationFailure<Expression>(operation, "ECMAScript record type could not be translated to JavaScript.");
 
-		var nodes = new List<Node>();
+		var memberOrder = BuildEcmascriptRecordMemberOrderMap(namedType);
+		var members = new List<(Node Node, string Name, int Order)>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
 			var arg = operation.Arguments[index];
@@ -166,23 +169,271 @@ public partial class SemanticWalker
 					: null);
 			var keyName = ResolveEcmascriptRecordPropertyName(namedType, parameter, index);
 			var value = TranslateTupleForTarget(arg.Value, parameter?.Type, argument);
-			nodes.Add(new ObjectProperty(
+			members.Add((new ObjectProperty(
 				PropertyKind.Init,
 				key: new Identifier(keyName),
 				value: value,
 				computed: false,
 				shorthand: false,
-				method: false));
+				method: false),
+				keyName,
+				GetEcmascriptRecordMemberOrder(memberOrder, keyName)));
 		}
 
 		if (operation.Initializer is not null)
-			nodes.AddRange(BuildObjectLiteralMembers(operation.Initializer, argument));
+		{
+			var initializerNodes = BuildObjectLiteralMembers(operation.Initializer, argument);
+			for (var index = 0; index < initializerNodes.Count; index++)
+			{
+				members.Add((
+					initializerNodes[index],
+					GetObjectInitializerMemberName(operation.Initializer.Initializers[index]),
+					GetEcmascriptRecordMemberOrder(memberOrder, GetObjectInitializerMemberSymbol(operation.Initializer.Initializers[index]))));
+			}
+		}
 
-		Expression expr = new ObjectExpression(NodeList.From(nodes));
+		AppendInferredEcmascriptRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
+
+		Expression expr = new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
 		if (assignObj is not null)
 			expr = new AssignmentExpression(Operator.Assignment, assignObj, expr);
 
 		return expr;
+	}
+
+	private static Dictionary<string, int> BuildEcmascriptRecordMemberOrderMap(INamedTypeSymbol type)
+	{
+		var order = new Dictionary<string, int>(System.StringComparer.Ordinal);
+		var index = 0;
+		foreach (var current in EnumerateNamedTypeHierarchyBaseFirst(type))
+		{
+			foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
+			{
+				if (property.IsStatic)
+					continue;
+
+				var memberName = Util.GetConfigOrSymbolName(property);
+				if (!order.ContainsKey(memberName))
+				{
+					order.Add(memberName, index);
+					index++;
+				}
+			}
+		}
+
+		return order;
+	}
+
+	private static int GetEcmascriptRecordMemberOrder(IReadOnlyDictionary<string, int> memberOrder, string memberName)
+		=> memberOrder.TryGetValue(memberName, out var order) ? order : int.MaxValue;
+
+	private static int GetEcmascriptRecordMemberOrder(IReadOnlyDictionary<string, int> memberOrder, ISymbol? memberSymbol)
+	{
+		if (memberSymbol is null)
+			return int.MaxValue;
+
+		return GetEcmascriptRecordMemberOrder(memberOrder, Util.GetConfigOrSymbolName(memberSymbol));
+	}
+
+	private void AppendInferredEcmascriptRecordMembers(
+		INamedTypeSymbol type,
+		IObjectOrCollectionInitializerOperation? initializer,
+		IReadOnlyDictionary<string, int> memberOrder,
+		List<(Node Node, string Name, int Order)> members,
+		IOperation originOperation)
+	{
+		foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
+		{
+			if (property.IsStatic ||
+				!HasPropsInference(property))
+			{
+				continue;
+			}
+
+			var memberName = Util.GetConfigOrSymbolName(property);
+			if (members.Any(member => string.Equals(member.Name, memberName, System.StringComparison.Ordinal)))
+				continue;
+
+			ObjectProperty inferredMember;
+			if (HasPropsInference(property))
+				inferredMember = BuildPropsInferenceMember(type, property, originOperation);
+			else if (HasEmitsInference(property))
+				inferredMember = BuildEmitsInferenceMember(type, property, initializer, originOperation);
+			else
+				continue;
+
+			var memberOrderValue = GetEcmascriptRecordMemberOrder(memberOrder, memberName);
+			var insertIndex = members.FindIndex(member => member.Order > memberOrderValue);
+			var orderedMember = (WithOriginIfMissing(inferredMember, originOperation), memberName, memberOrderValue);
+			if (insertIndex < 0)
+				members.Add(orderedMember);
+			else
+				members.Insert(insertIndex, orderedMember);
+		}
+	}
+
+	private static ISymbol? GetObjectInitializerMemberSymbol(IOperation initializer)
+		=> initializer switch
+		{
+			ISimpleAssignmentOperation
+			{
+				Target: IPropertyReferenceOperation { Property: var property }
+			} => property,
+			ISimpleAssignmentOperation
+			{
+				Target: IFieldReferenceOperation { Field: var field }
+			} => field,
+			IMemberInitializerOperation
+			{
+				InitializedMember: IPropertyReferenceOperation { Property: var property }
+			} => property,
+			IMemberInitializerOperation
+			{
+				InitializedMember: IFieldReferenceOperation { Field: var field }
+			} => field,
+			_ => null
+		};
+
+	private static string GetObjectInitializerMemberName(IOperation initializer)
+	{
+		var symbol = GetObjectInitializerMemberSymbol(initializer);
+		return symbol is null
+			? string.Empty
+			: Util.GetConfigOrSymbolName(symbol);
+	}
+
+	private static bool HasPropsInference(IPropertySymbol property)
+	{
+		foreach (var attribute in property.GetAttributes())
+		{
+			if (attribute.AttributeClass?.ToDisplayString() == typeof(PropsAttribute).FullName)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static bool HasEmitsInference(IPropertySymbol property)
+	{
+		foreach (var attribute in property.GetAttributes())
+		{
+			if (attribute.AttributeClass?.ToDisplayString() == typeof(EmitsAttribute).FullName)
+				return true;
+		}
+
+		return false;
+	}
+
+	private ObjectProperty BuildPropsInferenceMember(
+		INamedTypeSymbol recordType,
+		IPropertySymbol targetProperty,
+		IOperation originOperation)
+	{
+		if (targetProperty.Type is not IArrayTypeSymbol
+			{
+				ElementType.SpecialType: SpecialType.System_String
+			})
+		{
+			return HandleTransformationFailure<ObjectProperty>(
+				originOperation,
+				$"[Props] can only be applied to string[] members, but '{targetProperty.ToDisplayString(Format.NameFormat)}' has type '{targetProperty.Type.ToDisplayString(Format.NameFormat)}'.");
+		}
+
+		if (!TryCollectTypeArgumentPublicInstancePropertyNames(recordType, 0, out var values))
+		{
+			return HandleTransformationFailure<ObjectProperty>(
+				originOperation,
+				$"[Props] requires '{recordType.ToDisplayString(Format.NameFormat)}' to provide a first named generic type argument for property-name inference.");
+		}
+
+		return BuildStringArrayRecordMember(targetProperty, values);
+	}
+
+	private ObjectProperty BuildEmitsInferenceMember(
+		INamedTypeSymbol recordType,
+		IPropertySymbol targetProperty,
+		IObjectOrCollectionInitializerOperation? initializer,
+		IOperation originOperation)
+	{
+		if (targetProperty.Type is not IArrayTypeSymbol
+			{
+				ElementType.SpecialType: SpecialType.System_String
+			})
+		{
+			return HandleTransformationFailure<ObjectProperty>(
+				originOperation,
+				$"[Emits] can only be applied to string[] members, but '{targetProperty.ToDisplayString(Format.NameFormat)}' has type '{targetProperty.Type.ToDisplayString(Format.NameFormat)}'.");
+		}
+
+		var values = CollectSetupEmitNames(recordType, initializer, originOperation);
+		return BuildStringArrayRecordMember(targetProperty, values);
+	}
+
+	private static bool TryCollectTypeArgumentPublicInstancePropertyNames(
+		INamedTypeSymbol recordType,
+		int typeArgumentIndex,
+		out List<string> names)
+	{
+		names = null!;
+		if (typeArgumentIndex < 0 ||
+			recordType.TypeArguments.Length <= typeArgumentIndex ||
+			recordType.TypeArguments[typeArgumentIndex] is not INamedTypeSymbol sourceType)
+			return false;
+
+		names = CollectPublicInstancePropertyNames(sourceType);
+		return true;
+	}
+
+	private static List<string> CollectPublicInstancePropertyNames(INamedTypeSymbol type)
+	{
+		var names = new List<string>();
+		var seen = new HashSet<string>(System.StringComparer.Ordinal);
+		foreach (var current in EnumerateNamedTypeHierarchyBaseFirst(type))
+		{
+			foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
+			{
+				if (property.IsStatic ||
+					property.IsIndexer ||
+					property.DeclaredAccessibility != Accessibility.Public ||
+					property.GetMethod is null)
+				{
+					continue;
+				}
+
+				var name = Util.GetConfigOrSymbolName(property);
+				if (seen.Add(name))
+					names.Add(name);
+			}
+		}
+
+		return names;
+	}
+
+	private static IEnumerable<INamedTypeSymbol> EnumerateNamedTypeHierarchyBaseFirst(INamedTypeSymbol type)
+	{
+		var types = new Stack<INamedTypeSymbol>();
+		for (var current = type; current is not null; current = current.BaseType)
+			types.Push(current);
+
+		while (types.Count > 0)
+			yield return types.Pop();
+	}
+
+	private static string EscapeJavaScriptString(string value)
+	{
+		return value
+			.Replace("\\", "\\\\")
+			.Replace("\"", "\\\"")
+			.Replace("\0", "\\0")
+			.Replace("\a", "\\a")
+			.Replace("\b", "\\b")
+			.Replace("\f", "\\f")
+			.Replace("\n", "\\n")
+			.Replace("\r", "\\r")
+			.Replace("\t", "\\t")
+			.Replace("\v", "\\v");
 	}
 
 	private static string ResolveEcmascriptRecordPropertyName(INamedTypeSymbol type, IParameterSymbol? parameter, int index)
