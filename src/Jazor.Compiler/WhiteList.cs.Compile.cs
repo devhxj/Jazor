@@ -3,6 +3,8 @@
 using Acornima.Ast;
 using ECMAScript.Contract;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
 
@@ -12,9 +14,122 @@ partial interface IWhiteList
 	/// <summary>
 	/// static ECMAScript.Global.TypeOf(object)
 	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
 	/// <param name="handler"></param>
 	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
 	/// <returns></returns>
-	Expression? Compile_b58c68bda64ad0f8(Expression? handler, Expression?[] args);
+	Expression? Compile_b58c68bda64ad0f8(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.IVNode)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_4d891df0d6540e03(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_bf7eb3c58b5fa599(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Vue.IVNode)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_304e553be1ef96b9(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Vue.IVNode)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_218982270c602b63(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_12f66773377f7470(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Vue.IVNode)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_7144b71f1860ef44(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_1026633d034d6dff(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Vue.IVNode)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_ee7c23968f63b7e2(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_0700e0010fb8b9a9(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+
+	/// <summary>
+	/// static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)
+	/// </summary>
+	/// <param name="symbol"></param>
+	/// <param name="context"></param>
+	/// <param name="handler"></param>
+	/// <param name="args"></param>
+	/// <param name="originOperation"></param>
+	/// <returns></returns>
+	Expression? Compile_9fe39c798bb82645(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
 }

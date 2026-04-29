@@ -65,9 +65,12 @@ internal enum Op
 	/// 编译器内部特殊钩子。
 	/// 这类成员不依赖模板，也不依赖运行时模块，而是由 SemanticWalker 中的 Compile_* 直接产 AST。
 	///
-	/// 当前 contract 仍然很窄，只适合自包含表达式级改写。
-	/// 不要把需要临时变量、import、语句级展开、source map 来源追踪、
-	/// 或稳定 throw-expression 协议的成员直接标成 Compile。
+	/// 当前 contract 仍应保持克制：
+	/// - 会拿到原始 symbol、当前 SenseArgument、实例 handler、显式参数以及 origin operation
+	/// - 因而可以在必要时绑定 import、保留 usage-site 诊断锚点，或构造更精细的宿主 AST
+	///
+	/// 但 Compile 依然是“编译器拥有语义”的最窄入口。
+	/// 不要把本可用 Alias / Inline / Import 建模的成员机械升级成 Compile。
 	/// </summary>
 	Compile,
 }

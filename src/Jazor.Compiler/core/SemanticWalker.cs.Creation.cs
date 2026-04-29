@@ -245,7 +245,7 @@ public partial class SemanticWalker
 		foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
 		{
 			if (property.IsStatic ||
-				!HasPropsInference(property))
+				!TryGetRecordLiteralContractKind(property, out var contractKind))
 			{
 				continue;
 			}
@@ -254,13 +254,14 @@ public partial class SemanticWalker
 			if (members.Any(member => string.Equals(member.Name, memberName, System.StringComparison.Ordinal)))
 				continue;
 
-			ObjectProperty inferredMember;
-			if (HasPropsInference(property))
-				inferredMember = BuildPropsInferenceMember(type, property, originOperation);
-			else if (HasEmitsInference(property))
-				inferredMember = BuildEmitsInferenceMember(type, property, initializer, originOperation);
-			else
-				continue;
+			var inferredMember = contractKind switch
+			{
+				RecordLiteralContractKind.Props => BuildPropsInferenceMember(type, property, originOperation),
+				RecordLiteralContractKind.Emits => BuildEmitsInferenceMember(type, property, initializer, originOperation),
+				_ => HandleTransformationFailure<ObjectProperty>(
+					originOperation,
+					$"Unsupported record literal contract kind '{contractKind}' on '{property.ToDisplayString(Format.NameFormat)}'.")
+			};
 
 			var memberOrderValue = GetEcmascriptRecordMemberOrder(memberOrder, memberName);
 			var insertIndex = members.FindIndex(member => member.Order > memberOrderValue);
@@ -302,25 +303,32 @@ public partial class SemanticWalker
 			: Util.GetConfigOrSymbolName(symbol);
 	}
 
-	private static bool HasPropsInference(IPropertySymbol property)
+	private static bool TryGetRecordLiteralContractKind(IPropertySymbol property, out RecordLiteralContractKind kind)
 	{
+		kind = default;
+
 		foreach (var attribute in property.GetAttributes())
 		{
-			if (attribute.AttributeClass?.ToDisplayString() == typeof(PropsAttribute).FullName)
+			if (attribute.AttributeClass?.ToDisplayString() == typeof(RecordLiteralContractAttribute).FullName &&
+				attribute.ConstructorArguments.Length > 0 &&
+				attribute.ConstructorArguments[0].Value is int rawKind &&
+				Enum.IsDefined(typeof(RecordLiteralContractKind), rawKind))
 			{
+				kind = (RecordLiteralContractKind)rawKind;
 				return true;
 			}
-		}
 
-		return false;
-	}
-
-	private static bool HasEmitsInference(IPropertySymbol property)
-	{
-		foreach (var attribute in property.GetAttributes())
-		{
-			if (attribute.AttributeClass?.ToDisplayString() == typeof(EmitsAttribute).FullName)
+			if (attribute.AttributeClass?.ToDisplayString() == typeof(PropsAttribute).FullName)
+			{
+				kind = RecordLiteralContractKind.Props;
 				return true;
+			}
+
+			if (attribute.AttributeClass?.ToDisplayString() == typeof(EmitsAttribute).FullName)
+			{
+				kind = RecordLiteralContractKind.Emits;
+				return true;
+			}
 		}
 
 		return false;
@@ -384,6 +392,263 @@ public partial class SemanticWalker
 
 		names = CollectPublicInstancePropertyNames(sourceType);
 		return true;
+	}
+
+	private List<string> CollectSetupEmitNames(
+		INamedTypeSymbol recordType,
+		IObjectOrCollectionInitializerOperation? initializer,
+		IOperation originOperation)
+	{
+		if (initializer is null ||
+			!TryGetInitializerAssignedValue(initializer, "Setup", "setup", out var setupValue))
+		{
+			return new List<string>();
+		}
+
+		if (!TryResolveEmitInferenceRoot(setupValue, out var rootOperation, out var emitContextParameter))
+		{
+			return HandleTransformationFailure<List<string>>(
+				originOperation,
+				$"[Emits] could not analyze the setup callback assigned in '{recordType.ToDisplayString(Format.NameFormat)}'. Use an inline lambda or a source-declared method group, or set EmitNames explicitly.");
+		}
+
+		if (emitContextParameter is null)
+			return new List<string>();
+
+		var names = new List<string>();
+		var seen = new HashSet<string>(System.StringComparer.Ordinal);
+		foreach (var operation in EnumerateSelfAndDescendants(rootOperation))
+		{
+			if (operation is IParameterReferenceOperation parameterReference &&
+				SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, emitContextParameter) &&
+				!IsSupportedEmitContextUsage(parameterReference))
+			{
+				return HandleTransformationFailure<List<string>>(
+					originOperation,
+					$"[Emits] only supports direct setup-context member usage in '{recordType.ToDisplayString(Format.NameFormat)}'. If the context is passed around or aliased, set EmitNames explicitly.");
+			}
+
+			if (operation is not IInvocationOperation invocation ||
+				!string.Equals(invocation.TargetMethod.Name, "Emit", System.StringComparison.Ordinal) ||
+				!IsEmitContextInvocation(invocation.Instance, emitContextParameter))
+			{
+				continue;
+			}
+
+			if (invocation.Arguments.Length == 0 ||
+				invocation.Arguments[0].Value.ConstantValue is not { HasValue: true, Value: string emitName } ||
+				string.IsNullOrWhiteSpace(emitName))
+			{
+				return HandleTransformationFailure<List<string>>(
+					originOperation,
+					$"[Emits] requires literal non-empty event names in setup emit calls for '{recordType.ToDisplayString(Format.NameFormat)}'. Use context.Emit(\"event\") or set EmitNames explicitly.");
+			}
+
+			if (seen.Add(emitName))
+				names.Add(emitName);
+		}
+
+		return names;
+	}
+
+	private static bool TryGetInitializerAssignedValue(
+		IObjectOrCollectionInitializerOperation initializer,
+		string clrPropertyName,
+		string emittedPropertyName,
+		out IOperation value)
+	{
+		foreach (var item in initializer.Initializers)
+		{
+			if (item is not ISimpleAssignmentOperation
+				{
+					Target: IPropertyReferenceOperation { Property: var property },
+					Value: var assignedValue
+				})
+			{
+				continue;
+			}
+
+			if (string.Equals(property.Name, clrPropertyName, System.StringComparison.Ordinal) ||
+				string.Equals(Util.GetConfigOrSymbolName(property), emittedPropertyName, System.StringComparison.Ordinal))
+			{
+				value = assignedValue;
+				return true;
+			}
+		}
+
+		value = null!;
+		return false;
+	}
+
+	private bool TryResolveEmitInferenceRoot(
+		IOperation operation,
+		out IOperation rootOperation,
+		out IParameterSymbol? emitContextParameter)
+	{
+		switch (UnwrapEmitInferenceOperation(operation))
+		{
+			case IMethodReferenceOperation methodReference:
+				emitContextParameter = FindEmitContextParameter(methodReference.Method.Parameters);
+				return TryGetMethodOperationRoot(methodReference.Method, operation.SemanticModel, out rootOperation);
+			case IAnonymousFunctionOperation anonymousFunction:
+				rootOperation = anonymousFunction.Body;
+				emitContextParameter = FindEmitContextParameter(anonymousFunction.Symbol.Parameters);
+				return true;
+			default:
+				rootOperation = null!;
+				emitContextParameter = null;
+				return false;
+		}
+	}
+
+	private static IOperation UnwrapEmitInferenceOperation(IOperation operation)
+	{
+		var current = operation;
+		while (true)
+		{
+			switch (current)
+			{
+				case IConversionOperation conversion:
+					current = conversion.Operand;
+					continue;
+				case IDelegateCreationOperation delegateCreation:
+					current = delegateCreation.Target;
+					continue;
+				case IParenthesizedOperation parenthesized:
+					current = parenthesized.Operand;
+					continue;
+				default:
+					return current;
+			}
+		}
+	}
+
+	private bool TryGetMethodOperationRoot(
+		IMethodSymbol method,
+		SemanticModel? fallbackModel,
+		out IOperation rootOperation)
+	{
+		foreach (var reference in method.DeclaringSyntaxReferences)
+		{
+			var syntax = reference.GetSyntax(_cancellationToken);
+			var semanticModel = fallbackModel?.Compilation.GetSemanticModel(syntax.SyntaxTree) ?? fallbackModel;
+			if (semanticModel is null)
+				continue;
+
+			switch (syntax)
+			{
+				case MethodDeclarationSyntax methodDeclaration when methodDeclaration.Body is not null:
+					if (semanticModel.GetOperation(methodDeclaration.Body, _cancellationToken) is IOperation methodBodyOperation)
+					{
+						rootOperation = methodBodyOperation;
+						return true;
+					}
+					break;
+				case MethodDeclarationSyntax methodDeclaration when methodDeclaration.ExpressionBody is not null:
+					if (semanticModel.GetOperation(methodDeclaration.ExpressionBody.Expression, _cancellationToken) is IOperation methodExpressionOperation)
+					{
+						rootOperation = methodExpressionOperation;
+						return true;
+					}
+					break;
+				case LocalFunctionStatementSyntax localFunction when localFunction.Body is not null:
+					if (semanticModel.GetOperation(localFunction.Body, _cancellationToken) is IOperation localFunctionBodyOperation)
+					{
+						rootOperation = localFunctionBodyOperation;
+						return true;
+					}
+					break;
+				case LocalFunctionStatementSyntax localFunction when localFunction.ExpressionBody is not null:
+					if (semanticModel.GetOperation(localFunction.ExpressionBody.Expression, _cancellationToken) is IOperation localFunctionExpressionOperation)
+					{
+						rootOperation = localFunctionExpressionOperation;
+						return true;
+					}
+					break;
+			}
+		}
+
+		rootOperation = null!;
+		return false;
+	}
+
+	private static IParameterSymbol? FindEmitContextParameter(IEnumerable<IParameterSymbol> parameters)
+		=> parameters.FirstOrDefault(static parameter =>
+			parameter.Type is INamedTypeSymbol namedType &&
+			EnumerateNamedTypeHierarchyBaseFirst(namedType)
+				.SelectMany(static current => current.GetMembers("Emit").OfType<IMethodSymbol>())
+				.Any(static method =>
+					!method.IsStatic &&
+					method.Parameters.Length > 0 &&
+					method.Parameters[0].Type.SpecialType == SpecialType.System_String));
+
+	private static bool IsEmitContextInvocation(IOperation? instance, IParameterSymbol emitContextParameter)
+		=> UnwrapEmitInvocationInstance(instance) is IParameterReferenceOperation parameterReference &&
+		   SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, emitContextParameter);
+
+	private static IOperation? UnwrapEmitInvocationInstance(IOperation? operation)
+	{
+		var current = operation;
+		while (true)
+		{
+			switch (current)
+			{
+				case IConversionOperation conversion:
+					current = conversion.Operand;
+					continue;
+				case IParenthesizedOperation parenthesized:
+					current = parenthesized.Operand;
+					continue;
+				default:
+					return current;
+			}
+		}
+	}
+
+	private static bool IsSupportedEmitContextUsage(IParameterReferenceOperation parameterReference)
+	{
+		IOperation current = parameterReference;
+		while (true)
+		{
+			switch (current.Parent)
+			{
+				case IConversionOperation conversion when ReferenceEquals(conversion.Operand, current):
+					current = conversion;
+					continue;
+				case IParenthesizedOperation parenthesized when ReferenceEquals(parenthesized.Operand, current):
+					current = parenthesized;
+					continue;
+				case IInvocationOperation invocation when ReferenceEquals(invocation.Instance, current):
+					return true;
+				case IPropertyReferenceOperation propertyReference when ReferenceEquals(propertyReference.Instance, current):
+					return true;
+				case IFieldReferenceOperation fieldReference when ReferenceEquals(fieldReference.Instance, current):
+					return true;
+				default:
+					return false;
+			}
+		}
+	}
+
+	private static IEnumerable<IOperation> EnumerateSelfAndDescendants(IOperation rootOperation)
+	{
+		yield return rootOperation;
+		foreach (var operation in rootOperation.Descendants())
+			yield return operation;
+	}
+
+	private static ObjectProperty BuildStringArrayRecordMember(IPropertySymbol targetProperty, IEnumerable<string> values)
+	{
+		var elements = values
+			.Select(static name => (Expression?)new StringLiteral(name, $"\"{EscapeJavaScriptString(name)}\""));
+
+		return new ObjectProperty(
+			PropertyKind.Init,
+			key: new Identifier(Util.GetConfigOrSymbolName(targetProperty)),
+			value: new ArrayExpression(NodeList.From(elements)),
+			computed: false,
+			shorthand: false,
+			method: false);
 	}
 
 	private static List<string> CollectPublicInstancePropertyNames(INamedTypeSymbol type)

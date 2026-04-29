@@ -19,7 +19,7 @@ public partial class SemanticWalker
 	/// <param name="handler"></param>
 	/// <param name="args"></param>
 	/// <returns></returns>
-	public Expression? Compile_b58c68bda64ad0f8(Expression? handler, Expression?[] args)
+	public Expression? Compile_b58c68bda64ad0f8(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation)
 	{
 		if (handler is not null)
 			throw new InvalidOperationException("ECMAScript.Global.TypeOf(object) 不应接收实例 handler。");

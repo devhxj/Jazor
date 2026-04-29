@@ -6,16 +6,44 @@ public delegate void VueEventHandler<T>(T value);
 
 public delegate Vue.IVNode VueRenderCallback();
 
+public delegate Vue.IVNode VueSlotCallback();
+
+public delegate Vue.IVNode VueSlotCallback<TScope>(TScope scope);
+
 public delegate VueRenderCallback VueSetupCallback();
 
 public delegate VueRenderCallback VueTypedSetupCallback<TProps>(TProps props, Vue.VueSetupContext context)
 	where TProps : Vue.VueProps;
 
+public delegate VueRenderCallback VueTypedSlotSetupCallback<TSlots>(Vue.VueSetupContext<TSlots> context)
+	where TSlots : Vue.VueSlots;
+
+public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps props, Vue.VueSetupContext<TSlots> context)
+	where TProps : Vue.VueProps
+	where TSlots : Vue.VueSlots;
+
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
+[Jazor]
 public static class Vue
 {
     public interface IVueComponent : Contract.IUIComponent { }
+
+    public interface IVueComponent<TProps> : IVueComponent
+		where TProps : VueProps
+	{
+	}
+
+	public interface IVueSlotComponent<TSlots> : IVueComponent
+		where TSlots : VueSlots
+	{
+	}
+
+	public interface IVueComponent<TProps, TSlots> : IVueComponent<TProps>, IVueSlotComponent<TSlots>
+		where TProps : VueProps
+		where TSlots : VueSlots
+	{
+	}
 
     public interface IVNode { }
 
@@ -29,6 +57,9 @@ public static class Vue
 
 	[Description("@#")]
 	public abstract record VueProps : IVueOptionsBag;
+
+	[Description("@#")]
+	public abstract record VueSlots : IVueOptionsBag;
 
 	[Description("@#")]
 	public abstract record VueComponentDefinition : IVueOptionsBag;
@@ -55,7 +86,6 @@ public static class Vue
 		public VueDirectiveRegistry? Directives { get; init; }
 
 		[Description("@#emits")]
-		[Emits]
 		public string[]? EmitNames { get; init; }
 
 		[Description("@#setup")]
@@ -83,10 +113,58 @@ public static class Vue
 		public string[]? PropNames { get; init; }
 
 		[Description("@#emits")]
+		[Emits]
 		public string[]? EmitNames { get; init; }
 
 		[Description("@#setup")]
 		public VueTypedSetupCallback<TProps>? Setup { get; init; }
+	}
+
+	[Description("@#VueComponentOptions")]
+	public sealed record VueComponentOptions<TProps, TSlots> : VueComponentDefinition
+		where TProps : VueProps
+		where TSlots : VueSlots
+	{
+		[Description("@#name")]
+		public string? Name { get; init; }
+
+		[Description("@#components")]
+		public VueComponentRegistry? Components { get; init; }
+
+		[Description("@#directives")]
+		public VueDirectiveRegistry? Directives { get; init; }
+
+		[Description("@#props")]
+		[Props]
+		public string[]? PropNames { get; init; }
+
+		[Description("@#emits")]
+		[Emits]
+		public string[]? EmitNames { get; init; }
+
+		[Description("@#setup")]
+		public VueTypedSetupCallback<TProps, TSlots>? Setup { get; init; }
+	}
+
+	[Description("@#VueComponentOptions")]
+	public sealed record VueSlotComponentOptions<TSlots> : VueComponentDefinition
+		where TSlots : VueSlots
+	{
+		[Description("@#name")]
+		public string? Name { get; init; }
+
+		[Description("@#components")]
+		public VueComponentRegistry? Components { get; init; }
+
+		[Description("@#directives")]
+		public VueDirectiveRegistry? Directives { get; init; }
+
+		[Description("@#emits")]
+		[Emits]
+		public string[]? EmitNames { get; init; }
+
+		[Description("@#setup")]
+		public VueTypedSlotSetupCallback<TSlots>? Setup { get; init; }
 	}
 
 	public class VueReadonlyRef<T>
@@ -121,6 +199,13 @@ public static class Vue
 
 		[Description("@#expose")]
 		public extern void Expose<TValue>(TValue exposed) where TValue : class;
+	}
+
+	public abstract class VueSetupContext<TSlots> : VueSetupContext
+		where TSlots : VueSlots
+	{
+		[Description("@#slots")]
+		public new extern TSlots Slots { get; }
 	}
 
 	public abstract class VueAttributeBag
@@ -199,8 +284,24 @@ public static class Vue
     [Description("@#defineComponent")]
     public extern static IVueComponent DefineComponent(VueComponentDefinition options);
 
+    [Description("@#defineComponent")]
+    public extern static IVueComponent<TProps> DefineComponent<TProps>(VueComponentOptions<TProps> options)
+		where TProps : VueProps;
+
+	[Description("@#defineComponent")]
+	public extern static IVueSlotComponent<TSlots> DefineComponent<TSlots>(VueSlotComponentOptions<TSlots> options)
+		where TSlots : VueSlots;
+
+	[Description("@#defineComponent")]
+	public extern static IVueComponent<TProps, TSlots> DefineComponent<TProps, TSlots>(VueComponentOptions<TProps, TSlots> options)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
     [Description("@#h")]
     public extern static IVNode H(string type);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, IVNode child);
 
     [Description("@#h")]
     public extern static IVNode H(string type, Either<string, Number, bool, IVNode, IVNode[]> children);
@@ -209,18 +310,89 @@ public static class Vue
     public extern static IVNode H(string type, VueProps props);
 
     [Description("@#h")]
+    public extern static IVNode H(string type, VueProps props, IVNode child);
+
+    [Description("@#h")]
     public extern static IVNode H(string type, VueProps props, Either<string, Number, bool, IVNode, IVNode[]> children);
 
     [Description("@#h")]
     public extern static IVNode H(IVueComponent component);
 
     [Description("@#h")]
+    [Jazor]
+    public extern static IVNode H(IVueComponent component, IVNode child);
+
+    [Description("@#h")]
+    [Jazor]
     public extern static IVNode H(IVueComponent component, Either<string, Number, bool, IVNode, IVNode[]> children);
+
+    [Description("@#h")]
+    public extern static IVNode H(IVueComponent component, VueSlots slots);
 
     [Description("@#h")]
     public extern static IVNode H(IVueComponent component, VueProps props);
 
     [Description("@#h")]
+    [Jazor]
+    public extern static IVNode H(IVueComponent component, VueProps props, IVNode child);
+
+    [Description("@#h")]
+    public extern static IVNode H(IVueComponent component, VueProps props, VueSlots slots);
+
+    [Description("@#h")]
+    public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props)
+		where TProps : VueProps;
+
+	[Description("@#h")]
+	[Jazor]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, IVNode child)
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, Either<string, Number, bool, IVNode, IVNode[]> children)
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, TSlots slots)
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, IVNode child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, Either<string, Number, bool, IVNode, IVNode[]> children)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TSlots slots)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, Either<string, Number, bool, IVNode, IVNode[]> children)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, TSlots slots)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+    [Description("@#h")]
+    [Jazor]
     public extern static IVNode H(IVueComponent component, VueProps props, Either<string, Number, bool, IVNode, IVNode[]> children);
 
     [Description("@#reactive")]

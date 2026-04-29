@@ -6,7 +6,10 @@ namespace ECMAScript.Contract;
 /// contract 负责声明“这个成员可以被推导”，编译器只负责按该规则补写对象字面量，
 /// 而不关心具体是不是 Vue、是不是 props。
 /// </summary>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-internal sealed class PropsAttribute : Attribute
+internal sealed class PropsAttribute : RecordLiteralContractAttribute
 {
+	public PropsAttribute()
+		: base(RecordLiteralContractKind.Props)
+	{
+	}
 }

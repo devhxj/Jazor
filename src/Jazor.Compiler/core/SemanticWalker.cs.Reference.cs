@@ -2428,7 +2428,7 @@ public partial class SemanticWalker
 			intrinsicExpr is not null)
 			return intrinsicExpr;
 
-		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias);
+		var mapperExpr = GetWhiteListExpression(whiteListMethod, argument, arguments, instance, out var alias, ownerOperation);
 		if (mapperExpr is not null)
 			return mapperExpr;
 

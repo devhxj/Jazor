@@ -13,9 +13,19 @@ namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
-	partial void Generate(ref Dictionary<string, Func<Expression?, Expression?[], Expression?>> funcs)
+	partial void Generate(ref Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> funcs)
 	{
 		// 初始白名单特殊编译处理
 		funcs["static ECMAScript.Global.TypeOf(object)"] = Compile_b58c68bda64ad0f8;
+		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.IVNode)"] = Compile_4d891df0d6540e03;
+		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)"] = Compile_bf7eb3c58b5fa599;
+		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Vue.IVNode)"] = Compile_304e553be1ef96b9;
+		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Vue.IVNode)"] = Compile_218982270c602b63;
+		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)"] = Compile_12f66773377f7470;
+		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Vue.IVNode)"] = Compile_7144b71f1860ef44;
+		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)"] = Compile_1026633d034d6dff;
+		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Vue.IVNode)"] = Compile_ee7c23968f63b7e2;
+		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)"] = Compile_0700e0010fb8b9a9;
+		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Either<string, ECMAScript.Number, bool, ECMAScript.Vue.IVNode, ECMAScript.Vue.IVNode[]>)"] = Compile_9fe39c798bb82645;
 	}
 }

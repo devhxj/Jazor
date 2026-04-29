@@ -220,11 +220,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return operation.Member;
     }
 
-    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias)
-        => GetWhiteListExpressionCore(symbol, context, arguments, instance: null, out alias);
+    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias, IOperation? originOperation = null)
+        => GetWhiteListExpressionCore(symbol, context, arguments, instance: null, out alias, originOperation);
 
-    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
-        => GetWhiteListExpressionCore(symbol, context, arguments, instance, out alias);
+    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias, IOperation? originOperation = null)
+        => GetWhiteListExpressionCore(symbol, context, arguments, instance, out alias, originOperation);
 
     private void RejectUnsupportedTypeFallback(IOperation operation, ITypeSymbol typeSymbol, string usage)
     {
@@ -646,16 +646,16 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     /// - consumer：一旦成员已经被 producer 明确标成 Compile，就先信任这条最窄的特例路径
     ///
     /// 这里刻意把 `Compile` 和旧的 `Alias/Inline/Import` 分成两套参数语义：
-    /// - `Compile`：`handler` 表示实例宿主，`args` 只保留显式参数
+    /// - `Compile`：拿到原始 `symbol`、当前 `context`、实例 `handler`，以及只保留显式参数的 `args`
     /// - `Alias/Inline/Import`：继续沿用历史占位符布局，实例方法把宿主拼到参数前缀
     ///
     /// 这样既能把 `Compile` 接到主分发优先级前面，又不会一次性打坏既有模板和导入规则。
     /// </summary>
-    private Expression? GetWhiteListExpressionCore(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias)
+    private Expression? GetWhiteListExpressionCore(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias, IOperation? originOperation)
     {
         alias = null;
 
-        var compileExpr = TryGetCompileExpression(symbol, arguments, instance);
+        var compileExpr = TryGetCompileExpression(symbol, context, arguments, instance, originOperation);
         if (compileExpr is not null)
             return compileExpr;
 
@@ -679,13 +679,13 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return null;
     }
 
-    private Expression? TryGetCompileExpression(ISymbol symbol, List<Expression> arguments, Expression? instance)
+    private Expression? TryGetCompileExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, IOperation? originOperation)
     {
         if (!TryGetWhiteListValue(_whiteListCompiles, symbol, out _, out var compile))
             return null;
 
         var (handler, explicitArgs) = CreateCompileArguments(symbol, arguments, instance);
-        return compile(handler, explicitArgs);
+        return compile(symbol, context, handler, explicitArgs, originOperation);
     }
 
     private static bool TryGetWhiteListValue<T>(Dictionary<string, T> mappings, string lookupKey, out string displayString, out T value)
@@ -1176,7 +1176,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private readonly ITypeSymbol? _moduleRootType;
 
-    private readonly Dictionary<string, Func<Expression?, Expression?[], Expression?>> _whiteListCompiles;
+    private readonly Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> _whiteListCompiles;
 
     private readonly CancellationToken _cancellationToken;
 
@@ -1262,7 +1262,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 		return node;
 	}
 
-	partial void Generate(ref Dictionary<string, Func<Expression?, Expression?[], Expression?>> funcs);
+	partial void Generate(ref Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> funcs);
 
 	[DebuggerStepThrough]
     public static void EnsureSufficientExecutionStack(int recursionDepth)

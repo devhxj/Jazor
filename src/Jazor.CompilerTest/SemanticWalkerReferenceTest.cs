@@ -6286,8 +6286,11 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.Throws<InvalidOperationException>(() =>
 			walker.Compile_b58c68bda64ad0f8(
+				null!,
+				SenseArgument.Default,
 				new Identifier("host"),
-				[new Identifier("value")]));
+				[new Identifier("value")],
+				null));
 	}
 	
 	[TestMethod]
