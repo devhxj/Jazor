@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Components;
 using Jolt.Razor.Toolset;
 using Jolt.VirtualDocuments.Mapping;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Razor.InProc;
 

@@ -223,7 +223,7 @@ public static class Int16Module
 	{
 		if (right == 0)
 			throw new Error("DivideByZeroException");
-		var quotient = Math.Trunc_(left / right);
+		var quotient = Math.TruncFn(left / right);
 		var remainder = left - quotient * right;
 		return ((short)quotient, (short)remainder);
 	}

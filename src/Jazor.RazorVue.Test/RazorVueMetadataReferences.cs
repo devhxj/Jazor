@@ -1,7 +1,6 @@
 using Basic.Reference.Assemblies;
-using ECMAScript.UI.Vue.Vuetify;
-using Jazor.Razor;
-using Jazor.RazorVue;
+using ECMAScript.Razor;
+using ECMAScript.Vuetify;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

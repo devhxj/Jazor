@@ -1,1 +1,1 @@
-global using Jazor.Common.RazorVue;
+global using ECMAScript.Internal.RazorVue;

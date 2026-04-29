@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.DevServer;
 

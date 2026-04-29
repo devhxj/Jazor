@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.Workspace;
 using System.Collections.Concurrent;
 using System.Reflection;

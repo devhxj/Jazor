@@ -12,10 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" />
-    <ProjectReference Include="..\Jazor.Razor\Jazor.Razor.csproj" />
-    <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
-    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

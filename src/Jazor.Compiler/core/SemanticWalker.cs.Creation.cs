@@ -1,10 +1,8 @@
 ﻿using Acornima;
 using Acornima.Ast;
-using Jazor.Common;
+using ECMAScript.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Jazor.Compiler;
 

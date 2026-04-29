@@ -1,5 +1,5 @@
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Lsp.Lanes;
 

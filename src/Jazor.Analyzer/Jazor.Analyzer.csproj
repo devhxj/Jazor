@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(CodeAnalysisVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -15,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
-    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
   </ItemGroup>
 
   <ItemGroup>

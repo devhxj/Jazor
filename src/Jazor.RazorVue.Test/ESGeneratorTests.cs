@@ -1,16 +1,12 @@
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using Basic.Reference.Assemblies;
-using ECMAScript.UI.Vue.Vuetify;
+using ECMAScript.Razor;
+using ECMAScript.Vuetify;
 using Jazor.Compiler;
-using Jazor.Razor;
-using Jazor.RazorVue;
 using Jazor.RazorVue.Analysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Jazor.RazorVue.Test;
 
@@ -9310,7 +9306,7 @@ public sealed class ESGeneratorTests
             using System;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -9363,7 +9359,7 @@ public sealed class ESGeneratorTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -9423,7 +9419,7 @@ public sealed class ESGeneratorTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -9478,7 +9474,7 @@ public sealed class ESGeneratorTests
             using System;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -9591,7 +9587,7 @@ public sealed class ESGeneratorTests
             using System;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -9644,7 +9640,7 @@ public sealed class ESGeneratorTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -9701,7 +9697,7 @@ public sealed class ESGeneratorTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {

@@ -27,16 +27,16 @@ public sealed class SdkIntegrationTests
             {
                 "lib/net10.0/ECMAScript.dll",
                 "lib/net10.0/ECMAScript.pdb",
-                "lib/net10.0/Jazor.Common.dll",
-                "lib/net10.0/Jazor.Common.pdb",
+                "lib/net10.0/ECMAScript.Internal.dll",
+                "lib/net10.0/ECMAScript.Internal.pdb",
                 "lib/net10.0/Jazor.Compiler.dll",
                 "lib/net10.0/Jazor.Compiler.pdb",
                 "lib/net10.0/Jazor.Name.dll",
                 "lib/net10.0/Jazor.Name.pdb",
                 "lib/net10.0/Jazor.Razor.dll",
                 "lib/net10.0/Jazor.Razor.pdb",
-                "lib/net10.0/Jazor.RazorVue.dll",
-                "lib/net10.0/Jazor.RazorVue.pdb"
+                "lib/net10.0/ECMAScript.Vuetify.dll",
+                "lib/net10.0/ECMAScript.Vuetify.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("lib/net10.0/", StringComparison.Ordinal)).ToArray());
         CollectionAssert.AreEquivalent(
@@ -46,16 +46,12 @@ public sealed class SdkIntegrationTests
                 "analyzers/dotnet/cs/Acornima.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.pdb",
-                "analyzers/dotnet/cs/Jazor.Common.dll",
-                "analyzers/dotnet/cs/Jazor.Common.pdb",
+                "analyzers/dotnet/cs/ECMAScript.Internal.dll",
+                "analyzers/dotnet/cs/ECMAScript.Internal.pdb",
                 "analyzers/dotnet/cs/Jazor.Compiler.dll",
                 "analyzers/dotnet/cs/Jazor.Compiler.pdb",
                 "analyzers/dotnet/cs/Jazor.Name.dll",
-                "analyzers/dotnet/cs/Jazor.Name.pdb",
-                "analyzers/dotnet/cs/Jazor.RazorVue.Analysis.dll",
-                "analyzers/dotnet/cs/Jazor.RazorVue.Analysis.pdb",
-                "analyzers/dotnet/cs/Jazor.RazorVue.dll",
-                "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
+                "analyzers/dotnet/cs/Jazor.Name.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("analyzers/dotnet/cs/", StringComparison.Ordinal)).ToArray());
     }
@@ -70,8 +66,8 @@ public sealed class SdkIntegrationTests
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
 
-        CollectionAssert.Contains(entryNames, "lib/net10.0/Jazor.RazorVue.Vuetify.dll");
-        CollectionAssert.Contains(entryNames, "Jazor.RazorVue.Vuetify.nuspec");
+        CollectionAssert.Contains(entryNames, "lib/net10.0/ECMAScript.Vuetify.dll");
+        CollectionAssert.Contains(entryNames, "ECMAScript.Vuetify.nuspec");
     }
 
     [TestMethod]
@@ -437,7 +433,7 @@ public sealed class SdkIntegrationTests
             profileFormPath,
             """
             using ECMAScript;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -783,7 +779,7 @@ public sealed class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.RazorVue.Vuetify" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.Vuetify" Version="$(JazorPackageVersion)" />
               </ItemGroup>
 
               <ItemGroup>
@@ -820,7 +816,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "ProfileForm.cs"),
             """
             using ECMAScript;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -940,8 +936,8 @@ public sealed class SdkIntegrationTests
         var packageVersion = ReadPackageVersion(Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
         var ecmascriptOutput = Path.Combine(repoRoot, "src", "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
-        var razorVueOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll");
-        var vuetifyOutput = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "bin", "Debug", "net10.0", "Jazor.RazorVue.Vuetify.dll");
+        var internalOutput = Path.Combine(repoRoot, "src", "ECMAScript.Internal", "bin", "Debug", "netstandard2.0", "ECMAScript.Internal.dll");
+        var vuetifyOutput = Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "bin", "Debug", "net10.0", "ECMAScript.Vuetify.dll");
         var analyzerOutput = Path.Combine(repoRoot, "src", "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
         var emitPublishOutput = Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish", "Jazor.Emit.dll");
 
@@ -956,11 +952,11 @@ public sealed class SdkIntegrationTests
             ecmascriptOutput);
         await EnsureProjectBuiltAsync(
             repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.RazorVue", "Jazor.RazorVue.csproj"),
-            razorVueOutput);
+            Path.Combine(repoRoot, "src", "ECMAScript.Internal", "ECMAScript.Internal.csproj"),
+            internalOutput);
         await EnsureProjectBuiltAsync(
             repoRoot,
-            Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "Jazor.RazorVue.Vuetify.csproj"),
+            Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
             vuetifyOutput);
         await EnsureProjectBuiltAsync(
             repoRoot,
@@ -990,7 +986,7 @@ public sealed class SdkIntegrationTests
             repoRoot,
             [
                 "pack",
-                Path.Combine(repoRoot, "src", "Jazor.RazorVue.Vuetify", "Jazor.RazorVue.Vuetify.csproj"),
+                Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
                 "-c",
                 "Debug",
                 "--no-build",
@@ -1003,7 +999,7 @@ public sealed class SdkIntegrationTests
             packageVersion,
             packageOutputDirectory,
             GetPackagePath(packageOutputDirectory, packageVersion),
-            GetPackagePath(packageOutputDirectory, "Jazor.RazorVue.Vuetify", packageVersion));
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion));
     }
 
     private static async Task RunDotNetAndAssertAsync(string workingDirectory, IReadOnlyList<string> arguments)
@@ -1398,8 +1394,8 @@ public sealed class SdkIntegrationTests
     {
         Directory.CreateDirectory(hostRoot);
 
-        var razorVueProjectPath = Path.Combine(package.RepoRoot, "src", "Jazor.RazorVue", "Jazor.RazorVue.csproj");
-        var vuetifyProjectPath = Path.Combine(package.RepoRoot, "src", "Jazor.RazorVue.Vuetify", "Jazor.RazorVue.Vuetify.csproj");
+        var internalProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Internal", "ECMAScript.Internal.csproj");
+        var vuetifyProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj");
         var projectPath = Path.Combine(hostRoot, "RazorVueSample.Host.csproj");
 
         WriteFile(
@@ -1426,7 +1422,7 @@ public sealed class SdkIntegrationTests
               </ItemGroup>
 
               <ItemGroup>
-                <ProjectReference Include="{{razorVueProjectPath}}" />
+                <ProjectReference Include="{{internalProjectPath}}" />
                 <ProjectReference Include="{{vuetifyProjectPath}}" />
               </ItemGroup>
             </Project>
@@ -1463,7 +1459,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(hostRoot, "ProfileForm.cs"),
             """
             using ECMAScript;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;

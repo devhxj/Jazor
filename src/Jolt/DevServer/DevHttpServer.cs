@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.DevServer;
 

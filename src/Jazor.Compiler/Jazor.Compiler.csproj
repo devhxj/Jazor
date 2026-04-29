@@ -14,7 +14,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
     <ProjectReference Include="..\Jazor.Name\Jazor.Name.csproj" />
   </ItemGroup>
 </Project>

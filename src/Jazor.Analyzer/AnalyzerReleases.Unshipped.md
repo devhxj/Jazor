@@ -20,3 +20,17 @@ JAZORVUE011 | RazorVue | Error | RazorVue child content parameter is assigned mu
 JAZORVUE012 | RazorVue | Error | RazorVue library component declaration is invalid
 JAZORVUE013 | RazorVue | Error | RazorVue library style dependency declaration is invalid
 JAZORVUE014 | RazorVue | Error | RazorVue library plugin requirement declaration is invalid
+JAZORVGA001 | Jazor.RazorVue.Analysis | Error | RazorVue catalog generation failed
+JAZORVGA002 | Jazor.RazorVue.Analysis | Error | RazorVue component not found
+JAZORVGA003 | Jazor.RazorVue.Analysis | Error | RazorVue component name is ambiguous
+JAZORVGA004 | Jazor.RazorVue.Analysis | Error | RazorVue component name collides with intrinsic
+JAZORVGA005 | Jazor.RazorVue.Analysis | Error | RazorVue lifecycle lowering is unsupported
+JAZORVGA006 | Jazor.RazorVue.Analysis | Error | RazorVue setup logic lowering is unsupported
+JAZORVGA007 | Jazor.RazorVue.Analysis | Error | RazorVue parameter is unknown
+JAZORVGA008 | Jazor.RazorVue.Analysis | Error | RazorVue bind target is invalid
+JAZORVGA009 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter is unknown
+JAZORVGA010 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter context is invalid
+JAZORVGA011 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter is assigned multiple times
+JAZORVGA012 | Jazor.RazorVue.Analysis | Error | RazorVue library component declaration is invalid
+JAZORVGA013 | Jazor.RazorVue.Analysis | Error | RazorVue library style dependency declaration is invalid
+JAZORVGA014 | Jazor.RazorVue.Analysis | Error | RazorVue library plugin requirement declaration is invalid

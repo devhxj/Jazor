@@ -1,4 +1,4 @@
-using Jazor.Common;
+using ECMAScript.Internal;
 using System.Collections.Generic;
 
 namespace Jazor.Compiler;

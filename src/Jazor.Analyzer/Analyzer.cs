@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using Jazor.Common;
+using ECMAScript.Internal;
 using Jazor.Compiler;
 using Jazor.RazorVue;
 using Jazor.Name;

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.DevServer;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;

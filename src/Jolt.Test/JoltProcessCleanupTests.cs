@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.Analysis;
 
 namespace Jolt.Test;

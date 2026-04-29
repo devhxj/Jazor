@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Jolt.Build;
-using Jazor.Common.SourceMaps;
+using ECMAScript.Internal.SourceMaps;
 using Jolt.SourceMap;
 using static Jolt.Test.SourceMapTestHelpers;
 

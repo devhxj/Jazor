@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Extensions.Builtin;
 

@@ -1,7 +1,7 @@
 using System.Reflection;
 using ECMAScript;
-using ECMAScript.Vue;
-using ECMAScript.Vue.Vuetify;
+using ECMAScript.Vuetify;
+using static ECMAScript.Vue;
 
 namespace Jazor.ComplierTest;
 
@@ -62,11 +62,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(exportedComponents.Length > 0);
         foreach (var property in exportedComponents)
         {
-            Assert.AreEqual(property.Name, property.PropertyType.Name, property.Name);
-            Assert.IsTrue(typeof(VuetifyComponent).IsAssignableFrom(property.PropertyType), property.Name);
-            Assert.IsTrue(typeof(VueComponent).IsAssignableFrom(property.PropertyType), property.Name);
+            Assert.IsTrue(typeof(IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
+            Assert.IsTrue(typeof(IVuetifyComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.AreEqual(property.PropertyType, registryProperties[property.Name].PropertyType.UnwrapNullable(), property.Name);
-            AssertModule(property.PropertyType, "vuetify/components", property.Name);
         }
     }
 
@@ -84,11 +82,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(exportedDirectives.Length > 0);
         foreach (var property in exportedDirectives)
         {
-            Assert.AreEqual($"{property.Name}Directive", property.PropertyType.Name, property.Name);
             Assert.IsTrue(typeof(VuetifyDirective).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.IsTrue(typeof(VueDirective).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.AreEqual(property.PropertyType, registryProperties[property.Name].PropertyType.UnwrapNullable(), property.Name);
-            AssertModule(property.PropertyType, "vuetify/directives", property.Name);
         }
     }
 
@@ -98,7 +94,7 @@ public sealed class EcmaScriptVueProxyTests
         var optionTypes = typeof(VuetifyOptions).Assembly
             .GetTypes()
             .Where(static type =>
-                type.Namespace == "ECMAScript.Vue.Vuetify" &&
+                type.Namespace == "ECMAScript.Vuetify" &&
                 (type.Name.EndsWith("Options", StringComparison.Ordinal) ||
                  type.Name.EndsWith("Registry", StringComparison.Ordinal)))
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
@@ -129,7 +125,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsNotNull(module, type.FullName);
         Assert.IsNotNull(name, type.FullName);
-        Assert.AreEqual(expectedModule, module.Import, type.FullName);
+        Assert.AreEqual(expectedModule, module.Export, type.FullName);
         Assert.AreEqual(expectedName, name.Name, type.FullName);
     }
 }

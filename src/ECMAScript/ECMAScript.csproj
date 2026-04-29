@@ -11,9 +11,6 @@
     <None Remove="generate\**" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Vue\" />
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
   </ItemGroup>
 </Project>

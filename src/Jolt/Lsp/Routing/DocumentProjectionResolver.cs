@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
 

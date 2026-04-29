@@ -5280,14 +5280,14 @@ export function Create() {
     {
         var code = """
             using ECMAScript;
-            using ECMAScript.Vue;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("app/main.mjs")]
                 public static class AppModule
                 {
-                    public static VueComponentPublicInstance Mount(VueComponent component)
+                    public static VueComponentPublicInstance Mount(IVueComponent component)
                     {
                         var app = Vue.CreateApp(component);
                         return app.Mount("#app");
@@ -5306,7 +5306,8 @@ export function Create() {
             code,
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.Vue).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Razor.IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -5321,7 +5322,7 @@ export function Create() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp, ref } from ""vue"";
+@"import { createApp, ref } from ""npm:vue@3"";
 export function Mount(component) {
   let app = createApp(component);
   return app.mount(""#app"");
@@ -5338,8 +5339,8 @@ export function ReadRef() {
     {
         var code = """
             using ECMAScript;
-            using ECMAScript.Vue;
             using System.ComponentModel;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
@@ -5352,7 +5353,7 @@ export function ReadRef() {
                 [ECMAScriptModule("app/main.mjs")]
                 public static class AppModule
                 {
-                    public static VueApp Boot(VueComponent component)
+                    public static VueApp Boot(IVueComponent component)
                     {
                         return Vue.CreateApp(component, new RootProps { Message = "Hello" });
                     }
@@ -5364,7 +5365,8 @@ export function ReadRef() {
             code,
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.Vue).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Razor.IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -5379,7 +5381,7 @@ export function ReadRef() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""vue"";
+@"import { createApp } from ""npm:vue@3"";
 export function Boot(component) {
   return createApp(component, { message: ""Hello"" });
 }
@@ -5391,15 +5393,15 @@ export function Boot(component) {
     {
         var code = """
             using ECMAScript;
-            using ECMAScript.Vue;
-            using ECMAScript.Vue.Vuetify;
+            using ECMAScript.Vuetify;
+            using static ECMAScript.Vue;
 
             namespace Demo
             {
                 [ECMAScriptModule("app/main.mjs")]
                 public static class AppModule
                 {
-                    public static VueComponentPublicInstance Boot(VueComponent component)
+                    public static VueComponentPublicInstance Boot(IVueComponent component)
                     {
                         var app = Vue.CreateApp(component);
                         app.Use(Vuetify.CreateVuetify(new VuetifyOptions
@@ -5429,7 +5431,9 @@ export function Boot(component) {
             code,
             "AppModule",
             MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.Vue).Assembly.Location));
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Razor.IJazorComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vuetify.Vuetify).Assembly.Location));
         var appModule = semanticModel.SyntaxTree
             .GetRoot()
             .DescendantNodes()
@@ -5444,8 +5448,8 @@ export function Boot(component) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"import { createApp } from ""vue"";
-import { createVuetify } from ""vuetify"";
+@"import { createApp } from ""npm:vue@3"";
+import { createVuetify } from ""npm:vuetify"";
 import { VBtn } from ""vuetify/components"";
 import { Ripple } from ""vuetify/directives"";
 export function Boot(component) {

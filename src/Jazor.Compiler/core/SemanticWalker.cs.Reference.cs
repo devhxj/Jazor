@@ -1,12 +1,10 @@
 ﻿using Acornima;
 using Acornima.Ast;
-using Jazor.Common;
+using ECMAScript.Internal;
 using Jazor.Name;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Jazor.Compiler;
 
@@ -75,12 +73,16 @@ public partial class SemanticWalker
 	{
 		foreach (var attribute in symbol.GetAttributes())
 		{
-			if (attribute.AttributeClass?.ToDisplayString() != "ECMAScript.ECMAScriptModuleAttribute")
+			var attributeName = attribute.AttributeClass?.ToDisplayString();
+			if (attribute.ConstructorArguments.Length != 1 ||
+				attribute.ConstructorArguments[0].Value is not string importPath ||
+				string.IsNullOrWhiteSpace(importPath))
 				continue;
 
-			if (attribute.ConstructorArguments.Length == 1 &&
-				attribute.ConstructorArguments[0].Value is string importPath &&
-				!string.IsNullOrWhiteSpace(importPath))
+			if (attributeName == "ECMAScript.ECMAScriptModuleAttribute")
+				return importPath;
+
+			if (attributeName == "ECMAScript.ECMAScriptAttribute")
 				return importPath;
 		}
 

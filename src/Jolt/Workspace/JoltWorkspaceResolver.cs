@@ -4,7 +4,7 @@ using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Jolt.DevServer;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Workspace;
 

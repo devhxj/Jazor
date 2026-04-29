@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.Rpc;
-using SharedVueAnalysisRpcMethodNames = Jazor.Common.VueContracts.Protocol.VueAnalysisRpcMethodNames;
+using SharedVueAnalysisRpcMethodNames = ECMAScript.Internal.VueContracts.Protocol.VueAnalysisRpcMethodNames;
 
 namespace Jolt.Analysis;
 

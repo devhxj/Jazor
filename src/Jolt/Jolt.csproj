@@ -17,8 +17,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
-    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" />
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Volar\Deno\Worker\**\*">

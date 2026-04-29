@@ -1,7 +1,7 @@
 using Jolt.Jazor.Projection;
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;

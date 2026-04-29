@@ -1,5 +1,5 @@
 using Jolt.Lsp.Aggregation;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Lsp.Coordination;
 

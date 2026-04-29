@@ -13,21 +13,20 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
-    <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Jazor.RazorVue.Analysis\Jazor.RazorVue.Analysis.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
     <ItemGroup>
       <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
-      <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\ECMAScript.Internal\bin\$(Configuration)\netstandard2.0\ECMAScript.Internal.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\ECMAScript.Internal\bin\$(Configuration)\netstandard2.0\ECMAScript.Internal.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Name\bin\$(Configuration)\netstandard2.0\Jazor.Name.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Name\bin\$(Configuration)\netstandard2.0\Jazor.Name.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll')" />
-      <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>
   </Target>
 

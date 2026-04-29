@@ -7,7 +7,7 @@ global using System.Numerics;
 global using System.Collections.Frozen;
 global using System.Threading.Tasks;
 global using System.Diagnostics.CodeAnalysis;
-global using Jazor.Common;
+global using ECMAScript.Internal;
 global using ECMAScript;
 global using ECMAScript.CSS;
 global using ECMAScript.GPUBufferUsage;

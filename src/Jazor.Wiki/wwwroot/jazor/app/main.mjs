@@ -1,6 +1,6 @@
 import i$e2b55fd24ba846bc from "./components/wiki-home.mjs";
-import { createApp } from "vue";
-import { createVuetify } from "vuetify";
+import { createApp } from "npm:vue@3";
+import { createVuetify } from "npm:vuetify";
 import { VBtn, VCard, VTextField } from "vuetify/components";
 import { Ripple } from "vuetify/directives";
 let VuetifyConfiguration = {

@@ -23,19 +23,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Jazor.RazorVue 保持 netstandard2.0；包面向 net10.0 暴露时只改变 PackagePath，不提高库 TFM。 -->
     <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.dll" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Name.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Name.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.Razor.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.Internal\bin\$(Configuration)\netstandard2.0\ECMAScript.Internal.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.Internal\bin\$(Configuration)\netstandard2.0\ECMAScript.Internal.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.Vuetify\bin\$(Configuration)\net10.0\ECMAScript.Vuetify.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.Vuetify\bin\$(Configuration)\net10.0\ECMAScript.Vuetify.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.Name\bin\$(Configuration)\netstandard2.0\Jazor.Name.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.Name\bin\$(Configuration)\netstandard2.0\Jazor.Name.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.pdb" Pack="true" PackagePath="lib\net10.0\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,14 +42,10 @@
     <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Internal.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Internal.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Name.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Name.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.Analysis.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.Analysis.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="..\Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <!-- 跟随 Directory.Build.props 中的统一版本，避免升级 Acornima 后打包仍读取旧缓存路径。 -->
     <None Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />

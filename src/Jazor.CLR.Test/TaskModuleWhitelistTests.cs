@@ -1,5 +1,5 @@
 using System.Reflection;
-using Jazor.Common;
+using ECMAScript.Internal;
 
 namespace Jazor.CLR.Test;
 

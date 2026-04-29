@@ -1,6 +1,6 @@
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Volar.Deno.Hosting;
 

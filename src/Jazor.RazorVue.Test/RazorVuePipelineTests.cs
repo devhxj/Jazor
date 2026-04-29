@@ -1,13 +1,9 @@
-using System.Collections.Immutable;
-using Basic.Reference.Assemblies;
-using ECMAScript.UI.Vue.Vuetify;
-using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
-using Jazor.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue.Test;
 
@@ -187,7 +183,7 @@ public sealed class RazorVuePipelineTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -234,7 +230,7 @@ public sealed class RazorVuePipelineTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -477,7 +473,7 @@ public sealed class RazorVuePipelineTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -540,7 +536,7 @@ public sealed class RazorVuePipelineTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -589,7 +585,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -651,7 +647,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -728,7 +724,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -828,7 +824,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -917,7 +913,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -1031,7 +1027,7 @@ public sealed class RazorVuePipelineTests
             using System;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -1073,7 +1069,7 @@ public sealed class RazorVuePipelineTests
             using System;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -1168,7 +1164,7 @@ public sealed class RazorVuePipelineTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {
@@ -1215,7 +1211,7 @@ public sealed class RazorVuePipelineTests
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
 
             namespace ECMAScript
             {

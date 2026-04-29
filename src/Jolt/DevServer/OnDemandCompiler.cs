@@ -4,10 +4,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Jolt.Roslyn.InProc;
-using Jazor.Common.SourceMaps;
+using ECMAScript.Internal.SourceMaps;
 using Jolt.SourceMap;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.DevServer;
 

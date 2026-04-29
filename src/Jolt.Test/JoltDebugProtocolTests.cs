@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using Jolt.Debug;
-using Jazor.Common.SourceMaps;
+using ECMAScript.Internal.SourceMaps;
 using Jolt.SourceMap;
 using static Jolt.Test.SourceMapTestHelpers;
 

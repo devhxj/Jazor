@@ -10,12 +10,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Jolt.DevServer;
-using Jazor.Common.SourceMaps;
+using ECMAScript.Internal.SourceMaps;
 using Jolt.SourceMap;
 using Jolt.Workspace;
 using static Jolt.Test.SourceMapTestHelpers;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 
 namespace Jolt.Test;
 
@@ -1085,8 +1085,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1146,8 +1146,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1203,8 +1203,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1262,8 +1262,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1320,8 +1320,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1383,8 +1383,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1458,8 +1458,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1536,8 +1536,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1603,8 +1603,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = false
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1645,8 +1645,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -1689,8 +1689,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -1736,8 +1736,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1789,8 +1789,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -1889,8 +1889,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2001,8 +2001,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2101,8 +2101,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2209,8 +2209,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2272,8 +2272,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -2333,8 +2333,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2411,8 +2411,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2499,8 +2499,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2587,8 +2587,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2666,8 +2666,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2753,8 +2753,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2812,8 +2812,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -2899,8 +2899,8 @@ public sealed class JoltDevServerTests
             var workspaceStore = new InMemoryWorkspaceStore();
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3000,8 +3000,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3093,8 +3093,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3191,8 +3191,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3289,8 +3289,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3387,8 +3387,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3481,8 +3481,8 @@ public sealed class JoltDevServerTests
             var options = CreateHmrTestOptions(rootDirectory);
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3564,8 +3564,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3642,8 +3642,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3701,8 +3701,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -3750,8 +3750,8 @@ public sealed class JoltDevServerTests
                 HmrEnabled = true
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -3800,8 +3800,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3853,8 +3853,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3904,8 +3904,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -3973,8 +3973,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -4076,8 +4076,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -4183,8 +4183,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -4266,8 +4266,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -4358,8 +4358,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4432,8 +4432,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4503,8 +4503,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4568,8 +4568,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4642,8 +4642,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4730,8 +4730,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4812,8 +4812,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4895,8 +4895,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -4969,8 +4969,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -5036,8 +5036,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -5104,8 +5104,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache());
             await using var server = new DevHttpServer(
@@ -5165,8 +5165,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: moduleResolver);
@@ -5230,8 +5230,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5298,8 +5298,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5371,8 +5371,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5448,8 +5448,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5521,8 +5521,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5598,8 +5598,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5668,8 +5668,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5720,8 +5720,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: moduleResolver);
@@ -5756,8 +5756,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -5801,8 +5801,8 @@ public sealed class JoltDevServerTests
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -5854,8 +5854,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -5914,8 +5914,8 @@ public sealed class JoltDevServerTests
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -5990,8 +5990,8 @@ public sealed class JoltDevServerTests
                     Dependencies = []
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6063,8 +6063,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -6131,8 +6131,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -6203,8 +6203,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6283,8 +6283,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6361,8 +6361,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6437,8 +6437,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -6498,8 +6498,8 @@ public sealed class JoltDevServerTests
                 });
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6572,8 +6572,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6652,8 +6652,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6732,8 +6732,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6813,8 +6813,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6905,8 +6905,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -6975,8 +6975,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7051,8 +7051,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7119,8 +7119,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7187,8 +7187,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7257,8 +7257,8 @@ public sealed class JoltDevServerTests
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7341,8 +7341,8 @@ public sealed class JoltDevServerTests
                     SupportsHmr = true
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7390,8 +7390,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(htmlPath, "<html></html>");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7423,8 +7423,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(configPath, "{}");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7454,8 +7454,8 @@ public sealed class JoltDevServerTests
             var deletedPath = Path.Combine(rootDirectory, "Deleted.vue");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7486,8 +7486,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(stylePath, "body { color: red; }");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 new FakeFrontendModuleCompiler(),
                 new CompilationCache(),
                 new DependencyGraph(new ModuleResolver(rootDirectory)));
@@ -7531,8 +7531,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -7584,8 +7584,8 @@ public sealed class JoltDevServerTests
                     EmbeddedStyleDependencies = ["./site.css"]
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7640,8 +7640,8 @@ public sealed class JoltDevServerTests
                     StyleContent = ".counter { color: red; }"
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph);
@@ -7698,8 +7698,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -7774,8 +7774,8 @@ public sealed class JoltDevServerTests
             };
             var moduleResolver = new ModuleResolver(rootDirectory);
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 new DependencyGraph(moduleResolver),
@@ -7847,8 +7847,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7929,8 +7929,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 graph,
@@ -7982,8 +7982,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8022,8 +8022,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8059,8 +8059,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8128,8 +8128,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8174,8 +8174,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory));
@@ -8227,8 +8227,8 @@ public sealed class JoltDevServerTests
                 """;
             await File.WriteAllTextAsync(documentPath, source);
 
-            var parser = new global::Jazor.Common.RazorVue.JazorVueParser();
-            var vueCompiler = new global::Jazor.Common.RazorVue.JazorVueCompiler();
+            var parser = new global::ECMAScript.Internal.RazorVue.JazorVueParser();
+            var vueCompiler = new global::ECMAScript.Internal.RazorVue.JazorVueCompiler();
             var generatedSfc = vueCompiler.Compile(JazorVueParser.Parse(documentPath, source));
             var frontendSourceMap = CreateSingleSourceLineMap(
                 "Counter.jazor",
@@ -8310,8 +8310,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8370,8 +8370,8 @@ public sealed class JoltDevServerTests
                     Dependencies = []
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8445,8 +8445,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8507,8 +8507,8 @@ public sealed class JoltDevServerTests
                     Dependencies = []
                 });
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache(),
                 moduleResolver: new ModuleResolver(rootDirectory),
@@ -8553,8 +8553,8 @@ public sealed class JoltDevServerTests
                 }
             };
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler,
                 new CompilationCache());
 
@@ -8585,8 +8585,8 @@ public sealed class JoltDevServerTests
             await File.WriteAllTextAsync(documentPath, "<template><div>Hello</div></template>");
 
             var compiler = new OnDemandCompiler(
-                new global::Jazor.Common.RazorVue.JazorVueParser(),
-                new global::Jazor.Common.RazorVue.JazorVueCompiler(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueParser(),
+                new global::ECMAScript.Internal.RazorVue.JazorVueCompiler(),
                 frontendCompiler: null,
                 new CompilationCache());
 

@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
+    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
+    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DenoHost.Core" Version="$(DenoHostVersion)" />
-    <PackageReference Include="DenoHost.Runtime.win-x64" Version="$(DenoHostVersion)" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <ProjectReference Include="..\ECMAScript.Internal\ECMAScript.Internal.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,12 +1,8 @@
-using System.Collections.Immutable;
-using Basic.Reference.Assemblies;
-using ECMAScript.UI.Vue.Vuetify;
 using Jazor.Analyzer;
-using Jazor.Razor;
-using Jazor.RazorVue;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue.Test;
 
@@ -480,7 +476,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -516,7 +512,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -560,7 +556,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -599,7 +595,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -644,7 +640,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -683,7 +679,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -718,7 +714,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -758,7 +754,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using ECMAScript.UI.Vue.Vuetify;
+            using ECMAScript.Vuetify;
             using Jazor.RazorVue;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;

@@ -3,7 +3,7 @@ using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using ECMAScript.Internal.VueContracts.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Test;

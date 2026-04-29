@@ -1,7 +1,7 @@
 using ECMAScript;
-using ECMAScript.Vue;
-using ECMAScript.Vue.Vuetify;
+using ECMAScript.Vuetify;
 using System.ComponentModel;
+using static ECMAScript.Vue;
 
 namespace Jazor.Wiki;
 
@@ -9,7 +9,7 @@ namespace Jazor.Wiki;
 public sealed class WikiHomeModule
 {
     [Description("@#default")]
-    public static VueComponent Component = null!;
+    public static IVueComponent Component = null!;
 }
 
 [ECMAScriptModule("app/main.mjs")]

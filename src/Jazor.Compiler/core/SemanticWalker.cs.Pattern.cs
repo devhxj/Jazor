@@ -834,7 +834,7 @@ public partial class SemanticWalker
 			: operation.LengthSymbol;
 
 		return TryGetWhiteListValue(WhiteList.Members, lookupSymbol, out _, out var entry) &&
-			entry.Op == Jazor.Common.Op.Alias &&
+			entry.Op == ECMAScript.Internal.Op.Alias &&
 			string.Equals(entry.Value, "length", StringComparison.Ordinal);
 	}
 

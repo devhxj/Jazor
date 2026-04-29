@@ -1,11 +1,7 @@
-using System.Collections.Immutable;
-using Basic.Reference.Assemblies;
-using ECMAScript.UI.Vue.Vuetify;
 using Jazor.RazorVue.Descriptor;
-using Jazor.RazorVue;
-using Jazor.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue.Test;
 
@@ -54,12 +50,12 @@ public sealed class RazorVueComponentRegistryTests
         var registry = CreateRegistry(
             [],
         [
-            CreateLibraryComponent("VBtn", "ECMAScript.UI.Vue.Vuetify")
+            CreateLibraryComponent("VBtn", "ECMAScript.Vuetify")
         ]);
 
         var result = registry.Resolve(
             "VBtn",
-            VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.UI.Vue.Vuetify"));
+            VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.Vuetify"));
 
         Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status);
         Assert.IsNotNull(result.Descriptor);
@@ -311,7 +307,7 @@ public sealed class RazorVueComponentRegistryTests
         {
             var result = registry.Resolve(
                 componentName,
-                VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.UI.Vue.Vuetify"));
+                VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.Vuetify"));
 
             Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status, componentName);
             Assert.IsNotNull(result.Descriptor, componentName);
