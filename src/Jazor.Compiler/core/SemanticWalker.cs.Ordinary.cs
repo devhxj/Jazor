@@ -1682,7 +1682,7 @@ public partial class SemanticWalker
 			var element = tupleType.TupleElements[index];
 			nodes.Add(new ObjectProperty(
 				PropertyKind.Init,
-				key: new Identifier(Util.GetConfigOrSymbolName(element)),
+				key: CreateObjectPropertyKey(Util.GetConfigOrSymbolName(element)),
 				value: BuildDefaultValueExpression(operation, element.Type, argument),
 				computed: false,
 				shorthand: false,
@@ -2188,7 +2188,7 @@ public partial class SemanticWalker
 				// 确保生成正确的属性语法：{ ...original, propertyName: value }
 				properties.Add(new ObjectProperty(
 					kind: PropertyKind.Init,
-					key: new Identifier(memberName),
+					key: CreateObjectPropertyKey(memberName),
 					value: initValue,
 					computed: false,
 					shorthand: false,
@@ -2292,9 +2292,9 @@ public partial class SemanticWalker
                     return HandleTransformationFailure<Node>(operation, "Failed to convert attribute argument");
 
                 // 通过语法判断是否命名参数（NameEquals 表示 PropertyName = value）
-                if (syntaxArg.NameEquals is not null)
+				if (syntaxArg.NameEquals is not null)
 				{
-					var key = new Identifier(syntaxArg.NameEquals.Name.Identifier.Text);
+					var key = CreateObjectPropertyKey(syntaxArg.NameEquals.Name.Identifier.Text);
 					namedProps.Add(new ObjectProperty(
 						kind: PropertyKind.Init,
 						key: key,

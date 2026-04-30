@@ -5433,6 +5433,227 @@ export function boot(component) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueObjectRootProps_FlattensIntoCreateAppArgument()
+    {
+        var code = """
+            using ECMAScript;
+            using ECMAScript.Contract;
+            using System.ComponentModel;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record RootProps : VueProps
+                {
+                    [Description("@#message")]
+                    public string? Message { get; init; }
+                }
+
+                [ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static VueApp Boot(IVueComponent component)
+                    {
+                        return Vue3.CreateApp(component, new RootVueProps
+                        {
+                            Props = new RootProps { Message = "Hello" }
+                        });
+                    }
+                }
+
+                public sealed record RootVueProps : VueObject<RootProps>;
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "AppModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { createApp } from ""npm:vue@3"";
+export function boot(component) {
+  return createApp(component, { message: ""Hello"" });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueObjectElementProps_FlattensCommonMembersAndBags()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record StyleBag : VueProps
+                {
+                    [Description("@#color")]
+                    public string? Color { get; init; }
+                }
+
+                public sealed record AttrBag : VueProps
+                {
+                    [Description("@#.name")]
+                    public string? NameSelector { get; init; }
+                }
+
+                public sealed record DatasetBag : VueProps
+                {
+                    [Description("@#data-user-id")]
+                    public string? UserId { get; init; }
+                }
+
+                public sealed record RawBag : VueProps
+                {
+                    [Description("@#^width")]
+                    public string? Width { get; init; }
+                }
+
+                public sealed record ElementVueProps : VueObject;
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode Render()
+                        => H("div", new ElementVueProps
+                        {
+                            Id = null,
+                            Title = "hero",
+                            Class = new[] { "foo", "bar" },
+                            Style = new StyleBag { Color = "red" },
+                            Attrs = new AttrBag { NameSelector = "some-name" },
+                            Dataset = new DatasetBag { UserId = "42" },
+                            Raw = new RawBag { Width = "100" }
+                        });
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function render() {
+  return h(""div"", {
+    title: ""hero"",
+    class: [""foo"", ""bar""],
+    style: { color: ""red"" },
+    "".name"": ""some-name"",
+    ""data-user-id"": ""42"",
+    ""^width"": ""100""
+  });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueObjectTypedProps_FlattensPropsAndOmitsNullExpansionMembers()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record ChildProps : VueProps
+                {
+                    [Description("@#title")]
+                    public string? Title { get; init; }
+                }
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent<ChildProps> Child = Vue3.DefineComponent(new VueComponentOptions<ChildProps>
+                    {
+                        Name = "ChildView"
+                    });
+
+                    public static IVNode Render()
+                        => H(Child, new ChildVueProps
+                        {
+                            Props = new ChildProps { Title = "Welcome" },
+                            Attrs = null,
+                            Dataset = null,
+                            Raw = null,
+                            Title = null
+                        });
+                }
+
+                public sealed record ChildVueProps : VueObject<ChildProps>;
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let child = defineComponent({
+  name: ""ChildView"",
+  props: [""title""],
+  emits: []
+});
+export function render() {
+  return h(child, { title: ""Welcome"" });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueComponentSetup_GeneratesSetupFunction()
     {
         var code = """

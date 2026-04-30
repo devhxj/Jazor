@@ -153,6 +153,73 @@ public static class Vue3
 	public abstract record VueProps : IVueOptionsBag;
 
 	/// <summary>
+	/// General-purpose Vue object authoring surface for <c>h()</c> props and root props.
+	/// This remains a record so it participates in the compiler's structural object lowering.
+	/// Members marked with <see cref="SpreadAttribute"/> are flattened into the
+	/// containing object instead of producing nested properties.
+	/// </summary>
+	public abstract record VueObject : VueProps
+	{
+		/// <summary>
+		/// Standard Vue <c>class</c> binding. Accepts string, string array, or nested object forms.
+		/// </summary>
+		[Description("@#class")]
+		public Either<string, string[], VueProps>? Class { get; init; }
+
+		/// <summary>
+		/// Standard Vue <c>style</c> binding.
+		/// </summary>
+		[Description("@#style")]
+		public VueProps? Style { get; init; }
+
+		/// <summary>
+		/// Standard <c>id</c> attribute.
+		/// </summary>
+		[Description("@#id")]
+		public string? Id { get; init; }
+
+		/// <summary>
+		/// Standard <c>title</c> attribute.
+		/// </summary>
+		[Description("@#title")]
+		public string? Title { get; init; }
+
+		/// <summary>
+		/// Additional properties to flatten directly into the current Vue object.
+		/// </summary>
+		[Spread]
+		public VueProps? Attrs { get; init; }
+
+		/// <summary>
+		/// Dataset attributes flattened into the current Vue object.
+		/// Expected property names should already map to their final <c>data-*</c> keys.
+		/// </summary>
+		[Spread]
+		public VueProps? Dataset { get; init; }
+
+		/// <summary>
+		/// Raw attributes flattened into the current Vue object without additional Vue-specific interpretation.
+		/// </summary>
+		[Spread]
+		public VueProps? Raw { get; init; }
+	}
+
+	/// <summary>
+	/// Typed Vue object authoring surface that can both flatten a typed props bag and carry
+	/// the common convenience members declared on <see cref="VueObject"/>.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props record that should be flattened into the output object.</typeparam>
+	public abstract record VueObject<TProps> : VueObject
+		where TProps : VueProps
+	{
+		/// <summary>
+		/// Typed props bag flattened into the current Vue object.
+		/// </summary>
+		[Spread]
+		public TProps? Props { get; init; }
+	}
+
+	/// <summary>
 	/// Base record for component slot declarations. Inherit from this record and declare
 	/// callback properties to define the named slots a component accepts. Maps to a plain
 	/// JS object in Vue's <c>slots</c> option.

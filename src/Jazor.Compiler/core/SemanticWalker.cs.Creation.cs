@@ -10,6 +10,8 @@ namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
+	private const string SpreadAttributeFullName = "ECMAScript.SpreadAttribute";
+
 	/// <summary>
 	/// 构建对象创建表达式
 	/// </summary>
@@ -164,11 +166,21 @@ public partial class SemanticWalker
 				(operation.Constructor is not null && operation.Constructor.Parameters.Length > index
 					? operation.Constructor.Parameters[index]
 					: null);
+			if (IsStaticallyKnownNull(arg.Value))
+				continue;
+
 			var keyName = ResolveEcmascriptRecordPropertyName(namedType, parameter, index);
+			var property = ResolveEcmascriptRecordProperty(namedType, parameter);
+			if (property is not null && TryGetSpreadAttribute(property, out _))
+			{
+				AppendExpandedRecordMembers(property, arg.Value, argument, members, memberOrder, operation);
+				continue;
+			}
+
 			var value = TranslateTupleForTarget(arg.Value, parameter?.Type, argument);
 			members.Add((new ObjectProperty(
 				PropertyKind.Init,
-				key: new Identifier(keyName),
+				key: CreateObjectPropertyKey(keyName),
 				value: value,
 				computed: false,
 				shorthand: false,
@@ -179,13 +191,13 @@ public partial class SemanticWalker
 
 		if (operation.Initializer is not null)
 		{
-			var initializerNodes = BuildObjectLiteralMembers(operation.Initializer, argument);
+			var initializerNodes = BuildObjectLiteralMembers(operation.Initializer, argument, expandRecordMembers: true);
 			for (var index = 0; index < initializerNodes.Count; index++)
 			{
 				members.Add((
-					initializerNodes[index],
-					GetObjectInitializerMemberName(operation.Initializer.Initializers[index]),
-					GetRecordStructuralMemberOrder(memberOrder, GetObjectInitializerMemberSymbol(operation.Initializer.Initializers[index]))));
+					initializerNodes[index].Node,
+					initializerNodes[index].Name,
+					GetRecordStructuralMemberOrder(memberOrder, initializerNodes[index].OrderSymbol)));
 			}
 		}
 
@@ -230,6 +242,88 @@ public partial class SemanticWalker
 			return int.MaxValue;
 
 		return GetRecordStructuralMemberOrder(memberOrder, Util.GetConfigOrSymbolName(memberSymbol));
+	}
+
+	private static bool IsStaticallyKnownNull(IOperation? operation)
+		=> operation is not null &&
+		   operation.ConstantValue.HasValue &&
+		   operation.ConstantValue.Value is null;
+
+	private static IPropertySymbol? ResolveEcmascriptRecordProperty(INamedTypeSymbol type, IParameterSymbol? parameter)
+	{
+		if (parameter is null)
+			return null;
+
+		return type
+			.GetMembers()
+			.OfType<IPropertySymbol>()
+			.FirstOrDefault(member =>
+				!member.IsStatic &&
+				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+	}
+
+	private static bool TryGetSpreadAttribute(IPropertySymbol property, out AttributeData attribute)
+	{
+		foreach (var candidate in property.GetAttributes())
+		{
+			if (candidate.AttributeClass?.ToDisplayString() == SpreadAttributeFullName)
+			{
+				attribute = candidate;
+				return true;
+			}
+		}
+
+		attribute = null!;
+		return false;
+	}
+
+	private void AppendExpandedRecordMembers(
+		IPropertySymbol property,
+		IOperation valueOperation,
+		SenseArgument argument,
+		List<(Node Node, string Name, int Order)> members,
+		IReadOnlyDictionary<string, int> memberOrder,
+		IOperation originOperation)
+	{
+		var expandedExpression = TranslateTupleForTarget(valueOperation, property.Type, argument);
+		if (expandedExpression is ObjectExpression literal)
+		{
+			foreach (var propertyNode in literal.Properties)
+			{
+				var nodeInfo = CreateObjectLiteralNode(propertyNode, null);
+				members.Add((
+					nodeInfo.Node,
+					nodeInfo.Name,
+					GetObjectLiteralNodeOrder(memberOrder, nodeInfo)));
+			}
+
+			return;
+		}
+
+		if (expandedExpression is null)
+		{
+			HandleTransformationFailure<Node>(
+				originOperation,
+				$"Expanded member '{property.ToDisplayString(Format.NameFormat)}' could not be translated to an object expression.");
+			return;
+		}
+
+		members.Add((
+			new SpreadElement(expandedExpression!),
+			string.Empty,
+			GetRecordStructuralMemberOrder(memberOrder, property)));
+	}
+
+	private static int GetObjectLiteralNodeOrder(IReadOnlyDictionary<string, int> memberOrder, ObjectLiteralNode node)
+	{
+		var orderSymbol = node.OrderSymbol;
+		if (orderSymbol is not null)
+			return GetRecordStructuralMemberOrder(memberOrder, orderSymbol);
+
+		var name = node.Name;
+		return string.IsNullOrEmpty(name)
+			? int.MaxValue
+			: GetRecordStructuralMemberOrder(memberOrder, name);
 	}
 
 	private void AppendInferredRecordMembers(
@@ -714,7 +808,7 @@ public partial class SemanticWalker
 
 		return new ObjectProperty(
 			PropertyKind.Init,
-			key: new Identifier(Util.GetConfigOrSymbolName(targetProperty)),
+			key: CreateObjectPropertyKey(Util.GetConfigOrSymbolName(targetProperty)),
 			value: new ArrayExpression(NodeList.From(elements)),
 			computed: false,
 			shorthand: false,
@@ -769,6 +863,58 @@ public partial class SemanticWalker
 			.Replace("\r", "\\r")
 			.Replace("\t", "\\t")
 			.Replace("\v", "\\v");
+	}
+
+	private static Expression CreateObjectPropertyKey(string name)
+	{
+		// Object literal keys accept JavaScript IdentifierName, which is wider than
+		// binding identifiers and still allows keywords like "class" without quoting.
+		return IsJavaScriptIdentifierName(name)
+			? new Identifier(name)
+			: new StringLiteral(name, $"\"{EscapeJavaScriptString(name)}\"");
+	}
+
+	private static bool IsJavaScriptIdentifierName(string? name)
+	{
+		if (name is not { Length: > 0 })
+			return false;
+
+		if (!IsJavaScriptIdentifierStart(name[0]))
+			return false;
+
+		for (var index = 1; index < name.Length; index++)
+		{
+			if (!IsJavaScriptIdentifierPart(name[index]))
+				return false;
+		}
+
+		return true;
+	}
+
+	private static bool IsJavaScriptIdentifierStart(char ch)
+	{
+		if (ch is '$' or '_')
+			return true;
+
+		return char.GetUnicodeCategory(ch) is
+			System.Globalization.UnicodeCategory.UppercaseLetter or
+			System.Globalization.UnicodeCategory.LowercaseLetter or
+			System.Globalization.UnicodeCategory.TitlecaseLetter or
+			System.Globalization.UnicodeCategory.ModifierLetter or
+			System.Globalization.UnicodeCategory.OtherLetter or
+			System.Globalization.UnicodeCategory.LetterNumber;
+	}
+
+	private static bool IsJavaScriptIdentifierPart(char ch)
+	{
+		if (IsJavaScriptIdentifierStart(ch) || ch is '\u200C' or '\u200D')
+			return true;
+
+		return char.GetUnicodeCategory(ch) is
+			System.Globalization.UnicodeCategory.NonSpacingMark or
+			System.Globalization.UnicodeCategory.SpacingCombiningMark or
+			System.Globalization.UnicodeCategory.DecimalDigitNumber or
+			System.Globalization.UnicodeCategory.ConnectorPunctuation;
 	}
 
 	private static string ResolveEcmascriptRecordPropertyName(INamedTypeSymbol type, IParameterSymbol? parameter, int index)
@@ -1197,40 +1343,60 @@ public partial class SemanticWalker
 	/// </summary>
 	/// <param name="operation"></param>
 	/// <returns>转换为字面量对象</returns>
-	private List<Node> BuildObjectLiteralMembers(IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
+	private List<ObjectLiteralNode> BuildObjectLiteralMembers(
+		IObjectOrCollectionInitializerOperation operation,
+		SenseArgument argument,
+		bool expandRecordMembers = false)
 	{
-		var nodes = new List<Node>();
+		var nodes = new List<ObjectLiteralNode>();
 		foreach (var initializer in operation.Initializers)
 		{
 			Expression? target = null, value = null;
+			ISymbol? orderSymbol = null;
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
+				if (expandRecordMembers &&
+					IsStaticallyKnownNull(simpleAssignmentOp.Value))
+				{
+					continue;
+				}
+
+				orderSymbol = GetObjectInitializerMemberSymbol(simpleAssignmentOp);
 				target = simpleAssignmentOp.Target switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+					IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 						simpleAssignmentOp,
 						propertyReferenceOp.Property,
 						"object literal member initialization",
 						propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+					IFieldReferenceOperation fieldReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 						simpleAssignmentOp,
 						fieldReferenceOp.Field,
 						"object literal member initialization",
 						fieldReferenceOp.Instance?.Type ?? fieldReferenceOp.Field.ContainingType)),
 					_ => Translate<Expression>(simpleAssignmentOp.Target, argument)
 				};
+				if (expandRecordMembers &&
+					orderSymbol is IPropertySymbol propertySymbol &&
+					TryGetSpreadAttribute(propertySymbol, out _))
+				{
+					AppendExpandedInitializerMembers(propertySymbol, simpleAssignmentOp.Value, argument, nodes);
+					continue;
+				}
+
 				value = TranslateTupleForTarget(simpleAssignmentOp.Value, simpleAssignmentOp.Target.Type, argument);
 			}
 			else if (initializer is IMemberInitializerOperation memberInitializerOp)
 			{
+				orderSymbol = GetObjectInitializerMemberSymbol(memberInitializerOp);
 				target = memberInitializerOp.InitializedMember switch
 				{
-					IPropertyReferenceOperation propertyReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+					IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 						memberInitializerOp,
 						propertyReferenceOp.Property,
 						"object literal member initialization",
 						propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
-					IFieldReferenceOperation fieldReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+					IFieldReferenceOperation fieldReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 						memberInitializerOp,
 						fieldReferenceOp.Field,
 						"object literal member initialization",
@@ -1243,7 +1409,7 @@ public partial class SemanticWalker
 			}
 
 			if (target is null || value is null)
-				return HandleTransformationFailure<List<Node>>(operation, "Member initializer could not be translated to JavaScript.");
+				return HandleTransformationFailure<List<ObjectLiteralNode>>(operation, "Member initializer could not be translated to JavaScript.");
 
 			var prop = new ObjectProperty(
 				PropertyKind.Init,
@@ -1251,15 +1417,39 @@ public partial class SemanticWalker
 				value: value,
 				computed: false,
 				shorthand: false,
-				method: false
-			);
-			nodes.Add(prop);
+				method: false);
+			nodes.Add(new ObjectLiteralNode(prop, GetObjectInitializerMemberName(initializer), orderSymbol));
 		}
 		return nodes;
 	}
 
+	private void AppendExpandedInitializerMembers(
+		IPropertySymbol property,
+		IOperation valueOperation,
+		SenseArgument argument,
+		List<ObjectLiteralNode> nodes)
+	{
+		var expandedExpression = TranslateTupleForTarget(valueOperation, property.Type, argument);
+		if (expandedExpression is ObjectExpression literal)
+		{
+			foreach (var propertyNode in literal.Properties)
+				nodes.Add(CreateObjectLiteralNode(propertyNode, null));
+			return;
+		}
+
+		if (expandedExpression is null)
+		{
+			HandleTransformationFailure<Node>(
+				valueOperation,
+				$"Expanded initializer member '{property.ToDisplayString(Format.NameFormat)}' could not be translated to an object expression.");
+			return;
+		}
+
+		nodes.Add(new ObjectLiteralNode(new SpreadElement(expandedExpression!), string.Empty, property));
+	}
+
 	private ObjectExpression RecursiveObjectOrCollectionInitializer(IObjectOrCollectionInitializerOperation operation, SenseArgument argument)
-		=> new(NodeList.From(BuildObjectLiteralMembers(operation, argument)));
+		=> new(NodeList.From(BuildObjectLiteralMembers(operation, argument).Select(static node => node.Node)));
 
 	/// <summary>
 	///  
@@ -1368,6 +1558,25 @@ public partial class SemanticWalker
 
 		return new ObjectExpression(NodeList.From(properties));
 	}
+
+	private static string GetObjectLiteralNodeName(Node node)
+		=> node switch
+		{
+			ObjectProperty
+			{
+				Key: Identifier { Name: var name }
+			} => name,
+			ObjectProperty
+			{
+				Key: StringLiteral { Value: var name }
+			} => name,
+			_ => string.Empty
+		};
+
+	private static ObjectLiteralNode CreateObjectLiteralNode(Node node, ISymbol? orderSymbol)
+		=> new(node, GetObjectLiteralNodeName(node), orderSymbol);
+
+	private readonly record struct ObjectLiteralNode(Node Node, string Name, ISymbol? OrderSymbol);
 
 	/// <summary>
 	/// 处理泛型对象创建操作
@@ -1498,12 +1707,12 @@ public partial class SemanticWalker
 	{
 		var target = operation.InitializedMember switch
 		{
-			IPropertyReferenceOperation propertyReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+			IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 				operation,
 				propertyReferenceOp.Property,
 				"member initializer assignment",
 				propertyReferenceOp.Instance?.Type ?? propertyReferenceOp.Property.ContainingType)),
-			IFieldReferenceOperation fieldReferenceOp => new Identifier(ResolveInitializerAssignmentMemberName(
+			IFieldReferenceOperation fieldReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
 				operation,
 				fieldReferenceOp.Field,
 				"member initializer assignment",

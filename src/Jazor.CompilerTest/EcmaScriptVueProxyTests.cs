@@ -97,6 +97,41 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void Vue_SpreadAttribute_And_VueObject_Surface_ArePublicAndTyped()
+    {
+        var spreadUsage = typeof(SpreadAttribute).GetCustomAttribute<AttributeUsageAttribute>();
+        var vueObjectType = typeof(VueObject);
+        var typedVueObjectType = typeof(VueObject<>);
+        var attrs = typeof(VueObject).GetProperty(nameof(VueObject.Attrs), BindingFlags.Public | BindingFlags.Instance);
+        var dataset = typeof(VueObject).GetProperty(nameof(VueObject.Dataset), BindingFlags.Public | BindingFlags.Instance);
+        var raw = typeof(VueObject).GetProperty(nameof(VueObject.Raw), BindingFlags.Public | BindingFlags.Instance);
+        var props = typeof(VueObject<>).GetProperty("Props", BindingFlags.Public | BindingFlags.Instance);
+
+        Assert.IsNotNull(spreadUsage);
+        Assert.AreEqual(AttributeTargets.Property, spreadUsage.ValidOn);
+        Assert.AreEqual(false, spreadUsage.AllowMultiple);
+        Assert.AreEqual("ECMAScript", typeof(SpreadAttribute).Namespace);
+        Assert.IsTrue(typeof(VueProps).IsAssignableFrom(vueObjectType));
+        Assert.IsTrue(typeof(VueProps).IsAssignableFrom(typedVueObjectType));
+        Assert.IsNotNull(attrs);
+        Assert.IsNotNull(dataset);
+        Assert.IsNotNull(raw);
+        Assert.IsNotNull(props);
+        CollectionAssert.Contains(
+            attrs.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
+            typeof(SpreadAttribute));
+        CollectionAssert.Contains(
+            dataset.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
+            typeof(SpreadAttribute));
+        CollectionAssert.Contains(
+            raw.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
+            typeof(SpreadAttribute));
+        CollectionAssert.Contains(
+            props.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
+            typeof(SpreadAttribute));
+    }
+
+    [TestMethod]
     public void Vue_GenericComponentOptions_UseTypedSetupAndExplicitContracts()
     {
         var componentOptions = typeof(VueComponentOptions<>).MakeGenericType(typeof(TestVueProps));

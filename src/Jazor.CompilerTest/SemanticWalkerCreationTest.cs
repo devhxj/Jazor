@@ -1002,6 +1002,304 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_RecordPrimaryConstructor_StaticNullLiteral_IsOmitted()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new PersonProps(null, 30);
+                }
+
+                public sealed record PersonProps(
+                    [property: Description(""@#name"")] string? Name,
+                    [property: Description(""@#age"")] int Age);
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ age: 30 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordObjectInitializer_StaticNullLiteral_IsOmitted()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new PersonProps
+                    {
+                        Name = null,
+                        Age = 30
+                    };
+                }
+
+                public sealed record PersonProps
+                {
+                    [Description(""@#name"")]
+                    public string? Name { get; init; }
+
+                    [Description(""@#age"")]
+                    public int Age { get; init; }
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ age: 30 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordObjectInitializer_NonConstantNullFlow_IsPreserved()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    string? name = null;
+                    var obj = new PersonProps
+                    {
+                        Name = name,
+                        Age = 30
+                    };
+                }
+
+                public sealed record PersonProps
+                {
+                    [Description(""@#name"")]
+                    public string? Name { get; init; }
+
+                    [Description(""@#age"")]
+                    public int Age { get; init; }
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ name: name, age: 30 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordSpreadProperty_FlattensNestedRecord()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new Wrapper
+                    {
+                        Prefix = ""x"",
+                        Child = new ChildProps
+                        {
+                            Name = ""John"",
+                            Age = 30
+                        }
+                    };
+                }
+
+                public sealed record ChildProps
+                {
+                    [Description(""@#name"")]
+                    public string? Name { get; init; }
+
+                    [Description(""@#age"")]
+                    public int Age { get; init; }
+                }
+
+                public sealed record Wrapper
+                {
+                    [Description(""@#prefix"")]
+                    public string? Prefix { get; init; }
+
+                    [Spread]
+                    public ChildProps? Child { get; init; }
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"{
+  prefix: ""x"",
+  name: ""John"",
+  age: 30
+}", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordPrimaryConstructorSpreadProperty_NonLiteralValue_UsesSpreadElement()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var child = new ChildProps
+                    {
+                        Name = ""John"",
+                        Age = 30
+                    };
+                    var obj = new Wrapper(""x"", child);
+                }
+
+                public sealed record ChildProps
+                {
+                    [Description(""@#name"")]
+                    public string? Name { get; init; }
+
+                    [Description(""@#age"")]
+                    public int Age { get; init; }
+                }
+
+                public sealed record Wrapper(
+                    [property: Description(""@#prefix"")] string? Prefix,
+                    [property: Spread] ChildProps? Child);
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ prefix: ""x"", ...child }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordObjectInitializerSpreadProperty_NonLiteralValue_UsesSpreadElement()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var child = new ChildProps
+                    {
+                        Name = ""John"",
+                        Age = 30
+                    };
+                    var obj = new Wrapper
+                    {
+                        Prefix = ""x"",
+                        Child = child
+                    };
+                }
+
+                public sealed record ChildProps
+                {
+                    [Description(""@#name"")]
+                    public string? Name { get; init; }
+
+                    [Description(""@#age"")]
+                    public int Age { get; init; }
+                }
+
+                public sealed record Wrapper
+                {
+                    [Description(""@#prefix"")]
+                    public string? Prefix { get; init; }
+
+                    [Spread]
+                    public ChildProps? Child { get; init; }
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ prefix: ""x"", ...child }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordSpecialPropertyNames_AreQuotedWhenRequired()
+    {
+        var block = GetBlockOperation(@"
+            using System.ComponentModel;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new SpecialProps
+                    {
+                        Selector = ""some-name"",
+                        DataUserId = ""42"",
+                        Width = ""100"",
+                        Class = ""foo""
+                    };
+                }
+
+                public sealed record SpecialProps
+                {
+                    [Description(""@#.name"")]
+                    public string? Selector { get; init; }
+
+                    [Description(""@#data-user-id"")]
+                    public string? DataUserId { get; init; }
+
+                    [Description(""@#^width"")]
+                    public string? Width { get; init; }
+
+                    [Description(""@#class"")]
+                    public string? Class { get; init; }
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"{
+  "".name"": ""some-name"",
+  ""data-user-id"": ""42"",
+  ""^width"": ""100"",
+  class: ""foo""
+}", script);
+    }
+
+    [TestMethod]
     public void VisitArrayCreation_WithMultipleDimensions_ShouldHandleGracefully()
     {
         var block = GetBlockOperation(@"
