@@ -159,24 +159,17 @@ var total = Sum(3, 5);
 [Description("@#")]
 public sealed record WikiElementProps : VueProps
 {
-    [Description("@#class")]
     public string? Class { get; init; }
 
-    [Description("@#id")]
     public string? Id { get; init; }
 
-    [Description("@#for")]
     public string? For { get; init; }
 
-    [Description("@#spellcheck")]
     public bool Spellcheck { get; init; }
 
-    [Description("@#rows")]
     public int Rows { get; init; }
 
-    [Description("@#value")]
     public string? Value { get; init; }
 
-    [Description("@#onInput")]
     public HandleEventCallback? OnInput { get; init; }
 }
