@@ -17,7 +17,7 @@ Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是�
 
 | 线路 | 模式 | 核心项目 | 说明 |
 |------|------|---------|------|
-| **RazorVue** | 库模式 | `Jazor.RazorVue` + Analysis + Vuetify | Source Generator 驱动，不使用 .vue SFC，编译时直接输出 JS/TS 模块 |
+| **RazorVue** | 库模式 | `Jazor.Common/RazorVue/` + `Jazor.Analyzer/RazorVue/` + `ECMAScript.Vuetify` | Source Generator 驱动，不使用 .vue SFC，编译时直接输出 JS/TS 模块 |
 | **Jolt** | 全功能模式 | `Jolt` | 类似 Vite，支持 .jazor + .vue SFC，LSP + DevServer/HMR + Debug + Build |
 
 两条线路共享同一套编译器基础设施（SemanticWalker、WhiteList、AstConverter）。
@@ -47,7 +47,9 @@ Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是�
 Jazor/
 ├── src/
 │   ├── ECMAScript/                         # ECMAScript AST 核心类型与特性
-│   ├── ECMAScript.WebIDL/                  # WebIDL 绑定生成器（TypeScript，已归档）
+│   ├── ECMAScript.Contract/                # 依赖零污染的最小契约层（JazorAttribute、Op、IUIComponent）
+│   ├── ECMAScript.Vue/                     # Vue 3 运行时投影类型与绑定
+│   ├── ECMAScript.Vuetify/                 # Vuetify 绑定与 RazorVue 组件桩
 │   ├── ECMAScript.WebIDL.Generator/        # WebIDL 绑定生成器（.NET）
 │   ├── ECMAScript.WebIDL.GeneratorTest/    # WebIDL 生成器测试（MSTest）
 │   ├── Jazor.Compiler/                     # C# → JS 编译器核心（SemanticWalker 分文件组织）
@@ -57,20 +59,15 @@ Jazor/
 │   ├── Jazor.CLR/                          # CLR 运行时支持（白名单声明 + JS 实现）
 │   ├── Jazor.CLR.Generator/                # CLR 类型映射与绑定代码生成器
 │   ├── Jazor.CLR.Test/                     # CLR 测试（MSTest）
-│   ├── Jazor.Common/                       # 跨项目共享契约
-│   ├── Jazor.Name/                         # 符号格式化与哈希命名工具
+│   ├── Jazor.Common/                       # 跨项目共享契约、Format、SourceMap、RazorVue 共享语义
 │   ├── Jazor.Emit/                         # 发射管线、打包物化、SourceMap 输出
 │   ├── Jazor.EmitTest/                     # 发射测试（MSTest）
 │   ├── Jazor.Analyzer/                     # 静态代码分析器（白名单编译时验证）
-│   ├── Jazor.Razor/                        # Razor 基础层（桥接 ASP.NET Core）
-│   ├── Jazor.RazorVue/                     # 【RazorVue 线路】核心语义
-│   ├── Jazor.RazorVue.Analysis/            # 【RazorVue 线路】编译时分析
-│   ├── Jazor.RazorVue.Test/                # 【RazorVue 线路】测试（MSTest）
-│   ├── Jazor.RazorVue.Vuetify/             # 【RazorVue 线路】Vuetify 3 组件库
-│   ├── Jazor.Test/                         # Jazor 集成测试（MSTest）
+│   ├── Jazor.RazorVue.Test/                # RazorVue 测试（MSTest）
 │   ├── Jolt/                               # 【Jolt 线路】LSP + DevServer + HMR + Debug + Build
 │   ├── Jolt.Test/                          # Jolt 测试（MSTest）
 │   ├── Jolt.VSCodeExtension/               # VS Code Language Client 扩展
+│   ├── Wiki/                               # Wiki 示例应用
 │   └── Jazor/                              # NuGet 包（运行时 + 分析器 + 生成器 + MSBuild）
 ├── samples/                                # 示例项目
 ├── docs/                                   # 文档中心（01-目标/02-计划/03-完成/04-补充/05-遗弃）
@@ -78,15 +75,13 @@ Jazor/
 └── README.md
 ```
 
-> **注**：`ECMAScript.WebIDL`（TypeScript 版）已归档，非当前活跃方向。
-
 ## 核心组件
 
 - **Jazor.Compiler** — C# 到 JavaScript 的编译器核心 [→ 文档](src/Jazor.Compiler/README.md)
 - **Jazor.Analyzer** — 静态分析和白名单验证，确保编译时类型安全
 - **Jazor.CLR** — .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
 - **Jazor.Emit** — 产物输出和打包管道，处理 host-facing 输出 [→ 文档](src/Jazor.Emit/README.md)
-- **Jazor.RazorVue** — Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写 [→ 设计](docs/01-目标/razorvue/README.md)
+- **RazorVue** — Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写 [→ 设计](docs/01-目标/razorvue/README.md)
 - **Jolt** — `.jazor` 全功能开发时边界：LSP + DevServer + HMR + Debug + Build [→ 设计](docs/01-目标/jolt/README.md) [→ 状态](docs/03-完成/jolt/status.md)
 
 `.jazor` 以 Razor 作为源码语法，Vue 相关产物仅作为内部投影或桥接工件。
