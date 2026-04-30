@@ -33,9 +33,13 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private const string Attribute = "Attribute";
 	private const string DiagnosticId = "JAZOR001";
 	private const string AmbiguousRuntimeTypeFilterDiagnosticId = "JAZOR002";
+	private const string InvalidSpreadUsageDiagnosticId = "JAZOR003";
+	private const string ConflictingSpreadPropertyNameDiagnosticId = "JAZOR004";
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
 	private const string AmbiguousRuntimeTypeFilterMessageFormat = "[{0}] cannot be used for {1} because runtime alias '{2}' is shared with incompatible supported types: {3}";
+	private const string InvalidSpreadUsageMessageFormat = "[Spread] is only valid on instance record properties that participate in structural object lowering";
+	private const string ConflictingSpreadPropertyNameMessageFormat = "[Spread] cannot be combined with explicit JavaScript property-name attributes on '{0}'";
 	private const string Category = "Security";
 
 	/// <summary>
@@ -60,15 +64,32 @@ public partial class Analyzer : DiagnosticAnalyzer
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
 
+	private static readonly DiagnosticDescriptor InvalidSpreadUsageRule = new(
+		InvalidSpreadUsageDiagnosticId,
+		Title,
+		InvalidSpreadUsageMessageFormat,
+		Category,
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
+	private static readonly DiagnosticDescriptor ConflictingSpreadPropertyNameRule = new(
+		ConflictingSpreadPropertyNameDiagnosticId,
+		Title,
+		ConflictingSpreadPropertyNameMessageFormat,
+		Category,
+		DiagnosticSeverity.Error,
+		isEnabledByDefault: true);
+
 	/// <summary>
 	/// <inheritdoc/>
 	/// </summary>
-	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, AmbiguousRuntimeTypeFilterRule];
+	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, AmbiguousRuntimeTypeFilterRule, InvalidSpreadUsageRule, ConflictingSpreadPropertyNameRule];
 
 	public override void Initialize(AnalysisContext context)
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
+		context.RegisterSymbolAction(AnalyzeSpreadPropertyUsage, SymbolKind.Property);
         context.RegisterSymbolStartAction(startContext =>
 		{
 			var symbol = (INamedTypeSymbol)startContext.Symbol;
@@ -765,6 +786,55 @@ public partial class Analyzer : DiagnosticAnalyzer
 				return true;
 
 			current = current.BaseType;
+		}
+
+		return false;
+	}
+
+	private static void AnalyzeSpreadPropertyUsage(SymbolAnalysisContext context)
+	{
+		if (context.Symbol is not IPropertySymbol property)
+			return;
+
+		if (!HasSpreadAttribute(property))
+			return;
+
+		var location = GetLocation(property.Locations);
+		if (property.IsStatic ||
+			property.IsIndexer ||
+			property.ContainingType is not INamedTypeSymbol { IsRecord: true })
+		{
+			context.ReportDiagnostic(Diagnostic.Create(InvalidSpreadUsageRule, location));
+			return;
+		}
+
+		if (HasExplicitJavaScriptPropertyName(property))
+		{
+			context.ReportDiagnostic(Diagnostic.Create(
+				ConflictingSpreadPropertyNameRule,
+				location,
+				property.ToDisplayString(Format.NameFormat)));
+		}
+	}
+
+	private static bool HasSpreadAttribute(IPropertySymbol property)
+		=> property.GetAttributes().Any(static attribute => attribute.AttributeClass?.ToDisplayString() == "ECMAScript.SpreadAttribute");
+
+	private static bool HasExplicitJavaScriptPropertyName(IPropertySymbol property)
+	{
+		foreach (var attribute in property.GetAttributes())
+		{
+			var attributeName = attribute.AttributeClass?.Name;
+			if (attributeName == "ECMAScriptNameAttribute")
+				return true;
+
+			if (attributeName == "DescriptionAttribute" &&
+				attribute.ConstructorArguments.Length > 0 &&
+				attribute.ConstructorArguments[0].Value is string description &&
+				description.Trim().StartsWith("@#", StringComparison.Ordinal))
+			{
+				return true;
+			}
 		}
 
 		return false;

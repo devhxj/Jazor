@@ -43,6 +43,7 @@ public sealed class JazorAnalyzerTests
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
 			"""
 			using System;
+			using ECMAScript;
 
 			namespace ECMAScript
 			{
@@ -104,6 +105,7 @@ public sealed class JazorAnalyzerTests
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
 			"""
 			using System;
+			using ECMAScript;
 
 			namespace ECMAScript
 			{
@@ -201,6 +203,7 @@ public sealed class JazorAnalyzerTests
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
 			"""
 			using System;
+			using ECMAScript;
 
 			namespace ECMAScript
 			{
@@ -231,6 +234,7 @@ public sealed class JazorAnalyzerTests
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
 			"""
 			using System;
+			using ECMAScript;
 
 			namespace ECMAScript
 			{
@@ -275,6 +279,7 @@ public sealed class JazorAnalyzerTests
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
 			"""
 			using System;
+			using ECMAScript;
 
 			namespace ECMAScript
 			{
@@ -311,6 +316,7 @@ public sealed class JazorAnalyzerTests
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
 			"""
 			using System;
+			using ECMAScript;
 
 			namespace ECMAScript
 			{
@@ -427,6 +433,118 @@ public sealed class JazorAnalyzerTests
 			""");
 
 		AssertNoDiagnostic(diagnostics, "JAZOR001", "JAZOR002");
+	}
+
+	[TestMethod]
+	public async Task Jazor_SpreadOnNonRecordProperty_ReportsJAZOR003()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public sealed class ChildProps
+			    {
+			        public string? Name { get; set; }
+			    }
+
+			    public sealed class Wrapper
+			    {
+			        [ECMAScript.Spread]
+			        public ChildProps? Child { get; set; }
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR003");
+	}
+
+	[TestMethod]
+	public async Task Jazor_SpreadCombinedWithExplicitPropertyName_ReportsJAZOR004()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using System.ComponentModel;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public sealed record ChildProps
+			    {
+			        public string? Name { get; init; }
+			    }
+
+			    public sealed record Wrapper
+			    {
+			        [ECMAScript.Spread]
+			        [Description("@#child")]
+			        public ChildProps? Child { get; init; }
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR004");
+	}
+
+	[TestMethod]
+	public async Task Jazor_SpreadOnRecordPropertyWithoutExplicitName_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class ValidModule
+			{
+			    public sealed record ChildProps
+			    {
+			        public string? Name { get; init; }
+			    }
+
+			    public sealed record Wrapper
+			    {
+			        [ECMAScript.Spread]
+			        public ChildProps? Child { get; init; }
+			    }
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR003", "JAZOR004");
 	}
 
 	private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)

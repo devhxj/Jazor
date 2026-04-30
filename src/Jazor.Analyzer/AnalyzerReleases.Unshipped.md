@@ -7,6 +7,8 @@ Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
 JAZOR001 | Security | Error | CodeAnalyzer
 JAZOR002 | Security | Error | Ambiguous runtime type filter
+JAZOR003 | Security | Error | Invalid SpreadAttribute usage
+JAZOR004 | Security | Error | SpreadAttribute conflicts with explicit property name
 JAZORVUE001 | RazorVue | Error | Invalid RazorVue component inheritance
 JAZORVUE002 | RazorVue | Error | Direct ComponentBase entry is not allowed
 JAZORVUE004 | RazorVue | Error | StateHasChanged is not part of RazorVue semantics
