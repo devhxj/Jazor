@@ -4,7 +4,7 @@
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Jazor</PackageId>
-    <Version>0.1.14</Version>
+    <Version>0.1.15</Version>
     <Authors>hanxj</Authors>
     <Description>Jazor SDK with runtime, analyzer, source generator, emit tool and MSBuild integration.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
