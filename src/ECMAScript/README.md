@@ -50,7 +50,7 @@
 - 一旦显式设置 `PropNames`，显式声明优先，不再做推断补写。
 - `EmitNames` 的自动推断只接受稳定字符串字面量事件名；如果 `context.Emit(...)` 的第一个参数不是可静态确定的非空字符串，应显式设置 `EmitNames`。
 
-这些推断规则不是编译器里的 Vue 名字硬编码，而是通过统一的 `ECMAScript.Contract.RecordLiteralContractAttribute` 核心模型分发，并由 `ECMAScript.Contract.PropsAttribute` / `ECMAScript.Contract.EmitsAttribute` 作为声明侧薄封装暴露出来。
+这些推断规则不是编译器里的 Vue 名字硬编码，而是由 `ECMAScript.Contract.PropsAttribute` / `ECMAScript.Contract.EmitsAttribute` 直接声明推导入口；需要偏移来源时，分别通过 `TypeArgumentIndex` 和 `SourceMemberName` 配置。
 
 `VueSetupContext` 当前暴露：
 
@@ -62,7 +62,8 @@
 `H(...)` 的 component authoring 现在还支持显式 slot object：
 
 - `H(tagOrComponent, singleVNodeChild)` 可直接表达单个 vnode child，不必再手动包 `IVNode[]`；
-- 当目标是 `component` 时，`IVNode` child 以及 `Either<string, Number, bool, IVNode, IVNode[]>` children 都会按 default slot authoring 收敛；编译输出会保持 `component / props / child` 左到右、单次求值，再映射成标准 Vue slot 形状；
+- `H(...)` 的常用 children authoring 已切到 overload-first：`string`、`Number`、`bool`、`IVNode`、`IVNode[]` 直接用 C# 重载表达，不再依赖 `Either<...>`；
+- 当目标是 `component` 时，这些 child overload 都会按 default slot authoring 收敛；编译输出会保持 `component / props / child` 左到右、单次求值，再映射成标准 Vue slot 形状；
 - 当目标是 `IVueSlotComponent<TSlots>` 或 `IVueComponent<TProps, TSlots>` 时，implicit child/default-slot sugar 只在 `TSlots` 暴露且仅暴露一个 parameterless default slot 时成立；缺少 default slot、声明了多个 default slot，或 default slot 使用 `VueSlotCallback<TScope>` 时，必须回到显式 `H(component, slots)` / `H(component, props, slots)` authoring；
 - typed default slot 通过 slot 属性最终映射名是否为 `default` 识别；推荐直接用 `Description("@#default")` 明确声明；
 - `H(component, slots)`

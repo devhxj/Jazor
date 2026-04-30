@@ -1,5 +1,6 @@
 using System.Reflection;
 using ECMAScript;
+using ECMAScript.Contract;
 using ECMAScript.Vuetify;
 using static ECMAScript.Vue;
 
@@ -70,6 +71,10 @@ public sealed class EcmaScriptVueProxyTests
         var setup = componentOptions.GetProperty("Setup", BindingFlags.Public | BindingFlags.Instance);
         var propNames = componentOptions.GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance);
         var emitNames = componentOptions.GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance);
+        var propsUsage = typeof(PropsAttribute).GetCustomAttribute<AttributeUsageAttribute>();
+        var emitsUsage = typeof(EmitsAttribute).GetCustomAttribute<AttributeUsageAttribute>();
+        var propsDefaults = new PropsAttribute();
+        var emitsDefaults = new EmitsAttribute();
 
         Assert.IsNotNull(setup);
         Assert.IsNotNull(propNames);
@@ -77,13 +82,14 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueTypedSetupCallback<TestVueProps>), setup.PropertyType);
         Assert.AreEqual(typeof(string[]), propNames.PropertyType);
         Assert.AreEqual(typeof(string[]), emitNames.PropertyType);
-        var contractAssembly = typeof(ECMAScript.Contract.IUIComponent).Assembly;
-        Assert.AreEqual(
-            "ECMAScript.Contract.RecordLiteralContractAttribute",
-            contractAssembly.GetType("ECMAScript.Contract.PropsAttribute")?.BaseType?.FullName);
-        Assert.AreEqual(
-            "ECMAScript.Contract.RecordLiteralContractAttribute",
-            contractAssembly.GetType("ECMAScript.Contract.EmitsAttribute")?.BaseType?.FullName);
+        Assert.IsNotNull(propsUsage);
+        Assert.IsNotNull(emitsUsage);
+        Assert.AreEqual(AttributeTargets.Property, propsUsage.ValidOn);
+        Assert.AreEqual(AttributeTargets.Property, emitsUsage.ValidOn);
+        Assert.AreEqual(false, propsUsage.AllowMultiple);
+        Assert.AreEqual(false, emitsUsage.AllowMultiple);
+        Assert.AreEqual(PropsAttribute.DefaultTypeArgumentIndex, propsDefaults.TypeArgumentIndex);
+        Assert.AreEqual(EmitsAttribute.DefaultSourceMemberName, emitsDefaults.SourceMemberName);
         CollectionAssert.Contains(
             propNames.CustomAttributes.Select(static attribute => attribute.AttributeType.FullName).ToArray(),
             "ECMAScript.Contract.PropsAttribute");
@@ -219,7 +225,7 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void Vue_H_ExposesSingleVNodeChildOverloads()
+    public void Vue_H_ExposesChildOverloads()
     {
         var overloads = typeof(Vue)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
@@ -227,24 +233,30 @@ public sealed class EcmaScriptVueProxyTests
             .Select(static method => method.GetParameters().Select(static parameter => parameter.ParameterType).ToArray())
             .ToArray();
 
-        Assert.IsTrue(overloads.Any(static parameters =>
-            parameters.Length == 2 &&
-            parameters[0] == typeof(string) &&
-            parameters[1] == typeof(IVNode)));
-        Assert.IsTrue(overloads.Any(static parameters =>
-            parameters.Length == 3 &&
-            parameters[0] == typeof(string) &&
-            parameters[1] == typeof(VueProps) &&
-            parameters[2] == typeof(IVNode)));
-        Assert.IsTrue(overloads.Any(static parameters =>
-            parameters.Length == 2 &&
-            parameters[0] == typeof(ECMAScript.Vue.IVueComponent) &&
-            parameters[1] == typeof(IVNode)));
-        Assert.IsTrue(overloads.Any(static parameters =>
-            parameters.Length == 3 &&
-            parameters[0] == typeof(ECMAScript.Vue.IVueComponent) &&
-            parameters[1] == typeof(VueProps) &&
-            parameters[2] == typeof(IVNode)));
+        static bool HasOverload(Type[][] overloads, params Type[] signature)
+            => overloads.Any(parameters => parameters.SequenceEqual(signature));
+
+        var childTypes = new[]
+        {
+            typeof(IVNode),
+            typeof(string),
+            typeof(Number),
+            typeof(bool),
+            typeof(IVNode[]),
+        };
+
+        foreach (var childType in childTypes)
+        {
+            Assert.IsTrue(HasOverload(overloads, typeof(string), childType));
+            Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), childType));
+            Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), childType));
+            Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue.IVueComponent), typeof(VueProps), childType));
+        }
+
+        Assert.IsFalse(overloads.Any(static parameters =>
+            parameters.Any(static parameter =>
+                parameter.IsGenericType &&
+                parameter.GetGenericTypeDefinition() == typeof(Either<,,,,>))));
     }
 
     [TestMethod]
@@ -255,77 +267,53 @@ public sealed class EcmaScriptVueProxyTests
             .Where(static method => method.Name == nameof(Vue.H) && method.IsGenericMethodDefinition)
             .ToArray();
 
-        Assert.IsTrue(overloads.Any(static method =>
-        {
-            if (method.GetGenericArguments().Length != 1)
-                return false;
+        static bool HasGenericOverload(MethodInfo[] methods, int genericArity, params Func<ParameterInfo[], bool>[] predicates)
+            => methods.Any(method =>
+            {
+                if (method.GetGenericArguments().Length != genericArity)
+                    return false;
 
-            var parameters = method.GetParameters();
-            return parameters.Length == 2 &&
-                   parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
-                   parameters[1].ParameterType == typeof(IVNode);
-        }));
-        Assert.IsTrue(overloads.Any(static method =>
-        {
-            if (method.GetGenericArguments().Length != 1)
-                return false;
+                var parameters = method.GetParameters();
+                return predicates.Any(predicate => predicate(parameters));
+            });
 
-            var parameters = method.GetParameters();
-            return parameters.Length == 2 &&
-                   parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
-                   parameters[1].ParameterType.IsGenericType &&
-                   parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(Either<,,,,>);
-        }));
-        Assert.IsTrue(overloads.Any(static method =>
+        var childTypes = new[]
         {
-            if (method.GetGenericArguments().Length != 2)
-                return false;
+            typeof(IVNode),
+            typeof(string),
+            typeof(Number),
+            typeof(bool),
+            typeof(IVNode[]),
+        };
 
-            var parameters = method.GetParameters();
-            return parameters.Length == 2 &&
-                   parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
-                   parameters[1].ParameterType == typeof(IVNode);
-        }));
-        Assert.IsTrue(overloads.Any(static method =>
+        foreach (var childType in childTypes)
         {
-            if (method.GetGenericArguments().Length != 2)
-                return false;
+            Assert.IsTrue(HasGenericOverload(
+                overloads,
+                1,
+                parameters => parameters.Length == 2 &&
+                              parameters[0].ParameterType.IsGenericType &&
+                              parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueSlotComponent<>) &&
+                              parameters[1].ParameterType == childType));
 
-            var parameters = method.GetParameters();
-            return parameters.Length == 2 &&
-                   parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
-                   parameters[1].ParameterType.IsGenericType &&
-                   parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(Either<,,,,>);
-        }));
-        Assert.IsTrue(overloads.Any(static method =>
-        {
-            if (method.GetGenericArguments().Length != 2)
-                return false;
+            Assert.IsTrue(HasGenericOverload(
+                overloads,
+                2,
+                parameters => parameters.Length == 2 &&
+                              parameters[0].ParameterType.IsGenericType &&
+                              parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
+                              parameters[1].ParameterType == childType,
+                parameters => parameters.Length == 3 &&
+                              parameters[0].ParameterType.IsGenericType &&
+                              parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
+                              parameters[1].ParameterType.IsGenericParameter &&
+                              parameters[2].ParameterType == childType));
+        }
 
-            var parameters = method.GetParameters();
-            return parameters.Length == 3 &&
-                   parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
-                   parameters[1].ParameterType.IsGenericParameter &&
-                   parameters[2].ParameterType == typeof(IVNode);
-        }));
-        Assert.IsTrue(overloads.Any(static method =>
-        {
-            if (method.GetGenericArguments().Length != 2)
-                return false;
-
-            var parameters = method.GetParameters();
-            return parameters.Length == 3 &&
-                   parameters[0].ParameterType.IsGenericType &&
-                   parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue.IVueComponent<,>) &&
-                   parameters[1].ParameterType.IsGenericParameter &&
-                   parameters[2].ParameterType.IsGenericType &&
-                   parameters[2].ParameterType.GetGenericTypeDefinition() == typeof(Either<,,,,>);
-        }));
+        Assert.IsFalse(overloads.Any(static method =>
+            method.GetParameters().Any(static parameter =>
+                parameter.ParameterType.IsGenericType &&
+                parameter.ParameterType.GetGenericTypeDefinition() == typeof(Either<,,,,>))));
     }
 
     [TestMethod]

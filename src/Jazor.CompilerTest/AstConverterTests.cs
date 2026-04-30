@@ -5655,6 +5655,150 @@ function Setup(props, context) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingConfiguredPropsAndEmitsAttributes_InferPropsAndEmits()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using Jazor.ComplierTest;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public sealed record CounterProps : VueProps
+                {
+                    [Description("@#message")]
+                    public string? Message { get; init; }
+                }
+
+                [ECMAScriptModule("components/counter.mjs")]
+                public static class CounterModule
+                {
+                    public static IVueComponent Component = Vue.DefineComponent(new TestShiftedContractComponentOptions<int, CounterProps>
+                    {
+                        Name = "CounterView",
+                        Bootstrap = Setup
+                    });
+
+                    private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
+                    {
+                        context.Emit("ready", props.Message);
+                        return () => H("button", props.Message == "ready");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(TestShiftedContractComponentOptions<,>).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "CounterModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Component = defineComponent({
+  name: ""CounterView"",
+  props: [""message""],
+  emits: [""ready""],
+  setup: Setup
+});
+function Setup(props, context) {
+  context.emit(""ready"", props.message);
+  return () => {
+    return h(""button"", props.message === ""ready"");
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingInheritedPropsAndEmitsMembers_InferPropsAndEmits()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using Jazor.ComplierTest;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public sealed record CounterProps : VueProps
+                {
+                    [Description("@#message")]
+                    public string? Message { get; init; }
+                }
+
+                [ECMAScriptModule("components/counter.mjs")]
+                public static class CounterModule
+                {
+                    public static IVueComponent Component = Vue.DefineComponent(new TestInheritedContractComponentOptions<CounterProps>
+                    {
+                        Name = "CounterView",
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
+                    {
+                        context.Emit("ready", props.Message);
+                        return () => H("button", props.Message == "ready");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(TestInheritedContractComponentOptions<>).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "CounterModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Component = defineComponent({
+  props: [""message""],
+  emits: [""ready""],
+  name: ""CounterView"",
+  setup: Setup
+});
+function Setup(props, context) {
+  context.emit(""ready"", props.message);
+  return () => {
+    return h(""button"", props.message === ""ready"");
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueHComponentSlots_GeneratesSlotsObjectArgument()
     {
         var code = """
@@ -5967,6 +6111,108 @@ export function Render(child) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueHComponentBoolChild_GeneratesDefaultSlotSugar()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ChildView"
+                    });
+
+                    public static IVNode Render(bool child)
+                        => H(Child, child);
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
+  return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueHComponentIntChild_GeneratesDefaultSlotSugar()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Child = Vue.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ChildView"
+                    });
+
+                    public static IVNode Render(int child)
+                        => H(Child, child);
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Child = defineComponent({ name: ""ChildView"" });
+export function Render(child) {
+  return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueHComponentPropsAndEitherArrayChildren_GeneratesDefaultSlotSugar()
     {
         var code = """
@@ -6170,6 +6416,132 @@ function SetupChild(context) {
 export let Child = defineComponent({ name: ""ChildView"", emits: [] });
 export function Render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingTypedVueSlotOnlyComponentStringChild_GeneratesDefaultSlotSugar()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback ChildContent { get; init; } = default!;
+                }
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueSlotComponent<ChildSlots> Child = Vue.DefineComponent(new VueSlotComponentOptions<ChildSlots>
+                    {
+                        Name = "ChildView"
+                    });
+
+                    public static IVNode Render(string child)
+                        => H(Child, child);
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Child = defineComponent({ name: ""ChildView"", emits: [] });
+export function Render(child) {
+  return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingTypedVueComponentPropsAndBoolChild_GeneratesDefaultSlotSugar()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            namespace Demo
+            {
+                public sealed record ChildProps : VueProps
+                {
+                    [Description("@#title")]
+                    public string? Title { get; init; }
+                }
+
+                public sealed record ChildSlots : VueSlots
+                {
+                    [Description("@#default")]
+                    public VueSlotCallback ChildContent { get; init; } = default!;
+                }
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent<ChildProps, ChildSlots> Child = Vue.DefineComponent(new VueComponentOptions<ChildProps, ChildSlots>
+                    {
+                        Name = "ChildView"
+                    });
+
+                    public static IVNode Render(bool child)
+                        => H(Child, new ChildProps { Title = "Welcome" }, child);
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let Child = defineComponent({
+  name: ""ChildView"",
+  props: [""title""],
+  emits: []
+});
+export function Render(child) {
+  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }

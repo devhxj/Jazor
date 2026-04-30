@@ -73,7 +73,7 @@ foreach (var syntaxTree in syntaxTrees)
 				continue;
 
 			// 默认注解需要生成名称和 hash 值。
-			if ((op == nameof(Op.Compile) || op == nameof(Op.Inline)) && memberName is null)
+			if ((op == nameof(Op.Compile) || op == nameof(Op.Inline)) && string.IsNullOrEmpty(memberName))
 			{
 				memberName = FormatSymbolName(member);
 				value ??= Format.HashName(memberName);
@@ -113,6 +113,8 @@ var membersInit = string.Join(Split, members
 	.Select(n => $"members[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatModulePath(n.Op, n.ModulePath)});"));
 var compilesInit = string.Join("", members
 	.Where(x => x.Op == nameof(Op.Compile))
+	.GroupBy(x => x.Value, StringComparer.Ordinal)
+	.Select(x => x.First())
 	.Select(n => $@"
 	/// <summary>
 	/// {n.Member}

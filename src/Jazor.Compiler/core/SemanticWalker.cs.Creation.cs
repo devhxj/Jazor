@@ -242,34 +242,41 @@ public partial class SemanticWalker
 		List<(Node Node, string Name, int Order)> members,
 		IOperation originOperation)
 	{
-		foreach (var property in type.GetMembers().OfType<IPropertySymbol>())
+		var seenContractMembers = new HashSet<string>(StringComparer.Ordinal);
+		foreach (var current in EnumerateNamedTypeHierarchyBaseFirst(type))
 		{
-			if (property.IsStatic ||
-				!TryGetRecordLiteralContractKind(property, out var contractKind))
+			foreach (var property in current.GetMembers().OfType<IPropertySymbol>())
 			{
-				continue;
+				if (property.IsStatic ||
+					property.IsIndexer)
+				{
+					continue;
+				}
+
+				var memberName = Util.GetConfigOrSymbolName(property);
+				if (!seenContractMembers.Add(memberName) ||
+					members.Any(member => string.Equals(member.Name, memberName, System.StringComparison.Ordinal)))
+				{
+					continue;
+				}
+
+				ObjectProperty? inferredMember = null;
+				if (TryGetPropsAttribute(property, out var typeArgumentIndex))
+					inferredMember = BuildPropsInferenceMember(type, property, typeArgumentIndex, originOperation);
+				else if (TryGetEmitsAttribute(property, out var sourceMemberName))
+					inferredMember = BuildEmitsInferenceMember(type, property, sourceMemberName, initializer, originOperation);
+
+				if (inferredMember is null)
+					continue;
+
+				var memberOrderValue = GetEcmascriptRecordMemberOrder(memberOrder, memberName);
+				var insertIndex = members.FindIndex(member => member.Order > memberOrderValue);
+				var orderedMember = (WithOriginIfMissing(inferredMember, originOperation), memberName, memberOrderValue);
+				if (insertIndex < 0)
+					members.Add(orderedMember);
+				else
+					members.Insert(insertIndex, orderedMember);
 			}
-
-			var memberName = Util.GetConfigOrSymbolName(property);
-			if (members.Any(member => string.Equals(member.Name, memberName, System.StringComparison.Ordinal)))
-				continue;
-
-			var inferredMember = contractKind switch
-			{
-				RecordLiteralContractKind.Props => BuildPropsInferenceMember(type, property, originOperation),
-				RecordLiteralContractKind.Emits => BuildEmitsInferenceMember(type, property, initializer, originOperation),
-				_ => HandleTransformationFailure<ObjectProperty>(
-					originOperation,
-					$"Unsupported record literal contract kind '{contractKind}' on '{property.ToDisplayString(Format.NameFormat)}'.")
-			};
-
-			var memberOrderValue = GetEcmascriptRecordMemberOrder(memberOrder, memberName);
-			var insertIndex = members.FindIndex(member => member.Order > memberOrderValue);
-			var orderedMember = (WithOriginIfMissing(inferredMember, originOperation), memberName, memberOrderValue);
-			if (insertIndex < 0)
-				members.Add(orderedMember);
-			else
-				members.Insert(insertIndex, orderedMember);
 		}
 	}
 
@@ -303,40 +310,66 @@ public partial class SemanticWalker
 			: Util.GetConfigOrSymbolName(symbol);
 	}
 
-	private static bool TryGetRecordLiteralContractKind(IPropertySymbol property, out RecordLiteralContractKind kind)
+	private static bool TryGetPropsAttribute(IPropertySymbol property, out int typeArgumentIndex)
 	{
-		kind = default;
-
 		foreach (var attribute in property.GetAttributes())
 		{
-			if (attribute.AttributeClass?.ToDisplayString() == typeof(RecordLiteralContractAttribute).FullName &&
-				attribute.ConstructorArguments.Length > 0 &&
-				attribute.ConstructorArguments[0].Value is int rawKind &&
-				Enum.IsDefined(typeof(RecordLiteralContractKind), rawKind))
-			{
-				kind = (RecordLiteralContractKind)rawKind;
+			if (TryReadPropsAttribute(attribute, out typeArgumentIndex))
 				return true;
-			}
-
-			if (attribute.AttributeClass?.ToDisplayString() == typeof(PropsAttribute).FullName)
-			{
-				kind = RecordLiteralContractKind.Props;
-				return true;
-			}
-
-			if (attribute.AttributeClass?.ToDisplayString() == typeof(EmitsAttribute).FullName)
-			{
-				kind = RecordLiteralContractKind.Emits;
-				return true;
-			}
 		}
 
+		typeArgumentIndex = default;
 		return false;
+	}
+
+	private static bool TryReadPropsAttribute(AttributeData attribute, out int typeArgumentIndex)
+	{
+		typeArgumentIndex = PropsAttribute.DefaultTypeArgumentIndex;
+		if (attribute.AttributeClass?.ToDisplayString() != typeof(PropsAttribute).FullName)
+			return false;
+
+		foreach (var namedArgument in attribute.NamedArguments)
+		{
+			if (string.Equals(namedArgument.Key, nameof(PropsAttribute.TypeArgumentIndex), StringComparison.Ordinal) &&
+				namedArgument.Value.Value is int configuredIndex)
+				typeArgumentIndex = configuredIndex;
+		}
+
+		return true;
+	}
+
+	private static bool TryGetEmitsAttribute(IPropertySymbol property, out string sourceMemberName)
+	{
+		foreach (var attribute in property.GetAttributes())
+		{
+			if (TryReadEmitsAttribute(attribute, out sourceMemberName))
+				return true;
+		}
+
+		sourceMemberName = null!;
+		return false;
+	}
+
+	private static bool TryReadEmitsAttribute(AttributeData attribute, out string sourceMemberName)
+	{
+		sourceMemberName = EmitsAttribute.DefaultSourceMemberName;
+		if (attribute.AttributeClass?.ToDisplayString() != typeof(EmitsAttribute).FullName)
+			return false;
+
+		foreach (var namedArgument in attribute.NamedArguments)
+		{
+			if (string.Equals(namedArgument.Key, nameof(EmitsAttribute.SourceMemberName), StringComparison.Ordinal) &&
+				namedArgument.Value.Value is string configuredSourceMemberName)
+				sourceMemberName = configuredSourceMemberName;
+		}
+
+		return true;
 	}
 
 	private ObjectProperty BuildPropsInferenceMember(
 		INamedTypeSymbol recordType,
 		IPropertySymbol targetProperty,
+		int typeArgumentIndex,
 		IOperation originOperation)
 	{
 		if (targetProperty.Type is not IArrayTypeSymbol
@@ -349,11 +382,18 @@ public partial class SemanticWalker
 				$"[Props] can only be applied to string[] members, but '{targetProperty.ToDisplayString(Format.NameFormat)}' has type '{targetProperty.Type.ToDisplayString(Format.NameFormat)}'.");
 		}
 
-		if (!TryCollectTypeArgumentPublicInstancePropertyNames(recordType, 0, out var values))
+		if (typeArgumentIndex < 0)
 		{
 			return HandleTransformationFailure<ObjectProperty>(
 				originOperation,
-				$"[Props] requires '{recordType.ToDisplayString(Format.NameFormat)}' to provide a first named generic type argument for property-name inference.");
+				$"[Props] on '{targetProperty.ToDisplayString(Format.NameFormat)}' must declare a non-negative TypeArgumentIndex.");
+		}
+
+		if (!TryCollectTypeArgumentPublicInstancePropertyNames(recordType, typeArgumentIndex, out var values))
+		{
+			return HandleTransformationFailure<ObjectProperty>(
+				originOperation,
+				$"[Props] requires '{recordType.ToDisplayString(Format.NameFormat)}' to provide a named generic type argument at index {typeArgumentIndex} for property-name inference.");
 		}
 
 		return BuildStringArrayRecordMember(targetProperty, values);
@@ -362,6 +402,7 @@ public partial class SemanticWalker
 	private ObjectProperty BuildEmitsInferenceMember(
 		INamedTypeSymbol recordType,
 		IPropertySymbol targetProperty,
+		string sourceMemberName,
 		IObjectOrCollectionInitializerOperation? initializer,
 		IOperation originOperation)
 	{
@@ -375,7 +416,7 @@ public partial class SemanticWalker
 				$"[Emits] can only be applied to string[] members, but '{targetProperty.ToDisplayString(Format.NameFormat)}' has type '{targetProperty.Type.ToDisplayString(Format.NameFormat)}'.");
 		}
 
-		var values = CollectSetupEmitNames(recordType, initializer, originOperation);
+		var values = CollectEmitNames(recordType, initializer, originOperation, targetProperty, sourceMemberName);
 		return BuildStringArrayRecordMember(targetProperty, values);
 	}
 
@@ -394,13 +435,29 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private List<string> CollectSetupEmitNames(
+	private List<string> CollectEmitNames(
 		INamedTypeSymbol recordType,
 		IObjectOrCollectionInitializerOperation? initializer,
-		IOperation originOperation)
+		IOperation originOperation,
+		IPropertySymbol targetProperty,
+		string sourceMemberName)
 	{
+		if (string.IsNullOrWhiteSpace(sourceMemberName))
+		{
+			return HandleTransformationFailure<List<string>>(
+				originOperation,
+				$"[Emits] on '{targetProperty.ToDisplayString(Format.NameFormat)}' must declare a non-empty SourceMemberName.");
+		}
+
+		if (!TryResolveInstanceProperty(recordType, sourceMemberName, out var sourceProperty))
+		{
+			return HandleTransformationFailure<List<string>>(
+				originOperation,
+				$"[Emits] source member '{sourceMemberName}' configured on '{targetProperty.ToDisplayString(Format.NameFormat)}' was not found on '{recordType.ToDisplayString(Format.NameFormat)}'.");
+		}
+
 		if (initializer is null ||
-			!TryGetInitializerAssignedValue(initializer, "Setup", "setup", out var setupValue))
+			!TryGetInitializerAssignedValue(initializer, sourceProperty, out var setupValue))
 		{
 			return new List<string>();
 		}
@@ -451,10 +508,27 @@ public partial class SemanticWalker
 		return names;
 	}
 
+	private static bool TryResolveInstanceProperty(INamedTypeSymbol recordType, string clrPropertyName, out IPropertySymbol property)
+	{
+		for (var current = recordType; current is not null; current = current.BaseType)
+		{
+			var match = current.GetMembers(clrPropertyName)
+				.OfType<IPropertySymbol>()
+				.FirstOrDefault(static candidate => !candidate.IsStatic && !candidate.IsIndexer);
+			if (match is not null)
+			{
+				property = match;
+				return true;
+			}
+		}
+
+		property = null!;
+		return false;
+	}
+
 	private static bool TryGetInitializerAssignedValue(
 		IObjectOrCollectionInitializerOperation initializer,
-		string clrPropertyName,
-		string emittedPropertyName,
+		IPropertySymbol targetProperty,
 		out IOperation value)
 	{
 		foreach (var item in initializer.Initializers)
@@ -468,8 +542,7 @@ public partial class SemanticWalker
 				continue;
 			}
 
-			if (string.Equals(property.Name, clrPropertyName, System.StringComparison.Ordinal) ||
-				string.Equals(Util.GetConfigOrSymbolName(property), emittedPropertyName, System.StringComparison.Ordinal))
+			if (SymbolEqualityComparer.Default.Equals(property.OriginalDefinition, targetProperty.OriginalDefinition))
 			{
 				value = assignedValue;
 				return true;

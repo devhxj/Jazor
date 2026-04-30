@@ -27,6 +27,10 @@ public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps p
 [Jazor]
 public static class Vue
 {
+	private const string HDefaultSlotNoPropsCompileMember = "VueHDefaultSlotNoProps";
+
+	private const string HDefaultSlotWithPropsCompileMember = "VueHDefaultSlotWithProps";
+
     public interface IVueComponent : Contract.IUIComponent { }
 
     public interface IVueComponent<TProps> : IVueComponent
@@ -279,7 +283,7 @@ public static class Vue
     public extern static VueApp CreateSsrApp(IVueComponent rootComponent);
 
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp(IVueComponent rootComponent, [Anonymous] VueProps rootProps);
+	public extern static VueApp CreateSsrApp(IVueComponent rootComponent, VueProps rootProps);
 
     [Description("@#defineComponent")]
     public extern static IVueComponent DefineComponent(VueComponentDefinition options);
@@ -304,7 +308,16 @@ public static class Vue
     public extern static IVNode H(string type, IVNode child);
 
     [Description("@#h")]
-    public extern static IVNode H(string type, Either<string, Number, bool, IVNode, IVNode[]> children);
+    public extern static IVNode H(string type, string child);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, Number child);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, bool child);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, IVNode[] children);
 
     [Description("@#h")]
     public extern static IVNode H(string type, VueProps props);
@@ -313,18 +326,39 @@ public static class Vue
     public extern static IVNode H(string type, VueProps props, IVNode child);
 
     [Description("@#h")]
-    public extern static IVNode H(string type, VueProps props, Either<string, Number, bool, IVNode, IVNode[]> children);
+    public extern static IVNode H(string type, VueProps props, string child);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, VueProps props, Number child);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, VueProps props, bool child);
+
+    [Description("@#h")]
+    public extern static IVNode H(string type, VueProps props, IVNode[] children);
 
     [Description("@#h")]
     public extern static IVNode H(IVueComponent component);
 
     [Description("@#h")]
-    [Jazor]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
     public extern static IVNode H(IVueComponent component, IVNode child);
 
     [Description("@#h")]
-    [Jazor]
-    public extern static IVNode H(IVueComponent component, Either<string, Number, bool, IVNode, IVNode[]> children);
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, string child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, Number child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, bool child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, IVNode[] children);
 
     [Description("@#h")]
     public extern static IVNode H(IVueComponent component, VueSlots slots);
@@ -333,8 +367,24 @@ public static class Vue
     public extern static IVNode H(IVueComponent component, VueProps props);
 
     [Description("@#h")]
-    [Jazor]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
     public extern static IVNode H(IVueComponent component, VueProps props, IVNode child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, VueProps props, string child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, VueProps props, Number child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, VueProps props, bool child);
+
+    [Description("@#h")]
+    [Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+    public extern static IVNode H(IVueComponent component, VueProps props, IVNode[] children);
 
     [Description("@#h")]
     public extern static IVNode H(IVueComponent component, VueProps props, VueSlots slots);
@@ -344,13 +394,28 @@ public static class Vue
 		where TProps : VueProps;
 
 	[Description("@#h")]
-	[Jazor]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, IVNode child)
 		where TSlots : VueSlots;
 
 	[Description("@#h")]
-	[Jazor]
-	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, Either<string, Number, bool, IVNode, IVNode[]> children)
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, string child)
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, Number child)
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, bool child)
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, IVNode[] children)
 		where TSlots : VueSlots;
 
 	[Description("@#h")]
@@ -358,14 +423,32 @@ public static class Vue
 		where TSlots : VueSlots;
 
 	[Description("@#h")]
-	[Jazor]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, IVNode child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
 	[Description("@#h")]
-	[Jazor]
-	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, Either<string, Number, bool, IVNode, IVNode[]> children)
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, string child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, Number child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, bool child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, IVNode[] children)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
@@ -375,14 +458,32 @@ public static class Vue
 		where TSlots : VueSlots;
 
 	[Description("@#h")]
-	[Jazor]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
 	[Description("@#h")]
-	[Jazor]
-	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, Either<string, Number, bool, IVNode, IVNode[]> children)
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, string child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, Number child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, bool child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	[Description("@#h")]
+	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode[] children)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
@@ -390,10 +491,6 @@ public static class Vue
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, TSlots slots)
 		where TProps : VueProps
 		where TSlots : VueSlots;
-
-    [Description("@#h")]
-    [Jazor]
-    public extern static IVNode H(IVueComponent component, VueProps props, Either<string, Number, bool, IVNode, IVNode[]> children);
 
     [Description("@#reactive")]
     public extern static T Reactive<T>(T value) where T : class;
