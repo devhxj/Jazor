@@ -1,6 +1,7 @@
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -69,7 +70,11 @@ public sealed class ESGenerator : IIncrementalGenerator
         if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
             return null;
 
-        return new ModuleCandidate(classSymbol, context.SemanticModel, context.TargetNode.GetLocation());
+        return new ModuleCandidate(
+            classSymbol,
+            context.SemanticModel,
+            context.TargetNode.GetLocation(),
+            ResolveConfiguredImportPath(context));
     }
 
     private static void EmitCatalogs(
@@ -120,7 +125,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             {
                 var converter = new AstConverter(candidate.ClassSymbol, candidate.SemanticModel);
                 var module = converter.Convert().GetAwaiter().GetResult();
-                var relativePath = GetRelativePath(candidate.ClassSymbol);
+                var relativePath = GetRelativePath(candidate);
                 GeneratedJavaScriptArtifact? artifact = null;
                 string content;
 
@@ -322,9 +327,47 @@ public sealed class ESGenerator : IIncrementalGenerator
         return Util.NormalizeLineEndingsToLf(builder.ToString());
     }
 
-    private static string GetRelativePath(INamedTypeSymbol classSymbol)
+    private static string? ResolveConfiguredImportPath(GeneratorAttributeSyntaxContext context)
     {
-        foreach (var attribute in classSymbol.GetAttributes())
+        foreach (var attribute in context.Attributes)
+        {
+            if (attribute.AttributeClass?.ToDisplayString() != "ECMAScript.ECMAScriptModuleAttribute")
+                continue;
+
+            if (attribute.ConstructorArguments.Length == 1 &&
+                attribute.ConstructorArguments[0].Value is string importPath)
+            {
+                return importPath;
+            }
+
+            if (attribute.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax syntax &&
+                syntax.ArgumentList?.Arguments.Count > 0)
+            {
+                var expression = syntax.ArgumentList.Arguments[0].Expression;
+                var constant = context.SemanticModel.GetConstantValue(expression);
+                if (constant.HasValue &&
+                    constant.Value is string constantImportPath)
+                {
+                    return constantImportPath;
+                }
+
+                if (expression is LiteralExpressionSyntax literal &&
+                    literal.IsKind(SyntaxKind.StringLiteralExpression))
+                {
+                    return literal.Token.ValueText;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string GetRelativePath(ModuleCandidate candidate)
+    {
+        if (!string.IsNullOrWhiteSpace(candidate.ConfiguredImportPath))
+            return NormalizeRelativePath(candidate.ConfiguredImportPath!);
+
+        foreach (var attribute in candidate.ClassSymbol.GetAttributes())
         {
             if (attribute.AttributeClass?.ToDisplayString() != "ECMAScript.ECMAScriptModuleAttribute")
                 continue;
@@ -337,6 +380,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             }
         }
 
+        var classSymbol = candidate.ClassSymbol;
         var assemblyName = classSymbol.ContainingAssembly?.Name ?? "Jazor.Assembly";
         var namespaceName = classSymbol.ContainingNamespace?.IsGlobalNamespace == true
             ? string.Empty
@@ -548,7 +592,8 @@ public sealed class ESGenerator : IIncrementalGenerator
     private sealed record ModuleCandidate(
         INamedTypeSymbol ClassSymbol,
         SemanticModel SemanticModel,
-        Location Location);
+        Location Location,
+        string? ConfiguredImportPath);
 
     private sealed record GeneratedModuleInfo(
         string AssemblyName,
