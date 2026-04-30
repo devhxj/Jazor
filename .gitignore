@@ -424,3 +424,7 @@ CLAUDE.md
 .verify/
 .verify*/
 .github/
+!.github/
+.github/*
+!.github/workflows/
+!.github/workflows/*.yml
