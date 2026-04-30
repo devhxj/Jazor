@@ -31,6 +31,8 @@ internal static class WhiteListLookup
 		foreach (var candidate in EnumerateWhiteListLookupSymbols(symbol))
 		{
 			var rawDisplayString = candidate.OriginalDefinition.ToDisplayString(Format.NameFormat);
+			string? staticExtensionKey = null;
+
 			foreach (var lookupKey in EnumerateWhiteListLookupKeys(rawDisplayString))
 			{
 				if (TryGetValue(mappings, lookupKey, out displayString, out value))
@@ -41,8 +43,8 @@ internal static class WhiteListLookup
 				(method.IsExtensionMethod || method.ReducedFrom is not null))
 			{
 				var extensionSource = method.ReducedFrom?.OriginalDefinition ?? method.OriginalDefinition;
-				var staticDisplayString = extensionSource.ToDisplayString(Format.StaticExtensionNameFormat);
-				foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticDisplayString))
+				staticExtensionKey = extensionSource.ToDisplayString(Format.StaticExtensionNameFormat);
+				foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticExtensionKey))
 				{
 					if (TryGetValue(mappings, lookupKey, out displayString, out value))
 						return true;
@@ -52,7 +54,9 @@ internal static class WhiteListLookup
 			if (candidate is IMethodSymbol supplementalMethod)
 			{
 				var synthesizedStaticKey = TryBuildMethodWhiteListKey(supplementalMethod);
-				if (!string.IsNullOrEmpty(synthesizedStaticKey))
+				if (!string.IsNullOrEmpty(synthesizedStaticKey) &&
+					!string.Equals(synthesizedStaticKey, rawDisplayString, StringComparison.Ordinal) &&
+					!string.Equals(synthesizedStaticKey, staticExtensionKey, StringComparison.Ordinal))
 				{
 					foreach (var lookupKey in EnumerateWhiteListLookupKeys(synthesizedStaticKey!))
 					{
@@ -277,7 +281,7 @@ internal static class WhiteListLookup
 
 	private static IEnumerable<ISymbol> EnumerateWithOverrideFallback(ISymbol symbol)
 	{
-		for (ISymbol? current = symbol; current is not null; current = GetWhiteListFallbackSymbol(current))
+		for (ISymbol? current = symbol; current is not null; current = GetFallbackSymbol(current))
 			yield return current;
 	}
 
@@ -358,7 +362,7 @@ internal static class WhiteListLookup
 			candidate.Type.OriginalDefinition);
 	}
 
-	private static ISymbol? GetWhiteListFallbackSymbol(ISymbol symbol)
+	public static ISymbol? GetFallbackSymbol(ISymbol symbol)
 		=> symbol switch
 		{
 			IMethodSymbol { ReducedFrom: not null } method => method.ReducedFrom.OriginalDefinition,
@@ -371,6 +375,11 @@ internal static class WhiteListLookup
 	private static IEnumerable<string> EnumerateWhiteListLookupKeys(string displayString)
 	{
 		yield return displayString;
+
+		var normalizedConstFieldDisplay = NormalizeConstFieldDisplay(displayString);
+		if (normalizedConstFieldDisplay is { Length: > 0 } &&
+			!string.Equals(normalizedConstFieldDisplay, displayString, StringComparison.Ordinal))
+			yield return normalizedConstFieldDisplay;
 
 		var normalizedExtensionDisplay = NormalizeExtensionThisParameterDisplay(displayString);
 		if (normalizedExtensionDisplay is { Length: > 0 } &&
@@ -417,6 +426,17 @@ internal static class WhiteListLookup
 				.Replace(", this ", ", ");
 
 			return string.Equals(normalized, text, StringComparison.Ordinal) ? null : normalized;
+		}
+
+		static string? NormalizeConstFieldDisplay(string text)
+		{
+			const string constPrefix = "const ";
+			if (!text.StartsWith(constPrefix, StringComparison.Ordinal))
+				return null;
+
+			var end = text.IndexOf(" = ", StringComparison.Ordinal);
+			var withoutInitializer = end >= 0 ? text.Substring(0, end) : text;
+			return "static " + withoutInitializer.Substring(constPrefix.Length);
 		}
 
 		static string? NormalizeStaticAbstractLikeDisplay(string text)
