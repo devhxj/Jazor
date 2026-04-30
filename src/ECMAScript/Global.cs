@@ -51,7 +51,7 @@ public static partial class Global
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Number(...)</c>.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Number")]
 	public extern static Number NumberFn();
@@ -59,7 +59,7 @@ public static partial class Global
 	/// <summary>
 	/// C# host name for JavaScript <c>Number(...)</c>.
 	/// This overload keeps JavaScript's value-coercion entry point available for arbitrary runtime values.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Number")]
 	public extern static Number NumberFn(object? value);
@@ -75,7 +75,7 @@ public static partial class Global
 
 	/// <summary>
 	/// C# host name for JavaScript <c>String()</c>.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#String")]
 	public extern static string StringFn();
@@ -83,14 +83,14 @@ public static partial class Global
 	/// <summary>
 	/// C# host name for JavaScript <c>String(...)</c>.
 	/// This overload keeps JavaScript's value-to-string coercion entry point available for arbitrary runtime values.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#String")]
 	public extern static string StringFn(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Boolean()</c>.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Boolean")]
 	public extern static bool BooleanFn();
@@ -98,21 +98,21 @@ public static partial class Global
 	/// <summary>
 	/// C# host name for JavaScript <c>Boolean(...)</c>.
 	/// This overload keeps JavaScript's truthiness conversion entry point available for arbitrary runtime values.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#Boolean")]
 	public extern static bool BooleanFn(object? value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#BigInt")]
 	public extern static BigInt BigIntFn(Number value);
 
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// </summary>
 	[Description("@#BigInt")]
 	public extern static BigInt BigIntFn(string value);
@@ -120,7 +120,7 @@ public static partial class Global
 	/// <summary>
 	/// C# host name for JavaScript <c>BigInt(...)</c>.
 	/// This overload keeps JavaScript's bigint conversion entry point available for arbitrary runtime values.
-	/// The trailing underscore only avoids naming conflicts on the C# side.
+	/// The Fn suffix only avoids naming conflicts on the C# side.
 	/// Runtime failures still follow JavaScript <c>BigInt</c> conversion semantics.
 	/// </summary>
 	[Description("@#BigInt")]
@@ -128,7 +128,7 @@ public static partial class Global
 
 	/// <summary>
 	/// C# host name for JavaScript <c>Symbol(...)</c>.
-	/// The trailing underscore only avoids naming conflicts with the <see cref="Symbol"/> type.
+	/// The Fn suffix only avoids naming conflicts with the <see cref="Symbol"/> type.
 	/// </summary>
 	[Description("@#Symbol")]
 	public extern static Symbol SymbolFn(string? description = null);

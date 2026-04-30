@@ -14,41 +14,49 @@ public static partial class Global
 		/// Euler's number as exposed by JavaScript <c>Math.E</c>.
 		/// This remains on the <c>Math</c> host so the runtime shape stays aligned with JavaScript rather than drifting into CLR helper APIs.
 		/// </summary>
+		[Description("@#E")]
 		public extern static Number E { get; }
 
 		/// <summary>
 		/// The natural logarithm of 10.
 		/// </summary>
+		[Description("@#LN10")]
 		public extern static Number LN10 { get; }
 
 		/// <summary>
 		/// The natural logarithm of 2.
 		/// </summary>
+		[Description("@#LN2")]
 		public extern static Number LN2 { get; }
 
 		/// <summary>
 		/// The base-2 logarithm of e.
 		/// </summary>
+		[Description("@#LOG2E")]
 		public extern static Number LOG2E { get; }
 
 		/// <summary>
 		/// The base-10 logarithm of e.
 		/// </summary>
+		[Description("@#LOG10E")]
 		public extern static Number LOG10E { get; }
 
 		/// <summary>
 		/// Pi. This is the ratio of the circumference of a circle to its diameter.
 		/// </summary>
+		[Description("@#PI")]
 		public extern static Number PI { get; }
 
 		/// <summary>
 		/// The square root of 0.5, or, equivalently, one divided by the square root of 2.
 		/// </summary>
+		[Description("@#SQRT1_2")]
 		public extern static Number SQRT1_2 { get; }
 
 		/// <summary>
 		/// The square root of 2.
 		/// </summary>
+		[Description("@#SQRT2")]
 		public extern static Number SQRT2 { get; }
 
 		/// <summary>

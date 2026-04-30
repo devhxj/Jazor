@@ -1169,8 +1169,8 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let max = 79228162514264337593543950335;
-  let min = -79228162514264337593543950335;
+  let max = _6a4e5f697d4fc607();
+  let min = _cc6392a7d6df1e14();
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

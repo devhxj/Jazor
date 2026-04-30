@@ -2067,6 +2067,10 @@ public partial class SemanticWalker
 			if (operation.Field.IsConst)
 				return WithOriginIfMissing(GetFieldName(operation, operation.Field), operation);
 
+			var runtimeHost = TryBuildRuntimeHostExpression(operation.Field.ContainingType, argument);
+			if (runtimeHost is not null)
+				return WithOriginIfMissing(new MemberExpression(runtimeHost, property, computed: false, optional: false), operation);
+
 			var containing = BuildFullTypeName(operation.Field.ContainingType, argument);
 			if (containing is not null)
 				return WithOriginIfMissing(new MemberExpression(containing, property, computed: false, optional: false), operation);
@@ -2155,6 +2159,10 @@ public partial class SemanticWalker
 			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel, propertyName!, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
 				return WithOriginIfMissing(preferredStaticProperty, operation);
+
+			var runtimeHost = TryBuildRuntimeHostExpression(operation.Property.ContainingType, argument);
+			if (runtimeHost is not null)
+				return WithOriginIfMissing(new MemberExpression(runtimeHost, property, computed: false, optional: false), operation);
 
 			// 生成类型标识符作为对象
 			var containing = BuildFullTypeName(operation.Property.ContainingType, argument);

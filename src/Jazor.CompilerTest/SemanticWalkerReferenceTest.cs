@@ -1457,7 +1457,7 @@ public sealed class SemanticWalkerReferenceTest
 	/// <summary>
 	/// 测试 VisitFieldReference - 静态常量字段 Epsilon
 	/// C# 示例：double x = double.Epsilon;
-	/// 转换结果：let x = Number.EPSILON;
+	/// 转换结果：let x = Number.MIN_VALUE;
 	/// </summary>
 	[TestMethod]
 	public void Visit_FieldReference_StaticEpsilon()
@@ -1477,7 +1477,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let x = Number.EPSILON;
+  let x = Number.MIN_VALUE;
 }", script);
 	}
 
@@ -2892,7 +2892,7 @@ public sealed class SemanticWalkerReferenceTest
   let posInf = Infinity;
   let negInf = -Infinity;
   let nan = NaN;
-  let epsilon = Number.EPSILON;
+  let epsilon = Number.MIN_VALUE;
   let maxVal = Number.MAX_VALUE;
   let minVal = -Number.MAX_VALUE;
   let longMax = 9223372036854775807n;
@@ -4903,6 +4903,34 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_RuntimeHostMembers_PreserveExplicitUppercaseJsNames()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Number pi = Math.PI;
+                    Number ln10 = Math.LN10;
+                    Number nan = Number.NaN;
+                    Number utc = Date.UTC(2024, 0, 2, 3, 4, 5, 6);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let pi = Math.PI;
+  let ln10 = Math.LN10;
+  let nan = Number.NaN;
+  let utc = Date.UTC(2024, 0, 2, 3, 4, 5, 6);
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
 	public void Visit_Reference_DataViewApis_UseJsShapes()
 	{
 		var block = GetBlockOperation(@"
@@ -6244,9 +6272,19 @@ public sealed class SemanticWalkerReferenceTest
 	[TestMethod]
 	public void WhiteList_GenericSignatureEquivalence_MatchesDeclaredParametersOnly()
 	{
-		var method = typeof(SemanticWalker).GetMethod(
-			"TryGetGenericParameterEquivalentWhiteListValue",
-			BindingFlags.NonPublic | BindingFlags.Static);
+		var whiteListLookupType = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteListLookup", throwOnError: true);
+		var method = whiteListLookupType?
+			.GetMethods(BindingFlags.Public | BindingFlags.Static)
+			.SingleOrDefault(static candidate =>
+			{
+				if (candidate.Name != "TryGetValue" || !candidate.IsGenericMethodDefinition)
+					return false;
+
+				var parameters = candidate.GetParameters();
+				return parameters.Length == 4 &&
+					   parameters[1].ParameterType == typeof(string);
+			});
 
 		Assert.IsNotNull(method);
 
@@ -7402,7 +7440,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let value = 79228162514264337593543950335;
+  let value = _6a4e5f697d4fc607();
   let text = _65a0e4fe8ccdd829(value);
 }", script);
 	}
