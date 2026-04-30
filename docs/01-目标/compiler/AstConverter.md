@@ -67,6 +67,7 @@ INamedTypeSymbol + SemanticModel
 
 - `public` / `internal` -> 生成 `ExportNamedDeclaration`
 - 其他访问级别 -> 只生成本地声明，不导出
+- 不支持 `default export`；如果配置名或推导名解析成 `default`，当前应显式失败
 
 判断逻辑在：
 
@@ -99,6 +100,7 @@ INamedTypeSymbol + SemanticModel
 当前 `AstConverter` 支持把模块内部的非静态成员类转换出来；枚举和接口则按“只保编译期角色，不发射 runtime declaration”处理：
 
 - 成员类 -> `ClassDeclaration`
+- 成员 `record` -> 不发射 runtime declaration，使用点统一交给 structural lowering
 - 成员枚举 -> 不发射模块级声明对象，使用点由 `SemanticWalker` 常量化
 - 成员接口 -> 不发射 runtime declaration
 
@@ -116,6 +118,7 @@ INamedTypeSymbol + SemanticModel
 但这里必须额外强调两个方向约束：
 
 - interface 一律不应发射 runtime artifact，它只是一种契约；
+- record 一律不应被偷偷抬升回 nominal runtime class；若需要 `class` 语义，必须显式写 `class`；
 - 继承如果要支持，必须真的输出 `extends` / `super` 相关语义，不能静默擦除。
 
 ### 6. `ref` / `out` 返回协议包装

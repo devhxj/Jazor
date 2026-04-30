@@ -153,11 +153,13 @@ tuple 解构仍按位置展开。
 - 嵌套 tuple 解构
 - 丢弃
 - 带临时缓存的复杂右值
+- `record` 的结构化位置解构
 - 自定义 `Deconstruct`
 
 其中 tuple 解构和自定义 `Deconstruct` 是两套路径：
 
 - tuple 解构直接按字段访问对象
+- `record` 解构在当前约定下也直接按结构属性键访问对象，不依赖实例 `Deconstruct()` runtime protocol
 - 自定义 `Deconstruct` 按当前编译器约定转成一次方法调用，再从返回数组中取出 out 值
 
 ## 比较规则

@@ -12,6 +12,31 @@ public partial class SemanticWalker
 	private static string GetTupleRuntimeFieldName(IFieldSymbol field)
 		=> Util.GetConfigOrSymbolName(field);
 
+	private static bool ShouldLowerRecordStructurally(INamedTypeSymbol? namedType)
+		=> namedType is not null && namedType.IsRecord;
+
+	private static bool TryGetRecordRuntimePropertyName(INamedTypeSymbol recordType, int index, out string propertyName)
+	{
+		propertyName = null!;
+
+		var constructor = recordType.Constructors
+			.FirstOrDefault(ctor => !ctor.IsStatic && ctor.Parameters.Length > index);
+		if (constructor is null)
+			return false;
+
+		var parameter = constructor.Parameters[index];
+		var property = EnumerateNamedTypeHierarchyBaseFirst(recordType)
+			.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
+			.FirstOrDefault(member =>
+				!member.IsStatic &&
+				string.Equals(member.Name, parameter.Name, System.StringComparison.OrdinalIgnoreCase));
+
+		propertyName = property is null
+			? parameter.Name
+			: Util.GetConfigOrSymbolName(property);
+		return true;
+	}
+
 	/// <summary>
 	/// 处理元组操作
 	/// C# 示例：
@@ -596,6 +621,63 @@ public partial class SemanticWalker
 					}
 					else
 						AppendDeconstructionWrite(element, right, exprs, declareTargets || element is IDeclarationExpressionOperation);
+				}
+			}
+			else if (valueType is INamedTypeSymbol recordType &&
+					 ShouldLowerRecordStructurally(recordType) &&
+					 value is IOperation recordExpr)
+			{
+				ITupleOperation tupleResult;
+				bool isDeclarationExpressionTarget = false;
+				if (target is IDeclarationExpressionOperation declarationExpr && declarationExpr.Expression is ITupleOperation t1)
+				{
+					tupleResult = t1;
+					isDeclarationExpressionTarget = true;
+				}
+				else if (target is ITupleOperation t2)
+					tupleResult = t2;
+				else
+				{
+					HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
+					return;
+				}
+
+				Identifier? tempVar = null;
+				if (ShouldCacheTupleSource(recordExpr))
+				{
+					tempVar = new Identifier(AllocateUniqueName(recordExpr, argument, LoweringSite.TupleDeconstructionSource()));
+					var init = Translate<Expression>(recordExpr, argument);
+					var declarator = new VariableDeclarator(tempVar, null);
+					argument.AddVarDeclarator(declarator, _recursionDepth);
+					exprs.Add(new AssignmentExpression(Operator.Assignment, tempVar, init));
+				}
+
+				var recordExprValue = tempVar is null
+					? Translate<Expression>(recordExpr, argument)
+					: (Expression)tempVar;
+
+				for (var index = 0; index < tupleResult.Elements.Length; index++)
+				{
+					var element = tupleResult.Elements[index];
+					if (element is IDiscardOperation)
+						continue;
+
+					if (!TryGetRecordRuntimePropertyName(recordType, index, out var propertyName))
+					{
+						HandleTransformationFailure<Node>(target, $"Record type '{recordType.ToDisplayString(Jazor.Common.Format.NameFormat)}' could not resolve positional member {index} for deconstruction.");
+						return;
+					}
+
+					var right = new MemberExpression(recordExprValue, new Identifier(propertyName), false, false);
+					var tupleTarget = tupleResult.Type as INamedTypeSymbol;
+					var targetFieldType = tupleTarget?.TupleElements.Length > index
+						? tupleTarget.TupleElements[index].Type
+						: element.Type;
+
+					if (targetFieldType?.IsTupleType == true)
+						Deconstruct(element, targetFieldType, right, exprs, isDeclarationExpressionTarget || element is IDeclarationExpressionOperation, ComposeTupleSlot(tupleSlot, index));
+					else
+						AppendDeconstructionWrite(element, right, exprs, isDeclarationExpressionTarget || element is IDeclarationExpressionOperation);
 				}
 			}
 			else if (valueType.TypeKind == TypeKind.Class && value is IOperation expr)

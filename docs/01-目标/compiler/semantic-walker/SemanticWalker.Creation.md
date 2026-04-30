@@ -19,7 +19,7 @@
 
 - 对象创建
 - 对象/集合初始化器
-- ECMAScript record-like 创建
+- `record` 创建
 - 匿名对象
 - 数组创建
 - 泛型类型参数对象创建
@@ -160,7 +160,7 @@ let obj = (() => {
 - 对象初始化器赋值
 - 集合初始化器元素
 - 数组元素
-- record-like 参数
+- `record` 构造参数
 
 换言之，创建路径不会因为“这是 `new`”就绕过 tuple 视图/对象协议规则。
 
@@ -288,7 +288,7 @@ let anonymous = { Name: "Test", Value: 42 };
 会直接落成对象字面量的典型情况有：
 
 - 匿名对象
-- ECMAScript record-like
+- `record`
 - 递归对象/集合初始化器生成的嵌套字面量
 
 这和整体设计保持一致：
@@ -298,9 +298,9 @@ let anonymous = { Name: "Test", Value: 42 };
 
 ## 当前边界
 
-- 保证所有集合类型都能落成最优 JS 宿主
-- 让所有初始化器都不用 IIFE
-- 保持和 CLR 匿名类型/record 运行时细节完全一致
+- 不保证所有集合类型都能落成“最优” JS 宿主；优先保证语义正确和 lowering 稳定
+- 不保证所有初始化器都绕开 IIFE；当求值顺序或初始化协议需要时，IIFE 仍然是合法实现手段
+- 不追求保持 CLR 匿名类型 / `record` 的 runtime identity、构造协议或实例细节完全一致
 
 ## 延伸阅读
 

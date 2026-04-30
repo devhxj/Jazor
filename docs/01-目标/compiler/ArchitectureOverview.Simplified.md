@@ -60,6 +60,8 @@ flowchart TD
 
 - `enum` 声明擦除，不生成 runtime declaration object
 - `interface` 只作为契约存在，不发射 runtime artifact
+- `record` 不发射 runtime declaration，统一保留 structural lowering 语义
+- 模块导出只支持 named export；若导出名解析为 `default`，必须显式失败
 - 成员类继承支持同模块 JS-compatible 子集：`extends` / `super(...)` / `super.member`
 - 成员类构造函数重载走单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher
 
@@ -84,6 +86,7 @@ flowchart TD
 - `tuple` 作为表达式组合 lowering 处理
 - `ref/out` 作为 caller/callee 协议模拟处理
 - `enum` 使用点常量化
+- `record` 创建、`with`、位置/属性模式与解构统一按结构属性键处理
 - runtime host / member shape 优先贴近真实 JS 形态
 
 ### 3.4 WhiteList

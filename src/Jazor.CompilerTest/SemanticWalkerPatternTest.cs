@@ -7055,6 +7055,35 @@ line2"";
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_TypePattern_Record_BareType_Throws()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                record Person(string Name, int Age);
+
+                void TestMethod(object value)
+                {
+                    bool match = value is Person;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+
+    try
+    {
+      _ = walker.Visit(block, new());
+      Assert.Fail("Expected OperationTransformationException for bare record type pattern.");
+    }
+    catch (OperationTransformationException exception)
+    {
+      StringAssert.Contains(exception.Message, "structural lowering");
+      StringAssert.Contains(exception.Message, "bare record type pattern");
+    }
+  }
+
   /// <summary>
   /// 测试白名单运行时属性模式会复用 getter helper，而不是回退成原始成员名
   /// </summary>

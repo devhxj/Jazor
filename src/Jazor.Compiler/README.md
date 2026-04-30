@@ -30,11 +30,13 @@
 - `ref/out`：走 caller/callee 协议模拟，优先保证求值顺序、回写顺序和最终结果。
 - `enum`：走“声明擦除 + 使用点常量化”，运行时按底层标量处理。
 - `interface`：只作为契约参与分析、宿主查找和投影，不发射 runtime declaration。
+- `record`：固定走 structural lowering；创建、`with`、位置/属性模式、解构都按结构属性键处理，不保 nominal runtime identity；若需要普通 runtime class 语义，必须显式写 `class`。
 - 成员类继承：当前支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`。
 - 普通方法重载：仅在确有同名 overload 时追加稳定签名 hash；ECMAScript runtime host API 默认跳过该后缀。
 - 成员类构造函数重载：固定为单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher。
 - `Op.Import`：已完成“发现 -> 收集 -> 合并 -> 模块头输出”的闭环，后续重点是稳定性而不是接线。
 - `Op.Compile`：已接入主分发，但当前 contract 仍限于自包含表达式级钩子，不是完整 lowering 子系统。
+- 模块导出：只支持 named export，不支持 default export；任何成员若解析到导出名 `default` 都应显式失败。
 
 ## 模块边界
 
@@ -112,16 +114,18 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 如果要理解当前实现路线，建议按下面顺序阅读：
 
 1. `src/Jazor.Compiler/ImplementationPrinciples.md`
-2. `docs/01-目标/compiler/README.md`
-3. `docs/01-目标/compiler/ArchitectureOverview.md`
-4. `docs/01-目标/compiler/SyntaxTransformationPipeline.md`
-5. `docs/01-目标/compiler/semantic-walker/SemanticWalker.md`
-6. `docs/01-目标/compiler/ModuleConversionSpec.md`
-7. `docs/01-目标/compiler/OpCompileSpec.md`
+2. `docs/01-目标/compiler/Compiler.HardRules.md`
+3. `docs/01-目标/compiler/README.md`
+4. `docs/01-目标/compiler/ArchitectureOverview.md`
+5. `docs/01-目标/compiler/SyntaxTransformationPipeline.md`
+6. `docs/01-目标/compiler/semantic-walker/SemanticWalker.md`
+7. `docs/01-目标/compiler/ModuleConversionSpec.md`
+8. `docs/01-目标/compiler/OpCompileSpec.md`
 
 ## 相关文档
 
 - [ImplementationPrinciples.md](./ImplementationPrinciples.md)
+- [Compiler Hard Rules](../../docs/01-目标/compiler/Compiler.HardRules.md)
 - [Compiler 文档索引](../../docs/01-目标/compiler/README.md)
 - [Compiler 架构桥接](../../docs/01-目标/compiler/architecture.md)
 - [Jazor.CompilerTest README](../Jazor.CompilerTest/README.md)

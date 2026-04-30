@@ -211,6 +211,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 - 静态属性 -> `get_*/set_*` 函数
 - 静态方法 -> `function`
 - 成员类 -> `class`
+- 成员 `record` -> 不发射 runtime declaration，使用点统一走 structural lowering
 - 枚举 -> “声明擦除 + 使用点常量化”；若旧文档或历史实现仍出现 `Object.freeze({...})`，应视为已废弃的过渡态
 
 当前 `AstConverter` 的处理粒度是“类成员声明”，而不是方法体内部语义；方法体、表达式体、字段初始化器一旦超出简单字面量，就会下沉给 `SemanticWalker`。
@@ -219,6 +220,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 
 - `public`、`internal` 视为模块公开成员
 - 其他访问级别视为私有，不导出
+- 只支持 named export；若成员最终导出名解析为 `default`，必须显式失败
 
 ### 6.4 当前边界与扩展点
 

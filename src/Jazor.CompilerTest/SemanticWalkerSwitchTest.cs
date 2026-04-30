@@ -2449,6 +2449,43 @@ public sealed class SemanticWalkerSwitchTest
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
+	[TestMethod]
+	public void VisitSwitchExpression_RecordPropertyPattern_UsesStructuralMatch()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				record Person(string Name, int Age);
+
+				string TestMethod(Person p)
+				{
+					return p switch
+					{
+						{ Name: ""Alice"" } => ""Hi Alice"",
+						{ Name: ""Bob"" } => ""Hey Bob"",
+						_ => ""Hello stranger""
+					};
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(
+			@"{
+  return (() => {
+    const v$0 = p;
+    if (v$0 != null && (""name"" in v$0 && v$0.name === ""Alice""))
+      return ""Hi Alice"";
+    if (v$0 != null && (""name"" in v$0 && v$0.name === ""Bob""))
+      return ""Hey Bob"";
+    return ""Hello stranger"";
+  })();
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
 	/// <summary>
 	/// 测试 switch 表达式 - 使用关系模式
 	/// </summary>

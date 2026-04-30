@@ -51,6 +51,7 @@
 | 静态属性 | `get_Name` / `set_Name` 函数 | 自动属性用 backing field |
 | 静态方法 | `function Name(...) {}` | 方法体由 `SemanticWalker` 生成 |
 | 嵌套类 | `class` | 当前仅支持作为成员类输出 |
+| 嵌套 `record` | 无独立 runtime 声明 | 只保留 structural lowering 语义；使用点由 `SemanticWalker` 按对象 shape 处理 |
 | 枚举 | 无独立 runtime 声明 | 定义仅保留在编译期；使用点在 `SemanticWalker` 常量化 |
 | 接口 | 无独立 runtime 声明 | 只作为契约参与分析、投影和宿主查找 |
 
@@ -62,6 +63,7 @@
 
 - `public`、`internal` -> 导出
 - 其他访问级别 -> 模块私有
+- 只允许 named export；如果成员最终导出名解析为 `default`，必须显式失败而不是生成 `export default`
 
 当前规则是工程约定，不是 C# 原生可见性的严格镜像。后续若要扩展 `protected`、`protected internal`，必须先定义 JS 模块级语义，再改实现与测试。
 
@@ -129,6 +131,7 @@
 - 模块类自身不支持再作为嵌套模块类处理
 - 成员类内部再次嵌套 `class` 当前不支持
 - 嵌套类内部再出现复杂成员时，仍依赖 `AstConverter` / `SemanticWalker` 的递归一致性
+- `record` 不发射模块级或成员级 runtime class declaration，只保留 structural lowering 语义
 - 枚举和接口都不发射模块级 runtime artifact
 
 建议未来统一原则：

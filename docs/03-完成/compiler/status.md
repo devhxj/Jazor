@@ -43,6 +43,8 @@
 - `ref/out`：走 caller/callee 协议模拟，保求值顺序、回写顺序和结果形态
 - `enum`：声明擦除，使用点常量化，运行时按底层标量处理
 - `interface`：只作为契约参与分析、投影和宿主查找，不发射 runtime artifact
+- `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
+- 模块导出：固定只支持 named export；任何成员若解析到导出名 `default` 都应显式失败
 - 成员类继承：支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
 - 成员类构造函数重载：单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher
 

@@ -52,6 +52,7 @@
 
 - [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) - 快速理解输入域、宿主映射、转换核心与输出闭环
 - [ArchitectureOverview.md](./ArchitectureOverview.md) - 完整架构总览、分层职责、扩展点和术语表
+- [Compiler.HardRules.md](./Compiler.HardRules.md) - 已收口 compiler 语义与输出边界的一页硬规则摘要
 - [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) - 端到端转换链路与阶段职责
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md) - 实现路线、失败策略、行为保真顺序与扩展决策原则
 

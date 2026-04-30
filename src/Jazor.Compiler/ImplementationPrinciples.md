@@ -269,6 +269,7 @@ tuple 在 Jazor 中应视为“可擦除的复合值”：
 - `record` 创建默认 lower 成对象字面量，而不是 `new Record(...)`
 - `with` 表达式默认 lower 成对象 spread
 - record 位置模式/属性模式默认按结构属性键匹配
+- record 解构赋值默认按结构属性键展开，而不是依赖实例 `Deconstruct()` runtime protocol
 - 模块层与成员层都不为 `record` 发射 runtime class 声明
 - `Description` / `ECMAScriptName` 之类命名配置只影响结构属性键或编译期名称，不会把 `record` 抬升回 nominal class 语义
 

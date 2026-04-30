@@ -307,7 +307,7 @@ public partial class SemanticWalker
 	/// <remarks>
 	/// C# 示例：
 	/// <code>
-	/// // 属性模式
+	/// // 属性模式（显式 class，保留 nominal runtime type check）
 	/// obj is Person { Name: "John", Age: > 18 }
 	/// // → obj instanceof Person && obj.Name === "John" && obj.Age > 18
 	///
@@ -315,13 +315,13 @@ public partial class SemanticWalker
 	/// value is (int x, string y)
 	/// // → typeof value === "object" && value.Item1 !== undefined && value.Item2 !== undefined
 	///
-	/// // 位置式 record 模式
+	/// // 位置式 record 模式（structural lowering）
 	/// obj is Person("John", 18)
-	/// // → obj instanceof Person && obj.Name === "John" && obj.Age === 18
+	/// // → obj.name === "John" && obj.age === 18
 	///
-	/// // 混合模式
+	/// // 混合模式（显式 class）
 	/// data is Point(int x, int y) { Z: > 0 }
-	/// // → data instanceof Point && data.X !== undefined && data.Y !== undefined && data.Z > 0
+	/// // → data instanceof Point && positional match && data.Z > 0
 	/// </code>
 	/// </remarks>
 	/// <param name="operation">递归模式操作</param>

@@ -1008,6 +1008,35 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitDeconstructionAssignment_Record_UsesStructuralMembers()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, 2);
+                    var (x, y) = point;
+                }
+
+                record Point(int X, int Y);
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var ctx = SenseArgument.Default;
+        var node = walker.Visit(block, ctx);
+        var script = node?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+@"{
+  let x, y;
+  let point = { x: 1, y: 2 };
+  x = point.x, y = point.y;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    }
+
+    [TestMethod]
     public void VisitDeconstructionAssignment_DeconstructMethodFieldTargets()
     {
         var block = GetBlockOperation(@"
@@ -1095,6 +1124,36 @@ public sealed class SemanticWalkerTupleTest
   v$1 = point.Deconstruct(x, v$0), x = v$1[0], v$0 = v$1[1], w = v$0.Item1.Item1, j = v$0.Item1.Item2.Item1, g = v$0.Item1.Item2.Item2, z = v$0.b;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
+    }
+
+    [TestMethod]
+    public void VisitDeconstructionAssignment_Record_WithNestedTuple_UsesStructuralMembers()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var point = new Point(1, (2,3));
+                    int x;
+                    (x, (int a, int b)) = point;
+                }
+
+                record Point(int X, (int A, int B) Pair);
+            }");
+
+        var walker = new SemanticWalker(true);
+        var ctx = SenseArgument.Default;
+        var node = walker.Visit(block, ctx);
+        var script = node?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual(
+@"{
+  let a, b;
+  let point = { x: 1, pair: { a: 2, b: 3 } };
+  let x;
+  x = point.x, a = point.pair.a, b = point.pair.b;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
     [TestMethod]

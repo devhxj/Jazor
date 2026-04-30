@@ -170,6 +170,8 @@ flowchart TD
 
 - `enum` declaration 擦除，不生成 runtime declaration object
 - `interface` declaration 擦除，只保编译期契约角色
+- `record` declaration 不生成 runtime declaration，只保 structural lowering 语义
+- 模块导出固定只支持 named export；若导出名解析为 `default`，必须显式失败
 - 成员类继承支持同模块 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
 - 成员类构造函数重载走“单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher”
 
@@ -194,6 +196,7 @@ flowchart TD
 - `tuple` 视为编译期语法糖，按表达式组合 lowering 处理
 - `ref/out` 视为 caller/callee 协议模拟，而不是 CLR 地址语义复刻
 - `enum` 使用点由 `SemanticWalker` 常量化为底层标量或标量表达式
+- `record` 创建、`with`、位置/属性模式与解构统一按结构属性键处理，不保 nominal runtime identity
 - `Reference` 域负责已绑定成员的最终宿主与成员名，不负责 runtime 二次 overload dispatch
 
 ### 6.3 SenseArgument
