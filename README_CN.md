@@ -13,6 +13,18 @@
 
 Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是将 C# 操作树（IOperation）语义保持地降低为 JavaScript AST。当前以编译器主线和 `Jolt`（`.jazor` 全功能开发时宿主）为活跃开发边界。
 
+## 核心特性
+
+- **C# → JavaScript 编译** — 基于 Roslyn `IOperation` 的语义降低到 ECMAScript AST
+- **双技术线路** — RazorVue（库模式，Source Generator 驱动）和 Jolt（全功能开发宿主）
+- **Vue 3 集成** — Blazor 风格组件编写，Vue 运行时投影
+- **模块系统** — ECMAScript 模块发射，支持 import/export 和 Source Map
+- **白名单安全** — 通过静态分析在编译期强制类型边界
+- **Razor 语法** — 使用 `.razor` / `.jazor` 作为源码语法，无需 `.vue` SFC
+- **.NET 10** — 基于最新 .NET SDK 和 Roslyn 编译器平台
+
+---
+
 ## 两条技术线路
 
 | 线路 | 模式 | 说明 |
@@ -40,6 +52,8 @@ Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是�
 - 🔄 **Jolt** — Phase 1–6 收口中，Phase 7 扩展系统规划中
 - 🔄 **Emit / Materialisation** — 持续承接，产物输出和打包管道
 - 🔄 **SourceMap** — 局部活跃（narrow lane），支撑 Jolt / Deno 物化链路
+
+---
 
 ## 项目结构
 
@@ -86,6 +100,8 @@ Jazor/
 
 `.jazor` 以 Razor 作为源码语法，Vue 相关产物仅作为内部投影或桥接工件。
 
+---
+
 ## 核心能力
 
 Jazor 支持将 C# 代码转换为 JavaScript，包括：
@@ -117,6 +133,18 @@ let x = 42;
 let message = `Value is ${x}`;
 let isPositive = x > 0;
 ```
+
+---
+
+## 快速开始
+
+### NuGet
+
+```
+dotnet add package Jazor
+```
+
+> 该包包含运行时、分析器、源码生成器、发射管线和 MSBuild 集成。
 
 ## 使用方法
 
@@ -151,6 +179,8 @@ var walker = new SemanticWalker();
 var jsAst = walker.Visit(operation, new());
 ```
 
+---
+
 ## 开发和构建
 
 ### 环境要求
@@ -184,6 +214,8 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
+---
+
 ## 贡献
 
 欢迎社区贡献。请在提交 Pull Request 前查阅仓库文档并遵循代码库中描述的约定。
@@ -200,6 +232,8 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 - 在需要澄清的地方添加适当的注释和文档
 - 确保新功能有相应的单元测试
 - 遵循语义保持的设计原则
+
+---
 
 ## 许可证
 
@@ -225,3 +259,27 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 - [SharpPromise](https://github.com/legacybass/SharpPromise) - C# 的 Promise 实现
 - [DenoHost](https://github.com/thomas3577/DenoHost) - .NET 的 Deno 运行时宿主
 - [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# 到 JavaScript 转译器
+
+---
+
+## 安全策略
+
+如果你发现安全漏洞，请通过 [GitHub 安全公告](https://github.com/devhxj/Jazor/security/advisories/new)私下报告。不要为安全问题创建公开 Issue。
+
+---
+
+## 反馈
+
+- [报告 Bug](https://github.com/devhxj/Jazor/issues/new?template=bug_report.md) — 提交包含复现步骤的 Issue
+- [功能请求](https://github.com/devhxj/Jazor/issues/new?template=feature_request.md) — 描述使用场景
+- [讨论区](https://github.com/devhxj/Jazor/discussions) — 提问和交流想法
+
+---
+
+## 链接
+
+- [文档中心](docs/README.md) — 项目全貌与导航
+- [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) — 技术深入
+- [Jolt 设计](docs/01-目标/jolt/README.md) — 开发宿主设计
+- [RazorVue 设计](docs/01-目标/razorvue/README.md) — 库模式设计
+- [工作流总览](docs/02-计划/workstream-dashboard.md) — 当前状态与优先级

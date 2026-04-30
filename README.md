@@ -12,6 +12,18 @@
 
 Jazor is a Roslyn-based C# → JavaScript toolchain centered on `IOperation → ECMAScript AST` lowering. The repository has two active technical lines: compile-time library mode via `RazorVue`, and the `.jazor` development host `Jolt`.
 
+## Features
+
+- **C# → JavaScript compilation** — Roslyn `IOperation` based semantic lowering to ECMAScript AST
+- **Two technical lines** — RazorVue (library mode, Source Generator–driven) and Jolt (full-featured dev host)
+- **Vue 3 integration** — Blazor-style component authoring with Vue runtime projection
+- **Module system** — ECMAScript module emission with import/export and source maps
+- **Whitelist safety** — compile-time type boundary enforcement via static analysis
+- **Razor syntax** — use `.razor` / `.jazor` as source syntax, no `.vue` SFC required
+- **.NET 10** — built on the latest .NET SDK and Roslyn compiler platform
+
+---
+
 ## Two Technical Lines
 
 | Line | Mode | Description |
@@ -39,6 +51,8 @@ See [Workstream Dashboard](docs/02-计划/workstream-dashboard.md) for details.
 - 🔄 **Jolt** — Phase 1–6 wrapping up, Phase 7 extension system in planning
 - 🔄 **Emit / Materialisation** — ongoing, output and bundling pipeline
 - 🔄 **SourceMap** — narrow lane, supporting Jolt / Deno materialisation
+
+---
 
 ## Project Structure
 
@@ -84,6 +98,8 @@ Jazor/
 - **Jolt** — `.jazor` full-featured development boundary: LSP + DevServer + HMR + Debug + Build [→ Design](docs/01-目标/jolt/README.md) [→ Status](docs/03-完成/jolt/status.md)
 
 `.jazor` uses Razor as its source syntax; Vue-related artifacts serve only as internal projections or bridge artifacts.
+
+---
 
 ## Capabilities
 
@@ -139,6 +155,18 @@ public partial class TodoPage
 }
 ```
 
+---
+
+## Quick Start
+
+### NuGet
+
+```
+dotnet add package Jazor
+```
+
+> The package includes runtime, analyzer, source generators, emit pipeline, and MSBuild integration.
+
 ## Usage
 
 ### Using ECMAScriptModule Attribute
@@ -171,6 +199,8 @@ var module = converter.Convert();
 var walker = new SemanticWalker();
 var jsAst = walker.Visit(operation, new());
 ```
+
+---
 
 ## Development
 
@@ -205,6 +235,8 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticW
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest.Visit_IsPattern_Constant"
 ```
 
+---
+
 ## Contributing
 
 Community contributions are welcome. Please review the repository documentation and follow the conventions described in the codebase before submitting a Pull Request.
@@ -221,6 +253,8 @@ Community contributions are welcome. Please review the repository documentation 
 - Add appropriate comments and documentation where clarification is needed
 - Ensure new features have corresponding unit tests
 - Follow semantics-preserving design principles
+
+---
 
 ## License
 
@@ -246,3 +280,27 @@ Special thanks to these open-source projects:
 - [SharpPromise](https://github.com/legacybass/SharpPromise) - Promise implementation for C#
 - [DenoHost](https://github.com/thomas3577/DenoHost) - Deno runtime host for .NET
 - [CSharpToJavaScript](https://github.com/TiLied/CSharpToJavaScript) - C# to JavaScript transpiler
+
+---
+
+## Security Policy
+
+If you discover a security vulnerability, please report it privately via [GitHub Security Advisories](https://github.com/devhxj/Jazor/security/advisories/new). Do not file public issues for security concerns.
+
+---
+
+## Feedback
+
+- [Report a bug](https://github.com/devhxj/Jazor/issues/new?template=bug_report.md) — open an issue with reproduction steps
+- [Request a feature](https://github.com/devhxj/Jazor/issues/new?template=feature_request.md) — describe the use case
+- [Discussions](https://github.com/devhxj/Jazor/discussions) — ask questions and share ideas
+
+---
+
+## Links
+
+- [Documentation Hub](docs/README.md) — project overview and navigation
+- [Compiler Architecture](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) — technical deep dive
+- [Jolt Design](docs/01-目标/jolt/README.md) — dev host design
+- [RazorVue Design](docs/01-目标/razorvue/README.md) — library mode design
+- [Workstream Dashboard](docs/02-计划/workstream-dashboard.md) — current status and priorities
