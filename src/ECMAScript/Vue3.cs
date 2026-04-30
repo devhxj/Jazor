@@ -77,10 +77,6 @@ public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps p
 [Jazor]
 public static class Vue3
 {
-	private const string HDefaultSlotNoPropsCompileMember = "VueHDefaultSlotNoProps";
-
-	private const string HDefaultSlotWithPropsCompileMember = "VueHDefaultSlotWithProps";
-
 	/// <summary>
 	/// Marker interface for a Vue component reference. Implemented by all component types
 	/// produced by <c>defineComponent()</c> and consumed by <c>h()</c>.
@@ -915,58 +911,48 @@ public static class Vue3
 	public extern static IVNode H(IVueComponent component);
 
 	/// <summary>
-	/// Creates a VNode for a component with a single VNode child, automatically wrapped
-	/// as the default slot content.
+	/// Creates a VNode for a component with a single VNode child as default slot content.
 	/// </summary>
 	/// <param name="component">The component definition to render.</param>
 	/// <param name="child">A single child VNode passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with default slot content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, IVNode child);
 
 	/// <summary>
-	/// Creates a VNode for a component with a text child, automatically wrapped as the
-	/// default slot content.
+	/// Creates a VNode for a component with a text child as default slot content.
 	/// </summary>
 	/// <param name="component">The component definition to render.</param>
 	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with default slot text content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, string child);
 
 	/// <summary>
-	/// Creates a VNode for a component with a numeric child, automatically wrapped as
-	/// the default slot content.
+	/// Creates a VNode for a component with a numeric child as default slot content.
 	/// </summary>
 	/// <param name="component">The component definition to render.</param>
 	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with default slot numeric content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, Number child);
 
 	/// <summary>
-	/// Creates a VNode for a component with a boolean child, automatically wrapped as
-	/// the default slot content.
+	/// Creates a VNode for a component with a boolean child as default slot content.
 	/// </summary>
 	/// <param name="component">The component definition to render.</param>
 	/// <param name="child">A boolean value passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with default slot boolean content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, bool child);
 
 	/// <summary>
-	/// Creates a VNode for a component with an array of children, automatically wrapped
-	/// as the default slot content.
+	/// Creates a VNode for a component with an array of children as default slot content.
 	/// </summary>
 	/// <param name="component">The component definition to render.</param>
 	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with multiple default slot children.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, IVNode[] children);
 
 	/// <summary>
@@ -996,7 +982,6 @@ public static class Vue3
 	/// <param name="child">A single child VNode passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with props and default slot content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, VueProps props, IVNode child);
 
 	/// <summary>
@@ -1007,7 +992,6 @@ public static class Vue3
 	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with props and default slot text content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, VueProps props, string child);
 
 	/// <summary>
@@ -1018,7 +1002,6 @@ public static class Vue3
 	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with props and default slot numeric content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, VueProps props, Number child);
 
 	/// <summary>
@@ -1029,7 +1012,6 @@ public static class Vue3
 	/// <param name="child">A boolean value passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with props and default slot boolean content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, VueProps props, bool child);
 
 	/// <summary>
@@ -1040,7 +1022,6 @@ public static class Vue3
 	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with props and multiple default slot children.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H(IVueComponent component, VueProps props, IVNode[] children);
 
 	/// <summary>
@@ -1072,7 +1053,6 @@ public static class Vue3
 	/// <param name="child">A single child VNode passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with default slot content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, IVNode child)
 		where TSlots : VueSlots;
 
@@ -1084,7 +1064,6 @@ public static class Vue3
 	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with default slot text content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, string child)
 		where TSlots : VueSlots;
 
@@ -1096,7 +1075,6 @@ public static class Vue3
 	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with default slot numeric content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, Number child)
 		where TSlots : VueSlots;
 
@@ -1108,7 +1086,6 @@ public static class Vue3
 	/// <param name="child">A boolean value passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with default slot boolean content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, bool child)
 		where TSlots : VueSlots;
 
@@ -1120,7 +1097,6 @@ public static class Vue3
 	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with multiple default slot children.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TSlots>(IVueSlotComponent<TSlots> component, IVNode[] children)
 		where TSlots : VueSlots;
 
@@ -1145,7 +1121,6 @@ public static class Vue3
 	/// <param name="child">A single child VNode passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with default slot content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, IVNode child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1160,7 +1135,6 @@ public static class Vue3
 	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with default slot text content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, string child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1175,7 +1149,6 @@ public static class Vue3
 	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with default slot numeric content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, Number child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1190,7 +1163,6 @@ public static class Vue3
 	/// <param name="child">A boolean value passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with default slot boolean content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, bool child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1205,7 +1177,6 @@ public static class Vue3
 	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with multiple default slot children.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotNoPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, IVNode[] children)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1234,7 +1205,6 @@ public static class Vue3
 	/// <param name="child">A single child VNode passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with props and default slot content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1250,7 +1220,6 @@ public static class Vue3
 	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with props and default slot text content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, string child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1266,7 +1235,6 @@ public static class Vue3
 	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
 	/// <returns>A VNode representing the component with props and default slot numeric content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, Number child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1282,7 +1250,6 @@ public static class Vue3
 	/// <param name="child">A boolean value passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with props and default slot boolean content.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, bool child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
@@ -1298,7 +1265,6 @@ public static class Vue3
 	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
 	/// <returns>A VNode representing the component with props and multiple default slot children.</returns>
 	[Description("@#h")]
-	[Jazor(Contract.Op.Compile, "", HDefaultSlotWithPropsCompileMember)]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode[] children)
 		where TProps : VueProps
 		where TSlots : VueSlots;

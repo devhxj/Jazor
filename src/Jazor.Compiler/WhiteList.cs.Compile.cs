@@ -10,7 +10,7 @@ namespace Jazor.Compiler;
 
 partial interface IWhiteList
 {
-	
+
 	/// <summary>
 	/// static ECMAScript.Global.TypeOf(object)
 	/// </summary>
@@ -21,27 +21,5 @@ partial interface IWhiteList
 	/// <param name="originOperation"></param>
 	/// <returns></returns>
 	Expression? Compile_b58c68bda64ad0f8(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
-
-	/// <summary>
-	/// static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.IVNode)
-	/// </summary>
-	/// <param name="symbol"></param>
-	/// <param name="context"></param>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <param name="originOperation"></param>
-	/// <returns></returns>
-	Expression? CompileVueHDefaultSlotNoProps(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
-
-	/// <summary>
-	/// static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, ECMAScript.Vue3.IVNode)
-	/// </summary>
-	/// <param name="symbol"></param>
-	/// <param name="context"></param>
-	/// <param name="handler"></param>
-	/// <param name="args"></param>
-	/// <param name="originOperation"></param>
-	/// <returns></returns>
-	Expression? CompileVueHDefaultSlotWithProps(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
 }

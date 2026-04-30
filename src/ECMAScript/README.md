@@ -6,7 +6,7 @@
 `ECMAScript` 提供 Jazor 的基础 JavaScript 运行时投影，包括：
 
 - 全局宿主表面（`Global.cs`）
-- Vue 运行时 authoring surface（`Vue.cs`）
+- Vue 运行时 authoring surface（`Vue3.cs`）
 - `Either<...>`、DOM、Web API 等核心契约
 
 ## Responsibilities
@@ -17,7 +17,7 @@
 
 ## Vue Authoring Surface
 
-`Vue.cs` 当前提供两条组件 authoring 通道：
+`Vue3.cs` 当前提供两条组件 authoring 通道：
 
 1. `VueComponentOptions`
    - 面向无 props 的简单组件。
@@ -77,6 +77,49 @@
 
 这层合同的目标是让 emitted JS 维持标准 Vue 3 组件形状，而不是引入 Jazor 私有运行时包装。
 
+### `VueObject` / `VueObject<TProps>`
+
+除组件定义对象外，`Vue3.cs` 还提供了面向 `h(...)` props / root props authoring 的 record surface：
+
+- `VueObject`
+- `VueObject<TProps>`
+
+它们本质上不是新的 runtime shape，而是普通 `record` structural lowering 的便捷 authoring contract：
+
+- `VueObject` 继承自 `VueProps`，因此仍然走 record -> plain JS object 的既有 lowering；
+- `Class`、`Style`、`Id`、`Title` 提供常用 Vue/DOM props 的强类型入口；
+- `Attrs`、`Dataset`、`Raw` 通过 `[Spread]` 直接扁平化进当前对象；
+- `VueObject<TProps>.Props` 也通过 `[Spread]` 扁平化 typed props bag；
+- `Dataset` 当前不提供额外 prefix/format 规则，属性名应直接映射到最终 `data-*` key，例如 `Description("@#data-user-id")`。
+
+也就是说，`VueObject` 不是“编译器里的 Vue 特路”，而是建立在通用 record structural lowering 之上的 authoring sugar。
+
+### `[Spread]` 语法糖
+
+`ECMAScript.SpreadAttribute` 是通用 record property flattening 标记，不是 Vue 专属特性。
+
+当前规则是：
+
+- 仅对参与 structural lowering 的 record 实例属性生效；
+- 若被标记成员 lower 后是 object literal，会内联展开其成员；
+- 若不是 object literal，则生成标准 JS `...expr`；
+- 不能与显式 JS 属性命名约定同时使用，因为两者语义自相矛盾；
+- 这层能力的目标是“把一个 record 成员 flatten 到外层对象”，而不是引入新的 runtime 类型系统。
+
+### record 的静态 `null` 省略
+
+对 structural-lowered record，编译器会做一个刻意的静态优化：
+
+- 若 record 主构造参数的实参能被 Roslyn 静态证明为 `null`，该成员不生成；
+- 若 record object initializer 的赋值值能被 Roslyn 静态证明为 `null`，该成员不生成；
+- 这条规则只针对静态可证明的 `null`，不会把一般运行时 `null` 检查扩展成隐式省略协议。
+
+因此：
+
+- 未赋值或静态 `null` 的 authoring 成员可以被干净省略；
+- 非常量 `null` 流值仍会按普通值成员生成；
+- 这条优化适用于通用 record structural lowering，不是 `VueObject` 专属行为。
+
 ## Boundaries
 
 - `ECMAScript` 不承载 RazorVue 描述符提取、组件目录生成或 Roslyn 分析逻辑；这些能力位于 `Jazor.Common` / `Jazor.Analyzer`。
@@ -86,7 +129,7 @@
 ## Key Files
 
 - `Global.cs`: JavaScript 全局对象与基础函数投影。
-- `Vue.cs`: Vue 运行时 authoring 合同。
+- `Vue3.cs`: Vue 运行时 authoring 合同。
 - `internal/Either.cs`: JS union-like host contract。
 
 ## Read Next

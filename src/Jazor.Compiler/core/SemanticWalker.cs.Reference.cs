@@ -1101,13 +1101,16 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private bool TryBuildIntrinsicMethodInvocation(IInvocationOperation operation, IMethodSymbol method, Expression? instance, List<Expression> arguments, out Expression? expression)
+	private bool TryBuildIntrinsicMethodInvocation(IInvocationOperation operation, IMethodSymbol method, Expression? instance, List<Expression> arguments, SenseArgument argument, out Expression? expression)
 	{
 		expression = null;
 		if (method.ContainingType is null)
 			return false;
 
 		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		if (TryBuildVueHInvocationIntrinsic(operation, method, arguments, argument, out expression))
+			return true;
+
 		if (TryBuildEnumerableArrayLikeIntrinsic(operation, method, arguments, out expression))
 			return true;
 
@@ -2458,7 +2461,7 @@ public partial class SemanticWalker
 		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(targetMethod, syntax, semanticModel);
 		if (allowIntrinsic &&
 			invocationOperation is not null &&
-			TryBuildIntrinsicMethodInvocation(invocationOperation, whiteListMethod, instance, arguments, out var intrinsicExpr) &&
+			TryBuildIntrinsicMethodInvocation(invocationOperation, whiteListMethod, instance, arguments, argument, out var intrinsicExpr) &&
 			intrinsicExpr is not null)
 			return intrinsicExpr;
 

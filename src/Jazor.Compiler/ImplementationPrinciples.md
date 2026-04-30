@@ -287,9 +287,27 @@ tuple 在 Jazor 中应视为“可擦除的复合值”：
 
 如果用户需要普通 class 的运行时语义，应显式写 `class`，而不是依赖“带名字的 record”“带配置特性的 record”或其他隐式升级路径。
 
+这条 record 路线还需要明确三条操作性规则：
+
+1. structural-lowered record 支持 `[Spread]` 语法糖：
+   - 标记在 record 实例属性上时，含义是“把该成员 lower 后的对象形状 flatten 到当前外层对象”；
+   - 若该成员可直接 lower 为 object literal，则内联展开；
+   - 若不能直接 lower 为 object literal，则生成标准 JS spread `...expr`；
+   - 这是一层通用 record structural sugar，不是 Vue 特例。
+
+2. structural-lowered record 支持静态 `null` 省略优化：
+   - 对主构造参数和 object initializer 成员，只要 Roslyn 能静态证明赋值值为 `null`，该成员就不生成；
+   - 这条规则的目标是消除结构对象里的无意义字面量垃圾，而不是引入通用运行时 omit-null 协议；
+   - 因此非静态、非字面量的 `null` 流值仍按普通成员保留。
+
+3. `ECMAScript.Vue3.VueObject` / `VueObject<TProps>` 只是建立在 record structural lowering 之上的 authoring surface：
+   - 编译器不应为它们再开一条 Vue-only lowering 分支；
+   - `Props` / `Attrs` / `Dataset` / `Raw` 的 flatten 行为都应通过通用 `[Spread]` 路线获得；
+   - 如果 `VueObject` 所需能力在一般 record 上不成立，应优先增强通用 structural lowering，而不是追加 Vue 特路。
+
 它们不能再被视为“以后再看”的零散实现点，因为三者直接决定模块级输出模型是否自洽。
 
-### 8.1 enum：编译期值域类型，运行时擦除为底层常量
+### 8.2 enum：编译期值域类型，运行时擦除为底层常量
 
 enum 的路线应定义为：
 
@@ -326,7 +344,7 @@ enum 的路线应定义为：
 
 如果当前实现里仍然存在 `Object.freeze({...})` 式的枚举声明输出，它只能被视为过渡态，而不是长期路线本身。
 
-### 8.2 interface：只作为契约，不发射 runtime artifact
+### 8.3 interface：只作为契约，不发射 runtime artifact
 
 interface 的路线应定义为：
 
@@ -349,7 +367,7 @@ interface 的路线应定义为：
 - 某些 `IEnumerable<T>` / `IList<T>` / runtime host 接口能参与 lowering；
 - 但 nested interface declaration 本身仍然不应被输出成 JS 声明。
 
-### 8.3 继承：支持受控的 JS-compatible 子集，超出子集显式失败
+### 8.4 继承：支持受控的 JS-compatible 子集，超出子集显式失败
 
 JavaScript 原生支持 `class extends`、`super(...)` 和 prototype dispatch。  
 因此对于与 JS 语义足够接近的 C# class inheritance，compiler 的目标不应是永久拒绝，而应是支持一个清晰、受控的子集。
@@ -404,7 +422,7 @@ JS 的 `super.Field` 查找的是基类原型链，不会自然命中这类实�
 
 也就是说，如果某个成员类声明了非 `object` 基类，但当前场景不在上述已支持子集内，就必须直接失败，而不是生成 `superClass: null`、省略 `super(...)`、或者把 `base` 悄悄变成 `this` 的错误 class shape。
 
-### 8.4 成员类构造函数重载：单 `constructor` + 稳定 helper + 按参数个数分派
+### 8.5 成员类构造函数重载：单 `constructor` + 稳定 helper + 按参数个数分派
 
 成员类构造函数重载不能照搬普通方法重载路线。  
 原因不是“签名 hash 不够”，而是 JavaScript class runtime shape 只允许一个真实 `constructor`。
