@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <!-- Keep in sync with src/Jazor/Jazor.csproj <Version>. build-local.ps1 reads from Jazor.csproj and passes via -p:. -->
     <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.1.13</JazorPackageVersion>
   </PropertyGroup>
 </Project>
