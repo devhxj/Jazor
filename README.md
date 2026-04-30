@@ -61,31 +61,26 @@ Jazor/
 ├── src/
 │   ├── ECMAScript/                         # ECMAScript AST core types and attributes
 │   ├── ECMAScript.Contract/                # Zero-dependency minimal contract layer (JazorAttribute, Op, IUIComponent)
-│   ├── ECMAScript.Vue/                     # Vue 3 runtime projection types and bindings
 │   ├── ECMAScript.Vuetify/                 # Vuetify bindings and RazorVue component stubs
-│   ├── ECMAScript.WebIDL.Generator/        # WebIDL binding generator (.NET)
-│   ├── ECMAScript.WebIDL.GeneratorTest/    # WebIDL generator tests (MSTest)
-│   ├── Jazor.Compiler/                     # C# → JS compiler core (SemanticWalker partial files)
-│   ├── Jazor.Compiler.Generator/           # Whitelist Source Generator
-│   ├── Jazor.Compiler.Razor/               # Compiler Razor integration layer
-│   ├── Jazor.CompilerTest/                 # Compiler + Jolt + LSP tests (MSTest)
-│   ├── Jazor.CLR/                          # CLR runtime support (whitelist declarations + JS implementations)
-│   ├── Jazor.CLR.Generator/                # CLR type mapping and binding code generator
-│   ├── Jazor.CLR.Test/                     # CLR tests (MSTest)
-│   ├── Jazor.Common/                       # Shared contracts, Format, SourceMap, RazorVue shared semantics
-│   ├── Jazor.Emit/                         # Emit pipeline, bundle materialisation, SourceMap output
-│   ├── Jazor.EmitTest/                     # Emit tests (MSTest)
 │   ├── Jazor.Analyzer/                     # Static analyzer (whitelist compile-time validation)
-│   ├── Jazor.RazorVue.Test/                # RazorVue tests (MSTest)
+│   ├── Jazor.CLR/                          # CLR runtime support (whitelist declarations + JS implementations)
+│   ├── Jazor.Common/                       # Shared contracts, Format, SourceMap, RazorVue shared semantics
+│   ├── Jazor.Compiler/                     # C# → JS compiler core (SemanticWalker partial files)
+│   ├── Jazor.Emit/                         # Emit pipeline, bundle materialisation, SourceMap output
+│   ├── Jazor/                              # NuGet package (runtime + analyzer + generators + MSBuild)
 │   ├── Jolt/                               # [Jolt] LSP + DevServer + HMR + Debug + Build
-│   ├── Jolt.Test/                          # Jolt tests (MSTest)
-│   ├── Jolt.VSCodeExtension/               # VS Code Language Client extension
 │   ├── Wiki/                               # Wiki sample application
-│   └── Jazor/                              # NuGet package (runtime + analyzer + generators + MSBuild)
-├── samples/                                # Sample projects
+│   ├── ECMAScript.WebIDL.Generator/        # WebIDL binding generator (.NET)
+│   ├── Jazor.CLR.Generator/                # CLR type mapping and binding code generator
+│   ├── Jazor.Compiler.Generator/           # Whitelist Source Generator
+│   ├── ECMAScript.WebIDL.GeneratorTest/    # WebIDL generator tests (MSTest)
+│   ├── Jazor.CLR.Test/                     # CLR tests (MSTest)
+│   ├── Jazor.CompilerTest/                 # Compiler + Jolt + LSP tests (MSTest)
+│   ├── Jazor.EmitTest/                     # Emit tests (MSTest)
+│   ├── Jazor.RazorVue.Test/                # RazorVue tests (MSTest)
+│   └── Jolt.Test/                          # Jolt tests (MSTest)
 ├── docs/                                   # Documentation hub
-├── scripts/                                # Build and tooling scripts
-└── README.md
+└── scripts/                                # Build and tooling scripts
 ```
 
 ## Core Components
