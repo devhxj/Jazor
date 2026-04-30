@@ -1,20 +1,21 @@
 // shared/greetings.mjs
-function Prefix() {
+function prefix() {
   return "Hello";
 }
-function Compose(name) {
-  return `${Prefix()}, ${name}`;
+function compose(name) {
+  return `${prefix()}, ${name}`;
 }
 
 // features/greeter.mjs
-function Greet(name) {
-  return Compose(name);
+function greet(name) {
+  return compose(name);
 }
 
 // host/app.mjs
-function Boot() {
-  return Greet("Jazor");
+function boot() {
+  return greet("Jazor");
 }
 export {
-  Boot
+  boot
 };
+//# sourceMappingURL=app.bundle.js.map

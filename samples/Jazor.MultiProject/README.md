@@ -56,4 +56,4 @@ This writes:
 .\Sample.Host\wwwroot\app.bundle.js
 ```
 
-The bundled file re-exports the host module members, so in this sample the final bundle exports `Boot`.
+The bundled file re-exports the host module members, so in this sample the final bundle exports `boot`.

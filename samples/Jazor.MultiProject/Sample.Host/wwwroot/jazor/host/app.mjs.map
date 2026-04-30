@@ -1,0 +1,1 @@
+{"version":3,"file":"host/app.mjs","sources":["AppModule.cs"],"sourcesContent":["using ECMAScript;\nusing Sample.Features;\n\nnamespace Sample.Host;\n\n[ECMAScriptModule(\"host/app.mjs\")]\npublic static class AppModule\n{\n    public static string Boot()\n    {\n        return GreeterModule.Greet(\"Jazor\");\n    }\n}\n"],"names":[],"mappings":";sBASI;EACI,MAAO,OAAoB"}

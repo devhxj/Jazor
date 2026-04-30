@@ -1,27 +1,33 @@
 {
   "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\Jazor.MultiProject\\Sample.Host\\bin\\Debug\\net10.0\\Sample.Host.dll",
-  "GeneratedAtUtc": "2026-04-01T12:06:17.0421635Z",
+  "GeneratedAtUtc": "2026-04-30T06:08:54.0983482Z",
   "Modules": [
     {
       "AssemblyName": "Sample.Features",
       "TypeName": "Sample.Features.GreeterModule",
       "Id": "Sample.Features.GreeterModule",
       "RelativePath": "features/greeter.mjs",
-      "Hash": "F2C74DC3457679DD99357B2C2C4421AF51F016B2816CC033E135712BE2183129"
+      "Hash": "744F56C2A3E9ED294B89B16D585A1FD99C6DCEB21E940F37E81A76C48C3DA15C",
+      "SourceMapPath": "features/greeter.mjs.map",
+      "MapHash": "94325423CA4E809355F812D47B4FCA6175A742F98C98052DDE4D1DB0F285EE6C"
     },
     {
       "AssemblyName": "Sample.Host",
       "TypeName": "Sample.Host.AppModule",
       "Id": "Sample.Host.AppModule",
       "RelativePath": "host/app.mjs",
-      "Hash": "F190206787E58FE5D1E0BD3634145EE1ADBEA1AFB4E55B8D11125D89CA4BAB9C"
+      "Hash": "FF8B4CA014845B8EAD5D25EC6F61620294974FD8E7AE49373DA57643DBE6830A",
+      "SourceMapPath": "host/app.mjs.map",
+      "MapHash": "F5A7A9726A39C217240DD55E5F4650523D57954153489276D2FD0454CF9C30C0"
     },
     {
       "AssemblyName": "Sample.Contracts",
       "TypeName": "Sample.Contracts.GreetingSharedModule",
       "Id": "Sample.Contracts.GreetingSharedModule",
       "RelativePath": "shared/greetings.mjs",
-      "Hash": "D29920936B0E2DF905D08B09008FFF21DD1DC694E41A2465DE5737D6549E5D83"
+      "Hash": "4402A11C69E68D5B46EF888F01E7365536E953B9FECAD08432B2AF1ED8B9FCF2",
+      "SourceMapPath": "shared/greetings.mjs.map",
+      "MapHash": "F9A4316DF3A2408A51979E1C163B75B42216CF07B4B78BD0D4C3805D0CA73575"
     }
   ]
 }

@@ -26,6 +26,10 @@ dotnet build $analyzerProject -c $Configuration /m:1 /p:BuildInParallel=false
 dotnet publish $emitProject -c $Configuration -o $emitPublishDir /m:1 /p:BuildInParallel=false
 dotnet pack $packageProject -c $Configuration --no-build -o $packageOutput
 
+$packagePath = Join-Path $packageOutput "Jazor.$packageVersion.nupkg"
+$packageStamp = (Get-Item $packagePath).LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
+$restorePackagesPath = Join-Path $repoRoot ".tmp\nuget-sample-packages\$packageVersion-$packageStamp"
+
 $buildArgs = @(
     "build",
     $hostProject,
@@ -33,6 +37,8 @@ $buildArgs = @(
     "/m:1",
     "/p:BuildInParallel=false",
     "-p:RestoreSources=$packageOutput",
+    "-p:RestorePackagesPath=$restorePackagesPath",
+    "-p:RestoreForce=true",
     "-p:JazorPackageVersion=$packageVersion"
 )
 
