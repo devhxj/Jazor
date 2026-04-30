@@ -1,6 +1,6 @@
 using ECMAScript;
 using System.ComponentModel;
-using static ECMAScript.Vue;
+using static ECMAScript.Vue3;
 
 namespace Wiki;
 
@@ -23,7 +23,7 @@ var total = Sum(3, 5);
     private static readonly RegExp EmptyLinePattern = Global.RegExp(@"\n{3,}", "g");
 
     [Description("@#default")]
-    public static IVueComponent Component = Vue.DefineComponent(new VueComponentOptions
+    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
     {
         Name = "WikiHome",
         Setup = Setup
@@ -31,8 +31,8 @@ var total = Sum(3, 5);
 
     private static VueRenderCallback Setup()
     {
-        var source = Vue.Ref(SampleSnippet);
-        var preview = Vue.Computed(() => BuildPreviewText(source.Value));
+        var source = Vue3.Ref(SampleSnippet);
+        var preview = Vue3.Computed(() => BuildPreviewText(source.Value));
         return () => Render(source, preview, @event => OnSourceInput(source, @event));
     }
 

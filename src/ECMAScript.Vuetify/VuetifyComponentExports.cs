@@ -1,6 +1,6 @@
 namespace ECMAScript.Vuetify;
 
-[ECMAScriptModule("vuetify/components")]
+[ECMAScript("vuetify/components")]
 public static class VuetifyComponents
 {
     [ECMAScriptName("VAlert")]

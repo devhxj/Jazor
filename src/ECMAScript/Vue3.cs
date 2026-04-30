@@ -4,28 +4,28 @@ public delegate void VueWatchHandle();
 
 public delegate void VueEventHandler<T>(T value);
 
-public delegate Vue.IVNode VueRenderCallback();
+public delegate Vue3.IVNode VueRenderCallback();
 
-public delegate Vue.IVNode VueSlotCallback();
+public delegate Vue3.IVNode VueSlotCallback();
 
-public delegate Vue.IVNode VueSlotCallback<TScope>(TScope scope);
+public delegate Vue3.IVNode VueSlotCallback<TScope>(TScope scope);
 
 public delegate VueRenderCallback VueSetupCallback();
 
-public delegate VueRenderCallback VueTypedSetupCallback<TProps>(TProps props, Vue.VueSetupContext context)
-	where TProps : Vue.VueProps;
+public delegate VueRenderCallback VueTypedSetupCallback<TProps>(TProps props, Vue3.VueSetupContext context)
+	where TProps : Vue3.VueProps;
 
-public delegate VueRenderCallback VueTypedSlotSetupCallback<TSlots>(Vue.VueSetupContext<TSlots> context)
-	where TSlots : Vue.VueSlots;
+public delegate VueRenderCallback VueTypedSlotSetupCallback<TSlots>(Vue3.VueSetupContext<TSlots> context)
+	where TSlots : Vue3.VueSlots;
 
-public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps props, Vue.VueSetupContext<TSlots> context)
-	where TProps : Vue.VueProps
-	where TSlots : Vue.VueSlots;
+public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps props, Vue3.VueSetupContext<TSlots> context)
+	where TProps : Vue3.VueProps
+	where TSlots : Vue3.VueSlots;
 
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
 [Jazor]
-public static class Vue
+public static class Vue3
 {
 	private const string HDefaultSlotNoPropsCompileMember = "VueHDefaultSlotNoProps";
 

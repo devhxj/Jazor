@@ -14,7 +14,7 @@ public static class Vuetify
 [ECMAScript]
 public interface IVuetifyComponent : IVueComponent { }
 
-[ECMAScriptModule("vuetify")]
+[ECMAScript]
 public sealed class VuetifyPlugin : VuePlugin
 {
     private VuetifyPlugin()
@@ -22,7 +22,7 @@ public sealed class VuetifyPlugin : VuePlugin
     }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyOptions")]
 public sealed record VuetifyOptions : VuePluginOptions
 {
@@ -51,7 +51,7 @@ public sealed record VuetifyOptions : VuePluginOptions
     public bool? Ssr { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyThemeOptions")]
 public sealed record VuetifyThemeOptions
 {
@@ -62,7 +62,7 @@ public sealed record VuetifyThemeOptions
     public VuetifyThemeVariationOptions? Variations { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyThemeVariationOptions")]
 public sealed record VuetifyThemeVariationOptions
 {
@@ -76,7 +76,7 @@ public sealed record VuetifyThemeVariationOptions
     public int? Darken { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyDisplayOptions")]
 public sealed record VuetifyDisplayOptions
 {
@@ -87,7 +87,7 @@ public sealed record VuetifyDisplayOptions
     public VuetifyDisplayThresholds? Thresholds { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyDisplayThresholds")]
 public sealed record VuetifyDisplayThresholds
 {
@@ -110,7 +110,7 @@ public sealed record VuetifyDisplayThresholds
     public int? Xxl { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyIconOptions")]
 public sealed record VuetifyIconOptions
 {
@@ -118,7 +118,7 @@ public sealed record VuetifyIconOptions
     public string? DefaultSet { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyLocaleOptions")]
 public sealed record VuetifyLocaleOptions
 {
@@ -129,7 +129,7 @@ public sealed record VuetifyLocaleOptions
     public string? Fallback { get; init; }
 }
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyDateOptions")]
 public sealed record VuetifyDateOptions
 {

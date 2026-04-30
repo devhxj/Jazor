@@ -1,6 +1,6 @@
 namespace ECMAScript.Vuetify;
 
-[ECMAScriptModule("vuetify/directives")]
+[ECMAScript("vuetify/directives")]
 public static class VuetifyDirectives
 {
     [ECMAScriptName("ClickOutside")]

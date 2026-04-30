@@ -1,6 +1,6 @@
 using ECMAScript;
 using ECMAScript.Vuetify;
-using static ECMAScript.Vue;
+using static ECMAScript.Vue3;
 
 namespace Wiki;
 
@@ -38,7 +38,7 @@ public static class AppModule
 
     public static void Boot()
     {
-        var app = Vue.CreateApp(WikiHomeModule.Component);
+        var app = Vue3.CreateApp(WikiHomeModule.Component);
         app.Use(Vuetify.CreateVuetify(VuetifyConfiguration));
         app.Mount("#app");
     }

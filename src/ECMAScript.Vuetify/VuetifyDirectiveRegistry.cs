@@ -1,6 +1,6 @@
 namespace ECMAScript.Vuetify;
 
-[ECMAScriptModule]
+[ECMAScript]
 [Description("@#VuetifyDirectiveRegistry")]
 public sealed record VuetifyDirectiveRegistry : VueDirectiveRegistry
 {
