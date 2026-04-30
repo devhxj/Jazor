@@ -38,7 +38,7 @@ public static class AppModule
 
     public static void Boot()
     {
-        var app = Vue3.CreateApp(WikiHomeModule.Component);
+        var app = CreateApp(WikiHomeModule.Component);
         app.Use(Vuetify.CreateVuetify(VuetifyConfiguration));
         app.Mount("#app");
     }

@@ -20,7 +20,7 @@ namespace Jazor.Compiler;
 /// INamedTypeSymbol 的 TypeKind 是 TypeKind.Class
 /// 当前classSymbol 对应的代码是一个public static 类，最终对应一个 Acornima es6 module
 /// 内部发成员有公开的、私有的，有静态字段、静态属性、静态方法、类（非静态）、枚举（非静态）、接口、没有构造函数
-/// 内部发成员若是非private的，默认走具名导出；显式配置为 @#default 的成员发射 default export
+/// 内部成员若是非private的，统一走具名导出；模块层不支持 default export
 /// 静态字段 转换为 Acornima变量
 /// 静态属性 转换为 Acornima方法（考虑get、set）
 /// 静态方法 转换为 Acornima方法
@@ -68,6 +68,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         if (_classSymbol.ContainingType != null)
             throw new NotSupportedException($"嵌套类 {_classSymbol.Name} 需要扁平化处理");
+
+        ValidateModuleExportPolicy();
 
         var members = new List<Statement>();
         var emittedMemberClasses = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
@@ -220,11 +222,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var (declaration, localName) = await ConvertVariableField(symbol, cancellationToken);
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             statements.Add(declaration);
-        else if (ShouldUseDefaultExport(symbol))
-        {
-            statements.Add(declaration);
-            statements.Add(CreateDefaultExport(localName));
-        }
         else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
         {
             statements.Add(new ExportNamedDeclaration(
@@ -386,11 +383,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
             statements.Add(declaration);
-        else if (ShouldUseDefaultExport(symbol))
-        {
-            statements.Add(declaration);
-            statements.Add(CreateDefaultExport(localName));
-        }
         else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
         {
             statements.Add(new ExportNamedDeclaration(
@@ -423,7 +415,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 }
             }
 
-        var defaultExport = ShouldUseDefaultExport(symbol);
         string name;
         bool isPropertyInitOnly = false;
         if (symbol.AssociatedSymbol is IPropertySymbol property)
@@ -434,8 +425,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 .Any(static p => p.AccessorList?.Accessors.Any(a => a.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.InitAccessorDeclaration)) == true);
             if (symbol.IsImplicitlyDeclared)
                 name = Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
-            else if (defaultExport)
-                name = property.Name;
             else
                 name = Util.GetConfigOrSymbolName(symbol);
 
@@ -455,7 +444,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
         else
-            name = defaultExport ? symbol.Name : Util.GetConfigOrSymbolName(symbol);
+            name = Util.GetConfigOrSymbolName(symbol);
 
         name = GetModuleDeclaredName(symbol);
 
@@ -468,32 +457,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         return (declaration, name);
     }
-
-    private static bool ShouldUseDefaultExport(ISymbol symbol)
-        => string.Equals(GetEffectiveExportName(symbol), "default", System.StringComparison.Ordinal);
-
-    private static string GetEffectiveExportName(ISymbol symbol)
-        => symbol switch
-        {
-            IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => Util.GetConfigOrSymbolName(property),
-            IFieldSymbol { AssociatedSymbol: IPropertySymbol property } when !symbol.IsImplicitlyDeclared => Util.GetConfigOrSymbolName(property),
-            _ => Util.GetConfigOrSymbolName(symbol)
-        };
-
-    private static string GetDefaultExportLocalName(ISymbol symbol)
-        => symbol switch
-        {
-            IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => property.Name,
-            IFieldSymbol { AssociatedSymbol: IPropertySymbol property } when !symbol.IsImplicitlyDeclared => property.Name,
-            _ => symbol.Name
-        };
-
-    private static ExportNamedDeclaration CreateDefaultExport(string localName)
-        => new ExportNamedDeclaration(
-            null!,
-            NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier("default"))]),
-            null,
-            NodeList.From<ImportAttribute>([]));
 
     private static ExportNamedDeclaration CreateNamedExport(string localName, string exportName)
         => new ExportNamedDeclaration(
@@ -1512,6 +1475,38 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             _ => Util.GetConfigOrSymbolName(symbol)
         };
 
+    private void ValidateModuleExportPolicy()
+    {
+        foreach (var member in _classSymbol.GetMembers())
+        {
+            switch (member)
+            {
+                case IFieldSymbol field:
+                    ValidateModuleExportPolicy(field);
+                    break;
+                case IMethodSymbol method when ShouldReserveModuleMethodName(method):
+                    ValidateModuleExportPolicy(method);
+                    break;
+                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class:
+                    ValidateModuleExportPolicy(type);
+                    break;
+            }
+        }
+    }
+
+    private void ValidateModuleExportPolicy(ISymbol symbol)
+    {
+        if (ShouldBePrivate(symbol.DeclaredAccessibility))
+            return;
+
+        var exportName = GetModuleNamedExportName(symbol);
+        if (string.Equals(exportName, "default", System.StringComparison.Ordinal))
+        {
+            throw new NotSupportedException(
+                $"Jazor module export does not support default export. Member '{symbol.ToDisplayString(Format.NameFormat)}' resolves to export name 'default'. Use a named export instead.");
+        }
+    }
+
     private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
@@ -1587,9 +1582,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => symbol switch
         {
             IFieldSymbol field => GetPreferredModuleFieldDeclaredName(field),
-            IMethodSymbol method => ShouldUseDefaultExport(method)
-                ? GetDefaultExportLocalName(method)
-                : Util.GetConfigOrSymbolName(method),
+            IMethodSymbol method => Util.GetConfigOrSymbolName(method),
             INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
             _ => Util.GetConfigOrSymbolName(symbol)
         };
@@ -1661,9 +1654,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         if (symbol.AssociatedSymbol is IPropertySymbol && symbol.IsImplicitlyDeclared)
             return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
-
-        if (ShouldUseDefaultExport(symbol))
-            return GetDefaultExportLocalName(symbol);
 
         return Util.GetConfigOrSymbolName(symbol);
     }

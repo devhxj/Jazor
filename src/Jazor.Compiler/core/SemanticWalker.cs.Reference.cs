@@ -308,6 +308,12 @@ public partial class SemanticWalker
 		if (containingType is null)
 			return false;
 
+		if (string.Equals(memberName, "default", StringComparison.Ordinal))
+		{
+			throw new NotSupportedException(
+				$"Jazor module import does not support default export. Member import from '{containingType.ToDisplayString(Format.NameFormat)}' resolves to export name 'default'. Use a named export instead.");
+		}
+
 		var modulePath = GetModuleImportPath(containingType);
 		if (string.IsNullOrWhiteSpace(modulePath))
 			return false;

@@ -4,9 +4,9 @@ let visibilityPattern = RegExp("^\\s*(?:public|private|protected|internal)\\s+",
 let staticPattern = RegExp("^\\s*static\\s+", "gm");
 let typedLocalPattern = RegExp("^(\\s*)(?:var|bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|char|object)\\s+([A-Za-z_][\\w]*)\\s*=", "gm");
 let typedMethodPattern = RegExp("^(\\s*)([A-Za-z_][\\w<>,\\[\\]\\?]*)\\s+([A-Za-z_][\\w]*)\\s*\\(([^)]*)\\)(\\s*\\{?)", "gm");
+let typedParameterPattern = RegExp("([,(]\\s*)(?:(?:ref|out|in|params)\\s+)?(?:[A-Za-z_][\\w<>,\\[\\]\\?\\.]*)\\s+([A-Za-z_][\\w]*)", "g");
 let emptyLinePattern = RegExp("\\n{3,}", "g");
-let Component = defineComponent({ name: "WikiHome", setup: setup });
-export { Component as default };
+export let component = defineComponent({ name: "WikiHome", setup: setup });
 function setup() {
   let source = ref("public static int Sum(int a, int b)\n{\n    return a + b;\n}\n\nvar total = Sum(3, 5);");
   let preview = computed(() => {
@@ -67,6 +67,7 @@ function convertPreviewSource(source) {
   text = text.replaceAll("Console.WriteLine", "console.log");
   text = text.replace(typedLocalPattern, "$1let $2 =");
   text = text.replace(typedMethodPattern, "$1function $3($4)$5");
+  text = text.replace(typedParameterPattern, "$1$2");
   text = text.replace(emptyLinePattern, "\n\n");
   return text;
 }

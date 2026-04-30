@@ -12,7 +12,7 @@ It demonstrates:
 ## Project Layout
 
 - `Wiki.csproj`: single web host project for this sample.
-- `WikiHomeModule.cs`: default-export Vue component built with `Vue.DefineComponent(...)` and `H(...)`.
+- `WikiHomeModule.cs`: named-export Vue component built with `Vue.DefineComponent(...)` and `H(...)`.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `wwwroot/`: static entry (`index.html`, `site.css`) and emitted modules.
 

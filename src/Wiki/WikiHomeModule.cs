@@ -1,5 +1,6 @@
 using ECMAScript;
 using System.ComponentModel;
+using static ECMAScript.Global;
 using static ECMAScript.Vue3;
 
 namespace Wiki;
@@ -16,14 +17,14 @@ public static int Sum(int a, int b)
 var total = Sum(3, 5);
 """;
 
-    private static readonly RegExp VisibilityPattern = Global.RegExp(@"^\s*(?:public|private|protected|internal)\s+", "gm");
-    private static readonly RegExp StaticPattern = Global.RegExp(@"^\s*static\s+", "gm");
-    private static readonly RegExp TypedLocalPattern = Global.RegExp(@"^(\s*)(?:var|bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|char|object)\s+([A-Za-z_][\w]*)\s*=", "gm");
-    private static readonly RegExp TypedMethodPattern = Global.RegExp(@"^(\s*)([A-Za-z_][\w<>,\[\]\?]*)\s+([A-Za-z_][\w]*)\s*\(([^)]*)\)(\s*\{?)", "gm");
-    private static readonly RegExp EmptyLinePattern = Global.RegExp(@"\n{3,}", "g");
+    private static readonly RegExp VisibilityPattern = RegExp(@"^\s*(?:public|private|protected|internal)\s+", "gm");
+    private static readonly RegExp StaticPattern = RegExp(@"^\s*static\s+", "gm");
+    private static readonly RegExp TypedLocalPattern = RegExp(@"^(\s*)(?:var|bool|byte|sbyte|short|ushort|int|uint|long|ulong|float|double|decimal|string|char|object)\s+([A-Za-z_][\w]*)\s*=", "gm");
+    private static readonly RegExp TypedMethodPattern = RegExp(@"^(\s*)([A-Za-z_][\w<>,\[\]\?]*)\s+([A-Za-z_][\w]*)\s*\(([^)]*)\)(\s*\{?)", "gm");
+    private static readonly RegExp TypedParameterPattern = RegExp(@"([,(]\s*)(?:(?:ref|out|in|params)\s+)?(?:[A-Za-z_][\w<>,\[\]\?\.]*)\s+([A-Za-z_][\w]*)", "g");
+    private static readonly RegExp EmptyLinePattern = RegExp(@"\n{3,}", "g");
 
-    [Description("@#default")]
-    public static IVueComponent Component = DefineComponent(new VueComponentOptions
+    public static readonly IVueComponent Component = DefineComponent(new VueComponentOptions
     {
         Name = "WikiHome",
         Setup = Setup
@@ -150,6 +151,7 @@ var total = Sum(3, 5);
         text = text.Replace("Console.WriteLine", "console.log");
         text = text.Replace(TypedLocalPattern, "$1let $2 =");
         text = text.Replace(TypedMethodPattern, "$1function $3($4)$5");
+        text = text.Replace(TypedParameterPattern, "$1$2");
         text = text.Replace(EmptyLinePattern, "\n\n");
         return text;
     }

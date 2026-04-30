@@ -7114,11 +7114,10 @@ export function renderPreview() {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultExportReference_GeneratesAliasedDefaultImport()
+    public async Task Convert_ClassWithCrossModuleNamedComponentReference_GeneratesNamedImport()
     {
         var code = """
             using System;
-            using System.ComponentModel;
 
             namespace ECMAScript
             {
@@ -7134,7 +7133,6 @@ export function renderPreview() {
                 [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
                 public static class WikiHomeModule
                 {
-                    [Description("@#default")]
                     public static object Component = null!;
                 }
 
@@ -7159,18 +7157,17 @@ export function renderPreview() {
         var converter = new AstConverter(appModule, semanticModel);
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
-        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
 
         Assert.AreEqual(
-$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
+$@"import {{ component }} from ""./components/wiki-home.mjs"";
 export function boot() {{
-  return {defaultBinding};
+  return component;
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithDefaultExportField_GeneratesDefaultExportAlias()
+    public async Task Convert_ClassWithDefaultExportField_Throws()
     {
         var code = """
             using System;
@@ -7207,17 +7204,13 @@ export function boot() {{
             .Single();
 
         var converter = new AstConverter(moduleSymbol, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
-Assert.AreEqual(
-@"let Component = null;
-export { Component as default };
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "does not support default export");
+        StringAssert.Contains(exception.Message, "Component");
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithMemberNamedDefault_UsesDefaultExportByConvention()
+    public async Task Convert_ClassWithMemberNamedDefault_Throws()
     {
         var code = """
             using System;
@@ -7252,17 +7245,13 @@ export { Component as default };
             .Single();
 
         var converter = new AstConverter(moduleSymbol, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
-        Assert.AreEqual(
-@"let Default = null;
-export { Default as default };
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "does not support default export");
+        StringAssert.Contains(exception.Message, "Default");
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultExportReferenceFromProxyClass_GeneratesDefaultImport()
+    public async Task Convert_ClassWithCrossModuleDefaultExportReferenceFromProxyClass_Throws()
     {
         var code = """
             using System;
@@ -7305,20 +7294,13 @@ export { Default as default };
             .Single();
 
         var converter = new AstConverter(appModule, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
-
-        Assert.AreEqual(
-$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
-export function boot() {{
-  return {defaultBinding};
-}}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "does not support default export");
+        StringAssert.Contains(exception.Message, "Demo.WikiHomeModule");
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultAccessorReference_GeneratesDefaultImport()
+    public async Task Convert_ClassWithCrossModuleDefaultAccessorReference_Throws()
     {
         var code = """
             using System;
@@ -7364,20 +7346,13 @@ export function boot() {{
             .Single();
 
         var converter = new AstConverter(appModule, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
-
-        Assert.AreEqual(
-$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
-export function boot() {{
-  return {defaultBinding};
-}}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "does not support default export");
+        StringAssert.Contains(exception.Message, "Demo.WikiHomeModule");
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithCrossModuleDefaultConventionReference_GeneratesAliasedDefaultImport()
+    public async Task Convert_ClassWithCrossModuleDefaultConventionReference_Throws()
     {
         var code = """
             using System;
@@ -7418,16 +7393,9 @@ export function boot() {{
             .Single();
 
         var converter = new AstConverter(appModule, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
-
-        Assert.AreEqual(
-$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
-export function boot() {{
-  return {defaultBinding};
-}}
-".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "does not support default export");
+        StringAssert.Contains(exception.Message, "Demo.WikiHomeModule");
     }
 
     [TestMethod]

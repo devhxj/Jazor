@@ -1,4 +1,4 @@
-import i$e2b55fd24ba846bc from "./components/wiki-home.mjs";
+import { component } from "./components/wiki-home.mjs";
 import { createApp } from "npm:vue@3";
 import { createVuetify } from "npm:vuetify";
 import { VBtn, VCard, VTextField } from "vuetify/components";
@@ -19,7 +19,7 @@ function initialize() {
   return true;
 }
 export function boot() {
-  let app = createApp(i$e2b55fd24ba846bc);
+  let app = createApp(component);
   app.use(createVuetify(vuetifyConfiguration));
   app.mount("#app");
 }
