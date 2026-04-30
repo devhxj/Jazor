@@ -150,7 +150,6 @@ public static class Vue3
 	/// properties to define the props a component accepts. Maps to a plain JS object in
 	/// Vue's <c>props</c> option.
 	/// </summary>
-	[Description("@#")]
 	public abstract record VueProps : IVueOptionsBag;
 
 	/// <summary>
@@ -158,14 +157,12 @@ public static class Vue3
 	/// callback properties to define the named slots a component accepts. Maps to a plain
 	/// JS object in Vue's <c>slots</c> option.
 	/// </summary>
-	[Description("@#")]
 	public abstract record VueSlots : IVueOptionsBag;
 
 	/// <summary>
 	/// Base record for component definition objects passed to <c>defineComponent()</c>.
 	/// Holds shared options like <c>name</c>, <c>components</c>, <c>directives</c>, etc.
 	/// </summary>
-	[Description("@#")]
 	public abstract record VueComponentDefinition : IVueOptionsBag;
 
 	/// <summary>
@@ -173,7 +170,6 @@ public static class Vue3
 	/// Inherit from this record and declare <c>IVueComponent</c> properties to register
 	/// child components. Maps to Vue's <c>components</c> option.
 	/// </summary>
-	[Description("@#")]
 	public abstract record VueComponentRegistry : IVueOptionsBag;
 
 	/// <summary>
@@ -181,7 +177,6 @@ public static class Vue3
 	/// Inherit from this record and declare <c>VueDirective</c> properties to register
 	/// custom directives. Maps to Vue's <c>directives</c> option.
 	/// </summary>
-	[Description("@#")]
 	public abstract record VueDirectiveRegistry : IVueOptionsBag;
 
 	/// <summary>
@@ -189,14 +184,12 @@ public static class Vue3
 	/// <c>app.use(plugin, options)</c>. Inherit from this record to define typed
 	/// plugin options.
 	/// </summary>
-	[Description("@#")]
 	public abstract record VuePluginOptions : IVueOptionsBag;
 
 	/// <summary>
 	/// Options for <c>defineComponent()</c> with no typed props or slots. Use this variant
 	/// for simple components that rely on untyped props or have no props at all.
 	/// </summary>
-	[Description("@#VueComponentOptions")]
 	public sealed record VueComponentOptions : VueComponentDefinition
 	{
 		/// <summary>
@@ -249,7 +242,6 @@ public static class Vue3
 	/// auto-infers prop names from the <typeparamref name="TProps"/> record properties.
 	/// </summary>
 	/// <typeparam name="TProps">The props record type describing the component's accepted props.</typeparam>
-	[Description("@#VueComponentOptions")]
 	public sealed record VueComponentOptions<TProps> : VueComponentDefinition
 		where TProps : VueProps
 	{
@@ -307,7 +299,6 @@ public static class Vue3
 	/// </summary>
 	/// <typeparam name="TProps">The props record type describing the component's accepted props.</typeparam>
 	/// <typeparam name="TSlots">The slots record type describing the component's accepted slots.</typeparam>
-	[Description("@#VueComponentOptions")]
 	public sealed record VueComponentOptions<TProps, TSlots> : VueComponentDefinition
 		where TProps : VueProps
 		where TSlots : VueSlots
@@ -364,7 +355,6 @@ public static class Vue3
 	/// variant for components that accept named slots but do not declare typed props.
 	/// </summary>
 	/// <typeparam name="TSlots">The slots record type describing the component's accepted slots.</typeparam>
-	[Description("@#VueComponentOptions")]
 	public sealed record VueSlotComponentOptions<TSlots> : VueComponentDefinition
 		where TSlots : VueSlots
 	{

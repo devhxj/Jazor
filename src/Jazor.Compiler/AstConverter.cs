@@ -88,8 +88,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case IMethodSymbol func:
                     await ConvertModuleMethod(members, func, cancellationToken);
                     break;
-                case INamedTypeSymbol @class when @class.TypeKind == TypeKind.Class:
+                case INamedTypeSymbol @class when IsRuntimeMemberClass(@class):
                     AppendModuleClass(members, @class, emittedMemberClasses, cancellationToken);
+                    break;
+                case INamedTypeSymbol recordType when recordType.IsRecord:
+                    // record 统一走 structural lowering，不发射模块级 runtime 声明。
                     break;
                 case INamedTypeSymbol @enum when @enum.TypeKind == TypeKind.Enum:
                     // enum 在模块层走“声明擦除 + 使用点常量化”路线：
@@ -879,6 +882,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case INamedTypeSymbol nestedEnum when nestedEnum.TypeKind == TypeKind.Enum:
                     // enum 在成员类内同样仅保留编译期值域角色，运行时声明擦除。
                     break;
+                case INamedTypeSymbol nestedRecord when nestedRecord.IsRecord:
+                    // record 在成员类内同样只保留编译期/结构化值语义，不发射 runtime class。
+                    break;
                 case INamedTypeSymbol nestedInterface when nestedInterface.TypeKind == TypeKind.Interface:
                     // interface 在成员类内同样只作为契约参与分析，不发射运行时对象。
                     break;
@@ -1487,7 +1493,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
                     ValidateModuleExportPolicy(method);
                     break;
-                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class:
+                case INamedTypeSymbol type when IsRuntimeMemberClass(type):
                     ValidateModuleExportPolicy(type);
                     break;
             }
@@ -1540,7 +1546,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case IMethodSymbol method when ShouldReserveModuleMethodName(method):
                     declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames);
                     break;
-                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class:
+                case INamedTypeSymbol type when IsRuntimeMemberClass(type):
                     declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames);
                     break;
             }
@@ -1623,7 +1629,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                                                declaredNames.TryGetValue(method.OriginalDefinition, out var methodName):
                     names.Add(methodName);
                     break;
-                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class &&
+                case INamedTypeSymbol type when IsRuntimeMemberClass(type) &&
                                                declaredNames.TryGetValue(type.OriginalDefinition, out var typeName):
                     names.Add(typeName);
                     break;
@@ -1649,6 +1655,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         return method.MethodKind is MethodKind.Ordinary or MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.SharedConstructor;
     }
+
+    private static bool IsRuntimeMemberClass(INamedTypeSymbol type)
+        => type.TypeKind == TypeKind.Class && !type.IsRecord;
 
     private static string GetPreferredModuleFieldDeclaredName(IFieldSymbol symbol)
     {

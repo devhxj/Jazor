@@ -339,6 +339,7 @@ public partial class SemanticWalker
 		// 类型匹配条件（排除匿名类型、元组类型、object）
 		if (!operation.MatchedType.IsAnonymousType &&
 			!operation.MatchedType.IsTupleType &&
+			!(operation.MatchedType is INamedTypeSymbol matchedNamedType && matchedNamedType.IsRecord) &&
 			operation.MatchedType.SpecialType != SpecialType.System_Object)
 		{
 			var typeCheck = CreateTypeMatchExpr(operation, operation.MatchedType, targetExpr, context: patternArgument);
@@ -1868,6 +1869,13 @@ public partial class SemanticWalker
 		string typeName,
 		SenseArgument? context)
 	{
+		if (typeSymbol is INamedTypeSymbol namedType && namedType.IsRecord)
+		{
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Record type '{namedType.ToDisplayString(Format.NameFormat)}' uses structural lowering and does not support nominal runtime type checks. Use property/positional patterns instead of a bare record type pattern.");
+		}
+
 		RejectUnsupportedTypeFallback(operation, typeSymbol, "type checks");
 		RejectAmbiguousRuntimeTypeFilter(operation, typeSymbol, "type checks");
 		var runtimeType = BuildFullTypeName(typeSymbol, context) ?? new Identifier(typeName);
@@ -1886,6 +1894,7 @@ public partial class SemanticWalker
 	{
 		Identifier? deconstructResultId = null;
 		if (!namedType.IsTupleType &&
+			!namedType.IsRecord &&
 			operation.DeconstructSymbol is IMethodSymbol deconstructMethod)
 		{
 			deconstructResultId = new Identifier(AllocateUniqueName(operation, argument, LoweringSite.DeconstructResult()));
@@ -1965,7 +1974,7 @@ public partial class SemanticWalker
 		}
 		else if (namedType.IsRecord)
 		{
-			// Record 类型：使用 Deconstruct 输出参数名或主构造函数参数名
+			// Record 统一走 structural lowering，位置模式直接绑定到其结构属性键。
 			propertyName = GetRecordPositionPropertyName(operation, namedType, index);
 		}
 
@@ -1988,22 +1997,24 @@ public partial class SemanticWalker
 		INamedTypeSymbol namedType,
 		int index)
 	{
-		// 1. 优先使用 Deconstruct 方法的输出参数名
-		if (operation.DeconstructSymbol is IMethodSymbol deconstructMethod &&
-			deconstructMethod.Parameters.Length > index)
-		{
-			return deconstructMethod.Parameters[index].Name;
-		}
-
-		// 2. 回退到主构造函数参数名
+		// Record 统一走 structural lowering，位置模式必须绑定到运行时结构属性键。
+		// 主构造函数参数名只用于定位对应属性，最终仍取属性的运行时名。
 		var constructor = FindMatchingConstructor(namedType, operation.DeconstructionSubpatterns.Length);
 		if (constructor is not null && constructor.Parameters.Length > index)
 		{
-			return constructor.Parameters[index].Name;
+			var parameter = constructor.Parameters[index];
+			var property = EnumerateNamedTypeHierarchyBaseFirst(namedType)
+				.SelectMany(static current => current.GetMembers().OfType<IPropertySymbol>())
+				.FirstOrDefault(member =>
+					!member.IsStatic &&
+					string.Equals(member.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+			return property is null
+				? parameter.Name
+				: Util.GetConfigOrSymbolName(property);
 		}
 
 		var message = $"Cannot determine property name for record type '{namedType.Name}' at position {index}. " +
-			$"Ensure the record has a Deconstruct method or a matching constructor.";
+			$"Ensure the record has a matching primary constructor/property shape.";
 		var location = operation.Syntax.GetLocation();
 		_report?.Invoke(location, message);
 		throw new OperationTransformationException(operation.Kind, message);

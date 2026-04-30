@@ -2620,6 +2620,30 @@ public sealed class SemanticWalkerCreationTest
 }", script);
     }
 
+    [TestMethod]
+    public void Visit_ObjectCreation_Record_LowersStructurally()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                record Point(int X, int Y);
+
+                void TestMethod()
+                {
+                    var point = new Point(10, 20);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let point = { x: 10, y: 20 };
+}", script);
+    }
+
     /// <summary>
     /// 测试对象创建 - 链式构造
     /// </summary>

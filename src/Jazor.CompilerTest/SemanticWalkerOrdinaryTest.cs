@@ -2397,7 +2397,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
   AssertScriptEqual(@"{
-  let person = new Person({ first: ""John"", years: 30 });
+  let person = { info: { first: ""John"", years: 30 } };
   let newPerson = { ...person, Info: { first: ""Jane"", years: 40 } };
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }

@@ -23,8 +23,8 @@ public partial class SemanticWalker
 			return HandleTransformationFailure<Expression>(operation, "Object creation type could not be translated to JavaScript.");
 
 		if (operation.Type is INamedTypeSymbol namedType &&
-			IsEcmascriptRecordLike(namedType))
-			return BuildEcmascriptRecordLiteral(assignObj, operation, argument);
+			ShouldLowerRecordStructurally(namedType))
+			return BuildRecordStructuralLiteral(assignObj, operation, argument);
 
 		RejectUnsupportedTypeFallback(operation, operation.Type, "object creation");
 
@@ -132,12 +132,9 @@ public partial class SemanticWalker
 		return false;
 	}
 
-	private static bool IsEcmascriptRecordLike(ITypeSymbol? typeSymbol)
+	private static bool ShouldLowerRecordStructurally(ITypeSymbol? typeSymbol)
 		=> typeSymbol is INamedTypeSymbol namedType &&
-		   namedType.IsRecord &&
-		   (namedType.ContainingAssembly?.Name == "ECMAScript" ||
-			HasEcmascriptSupportMarker(namedType) ||
-			HasEcmascriptSupportMarkerBaseType(namedType));
+		   namedType.IsRecord;
 
 	private static bool HasEcmascriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
 	{
@@ -150,12 +147,12 @@ public partial class SemanticWalker
 		return false;
 	}
 
-	private Expression BuildEcmascriptRecordLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
+	private Expression BuildRecordStructuralLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is not INamedTypeSymbol namedType)
-			return HandleTransformationFailure<Expression>(operation, "ECMAScript record type could not be translated to JavaScript.");
+			return HandleTransformationFailure<Expression>(operation, "Record type could not be translated to JavaScript.");
 
-		var memberOrder = BuildEcmascriptRecordMemberOrderMap(namedType);
+		var memberOrder = BuildRecordStructuralMemberOrderMap(namedType);
 		var members = new List<(Node Node, string Name, int Order)>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
@@ -177,7 +174,7 @@ public partial class SemanticWalker
 				shorthand: false,
 				method: false),
 				keyName,
-				GetEcmascriptRecordMemberOrder(memberOrder, keyName)));
+				GetRecordStructuralMemberOrder(memberOrder, keyName)));
 		}
 
 		if (operation.Initializer is not null)
@@ -188,11 +185,11 @@ public partial class SemanticWalker
 				members.Add((
 					initializerNodes[index],
 					GetObjectInitializerMemberName(operation.Initializer.Initializers[index]),
-					GetEcmascriptRecordMemberOrder(memberOrder, GetObjectInitializerMemberSymbol(operation.Initializer.Initializers[index]))));
+					GetRecordStructuralMemberOrder(memberOrder, GetObjectInitializerMemberSymbol(operation.Initializer.Initializers[index]))));
 			}
 		}
 
-		AppendInferredEcmascriptRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
+		AppendInferredRecordMembers(namedType, operation.Initializer, memberOrder, members, operation);
 
 		Expression expr = new ObjectExpression(NodeList.From(members.Select(static member => member.Node)));
 		if (assignObj is not null)
@@ -201,7 +198,7 @@ public partial class SemanticWalker
 		return expr;
 	}
 
-	private static Dictionary<string, int> BuildEcmascriptRecordMemberOrderMap(INamedTypeSymbol type)
+	private static Dictionary<string, int> BuildRecordStructuralMemberOrderMap(INamedTypeSymbol type)
 	{
 		var order = new Dictionary<string, int>(System.StringComparer.Ordinal);
 		var index = 0;
@@ -224,18 +221,18 @@ public partial class SemanticWalker
 		return order;
 	}
 
-	private static int GetEcmascriptRecordMemberOrder(IReadOnlyDictionary<string, int> memberOrder, string memberName)
+	private static int GetRecordStructuralMemberOrder(IReadOnlyDictionary<string, int> memberOrder, string memberName)
 		=> memberOrder.TryGetValue(memberName, out var order) ? order : int.MaxValue;
 
-	private static int GetEcmascriptRecordMemberOrder(IReadOnlyDictionary<string, int> memberOrder, ISymbol? memberSymbol)
+	private static int GetRecordStructuralMemberOrder(IReadOnlyDictionary<string, int> memberOrder, ISymbol? memberSymbol)
 	{
 		if (memberSymbol is null)
 			return int.MaxValue;
 
-		return GetEcmascriptRecordMemberOrder(memberOrder, Util.GetConfigOrSymbolName(memberSymbol));
+		return GetRecordStructuralMemberOrder(memberOrder, Util.GetConfigOrSymbolName(memberSymbol));
 	}
 
-	private void AppendInferredEcmascriptRecordMembers(
+	private void AppendInferredRecordMembers(
 		INamedTypeSymbol type,
 		IObjectOrCollectionInitializerOperation? initializer,
 		IReadOnlyDictionary<string, int> memberOrder,
@@ -269,7 +266,7 @@ public partial class SemanticWalker
 				if (inferredMember is null)
 					continue;
 
-				var memberOrderValue = GetEcmascriptRecordMemberOrder(memberOrder, memberName);
+				var memberOrderValue = GetRecordStructuralMemberOrder(memberOrder, memberName);
 				var insertIndex = members.FindIndex(member => member.Order > memberOrderValue);
 				var orderedMember = (WithOriginIfMissing(inferredMember, originOperation), memberName, memberOrderValue);
 				if (insertIndex < 0)

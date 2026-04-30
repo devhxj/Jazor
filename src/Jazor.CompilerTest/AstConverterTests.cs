@@ -7455,6 +7455,54 @@ export function create() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithNestedRecord_DoesNotEmitRuntimeDeclaration()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public sealed record Point(int X, int Y);
+
+                    public static object Create() => new Point(1, 2);
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "AppModule");
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"export function create() {
+  return { x: 1, y: 2 };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithTopLevelSiblingSourceHelper_Throws()
     {
         // Arrange

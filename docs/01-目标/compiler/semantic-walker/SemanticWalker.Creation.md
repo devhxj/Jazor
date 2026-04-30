@@ -93,14 +93,14 @@ let obj = (() => {
 - 避免把本来就能直接表达的 JS 集合再包成初始化器流程
 - 让 CLR 集合桥接类型尽量对齐真实 JS 容器 shape
 
-### 4. ECMAScript record-like 创建
+### 4. `record` 创建
 
-如果目标类型是 ECMAScript 程序集里的 record-like 类型，当前不会走普通 `new` 对象创建路径，而是直接落成对象字面量。
+如果目标类型是 `record`，当前不会走普通 `new` 对象创建路径，而是直接落成对象字面量。
 
 这条路径由：
 
-- `IsEcmascriptRecordLike(...)`
-- `BuildEcmascriptRecordLiteral(...)`
+- `ShouldLowerRecordStructurally(...)`
+- `BuildRecordStructuralLiteral(...)`
 
 负责。
 
@@ -111,7 +111,15 @@ let obj = (() => {
 - 合并初始化器成员
 - 最终产出 `ObjectExpression`
 
-这意味着这些类型在当前语义里更接近“带静态协议的 JS 对象字面量”，而不是普通 CLR class 构造实例。
+这意味着 `record` 在当前语义里更接近“带静态协议的 JS 对象字面量”，而不是普通 CLR class 构造实例。
+
+这条规则是全局约定，不依赖：
+
+- record 是否位于 `ECMAScript` 程序集
+- record 是否声明了 `Description` / `ECMAScriptName`
+- record 是否有显式名称
+
+如果想要普通类语义，必须显式写 `class`。
 
 ### 5. 数组创建
 
@@ -180,6 +188,20 @@ let obj = (() => {
 - 集合初始化器里的调用映射
 
 换言之，一个创建表达式里的构造、赋值、Add 调用，仍然可能分别落到不同的白名单规则上。
+
+### 4. `record` 的语义边界
+
+当前 `record` 的 lowering 约定是 structural lowering：
+
+- `new Record(...)` -> 对象字面量
+- `record with { ... }` -> 对象 spread
+- record 位置/属性模式 -> 基于结构属性键匹配
+
+当前不承诺：
+
+- `record` 的 runtime class identity
+- `instanceof Record`
+- 模块/成员层 record runtime declaration
 
 ## 现状与典型结果
 

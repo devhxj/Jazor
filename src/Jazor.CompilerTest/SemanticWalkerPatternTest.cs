@@ -4867,9 +4867,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let v$0;
-  let point = new Point(1, 2);
-  let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] === 1 && v$0[1] === 2;
+  let point = { x: 1, y: 2 };
+  let result = point.x === 1 && point.y === 2;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
@@ -4897,9 +4896,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let v$0;
-  let point = new Point(1, 2);
-  let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] > 0 && v$0[1] > 0;
+  let point = { x: 1, y: 2 };
+  let result = point.x > 0 && point.y > 0;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
@@ -4930,9 +4928,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let v$0, x, y;
-  let point = new Point(1, 2);
-  if (point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && (x = v$0[0], true) && (y = v$0[1], true)) {
+  let x, y;
+  let point = { x: 1, y: 2 };
+  if ((x = point.x, true) && (y = point.y, true)) {
     console.log(`(${x}, ${y})`);
   }
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -7022,6 +7020,37 @@ line2"";
   })();
   if (point instanceof Point && point != null && ""X"" in point && point.X === 0 && ""Y"" in point && point.Y === 0) {
     console.log(""origin"");
+  }
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_PropertyPattern_Record_UsesStructuralMatchWithoutInstanceOf()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                record Person(string Name, int Age);
+
+                void TestMethod()
+                {
+                    var person = new Person(""John"", 20);
+                    if (person is { Name: ""John"" })
+                    {
+                        Console.WriteLine(""found"");
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let person = { name: ""John"", age: 20 };
+  if (person != null && (""name"" in person && person.name === ""John"")) {
+    console.log(""found"");
   }
 }", script);
   }

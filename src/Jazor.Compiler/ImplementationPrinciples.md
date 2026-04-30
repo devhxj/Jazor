@@ -258,6 +258,33 @@ tuple 在 Jazor 中应视为“可擦除的复合值”：
 - enum
 - interface
 - class inheritance
+- record
+
+### 8.1 record 的路线：结构化值对象，不保 nominal runtime identity
+
+`record` 在当前编译器里应视为“结构化值对象声明”，而不是“语法更短的 class”。
+
+这条路线的约束是：
+
+- `record` 创建默认 lower 成对象字面量，而不是 `new Record(...)`
+- `with` 表达式默认 lower 成对象 spread
+- record 位置模式/属性模式默认按结构属性键匹配
+- 模块层与成员层都不为 `record` 发射 runtime class 声明
+- `Description` / `ECMAScriptName` 之类命名配置只影响结构属性键或编译期名称，不会把 `record` 抬升回 nominal class 语义
+
+换句话说，`record` 保的是：
+
+- 属性 shape
+- 位置/属性匹配行为
+- `with` 的非破坏性更新语义
+
+而不保：
+
+- `instanceof Record`
+- 模块级/成员级 runtime class 声明
+- 默认的 nominal runtime type identity
+
+如果用户需要普通 class 的运行时语义，应显式写 `class`，而不是依赖“带名字的 record”“带配置特性的 record”或其他隐式升级路径。
 
 它们不能再被视为“以后再看”的零散实现点，因为三者直接决定模块级输出模型是否自洽。
 
