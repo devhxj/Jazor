@@ -62,11 +62,10 @@ jobs:
       - name: Pack Jazor
         shell: pwsh
         run: |
-          dotnet pack 'src/Jazor/Jazor.csproj' `
-            -c Release `
-            -o 'artifacts/packages' `
-            -p:ContinuousIntegrationBuild=true `
-            -v minimal
+          pwsh './scripts/publish-nuget.ps1' `
+            -Configuration Release `
+            -OutputDirectory 'artifacts/packages' `
+            -SkipPush
 
       - name: List package artifacts
         shell: pwsh

@@ -45,6 +45,14 @@ pwsh ./scripts/publish-nuget.ps1 -SkipPush
 - The current package content is assembled from Windows publish output for `Jazor.Emit`, so use a Windows machine/runner when producing the release package.
 - If the current worktree has unrelated compile breakage but the required outputs already exist, use `pwsh ./scripts/publish-nuget.ps1 -SkipPush -NoBuild`.
 
+## Verify
+
+```bash
+pwsh ./scripts/verify-nuget-package.ps1
+```
+
+- `verify-nuget-package.ps1` runs a local dry-run package build and checks the generated `.nupkg` for required metadata and key entries such as `buildTransitive`, analyzer payload, and `tools/net10.0/Jazor.Emit.dll`.
+
 ## Publish
 
 - Local publish:

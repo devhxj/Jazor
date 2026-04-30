@@ -11,11 +11,24 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $packageProject = Join-Path $repoRoot "src\Jazor\Jazor.csproj"
+$emitProject = Join-Path $repoRoot "src\Jazor.Emit\Jazor.Emit.csproj"
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 
 if (-not (Test-Path $packageProject)) {
     throw "Package project not found: $packageProject"
+}
+
+function Invoke-DotNet {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    dotnet @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet $($Arguments[0]) failed with exit code $LASTEXITCODE."
+    }
 }
 
 function Get-ProjectPropertyValue {
@@ -61,23 +74,36 @@ $resolvedOutputDirectory = if ([System.IO.Path]::IsPathRooted($OutputDirectory))
 
 New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
 
+if (-not $NoBuild) {
+    $dependencyProjects = @(
+        (Join-Path $repoRoot "src\ECMAScript\ECMAScript.csproj"),
+        (Join-Path $repoRoot "src\ECMAScript.Contract\ECMAScript.Contract.csproj"),
+        (Join-Path $repoRoot "src\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj"),
+        (Join-Path $repoRoot "src\Jazor.Common\Jazor.Common.csproj"),
+        (Join-Path $repoRoot "src\Jazor.Compiler\Jazor.Compiler.csproj"),
+        (Join-Path $repoRoot "src\Jazor.Analyzer\Jazor.Analyzer.csproj")
+    )
+
+    foreach ($project in $dependencyProjects) {
+        Invoke-DotNet -Arguments @("build", $project, "-c", $Configuration, "-v", "minimal")
+    }
+
+    Invoke-DotNet -Arguments @("publish", $emitProject, "-c", $Configuration, "-v", "minimal")
+}
+
 $packArgs = @(
     "pack",
     $packageProject,
     "-c", $Configuration,
     "-o", $resolvedOutputDirectory,
+    "-p:JazorPreparePackageArtifacts=false",
     "-v", "minimal"
 )
 
 if ($NoBuild) {
     $packArgs += "--no-build"
-    $packArgs += "-p:JazorPreparePackageArtifacts=false"
 }
-
-dotnet @packArgs
-if ($LASTEXITCODE -ne 0) {
-    throw "dotnet pack failed for '$packageProject' with exit code $LASTEXITCODE."
-}
+Invoke-DotNet -Arguments $packArgs
 
 $packagePath = Join-Path $resolvedOutputDirectory "$packageId.$packageVersion.nupkg"
 if (-not (Test-Path $packagePath)) {
@@ -104,20 +130,24 @@ if ([string]::IsNullOrWhiteSpace($ApiKey)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($ApiKey)) {
-    throw "NuGet API key is required. Pass -ApiKey or set NUGET_API_KEY."
+    $ApiKey = [Environment]::GetEnvironmentVariable("NUGET_API_KEY", "User")
+}
+
+if ([string]::IsNullOrWhiteSpace($ApiKey)) {
+    $ApiKey = [Environment]::GetEnvironmentVariable("NUGET_API_KEY", "Machine")
 }
 
 $pushArgs = @(
     "nuget", "push",
     $packagePath,
-    "--api-key", $ApiKey,
     "--source", $Source,
     "--skip-duplicate"
 )
 
-dotnet @pushArgs
-if ($LASTEXITCODE -ne 0) {
-    throw "dotnet nuget push failed for '$packagePath' with exit code $LASTEXITCODE."
+if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
+    $pushArgs += @("--api-key", $ApiKey)
 }
+
+Invoke-DotNet -Arguments $pushArgs
 
 Write-Host "Published package: $packagePath"
