@@ -15,10 +15,10 @@ Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是�
 
 ## 两条技术线路
 
-| 线路 | 模式 | 核心项目 | 说明 |
-|------|------|---------|------|
-| **RazorVue** | 库模式 | `Jazor.Common/RazorVue/` + `Jazor.Analyzer/RazorVue/` + `ECMAScript.Vuetify` | Source Generator 驱动，不使用 .vue SFC，编译时直接输出 JS/TS 模块 |
-| **Jolt** | 全功能模式 | `Jolt` | 类似 Vite，支持 .jazor + .vue SFC，LSP + DevServer/HMR + Debug + Build |
+| 线路 | 模式 | 说明 |
+|------|------|------|
+| **RazorVue** | 库模式 | Source Generator 驱动，不使用 .vue SFC，编译时直接输出 JS/TS 模块 |
+| **Jolt** | 全功能模式 | 类似 Vite，支持 .jazor + .vue SFC，LSP + DevServer/HMR + Debug + Build |
 
 两条线路共享同一套编译器基础设施（SemanticWalker、WhiteList、AstConverter）。
 
