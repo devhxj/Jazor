@@ -23,6 +23,7 @@ public static partial class Global
 	/// This stays on <see cref="Global"/> because JavaScript exposes it on
 	/// <c>globalThis</c> rather than as a member on another host object.
 	/// </summary>
+	[Description("@#RegExp")]
 	public extern static RegExp RegExp(string value);
 
 	/// <summary>
@@ -30,12 +31,14 @@ public static partial class Global
 	/// This overload exists only to match the JavaScript constructor/function call surface,
 	/// not to introduce a separate CLR regex abstraction.
 	/// </summary>
+	[Description("@#RegExp")]
 	public extern static RegExp RegExp(string value, string flags);
 
 	/// <summary>
 	/// C# host projection of JavaScript global <c>RegExp(existingRegExp)</c>.
 	/// This stays on <see cref="Global"/> because JavaScript allows the global constructor function to be called with an existing regular expression value.
 	/// </summary>
+	[Description("@#RegExp")]
 	public extern static RegExp RegExp(RegExp value);
 
 	/// <summary>
@@ -43,6 +46,7 @@ public static partial class Global
 	/// This overload exists only to match the JavaScript constructor/function call surface,
 	/// not to introduce a separate CLR regex abstraction.
 	/// </summary>
+	[Description("@#RegExp")]
 	public extern static RegExp RegExp(RegExp value, string flags);
 
 	/// <summary>

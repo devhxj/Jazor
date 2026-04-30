@@ -1960,8 +1960,8 @@ public partial class SemanticWalker
 
 		if (namedType.IsTupleType)
 		{
-			// 元组类型：使用 TupleElements[index].Name（如 Item1, Item2）
-			propertyName = namedType.TupleElements[index].Name;
+			// 元组类型同样遵循统一的 runtime naming 规则，而不是直接透传 CLR 成员名。
+			propertyName = Util.GetConfigOrSymbolName(namedType.TupleElements[index]);
 		}
 		else if (namedType.IsRecord)
 		{

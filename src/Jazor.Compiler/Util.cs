@@ -196,6 +196,7 @@ public static class Util
         // Roslyn 生成的自动属性 backing field 形如 <PropName>k__BackingField，
         // 这里需要收敛成稳定哈希名；但不能把所有隐式字段都当成 backing field，
         // 例如 tuple 元素字段同样是隐式声明，仍应保留其运行时成员名。
+        string? tupleFallbackName = null;
         if (symbol is IFieldSymbol fieldSymbol && fieldSymbol.IsImplicitlyDeclared)
         {
             if (fieldSymbol.AssociatedSymbol is IPropertySymbol propertySymbol)
@@ -206,10 +207,51 @@ public static class Util
 
             if (fieldSymbol.CorrespondingTupleField is IFieldSymbol tupleField &&
                 !SymbolEqualityComparer.Default.Equals(tupleField, fieldSymbol))
-                return tupleField.Name;
+                tupleFallbackName = tupleField.Name;
         }
 
-        return AppendMethodOverloadSuffixIfNeeded(symbol, symbol.Name);
+        var fallbackName = tupleFallbackName ?? symbol.Name;
+        if (ShouldUseJsMemberNamingFallback(symbol))
+            fallbackName = ConvertPascalCaseIdentifierToJsNaming(fallbackName);
+
+        return AppendMethodOverloadSuffixIfNeeded(symbol, fallbackName);
+    }
+
+    private static bool ShouldUseJsMemberNamingFallback(ISymbol symbol)
+        => symbol switch
+        {
+            IMethodSymbol methodSymbol => methodSymbol.MethodKind is not MethodKind.LocalFunction
+                and not MethodKind.AnonymousFunction
+                and not MethodKind.LambdaMethod,
+            IPropertySymbol or IFieldSymbol or IEventSymbol => true,
+            _ => false,
+        };
+
+    internal static string ConvertPascalCaseIdentifierToJsNaming(string name)
+    {
+        if (string.IsNullOrEmpty(name) ||
+            !char.IsUpper(name[0]))
+            return name;
+
+        if (name.Length == 1)
+            return char.ToLowerInvariant(name[0]).ToString();
+
+        var chars = name.ToCharArray();
+        chars[0] = char.ToLowerInvariant(chars[0]);
+
+        for (var index = 1; index < chars.Length; index++)
+        {
+            if (!char.IsUpper(chars[index]))
+                break;
+
+            var hasNext = index + 1 < chars.Length;
+            if (hasNext && !char.IsUpper(chars[index + 1]))
+                break;
+
+            chars[index] = char.ToLowerInvariant(chars[index]);
+        }
+
+        return new string(chars);
     }
 
     private static string AppendMethodOverloadSuffixIfNeeded(ISymbol symbol, string name)

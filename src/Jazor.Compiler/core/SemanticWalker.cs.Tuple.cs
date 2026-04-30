@@ -9,6 +9,9 @@ namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
+	private static string GetTupleRuntimeFieldName(IFieldSymbol field)
+		=> Util.GetConfigOrSymbolName(field);
+
 	/// <summary>
 	/// 处理元组操作
 	/// C# 示例：
@@ -38,7 +41,7 @@ public partial class SemanticWalker
 		var tupleType = (INamedTypeSymbol)operation.NaturalType!;
 		for (var index = 0; index < operation.Elements.Length; index++)
 		{
-			var fieldName = tupleType.TupleElements[index].Name;
+			var fieldName = GetTupleRuntimeFieldName(tupleType.TupleElements[index]);
 			var element = operation.Elements[index];
 			var key = new Identifier(fieldName);
 			var value = Translate<Expression>(element, argument);
@@ -136,7 +139,10 @@ public partial class SemanticWalker
 		{
 			var sourceField = sourceType.TupleElements[index];
 			var targetField = targetType.TupleElements[index];
-			if (sourceField.Name != targetField.Name)
+			if (!string.Equals(
+				GetTupleRuntimeFieldName(sourceField),
+				GetTupleRuntimeFieldName(targetField),
+				System.StringComparison.Ordinal))
 				return false;
 
 			var sourceNested = sourceField.Type as INamedTypeSymbol;
@@ -216,7 +222,7 @@ public partial class SemanticWalker
 				// 嵌套 tuple 仍然按“位置匹配、目标名字落地”的同一规则递归 remap。
 				var nestedSource = tupleLiteral is not null
 					? (object)tupleLiteral.Elements[index]
-					: new MemberExpression(sourceExpression!, new Identifier(sourceField.Name), false, false);
+					: new MemberExpression(sourceExpression!, new Identifier(GetTupleRuntimeFieldName(sourceField)), false, false);
 				value = BuildTupleProjection(nestedSource, nestedSourceType, nestedTargetType, argument);
 			}
 			else if (tupleLiteral is not null)
@@ -225,12 +231,12 @@ public partial class SemanticWalker
 			}
 			else
 			{
-				value = new MemberExpression(sourceExpression!, new Identifier(sourceField.Name), false, false);
+				value = new MemberExpression(sourceExpression!, new Identifier(GetTupleRuntimeFieldName(sourceField)), false, false);
 			}
 
 			properties.Add(new ObjectProperty(
 				PropertyKind.Init,
-				key: new Identifier(targetField.Name),
+				key: new Identifier(GetTupleRuntimeFieldName(targetField)),
 				value: value,
 				computed: false,
 				shorthand: false,
@@ -334,8 +340,9 @@ public partial class SemanticWalker
 		/// <param name="tempVar">临时变量（用于 invocation 场景）</param>
 		/// <param name="argument">上下文参数</param>
 		/// <returns>字段值表达式，失败返回 null</returns>
-		Expression? GetTupleFieldValue(object value, string fieldName, int index, Identifier? tempVar, SenseArgument argument)
+		Expression? GetTupleFieldValue(object value, IFieldSymbol field, int index, Identifier? tempVar, SenseArgument argument)
 		{
+			var fieldName = GetTupleRuntimeFieldName(field);
 			if (tempVar is not null)
 				return new MemberExpression(tempVar, new Identifier(fieldName), false, false);
 			if (value is ILocalReferenceOperation localRef)
@@ -545,7 +552,7 @@ public partial class SemanticWalker
 					if (element is IDiscardOperation)
 						continue;
 
-					var fieldValue = GetTupleFieldValue(value, field.Name, index, tempVar, argument);
+					var fieldValue = GetTupleFieldValue(value, field, index, tempVar, argument);
 					if (fieldValue is null)
 					{
 						HandleTransformationFailure<Node>(target, $"The {target.Kind} operation is not supported in DeconstructionAssignment.");
@@ -674,8 +681,16 @@ public partial class SemanticWalker
 				// 当前编译器约定把它 lower 成：
 				// - 普通参数调用
 				// - 返回一个数组，数组元素就是原本 out 参数的输出值
+				IMethodSymbol method;
+				if (expr is IInvocationOperation invocation)
+					method = invocation.TargetMethod;
+				else
+					method = (IMethodSymbol)valueType
+						.GetMembers()
+						.First(x => x.Kind == SymbolKind.Method && x.Name == "Deconstruct");
+
 				var obj = Translate<Expression>(expr, argument);
-				var prop = new Identifier("Deconstruct");
+				var prop = new Identifier(Util.GetConfigOrSymbolName(method));
 				var func = new MemberExpression(obj, prop, false, false);
 				var call = new CallExpression(func, NodeList.From(args), false);
 				var deconstructName = AllocateUniqueName(operation, argument, LoweringSite.DeconstructResult());
@@ -702,15 +717,7 @@ public partial class SemanticWalker
 						AppendDeconstructionWrite(assignmentTarget, member, exprs);
 				}
 
-				IMethodSymbol method;
 				// 如果 out 参数对应的是嵌套 tuple，这里继续递归展开。
-				if (expr is IInvocationOperation invocation)
-					method = invocation.TargetMethod;
-				else
-					method = (IMethodSymbol)valueType
-						.GetMembers()
-						.First(x => x.Kind == SymbolKind.Method && x.Name == "Deconstruct");
-
 				foreach (var (index, id) in nestedRefs)
 				{
 					var parameter = method.Parameters[index];
@@ -856,7 +863,7 @@ public partial class SemanticWalker
 		if (operand.TupleOperation is not null)
 			return Translate<Expression>(operand.TupleOperation.Elements[index], argument);
 		if (operand.Expression is not null)
-			return new MemberExpression(operand.Expression, new Identifier(field.Name), false, false);
+			return new MemberExpression(operand.Expression, new Identifier(GetTupleRuntimeFieldName(field)), false, false);
 		return null;
 	}
 

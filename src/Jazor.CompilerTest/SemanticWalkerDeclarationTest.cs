@@ -130,6 +130,9 @@ public sealed class SemanticWalkerDeclarationTest
     private static void AssertScriptEqual(string expected, string? actual)
         => Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
+    private static void AssertJsNamingScriptEqual(string expected, string? actual)
+        => Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+
     /// <summary>
     /// 获取元组操作
     /// </summary>
@@ -1521,7 +1524,7 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertJsNamingScriptEqual(
 @"{
   let person = { Name: ""John"", Age: 30 };
   console.log(person.Name);
@@ -1746,7 +1749,7 @@ public sealed class SemanticWalkerDeclarationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertJsNamingScriptEqual(
 @"{
   let result = this.GetValue();
 }", script);

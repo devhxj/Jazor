@@ -90,6 +90,9 @@ public sealed class SemanticWalkerSwitchTest
 		return operation as T ?? throw new InvalidOperationException("未找到可分析的操作");
 	}
 
+	private static void AssertScriptEqual(string expected, string? actual)
+		=> Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+
 	// ==================== 传统 Switch 语句测试 ====================
 
 	/// <summary>
@@ -428,7 +431,7 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
+		AssertScriptEqual(
 			@"{
   let value = 1;
   switch (value) {
@@ -1101,7 +1104,7 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
+		AssertScriptEqual(
 			@"{
   let point = { X: 0, Y: 0 };
   let result = (() => {
@@ -2383,7 +2386,7 @@ public sealed class SemanticWalkerSwitchTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
+		AssertScriptEqual(
 			@"{
   return (() => {
     const v$0 = p;

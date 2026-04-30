@@ -23,7 +23,7 @@ partial interface IWhiteList
 	Expression? Compile_b58c68bda64ad0f8(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
 	/// <summary>
-	/// static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.IVNode)
+	/// static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.IVNode)
 	/// </summary>
 	/// <param name="symbol"></param>
 	/// <param name="context"></param>
@@ -34,7 +34,7 @@ partial interface IWhiteList
 	Expression? CompileVueHDefaultSlotNoProps(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
 	/// <summary>
-	/// static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Vue.IVNode)
+	/// static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, ECMAScript.Vue3.IVNode)
 	/// </summary>
 	/// <param name="symbol"></param>
 	/// <param name="context"></param>

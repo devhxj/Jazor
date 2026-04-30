@@ -17,30 +17,30 @@ public partial class SemanticWalker
 	{
 		// 初始白名单特殊编译处理
 		funcs["static ECMAScript.Global.TypeOf(object)"] = Compile_b58c68bda64ad0f8;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.IVNode)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, string)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Number)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, bool)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.IVNode[])"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Vue.IVNode)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, string)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Number)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, bool)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H(ECMAScript.Vue.IVueComponent, ECMAScript.Vue.VueProps, ECMAScript.Vue.IVNode[])"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Vue.IVNode)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, string)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Number)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, bool)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TSlots>(ECMAScript.Vue.IVueSlotComponent<TSlots>, ECMAScript.Vue.IVNode[])"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Vue.IVNode)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, string)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Number)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, bool)"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, ECMAScript.Vue.IVNode[])"] = CompileVueHDefaultSlotNoProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Vue.IVNode)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, string)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Number)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, bool)"] = CompileVueHDefaultSlotWithProps;
-		funcs["static ECMAScript.Vue.H<TProps, TSlots>(ECMAScript.Vue.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Vue.IVNode[])"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.IVNode)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, string)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Number)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, bool)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.IVNode[])"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, ECMAScript.Vue3.IVNode)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, string)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, ECMAScript.Number)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, bool)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H(ECMAScript.Vue3.IVueComponent, ECMAScript.Vue3.VueProps, ECMAScript.Vue3.IVNode[])"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H<TSlots>(ECMAScript.Vue3.IVueSlotComponent<TSlots>, ECMAScript.Vue3.IVNode)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TSlots>(ECMAScript.Vue3.IVueSlotComponent<TSlots>, string)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TSlots>(ECMAScript.Vue3.IVueSlotComponent<TSlots>, ECMAScript.Number)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TSlots>(ECMAScript.Vue3.IVueSlotComponent<TSlots>, bool)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TSlots>(ECMAScript.Vue3.IVueSlotComponent<TSlots>, ECMAScript.Vue3.IVNode[])"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, ECMAScript.Vue3.IVNode)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, string)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, ECMAScript.Number)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, bool)"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, ECMAScript.Vue3.IVNode[])"] = CompileVueHDefaultSlotNoProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Vue3.IVNode)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, TProps, string)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Number)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, TProps, bool)"] = CompileVueHDefaultSlotWithProps;
+		funcs["static ECMAScript.Vue3.H<TProps, TSlots>(ECMAScript.Vue3.IVueComponent<TProps, TSlots>, TProps, ECMAScript.Vue3.IVNode[])"] = CompileVueHDefaultSlotWithProps;
 	}
 }

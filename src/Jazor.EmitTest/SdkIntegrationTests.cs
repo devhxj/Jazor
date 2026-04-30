@@ -33,8 +33,6 @@ public sealed class SdkIntegrationTests
                 "lib/net10.0/Jazor.Compiler.pdb",
                 "lib/net10.0/Jazor.Common.dll",
                 "lib/net10.0/Jazor.Common.pdb",
-                "lib/net10.0/Jazor.Razor.dll",
-                "lib/net10.0/Jazor.Razor.pdb",
                 "lib/net10.0/ECMAScript.Vuetify.dll",
                 "lib/net10.0/ECMAScript.Vuetify.pdb"
             },
@@ -149,17 +147,17 @@ public sealed class SdkIntegrationTests
         var hostModule = await File.ReadAllTextAsync(hostModulePath);
         var bundle = await File.ReadAllTextAsync(bundlePath);
 
-        StringAssert.Contains(sharedModule, "export function Prefix()");
-        StringAssert.Contains(sharedModule, "export function Compose(name)");
-        StringAssert.Contains(featureModule, "import { Compose } from \"shared/greetings.mjs\";");
-        StringAssert.Contains(featureModule, "export function Greet(name)");
-        StringAssert.Contains(hostModule, "import { Greet } from \"features/greeter.mjs\";");
-        StringAssert.Contains(hostModule, "export function Boot()");
-        StringAssert.Contains(bundle, "function Prefix()");
-        StringAssert.Contains(bundle, "function Greet(name)");
-        StringAssert.Contains(bundle, "function Boot()");
+        StringAssert.Contains(sharedModule, "export function prefix()");
+        StringAssert.Contains(sharedModule, "export function compose(name)");
+        StringAssert.Contains(featureModule, "import { compose } from \"shared/greetings.mjs\";");
+        StringAssert.Contains(featureModule, "export function greet(name)");
+        StringAssert.Contains(hostModule, "import { greet } from \"features/greeter.mjs\";");
+        StringAssert.Contains(hostModule, "export function boot()");
+        StringAssert.Contains(bundle, "function prefix()");
+        StringAssert.Contains(bundle, "function greet(name)");
+        StringAssert.Contains(bundle, "function boot()");
         StringAssert.Contains(bundle, "export {");
-        StringAssert.Contains(bundle, "Boot");
+        StringAssert.Contains(bundle, "boot");
     }
 
     [TestMethod]

@@ -46,6 +46,20 @@ public partial class SemanticWalker
 		return Util.GetConfigOrSymbolName(method);
 	}
 
+	private bool TryGetCurrentModuleDeclaredName(ISymbol symbol, out string name)
+	{
+		name = null!;
+		if (_moduleDeclaredNames is null)
+			return false;
+
+		return _moduleDeclaredNames.TryGetValue(symbol.OriginalDefinition, out name);
+	}
+
+	private string GetCurrentModuleDeclaredOrConfigName(ISymbol symbol)
+		=> TryGetCurrentModuleDeclaredName(symbol, out var declaredName)
+			? declaredName
+			: Util.GetConfigOrSymbolName(symbol);
+
 	private static string? GetTypeConfigOrWhiteListName(ITypeSymbol symbol)
 	{
 		string? name = null;
@@ -129,6 +143,12 @@ public partial class SemanticWalker
 
 	private Expression? BuildFullTypeName(ITypeSymbol symbol, SenseArgument? context = null)
 	{
+		if (symbol is INamedTypeSymbol namedTypeSymbol &&
+			TryGetCurrentModuleDeclaredName(namedTypeSymbol, out var moduleDeclaredTypeName))
+		{
+			return new Identifier(moduleDeclaredTypeName);
+		}
+
 		if (ShouldFlattenRuntimeNestedType(symbol))
 		{
 			var flatName = GetTypeConfigOrWhiteListName(symbol);
@@ -761,11 +781,11 @@ public partial class SemanticWalker
 				// 其他整数类型（int, short, sbyte 等）保持原样，会作为字面量处理
 				_ => symbol.HasConstantValue
 					? BuildValueLiteral(symbol.Type, symbol.ConstantValue) ?? Null
-					: new Identifier(Util.GetConfigOrSymbolName(symbol))
+					: new Identifier(GetCurrentModuleDeclaredOrConfigName(symbol))
 			};
 		}
 
-		return new Identifier(Util.GetConfigOrSymbolName(symbol));
+		return new Identifier(GetCurrentModuleDeclaredOrConfigName(symbol));
 	}
 
 	private static bool TryBuildECMAScriptEnumLiteral(IFieldSymbol symbol, out Expression expression)
@@ -2026,7 +2046,7 @@ public partial class SemanticWalker
 
 		// 获取字段名称（支持别名）
 		var fieldName = string.IsNullOrEmpty(alias)
-			? Util.GetConfigOrSymbolName(operation.Field)
+			? GetCurrentModuleDeclaredOrConfigName(operation.Field)
 			: alias;
 
 		var property = new Identifier(fieldName!);
@@ -2111,7 +2131,7 @@ public partial class SemanticWalker
 
 		// 获取方法名称
 		var propertyName = string.IsNullOrEmpty(alias)
-			? Util.GetConfigOrSymbolName(operation.Property)
+			? GetCurrentModuleDeclaredOrConfigName(operation.Property)
 			: alias;
 
 		var property = new Identifier(propertyName!);
@@ -2184,7 +2204,7 @@ public partial class SemanticWalker
 			RejectUnsupportedRuntimeFallback(operation, whiteListMethod, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
 
 		var instance = Translate<Expression>(operation.Instance, argument, null);
-		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(operation.Method) : alias;
+		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(operation.Method) : alias;
 		var initializations = new List<Expression>();
 		if (instance is not null)
 		{
@@ -2435,7 +2455,7 @@ public partial class SemanticWalker
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(ownerOperation, whiteListMethod, "method invocation", hostType ?? targetMethod.ContainingType);
 
-		var methodName = string.IsNullOrEmpty(alias) ? Util.GetConfigOrSymbolName(targetMethod) : alias;
+		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
 		if (instance is not null)
 			instance = NormalizeRuntimeReceiverHostInstance(instance, targetMethod);
 

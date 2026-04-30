@@ -1682,7 +1682,7 @@ public partial class SemanticWalker
 			var element = tupleType.TupleElements[index];
 			nodes.Add(new ObjectProperty(
 				PropertyKind.Init,
-				key: new Identifier(element.Name),
+				key: new Identifier(Util.GetConfigOrSymbolName(element)),
 				value: BuildDefaultValueExpression(operation, element.Type, argument),
 				computed: false,
 				shorthand: false,

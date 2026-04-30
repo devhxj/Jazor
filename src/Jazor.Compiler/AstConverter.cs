@@ -44,7 +44,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
-    private readonly HashSet<string> _reservedImportNames = BuildReservedImportNames(classSymbol);
+    private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(classSymbol);
+
+    private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
+
+    private Dictionary<ISymbol, string> ModuleDeclaredNames => _moduleNamePlan.DeclaredNames;
+
+    private HashSet<string> ReservedImportNames => _moduleNamePlan.ReservedImportNames;
 
     /// <summary>
     /// 将C# 14 ClassDeclarationSyntax 转换为Acornima.Ast.Module(es6+ module)
@@ -117,7 +123,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (baseType is not null)
             AppendModuleClass(members, baseType, emittedMemberClasses, cancellationToken);
 
-        members.Add(ConvertModuleClass(symbol, baseType, cancellationToken));
+        members.AddRange(ConvertModuleClass(symbol, baseType, cancellationToken));
     }
 
     private IEnumerable<ImportDeclaration> BuildImportDeclarations()
@@ -199,7 +205,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// </summary>
     private SenseArgument CreateImportAwareArgument(Sense sense)
         => new SenseArgument(sense, UseImportAliases: true)
-            .WithImportContext(_importBindings, _importLocalBindings, _reservedImportNames);
+            .WithImportContext(_importBindings, _importLocalBindings, ReservedImportNames);
 
     /// <summary>
     /// 
@@ -219,12 +225,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             statements.Add(declaration);
             statements.Add(CreateDefaultExport(localName));
         }
-        else
+        else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
+        {
             statements.Add(new ExportNamedDeclaration(
                 declaration,
                 NodeList.From<ExportSpecifier>([]),
                 null,
                 NodeList.From<ImportAttribute>([])));
+        }
+        else
+        {
+            statements.Add(declaration);
+            statements.Add(CreateNamedExport(localName, GetModuleNamedExportName(symbol)));
+        }
     }
 
     /// <summary>
@@ -337,7 +350,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = _classModel.GetOperation(blockSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker(_classSymbol, cancellationToken);
+                var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.FunctionBody);
                 body = MaterializeFunctionBody(walker.Visit(operation, argument), argument, symbol.ReturnsVoid);
                 MergeImports(argument);
@@ -348,7 +361,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var operation = _classModel.GetOperation(expressionSyntax);
             if (operation is not null)
             {
-                var walker = new SemanticWalker(_classSymbol, cancellationToken);
+                var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
                 var argument = CreateImportAwareArgument(Sense.Any);
                 var visited = walker.Visit(operation, argument);
                 MergeImports(argument);
@@ -361,11 +374,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (refParas.Count > 0)
             body = ApplyRefOutReturnProtocol(body, refParas, hasReturn);
 
-        var localName = ShouldUseDefaultExport(symbol)
-            ? GetDefaultExportLocalName(symbol)
-            : Util.GetConfigOrSymbolName(symbol);
-        var name = localName;
-        var identifier = new Identifier(name);
+        var localName = GetModuleDeclaredName(symbol);
+        var identifier = new Identifier(localName);
         // todo:分析使用ArrowFunctionExpression的可能性
         var declaration = new FunctionDeclaration(
             id: identifier,
@@ -381,12 +391,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             statements.Add(declaration);
             statements.Add(CreateDefaultExport(localName));
         }
-        else
+        else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
+        {
             statements.Add(new ExportNamedDeclaration(
                 declaration,
                 NodeList.From<ExportSpecifier>([]),
                 null,
                 NodeList.From<ImportAttribute>([])));
+        }
+        else
+        {
+            statements.Add(declaration);
+            statements.Add(CreateNamedExport(localName, GetModuleNamedExportName(symbol)));
+        }
     }
     private async Task<(VariableDeclaration Declaration, string LocalName)> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {
@@ -440,6 +457,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         else
             name = defaultExport ? symbol.Name : Util.GetConfigOrSymbolName(symbol);
 
+        name = GetModuleDeclaredName(symbol);
+
         var identifier = new Identifier(name);
         var kind = symbol.IsConst || isPropertyInitOnly
             ? VariableDeclarationKind.Const
@@ -451,7 +470,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private static bool ShouldUseDefaultExport(ISymbol symbol)
-        => string.Equals(Util.GetSymbolConfigName(symbol), "default", System.StringComparison.Ordinal);
+        => string.Equals(GetEffectiveExportName(symbol), "default", System.StringComparison.Ordinal);
+
+    private static string GetEffectiveExportName(ISymbol symbol)
+        => symbol switch
+        {
+            IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => Util.GetConfigOrSymbolName(property),
+            IFieldSymbol { AssociatedSymbol: IPropertySymbol property } when !symbol.IsImplicitlyDeclared => Util.GetConfigOrSymbolName(property),
+            _ => Util.GetConfigOrSymbolName(symbol)
+        };
 
     private static string GetDefaultExportLocalName(ISymbol symbol)
         => symbol switch
@@ -465,6 +492,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => new ExportNamedDeclaration(
             null!,
             NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier("default"))]),
+            null,
+            NodeList.From<ImportAttribute>([]));
+
+    private static ExportNamedDeclaration CreateNamedExport(string localName, string exportName)
+        => new ExportNamedDeclaration(
+            null!,
+            NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier(exportName))]),
             null,
             NodeList.From<ImportAttribute>([]));
 
@@ -895,10 +929,22 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (baseType is not null && !hasExplicitConstructor)
             nodes.Insert(0, CreateImplicitBaseConstructor());
 
-        var className = Util.GetConfigOrSymbolName(symbol);
+        var className =
+            symbol.ContainingType is not null &&
+            SymbolEqualityComparer.Default.Equals(symbol.ContainingType.OriginalDefinition, _classSymbol.OriginalDefinition)
+                ? GetModuleDeclaredName(symbol)
+                : Util.GetConfigOrSymbolName(symbol);
+        var superClassName =
+            baseType is not null &&
+            baseType.ContainingType is not null &&
+            SymbolEqualityComparer.Default.Equals(baseType.ContainingType.OriginalDefinition, _classSymbol.OriginalDefinition)
+                ? GetModuleDeclaredName(baseType)
+                : baseType is null
+                    ? null
+                    : Util.GetConfigOrSymbolName(baseType);
         var declaration = new ClassDeclaration(
             id: new Identifier(className),
-            superClass: baseType is null ? null : new Identifier(Util.GetConfigOrSymbolName(baseType)),
+            superClass: superClassName is null ? null : new Identifier(superClassName),
             body: new ClassBody(NodeList.From(nodes)),
             decorators: NodeList.Empty<Decorator>()
         );
@@ -1082,7 +1128,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (symbol.AssociatedSymbol is IPropertySymbol && symbol.IsImplicitlyDeclared)
             return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
 
-        return symbol.Name;
+        return Util.GetConfigOrSymbolName(symbol);
     }
 
     private static bool IsInitOnlyAccessor(IMethodSymbol method)
@@ -1100,7 +1146,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return method.IsInitOnly;
     }
 
-    private Declaration ConvertModuleClass(
+    private IEnumerable<Statement> ConvertModuleClass(
         INamedTypeSymbol symbol,
         INamedTypeSymbol? baseType,
         CancellationToken cancellationToken)
@@ -1113,13 +1159,25 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var declaration = ConvertMemberClass(symbol, baseType, cancellationToken);
 
         if (ShouldBePrivate(symbol.DeclaredAccessibility))
-            return declaration;
-        else
-            return new ExportNamedDeclaration(
+        {
+            yield return declaration;
+            yield break;
+        }
+
+        var localName = GetModuleDeclaredName(symbol);
+        var exportName = Util.GetConfigOrSymbolName(symbol);
+        if (string.Equals(localName, exportName, System.StringComparison.Ordinal))
+        {
+            yield return new ExportNamedDeclaration(
                 declaration,
                 NodeList.From<ExportSpecifier>([]),
                 null,
                 NodeList.From<ImportAttribute>([]));
+            yield break;
+        }
+
+        yield return declaration;
+        yield return CreateNamedExport(localName, exportName);
     }
 
     private INamedTypeSymbol? GetSupportedMemberBaseType(INamedTypeSymbol symbol)
@@ -1251,7 +1309,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var operation = _classModel.GetOperation(value);
         if (operation is not null)
         {
-            var walker = new SemanticWalker(_classSymbol, cancellationToken);
+            var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
             var argument = CreateImportAwareArgument(Sense.Any);
             var expr = walker.Visit(operation, argument) as Expression;
             MergeImports(argument);
@@ -1429,32 +1487,34 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             .Replace("\v", "\\v");
     }
 
-    /// <summary>
-    /// 收集模块级保留名。
-    /// 这不是逐词法作用域的精确遮蔽分析，而是为导入绑定提供一个稳定的保守上界：
-    /// 只要名字在模块成员或任意局部声明里出现过，就视为该名字可能与导入冲突。
-    /// 这样会放大一部分本可直接使用原名的场景，但能避免漏判导致的错误绑定。
-    /// </summary>
-    private static HashSet<string> BuildReservedImportNames(INamedTypeSymbol classSymbol)
+    private sealed record ModuleNamePlan(
+        HashSet<string> LocalNames,
+        Dictionary<ISymbol, string> DeclaredNames,
+        HashSet<string> ReservedImportNames);
+
+    private static ModuleNamePlan BuildModuleNamePlan(INamedTypeSymbol classSymbol)
+    {
+        var localNames = BuildModuleLocalNames(classSymbol);
+        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames);
+        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames);
+        return new ModuleNamePlan(localNames, declaredNames, reservedImportNames);
+    }
+
+    private string GetModuleDeclaredName(ISymbol symbol)
+        => ModuleDeclaredNames.TryGetValue(symbol.OriginalDefinition, out var name)
+            ? name
+            : GetPreferredModuleDeclaredName(symbol);
+
+    private static string GetModuleNamedExportName(ISymbol symbol)
+        => symbol switch
+        {
+            INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
+            _ => Util.GetConfigOrSymbolName(symbol)
+        };
+
+    private static HashSet<string> BuildModuleLocalNames(INamedTypeSymbol classSymbol)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
-
-        foreach (var member in classSymbol.GetMembers())
-        {
-            switch (member)
-            {
-                case IFieldSymbol field:
-                    names.Add(GetModuleFieldDeclaredName(field));
-                    break;
-                case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    names.Add(Util.GetConfigOrSymbolName(method));
-                    break;
-                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class:
-                    names.Add(Util.GetConfigOrSymbolName(type));
-                    break;
-            }
-        }
-
         foreach (var syntaxRef in classSymbol.DeclaringSyntaxReferences)
         {
             if (syntaxRef.GetSyntax() is not ClassDeclarationSyntax classSyntax)
@@ -1463,6 +1523,124 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             var collector = new DeclaredNameCollector();
             collector.Visit(classSyntax);
             names.UnionWith(collector.Names);
+        }
+
+        return names;
+    }
+
+    private static Dictionary<ISymbol, string> BuildModuleDeclaredNames(
+        INamedTypeSymbol classSymbol,
+        HashSet<string> localNames)
+    {
+        var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
+        var usedDeclaredNames = new HashSet<string>(System.StringComparer.Ordinal);
+
+        foreach (var member in classSymbol.GetMembers())
+        {
+            switch (member)
+            {
+                case IFieldSymbol field:
+                    declaredNames[field.OriginalDefinition] = ChooseModuleDeclaredName(field, usedDeclaredNames, localNames);
+                    break;
+                case IMethodSymbol method when ShouldReserveModuleMethodName(method):
+                    declaredNames[method.OriginalDefinition] = ChooseModuleDeclaredName(method, usedDeclaredNames, localNames);
+                    break;
+                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class:
+                    declaredNames[type.OriginalDefinition] = ChooseModuleDeclaredName(type, usedDeclaredNames, localNames);
+                    break;
+            }
+        }
+
+        return declaredNames;
+    }
+
+    private static string ChooseModuleDeclaredName(
+        ISymbol symbol,
+        HashSet<string> usedDeclaredNames,
+        HashSet<string> localNames)
+    {
+        var preferredName = GetPreferredModuleDeclaredName(symbol);
+        if (!localNames.Contains(preferredName) && usedDeclaredNames.Add(preferredName))
+            return preferredName;
+
+        var sourceName = GetSourceDeclaredNameCandidate(symbol);
+        if (!string.IsNullOrEmpty(sourceName) &&
+            !localNames.Contains(sourceName!) &&
+            usedDeclaredNames.Add(sourceName!))
+        {
+            return sourceName!;
+        }
+
+        var displayString = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
+        var alias = $"m${Format.HashName(displayString).TrimStart('_')}";
+        var suffix = 0;
+        while (localNames.Contains(alias) || !usedDeclaredNames.Add(alias))
+        {
+            suffix++;
+            alias = $"m${Format.HashName(displayString).TrimStart('_')}${suffix}";
+        }
+
+        return alias;
+    }
+
+    private static string GetPreferredModuleDeclaredName(ISymbol symbol)
+        => symbol switch
+        {
+            IFieldSymbol field => GetPreferredModuleFieldDeclaredName(field),
+            IMethodSymbol method => ShouldUseDefaultExport(method)
+                ? GetDefaultExportLocalName(method)
+                : Util.GetConfigOrSymbolName(method),
+            INamedTypeSymbol type => Util.GetConfigOrSymbolName(type),
+            _ => Util.GetConfigOrSymbolName(symbol)
+        };
+
+    private static string? GetSourceDeclaredNameCandidate(ISymbol symbol)
+        => symbol switch
+        {
+            IFieldSymbol field when field.AssociatedSymbol is IPropertySymbol property && !field.IsImplicitlyDeclared => property.Name,
+            IFieldSymbol field when field.IsImplicitlyDeclared => null,
+            IFieldSymbol field => field.Name,
+            IMethodSymbol method when method.AssociatedSymbol is IPropertySymbol property => property.Name,
+            IMethodSymbol method => method.Name,
+            INamedTypeSymbol type => type.Name,
+            _ => symbol.Name
+        };
+
+    /// <summary>
+    /// 收集模块级保留名。
+    /// 这不是逐词法作用域的精确遮蔽分析，而是为导入绑定提供一个稳定的保守上界：
+    /// 只要名字在模块成员或任意局部声明里出现过，就视为该名字可能与导入冲突。
+    /// 这样会放大一部分本可直接使用原名的场景，但能避免漏判导致的错误绑定。
+    /// </summary>
+    private static HashSet<string> BuildReservedImportNames(
+        INamedTypeSymbol classSymbol,
+        IReadOnlyDictionary<ISymbol, string> declaredNames,
+        HashSet<string> localNames)
+    {
+        var names = new HashSet<string>(System.StringComparer.Ordinal);
+
+        foreach (var member in classSymbol.GetMembers())
+        {
+            switch (member)
+            {
+                case IFieldSymbol field when declaredNames.TryGetValue(field.OriginalDefinition, out var fieldName):
+                    names.Add(fieldName);
+                    break;
+                case IMethodSymbol method when ShouldReserveModuleMethodName(method) &&
+                                               declaredNames.TryGetValue(method.OriginalDefinition, out var methodName):
+                    names.Add(methodName);
+                    break;
+                case INamedTypeSymbol type when type.TypeKind == TypeKind.Class &&
+                                               declaredNames.TryGetValue(type.OriginalDefinition, out var typeName):
+                    names.Add(typeName);
+                    break;
+            }
+        }
+
+        foreach (var localName in localNames)
+        {
+            names.Add(localName);
+            names.Add(Util.ConvertPascalCaseIdentifierToJsNaming(localName));
         }
 
         return names;
@@ -1479,10 +1657,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return method.MethodKind is MethodKind.Ordinary or MethodKind.PropertyGet or MethodKind.PropertySet or MethodKind.SharedConstructor;
     }
 
-    private static string GetModuleFieldDeclaredName(IFieldSymbol symbol)
+    private static string GetPreferredModuleFieldDeclaredName(IFieldSymbol symbol)
     {
         if (symbol.AssociatedSymbol is IPropertySymbol && symbol.IsImplicitlyDeclared)
             return Format.HashName(symbol.AssociatedSymbol!.OriginalDefinition.ToDisplayString(Format.NameFormat));
+
+        if (ShouldUseDefaultExport(symbol))
+            return GetDefaultExportLocalName(symbol);
 
         return Util.GetConfigOrSymbolName(symbol);
     }
@@ -1504,6 +1685,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         public override void VisitVariableDeclarator(VariableDeclaratorSyntax node)
         {
+            if (node.Parent?.Parent is FieldDeclarationSyntax &&
+                node.Parent.Parent.Parent is ClassDeclarationSyntax)
+            {
+                return;
+            }
+
             Add(node.Identifier);
             base.VisitVariableDeclarator(node);
         }
@@ -1594,16 +1781,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             (method.MethodKind == MethodKind.PropertyGet || method.MethodKind == MethodKind.PropertySet))
         {
             if (method.AssociatedSymbol is IPropertySymbol property)
-                return property.Name;
+                return Util.GetConfigOrSymbolName(property);
 
             if (method.Name.StartsWith("get_", StringComparison.Ordinal) || method.Name.StartsWith("set_", StringComparison.Ordinal))
-                return method.Name.Substring(4);
+                return Util.ConvertPascalCaseIdentifierToJsNaming(method.Name.Substring(4));
         }
 
         if (symbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol propertySymbol })
-            return propertySymbol.Name;
+            return Util.GetConfigOrSymbolName(propertySymbol);
 
-        return symbol.Name;
+        return Util.GetConfigOrSymbolName(symbol);
     }
 
     /// <summary>

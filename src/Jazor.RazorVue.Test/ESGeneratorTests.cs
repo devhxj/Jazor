@@ -102,7 +102,7 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         // 生成器固定以 LF 写入 catalog 字符串字面量，避免模块内容随宿主换行漂移。
-        var moduleContent = "export let Value = 2;\n";
+        var moduleContent = "export let value = 2;\n";
         var moduleHash = ComputeSha256Hex(moduleContent);
 
         Assert.AreEqual(0, conflicts.Length, string.Join("\n", conflicts.Select(static x => x.ToString())));
@@ -194,8 +194,8 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
-        var alphaContent = "export let Value = 1;\n";
-        var zetaContent = "export let Value = 2;\n";
+        var alphaContent = "export let value = 1;\n";
+        var zetaContent = "export let value = 2;\n";
         var alphaHash = ComputeSha256Hex(alphaContent);
         var zetaHash = ComputeSha256Hex(zetaContent);
 
@@ -377,7 +377,7 @@ public sealed class ESGeneratorTests
         var diagnostics = outputCompilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
-        var moduleContent = "export let Value = 7;\n";
+        var moduleContent = "export let value = 7;\n";
         var moduleHash = ComputeSha256Hex(moduleContent);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
@@ -553,7 +553,7 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
-        const string moduleContent = "export let QuoteString = \"He said \\\"Hello\\\"\";\nexport let SpecialString = \"Hello\\nWorld\\t!\";\n";
+        const string moduleContent = "export let quoteString = \"He said \\\"Hello\\\"\";\nexport let specialString = \"Hello\\nWorld\\t!\";\n";
         var moduleHash = ComputeSha256Hex(moduleContent);
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));

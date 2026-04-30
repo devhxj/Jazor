@@ -871,7 +871,7 @@ public partial class SemanticWalker
 			return entry.Value!;
 
 		RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
-		return Util.GetConfigOrSymbolName(symbol);
+		return GetCurrentModuleDeclaredOrConfigName(symbol);
 	}
 
 	private string ResolveInitializerAccessMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
@@ -888,7 +888,7 @@ public partial class SemanticWalker
 			return entry.Value!;
 
 		RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
-		return Util.GetConfigOrSymbolName(symbol);
+		return GetCurrentModuleDeclaredOrConfigName(symbol);
 	}
 
 	private Expression BuildMemberInitializerReceiver(

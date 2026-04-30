@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -78,7 +79,43 @@ public sealed class SemanticWalkerCreationTest
     // 统一脚本断言，既锁定完整 JS 输出风格，也屏蔽平台行尾差异。
     private static void AssertScriptEqual(string expected, string? actual)
     {
-        Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
+        Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings(), actual?.ReplaceLineEndings());
+    }
+
+    private static string NormalizeExpectedJsNaming(string expected)
+    {
+        expected = Regex.Replace(expected, @"\bItem([0-9]+)\b", "item$1");
+        expected = Regex.Replace(expected, @"([\{\[,]\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value);
+        expected = Regex.Replace(expected, @"(^\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value, RegexOptions.Multiline);
+        expected = Regex.Replace(expected, @"(\?*\.)([A-Z][A-Za-z0-9_]*)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value));
+        expected = Regex.Replace(expected, @"""([A-Z][A-Za-z0-9_]*)""(\s+in\b)", static m => "\"" + Camel(m.Groups[1].Value) + "\"" + m.Groups[2].Value);
+        expected = Regex.Replace(expected, @"\[""([A-Z][A-Za-z0-9_]*)""\]", static m => "[\"" + Camel(m.Groups[1].Value) + "\"]");
+        return expected;
+    }
+
+    private static string Camel(string name)
+    {
+        if (string.IsNullOrEmpty(name) || !char.IsUpper(name[0]))
+            return name;
+
+        if (name.Length == 1)
+            return char.ToLowerInvariant(name[0]).ToString();
+
+        var chars = name.ToCharArray();
+        chars[0] = char.ToLowerInvariant(chars[0]);
+        for (var index = 1; index < chars.Length; index++)
+        {
+            if (!char.IsUpper(chars[index]))
+                break;
+
+            var hasNext = index + 1 < chars.Length;
+            if (hasNext && !char.IsUpper(chars[index + 1]))
+                break;
+
+            chars[index] = char.ToLowerInvariant(chars[index]);
+        }
+
+        return new string(chars);
     }
 
     /// <summary>
@@ -178,7 +215,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass", script);
+        AssertScriptEqual("new MyClass", script);
     }
 
     [TestMethod]
@@ -204,7 +241,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"new MyClass(42,""test"")", script);
+        AssertScriptEqual(@"new MyClass(42,""test"")", script);
     }
 
     [TestMethod]
@@ -247,7 +284,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("[]", script);
+        AssertScriptEqual("[]", script);
     }
 
     [TestMethod]
@@ -291,7 +328,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"{Name:""John"",Age:30}", script);
+        AssertScriptEqual(@"{Name:""John"",Age:30}", script);
     }
 
     [TestMethod]
@@ -316,7 +353,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass", script);
+        AssertScriptEqual("new MyClass", script);
     }
 
     [TestMethod]
@@ -337,7 +374,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("[1,2,3]", script);
+        AssertScriptEqual("[1,2,3]", script);
     }
 
     [TestMethod]
@@ -358,7 +395,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new Array(1)", script);
+        AssertScriptEqual("new Array(1)", script);
     }
 
     [TestMethod]
@@ -379,7 +416,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new Array(5)", script);
+        AssertScriptEqual("new Array(5)", script);
     }
 
     [TestMethod]
@@ -400,7 +437,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("[]", script);
+        AssertScriptEqual("[]", script);
     }
 
     [TestMethod]
@@ -421,7 +458,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"{Name:""John"",Age:25}", script);
+        AssertScriptEqual(@"{Name:""John"",Age:25}", script);
     }
 
     [TestMethod]
@@ -443,7 +480,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Sum:x+y,Product:x*y}", script);
+        AssertScriptEqual("{Sum:x+y,Product:x*y}", script);
     }
 
     [TestMethod]
@@ -472,7 +509,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new MyClass(2, 3);
   v$0.Property1 = ""value1"";
@@ -505,7 +542,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new MyClass;
   v$0.Person = { first: ""John"", years: 30 };
@@ -537,7 +574,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"v$0.Property1 = ""value1"", v$0.Property2 = 42", script);
+        AssertScriptEqual(@"v$0.Property1 = ""value1"", v$0.Property2 = 42", script);
 
     }
 
@@ -582,7 +619,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new A;
   v$0.A1.B1 = ""Test"";
@@ -641,7 +678,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("`Hello, ${name}!`", script);
+        AssertScriptEqual("`Hello, ${name}!`", script);
     }
 
     [TestMethod]
@@ -663,7 +700,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("`Sum: ${x+y}, Product: ${x*y}`", script);
+        AssertScriptEqual("`Sum: ${x+y}, Product: ${x*y}`", script);
     }
 
     [TestMethod]
@@ -686,7 +723,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("`Name: ${name}, Age: ${age}`", script);
+        AssertScriptEqual("`Name: ${name}, Age: ${age}`", script);
     }
 
     [TestMethod]
@@ -707,7 +744,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("'Hello, World!'", script);
+        AssertScriptEqual("'Hello, World!'", script);
     }
 
     [TestMethod]
@@ -739,7 +776,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   let simpleObj = new MyClass;
   let paramObj = new MyClass(42, ""test"");
@@ -773,7 +810,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass", script);
+        AssertScriptEqual("new MyClass", script);
     }
 
     [TestMethod]
@@ -815,7 +852,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new Outer;
   v$0.Middle = new Middle;
@@ -863,7 +900,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new MyClass(1, 2);
   v$0.Prop1 = ""value1"";
@@ -897,7 +934,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"{Name:""John"",Address:{City:""New York"",Zip:10001}}", script);
+        AssertScriptEqual(@"{Name:""John"",Address:{City:""New York"",Zip:10001}}", script);
     }
 
     [TestMethod]
@@ -918,7 +955,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"{Name:""John"",Scores:[85,92,78]}", script);
+        AssertScriptEqual(@"{Name:""John"",Scores:[85,92,78]}", script);
     }
 
     [TestMethod]
@@ -939,7 +976,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{}", script);
+        AssertScriptEqual("{}", script);
     }
 
     [TestMethod]
@@ -961,7 +998,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Name:name,Age:30}", script);
+        AssertScriptEqual("{Name:name,Age:30}", script);
     }
 
     [TestMethod]
@@ -983,7 +1020,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new Array(5).fill().map(()=>new Array(5))", script);
+        AssertScriptEqual("new Array(5).fill().map(()=>new Array(5))", script);
     }
 
     [TestMethod]
@@ -1004,7 +1041,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"[""Hello"",""World""]", script);
+        AssertScriptEqual(@"[""Hello"",""World""]", script);
     }
 
     [TestMethod]
@@ -1025,7 +1062,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"[42,""test"",true]", script);
+        AssertScriptEqual(@"[42,""test"",true]", script);
     }
 
     [TestMethod]
@@ -1046,7 +1083,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("[[1,2],[3,4]]", script);
+        AssertScriptEqual("[[1,2],[3,4]]", script);
     }
 
     [TestMethod]
@@ -1073,7 +1110,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("this.MyMethod.bind(this)", script);
+        AssertScriptEqual("this.MyMethod.bind(this)", script);
     }
 
     [TestMethod]
@@ -1098,7 +1135,7 @@ public sealed class SemanticWalkerCreationTest
         var node = watcher.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("x=>{return x*2}", script);
+        AssertScriptEqual("x=>{return x*2}", script);
     }
 
     [TestMethod]
@@ -1145,7 +1182,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"v$0.push(1), v$0.push(2), v$0.push(3)", script);
+        AssertScriptEqual(@"v$0.push(1), v$0.push(2), v$0.push(3)", script);
     }
 
     [TestMethod]
@@ -1169,7 +1206,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectOrCollectionInitializer(operation.Initializer!, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"v$0.push([1]), v$0.push([2, 4]), v$0.push([3])".ReplaceLineEndings(), script?.ReplaceLineEndings());
+        AssertScriptEqual(@"v$0.push([1]), v$0.push([2, 4]), v$0.push([3])".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
 
@@ -1197,7 +1234,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new MyClass;
   v$0.Field1 = 42;
@@ -1225,7 +1262,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("[42]", script);
+        AssertScriptEqual("[42]", script);
     }
 
     [TestMethod]
@@ -1246,7 +1283,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("{Flag:true,Count:100,Price:19.99}", script);
+        AssertScriptEqual("{Flag:true,Count:100,Price:19.99}", script);
     }
 
     [TestMethod]
@@ -1269,7 +1306,7 @@ public sealed class SemanticWalkerCreationTest
 
         // BigInt 类型使用 CallExpression 而非 NewExpression
         // GetMapperType 将 BigInteger 类型名称映射为 "BigInt"
-        Assert.AreEqual("BigInt(42)", script);
+        AssertScriptEqual("BigInt(42)", script);
     }
 
     [TestMethod]
@@ -1297,7 +1334,7 @@ public sealed class SemanticWalkerCreationTest
 
         // 当对象创建作为方法参数时，会直接内联创建
         // 静态方法调用使用类名前缀
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   TestClass.StaticMethod(new MyClass);
 }", script);
@@ -1330,7 +1367,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // 实例方法会带有 this 前缀
-        Assert.AreEqual("this.MyMethod.bind(this)", script);
+        AssertScriptEqual("this.MyMethod.bind(this)", script);
     }
 
     [TestMethod]
@@ -1356,7 +1393,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("x=>{return x*2}", script);
+        AssertScriptEqual("x=>{return x*2}", script);
     }
 
     [TestMethod]
@@ -1390,7 +1427,7 @@ public sealed class SemanticWalkerCreationTest
 
         // 验证嵌套对象创建作为参数时的处理
         // 当对象创建没有初始化器时，会直接内联创建
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   let list = [];
   list.push((() => {
@@ -1422,7 +1459,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // 交错数组（数组的数组）应该创建指定大小的数组
-        Assert.AreEqual("new Array(3)", script);
+        AssertScriptEqual("new Array(3)", script);
     }
 
     [TestMethod]
@@ -1449,7 +1486,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"new MyClass(42,""hello"",""world"")", script);
+        AssertScriptEqual(@"new MyClass(42,""hello"",""world"")", script);
     }
 
     [TestMethod]
@@ -1476,7 +1513,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"{Level1:{Level2:{Level3:""deep""}}}", script);
+        AssertScriptEqual(@"{Level1:{Level2:{Level3:""deep""}}}", script);
     }
 
     [TestMethod]
@@ -1497,7 +1534,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual(@"[""hello"",null,""world""]", script);
+        AssertScriptEqual(@"[""hello"",null,""world""]", script);
     }
 
     [TestMethod]
@@ -1520,7 +1557,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // 双大括号转义为单大括号
-        Assert.AreEqual(@"`The value is {value}: ${value}`", script);
+        AssertScriptEqual(@"`The value is {value}: ${value}`", script);
     }
 
     [TestMethod]
@@ -1555,7 +1592,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         // 多层嵌套会逐级创建对象
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"(() => {
   let v$0 = new A;
   v$0.B = new B;
@@ -1587,7 +1624,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("_4cb33a818161a3e1(2024,1,1)", script);
+        AssertScriptEqual("_4cb33a818161a3e1(2024,1,1)", script);
     }
 
     [TestMethod]
@@ -1608,7 +1645,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("_8c5a25d777626c6c(2024,1,1)", script);
+        AssertScriptEqual("_8c5a25d777626c6c(2024,1,1)", script);
     }
 
     [TestMethod]
@@ -1629,7 +1666,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("_e9a3481b3456aad4(12,30,0)", script);
+        AssertScriptEqual("_e9a3481b3456aad4(12,30,0)", script);
     }
 
     [TestMethod]
@@ -1650,7 +1687,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("_6f22e268aec62fe7(1,2,3)", script);
+        AssertScriptEqual("_6f22e268aec62fe7(1,2,3)", script);
     }
 
     [TestMethod]
@@ -1672,7 +1709,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // List 映射为 Array
-        Assert.AreEqual("[]", script);
+        AssertScriptEqual("[]", script);
     }
 
     [TestMethod]
@@ -1694,7 +1731,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // Dictionary 映射为 Map
-        Assert.AreEqual("new Map", script);
+        AssertScriptEqual("new Map", script);
     }
 
     [TestMethod]
@@ -1716,7 +1753,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // HashSet 映射为 Set
-        Assert.AreEqual("new Set", script);
+        AssertScriptEqual("new Set", script);
     }
 
     [TestMethod]
@@ -1751,7 +1788,7 @@ public sealed class SemanticWalkerCreationTest
         // 1. Roslyn 操作树结构与预期不同
         // 2. 需要特定的类型转换场景才包含 IConversionOperation
         // 3. 条件检查 operation.Parent?.Parent 可能需要调整
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   this.ProcessObject((() => {
     let v$0 = new MyClass;
@@ -1791,7 +1828,7 @@ public sealed class SemanticWalkerCreationTest
         // 1. Roslyn 操作树结构与预期不同
         // 2. 需要特定的类型转换场景才包含 IConversionOperation
         // 3. 条件检查 operation.Parent?.Parent 可能需要调整
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   this.ProcessObject((() => {
     let v$0 = new MyClass;
@@ -1827,7 +1864,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+        AssertScriptEqual(
 @"{
   let list = [];
   list.push((new Outer).Value);
@@ -1890,7 +1927,7 @@ public sealed class SemanticWalkerCreationTest
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let obj = (() => {", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("let obj = (async () => {", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "v$0.Callback = async () => {", StringComparison.Ordinal);
+        StringAssert.Contains(script, "v$0.callback = async () => {", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -1912,7 +1949,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // 大小为 0 的数组会压缩为空数组字面量
-        Assert.AreEqual("[]", script);
+        AssertScriptEqual("[]", script);
     }
 
     [TestMethod]
@@ -1936,7 +1973,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("new MyClass(x+y,x*y)", script);
+        AssertScriptEqual("new MyClass(x+y,x*y)", script);
     }
 
     [TestMethod]
@@ -1957,7 +1994,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        Assert.AreEqual("_d90dce0e1d2f06e4(2024,1,1,0,0,0,_e5548fcde33957a6())", script);
+        AssertScriptEqual("_d90dce0e1d2f06e4(2024,1,1,0,0,0,_e5548fcde33957a6())", script);
     }
 
     #region 扩展测试用例 - 数组创建变体
@@ -1982,7 +2019,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let arr = [1, 2, 3, 4, 5];
 }", script);
     }
@@ -2007,7 +2044,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let arr = [""a"", ""b"", ""c""];
 }", script);
     }
@@ -2032,7 +2069,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let matrix = new Array(2).fill().map(() => new Array(3));
 }", script);
     }
@@ -2057,7 +2094,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let jagged = new Array(3);
 }", script);
     }
@@ -2447,7 +2484,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let big = BigInt(12345);
 }", script);
     }
@@ -2953,7 +2990,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let a = new Object;
   let b = new Object;
   let c = new Object;
@@ -3008,7 +3045,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let list = [1, 2, 3, 4, 5];
 }", script);
     }
@@ -3061,7 +3098,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let set = new Set([""a"", ""b"", ""c""]);
 }", script);
     }
@@ -3086,7 +3123,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let arr = [1, 2, 3];
 }", script);
     }
@@ -3111,7 +3148,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let arr = [""a"", ""b"", ""c""];
 }", script);
     }
@@ -3136,7 +3173,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        Assert.AreEqual(@"{
+        AssertScriptEqual(@"{
   let arr = [1.1, 2.2, 3.3];
 }", script);
     }
@@ -3240,7 +3277,7 @@ public sealed class SemanticWalkerCreationTest
         StringAssert.Contains(script, "let obj = (() => {");
         StringAssert.Contains(script, "let v$1;");
         StringAssert.Contains(script, "let v$0 = new Box;");
-        StringAssert.Contains(script, "v$1 = this.GetTuple()");
+        StringAssert.Contains(script, "v$1 = this.getTuple()");
         Assert.IsFalse(
             script.Contains("{\r\n  let v$1;\r\n  let obj = (() => {", StringComparison.Ordinal)
             || script.Contains("{\n  let v$1;\n  let obj = (() => {", StringComparison.Ordinal),
@@ -3335,3 +3372,4 @@ public sealed class SemanticWalkerCreationTest
     #endregion
 }
 #endregion
+

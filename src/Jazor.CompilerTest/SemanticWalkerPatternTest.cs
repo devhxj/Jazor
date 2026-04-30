@@ -102,14 +102,27 @@ public sealed class SemanticWalkerPatternTest
 
   private static void AssertScriptEqual(string expected, string? actual)
   {
-    Assert.AreEqual(expected.ReplaceLineEndings(), actual?.ReplaceLineEndings());
+    Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings(), actual?.ReplaceLineEndings());
   }
 
   private static void AssertContainsCount(string? actual, string expected, int count)
   {
     Assert.IsNotNull(actual);
+    expected = ExpectedJsNaming.Normalize(expected);
     var actualCount = actual!.Split([expected], StringSplitOptions.None).Length - 1;
     Assert.AreEqual(count, actualCount, $"Expected '{expected}' to appear {count} time(s), but found {actualCount}.{Environment.NewLine}{actual}");
+  }
+
+  private static void AssertStringContainsJsNaming(string? actual, string expected)
+  {
+    Assert.IsNotNull(actual);
+    StringAssert.Contains(actual!, ExpectedJsNaming.Normalize(expected), StringComparison.Ordinal);
+  }
+
+  private static void AssertStringContainsJsNaming(string? actual, string expected, StringComparison comparisonType)
+  {
+    Assert.IsNotNull(actual);
+    StringAssert.Contains(actual!, ExpectedJsNaming.Normalize(expected), comparisonType);
   }
 
   /// <summary>
@@ -1144,7 +1157,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let person = { Name: ""John"", Age: 30 };
   let result = person != null && (""Name"" in person && person.Name === ""John"");
@@ -1180,7 +1193,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitPropertySubpattern(propertySubpatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"person.Name === ""John""", script);
+    AssertScriptEqual(@"person.Name === ""John""", script);
   }
 
   /// <summary>
@@ -1204,7 +1217,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let obj = { Name: ""John"", Age: 30 };
   let result = obj != null && ""Name"" in obj && obj.Name === ""John"" && ""Age"" in obj && obj.Age > 18;
@@ -1239,7 +1252,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitRecursivePattern(recursivePatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"obj != null && (""Name"" in obj && obj.Name === ""John"") && (obj != null && (""Age"" in obj && obj.Age > 18))", script);
 
   }
@@ -1967,7 +1980,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let value = 5;
   let result = (() => {
     const v$0 = TestClass.Get5(value);
@@ -2007,7 +2020,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let person = { Name: ""John"", Age: 30 };
   let result = (() => {
@@ -2080,10 +2093,10 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let data =", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let data =", StringComparison.Ordinal);
     AssertContainsCount(script, "data.Inner", 3);
-    StringAssert.Contains(script, "data.Inner != null", StringComparison.Ordinal);
-    StringAssert.Contains(script, "\"Value\" in data.Inner && data.Inner.Value > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "data.Inner != null", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Value\" in data.Inner && data.Inner.Value > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2516,11 +2529,11 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let x, s;", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let x, s;", StringComparison.Ordinal);
     AssertContainsCount(script, "tuple.Item1", 2);
     AssertContainsCount(script, "tuple.Item2", 2);
-    StringAssert.Contains(script, "typeof tuple.Item1 === \"number\" && (x = tuple.Item1, true)", StringComparison.Ordinal);
-    StringAssert.Contains(script, "typeof tuple.Item2 === \"string\" && (s = tuple.Item2, true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "typeof tuple.Item1 === \"number\" && (x = tuple.Item1, true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "typeof tuple.Item2 === \"string\" && (s = tuple.Item2, true)", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2544,12 +2557,12 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let x, s;", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let x, s;", StringComparison.Ordinal);
     AssertContainsCount(script, "tuple.Item1", 2);
     AssertContainsCount(script, "tuple.Item2", 2);
-    StringAssert.Contains(script, "typeof tuple.Item1 === \"number\" && (x = tuple.Item1, true)", StringComparison.Ordinal);
-    StringAssert.Contains(script, "typeof tuple.Item2 === \"string\" && (s = tuple.Item2, true)", StringComparison.Ordinal);
-    StringAssert.Contains(script, "&& x > 0;", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "typeof tuple.Item1 === \"number\" && (x = tuple.Item1, true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "typeof tuple.Item2 === \"string\" && (s = tuple.Item2, true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "&& x > 0;", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3191,7 +3204,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let obj = { Name: ""Test"", Value: 42 };
   let result = obj != null && (""Name"" in obj && obj.Name === ""Test"");
@@ -3307,7 +3320,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let obj = { Name: ""Test"" };
   let result = true;
 }", script);
@@ -3442,7 +3455,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "\"Inner\" in data && (data.Inner != null && (\"Value\" in data.Inner && data.Inner.Value === 42))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Inner\" in data && (data.Inner != null && (\"Value\" in data.Inner && data.Inner.Value === 42))", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3471,7 +3484,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let obj = { X: 1, Y: 2 };
   let result = (() => {
@@ -4066,7 +4079,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let obj = this.GetValue();
   let result = obj !== null;
 }", script);
@@ -4504,7 +4517,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "let result = (v$0 = this.GetValue(), v$0 !== null);", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let result = (v$0 = this.GetValue(), v$0 !== null);", StringComparison.Ordinal);
     AssertContainsCount(script, "this.GetValue()", 1);
   }
 
@@ -4530,8 +4543,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.IsNotNull(script);
-    StringAssert.Contains(script, "\"Name\" in obj", StringComparison.Ordinal);
-    StringAssert.Contains(script, "!== null", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Name\" in obj", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "!== null", StringComparison.Ordinal);
     Assert.IsFalse(script.Contains("&& false", StringComparison.Ordinal));
     AssertContainsCount(script, "obj.Name", 1);
   }
@@ -4853,7 +4866,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let v$0;
   let point = new Point(1, 2);
   let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] === 1 && v$0[1] === 2;
@@ -4883,7 +4896,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let v$0;
   let point = new Point(1, 2);
   let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] > 0 && v$0[1] > 0;
@@ -4916,7 +4929,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let v$0, x, y;
   let point = new Point(1, 2);
   if (point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && (x = v$0[0], true) && (y = v$0[1], true)) {
@@ -4961,7 +4974,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   let v$0;
   let point = new Point(1, 2);
   let result = point instanceof Point && (v$0 = point.Deconstruct(undefined, undefined), true) && v$0[0] === 2 && v$0[1] === 3;
@@ -5040,7 +5053,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let obj = { Value: 42 };
   let result = (() => {
@@ -5205,7 +5218,7 @@ line2"";
 
     AssertContainsCount(script, "data.Outer", 5);
     AssertContainsCount(script, "data.Outer.Middle", 3);
-    StringAssert.Contains(script, "\"Inner\" in data.Outer.Middle && data.Outer.Middle.Inner > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Inner\" in data.Outer.Middle && data.Outer.Middle.Inner > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5230,9 +5243,9 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "obj.Items", 7);
-    StringAssert.Contains(script, "let first;", StringComparison.Ordinal);
-    StringAssert.Contains(script, "Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true)", StringComparison.Ordinal);
-    StringAssert.Contains(script, "\"length\" in obj.Items && obj.Items.length > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let first;", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "Array.isArray(obj.Items) && obj.Items.length >= 1 && (first = obj.Items[0], true)", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"length\" in obj.Items && obj.Items.length > 0", StringComparison.Ordinal);
   }
 
   #endregion
@@ -5260,7 +5273,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let obj = { Value: null };
   let result = obj != null && (""Value"" in obj && !(obj.Value === null));
@@ -5289,9 +5302,9 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "let v;", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "let v;", StringComparison.Ordinal);
     AssertContainsCount(script, "obj.Inner", 3);
-    StringAssert.Contains(script, "\"Inner\" in obj && (obj.Inner != null && (\"Value\" in obj.Inner && (v = obj.Inner.Value, true)))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Inner\" in obj && (obj.Inner != null && (\"Value\" in obj.Inner && (v = obj.Inner.Value, true)))", StringComparison.Ordinal);
   }
 
   #endregion
@@ -5608,11 +5621,11 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    StringAssert.Contains(script, "\"Level1\" in data", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Level1\" in data", StringComparison.Ordinal);
     AssertContainsCount(script, "data.Level1", 7);
     AssertContainsCount(script, "data.Level1.Level2", 5);
     AssertContainsCount(script, "data.Level1.Level2.Level3", 3);
-    StringAssert.Contains(script, "\"Value\" in data.Level1.Level2.Level3 && data.Level1.Level2.Level3.Value > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"Value\" in data.Level1.Level2.Level3 && data.Level1.Level2.Level3.Value > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -5711,7 +5724,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(
+    AssertScriptEqual(
 @"{
   let result = (() => {
     let first, second, last;
@@ -5868,7 +5881,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "obj.A", 11);
-    StringAssert.Contains(script, "\"F\" in obj.A.B.C.D.E && obj.A.B.C.D.E.F === 42", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "\"F\" in obj.A.B.C.D.E && obj.A.B.C.D.E.F === 42", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -6359,8 +6372,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "person.Address", 4);
-    StringAssert.Contains(script, "(person.Address instanceof Address && (person.Address != null && (\"City\" in person.Address && person.Address.City === \"NYC\"))))", StringComparison.Ordinal);
-    StringAssert.Contains(script, "console.log(\"New Yorker\");", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "(person.Address instanceof Address && (person.Address != null && (\"City\" in person.Address && person.Address.City === \"NYC\"))))", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "console.log(\"New Yorker\");", StringComparison.Ordinal);
   }
 
   [TestMethod]
@@ -6388,8 +6401,8 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     AssertContainsCount(script, "person.Address", 6);
-    StringAssert.Contains(script, "person.Address.City === \"NYC\"", StringComparison.Ordinal);
-    StringAssert.Contains(script, "person.Address.Zip > 0", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "person.Address.City === \"NYC\"", StringComparison.Ordinal);
+    AssertStringContainsJsNaming(script, "person.Address.Zip > 0", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -6754,7 +6767,7 @@ line2"";
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"{
+    AssertScriptEqual(@"{
   this.Process(""hello"");
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }

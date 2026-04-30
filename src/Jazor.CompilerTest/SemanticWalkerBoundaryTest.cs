@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Text.RegularExpressions;
 
 namespace Jazor.ComplierTest;
 
@@ -68,7 +69,43 @@ public sealed class SemanticWalkerBoundaryTest
 	}
 
 	private static void AssertScriptEqual(string expected, string? actual)
-		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+		=> Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+
+	private static string NormalizeExpectedJsNaming(string expected)
+	{
+		expected = Regex.Replace(expected, @"\bItem([0-9]+)\b", "item$1");
+		expected = Regex.Replace(expected, @"([\{\[,]\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value);
+		expected = Regex.Replace(expected, @"(^\s*)([A-Z][A-Za-z0-9_]*)(\s*:)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value) + m.Groups[3].Value, RegexOptions.Multiline);
+		expected = Regex.Replace(expected, @"(\?*\.)([A-Z][A-Za-z0-9_]*)", static m => m.Groups[1].Value + Camel(m.Groups[2].Value));
+		expected = Regex.Replace(expected, @"""([A-Z][A-Za-z0-9_]*)""(\s+in\b)", static m => "\"" + Camel(m.Groups[1].Value) + "\"" + m.Groups[2].Value);
+		expected = Regex.Replace(expected, @"\[""([A-Z][A-Za-z0-9_]*)""\]", static m => "[\"" + Camel(m.Groups[1].Value) + "\"]");
+		return expected;
+	}
+
+	private static string Camel(string name)
+	{
+		if (string.IsNullOrEmpty(name) || !char.IsUpper(name[0]))
+			return name;
+
+		if (name.Length == 1)
+			return char.ToLowerInvariant(name[0]).ToString();
+
+		var chars = name.ToCharArray();
+		chars[0] = char.ToLowerInvariant(chars[0]);
+		for (var index = 1; index < chars.Length; index++)
+		{
+			if (!char.IsUpper(chars[index]))
+				break;
+
+			var hasNext = index + 1 < chars.Length;
+			if (hasNext && !char.IsUpper(chars[index + 1]))
+				break;
+
+			chars[index] = char.ToLowerInvariant(chars[index]);
+		}
+
+		return new string(chars);
+	}
 
 	#region 位运算符边界测试
 
@@ -97,7 +134,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let x = 5;
   let andResult = x & 0;
   let orResult = x | 0;
@@ -130,7 +167,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let x = 5;
   let andResult = x & 255;
   let orResult = x | 255;
@@ -163,7 +200,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let x = 5;
   let andResult = x & -1;
   let orResult = x | -1;
@@ -196,7 +233,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let x = 5;
   let leftShift = x << 0;
   let rightShift = x >> 0;
@@ -228,7 +265,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let x = 1;
   let leftShift = x << 31;
   let rightShift = x >> 31;
@@ -262,7 +299,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 2147483647;
   let result = max + 1;
 }", script);
@@ -291,7 +328,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let min = -2147483648;
   let result = min - 1;
 }", script);
@@ -320,7 +357,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = Number.MAX_VALUE;
   let result = max * 2;
 }", script);
@@ -379,7 +416,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let inf = Infinity;
   let check = inf > 0;
 }", script);
@@ -408,7 +445,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let inf = -Infinity;
   let check = inf < 0;
 }", script);
@@ -438,7 +475,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let x = 1 / 0;
   let y = -1 / 0;
   let z = 0 / 0;
@@ -481,7 +518,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let obj = { Level1: { Level2: { Level3: { Level4: { Value: 42 } } } } };
 }", script);
 	}
@@ -519,7 +556,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let obj = { A: { B: { C: { D: { E: 42 } } } } };
   let value = obj.A.B.C.D.E;
 }", script);
@@ -549,7 +586,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		// JavaScript 三元运算符是右结合的
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = true, b = true, c = true;
   let result = a ? b ? c ? 1 : 2 : 3 : 4;
 }", script);
@@ -581,7 +618,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let arr = [[[1, 2]]];
 }", script);
 	}
@@ -618,7 +655,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		// 变量没有被合并，因为它们的类型可能不同
 		// ?? 运算符转换为嵌套形式
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = null;
   let b = null;
   let c = null;
@@ -717,7 +754,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		// string.Empty 被白名单内联转换为空字符串 ""
 		// 空字符串使用双引号
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let empty1 = """";
   let empty2 = """";
   let empty3 = """";
@@ -751,7 +788,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = true, b = false, c = true, d = true, e = false, f = true;
   let result = a && b || c && d && e || f;
 }", script);
@@ -780,7 +817,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = 1, b = 2, c = 3, d = 4, e = 5, f = 6;
   let result = a + b * c - d / e % f;
 }", script);
@@ -811,7 +848,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		// C# 表达式 lambda 被转换为带 return 的函数
 		// 委托调用使用 Invoke 方法
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let nested = x => {
     return y => {
       return z => {
@@ -852,7 +889,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		// 空语句被放在同一行，最后一个 do-while 的格式不同
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   while (false) { }
   for (let i = 0; i < 0; i++) { }
   do { }
@@ -892,7 +929,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		// 验证生成了三层 for 循环
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   for (let i = 0; i < 10; i++) {
     for (let j = 0; j < 10; j++) {
       for (let k = 0; k < 10; k++) {
@@ -929,7 +966,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let empty = [];
   for (let item of empty) {
     console.log(item);
@@ -996,7 +1033,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 255;
   let min = 0;
 }", script);
@@ -1023,7 +1060,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 32767;
   let min = -32768;
 }", script);
@@ -1050,7 +1087,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 4294967295;
   let min = 0;
 }", script);
@@ -1077,7 +1114,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 18446744073709551615n;
   let min = 0n;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -1104,7 +1141,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 3.4028235E+38;
   let min = -3.4028235E+38;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -1131,7 +1168,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 79228162514264337593543950335;
   let min = -79228162514264337593543950335;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -1163,7 +1200,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let chinese = ""你好世界"";
   let emoji = ""😀🎉"";
   let mixed = ""Hello世界"";
@@ -1194,7 +1231,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let tab = ""\t"";
   let newline = ""\n"";
   let carriage = ""\r"";
@@ -1223,7 +1260,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let longText = ""This is a very long string that contains many characters and words to test how the compiler handles longer text content in string literals. It should be converted correctly to JavaScript without any issues."";
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -1252,7 +1289,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let large = new Array(1000);
 }", script);
 	}
@@ -1278,7 +1315,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let matrix2d = new Array(3).fill().map(() => new Array(4));
   let matrix3d = new Array(2).fill().map(() => new Array(3).fill().map(() => new Array(4)));
 }", script);
@@ -1307,7 +1344,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let ints = [1, 2, 3];
   let strings = [""a"", ""b"", ""c""];
   let bools = [true, false, true];
@@ -1339,7 +1376,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let empty = new Object;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -1370,7 +1407,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let obj = {
     name: ""test"",
     Name: ""Test"",
@@ -1400,7 +1437,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let obj = {
     a: 1,
     b: 2,
@@ -1441,7 +1478,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = 1;
   let result = a + 1 + 2 + (a + 3 + 4);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -1468,7 +1505,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = true, b = false, c = true, d = false;
   let result = (a || b) && (c || d) || !(a && b);
 }", script);
@@ -1498,7 +1535,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let a = 1, b = 2, c = 3;
   let result1 = a + b * c;
   let result2 = (a + b) * c;
@@ -1535,7 +1572,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let count = 0;
   for (let i = 0; i < 0; i++) {
     count++;
@@ -1567,7 +1604,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let count = 0;
   for (let i = 0; i < 1; i++) {
     count++;
@@ -1598,7 +1635,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   for (let i = 10; i >= 0; i -= 2) {
     console.log(i);
   }
@@ -1630,7 +1667,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   if (n <= 1)
     return 1;
   return n * this.Factorial(n - 1);
@@ -1697,7 +1734,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 255;
   let min = 0;
   let mid = 128;
@@ -1725,7 +1762,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let max = 32767;
   let min = -32768;
 }", script);
@@ -1919,7 +1956,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   let obj = null;
 }", script);
 	}
@@ -1983,7 +2020,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   if (true) {
     console.log(""always"");
   }
@@ -2013,7 +2050,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertScriptEqual(@"{
   if (false) {
     console.log(""never"");
   }
@@ -2058,3 +2095,4 @@ public sealed class SemanticWalkerBoundaryTest
 
 	#endregion
 }
+

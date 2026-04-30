@@ -1176,6 +1176,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private readonly ITypeSymbol? _moduleRootType;
 
+    private readonly IReadOnlyDictionary<ISymbol, string>? _moduleDeclaredNames;
+
     private readonly Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> _whiteListCompiles;
 
     private readonly CancellationToken _cancellationToken;
@@ -1193,6 +1195,18 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     public SemanticWalker(ITypeSymbol moduleRootType) : this() => _moduleRootType = moduleRootType;
 
     public SemanticWalker(ITypeSymbol moduleRootType, CancellationToken cancellationToken) : this(cancellationToken) => _moduleRootType = moduleRootType;
+
+    public SemanticWalker(ITypeSymbol moduleRootType, IReadOnlyDictionary<ISymbol, string> moduleDeclaredNames) : this()
+    {
+        _moduleRootType = moduleRootType;
+        _moduleDeclaredNames = moduleDeclaredNames;
+    }
+
+    public SemanticWalker(ITypeSymbol moduleRootType, IReadOnlyDictionary<ISymbol, string> moduleDeclaredNames, CancellationToken cancellationToken) : this(cancellationToken)
+    {
+        _moduleRootType = moduleRootType;
+        _moduleDeclaredNames = moduleDeclaredNames;
+    }
 
     public SemanticWalker(bool test) : this() => _test = test;
 

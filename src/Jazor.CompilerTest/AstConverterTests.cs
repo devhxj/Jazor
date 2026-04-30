@@ -166,8 +166,8 @@ public sealed class AstConverterTests
 
         // Assert
         Assert.AreEqual(
-@"export let Field = 42;
-export function Method() { }
+@"export let field = 42;
+export function method() { }
 ", script);
         
     }
@@ -211,7 +211,7 @@ export function Method() { }
 
         // Assert
         Assert.AreEqual(
-@"export let Field = 42;
+@"export let field = 42;
 ", script);
 
     }
@@ -236,7 +236,7 @@ export function Method() { }
 
         // Assert
         Assert.AreEqual(
-@"export const ConstField = 42;
+@"export const constField = 42;
 ", script);
 
     }
@@ -262,8 +262,8 @@ export function Method() { }
 
         // Assert
         Assert.AreEqual(
-@"let PrivateField = 42;
-export let PublicField = 24;
+@"let privateField = 42;
+export let publicField = 24;
 ", script);
 
     }
@@ -291,11 +291,52 @@ export let PublicField = 24;
 
         // Assert
         Assert.AreEqual(
-@"export function TestMethod() {
+@"export function testMethod() {
   return 1;
 }
 ", script);
 
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassMembersWithoutExplicitNameConfig_UseJsNamingFallback()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static int PascalField = 1;
+
+                public static int PascalMethod()
+                    => PascalField;
+
+                public sealed class NestedClass
+                {
+                    public int PascalValue = 2;
+
+                    public int ReadValue()
+                        => PascalValue;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export let pascalField = 1;
+export function pascalMethod() {
+  return pascalField;
+}
+export class NestedClass {
+  pascalValue = 2;
+  readValue() {
+    return this.pascalValue;
+  }
+}
+", script);
     }
 
     [TestMethod]
@@ -317,8 +358,8 @@ export let PublicField = 24;
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
-@"export async function TestMethodAsync() {
+AssertScriptEqual(
+@"export async function testMethodAsync() {
   await Promise.resolve();
 }
 ", script);
@@ -434,14 +475,14 @@ export function set_Property(value) {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
+Assert.AreEqual(
 @"export class NestedClass {
-  Field;
+  field;
   constructor(value) {
-    this.Field = value;
+    this.field = value;
   }
-  Double() {
-    return this.Field * 2;
+  double() {
+    return this.field * 2;
   }
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -470,9 +511,9 @@ export function set_Property(value) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+Assert.AreEqual(
 @"export class NestedClass {
-  Field;
+  field;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -663,9 +704,9 @@ export function set_Property(value) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+AssertScriptEqual(
 $@"export class NestedClass {{
-  Value;
+  value;
   constructor() {{
     let $args = arguments;
     if ($args.length === 0) {{
@@ -681,7 +722,7 @@ $@"export class NestedClass {{
   }}
   {ctor0}() {{ }}
   {ctor1}(value) {{
-    this.Value = value;
+    this.value = value;
   }}
 }}
 ", script);
@@ -883,11 +924,11 @@ export class Level3 extends Level2 {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+AssertScriptEqual(
 @"export class BaseClass {
-  Field;
+  field;
   constructor(value) {
-    this.Field = value;
+    this.field = value;
   }
 }
 export class NestedClass extends BaseClass {
@@ -937,11 +978,11 @@ export class NestedClass extends BaseClass {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+AssertScriptEqual(
 $@"export class BaseClass {{
-  Field;
+  field;
   constructor(value) {{
-    this.Field = value;
+    this.field = value;
   }}
 }}
 export class NestedClass extends BaseClass {{
@@ -962,7 +1003,7 @@ export class NestedClass extends BaseClass {{
   }}
   {ctor0}() {{ }}
   {ctor1}(value) {{
-    this.Field = value * 2;
+    this.field = value * 2;
   }}
 }}
 ", script);
@@ -1030,7 +1071,7 @@ export class NestedClass extends BaseClass {{
 
         AssertScriptEqual(
 @"export class BaseClass {
-  Value() {
+  value() {
     return 1;
   }
 }
@@ -1038,8 +1079,8 @@ export class NestedClass extends BaseClass {
   constructor() {
     super();
   }
-  Value() {
-    return super.Value() + 1;
+  value() {
+    return super.value() + 1;
   }
 }
 ", script);
@@ -1082,10 +1123,10 @@ export class NestedClass extends BaseClass {
         AssertScriptEqual(
 $@"export class BaseClass {{
   #{backingFieldName};
-  get Value() {{
+  get value() {{
     return this.#{backingFieldName};
   }}
-  set Value(value) {{
+  set value(value) {{
     this.#{backingFieldName} = value;
   }}
 }}
@@ -1093,11 +1134,11 @@ export class NestedClass extends BaseClass {{
   constructor() {{
     super();
   }}
-  Read() {{
-    return super.Value;
+  read() {{
+    return super.value;
   }}
-  Write(value) {{
-    super.Value = value + 1;
+  write(value) {{
+    super.value = value + 1;
   }}
 }}
 ", script);
@@ -1137,7 +1178,7 @@ export class NestedClass extends BaseClass {{
 
         AssertScriptEqual(
 @"export class BaseClass {
-  Value(value) {
+  value(value) {
     return value + 1;
   }
 }
@@ -1145,8 +1186,8 @@ export class NestedClass extends BaseClass {
   constructor() {
     super();
   }
-  Get() {
-    return value => super.Value(value);
+  get() {
+    return value => super.value(value);
   }
 }
 ", script);
@@ -1340,9 +1381,9 @@ export class NestedClass extends BaseClass {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+AssertScriptEqual(
 @"export class NestedClass {
-  Value = 42;
+  value = 42;
 }
 ", script);
     }
@@ -1371,10 +1412,10 @@ export class NestedClass extends BaseClass {
         AssertScriptEqual(
 $@"export class NestedClass {{
   #{backingFieldName} = 42;
-  get Value() {{
+  get value() {{
     return this.#{backingFieldName};
   }}
-  set Value(value) {{
+  set value(value) {{
     this.#{backingFieldName} = value;
   }}
 }}
@@ -1405,7 +1446,7 @@ $@"export class NestedClass {{
         AssertScriptEqual(
 $@"export class NestedClass {{
   #{backingFieldName} = 42;
-  get Value() {{
+  get value() {{
     return this.#{backingFieldName};
   }}
 }}
@@ -1436,10 +1477,10 @@ $@"export class NestedClass {{
         AssertScriptEqual(
 $@"export class NestedClass {{
   static #{backingFieldName} = 42;
-  static get Value() {{
+  static get value() {{
     return this.#{backingFieldName};
   }}
-  static set Value(value) {{
+  static set value(value) {{
     this.#{backingFieldName} = value;
   }}
 }}
@@ -1473,7 +1514,7 @@ $@"export class NestedClass {{
 $@"import {{ _4cb33a818161a3e1 }} from ""System/DateTimeModule.js"";
 export class NestedClass {{
   static #{backingFieldName} = _4cb33a818161a3e1(2024, 1, 2);
-  static get Value() {{
+  static get value() {{
     return this.#{backingFieldName};
   }}
 }}
@@ -1504,7 +1545,7 @@ export class NestedClass {{
 
         AssertScriptEqual(
 @"export class NestedClass {
-  get Value() {
+  get value() {
     return 1;
   }
 }
@@ -1532,7 +1573,7 @@ export class NestedClass {{
 
         AssertScriptEqual(
 @"export class NestedClass {
-  Square(x) {
+  square(x) {
     return x * x;
   }
 }
@@ -1561,9 +1602,9 @@ export class NestedClass {{
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+AssertScriptEqual(
 @"export class NestedClass {
-  async LoadAsync() {
+  async loadAsync() {
     await Promise.resolve();
   }
 }
@@ -1591,7 +1632,7 @@ export class NestedClass {{
 
         AssertScriptEqual(
 @"export class NestedClass {
-  get Value() {
+  get value() {
     return 1;
   }
 }
@@ -1626,10 +1667,10 @@ export class NestedClass {{
         AssertScriptEqual(
 @"export class NestedClass {
   current = 1;
-  get Value() {
+  get value() {
     return this.current;
   }
-  set Value(value) {
+  set value(value) {
     this.current = value;
   }
 }
@@ -1657,11 +1698,11 @@ export class NestedClass {{
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+AssertScriptEqual(
 @"export class NestedClass {
-  Value;
+  value;
   constructor() {
-    this.Value = 1;
+    this.value = 1;
   }
 }
 ", script);
@@ -1691,9 +1732,9 @@ export class NestedClass {{
 
         // Assert
         Assert.AreEqual(
-@"export let Field1 = 1;
-export let Field2 = 2;
-export let Field3 = 3;
+@"export let field1 = 1;
+export let field2 = 2;
+export let field3 = 3;
 ", script);
 
     }
@@ -1718,7 +1759,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export let ReadOnlyField = 42;
+@"export let readOnlyField = 42;
 ", script);
 
     }
@@ -1743,7 +1784,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export let InternalField = 42;
+@"export let internalField = 42;
 ", script);
 
     }
@@ -1768,7 +1809,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export let StringField = ""hello"";
+@"export let stringField = ""hello"";
 ", script);
 
     }
@@ -1793,7 +1834,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export let BoolField = true;
+@"export let boolField = true;
 ", script);
 
     }
@@ -1818,7 +1859,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export let DoubleField = 3.14;
+@"export let doubleField = 3.14;
 ", script);
 
     }
@@ -1849,7 +1890,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export function VoidMethod() { }
+@"export function voidMethod() { }
 ", script);
 
     }
@@ -1877,7 +1918,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export function Add(a, b) {
+@"export function add(a, b) {
   return a + b;
 }
 ", script);
@@ -1907,7 +1948,7 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"export function Greet(name) {
+@"export function greet(name) {
   return ""Hello "" + name;
 }
 ", script);
@@ -1935,8 +1976,8 @@ export let Field3 = 3;
 
         // Assert
         Assert.AreEqual(
-@"function PrivateMethod() { }
-export function PublicMethod() { }
+@"function privateMethod() { }
+export function publicMethod() { }
 ", script);
 
     }
@@ -1961,7 +2002,7 @@ export function PublicMethod() { }
 
         // Assert
         Assert.AreEqual(
-@"export function InternalMethod() { }
+@"export function internalMethod() { }
 ", script);
 
     }
@@ -2233,10 +2274,12 @@ export function set_Prop3(value) {
         var script = result?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
-@"export let A = 1;
-export let B = ""456"";
-export const C = 42;
+Assert.AreEqual(
+@"let A = 1;
+export { A as a };
+let B = ""456"";
+export { B as b };
+export const c = 42;
 let _81c4b3c96dabee42;
 export function get_P1() {
   return _81c4b3c96dabee42;
@@ -2249,11 +2292,11 @@ export function get_P2() {
   return _f616cc6f43cd37b6;
 }
 export function get_P3() {
-  return P1;
+  return p1;
 }
 export function set_P3(value) { }
 export function get_P4() {
-  return P1;
+  return p1;
 }
 export function get_P5() {
   return B;
@@ -2282,9 +2325,9 @@ export function get_P8() {
 export function set_P8(value) {
   B = value.trim();
 }
-export function Method_a604b94929b691c0() { }
-export function Method_d389d2b826e42edb(a) { }
-export function Method_04bbed0f7a07bb40(a, b) {
+export function method_a604b94929b691c0() { }
+export function method_d389d2b826e42edb(a) { }
+export function method_04bbed0f7a07bb40(a, b) {
   return a + b;
 }
 ", script);
@@ -2342,7 +2385,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export function Identity(value) {
+@"export function identity(value) {
   return value;
 }
 ", script);
@@ -2369,7 +2412,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let Numbers = [];
+@"export let numbers = [];
 ", script);
 
     }
@@ -2459,7 +2502,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         AssertScriptEqual(
-@"export let NullableField = null;
+@"export let nullableField = null;
 ", script);
 
     }
@@ -2484,7 +2527,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         AssertScriptEqual(
-@"export const Missing = null;
+@"export const missing = null;
 ", script);
     }
 
@@ -2508,7 +2551,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let ArrayField = [1, 2, 3];
+@"export let arrayField = [1, 2, 3];
 ", script);
 
     }
@@ -2533,7 +2576,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let ListField = [];
+@"export let listField = [];
 ", script);
 
     }
@@ -2558,7 +2601,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export let DictField = new Map;
+@"export let dictField = new Map;
 ", script);
 
     }
@@ -2591,7 +2634,7 @@ export function Method_04bbed0f7a07bb40(a, b) {
         // Assert
         Assert.AreEqual(
 @"import { _797b5246c9b12c8d } from ""System/IComparableT1Module.js"";
-export function Max(a, b) {
+export function max(a, b) {
   return _797b5246c9b12c8d(a, b) > 0 ? a : b;
 }
 ".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -2622,7 +2665,7 @@ export function Max(a, b) {
         // Assert
         // todo:扩展函数还需要增加调用测试
         Assert.AreEqual(
-@"export function Double(value) {
+@"export function double(value) {
   return value * 2;
 }
 ", script);
@@ -2653,7 +2696,7 @@ export function Max(a, b) {
         // Assert
         // todo:需要增加 params 参数方法调用测试
         Assert.AreEqual(
-@"export function Sum(values) {
+@"export function sum(values) {
   return values.length;
 }
 ", script);
@@ -2683,7 +2726,7 @@ export function Max(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export function Increment(value) {
+@"export function increment(value) {
   value++;
   return [value];
 }
@@ -2715,7 +2758,7 @@ export function Max(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export function IncrementAndReturn(value) {
+@"export function incrementAndReturn(value) {
   value++;
   return [value + 10, value];
 }
@@ -2749,7 +2792,7 @@ export function Max(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export function Normalize(value) {
+@"export function normalize(value) {
   if (value < 0)
     return [value];
   value++;
@@ -2844,7 +2887,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let LongField = 9223372036854775807n;
+@"export let longField = 9223372036854775807n;
 ", script);
 
     }
@@ -2869,7 +2912,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let ULongField = 18446744073709551615n;
+@"export let uLongField = 18446744073709551615n;
 ".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
     }
@@ -2894,7 +2937,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let MaxDouble = Number.MAX_VALUE;
+@"export let maxDouble = Number.MAX_VALUE;
 ", script);
 
     }
@@ -2919,7 +2962,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let DecimalField = 123.456;
+@"export let decimalField = 123.456;
 ", script);
 
     }
@@ -2944,7 +2987,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let SpecialString = ""Hello\nWorld\t!"";
+@"export let specialString = ""Hello\nWorld\t!"";
 ", script);
 
     }
@@ -2969,7 +3012,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let EmptyString = """";
+@"export let emptyString = """";
 ", script);
 
     }
@@ -2994,7 +3037,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let UnicodeString = ""你好世界🌍"";
+@"export let unicodeString = ""你好世界🌍"";
 ", script);
 
     }
@@ -3019,7 +3062,7 @@ export function get_Doubled() {
 
         // Assert
         Assert.AreEqual(
-@"export let QuoteString = ""He said \""Hello\"""";
+@"export let quoteString = ""He said \""Hello\"""";
 ", script);
 
     }
@@ -3044,7 +3087,7 @@ export function get_Doubled() {
 
         // Assert
         AssertScriptEqual(
-@"export let CharField = ""A"";
+@"export let charField = ""A"";
 ", script);
 
     }
@@ -3066,7 +3109,7 @@ export function get_Doubled() {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let ClassName = ""TestClass"";
+@"export let className = ""TestClass"";
 ", script);
     }
 
@@ -3090,7 +3133,7 @@ export function get_Doubled() {
 
         AssertScriptEqual(
 @"import { _bfa8ee5dd46e2005 } from ""System/DateTimeModule.js"";
-export let Value = _bfa8ee5dd46e2005();
+export let value = _bfa8ee5dd46e2005();
 ", script);
     }
 
@@ -3114,7 +3157,7 @@ export let Value = _bfa8ee5dd46e2005();
 
         AssertScriptEqual(
 @"import { _12b4f3f1dc14bea9 } from ""System/DateTimeOffsetModule.js"";
-export let Value = _12b4f3f1dc14bea9();
+export let value = _12b4f3f1dc14bea9();
 ", script);
     }
 
@@ -3138,7 +3181,7 @@ export let Value = _12b4f3f1dc14bea9();
 
         AssertScriptEqual(
 @"import { _5af0f6ad850e6702 } from ""System/TimeSpanModule.js"";
-export let Value = _5af0f6ad850e6702();
+export let value = _5af0f6ad850e6702();
 ", script);
     }
 
@@ -3162,7 +3205,7 @@ export let Value = _5af0f6ad850e6702();
 
         AssertScriptEqual(
 @"import { _5f8053a9657a0844 } from ""System/DateOnlyModule.js"";
-export let Value = _5f8053a9657a0844();
+export let value = _5f8053a9657a0844();
 ", script);
     }
 
@@ -3186,7 +3229,7 @@ export let Value = _5f8053a9657a0844();
 
         AssertScriptEqual(
 @"import { _9f78f92d0753f4cf } from ""System/TimeOnlyModule.js"";
-export let Value = _9f78f92d0753f4cf();
+export let value = _9f78f92d0753f4cf();
 ", script);
     }
 
@@ -3209,7 +3252,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = 0n;
+@"export let value = 0n;
 ", script);
     }
 
@@ -3232,7 +3275,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = 0;
+@"export let value = 0;
 ", script);
     }
 
@@ -3259,7 +3302,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = 0;
+@"export let value = 0;
 ", script);
     }
 
@@ -3286,7 +3329,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = 0n;
+@"export let value = 0n;
 ", script);
     }
 
@@ -3307,7 +3350,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export let Value = ""\0"";
+@"export let value = ""\0"";
 ", script);
     }
 
@@ -3334,7 +3377,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export const Value = 1;
+@"export const value = 1;
 ", script);
     }
 
@@ -3361,7 +3404,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export const Value = 9007199254740993n;
+@"export const value = 9007199254740993n;
 ", script);
     }
 
@@ -3392,7 +3435,7 @@ export let Value = _9f78f92d0753f4cf();
 
         // Assert
         Assert.AreEqual(
-@"export function Add(a, b = 10) {
+@"export function add(a, b = 10) {
   return a + b;
 }
 ", script);
@@ -3422,7 +3465,7 @@ export let Value = _9f78f92d0753f4cf();
 
         // Assert
         Assert.AreEqual(
-@"export function Greet(name = ""World"", age = 0) {
+@"export function greet(name = ""World"", age = 0) {
   return `Hello ${name}, age ${age}`;
 }
 ", script);
@@ -3451,7 +3494,7 @@ export let Value = _9f78f92d0753f4cf();
 
         // Assert
         AssertScriptEqual(
-@"export function Process(name = null) { }
+@"export function process(name = null) { }
 ", script);
     }
 
@@ -3481,7 +3524,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export function Check(value = 1) {
+@"export function check(value = 1) {
   return value;
 }
 ", script);
@@ -3509,7 +3552,7 @@ export let Value = _9f78f92d0753f4cf();
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export function Check(value = 1.5) {
+@"export function check(value = 1.5) {
   return 0;
 }
 ", script);
@@ -3542,10 +3585,10 @@ export let Value = _9f78f92d0753f4cf();
 
         // Assert
         Assert.AreEqual(
-@"export function DoWork_7bf2b889f48863c7() { }
-export function DoWork_6b6f7943743f9c5d(value) { }
-export function DoWork_53280513e48ce038(value) { }
-export function DoWork_90a9f2ec5e6402a1(a, b) {
+@"export function doWork_7bf2b889f48863c7() { }
+export function doWork_6b6f7943743f9c5d(value) { }
+export function doWork_53280513e48ce038(value) { }
+export function doWork_90a9f2ec5e6402a1(a, b) {
   return a + b;
 }
 ", script);
@@ -3576,7 +3619,7 @@ export function DoWork_90a9f2ec5e6402a1(a, b) {
 
         // Assert
         Assert.AreEqual(
-@"export function Square(x) {
+@"export function square(x) {
   return x * x;
 }
 ", script);
@@ -3605,7 +3648,7 @@ export function DoWork_90a9f2ec5e6402a1(a, b) {
         // Assert
         Assert.AreEqual(
 @"let _counter = 0;
-export function Increment() {
+export function increment() {
   _counter++;
 }
 ", script);
@@ -3630,7 +3673,7 @@ export function Increment() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "export function ParseOrZero(input) {");
+        StringAssert.Contains(script, "export function parseOrZero(input) {");
         StringAssert.Contains(script, "return ");
         Assert.IsTrue(
             System.Text.RegularExpressions.Regex.IsMatch(script, @"let\s+value,\s+__ref\$[0-9a-f]+;")
@@ -3658,7 +3701,7 @@ export function Increment() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "export let IsOrigin = (() => {");
+        StringAssert.Contains(script, "export let isOrigin = (() => {");
         Assert.IsTrue(
             System.Text.RegularExpressions.Regex.IsMatch(script, @"let\s+__tbin\$[0-9a-f]+;"),
             $"Expected tuple-comparison temporary to be declared inside an initializer IIFE.{Environment.NewLine}{script}");
@@ -3690,7 +3733,7 @@ export function Increment() {
 
         // Assert
         Assert.AreEqual(
-@"export let NestedGenerics = new Map;
+@"export let nestedGenerics = new Map;
 ", script);
 
     }
@@ -3719,10 +3762,10 @@ export function Increment() {
 
         // Assert
         Assert.AreEqual(
-@"export function Fibonacci(n) {
+@"export function fibonacci(n) {
   if (n <= 1)
     return n;
-  return Fibonacci(n - 1) + Fibonacci(n - 2);
+  return fibonacci(n - 1) + fibonacci(n - 2);
 }
 ", script);
 
@@ -3786,8 +3829,8 @@ export function Increment() {
         // Assert
     Assert.AreEqual(
 @"import { _155212572c9a3297, _fb5a811e7a32a324 } from ""System/Numerics/BigIntegerModule.js"";
-export let Value = _155212572c9a3297(""33"");
-export function LogValue() {
+export let value = _155212572c9a3297(""33"");
+export function logValue() {
   return _fb5a811e7a32a324(_155212572c9a3297(""44""));
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -3969,7 +4012,7 @@ export function LogValue() {
 
         Assert.AreEqual(
 @"import { _e2640560d207afce } from ""System/DateOnlyModule.js"";
-export function Format() {
+export function format() {
   return _e2640560d207afce(""2024-01-02"").toString();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -3995,7 +4038,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _25187a24d190d864, _e856edbfd7db0646 } from ""System/DateTimeOffsetModule.js"";
-export function Format() {
+export function format() {
   return _e856edbfd7db0646(_25187a24d190d864(""2024-01-02T03:04:05+08:00""), ""O"", null);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4025,7 +4068,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _559b27327f84f1af, _b7486264ae338f27 } from ""System/Globalization/CultureInfoModule.js"";
-export function Format() {
+export function format() {
   let culture = _b7486264ae338f27(""en-US"");
   return culture + ""|"" + _559b27327f84f1af(culture);
 }
@@ -4052,7 +4095,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _e2640560d207afce } from ""System/DateOnlyModule.js"";
-export function Format() {
+export function format() {
   return ""date="" + _e2640560d207afce(""2024-01-02"");
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4078,7 +4121,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _25187a24d190d864 } from ""System/DateTimeOffsetModule.js"";
-export function Format() {
+export function format() {
   return ""dto="" + _25187a24d190d864(""2024-01-02T03:04:05+08:00"");
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4104,7 +4147,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _4cb33a818161a3e1 } from ""System/DateTimeModule.js"";
-export function Format() {
+export function format() {
   return ""dt="" + _4cb33a818161a3e1(2024, 1, 2);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4130,7 +4173,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _e9a3481b3456aad4 } from ""System/TimeOnlyModule.js"";
-export function Format() {
+export function format() {
   return ""time="" + _e9a3481b3456aad4(12, 30, 0);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4156,7 +4199,7 @@ export function Format() {
 
         Assert.AreEqual(
 @"import { _6f22e268aec62fe7 } from ""System/TimeSpanModule.js"";
-export function Format() {
+export function format() {
   return ""span="" + _6f22e268aec62fe7(1, 2, 3);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4185,13 +4228,13 @@ export function Format() {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function FloatCopy(value, sign) {
+@"export function floatCopy(value, sign) {
   return sign < 0 || Object.is(sign, -0) ? -Math.abs(value) : Math.abs(value);
 }
-export function IntCopy(value, sign) {
+export function intCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
-export function LongCopy(value, sign) {
+export function longCopy(value, sign) {
   return sign < 0n ? value < 0n ? value : -value : value < 0n ? -value : value;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4232,16 +4275,16 @@ export function LongCopy(value, sign) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function SignedCopy(value, sign) {
+@"export function signedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
-export function SignedClamp(value, min, max) {
+export function signedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-export function SignedMeta(value) {
+export function signedMeta(value) {
   return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + Math.clz32(value) + (value === 0 ? 32 : 31 - Math.clz32(value & -value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
-export function SignedBounds(left, right) {
+export function signedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4267,7 +4310,7 @@ export function SignedBounds(left, right) {
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-@"export function Sum(b, i, s, dt) {
+@"export function sum(b, i, s, dt) {
   return 6 + 9 + 18 + 16;
 }
 ", script);
@@ -4325,25 +4368,25 @@ export function SignedBounds(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function SignedCopy(value, sign) {
+@"export function signedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
-export function SignedClamp(value, min, max) {
+export function signedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-export function SignedMeta(value) {
+export function signedMeta(value) {
   return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((((value & 0xFFFF) << (3 & 15) | (value & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16) + ((((value & 0xFFFF) >>> (5 & 15) | (value & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
-export function SignedBounds(left, right) {
+export function signedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
 }
-export function UnsignedClamp(value, min, max) {
+export function unsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-export function UnsignedMeta(value) {
+export function unsignedMeta(value) {
   return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((value << (3 & 15) | value >>> 16 - (3 & 15)) & 0xFFFF) + ((value >>> (5 & 15) | value << 16 - (5 & 15)) & 0xFFFF) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
-export function UnsignedBounds(left, right) {
+export function unsignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4382,16 +4425,16 @@ export function UnsignedBounds(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function UnsignedClamp(value, min, max) {
+@"export function unsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-export function UnsignedMeta(value) {
+export function unsignedMeta(value) {
   return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
-export function UnsignedCounts(value) {
+export function unsignedCounts(value) {
   return (value === 0 ? 8 : Math.clz32(value & 0xFF) - 24) + ((value & 1) + (value >> 1 & 1) + (value >> 2 & 1) + (value >> 3 & 1) + (value >> 4 & 1) + (value >> 5 & 1) + (value >> 6 & 1) + (value >> 7 & 1)) + (value === 0 ? 8 : Math.floor(Math.log2(value & 0xFF & -(value & 0xFF))));
 }
-export function UnsignedBounds(left, right) {
+export function unsignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4426,10 +4469,10 @@ export function UnsignedBounds(left, right) {
         Assert.AreEqual(
 @"import { _80e78c0aa0b98fef } from ""System/UInt16Module.js"";
 import { _8a073d758132b5bb } from ""System/UInt32Module.js"";
-export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
+export function sum(ushortLeft, ushortRight, uintLeft, uintRight) {
   let ushortPair = _80e78c0aa0b98fef(ushortLeft, ushortRight);
   let uintPair = _8a073d758132b5bb(uintLeft, uintRight);
-  return ushortPair.Quotient + ushortPair.Remainder + uintPair.Quotient + uintPair.Remainder;
+  return ushortPair.quotient + ushortPair.remainder + uintPair.quotient + uintPair.remainder;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -4458,9 +4501,9 @@ export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
 
         Assert.AreEqual(
 @"import { _1636c956519f95fa, _b2c1f15fae072110 } from ""System/Int16Module.js"";
-export function Sum(left, right, value) {
+export function sum(left, right, value) {
   let pair = _b2c1f15fae072110(left, right);
-  return pair.Quotient + pair.Remainder + _1636c956519f95fa(value);
+  return pair.quotient + pair.remainder + _1636c956519f95fa(value);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -4487,7 +4530,7 @@ export function Sum(left, right, value) {
         Assert.AreEqual(
 @"import { _2ea0cab4f3f489d9 } from ""System/UInt16Module.js"";
 import { _96cd49e102b39e5b } from ""System/UInt32Module.js"";
-export function Sum(ushortValue, uintValue) {
+export function sum(ushortValue, uintValue) {
   return BigInt(_2ea0cab4f3f489d9(ushortValue)) + BigInt(_96cd49e102b39e5b(uintValue));
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4557,49 +4600,49 @@ export function Sum(ushortValue, uintValue) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function SignedCopy(value, sign) {
+@"export function signedCopy(value, sign) {
   return sign < 0 ? -Math.abs(value) : Math.abs(value);
 }
-export function SignedClamp(value, min, max) {
+export function signedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-export function SignedMeta(value) {
+export function signedMeta(value) {
   return (value > 0 ? 1 : value < 0 ? -1 : 0) + Math.abs(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
-export function SignedBounds(left, right) {
+export function signedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
 }
-export function UnsignedClamp(value, min, max) {
+export function unsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
-export function UnsignedMeta(value) {
+export function unsignedMeta(value) {
   return BigInt(value === 0 ? 0 : 1) + BigInt(Math.floor(Math.log2(value))) + BigInt(Math.clz32(value)) + BigInt(value === 0 ? 32 : 31 - Math.clz32(value >>> 0 & -(value >>> 0))) + BigInt((value << (3 & 31) | value >>> 32 - (3 & 31)) >>> 0) + BigInt((value >>> (5 & 31) | value << 32 - (5 & 31)) >>> 0) + BigInt((value & 1) === 0 ? 1 : 0) + BigInt((value & 1) !== 0 ? 1 : 0) + BigInt(value > 0 && (value & value - 1) === 0 ? 1 : 0);
 }
-export function UnsignedBounds(left, right) {
+export function unsignedBounds(left, right) {
   return Math.max(left, right) - Math.min(left, right);
 }
-export function UnsignedLongClamp(value, min, max) {
+export function unsignedLongClamp(value, min, max) {
   return value < min ? min : value > max ? max : value;
 }
-export function UnsignedLongSign(value) {
+export function unsignedLongSign(value) {
   return value === 0n ? 0 : 1;
 }
-export function UnsignedLongEven(value) {
+export function unsignedLongEven(value) {
   return value % 2n === 0n;
 }
-export function UnsignedLongOdd(value) {
+export function unsignedLongOdd(value) {
   return value % 2n !== 0n;
 }
-export function UnsignedLongPow2(value) {
+export function unsignedLongPow2(value) {
   return value > 0n && (value & value - 1n) === 0n;
 }
-export function UnsignedLongLog2(value) {
+export function unsignedLongLog2(value) {
   return value === 0n ? 0n : BigInt(value.toString(2).length - 1);
 }
-export function UnsignedLongMax(left, right) {
+export function unsignedLongMax(left, right) {
   return left > right ? left : right;
 }
-export function UnsignedLongMin(left, right) {
+export function unsignedLongMin(left, right) {
   return left < right ? left : right;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4640,31 +4683,31 @@ export function UnsignedLongMin(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function LongClamp(value, min, max) {
+@"export function longClamp(value, min, max) {
   return value < min ? min : value > max ? max : value;
 }
-export function LongSign(value) {
+export function longSign(value) {
   return value > 0n ? 1 : value < 0n ? -1 : 0;
 }
-export function MathLongClamp(value, min, max) {
+export function mathLongClamp(value, min, max) {
   return value < min ? min : value > max ? max : value;
 }
-export function MathLongSign(value) {
+export function mathLongSign(value) {
   return value > 0n ? 1 : value < 0n ? -1 : 0;
 }
-export function MathLongMax(left, right) {
+export function mathLongMax(left, right) {
   return left > right ? left : right;
 }
-export function MathLongMin(left, right) {
+export function mathLongMin(left, right) {
   return left < right ? left : right;
 }
-export function MathUnsignedLongClamp(value, min, max) {
+export function mathUnsignedLongClamp(value, min, max) {
   return value < min ? min : value > max ? max : value;
 }
-export function MathUnsignedLongMax(left, right) {
+export function mathUnsignedLongMax(left, right) {
   return left > right ? left : right;
 }
-export function MathUnsignedLongMin(left, right) {
+export function mathUnsignedLongMin(left, right) {
   return left < right ? left : right;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4721,55 +4764,55 @@ export function MathUnsignedLongMin(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function Abs(value) {
+@"export function abs(value) {
   return value < 0n ? -value : value;
 }
-export function Add(left, right) {
+export function add(left, right) {
   return left + right;
 }
-export function Copy(value, sign) {
+export function copy(value, sign) {
   return sign < 0n ? value < 0n ? value : -value : value < 0n ? -value : value;
 }
-export function Compare(left, right) {
+export function compare(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
-export function CompareTo(left, right) {
+export function compareTo(left, right) {
   return left < right ? -1 : left > right ? 1 : 0;
 }
-export function Divide(left, right) {
+export function divide(left, right) {
   return left / right;
 }
-export function EqualsValue(left, right) {
+export function equalsValue(left, right) {
   return left === right;
 }
-export function Max(left, right) {
+export function max(left, right) {
   return left > right ? left : right;
 }
-export function Min(left, right) {
+export function min(left, right) {
   return left < right ? left : right;
 }
-export function Even(value) {
+export function even(value) {
   return value % 2n === 0n;
 }
-export function Negative(value) {
+export function negative(value) {
   return value < 0n;
 }
-export function Negate(value) {
+export function negate(value) {
   return -value;
 }
-export function Odd(value) {
+export function odd(value) {
   return value % 2n !== 0n;
 }
-export function Positive(value) {
+export function positive(value) {
   return value > 0n;
 }
-export function Remainder(left, right) {
+export function remainder(left, right) {
   return left % right;
 }
-export function Subtract(left, right) {
+export function subtract(left, right) {
   return left - right;
 }
-export function Multiply(left, right) {
+export function multiply(left, right) {
   return left * right;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4797,10 +4840,10 @@ export function Multiply(left, right) {
 
         Assert.AreEqual(
 @"import { _d305de2c64e85995, _fef56ccd17b22e88 } from ""System/Numerics/BigIntegerModule.js"";
-export function Max(left, right) {
+export function max(left, right) {
   return _d305de2c64e85995(left, right);
 }
-export function Min(left, right) {
+export function min(left, right) {
   return _fef56ccd17b22e88(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4826,10 +4869,10 @@ export function Min(left, right) {
 
         Assert.AreEqual(
 @"import { _9618dc0d855ee729, _bfad1ee52075b36e } from ""System/Int64Module.js"";
-export function Max(left, right) {
+export function max(left, right) {
   return _9618dc0d855ee729(left, right);
 }
-export function Min(left, right) {
+export function min(left, right) {
   return _bfad1ee52075b36e(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4859,16 +4902,16 @@ export function Min(left, right) {
 
         Assert.AreEqual(
 @"import { _4a2ec5d010e27cb1, _7c146ff0a50e958f, _b7b1d7781578b7e0, _e5a7b14f707c69f7 } from ""System/SingleModule.js"";
-export function Max(left, right) {
+export function max(left, right) {
   return _7c146ff0a50e958f(left, right);
 }
-export function MaxNumber(left, right) {
+export function maxNumber(left, right) {
   return _b7b1d7781578b7e0(left, right);
 }
-export function Min(left, right) {
+export function min(left, right) {
   return _e5a7b14f707c69f7(left, right);
 }
-export function MinNumber(left, right) {
+export function minNumber(left, right) {
   return _4a2ec5d010e27cb1(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -4924,7 +4967,7 @@ export function MinNumber(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function Run(value, left, right, third) {
+@"export function run(value, left, right, third) {
   let log2 = Math.log2(value);
   let expM1 = Math.exp(value) - 1;
   let ceil = Math.ceil(value);
@@ -4984,7 +5027,7 @@ export function MinNumber(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function Run(value, left, right) {
+@"export function run(value, left, right) {
   let log2 = Math.log2(value);
   let exp = Math.exp(value);
   let max = Math.max(left, right);
@@ -5021,7 +5064,7 @@ export function MinNumber(left, right) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function Run(fleft, fright, dleft, dright) {
+@"export function run(fleft, fright, dleft, dright) {
   let fmax = isNaN(fleft) ? fright : isNaN(fright) ? fleft : Math.max(fleft, fright);
   let fmin = isNaN(fleft) ? fright : isNaN(fright) ? fleft : Math.min(fleft, fright);
   let dmax = isNaN(dleft) ? dright : isNaN(dright) ? dleft : Math.max(dleft, dright);
@@ -5063,22 +5106,22 @@ export function MinNumber(left, right) {
 @"import { _0f9f49a802919a8f, _eee146c74a9bc322 } from ""System/DoubleModule.js"";
 import { _9a554cfca79bdc59, _c0668680ba7ef96e } from ""System/MathModule.js"";
 import { _0dcf89ab5d6bd60c, _323a6b94e62b2729 } from ""System/SingleModule.js"";
-export function FloatSign(value) {
+export function floatSign(value) {
   return _323a6b94e62b2729(value);
 }
-export function FloatPow2(value) {
+export function floatPow2(value) {
   return _0dcf89ab5d6bd60c(value);
 }
-export function DoubleSign(value) {
+export function doubleSign(value) {
   return _eee146c74a9bc322(value);
 }
-export function DoublePow2(value) {
+export function doublePow2(value) {
   return _0f9f49a802919a8f(value);
 }
-export function MathFloatSign(value) {
+export function mathFloatSign(value) {
   return _c0668680ba7ef96e(value);
 }
-export function MathDoubleSign(value) {
+export function mathDoubleSign(value) {
   return _9a554cfca79bdc59(value);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5107,16 +5150,16 @@ export function MathDoubleSign(value) {
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"export function FloatNormal(value) {
+@"export function floatNormal(value) {
   return isFinite(value) && value !== 0 && Math.abs(value) >= 1.17549435e-38;
 }
-export function FloatSubnormal(value) {
+export function floatSubnormal(value) {
   return isFinite(value) && value !== 0 && Math.abs(value) < 1.17549435e-38;
 }
-export function DoubleNormal(value) {
+export function doubleNormal(value) {
   return isFinite(value) && value !== 0 && Math.abs(value) >= 2.2250738585072014e-308;
 }
-export function DoubleSubnormal(value) {
+export function doubleSubnormal(value) {
   return isFinite(value) && value !== 0 && Math.abs(value) < 2.2250738585072014e-308;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5142,10 +5185,10 @@ export function DoubleSubnormal(value) {
 
         Assert.AreEqual(
 @"import { _2c792a5d6ef88cd1, _9905e3952bca67bc } from ""System/SingleModule.js"";
-export function Pair(value) {
+export function pair(value) {
   return _9905e3952bca67bc(value);
 }
-export function PairPi(value) {
+export function pairPi(value) {
   return _2c792a5d6ef88cd1(value);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5175,16 +5218,16 @@ export function PairPi(value) {
 
         Assert.AreEqual(
 @"import { _315c6cdfa11efcf2, _7f7b38b043f3f42f, _b6202851542d164c, _bb1daa880a2ad14e } from ""System/DoubleModule.js"";
-export function Max(left, right) {
+export function max(left, right) {
   return _b6202851542d164c(left, right);
 }
-export function MaxNumber(left, right) {
+export function maxNumber(left, right) {
   return _7f7b38b043f3f42f(left, right);
 }
-export function Min(left, right) {
+export function min(left, right) {
   return _bb1daa880a2ad14e(left, right);
 }
-export function MinNumber(left, right) {
+export function minNumber(left, right) {
   return _315c6cdfa11efcf2(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5210,10 +5253,10 @@ export function MinNumber(left, right) {
 
         Assert.AreEqual(
 @"import { _63d3d54252a49e29, _ea75510d32bc8099 } from ""System/Int16Module.js"";
-export function Max(left, right) {
+export function max(left, right) {
   return _ea75510d32bc8099(left, right);
 }
-export function Min(left, right) {
+export function min(left, right) {
   return _63d3d54252a49e29(left, right);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5268,9 +5311,9 @@ export function Min(left, right) {
 
         // Assert
         Assert.AreEqual(
-@"import { Make } from ""System/RuntimeModule.js"";
-export function Create() {
-  return Make();
+@"import { make } from ""System/RuntimeModule.js"";
+export function create() {
+  return make();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5324,11 +5367,11 @@ export function Create() {
 
         Assert.AreEqual(
 @"import { createApp, ref } from ""npm:vue@3"";
-export function Mount(component) {
+export function mount(component) {
   let app = createApp(component);
   return app.mount(""#app"");
 }
-export function ReadRef() {
+export function readRef() {
   let count = ref(1);
   return count.value;
 }
@@ -5383,7 +5426,7 @@ export function ReadRef() {
 
         Assert.AreEqual(
 @"import { createApp } from ""npm:vue@3"";
-export function Boot(component) {
+export function boot(component) {
   return createApp(component, { message: ""Hello"" });
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5438,8 +5481,8 @@ export function Boot(component) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, ref } from ""npm:vue@3"";
-export let Component = defineComponent({ name: ""CounterView"", setup: Setup });
-function Setup() {
+export let component = defineComponent({ name: ""CounterView"", setup: setup });
+function setup() {
   let count = ref(1);
   return () => {
     return h(""button"", count.value === 1);
@@ -5500,13 +5543,13 @@ function Setup() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Component = defineComponent({
+export let component = defineComponent({
   name: ""CounterView"",
   props: [""message""],
   emits: [""ready""],
-  setup: Setup
+  setup: setup
 });
-function Setup(props, context) {
+function setup(props, context) {
   context.emit(""ready"", true);
   return () => {
     return h(""button"", ""ready"");
@@ -5576,13 +5619,13 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Component = defineComponent({
+export let component = defineComponent({
   name: ""CounterView"",
   props: [""id"", ""message""],
   emits: [""ready""],
-  setup: Setup
+  setup: setup
 });
-function Setup(props, context) {
+function setup(props, context) {
   context.emit(""ready"", props.message);
   return () => {
     return h(""button"", props.id === 1 && props.message === ""ready"");
@@ -5640,13 +5683,13 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Component = defineComponent({
+export let component = defineComponent({
   name: ""EmptyView"",
   props: [],
   emits: [],
-  setup: Setup
+  setup: setup
 });
-function Setup(props, context) {
+function setup(props, context) {
   return () => {
     return h(""div"", ""empty"");
   };
@@ -5711,13 +5754,13 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Component = defineComponent({
+export let component = defineComponent({
   name: ""CounterView"",
   props: [""message""],
   emits: [""ready""],
-  setup: Setup
+  setup: setup
 });
-function Setup(props, context) {
+function setup(props, context) {
   context.emit(""ready"", props.message);
   return () => {
     return h(""button"", props.message === ""ready"");
@@ -5783,13 +5826,13 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Component = defineComponent({
+export let component = defineComponent({
   props: [""message""],
   emits: [""ready""],
   name: ""CounterView"",
-  setup: Setup
+  setup: setup
 });
-function Setup(props, context) {
+function setup(props, context) {
   context.emit(""ready"", props.message);
   return () => {
     return h(""button"", props.message === ""ready"");
@@ -5852,11 +5895,73 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"" });
-export function Render() {
-  return h(Child, { default: RenderBody });
+export let child = defineComponent({ name: ""ChildView"" });
+export function render() {
+  return h(child, { default: renderBody });
 }
-function RenderBody() {
+function renderBody() {
+  return h(""span"", ""body"");
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueHComponentSlotsWithDefaultNamedSlot_GeneratesSlotsObjectArgument()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record ChildSlots : VueSlots
+                {
+                    public VueSlotCallback? Default { get; init; }
+                }
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Child = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ChildView"
+                    });
+
+                    public static IVNode Render()
+                        => H(Child, new ChildSlots { Default = RenderBody });
+
+                    private static IVNode RenderBody()
+                        => H("span", "body");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let child = defineComponent({ name: ""ChildView"" });
+export function render() {
+  return h(child, { default: renderBody });
+}
+function renderBody() {
   return h(""span"", ""body"");
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -5926,19 +6031,19 @@ function RenderBody() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+export let child = defineComponent({
   name: ""ChildView"",
   props: [""title""],
   emits: [],
-  setup: SetupChild
+  setup: setupChild
 });
-export function Render() {
-  return h(Child, { title: ""Welcome"" }, { header: RenderHeader });
+export function render() {
+  return h(child, { title: ""Welcome"" }, { header: renderHeader });
 }
-function RenderHeader(title) {
+function renderHeader(title) {
   return h(""h1"", title);
 }
-function SetupChild(props, context) {
+function setupChild(props, context) {
   return () => {
     return h(""section"", ""child"");
   };
@@ -5990,8 +6095,9 @@ function SetupChild(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"" });
-export function Render(child) {
+let Child = defineComponent({ name: ""ChildView"" });
+export { Child as child };
+export function render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6048,12 +6154,13 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+let Child = defineComponent({
   name: ""ChildView"",
   props: [""title""],
   emits: []
 });
-export function Render(child) {
+export { Child as child };
+export function render(child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6103,8 +6210,9 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"" });
-export function Render(child) {
+let Child = defineComponent({ name: ""ChildView"" });
+export { Child as child };
+export function render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6154,8 +6262,9 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"" });
-export function Render(child) {
+let Child = defineComponent({ name: ""ChildView"" });
+export { Child as child };
+export function render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6205,8 +6314,9 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"" });
-export function Render(child) {
+let Child = defineComponent({ name: ""ChildView"" });
+export { Child as child };
+export function render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6267,13 +6377,13 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+export let child = defineComponent({
   name: ""ChildView"",
   props: [""title""],
   emits: []
 });
-export function Render() {
-  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, [h(""span"", ""a""), h(""span"", ""b"")]);
+export function render() {
+  return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(child, { title: ""Welcome"" }, [h(""span"", ""a""), h(""span"", ""b"")]);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -6342,18 +6452,18 @@ export function Render() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+export let child = defineComponent({
   name: ""ChildView"",
   emits: [""ready""],
-  setup: SetupChild
+  setup: setupChild
 });
-export function Render() {
-  return h(Child, { default: RenderBody });
+export function render() {
+  return h(child, { default: renderBody });
 }
-function RenderBody() {
+function renderBody() {
   return h(""span"", ""body"");
 }
-function SetupChild(context) {
+function setupChild(context) {
   context.emit(""ready"");
   return () => {
     return h(""section"", context.slots.default());
@@ -6413,8 +6523,9 @@ function SetupChild(context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"", emits: [] });
-export function Render(child) {
+let Child = defineComponent({ name: ""ChildView"", emits: [] });
+export { Child as child };
+export function render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6471,8 +6582,9 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({ name: ""ChildView"", emits: [] });
-export function Render(child) {
+let Child = defineComponent({ name: ""ChildView"", emits: [] });
+export { Child as child };
+export function render(child) {
   return ((__component, __slot0) => h(__component, { default: () => __slot0 }))(Child, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6535,12 +6647,13 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+let Child = defineComponent({
   name: ""ChildView"",
   props: [""title""],
   emits: []
 });
-export function Render(child) {
+export { Child as child };
+export function render(child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6603,12 +6716,13 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+let Child = defineComponent({
   name: ""ChildView"",
   props: [""title""],
   emits: []
 });
-export function Render(child) {
+export { Child as child };
+export function render(child) {
   return ((__component, __props, __slot0) => h(__component, __props, { default: () => __slot0 }))(Child, { title: ""Welcome"" }, child);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -6792,22 +6906,22 @@ export function Render(child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""npm:vue@3"";
-export let Child = defineComponent({
+export let child = defineComponent({
   name: ""ChildView"",
   props: [""title""],
   emits: [],
-  setup: SetupChild
+  setup: setupChild
 });
-export function Render() {
-  return h(Child, { title: ""Welcome"" }, { default: RenderBody, header: RenderHeader });
+export function render() {
+  return h(child, { title: ""Welcome"" }, { default: renderBody, header: renderHeader });
 }
-function RenderBody() {
+function renderBody() {
   return h(""span"", ""body"");
 }
-function RenderHeader(title) {
+function renderHeader(title) {
   return h(""h1"", title);
 }
-function SetupChild(props, context) {
+function setupChild(props, context) {
   return () => {
     return h(""section"", [context.slots.default(), context.slots.header(props.title ?? """")]);
   };
@@ -6930,7 +7044,7 @@ function SetupChild(props, context) {
 import { createVuetify } from ""npm:vuetify"";
 import { VBtn } from ""vuetify/components"";
 import { Ripple } from ""vuetify/directives"";
-export function Boot(component) {
+export function boot(component) {
   let app = createApp(component);
   app.use(createVuetify({
     components: { VBtn: VBtn },
@@ -6990,7 +7104,7 @@ export function Boot(component) {
         Assert.AreEqual(
 @"let _input;
 let _output;
-export function RenderPreview() {
+export function renderPreview() {
   if (_input === null || _output === null)
     return;
   let normalized = _input.value;
@@ -7049,7 +7163,7 @@ export function RenderPreview() {
 
         Assert.AreEqual(
 $@"import {defaultBinding} from ""./components/wiki-home.mjs"";
-export function Boot() {{
+export function boot() {{
   return {defaultBinding};
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7096,9 +7210,54 @@ export function Boot() {{
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+Assert.AreEqual(
 @"let Component = null;
 export { Component as default };
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithMemberNamedDefault_UsesDefaultExportByConvention()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
+                public static class WikiHomeModule
+                {
+                    public static object Default = null;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "WikiHomeModule");
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "WikiHomeModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"let Default = null;
+export { Default as default };
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
@@ -7152,7 +7311,7 @@ export { Component as default };
 
         Assert.AreEqual(
 $@"import {defaultBinding} from ""./components/wiki-home.mjs"";
-export function Boot() {{
+export function boot() {{
   return {defaultBinding};
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7211,7 +7370,61 @@ export function Boot() {{
 
         Assert.AreEqual(
 $@"import {defaultBinding} from ""./components/wiki-home.mjs"";
-export function Boot() {{
+export function boot() {{
+  return {defaultBinding};
+}}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithCrossModuleDefaultConventionReference_GeneratesAliasedDefaultImport()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("./components/wiki-home.mjs")]
+                public static class WikiHomeModule
+                {
+                    public static object Default = null!;
+                }
+
+                [ECMAScript.ECMAScriptModule("app/main.mjs")]
+                public static class AppModule
+                {
+                    public static object Boot() => WikiHomeModule.Default;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code, "AppModule");
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+        var defaultBinding = ImportBindingName("./components/wiki-home.mjs", "default");
+
+        Assert.AreEqual(
+$@"import {defaultBinding} from ""./components/wiki-home.mjs"";
+export function boot() {{
   return {defaultBinding};
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7267,7 +7480,7 @@ export function Boot() {{
         // Assert
         Assert.AreEqual(
 @"import { get_Value } from ""System/RuntimeModule.js"";
-export function Create() {
+export function create() {
   return get_Value();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7361,9 +7574,9 @@ export function Create() {
 
         // Assert
         Assert.AreEqual(
-@"import { Make } from ""System/RuntimeModule.js"";
-export function Create() {
-  return Make();
+@"import { make } from ""System/RuntimeModule.js"";
+export function create() {
+  return make();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -7422,9 +7635,9 @@ export function Create() {
 
         // Assert
         Assert.AreEqual(
-@"import { Make } from ""System/RuntimeModule.js"";
-export function Create() {
-  let factory = Make;
+@"import { make } from ""System/RuntimeModule.js"";
+export function create() {
+  let factory = make;
   return factory();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7481,7 +7694,7 @@ export function Create() {
         // Assert
         Assert.AreEqual(
 @"import { get_Value } from ""System/RuntimeModule.js"";
-export function Create() {
+export function create() {
   return get_Value();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7537,7 +7750,7 @@ export function Create() {
         // Assert
         Assert.AreEqual(
 @"import { get_Value } from ""System/RuntimeModule.js"";
-export function Create() {
+export function create() {
   return get_Value();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7588,9 +7801,9 @@ export function Create() {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        Assert.AreEqual(
+Assert.AreEqual(
 @"import { set_Value } from ""System/RuntimeModule.js"";
-export function Set() {
+export function set() {
   set_Value(7);
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -7730,10 +7943,10 @@ export function Set() {
         var script = module?.ToKnRECMAScript();
 
         // Assert
-        Assert.AreEqual(
+Assert.AreEqual(
 @"import { Helpers } from ""System/RuntimeModule.js"";
-export function Create() {
-  return Helpers.Make();
+export function create() {
+  return Helpers.make();
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -7788,10 +8001,10 @@ export function Create() {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        var makeId = ImportBindingName("System/RuntimeModule.js", "Make");
+        var makeId = ImportBindingName("System/RuntimeModule.js", "make");
         Assert.AreEqual(
-$@"import {{ Make as {makeId} }} from ""System/RuntimeModule.js"";
-export function Create() {{
+$@"import {{ make as {makeId} }} from ""System/RuntimeModule.js"";
+export function create() {{
   let Make = 1;
   return {makeId}() + Make;
 }}
@@ -7851,12 +8064,12 @@ export function Create() {{
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        var rightMakeId = ImportBindingName("System/RightModule.js", "Make");
+        var rightMakeId = ImportBindingName("System/RightModule.js", "make");
         Assert.AreEqual(
-$@"import {{ Make }} from ""System/LeftModule.js"";
-import {{ Make as {rightMakeId} }} from ""System/RightModule.js"";
-export function Create() {{
-  return Make() + {rightMakeId}();
+$@"import {{ make }} from ""System/LeftModule.js"";
+import {{ make as {rightMakeId} }} from ""System/RightModule.js"";
+export function create() {{
+  return make() + {rightMakeId}();
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -7928,8 +8141,8 @@ export function Create() {{
             var leftBrace = importLine.IndexOf('{');
             var rightBrace = importLine.IndexOf('}');
             var specifier = importLine[(leftBrace + 1)..rightBrace].Trim();
-            if (specifier.StartsWith("Make as ", StringComparison.Ordinal))
-                return specifier.Substring("Make as ".Length).Trim();
+            if (specifier.StartsWith("make as ", StringComparison.Ordinal))
+                return specifier.Substring("make as ".Length).Trim();
 
             return specifier;
         }
@@ -8051,12 +8264,11 @@ export function Create() {{
 
         // Assert
         Assert.AreEqual(
-@"export function Check() {
-  return { Value: 1 } === { Value: 1 };
+@"export function check() {
+  return { value: 1 } === { value: 1 };
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
     #endregion
 }
-

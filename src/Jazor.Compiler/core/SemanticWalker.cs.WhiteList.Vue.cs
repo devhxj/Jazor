@@ -127,14 +127,14 @@ public partial class SemanticWalker
 		{
 			throw CreateVueAuthoringException(
 				originOperation,
-				$"Typed Vue slot contract '{slotType.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not declare a default slot. Use H(component, slots) / H(component, props, slots) with an explicit slot object, or mark one slot property with Description(\"@#default\").");
+				$"Typed Vue slot contract '{slotType.ToDisplayString(Jazor.Common.Format.NameFormat)}' does not declare a default slot. Use H(component, slots) / H(component, props, slots) with an explicit slot object, or declare one slot property as 'Default' / Description(\"@#default\").");
 		}
 
 		if (defaultSlots.Count > 1)
 		{
 			throw CreateVueAuthoringException(
 				originOperation,
-				$"Typed Vue slot contract '{slotType.ToDisplayString(Jazor.Common.Format.NameFormat)}' declares more than one default slot. Only one property may map to Description(\"@#default\").");
+				$"Typed Vue slot contract '{slotType.ToDisplayString(Jazor.Common.Format.NameFormat)}' declares more than one default slot. Only one property may map to 'default' via the Default naming convention or Description(\"@#default\").");
 		}
 
 		var defaultSlot = defaultSlots[0];

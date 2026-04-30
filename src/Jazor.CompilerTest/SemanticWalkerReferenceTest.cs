@@ -72,6 +72,9 @@ public sealed class SemanticWalkerReferenceTest
 	private static void AssertScriptEqual(string expected, string? actual)
 		=> Assert.AreEqual(expected.ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
 
+	private static void AssertJsNamingScriptEqual(string expected, string? actual)
+		=> Assert.AreEqual(ExpectedJsNaming.Normalize(expected).ReplaceLineEndings("\n"), actual?.ReplaceLineEndings("\n"));
+
 	private static TOperation GetFirstOperation<TOperation>(string code)
 		where TOperation : class, IOperation
 	{
@@ -700,7 +703,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let ushortPair = _80e78c0aa0b98fef(ushortLeft, ushortRight);
   let ushortQuotient = ushortPair.Quotient;
   let ushortRemainder = ushortPair.Remainder;
@@ -730,7 +733,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let pair = _b2c1f15fae072110(left, right);
   let quotient = pair.Quotient;
   let remainder = pair.Remainder;
@@ -1611,7 +1614,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let obj = new TestClass;
   let x = obj.Field;
 }", script);
@@ -1755,7 +1758,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let obj = new TestClass;
   let value = obj.Prop.Prop;
 }", script);
@@ -2209,7 +2212,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(
+		AssertJsNamingScriptEqual(
 @"{
   let x = BigInt(100);
   let y = 0n;
@@ -2811,7 +2814,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let local = 5;
   let a = local;
   let b = param;
@@ -3011,7 +3014,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let obj = new TestClass;
   let x = obj.ReadOnlyProp;
 }", script);
@@ -3154,7 +3157,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let obj = new TestClass;
   let action = obj.DoSomething.bind(obj);
 }", script);
@@ -3184,7 +3187,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let v$1;
   let action = (v$1 = this.Create(), v$1.DoSomething.bind(v$1));
 }", script);
@@ -3212,7 +3215,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let add = this.Add.bind(this);
 }", script);
 	}
@@ -3243,7 +3246,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   this.Process(this);
 }", script);
 	}
@@ -3354,7 +3357,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let dict = new Map;
   dict.set({ Name: ""key"", Index: 1 }, 42);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -3415,7 +3418,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let person = null;
   let dict = new Map;
   dict.set(person?.Name, 42);
@@ -3857,7 +3860,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let dict = new Map;
   _f3b177bfce76ed5c(dict, ""key"", 42);
   let value = _371fad9265e864a1(dict, this.NextKey());
@@ -3895,7 +3898,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let dict = new Map;
   dict.set(""key"", 42);
   let value = _e73dbdff85c46ddc(this.Pick(dict), ""key"");
@@ -4053,7 +4056,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-	Assert.AreEqual(@"{
+	AssertJsNamingScriptEqual(@"{
   let v$0;
   let a = 1;
   let b = 2;
@@ -4087,7 +4090,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let v$0;
   let a = 1;
   let b = 2;
@@ -4779,7 +4782,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let obj = new TestClass;
   obj.Inner = new InnerClass;
   let x = obj.Inner.Value;
@@ -4951,7 +4954,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let value = this.ReadOnly;
 }", script);
 	}
@@ -4979,7 +4982,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let result = this.Doubled;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -5066,7 +5069,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let count = TestClass.Counter;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -5093,7 +5096,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let v = this.Value;
 }", script);
 	}
@@ -5268,7 +5271,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   let func = this.Double.bind(this);
   let result = func(5);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -5296,7 +5299,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-	Assert.AreEqual(@"{
+	AssertJsNamingScriptEqual(@"{
   let result = TestClass.Add(1, 2);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -5327,7 +5330,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-	Assert.AreEqual(@"{
+	AssertJsNamingScriptEqual(@"{
   let field = A.Field;
   let property = A.Value;
   let result = A.GetNumbers();
@@ -5362,8 +5365,8 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
-  let result = TestClass.Host.Middle.Inner.Value;
+		AssertScriptEqual(@"{
+  let result = TestClass.Host.Middle.Inner.value;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -7717,7 +7720,7 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		Assert.AreEqual(@"{
+		AssertJsNamingScriptEqual(@"{
   this.Process(this);
 }", script);
 	}
