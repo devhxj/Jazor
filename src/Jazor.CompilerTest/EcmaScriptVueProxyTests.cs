@@ -103,12 +103,16 @@ public sealed class EcmaScriptVueProxyTests
         var vueObjectType = typeof(VueObject);
         var typedVueObjectType = typeof(VueObject<>);
         var vueDictionaryType = typeof(VueDictionary<>);
+        var vueDictionary = typeof(VueDictionary);
+        var vueValue = typeof(VueValue);
         var attrs = typeof(VueObject).GetProperty(nameof(VueObject.Attrs), BindingFlags.Public | BindingFlags.Instance);
         var dataset = typeof(VueObject).GetProperty(nameof(VueObject.Dataset), BindingFlags.Public | BindingFlags.Instance);
         var raw = typeof(VueObject).GetProperty(nameof(VueObject.Raw), BindingFlags.Public | BindingFlags.Instance);
         var @class = typeof(VueObject).GetProperty(nameof(VueObject.Class), BindingFlags.Public | BindingFlags.Instance);
+        var item = typeof(VueObject).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
         var props = typeof(VueObject<>).GetProperty("Props", BindingFlags.Public | BindingFlags.Instance);
         var indexer = vueDictionaryType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var rootIndexer = vueDictionary.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
 
         Assert.IsNotNull(spreadUsage);
         Assert.AreEqual(AttributeTargets.Property, spreadUsage.ValidOn);
@@ -117,16 +121,24 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsFalse(vueObjectType.IsAbstract);
         Assert.IsFalse(typedVueObjectType.IsAbstract);
         Assert.IsFalse(vueDictionaryType.IsAbstract);
+        Assert.IsFalse(vueDictionary.IsAbstract);
+        Assert.IsFalse(vueValue.IsAbstract);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(vueObjectType));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(typedVueObjectType));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(vueDictionaryType));
+        Assert.IsTrue(typeof(VueProps).IsAssignableFrom(vueDictionary));
         Assert.IsNotNull(attrs);
         Assert.IsNotNull(dataset);
         Assert.IsNotNull(raw);
         Assert.IsNotNull(@class);
+        Assert.IsNotNull(item);
         Assert.IsNotNull(props);
         Assert.IsNotNull(indexer);
+        Assert.IsNotNull(rootIndexer);
+        Assert.AreEqual(typeof(VueValue), item.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueValue), rootIndexer.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        CollectionAssert.AreEqual(new[] { typeof(string) }, rootIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.Contains(
             attrs.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
             typeof(SpreadAttribute));
@@ -146,10 +158,10 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_DictionaryAndValueHelpers_DoNotExposeObject()
     {
+        AssertNotObject(typeof(VueDictionary), nameof(VueDictionary));
         AssertNotObject(typeof(VueDictionary<string>), nameof(VueDictionary<string>));
-        AssertNotObject(typeof(VueDictionary<Either<string, string[]>>), "VueDictionary<Either<string, string[]>>");
-        AssertNotObject(typeof(VueStyleValue), nameof(VueStyleValue));
-        AssertNotObject(typeof(VueClassItem), nameof(VueClassItem));
+        AssertNotObject(typeof(VueDictionary<VueValue>), "VueDictionary<VueValue>");
+        AssertNotObject(typeof(VueValue), nameof(VueValue));
     }
 
     [TestMethod]

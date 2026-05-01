@@ -162,65 +162,87 @@ public static class Vue3
 		/// </summary>
 		/// <param name="key">The final JavaScript object key to emit.</param>
 		/// <returns>The value mapped to the given key.</returns>
-		public extern TValue this[string key] { get; set; }
+		public extern TValue? this[string key] { get; set; }
 	}
 
 	/// <summary>
-	/// A strongly typed style value authoring helper for <see cref="VueDictionary{TValue}"/>
-	/// when building <c>style</c> objects inline.
+	/// Generic Vue value contract for dictionary/indexer authoring surfaces.
+	/// This is a compile-time wrapper only; implicit conversions erase to the
+	/// underlying JavaScript value at emission time.
 	/// </summary>
 	[ECMAScript]
 	[Description("@#")]
-	public readonly struct VueStyleValue
+	public sealed class VueValue
 	{
-		public extern static implicit operator VueStyleValue(string value);
+		private VueValue()
+		{
+		}
 
-		public extern static implicit operator VueStyleValue(double value);
+		public extern static implicit operator VueValue(string value);
 
-		public extern static implicit operator VueStyleValue(float value);
+		public extern static implicit operator VueValue(bool value);
 
-		public extern static implicit operator VueStyleValue(int value);
+		public extern static implicit operator VueValue(Number value);
 
-		public extern static implicit operator VueStyleValue(long value);
+		public extern static implicit operator VueValue(BigInt value);
 
-		public extern static implicit operator VueStyleValue(decimal value);
+		public extern static implicit operator VueValue(char value);
+
+		public extern static implicit operator VueValue(double value);
+
+		public extern static implicit operator VueValue(float value);
+
+		public extern static implicit operator VueValue(int value);
+
+		public extern static implicit operator VueValue(long value);
+
+		public extern static implicit operator VueValue(short value);
+
+		public extern static implicit operator VueValue(ushort value);
+
+		public extern static implicit operator VueValue(byte value);
+
+		public extern static implicit operator VueValue(sbyte value);
+
+		public extern static implicit operator VueValue(uint value);
+
+		public extern static implicit operator VueValue(ulong value);
+
+		public extern static implicit operator VueValue(decimal value);
+
+		public extern static implicit operator VueValue(VueProps value);
+
+		public extern static implicit operator VueValue(VueValue[] value);
 	}
 
 	/// <summary>
-	/// A strongly typed class-array item authoring helper. This enables mixed class-array
-	/// forms such as <c>["foo", { bar: true }]</c> while preserving a typed C# surface.
+	/// Convenience non-generic dictionary surface for common Vue object authoring.
+	/// This is the direct default when the value contract is the general <see cref="VueValue"/>.
 	/// </summary>
 	[ECMAScript]
 	[Description("@#")]
-	public readonly struct VueClassItem
+	public record VueDictionary : VueDictionary<VueValue>
 	{
-		public extern static implicit operator VueClassItem(string value);
-
-		public extern static implicit operator VueClassItem(string[] values);
-
-		public extern static implicit operator VueClassItem(VueProps value);
-
-		public extern static implicit operator VueClassItem(VueClassItem[] values);
 	}
 
 	/// <summary>
 	/// General-purpose Vue object authoring surface for <c>h()</c> props and root props.
 	/// This remains a record so it participates in the compiler's structural object lowering.
-	/// Members marked with <see cref="SpreadAttribute"/> are flattened into the
-	/// containing object instead of producing nested properties.
+	/// In addition to the common convenience members, it also exposes a string-keyed
+	/// dictionary surface for direct object-literal authoring.
 	/// </summary>
-	public record VueObject : VueProps
+	public record VueObject : VueDictionary
 	{
 		/// <summary>
 		/// Standard Vue <c>class</c> binding. Accepts string, string array, object forms, or
-		/// mixed class arrays via <see cref="VueClassItem"/>.
+		/// mixed class arrays via <see cref="VueValue"/>.
 		/// </summary>
 		[Description("@#class")]
-		public Either<string, string[], VueProps, VueClassItem[]>? Class { get; init; }
+		public Either<string, string[], VueProps, VueValue[]>? Class { get; init; }
 
 		/// <summary>
-		/// Standard Vue <c>style</c> binding. Use a normal typed record or
-		/// <see cref="VueDictionary{TValue}"/> with <see cref="VueStyleValue"/> for arbitrary keys.
+		/// Standard Vue <c>style</c> binding. Use a typed record or the convenience
+		/// <see cref="VueDictionary"/> for arbitrary keys.
 		/// </summary>
 		[Description("@#style")]
 		public VueProps? Style { get; init; }
@@ -239,7 +261,7 @@ public static class Vue3
 
 		/// <summary>
 		/// Additional properties to flatten directly into the current Vue object.
-		/// Supports both typed records and <see cref="VueDictionary{TValue}"/> for arbitrary keys.
+		/// Supports both typed records and <see cref="VueDictionary"/> for arbitrary keys.
 		/// </summary>
 		[Spread]
 		public VueProps? Attrs { get; init; }
@@ -247,14 +269,14 @@ public static class Vue3
 		/// <summary>
 		/// Dataset attributes flattened into the current Vue object.
 		/// Expected property names should already map to their final <c>data-*</c> keys.
-		/// Supports both typed records and <see cref="VueDictionary{TValue}"/> for arbitrary keys.
+		/// Supports both typed records and <see cref="VueDictionary"/> for arbitrary keys.
 		/// </summary>
 		[Spread]
 		public VueProps? Dataset { get; init; }
 
 		/// <summary>
 		/// Raw attributes flattened into the current Vue object without additional Vue-specific
-		/// interpretation. Supports both typed records and <see cref="VueDictionary{TValue}"/>
+		/// interpretation. Supports both typed records and <see cref="VueDictionary"/>
 		/// for arbitrary keys.
 		/// </summary>
 		[Spread]

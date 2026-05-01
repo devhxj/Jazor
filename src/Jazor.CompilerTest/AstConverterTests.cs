@@ -5533,11 +5533,12 @@ export function boot(component) {
                         {
                             Id = null,
                             Title = "hero",
-                            Class = new[] { "foo", "bar" },
+                            Class = new VueValue[] { "foo", new VueDictionary { ["bar"] = true } },
                             Style = new StyleBag { Color = "red" },
                             Attrs = new AttrBag { NameSelector = "some-name" },
                             Dataset = new DatasetBag { UserId = "42" },
-                            Raw = new RawBag { Width = "100" }
+                            Raw = new RawBag { Width = "100" },
+                            ["role"] = "banner"
                         });
                 }
             }
@@ -5567,18 +5568,19 @@ export function boot(component) {
 export function render() {
   return h(""div"", {
     title: ""hero"",
-    class: [""foo"", ""bar""],
+    class: [""foo"", { bar: true }],
     style: { color: ""red"" },
     "".name"": ""some-name"",
     ""data-user-id"": ""42"",
-    ""^width"": ""100""
+    ""^width"": ""100"",
+    role: ""banner""
   });
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
     [TestMethod]
-    public async Task Convert_ClassUsingVueObjectDictionaryBags_FlattensIntoObjectLiteralMembers()
+    public async Task Convert_ClassUsingVueObjectDictionarySurface_FlattensIntoObjectLiteralMembers()
     {
         var code = """
             using ECMAScript.Contract;
@@ -5593,25 +5595,26 @@ export function render() {
                     public static IVNode Render()
                         => H("div", new VueObject
                         {
-                            Style = new VueDictionary<VueStyleValue>
+                            Style = new VueDictionary
                             {
                                 ["color"] = "red",
-                                ["width"] = "100px"
+                                ["width"] = "100px",
+                                ["skip"] = null
                             },
-                            Class = new VueClassItem[]
+                            Class = new VueValue[]
                             {
                                 "foo",
-                                new VueDictionary<bool> { ["bar"] = true }
+                                new VueDictionary { ["bar"] = true }
                             },
-                            Attrs = new VueDictionary<string>
+                            Attrs = new VueDictionary
                             {
                                 [".name"] = "some-name"
                             },
-                            Dataset = new VueDictionary<string>
+                            Dataset = new VueDictionary
                             {
                                 ["data-user-id"] = "42"
                             },
-                            Raw = new VueDictionary<string>
+                            Raw = new VueDictionary
                             {
                                 ["^width"] = "100"
                             }

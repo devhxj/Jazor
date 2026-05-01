@@ -84,13 +84,16 @@
 
 - `VueObject`
 - `VueObject<TProps>`
+- `VueDictionary`
+- `VueValue`
 
 它们本质上不是新的 runtime shape，而是普通 `record` structural lowering 的便捷 authoring contract：
 
-- `VueObject` 继承自 `VueProps`，因此仍然走 record -> plain JS object 的既有 lowering；
+- `VueObject` 继承自 `VueDictionary`，因此既保留 record -> plain JS object lowering，也可以直接写 `["key"] = value`；
 - `Class`、`Style`、`Id`、`Title` 提供常用 Vue/DOM props 的强类型入口；
 - `Attrs`、`Dataset`、`Raw` 通过 `[Spread]` 直接扁平化进当前对象；
 - `VueObject<TProps>.Props` 也通过 `[Spread]` 扁平化 typed props bag；
+- `VueDictionary` 提供常用的非泛型字典入口，`VueValue` 提供统一的字典值契约；
 - `Dataset` 当前不提供额外 prefix/format 规则，属性名应直接映射到最终 `data-*` key，例如 `Description("@#data-user-id")`。
 
 也就是说，`VueObject` 不是“编译器里的 Vue 特路”，而是建立在通用 record structural lowering 之上的 authoring sugar。

@@ -303,6 +303,7 @@ tuple 在 Jazor 中应视为“可擦除的复合值”：
 3. `ECMAScript.Vue3.VueObject` / `VueObject<TProps>` 只是建立在 record structural lowering 之上的 authoring surface：
    - 编译器不应为它们再开一条 Vue-only lowering 分支；
    - `Props` / `Attrs` / `Dataset` / `Raw` 的 flatten 行为都应通过通用 `[Spread]` 路线获得；
+   - `VueObject` 允许直接写字符串索引键，但这仍然应落到同一套 object-literal lowering；
    - 如果 `VueObject` 所需能力在一般 record 上不成立，应优先增强通用 structural lowering，而不是追加 Vue 特路。
 
 它们不能再被视为“以后再看”的零散实现点，因为三者直接决定模块级输出模型是否自洽。
