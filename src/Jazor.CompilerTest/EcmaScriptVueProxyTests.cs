@@ -102,21 +102,31 @@ public sealed class EcmaScriptVueProxyTests
         var spreadUsage = typeof(SpreadAttribute).GetCustomAttribute<AttributeUsageAttribute>();
         var vueObjectType = typeof(VueObject);
         var typedVueObjectType = typeof(VueObject<>);
+        var vueDictionaryType = typeof(VueDictionary<>);
         var attrs = typeof(VueObject).GetProperty(nameof(VueObject.Attrs), BindingFlags.Public | BindingFlags.Instance);
         var dataset = typeof(VueObject).GetProperty(nameof(VueObject.Dataset), BindingFlags.Public | BindingFlags.Instance);
         var raw = typeof(VueObject).GetProperty(nameof(VueObject.Raw), BindingFlags.Public | BindingFlags.Instance);
+        var @class = typeof(VueObject).GetProperty(nameof(VueObject.Class), BindingFlags.Public | BindingFlags.Instance);
         var props = typeof(VueObject<>).GetProperty("Props", BindingFlags.Public | BindingFlags.Instance);
+        var indexer = vueDictionaryType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
 
         Assert.IsNotNull(spreadUsage);
         Assert.AreEqual(AttributeTargets.Property, spreadUsage.ValidOn);
         Assert.AreEqual(false, spreadUsage.AllowMultiple);
         Assert.AreEqual("ECMAScript", typeof(SpreadAttribute).Namespace);
+        Assert.IsFalse(vueObjectType.IsAbstract);
+        Assert.IsFalse(typedVueObjectType.IsAbstract);
+        Assert.IsFalse(vueDictionaryType.IsAbstract);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(vueObjectType));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(typedVueObjectType));
+        Assert.IsTrue(typeof(VueProps).IsAssignableFrom(vueDictionaryType));
         Assert.IsNotNull(attrs);
         Assert.IsNotNull(dataset);
         Assert.IsNotNull(raw);
+        Assert.IsNotNull(@class);
         Assert.IsNotNull(props);
+        Assert.IsNotNull(indexer);
+        CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.Contains(
             attrs.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
             typeof(SpreadAttribute));
@@ -129,6 +139,109 @@ public sealed class EcmaScriptVueProxyTests
         CollectionAssert.Contains(
             props.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
             typeof(SpreadAttribute));
+        Assert.IsTrue(@class.PropertyType.UnwrapNullable().IsGenericType);
+        Assert.AreEqual(typeof(Either<,,,>), @class.PropertyType.UnwrapNullable().GetGenericTypeDefinition());
+    }
+
+    [TestMethod]
+    public void Vue_DictionaryAndValueHelpers_DoNotExposeObject()
+    {
+        AssertNotObject(typeof(VueDictionary<string>), nameof(VueDictionary<string>));
+        AssertNotObject(typeof(VueDictionary<Either<string, string[]>>), "VueDictionary<Either<string, string[]>>");
+        AssertNotObject(typeof(VueStyleValue), nameof(VueStyleValue));
+        AssertNotObject(typeof(VueClassItem), nameof(VueClassItem));
+    }
+
+    [TestMethod]
+    public void Vue_CreateApp_And_CreateSsrApp_ExposeTypedRootPropsOverloads()
+    {
+        var methods = typeof(Vue3)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name is nameof(Vue3.CreateApp) or nameof(Vue3.CreateSsrApp))
+            .ToArray();
+
+        static bool HasTypedRootPropsOverload(MethodInfo[] methods, string methodName, int genericArity, Func<ParameterInfo[], bool> predicate)
+            => methods.Any(method =>
+                method.Name == methodName &&
+                method.IsGenericMethodDefinition &&
+                method.GetGenericArguments().Length == genericArity &&
+                predicate(method.GetParameters()));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateApp),
+            1,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[1].ParameterType.IsGenericParameter));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateApp),
+            1,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateApp),
+            2,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericParameter));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateApp),
+            2,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateSsrApp),
+            1,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[1].ParameterType.IsGenericParameter));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateSsrApp),
+            1,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateSsrApp),
+            2,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericParameter));
+
+        Assert.IsTrue(HasTypedRootPropsOverload(
+            methods,
+            nameof(Vue3.CreateSsrApp),
+            2,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
     }
 
     [TestMethod]
@@ -384,6 +497,96 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void Vue_H_ExposesTypedVueObjectPropsOverloads()
+    {
+        var overloads = typeof(Vue3)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == nameof(Vue3.H) && method.IsGenericMethodDefinition)
+            .ToArray();
+
+        static bool HasGenericOverload(MethodInfo[] methods, int genericArity, Func<ParameterInfo[], bool> predicate)
+            => methods.Any(method =>
+                method.GetGenericArguments().Length == genericArity &&
+                predicate(method.GetParameters()));
+
+        Assert.IsTrue(HasGenericOverload(
+            overloads,
+            1,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
+
+        Assert.IsTrue(HasGenericOverload(
+            overloads,
+            2,
+            parameters => parameters.Length == 2 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
+
+        Assert.IsTrue(HasGenericOverload(
+            overloads,
+            2,
+            parameters => parameters.Length == 3 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
+                          parameters[2].ParameterType == typeof(IVNode)));
+
+        Assert.IsTrue(HasGenericOverload(
+            overloads,
+            2,
+            parameters => parameters.Length == 3 &&
+                          parameters[0].ParameterType.IsGenericType &&
+                          parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
+                          parameters[1].ParameterType.IsGenericType &&
+                          parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
+                          parameters[2].ParameterType.IsGenericParameter));
+    }
+
+    [TestMethod]
+    public void Vue_DefaultSlotSugar_DoesNotDependOnJazorAttributes()
+    {
+        var vueType = typeof(Vue3);
+        var hOverloads = vueType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == nameof(Vue3.H))
+            .ToArray();
+
+        Assert.IsFalse(HasAttribute(vueType, "JazorAttribute"));
+
+        foreach (var method in hOverloads.Where(IsVueDefaultSlotSugarOverload))
+            Assert.IsFalse(HasAttribute(method, "JazorAttribute"), method.ToString());
+
+        static bool IsVueDefaultSlotSugarOverload(MethodInfo method)
+        {
+            var parameters = method.GetParameters();
+            if (parameters.Length is not (2 or 3))
+                return false;
+
+            var receiverType = parameters[0].ParameterType;
+            var childType = parameters[^1].ParameterType;
+            if (receiverType != typeof(ECMAScript.Vue3.IVueComponent) &&
+                !(receiverType.IsGenericType &&
+                  (receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) ||
+                   receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>))))
+            {
+                return false;
+            }
+
+            return childType == typeof(IVNode) ||
+                   childType == typeof(string) ||
+                   childType == typeof(Number) ||
+                   childType == typeof(bool) ||
+                   childType == typeof(IVNode[]);
+        }
+    }
+
+    [TestMethod]
     public void Vuetify_ComponentExports_AreConcreteComponentTypes()
     {
         var exportedComponents = typeof(VuetifyComponents)
@@ -472,6 +675,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNull(module, type.FullName);
         Assert.IsNull(runtime!.Import, type.FullName);
     }
+
+    private static bool HasAttribute(MemberInfo member, string attributeTypeName)
+        => member.GetCustomAttributesData().Any(attribute => attribute.AttributeType.Name == attributeTypeName);
 }
 
 internal static class TypeTestExtensions

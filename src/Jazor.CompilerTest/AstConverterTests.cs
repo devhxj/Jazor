@@ -5454,14 +5454,12 @@ export function boot(component) {
                 {
                     public static VueApp Boot(IVueComponent component)
                     {
-                        return Vue3.CreateApp(component, new RootVueProps
+                        return Vue3.CreateApp(component, new VueObject<RootProps>
                         {
                             Props = new RootProps { Message = "Hello" }
                         });
                     }
                 }
-
-                public sealed record RootVueProps : VueObject<RootProps>;
             }
             """;
 
@@ -5527,13 +5525,11 @@ export function boot(component) {
                     public string? Width { get; init; }
                 }
 
-                public sealed record ElementVueProps : VueObject;
-
                 [ECMAScriptModule("components/panel.mjs")]
                 public static class PanelModule
                 {
                     public static IVNode Render()
-                        => H("div", new ElementVueProps
+                        => H("div", new VueObject
                         {
                             Id = null,
                             Title = "hero",
@@ -5582,6 +5578,82 @@ export function render() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueObjectDictionaryBags_FlattensIntoObjectLiteralMembers()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode Render()
+                        => H("div", new VueObject
+                        {
+                            Style = new VueDictionary<VueStyleValue>
+                            {
+                                ["color"] = "red",
+                                ["width"] = "100px"
+                            },
+                            Class = new VueClassItem[]
+                            {
+                                "foo",
+                                new VueDictionary<bool> { ["bar"] = true }
+                            },
+                            Attrs = new VueDictionary<string>
+                            {
+                                [".name"] = "some-name"
+                            },
+                            Dataset = new VueDictionary<string>
+                            {
+                                ["data-user-id"] = "42"
+                            },
+                            Raw = new VueDictionary<string>
+                            {
+                                ["^width"] = "100"
+                            }
+                        });
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function render() {
+  return h(""div"", {
+    style: { color: ""red"", width: ""100px"" },
+    class: [""foo"", { bar: true }],
+    "".name"": ""some-name"",
+    ""data-user-id"": ""42"",
+    ""^width"": ""100""
+  });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueObjectTypedProps_FlattensPropsAndOmitsNullExpansionMembers()
     {
         var code = """
@@ -5607,7 +5679,7 @@ export function render() {
                     });
 
                     public static IVNode Render()
-                        => H(Child, new ChildVueProps
+                        => H(Child, new VueObject<ChildProps>
                         {
                             Props = new ChildProps { Title = "Welcome" },
                             Attrs = null,
@@ -5616,8 +5688,6 @@ export function render() {
                             Title = null
                         });
                 }
-
-                public sealed record ChildVueProps : VueObject<ChildProps>;
             }
             """;
 

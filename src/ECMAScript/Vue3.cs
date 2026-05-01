@@ -74,7 +74,6 @@ public delegate VueRenderCallback VueTypedSetupCallback<TProps, TSlots>(TProps p
 
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
-[Jazor]
 public static class Vue3
 {
 	/// <summary>
@@ -149,21 +148,79 @@ public static class Vue3
 	public abstract record VueProps : IVueOptionsBag;
 
 	/// <summary>
+	/// Generic dictionary-style Vue object authoring surface for arbitrary string keys.
+	/// This remains a record so it participates in structural object lowering and emits
+	/// a plain JavaScript object rather than a runtime <c>Map</c>.
+	/// </summary>
+	/// <typeparam name="TValue">The value contract for each arbitrary key.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public record VueDictionary<TValue> : VueProps
+	{
+		/// <summary>
+		/// Gets or sets an arbitrary Vue/object property by its final emitted key.
+		/// </summary>
+		/// <param name="key">The final JavaScript object key to emit.</param>
+		/// <returns>The value mapped to the given key.</returns>
+		public extern TValue this[string key] { get; set; }
+	}
+
+	/// <summary>
+	/// A strongly typed style value authoring helper for <see cref="VueDictionary{TValue}"/>
+	/// when building <c>style</c> objects inline.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly struct VueStyleValue
+	{
+		public extern static implicit operator VueStyleValue(string value);
+
+		public extern static implicit operator VueStyleValue(double value);
+
+		public extern static implicit operator VueStyleValue(float value);
+
+		public extern static implicit operator VueStyleValue(int value);
+
+		public extern static implicit operator VueStyleValue(long value);
+
+		public extern static implicit operator VueStyleValue(decimal value);
+	}
+
+	/// <summary>
+	/// A strongly typed class-array item authoring helper. This enables mixed class-array
+	/// forms such as <c>["foo", { bar: true }]</c> while preserving a typed C# surface.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public readonly struct VueClassItem
+	{
+		public extern static implicit operator VueClassItem(string value);
+
+		public extern static implicit operator VueClassItem(string[] values);
+
+		public extern static implicit operator VueClassItem(VueProps value);
+
+		public extern static implicit operator VueClassItem(VueClassItem[] values);
+	}
+
+	/// <summary>
 	/// General-purpose Vue object authoring surface for <c>h()</c> props and root props.
 	/// This remains a record so it participates in the compiler's structural object lowering.
 	/// Members marked with <see cref="SpreadAttribute"/> are flattened into the
 	/// containing object instead of producing nested properties.
 	/// </summary>
-	public abstract record VueObject : VueProps
+	public record VueObject : VueProps
 	{
 		/// <summary>
-		/// Standard Vue <c>class</c> binding. Accepts string, string array, or nested object forms.
+		/// Standard Vue <c>class</c> binding. Accepts string, string array, object forms, or
+		/// mixed class arrays via <see cref="VueClassItem"/>.
 		/// </summary>
 		[Description("@#class")]
-		public Either<string, string[], VueProps>? Class { get; init; }
+		public Either<string, string[], VueProps, VueClassItem[]>? Class { get; init; }
 
 		/// <summary>
-		/// Standard Vue <c>style</c> binding.
+		/// Standard Vue <c>style</c> binding. Use a normal typed record or
+		/// <see cref="VueDictionary{TValue}"/> with <see cref="VueStyleValue"/> for arbitrary keys.
 		/// </summary>
 		[Description("@#style")]
 		public VueProps? Style { get; init; }
@@ -182,6 +239,7 @@ public static class Vue3
 
 		/// <summary>
 		/// Additional properties to flatten directly into the current Vue object.
+		/// Supports both typed records and <see cref="VueDictionary{TValue}"/> for arbitrary keys.
 		/// </summary>
 		[Spread]
 		public VueProps? Attrs { get; init; }
@@ -189,12 +247,15 @@ public static class Vue3
 		/// <summary>
 		/// Dataset attributes flattened into the current Vue object.
 		/// Expected property names should already map to their final <c>data-*</c> keys.
+		/// Supports both typed records and <see cref="VueDictionary{TValue}"/> for arbitrary keys.
 		/// </summary>
 		[Spread]
 		public VueProps? Dataset { get; init; }
 
 		/// <summary>
-		/// Raw attributes flattened into the current Vue object without additional Vue-specific interpretation.
+		/// Raw attributes flattened into the current Vue object without additional Vue-specific
+		/// interpretation. Supports both typed records and <see cref="VueDictionary{TValue}"/>
+		/// for arbitrary keys.
 		/// </summary>
 		[Spread]
 		public VueProps? Raw { get; init; }
@@ -205,7 +266,7 @@ public static class Vue3
 	/// the common convenience members declared on <see cref="VueObject"/>.
 	/// </summary>
 	/// <typeparam name="TProps">The typed props record that should be flattened into the output object.</typeparam>
-	public abstract record VueObject<TProps> : VueObject
+	public record VueObject<TProps> : VueObject
 		where TProps : VueProps
 	{
 		/// <summary>
@@ -728,6 +789,60 @@ public static class Vue3
 	public extern static VueApp CreateApp(IVueComponent rootComponent, VueProps rootProps);
 
 	/// <summary>
+	/// Creates a Vue application instance with strongly typed root props.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <param name="rootComponent">The typed root component definition.</param>
+	/// <param name="rootProps">The strongly typed root props object.</param>
+	/// <returns>A new <see cref="VueApp"/> instance ready for configuration and mounting.</returns>
+	[Description("@#createApp")]
+	public extern static VueApp CreateApp<TProps>(IVueComponent<TProps> rootComponent, TProps rootProps)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a Vue application instance with strongly typed root props plus the common
+	/// convenience members exposed by <see cref="VueObject{TProps}"/>.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <param name="rootComponent">The typed root component definition.</param>
+	/// <param name="rootProps">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences such as <c>class</c>, <c>style</c>, and spreads.</param>
+	/// <returns>A new <see cref="VueApp"/> instance ready for configuration and mounting.</returns>
+	[Description("@#createApp")]
+	public extern static VueApp CreateApp<TProps>(IVueComponent<TProps> rootComponent, VueObject<TProps> rootProps)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a Vue application instance with strongly typed root props for a component
+	/// that also declares typed slots.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <typeparam name="TSlots">The root component slots contract.</typeparam>
+	/// <param name="rootComponent">The fully typed root component definition.</param>
+	/// <param name="rootProps">The strongly typed root props object.</param>
+	/// <returns>A new <see cref="VueApp"/> instance ready for configuration and mounting.</returns>
+	[Description("@#createApp")]
+	public extern static VueApp CreateApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, TProps rootProps)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
+	/// Creates a Vue application instance with strongly typed root props plus the common
+	/// convenience members exposed by <see cref="VueObject{TProps}"/> for a component that
+	/// also declares typed slots.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <typeparam name="TSlots">The root component slots contract.</typeparam>
+	/// <param name="rootComponent">The fully typed root component definition.</param>
+	/// <param name="rootProps">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences such as <c>class</c>, <c>style</c>, and spreads.</param>
+	/// <returns>A new <see cref="VueApp"/> instance ready for configuration and mounting.</returns>
+	[Description("@#createApp")]
+	public extern static VueApp CreateApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, VueObject<TProps> rootProps)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
 	/// Creates a Vue application instance in SSR (server-side rendering) mode. In SSR mode,
 	/// Vue renders the component tree to HTML strings instead of DOM nodes.
 	/// </summary>
@@ -744,6 +859,60 @@ public static class Vue3
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
 	public extern static VueApp CreateSsrApp(IVueComponent rootComponent, VueProps rootProps);
+
+	/// <summary>
+	/// Creates a Vue SSR application instance with strongly typed root props.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <param name="rootComponent">The typed root component definition.</param>
+	/// <param name="rootProps">The strongly typed root props object.</param>
+	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
+	[Description("@#createSSRApp")]
+	public extern static VueApp CreateSsrApp<TProps>(IVueComponent<TProps> rootComponent, TProps rootProps)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a Vue SSR application instance with strongly typed root props plus the common
+	/// convenience members exposed by <see cref="VueObject{TProps}"/>.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <param name="rootComponent">The typed root component definition.</param>
+	/// <param name="rootProps">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences such as <c>class</c>, <c>style</c>, and spreads.</param>
+	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
+	[Description("@#createSSRApp")]
+	public extern static VueApp CreateSsrApp<TProps>(IVueComponent<TProps> rootComponent, VueObject<TProps> rootProps)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a Vue SSR application instance with strongly typed root props for a component
+	/// that also declares typed slots.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <typeparam name="TSlots">The root component slots contract.</typeparam>
+	/// <param name="rootComponent">The fully typed root component definition.</param>
+	/// <param name="rootProps">The strongly typed root props object.</param>
+	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
+	[Description("@#createSSRApp")]
+	public extern static VueApp CreateSsrApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, TProps rootProps)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
+	/// Creates a Vue SSR application instance with strongly typed root props plus the common
+	/// convenience members exposed by <see cref="VueObject{TProps}"/> for a component that
+	/// also declares typed slots.
+	/// </summary>
+	/// <typeparam name="TProps">The root component props contract.</typeparam>
+	/// <typeparam name="TSlots">The root component slots contract.</typeparam>
+	/// <param name="rootComponent">The fully typed root component definition.</param>
+	/// <param name="rootProps">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences such as <c>class</c>, <c>style</c>, and spreads.</param>
+	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
+	[Description("@#createSSRApp")]
+	public extern static VueApp CreateSsrApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, VueObject<TProps> rootProps)
+		where TProps : VueProps
+		where TSlots : VueSlots;
 
 	/// <summary>
 	/// Defines a Vue component from an options object with no typed props. Use this overload
@@ -1046,6 +1215,230 @@ public static class Vue3
 		where TProps : VueProps;
 
 	/// <summary>
+	/// Creates a VNode for a typed-props component using a typed Vue object that flattens
+	/// the component props contract and also exposes common convenience members such as
+	/// <c>class</c>, <c>style</c>, and spreads.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <returns>A VNode representing the component with typed props.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a single VNode child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="child">A single child VNode passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with default slot content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, IVNode child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a text child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with default slot text content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, string child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a numeric child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with default slot numeric content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, Number child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a boolean child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="child">A boolean value passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with default slot boolean content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, bool child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with an array of children as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with multiple default slot children.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, IVNode[] children)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with named slots.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="slots">A slots record whose properties are named slot callbacks.</param>
+	/// <returns>A VNode representing the component with the provided named slots.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueSlots slots)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with props and a single VNode child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <param name="child">A single child VNode passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and default slot content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props, IVNode child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with props and a text child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with props and default slot text content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props, string child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with props and a numeric child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with props and default slot numeric content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props, Number child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with props and a boolean child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <param name="child">A boolean value passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and default slot boolean content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props, bool child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with props and an array of children as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and multiple default slot children.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props, IVNode[] children)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with props and named slots.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <param name="slots">A slots record whose properties are named slot callbacks.</param>
+	/// <returns>A VNode representing the component with props and named slots.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, TProps props, VueSlots slots)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a typed Vue object and a single VNode child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and also allows common authoring conveniences.</param>
+	/// <param name="child">A single child VNode passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and default slot content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props, IVNode child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a typed Vue object and a text child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and also allows common authoring conveniences.</param>
+	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with props and default slot text content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props, string child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a typed Vue object and a numeric child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and also allows common authoring conveniences.</param>
+	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with props and default slot numeric content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props, Number child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a typed Vue object and a boolean child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and also allows common authoring conveniences.</param>
+	/// <param name="child">A boolean value passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and default slot boolean content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props, bool child)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a typed Vue object and an array of children as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and also allows common authoring conveniences.</param>
+	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and multiple default slot children.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props, IVNode[] children)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props component with a typed Vue object and named slots.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <param name="component">The typed-props component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and also allows common authoring conveniences.</param>
+	/// <param name="slots">A slots record whose properties are named slot callbacks.</param>
+	/// <returns>A VNode representing the component with props and named slots.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps>(IVueComponent<TProps> component, VueObject<TProps> props, VueSlots slots)
+		where TProps : VueProps;
+
+	/// <summary>
 	/// Creates a VNode for a typed-slots component with a single VNode child as default slot content.
 	/// </summary>
 	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
@@ -1195,6 +1588,35 @@ public static class Vue3
 		where TSlots : VueSlots;
 
 	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component using its strongly typed props object.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">The typed props object whose properties are passed as individual props.</param>
+	/// <returns>A VNode representing the component with strongly typed props.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component using a typed Vue object that
+	/// flattens the component props contract and also exposes common convenience members such as
+	/// <c>class</c>, <c>style</c>, and spreads.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <returns>A VNode representing the component with strongly typed props.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
 	/// Creates a VNode for a typed-props, typed-slots component with props and a single VNode
 	/// child as default slot content.
 	/// </summary>
@@ -1206,6 +1628,22 @@ public static class Vue3
 	/// <returns>A VNode representing the component with props and default slot content.</returns>
 	[Description("@#h")]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, IVNode child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component with a typed Vue object and
+	/// a single VNode child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <param name="child">A single child VNode passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and default slot content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props, IVNode child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
@@ -1225,6 +1663,22 @@ public static class Vue3
 		where TSlots : VueSlots;
 
 	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component with a typed Vue object and
+	/// a text child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <param name="child">A text string passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with props and default slot text content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props, string child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
 	/// Creates a VNode for a typed-props, typed-slots component with props and a numeric child
 	/// as default slot content.
 	/// </summary>
@@ -1236,6 +1690,22 @@ public static class Vue3
 	/// <returns>A VNode representing the component with props and default slot numeric content.</returns>
 	[Description("@#h")]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, Number child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component with a typed Vue object and
+	/// a numeric child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <param name="child">A numeric value passed to the component's default slot as a text node.</param>
+	/// <returns>A VNode representing the component with props and default slot numeric content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props, Number child)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
@@ -1255,6 +1725,22 @@ public static class Vue3
 		where TSlots : VueSlots;
 
 	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component with a typed Vue object and
+	/// a boolean child as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <param name="child">A boolean value passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and default slot boolean content.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props, bool child)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
 	/// Creates a VNode for a typed-props, typed-slots component with props and an array of
 	/// children as default slot content.
 	/// </summary>
@@ -1270,6 +1756,22 @@ public static class Vue3
 		where TSlots : VueSlots;
 
 	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component with a typed Vue object and
+	/// an array of children as default slot content.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <param name="children">An array of child VNodes passed to the component's default slot.</param>
+	/// <returns>A VNode representing the component with props and multiple default slot children.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props, IVNode[] children)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
 	/// Creates a VNode for a typed-props, typed-slots component with props and named slots.
 	/// </summary>
 	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
@@ -1280,6 +1782,22 @@ public static class Vue3
 	/// <returns>A VNode representing the component with props and named slots.</returns>
 	[Description("@#h")]
 	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, TProps props, TSlots slots)
+		where TProps : VueProps
+		where TSlots : VueSlots;
+
+	/// <summary>
+	/// Creates a VNode for a typed-props, typed-slots component with a typed Vue object and
+	/// named slots.
+	/// </summary>
+	/// <typeparam name="TProps">The props record type matching the component's declared props.</typeparam>
+	/// <typeparam name="TSlots">The slots record type matching the component's declared slots.</typeparam>
+	/// <param name="component">The fully typed component to render.</param>
+	/// <param name="props">A typed Vue object that flattens <typeparamref name="TProps"/> and
+	/// also allows common authoring conveniences.</param>
+	/// <param name="slots">A typed slots record whose properties are named slot callbacks.</param>
+	/// <returns>A VNode representing the component with props and named slots.</returns>
+	[Description("@#h")]
+	public extern static IVNode H<TProps, TSlots>(IVueComponent<TProps, TSlots> component, VueObject<TProps> props, TSlots slots)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 

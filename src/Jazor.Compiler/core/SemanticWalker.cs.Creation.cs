@@ -149,6 +149,21 @@ public partial class SemanticWalker
 		return false;
 	}
 
+	private static bool IsObjectLiteralHostType(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol is not INamedTypeSymbol namedType)
+			return false;
+
+		if (ShouldLowerRecordStructurally(namedType))
+			return true;
+
+		if (!HasEcmascriptSupportMarker(namedType) &&
+			!HasEcmascriptSupportMarkerBaseType(namedType))
+			return false;
+
+		return Util.HasNameResolutionBoundary(namedType);
+	}
+
 	private Expression BuildRecordStructuralLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
 	{
 		if (operation.Type is not INamedTypeSymbol namedType)
@@ -1000,6 +1015,14 @@ public partial class SemanticWalker
 		return true;
 	}
 
+	private static Expression? TryTranslateObjectLiteralIndexerKey(IOperation operation)
+	{
+		if (operation.ConstantValue is not { HasValue: true, Value: string key })
+			return null;
+
+		return CreateObjectPropertyKey(key);
+	}
+
 	private string ResolveInitializerAssignmentMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
 	{
 		var validationSymbol = symbol switch
@@ -1362,6 +1385,12 @@ public partial class SemanticWalker
 				}
 
 				orderSymbol = GetObjectInitializerMemberSymbol(simpleAssignmentOp);
+				if (TryBuildObjectLiteralIndexerProperty(simpleAssignmentOp, argument, out var indexerProperty))
+				{
+					nodes.Add(indexerProperty);
+					continue;
+				}
+
 				target = simpleAssignmentOp.Target switch
 				{
 					IPropertyReferenceOperation propertyReferenceOp => CreateObjectPropertyKey(ResolveInitializerAssignmentMemberName(
@@ -1421,6 +1450,35 @@ public partial class SemanticWalker
 			nodes.Add(new ObjectLiteralNode(prop, GetObjectInitializerMemberName(initializer), orderSymbol));
 		}
 		return nodes;
+	}
+
+	private bool TryBuildObjectLiteralIndexerProperty(
+		ISimpleAssignmentOperation assignment,
+		SenseArgument argument,
+		out ObjectLiteralNode node)
+	{
+		node = default;
+		if (assignment.Target is not IPropertyReferenceOperation propertyReference ||
+			propertyReference.Arguments.Length != 1 ||
+			!IsObjectLiteralHostType(propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType))
+		{
+			return false;
+		}
+
+		var key = TryTranslateObjectLiteralIndexerKey(propertyReference.Arguments[0].Value);
+		if (key is null)
+			return false;
+
+		var value = TranslateTupleForTarget(assignment.Value, assignment.Target.Type, argument);
+		var property = new ObjectProperty(
+			PropertyKind.Init,
+			key: key,
+			value: value,
+			computed: false,
+			shorthand: false,
+			method: false);
+		node = new ObjectLiteralNode(property, GetObjectLiteralNodeName(property), propertyReference.Property);
+		return true;
 	}
 
 	private void AppendExpandedInitializerMembers(
