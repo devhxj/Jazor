@@ -13,7 +13,7 @@ on:
         type: boolean
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
   packages: write
 
@@ -119,3 +119,31 @@ jobs:
         run: |
           $pkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Select-Object -First 1
           dotnet nuget push $pkg.FullName --api-key '${{ secrets.GITHUB_TOKEN }}' --source 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json' --skip-duplicate
+
+      - name: Generate release notes
+        if: startsWith(github.ref, 'refs/tags/')
+        id: release_notes
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $prevTag = git tag --sort=-creatordate | Select-String -NotMatch "^$tag$" | Select-Object -First 1
+          if ($LASTEXITCODE -ne 0 -or -not $prevTag) { $prevTag = "" }
+          "prev_tag=$prevTag" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $version = '${{ steps.package.outputs.version }}'
+          $prevTag = '${{ steps.release_notes.outputs.prev_tag }}'
+
+          if ($prevTag) {
+            $notes = gh api "repos/${{ github.repository }}/releases/generate-notes" -f tag_name="$tag" -f previous_tag="$prevTag" --jq '.body'
+          } else {
+            $notes = "Release $version"
+          }
+
+          gh release create $tag --repo "${{ github.repository }}" --title $tag --notes $notes
