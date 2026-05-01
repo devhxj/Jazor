@@ -64,6 +64,7 @@
 - `H(tagOrComponent, singleVNodeChild)` 可直接表达单个 vnode child，不必再手动包 `IVNode[]`；
 - `H(...)` 的常用 children authoring 已切到 overload-first：`string`、`Number`、`bool`、`IVNode`、`IVNode[]` 直接用 C# 重载表达，不再依赖 `Either<...>`；
 - 当目标是 `component` 时，这些 child overload 都会按 default slot authoring 收敛；编译输出会保持 `component / props / child` 左到右、单次求值，再映射成标准 Vue slot 形状；
+- 这层 default-slot sugar 不通过外部库侧 `[Jazor]` / `Op.Compile` 声明驱动，而是由编译器基于既定 `H(...)` overload surface 做内部识别；
 - 当目标是 `IVueSlotComponent<TSlots>` 或 `IVueComponent<TProps, TSlots>` 时，implicit child/default-slot sugar 只在 `TSlots` 暴露且仅暴露一个 parameterless default slot 时成立；缺少 default slot、声明了多个 default slot，或 default slot 使用 `VueSlotCallback<TScope>` 时，必须回到显式 `H(component, slots)` / `H(component, props, slots)` authoring；
 - typed default slot 通过 slot 属性最终映射名是否为 `default` 识别；推荐直接用 `Description("@#default")` 明确声明；
 - `H(component, slots)`

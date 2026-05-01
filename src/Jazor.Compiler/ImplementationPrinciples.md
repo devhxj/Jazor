@@ -559,6 +559,8 @@ tuple 在 `Jazor.Compiler` 中不应被定义为“runtime tuple 模拟”，而
 - `Import`: 外部 helper/module 接缝
 - `Compile`: 需要 AST 级决策、上下文参与、局部协议或复杂结构构造的宿主语义出口
 
+但这里有一条额外边界：`Compile` 仍然是基础宿主绑定映射的 producer-side 出口，不应被外部库 authoring sugar 滥用。像 Vue `H(component, child)` 这种建立在公开 overload contract 上的 authoring 便利，应优先落到 compiler 内部 intrinsic / lowering 识别，而不是再让外部库用 `[Jazor]` / `Op.Compile` 声明一套语法糖协议。
+
 如果某个宿主能力继续停留在 `Inline` 会导致：
 
 - AST 结构脆弱

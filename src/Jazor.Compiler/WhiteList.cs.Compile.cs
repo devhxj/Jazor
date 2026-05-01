@@ -10,7 +10,6 @@ namespace Jazor.Compiler;
 
 partial interface IWhiteList
 {
-
 	/// <summary>
 	/// static ECMAScript.Global.TypeOf(object)
 	/// </summary>
