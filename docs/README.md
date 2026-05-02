@@ -38,6 +38,7 @@
 | `01-目标/webidl/` | `src/ECMAScript.WebIDL.Generator/` |
 | `01-目标/tools/` | `src/Jazor/` + `src/Jolt.VSCodeExtension/` + 相关测试/工具项目 |
 | **02-计划** | |
+| `02-计划/ecmascript/` | `src/ECMAScript/` |
 | `02-计划/jolt/` | `src/Jolt/` |
 | `02-计划/compiler/` | `src/Jazor.Compiler/` |
 | `02-计划/jolt/razorvue-implementation/` | RazorVue 线路 + `src/Jolt/` 的交叉实施材料 |
@@ -50,6 +51,11 @@
 ## 快速入口
 
 - 恢复工作 → [02-计划/workstream-dashboard.md](./02-计划/workstream-dashboard.md)
+- ECMAScript Vue3 目标设计 → [01-目标/ecmascript/vue3-balanced-design.md](./01-目标/ecmascript/vue3-balanced-design.md)
+- ECMAScript Vue3 模块映射规则 → [01-目标/ecmascript/vue3-module-mapping-rules.md](./01-目标/ecmascript/vue3-module-mapping-rules.md)
+- ECMAScript Vue3 API 覆盖矩阵 → [01-目标/ecmascript/vue3-api-coverage-matrix.md](./01-目标/ecmascript/vue3-api-coverage-matrix.md)
+- ECMAScript Vue3 映射细节 → [01-目标/ecmascript/vue3-mapping-details.md](./01-目标/ecmascript/vue3-mapping-details.md)
+- ECMAScript Vue3 落地计划 → [02-计划/ecmascript/ECMAScript.Vue3.Authoring.ImplementationPlan.md](./02-计划/ecmascript/ECMAScript.Vue3.Authoring.ImplementationPlan.md)
 - 编译器实现原则 → [../src/Jazor.Compiler/ImplementationPrinciples.md](../src/Jazor.Compiler/ImplementationPrinciples.md)
 - 编译器状态快照 → [03-完成/compiler/status.md](./03-完成/compiler/status.md)
 - RazorVue 设计入口 → [01-目标/razorvue/README.md](./01-目标/razorvue/README.md)
