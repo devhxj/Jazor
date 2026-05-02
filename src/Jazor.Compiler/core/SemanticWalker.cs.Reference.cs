@@ -1108,7 +1108,14 @@ public partial class SemanticWalker
 			return false;
 
 		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
-		if (TryBuildVueHInvocationIntrinsic(operation, method, arguments, argument, out expression))
+		var childrenToSlotServices = new ChildrenToSlotIntrinsic.Services(
+			argument,
+			TryBuildImportedModuleMember,
+			GetModuleImportPath,
+			GetMapperType,
+			EnumerateNamedTypeHierarchyBaseFirst,
+			CreateOperationTransformationException);
+		if (ChildrenToSlotIntrinsic.TryBuild(operation, method, arguments, childrenToSlotServices, out expression))
 			return true;
 
 		if (TryBuildEnumerableArrayLikeIntrinsic(operation, method, arguments, out expression))

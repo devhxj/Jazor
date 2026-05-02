@@ -1015,12 +1015,19 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private static Expression? TryTranslateObjectLiteralIndexerKey(IOperation operation)
+	private static Expression? TryTranslateObjectLiteralPropertyKey(IOperation operation)
 	{
-		if (operation.ConstantValue is not { HasValue: true, Value: string key })
-			return null;
+		if (operation.ConstantValue is { HasValue: true, Value: string key })
+			return CreateObjectPropertyKey(key);
+		return null;
+	}
 
-		return CreateObjectPropertyKey(key);
+	private void RejectUnsupportedDynamicObjectLiteralKey(IOperation operation, ITypeSymbol? hostType, string usage)
+	{
+		var hostDisplay = hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>";
+		HandleTransformationFailure<Node>(
+			operation,
+			$"unsupported dynamic object key in {usage} for '{hostDisplay}'. Object-literal host types only support compile-time string literal keys in indexer and Add(string, ...) initializers.");
 	}
 
 	private string ResolveInitializerAssignmentMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
@@ -1436,6 +1443,20 @@ public partial class SemanticWalker
 				if (target is not null)
 					value = RecursiveObjectOrCollectionInitializer(memberInitializerOp.Initializer, argument);
 			}
+			else if (initializer is IInvocationOperation invocationOp)
+			{
+				if (TryBuildObjectLiteralAddProperty(invocationOp, argument, out var addProperty))
+				{
+					if (expandRecordMembers &&
+						IsStaticallyKnownNull(invocationOp.Arguments[1].Value))
+					{
+						continue;
+					}
+
+					nodes.Add(addProperty);
+					continue;
+				}
+			}
 
 			if (target is null || value is null)
 				return HandleTransformationFailure<List<ObjectLiteralNode>>(operation, "Member initializer could not be translated to JavaScript.");
@@ -1458,16 +1479,28 @@ public partial class SemanticWalker
 		out ObjectLiteralNode node)
 	{
 		node = default;
+		var hostType = assignment.Target switch
+		{
+			IPropertyReferenceOperation propertyReferenceOperation => propertyReferenceOperation.Instance?.Type ?? propertyReferenceOperation.Property.ContainingType,
+			_ => null
+		};
+
 		if (assignment.Target is not IPropertyReferenceOperation propertyReference ||
 			propertyReference.Arguments.Length != 1 ||
-			!IsObjectLiteralHostType(propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType))
+			!IsObjectLiteralHostType(hostType))
 		{
 			return false;
 		}
 
-		var key = TryTranslateObjectLiteralIndexerKey(propertyReference.Arguments[0].Value);
+		var key = TryTranslateObjectLiteralPropertyKey(propertyReference.Arguments[0].Value);
 		if (key is null)
+		{
+			RejectUnsupportedDynamicObjectLiteralKey(
+				propertyReference.Arguments[0].Value,
+				hostType,
+				"object-literal indexer initialization");
 			return false;
+		}
 
 		var value = TranslateTupleForTarget(assignment.Value, assignment.Target.Type, argument);
 		var property = new ObjectProperty(
@@ -1479,6 +1512,59 @@ public partial class SemanticWalker
 			method: false);
 		node = new ObjectLiteralNode(property, GetObjectLiteralNodeName(property), propertyReference.Property);
 		return true;
+	}
+
+	private bool TryBuildObjectLiteralAddProperty(
+		IInvocationOperation invocation,
+		SenseArgument argument,
+		out ObjectLiteralNode node)
+	{
+		node = default;
+		if (!IsStringKeyedObjectLiteralAddInvocation(invocation))
+			return false;
+
+		var key = TryTranslateObjectLiteralPropertyKey(invocation.Arguments[0].Value);
+		if (key is null)
+		{
+			RejectUnsupportedDynamicObjectLiteralKey(
+				invocation.Arguments[0].Value,
+				invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType,
+				"object-literal Add(string, ...) initialization");
+			return false;
+		}
+
+		var value = TranslateTupleForTarget(invocation.Arguments[1].Value, invocation.Arguments[1].Parameter?.Type, argument);
+		var property = new ObjectProperty(
+			PropertyKind.Init,
+			key: key,
+			value: value,
+			computed: false,
+			shorthand: false,
+			method: false);
+		node = new ObjectLiteralNode(property, GetObjectLiteralNodeName(property), null);
+		return true;
+	}
+
+	private static bool IsStringKeyedObjectLiteralAddInvocation(IInvocationOperation invocation)
+	{
+		var targetMethod = invocation.TargetMethod;
+		if (targetMethod is
+			not
+			{
+				MethodKind: MethodKind.Ordinary,
+				IsStatic: false,
+				Name: "Add"
+			} ||
+			targetMethod.Parameters.Length != 2 ||
+			invocation.Arguments.Length != 2 ||
+			targetMethod.Parameters[0].RefKind != RefKind.None ||
+			targetMethod.Parameters[1].RefKind != RefKind.None ||
+			targetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String)
+		{
+			return false;
+		}
+
+		return IsObjectLiteralHostType(invocation.Instance?.Type ?? targetMethod.ContainingType);
 	}
 
 	private void AppendExpandedInitializerMembers(
