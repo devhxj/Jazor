@@ -15,7 +15,7 @@ public static class Vuetify
 public interface IVuetifyComponent : IVueComponent { }
 
 [ECMAScript]
-public sealed class VuetifyPlugin : VuePlugin
+public sealed record VuetifyPlugin : VuePlugin
 {
     private VuetifyPlugin()
     {
@@ -27,10 +27,10 @@ public sealed class VuetifyPlugin : VuePlugin
 public sealed record VuetifyOptions : VuePluginOptions
 {
     [Description("@#components")]
-    public VuetifyComponentRegistry? Components { get; init; }
+    public VueComponentRegistry? Components { get; init; }
 
     [Description("@#directives")]
-    public VuetifyDirectiveRegistry? Directives { get; init; }
+    public VueDirectiveRegistry? Directives { get; init; }
 
     [Description("@#display")]
     public VuetifyDisplayOptions? Display { get; init; }

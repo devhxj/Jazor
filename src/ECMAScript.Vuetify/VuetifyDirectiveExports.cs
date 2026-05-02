@@ -29,9 +29,6 @@ public static class VuetifyDirectives
 }
 
 [ECMAScript]
-public abstract class VuetifyDirective : VueDirective
+public abstract record VuetifyDirective : VueDirective
 {
-    protected VuetifyDirective()
-    {
-    }
 }
