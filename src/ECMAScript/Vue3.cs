@@ -397,6 +397,72 @@ public delegate IPromise VueServerPrefetchPromiseCallback();
 /// <returns>The bridge promise result Vue should await during server rendering.</returns>
 public delegate PromiseResult VueServerPrefetchCallback();
 
+/// <summary>
+/// this-bound data callback for Options API authoring. The first parameter receives
+/// the component public instance (<c>this</c>) at runtime.
+/// </summary>
+/// <typeparam name="TThis">Typed view of the component public instance.</typeparam>
+/// <param name="self">The runtime component public instance.</param>
+/// <returns>The data object for the current component instance.</returns>
+public delegate Vue3.VueProps VueThisDataCallback<TThis>(TThis self)
+	where TThis : class;
+
+/// <summary>
+/// this-bound action callback with no explicit runtime arguments.
+/// </summary>
+/// <typeparam name="TThis">Typed view of the component public instance.</typeparam>
+/// <param name="self">The runtime component public instance.</param>
+public delegate void VueThisAction<TThis>(TThis self)
+	where TThis : class;
+
+/// <summary>
+/// this-bound action callback with one runtime argument.
+/// </summary>
+public delegate void VueThisAction<TThis, T1>(TThis self, T1 arg1)
+	where TThis : class;
+
+/// <summary>
+/// this-bound action callback with two runtime arguments.
+/// </summary>
+public delegate void VueThisAction<TThis, T1, T2>(TThis self, T1 arg1, T2 arg2)
+	where TThis : class;
+
+/// <summary>
+/// this-bound action callback with three runtime arguments.
+/// </summary>
+public delegate void VueThisAction<TThis, T1, T2, T3>(TThis self, T1 arg1, T2 arg2, T3 arg3)
+	where TThis : class;
+
+/// <summary>
+/// this-bound function callback with no explicit runtime arguments.
+/// </summary>
+public delegate TResult VueThisFunc<TThis, TResult>(TThis self)
+	where TThis : class;
+
+/// <summary>
+/// this-bound function callback with one runtime argument.
+/// </summary>
+public delegate TResult VueThisFunc<TThis, T1, TResult>(TThis self, T1 arg1)
+	where TThis : class;
+
+/// <summary>
+/// this-bound function callback with two runtime arguments.
+/// </summary>
+public delegate TResult VueThisFunc<TThis, T1, T2, TResult>(TThis self, T1 arg1, T2 arg2)
+	where TThis : class;
+
+/// <summary>
+/// this-bound function callback with three runtime arguments.
+/// </summary>
+public delegate TResult VueThisFunc<TThis, T1, T2, T3, TResult>(TThis self, T1 arg1, T2 arg2, T3 arg3)
+	where TThis : class;
+
+/// <summary>
+/// this-bound watch callback that includes Vue's cleanup registration argument.
+/// </summary>
+public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TValue value, TValue oldValue, VueWatchCleanupRegistration onCleanup)
+	where TThis : class;
+
 [ECMAScript("npm:vue@3")]
 [Description("@#")]
 public static class Vue3
@@ -1414,6 +1480,63 @@ public static class Vue3
 	}
 
 	/// <summary>
+	/// Single Options API watch declaration entry. This wrapper keeps
+	/// watch handler unions strongly typed while allowing natural C#
+	/// assignments through implicit conversions.
+	/// </summary>
+	/// <typeparam name="TValue">The watched value type.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public sealed class VueWatchEntry<TValue>
+	{
+		private VueWatchEntry()
+		{
+		}
+
+		public extern static implicit operator VueWatchEntry<TValue>(string methodName);
+
+		public extern static implicit operator VueWatchEntry<TValue>(Action<TValue, TValue> handler);
+
+		public extern static implicit operator VueWatchEntry<TValue>(VueWatchCleanupCallback<TValue> handler);
+
+		public extern static implicit operator VueWatchEntry<TValue>(VueWatchHandlerOptions<TValue> options);
+
+		public extern static implicit operator VueWatchEntry<TValue>(VueWatchCleanupHandlerOptions<TValue> options);
+
+		public extern static implicit operator VueWatchEntry<TValue>(VueWatchNamedHandlerOptions options);
+	}
+
+	/// <summary>
+	/// Array-form Options API watch declaration entries. Vue runtime accepts
+	/// watch value arrays that mix method-name, callback, and object-form
+	/// handlers; this wrapper models that surface without requiring compiler
+	/// special casing.
+	/// </summary>
+	/// <typeparam name="TValue">The watched value type.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public sealed class VueWatchEntries<TValue>
+	{
+		private VueWatchEntries()
+		{
+		}
+
+		public extern static implicit operator VueWatchEntries<TValue>(string[] methodNames);
+
+		public extern static implicit operator VueWatchEntries<TValue>(Action<TValue, TValue>[] handlers);
+
+		public extern static implicit operator VueWatchEntries<TValue>(VueWatchCleanupCallback<TValue>[] handlers);
+
+		public extern static implicit operator VueWatchEntries<TValue>(VueWatchHandlerOptions<TValue>[] options);
+
+		public extern static implicit operator VueWatchEntries<TValue>(VueWatchCleanupHandlerOptions<TValue>[] options);
+
+		public extern static implicit operator VueWatchEntries<TValue>(VueWatchNamedHandlerOptions[] options);
+
+		public extern static implicit operator VueWatchEntries<TValue>(VueWatchEntry<TValue>[] entries);
+	}
+
+	/// <summary>
 	/// Options API watch registry for watch declarations that share one observed value type.
 	/// For heterogeneous watched value types, declare a custom <see cref="VueProps"/> record
 	/// with typed watch declaration properties instead.
@@ -1429,7 +1552,7 @@ public static class Vue3
 		/// </summary>
 		/// <param name="key">The final watch source key.</param>
 		/// <returns>The watch declaration for the given key.</returns>
-		public extern Either<string, Action<TValue, TValue>, VueWatchCleanupCallback<TValue>, VueWatchHandlerOptions<TValue>, VueWatchCleanupHandlerOptions<TValue>, VueWatchNamedHandlerOptions> this[string key] { get; set; }
+		public extern Either<string, Action<TValue, TValue>, VueWatchCleanupCallback<TValue>, VueWatchHandlerOptions<TValue>, VueWatchCleanupHandlerOptions<TValue>, VueWatchNamedHandlerOptions, VueWatchEntries<TValue>> this[string key] { get; set; }
 
 		/// <summary>
 		/// CLR bridge kept for collection-initializer authoring of method-name watch entries.
@@ -1466,6 +1589,12 @@ public static class Vue3
 		/// </summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VueWatchNamedHandlerOptions options);
+
+		/// <summary>
+		/// CLR bridge kept for collection-initializer authoring of array-form watch entries.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public extern void Add(string key, VueWatchEntries<TValue> entries);
 
 		extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 	}
@@ -3832,7 +3961,7 @@ public static class Vue3
 	/// <param name="directives">Directive argument tuples matching Vue's runtime contract.</param>
 	/// <returns>The same VNode with directive metadata attached.</returns>
 	[Description("@#withDirectives")]
-	public extern static IVNode WithDirectives(IVNode vnode, VueDirectiveArguments[] directives);
+	public extern static IVNode WithDirectives(IVNode vnode, [PreserveParamsArray] params VueDirectiveArguments[] directives);
 
 	/// <summary>
 	/// Wraps a parameterless event handler with Vue event modifiers such as
@@ -3842,7 +3971,7 @@ public static class Vue3
 	/// <param name="modifiers">Modifier names in Vue runtime form.</param>
 	/// <returns>A wrapped event handler.</returns>
 	[Description("@#withModifiers")]
-	public extern static Action WithModifiers(Action handler, string[] modifiers);
+	public extern static Action WithModifiers(Action handler, [PreserveParamsArray] params string[] modifiers);
 
 	/// <summary>
 	/// Wraps a typed event handler with Vue event modifiers.
@@ -3852,7 +3981,92 @@ public static class Vue3
 	/// <param name="modifiers">Modifier names in Vue runtime form.</param>
 	/// <returns>A wrapped typed event handler.</returns>
 	[Description("@#withModifiers")]
-	public extern static VueEventHandler<TEvent> WithModifiers<TEvent>(VueEventHandler<TEvent> handler, string[] modifiers);
+	public extern static VueEventHandler<TEvent> WithModifiers<TEvent>(VueEventHandler<TEvent> handler, [PreserveParamsArray] params string[] modifiers);
+
+	/// <summary>
+	/// Binds a this-aware data callback to Vue's Options API <c>data()</c> runtime shape.
+	/// </summary>
+	/// <typeparam name="TThis">Typed view of the component public instance.</typeparam>
+	/// <param name="callback">The callback that receives runtime <c>this</c> first.</param>
+	/// <returns>A standard Vue data callback.</returns>
+	private const string BindThisInlineTemplate = "((__cb) => function(){ return __cb(this, ...arguments); })(__arg1)";
+
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static VueDataCallback BindThis<TThis>(VueThisDataCallback<TThis> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware action callback with no explicit runtime arguments.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Action BindThis<TThis>(VueThisAction<TThis> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware action callback with one runtime argument.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Action<T1> BindThis<TThis, T1>(VueThisAction<TThis, T1> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware action callback with two runtime arguments.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Action<T1, T2> BindThis<TThis, T1, T2>(VueThisAction<TThis, T1, T2> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware action callback with three runtime arguments.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Action<T1, T2, T3> BindThis<TThis, T1, T2, T3>(VueThisAction<TThis, T1, T2, T3> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware watch cleanup callback.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static VueWatchCleanupCallback<TValue> BindThis<TThis, TValue>(VueThisWatchCleanupCallback<TThis, TValue> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware function callback with no explicit runtime arguments.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Func<TResult> BindThis<TThis, TResult>(VueThisFunc<TThis, TResult> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware function callback with one runtime argument.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Func<T1, TResult> BindThis<TThis, T1, TResult>(VueThisFunc<TThis, T1, TResult> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware function callback with two runtime arguments.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Func<T1, T2, TResult> BindThis<TThis, T1, T2, TResult>(VueThisFunc<TThis, T1, T2, TResult> callback)
+		where TThis : class;
+
+	/// <summary>
+	/// Binds a this-aware function callback with three runtime arguments.
+	/// </summary>
+	[ECMAScriptInline(BindThisInlineTemplate)]
+	[Description("@#bindThis")]
+	public extern static Func<T1, T2, T3, TResult> BindThis<TThis, T1, T2, T3, TResult>(VueThisFunc<TThis, T1, T2, T3, TResult> callback)
+		where TThis : class;
 
 	/// <summary>
 	/// Creates a VNode for an HTML element with no props or children.

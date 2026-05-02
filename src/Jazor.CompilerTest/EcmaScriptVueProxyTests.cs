@@ -483,22 +483,32 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters().Length == 1 &&
             method.GetParameters()[0].ParameterType == typeof(string) &&
             method.ReturnType == typeof(VueDirectiveValue)));
-        Assert.IsTrue(staticMethods.Any(static method =>
+        var withDirectivesMethod = staticMethods.FirstOrDefault(static method =>
             method.Name == nameof(Vue3.WithDirectives) &&
             method.ReturnType == typeof(IVNode) &&
-            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(IVNode), typeof(VueDirectiveArguments[]) })));
-        Assert.IsTrue(staticMethods.Any(static method =>
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(IVNode), typeof(VueDirectiveArguments[]) }));
+        Assert.IsNotNull(withDirectivesMethod);
+        Assert.IsTrue(withDirectivesMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
+        Assert.IsTrue(withDirectivesMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
+        var withModifiersMethod = staticMethods.FirstOrDefault(static method =>
             method.Name == nameof(Vue3.WithModifiers) &&
+            !method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(Action) &&
-            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action), typeof(string[]) })));
-        Assert.IsTrue(staticMethods.Any(static method =>
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Action), typeof(string[]) }));
+        var withModifiersTypedMethod = staticMethods.FirstOrDefault(static method =>
             method.Name == nameof(Vue3.WithModifiers) &&
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericType &&
             method.ReturnType.GetGenericTypeDefinition() == typeof(VueEventHandler<>) &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueEventHandler<>) &&
-            method.GetParameters()[1].ParameterType == typeof(string[])));
+            method.GetParameters()[1].ParameterType == typeof(string[]));
+        Assert.IsNotNull(withModifiersMethod);
+        Assert.IsNotNull(withModifiersTypedMethod);
+        Assert.IsTrue(withModifiersMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
+        Assert.IsTrue(withModifiersMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
+        Assert.IsTrue(withModifiersTypedMethod!.GetParameters()[1].IsDefined(typeof(ParamArrayAttribute), inherit: false));
+        Assert.IsTrue(withModifiersTypedMethod.GetParameters()[1].IsDefined(typeof(PreserveParamsArrayAttribute), inherit: false));
         Assert.IsTrue(directiveArgumentsType
             .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
             .Any(static constructor => constructor.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueDirectiveValue), typeof(VueValue), typeof(string), typeof(VueDirectiveModifierBag) })));
@@ -1768,29 +1778,66 @@ public sealed class EcmaScriptVueProxyTests
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(static method => method.Name == "Add")
             .ToArray();
+        var watchEntryType = typeof(VueWatchEntry<>).MakeGenericType(typeof(int));
+        var watchEntriesType = typeof(VueWatchEntries<>).MakeGenericType(typeof(int));
         var handlerOptionsType = typeof(VueWatchHandlerOptions<>).MakeGenericType(typeof(int));
         var cleanupOptionsType = typeof(VueWatchCleanupHandlerOptions<>).MakeGenericType(typeof(int));
+        var watchEntryImplicitInputs = watchEntryType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(static method => method.Name == "op_Implicit" && method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(VueWatchEntry<>))
+            .Select(static method => method.GetParameters().Single().ParameterType)
+            .ToArray();
+        var watchEntriesImplicitInputs = watchEntriesType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(static method => method.Name == "op_Implicit" && method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(VueWatchEntries<>))
+            .Select(static method => method.GetParameters().Single().ParameterType)
+            .ToArray();
 
         Assert.IsNotNull(watch);
         Assert.IsNotNull(indexer);
         Assert.AreEqual(typeof(VueProps), watch!.PropertyType.UnwrapNullable());
         Assert.AreEqual(
-            typeof(Either<string, Action<int, int>, VueWatchCleanupCallback<int>, VueWatchHandlerOptions<int>, VueWatchCleanupHandlerOptions<int>, VueWatchNamedHandlerOptions>),
+            typeof(Either<string, Action<int, int>, VueWatchCleanupCallback<int>, VueWatchHandlerOptions<int>, VueWatchCleanupHandlerOptions<int>, VueWatchNamedHandlerOptions, VueWatchEntries<int>>),
             indexer!.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
-        Assert.AreEqual(6, addMethods.Length);
-        Assert.IsTrue(addMethods.Any(static method =>
+        Assert.AreEqual(7, addMethods.Length);
+        Assert.IsTrue(addMethods.Any(method =>
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(string) })));
-        Assert.IsTrue(addMethods.Any(static method =>
+        Assert.IsTrue(addMethods.Any(method =>
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(Action<int, int>) })));
-        Assert.IsTrue(addMethods.Any(static method =>
+        Assert.IsTrue(addMethods.Any(method =>
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(VueWatchCleanupCallback<int>) })));
-        Assert.IsTrue(addMethods.Any(static method =>
+        Assert.IsTrue(addMethods.Any(method =>
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(VueWatchHandlerOptions<int>) })));
-        Assert.IsTrue(addMethods.Any(static method =>
+        Assert.IsTrue(addMethods.Any(method =>
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(VueWatchCleanupHandlerOptions<int>) })));
-        Assert.IsTrue(addMethods.Any(static method =>
+        Assert.IsTrue(addMethods.Any(method =>
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(VueWatchNamedHandlerOptions) })));
+        Assert.IsTrue(addMethods.Any(method =>
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), watchEntriesType })));
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                typeof(string),
+                typeof(Action<int, int>),
+                typeof(VueWatchCleanupCallback<int>),
+                typeof(VueWatchHandlerOptions<int>),
+                typeof(VueWatchCleanupHandlerOptions<int>),
+                typeof(VueWatchNamedHandlerOptions)
+            },
+            watchEntryImplicitInputs);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                typeof(string[]),
+                typeof(Action<int, int>[]),
+                typeof(VueWatchCleanupCallback<int>[]),
+                typeof(VueWatchHandlerOptions<int>[]),
+                typeof(VueWatchCleanupHandlerOptions<int>[]),
+                typeof(VueWatchNamedHandlerOptions[]),
+                typeof(VueWatchEntry<int>[])
+            },
+            watchEntriesImplicitInputs);
         Assert.AreEqual(typeof(Action<int, int>), handlerOptionsType.GetProperty(nameof(VueWatchHandlerOptions<int>.Handler))!.PropertyType);
         Assert.AreEqual(typeof(VueWatchCleanupCallback<int>), cleanupOptionsType.GetProperty(nameof(VueWatchCleanupHandlerOptions<int>.Handler))!.PropertyType);
         Assert.AreEqual(typeof(string), typeof(VueWatchNamedHandlerOptions).GetProperty(nameof(VueWatchNamedHandlerOptions.Handler))!.PropertyType);
@@ -1799,6 +1846,8 @@ public sealed class EcmaScriptVueProxyTests
             "DescriptionAttribute");
 
         AssertNotObject(typeof(VueWatchRegistry<int>), "VueWatchRegistry<int>");
+        AssertNotObject(watchEntryType, "VueWatchEntry<int>");
+        AssertNotObject(watchEntriesType, "VueWatchEntries<int>");
         AssertNotObject(typeof(VueWatchHandlerOptions<int>), "VueWatchHandlerOptions<int>");
         AssertNotObject(typeof(VueWatchCleanupHandlerOptions<int>), "VueWatchCleanupHandlerOptions<int>");
         AssertNotObject(typeof(VueWatchNamedHandlerOptions), nameof(VueWatchNamedHandlerOptions));
@@ -2107,6 +2156,64 @@ public sealed class EcmaScriptVueProxyTests
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>) &&
                           parameters[2].ParameterType.IsGenericParameter));
+    }
+
+    [TestMethod]
+    public void Vue_BindThis_ExposesThisBoundCallbackBridge()
+    {
+        var methods = typeof(Vue3)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == nameof(Vue3.BindThis))
+            .ToArray();
+        const string bindThisInlineTemplate = "((__cb) => function(){ return __cb(this, ...arguments); })(__arg1)";
+
+        static bool TypeMatches(Type actual, Type expected)
+        {
+            if (expected.IsGenericTypeDefinition)
+                return actual.IsGenericType && actual.GetGenericTypeDefinition() == expected;
+
+            return actual == expected;
+        }
+
+        static bool HasSignature(MethodInfo[] methods, Type returnType, int genericArity, params Type[] parameterTypes)
+            => methods.Any(method =>
+                TypeMatches(method.ReturnType, returnType) &&
+                method.GetGenericArguments().Length == genericArity &&
+                method.GetParameters().Length == parameterTypes.Length &&
+                method.GetParameters()
+                    .Select(static parameter => parameter.ParameterType)
+                    .Zip(parameterTypes, TypeMatches)
+                    .All(static matched => matched));
+
+        Assert.IsTrue(HasSignature(methods, typeof(VueDataCallback), 1, typeof(VueThisDataCallback<>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Action), 1, typeof(VueThisAction<>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Action<>), 2, typeof(VueThisAction<,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Action<,>), 3, typeof(VueThisAction<,,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Action<,,>), 4, typeof(VueThisAction<,,,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(VueWatchCleanupCallback<>), 2, typeof(VueThisWatchCleanupCallback<,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Func<>), 2, typeof(VueThisFunc<,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Func<,>), 3, typeof(VueThisFunc<,,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Func<,,>), 4, typeof(VueThisFunc<,,,>)));
+        Assert.IsTrue(HasSignature(methods, typeof(Func<,,,>), 5, typeof(VueThisFunc<,,,,>)));
+        Assert.AreEqual(10, methods.Length);
+
+        foreach (var method in methods)
+        {
+            var inline = method.GetCustomAttribute<ECMAScriptInlineAttribute>();
+            Assert.IsNotNull(inline, $"Vue3.{nameof(Vue3.BindThis)} overload must declare [{nameof(ECMAScriptInlineAttribute)}].");
+            Assert.AreEqual(bindThisInlineTemplate, inline.RawFuncCode, $"Vue3.{nameof(Vue3.BindThis)} overload inline template drifted.");
+        }
+
+        AssertNotObject(typeof(VueThisDataCallback<>), "VueThisDataCallback<TThis>");
+        AssertNotObject(typeof(VueThisAction<>), "VueThisAction<TThis>");
+        AssertNotObject(typeof(VueThisAction<,>), "VueThisAction<TThis,T1>");
+        AssertNotObject(typeof(VueThisAction<,,>), "VueThisAction<TThis,T1,T2>");
+        AssertNotObject(typeof(VueThisAction<,,,>), "VueThisAction<TThis,T1,T2,T3>");
+        AssertNotObject(typeof(VueThisWatchCleanupCallback<,>), "VueThisWatchCleanupCallback<TThis,TValue>");
+        AssertNotObject(typeof(VueThisFunc<,>), "VueThisFunc<TThis,TResult>");
+        AssertNotObject(typeof(VueThisFunc<,,>), "VueThisFunc<TThis,T1,TResult>");
+        AssertNotObject(typeof(VueThisFunc<,,,>), "VueThisFunc<TThis,T1,T2,TResult>");
+        AssertNotObject(typeof(VueThisFunc<,,,,>), "VueThisFunc<TThis,T1,T2,T3,TResult>");
     }
 
     [TestMethod]

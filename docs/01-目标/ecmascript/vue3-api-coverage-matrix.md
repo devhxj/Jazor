@@ -21,7 +21,7 @@
 - Application config、`app.mixin(...)`、`app.runWithContext(...)`、`version`；
 - async component、render function helper、built-in component/directive/helper；
 - Composition API 的 helpers、utilities、advanced reactivity、dependency injection、完整 lifecycle；
-- Options API 的 this-bound data/methods/computed/watch、复杂 provide/inject 等；
+- Options API 的复杂 provide/inject default/factory、symbol key 等；
 - SFC、template syntax、compiler macros、SSR renderer、custom renderer。
 
 因此后续目标不应该直接喊“全功能映射”，而应改成：
@@ -47,7 +47,7 @@
 | Vue 官方分类 | 当前覆盖 | 目标判断 | 说明 |
 |--------------|----------|----------|------|
 | Application API | Covered | Target Gap | app 创建、mount、use、component、directive、provide、runWithContext、version、config、mixin 已覆盖；`app.mixin` 是低层兼容 binding，不作为推荐 authoring path |
-| General API | Partial | Target Gap / Design Gap | `nextTick` promise/callback、`defineComponent`、`defineAsyncComponent` loader/options 核心路径已有；Options API 完整面仍需设计 |
+| General API | Partial | Target Gap / Design Gap | `nextTick` promise/callback、`defineComponent`、`defineAsyncComponent` loader/options 核心路径已有；剩余主要是 Options API 长尾语义（如 provide/inject 复杂形态） |
 | Composition API: setup | Partial | Design Gap | setup function 已通过 component options 表达；`defineProps` 等 SFC macro 不属于当前 surface |
 | Composition API: Helpers | Partial | Target Gap / Design Gap | `useAttrs`、`useSlots` 已覆盖基础 bag 与 typed projection；`useTemplateRef`、`useId` 已覆盖；`useModel` 底层 helper 已覆盖 ref + get/set options，完整 modifiers / v-model 协议仍需单独设计 |
 | Composition API: Reactivity Core | Covered | Target Gap | 常用核心、writable computed、watch handle、watch options、debugger event options、reactive object source 与同类 multi-source watch 已覆盖 |
@@ -55,7 +55,7 @@
 | Composition API: Reactivity Advanced | Covered | Target Gap | `shallowRef`、`customRef`、`triggerRef`、`shallowReactive`、`markRaw`、`effectScope` 等核心 advanced API 已覆盖 |
 | Composition API: Lifecycle Hooks | Covered | Target Gap | mounted/updated/unmounted、before*、errorCaptured、render debug、activated/deactivated、serverPrefetch 已覆盖 |
 | Composition API: Dependency Injection | Covered | Target Gap / Design Gap | composition-level string key 与 typed `VueInjectionKey<T>` provide/inject 已覆盖；Options API provide/inject 基础声明式形态已覆盖，复杂 this/default/factory 另行设计 |
-| Options API | Partial | Target Gap / Design Gap | component option 基础、显式 array/object-form `props` / `emits`、无 `this` `data()` factory、`inheritAttrs`、`expose`、无 `this` lifecycle callback、object-form `provide`、array/object-form `inject`、低层 `mixins`/`extends` binding 已覆盖；完整 this-bound Options API 需要 record surface 设计 |
+| Options API | Partial | Target Gap / Design Gap | component option 基础、显式 array/object-form `props` / `emits`、`BindThis<TThis,...>` this-bound `data`/`computed`/`methods`/`watch`/lifecycle、`inheritAttrs`、`expose`、object-form `provide`、array/object-form `inject`、低层 `mixins`/`extends` binding 已覆盖；复杂 provide/inject 形态仍需设计 |
 | Built-in Directives | Gap | Separate Workstream | 主要属于 template/SFC 语法，不应映射成 `Vue3.cs` 普通方法 |
 | Built-in Components | Partial | Design Gap / Separate Workstream | `Transition` / `TransitionGroup` / `KeepAlive` / `Teleport` / `Suspense` render-function binding 已覆盖；template-only 体验另行设计 |
 | Built-in Special Elements | Gap | Separate Workstream | `<component>`、`<slot>`、`<template>` 属于 template/SFC 语义 |
@@ -230,17 +230,17 @@ Sources:
 
 | 分类 | API | 当前状态 | 目标 |
 |------|-----|----------|------|
-| State | `data` | Partial | `VueDataCallback` 无 `this` factory 已覆盖，返回 `VueProps` record；`data(vm)` / `this` authoring 仍需设计 |
+| State | `data` | Covered | `VueDataCallback` + `BindThis<TThis>(VueThisDataCallback<TThis>)` 已覆盖无 `this` 与 this-bound `data(vm)` authoring |
 | State | `props` | Covered | `PropNames` 覆盖 array-form；`PropOptions` + `VuePropOptions<T>` / `VuePropRegistry<T>` / 自定义 `VueProps` record 覆盖 object-form validators/defaults；typed generic 只提供 C# authoring contract，不自动生成 runtime declaration |
-| State | `computed` | Partial | `VueComputedRegistry<T>` 支持动态键 getter / writable computed；自定义 `VueProps` record 支持异构强类型声明；依赖 `this` 的 computed authoring 仍需设计 |
-| State | `methods` | Partial | `VueMethodRegistry<TDelegate>` 支持动态键同签名方法；自定义 `VueProps` record 支持异构强类型 delegate；依赖 `this` 的 methods authoring 仍需设计 |
-| State | `watch` | Partial | `VueWatchRegistry<T>` 支持 callback、cleanup callback、method name、options object；数组 watcher 与 this-bound handler 仍需设计 |
+| State | `computed` | Covered | `VueComputedRegistry<T>` / writable options / custom `VueProps` record 已覆盖；this-bound getter/setter 通过 `BindThis<TThis,...>(VueThisFunc<...>/VueThisAction<...>)` 覆盖 |
+| State | `methods` | Covered | `VueMethodRegistry<TDelegate>` / custom `VueProps` record 已覆盖；this-bound method delegates 通过 `BindThis<TThis,...>(VueThisAction<...>/VueThisFunc<...>)` 覆盖 |
+| State | `watch` | Covered | `VueWatchRegistry<T>` + `VueWatchEntry<T>` / `VueWatchEntries<T>` 覆盖基础与数组声明；this-bound callback / cleanup callback 通过 `BindThis<TThis,...>` 覆盖 |
 | State | `emits` | Covered | `EmitNames` 覆盖 array-form；`EmitOptions` + `VueEmitRegistry` / `VueEmitRegistry<T0...T3>` 覆盖 object-form validators；超过 4 payload 再按需求加 overload |
 | State | `expose` | Covered | `VueComponentDefinition.Expose` |
 | Rendering | `template` | Separate Workstream | template compiler 不属于 `Vue3.cs` |
 | Rendering | `render` | Covered | 当前 `VueRenderCallback` |
 | Rendering | `compilerOptions` | Separate Workstream | 组件/SFC compiler 配置属于 build/Jolt/SFC pipeline；`app.config.compilerOptions` 已由 Application API surface 覆盖 |
-| Lifecycle | created/mounted/updated 等 | Partial | `beforeCreate`、`created`、mount/update/unmount、keep-alive、debug、error、serverPrefetch 的无 `this` callback surface 已覆盖；this-bound instance authoring 另行设计 |
+| Lifecycle | created/mounted/updated 等 | Covered | lifecycle callback surface 已覆盖；this-bound lifecycle callback 通过 `BindThis<TThis,...>` 覆盖 |
 | Composition | `provide` / `inject` | Partial | `Provide = VueProps` object form、`Inject = string[] / VueProps` array/object form 已覆盖；function-form provide、复杂 inject default/factory 仍需设计 |
 | Composition | `mixins` / `extends` | Covered | 低层兼容 binding 已覆盖为 `VueComponentDefinition[]` / `VueComponentDefinition`；不作为新代码推荐复用模型 |
 | Misc | `name` | Covered | 当前 `Name` |
@@ -251,8 +251,8 @@ Sources:
 建议：
 
 - 不把完整 Options API 作为当前第一优先级。
-- 先补不需要 compiler 的 option members：`InheritAttrs`、`Expose`、Options API lifecycle callback、provide/inject 基础声明式形态、computed no-`this` getter/writable registry、methods no-`this` delegate registry、watch 基础 object registry 已落地；this-bound instance authoring 后续再设计。
-- watch array declarations 以及依赖 `this` 的 `data` / `computed` / `methods` / `watch` 必须先设计 this-binding 与 record authoring 边界。
+- 先补不需要 compiler 的 option members：`InheritAttrs`、`Expose`、Options API lifecycle callback、provide/inject 基础声明式形态、computed/methods/watch registry、watch array declarations、this-bound callback bridge（`BindThis<TThis,...>`，由 `ECMAScriptInline` 降级）已落地。
+- function-form provide、inject default/factory 与更细粒度 this contract 仍需按真实需求继续收敛。
 
 ## 14. Built-ins
 
@@ -284,8 +284,8 @@ Source: <https://vuejs.org/api/render-function.html>
 | `isVNode()` | Covered | `bool IsVNode<T>(T value)` |
 | `resolveComponent()` | Covered | `ResolveComponent(string)` 返回 `IVueComponent` |
 | `resolveDirective()` | Covered | `ResolveDirective(string)` 返回 `VueDirectiveValue?` |
-| `withDirectives()` | Covered | `VueDirectiveArguments` / `VueDirectiveArguments<TValue>` + `VueDirectiveModifierBag` |
-| `withModifiers()` | Covered | `WithModifiers(Action, string[])` 与 typed `VueEventHandler<T>` overload |
+| `withDirectives()` | Covered | `WithDirectives(vnode, [PreserveParamsArray] params VueDirectiveArguments[])`；支持 `WithDirectives(vnode, d1, d2)` 且保持 runtime 第二参数为数组 |
+| `withModifiers()` | Covered | `WithModifiers(Action, [PreserveParamsArray] params string[])` 与 typed `VueEventHandler<T>` overload；支持 `WithModifiers(handler, "stop", "prevent")` 且保持 runtime 第二参数为数组 |
 
 `H(...)` 的 default slot sugar 已从 Vue 命名分块迁移到 `ChildrenToSlotIntrinsic`，后续按 `vue3-module-mapping-rules.md` 与 `vue3-mapping-details.md` 保持为稳定 children-to-slot contract。
 
@@ -369,7 +369,6 @@ Status: 第一批已落地到 `src/ECMAScript/Vue3.cs`，并由 `EcmaScriptVuePr
 ### P2: 需要单独 authoring 设计
 
 - Options API full object surface
-- with-directives / with-modifiers 后续 convenience（核心 helper 已落地，仍可优化 authoring 简洁度）
 
 ### P3: 不放进 `ECMAScript.Vue3.cs` 的独立工作流
 

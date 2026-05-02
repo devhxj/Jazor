@@ -460,7 +460,7 @@ new VueComponentOptions
 
 - `Provide` 使用 `VueProps?`，既支持用户声明 typed record，也支持 `VueDictionary` 任意 key。
 - `Inject` 使用 `Either<string[], VueProps>?`，覆盖官方 array form 和 object form 的基础 authoring。
-- object-form inject 的复杂 default/factory、Symbol key 细节，以及 function-form provide 需要和 this-bound Options API 一起设计；当前不在 compiler 里模拟。
+- object-form inject 的复杂 default/factory、Symbol key 细节，以及 function-form provide 仍需单独设计；this-bound Options API 已通过 `BindThis<TThis,...>` + `ECMAScriptInline` 覆盖。
 - Composition API `Provide(...)` / `Inject(...)` 与 Options API `Provide` / `Inject` 是不同入口：前者是 setup-time helper，后者是 component option object member。
 
 ### 6.7 Options API Mixins / Extends
@@ -573,7 +573,7 @@ public sealed record PanelComputed : VueProps
 - `VueComponentDefinition.Computed` 使用 `VueProps?`，避免为 Options API computed 引入 Vue-specific compiler 分支；普通 record object lowering 负责生成最终对象字面量。
 - `VueComputedRegistry<TValue>` 只解决动态字符串 key 且同值类型的常见场景；它继承 `VueProps` 并通过 `Add(string, Func<TValue>)` / `Add(string, VueWritableComputedOptions<TValue>)` 支持 collection initializer，避免 method group 直接转换到 `Either<...>` 的 C# 限制。
 - indexer 类型仍保留为 `Either<Func<TValue>, VueWritableComputedOptions<TValue>>`，服务显式赋值和反射契约；推荐 authoring path 是 collection initializer。
-- 依赖 Vue instance `this` 的 computed getter/setter 不在当前 surface 中模拟；需要和 `methods`、`watch`、`data(vm)` 的 this-binding 协议一起设计。
+- 依赖 Vue instance `this` 的 computed getter/setter 使用 `BindThis<TThis,...>(VueThisFunc<...>/VueThisAction<...>)`；`BindThis` 通过 `ECMAScriptInline` 降级为 `function(){ return cb(this, ...arguments); }` 包装。
 
 ### 6.10 Options API Methods
 
@@ -613,7 +613,7 @@ public sealed record PanelMethods : VueProps
 - `VueComponentDefinition.Methods` 使用 `VueProps?`，保持普通 record object lowering，不引入 methods 专用 compiler 分支。
 - `VueMethodRegistry<TDelegate>` 只解决动态字符串 key 且同 delegate 签名的场景；`TDelegate : Delegate` 保留 C# 方法组转换、参数类型和返回类型检查。
 - collection initializer 通过 `Add(string, TDelegate)` 表达动态键；最终仍生成 methods 对象属性，不生成运行时 `Add(...)` 调用。
-- Vue 会以 component public instance 作为 method `this` 调用目标，但当前 C# surface 不模拟该 instance；需要访问 state/props 的 method 应等待统一 this-binding 协议，或改用 setup/render 中显式闭包。
+- Vue 会以 component public instance 作为 method `this` 调用目标；C# 侧通过 `BindThis<TThis,...>(VueThisAction<...>/VueThisFunc<...>)` 显式声明 this-contract，并保持调用点强类型。
 
 ### 6.11 Options API Watch
 
@@ -657,14 +657,14 @@ new VueComponentOptions
 - `VueWatchHandlerOptions<T>`：带 `immediate` / `deep` / `flush` / debug options 的 callback object。
 - `VueWatchCleanupHandlerOptions<T>`：带 options 的 cleanup-aware callback object。
 - `VueWatchNamedHandlerOptions`：带 options 的 method-name handler object。
+- 上述任意形态的数组：通过 `VueWatchEntries<T>` 隐式转换覆盖 `string[]`、callback 数组、options 数组，以及 `VueWatchEntry<T>[]` 的 mixed array。
 
 设计约束：
 
 - `VueComponentDefinition.Watch` 使用 `VueProps?`，保持普通 object lowering；watch key 可以是普通属性名，也可以是 Vue 支持的简单点路径。
 - `VueWatchRegistry<TValue>` 只解决动态字符串 key 且同 watched value 类型的场景；异构 watch sources 使用自定义 `VueProps` record。
-- handler options 拆成 callback、cleanup callback、method-name 三个 record，避免把 method group 直接塞进 `Either<...>` 导致 C# 不能自然转换。
-- 官方允许 watch value 使用 handler 数组；当前未覆盖数组 watcher，避免在没有真实需求前扩张 union/collection 复杂度。
-- 依赖 component instance `this` 的 handler 不在当前 surface 中模拟；应等待和 `data(vm)` / `computed` / `methods` 一致的 this-binding 协议。
+- `VueWatchEntry<T>` / `VueWatchEntries<T>` 作为语法糖类型承接 array 场景复杂度；公开 indexer 仍保持 `Either` 主路径以兼容 method-group 等 C# 自然写法。
+- 依赖 component instance `this` 的 handler 使用 `BindThis<TThis,...>`；watch cleanup handler 使用 `BindThis<TThis, TValue>(VueThisWatchCleanupCallback<TThis, TValue>)`。
 
 ## 7. Render / `H(...)` 映射
 
@@ -772,13 +772,15 @@ H(Child, new ChildSlots
 | `ResolveComponent("Name")` | `resolveComponent("Name")` |
 | `ResolveDirective("focus")` | `resolveDirective("focus")` |
 | `WithDirectives(vnode, directives)` | `withDirectives(vnode, directives)` |
+| `WithDirectives(vnode, d1, d2)` | `withDirectives(vnode, [d1, d2])` |
 | `WithModifiers(handler, modifiers)` | `withModifiers(handler, modifiers)` |
+| `WithModifiers(handler, "stop", "prevent")` | `withModifiers(handler, ["stop", "prevent"])` |
 
 `IsVNode<T>(T value)` 使用泛型承接 Vue 官方的 unknown-like 输入，避免把 public surface 退化为 `object`。
 
-`withDirectives` 使用 `VueDirectiveArguments` / `VueDirectiveArguments<TValue>` 表达 Vue 官方的 directive tuple。该 tuple host 映射到 JavaScript `Array`，所以输出是 Vue 可直接消费的 `[directive, value, arg, modifiers]` array shape，而不是 record object。`VueDirectiveModifierBag` 继承 `VueDictionary<bool>`，key 是最终 modifier 名，不做模板语法推断。
+`withDirectives` 使用 `VueDirectiveArguments` / `VueDirectiveArguments<TValue>` 表达 Vue 官方的 directive tuple。该 tuple host 映射到 JavaScript `Array`，所以输出是 Vue 可直接消费的 `[directive, value, arg, modifiers]` array shape，而不是 record object。`VueDirectiveModifierBag` 继承 `VueDictionary<bool>`，key 是最终 modifier 名，不做模板语法推断。`WithDirectives` 参数使用 `[PreserveParamsArray] params VueDirectiveArguments[]`，因此可以写 `WithDirectives(vnode, d1, d2)`，但 JS 始终保持 `withDirectives(vnode, [d1, d2])`，不会退化成 varargs。
 
-`withModifiers` 保持官方 helper 形态：第二参数是 modifier name array。无 payload handler 使用 `Action`，有 payload handler 使用 `VueEventHandler<TEvent>`；普通 listener 优先放进 `VueObject.Events`，完全任意值形态仍可退回 `VueObject` string-key props。
+`withModifiers` 保持官方 helper 形态：第二参数是 modifier name array。无 payload handler 使用 `Action`，有 payload handler 使用 `VueEventHandler<TEvent>`；普通 listener 优先放进 `VueObject.Events`，完全任意值形态仍可退回 `VueObject` string-key props。`WithModifiers` 参数使用 `[PreserveParamsArray] params string[]`，因此 C# 可以写 `WithModifiers(handler, "stop", "prevent")`，但 JS 仍稳定输出 `withModifiers(handler, ["stop", "prevent"])`，不会退化成 varargs。
 
 ### 7.6 Built-in components
 
@@ -1177,7 +1179,7 @@ app.use(installFeature, { enabled: true });
 - `.Value` 只做 `value` member remap，不做自动 unwrapping。
 - `Reactive<T>` / `Readonly<T>` 的 `where T : class` 表达 Vue object proxy 输入，不生成 runtime type guard。
 - `IsRef<T>`、`IsVNode<T>` 这类 runtime predicate 使用泛型承接任意静态输入，避免 public API 暴露 `object`。
-- mixed-source watch array 只在未来 C# union / 更可靠 source-union 表达成熟后再扩展；当前不为了模拟 Vue 示例而削弱 C# 类型边界。
+- mixed-source watch array 已通过 `VueWatchEntry<T>[]` 覆盖；调用端需显式写出数组元素目标类型，避免隐式退化为 `object[]`。
 
 ## 14. Async Component 映射
 

@@ -1058,28 +1058,58 @@ public partial class SemanticWalker
 			NodeList.From(arguments),
 			optional: false);
 
-	private static IOperation UnwrapImplicitConversions(IOperation operation)
-	{
-		while (operation is IConversionOperation { IsImplicit: true } conversion)
-			operation = conversion.Operand;
+private static IOperation UnwrapImplicitConversions(IOperation operation)
+{
+	while (operation is IConversionOperation { IsImplicit: true } conversion)
+		operation = conversion.Operand;
 
-		return operation;
+	return operation;
+}
+
+private const string PreserveParamsArrayAttributeFullName = "ECMAScript.PreserveParamsArrayAttribute";
+private const string ECMAScriptInlineAttributeFullName = "ECMAScript.ECMAScriptInlineAttribute";
+
+private static bool HasPreserveParamsArrayAttribute(IParameterSymbol parameter)
+	=> parameter.GetAttributes().Any(static attribute =>
+		attribute.AttributeClass?.ToDisplayString() == PreserveParamsArrayAttributeFullName);
+
+private static bool TryGetEcmascriptInlineTemplate(IMethodSymbol method, out string template)
+{
+	foreach (var attribute in method.GetAttributes())
+	{
+		if (attribute.AttributeClass?.ToDisplayString() != ECMAScriptInlineAttributeFullName)
+			continue;
+
+		if (attribute.ConstructorArguments.Length == 1 &&
+			attribute.ConstructorArguments[0].Value is string value &&
+			!string.IsNullOrWhiteSpace(value))
+		{
+			template = value;
+			return true;
+		}
 	}
 
-	private bool TryExpandEcmascriptParamsArgument(
-		IMethodSymbol method,
-		IArgumentOperation arg,
-		SenseArgument argument,
-		List<Expression> destination)
-	{
-		if (method.ContainingAssembly?.Name != "ECMAScript" ||
-			arg.Parameter?.IsParams != true ||
-			arg.Parameter.Type is not IArrayTypeSymbol arrayType)
-			return false;
+	template = string.Empty;
+	return false;
+}
 
-		var value = UnwrapImplicitConversions(arg.Value);
-		switch (value)
-		{
+private bool TryExpandEcmascriptParamsArgument(
+	IMethodSymbol method,
+	IArgumentOperation arg,
+	SenseArgument argument,
+		List<Expression> destination)
+{
+	if (method.ContainingAssembly?.Name != "ECMAScript" ||
+		arg.Parameter?.IsParams != true ||
+		arg.Parameter.Type is not IArrayTypeSymbol arrayType)
+		return false;
+
+	if (HasPreserveParamsArrayAttribute(arg.Parameter))
+		return false;
+
+	var value = UnwrapImplicitConversions(arg.Value);
+	switch (value)
+	{
 			case IArrayCreationOperation { Initializer: not null } arrayCreation:
 				foreach (var element in arrayCreation.Initializer.ElementValues)
 					destination.Add(TranslateTupleForTarget(element, arrayType.ElementType, argument));
@@ -1106,6 +1136,14 @@ public partial class SemanticWalker
 		expression = null;
 		if (method.ContainingType is null)
 			return false;
+
+		if (TryGetEcmascriptInlineTemplate(method, out var inlineTemplate))
+		{
+			var signature = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
+			var inlineArguments = CreateLegacyWhiteListArguments(method, arguments, instance);
+			expression = InstantiateInlineTemplate(signature, inlineTemplate, inlineArguments);
+			return true;
+		}
 
 		var containingType = method.ContainingType.OriginalDefinition.ToDisplayString(Format.NameFormat);
 		var childrenToSlotServices = new ChildrenToSlotIntrinsic.Services(

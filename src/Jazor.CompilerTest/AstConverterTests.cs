@@ -5383,6 +5383,7 @@ export function readRef() {
     {
         var code = """
             using ECMAScript;
+            using System;
             using System.ComponentModel;
             using static ECMAScript.Vue3;
 
@@ -5774,7 +5775,7 @@ export function render() {
                             Events = new VueEventHandlers
                             {
                                 ["onClick"] = OnClick,
-                                ["onFocus"] = Vue3.WithModifiers(OnFocus, new[] { "stop" })
+                                ["onFocus"] = Vue3.WithModifiers(OnFocus, "stop")
                             }
                         }, "Save");
 
@@ -5881,6 +5882,132 @@ function onMouseMove(mouseEvent) { }
 @"import { h } from ""npm:vue@3"";
 export function renderCustomizedBuiltIn() {
   return h(""button"", { is: ""vue:primary-button"" }, ""Save"");
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingWithModifiersParamsVariable_PreservesArrayArgument()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode Render()
+                    {
+                        var modifiers = new[] { "stop", "prevent" };
+                        return H("button", new VueObject
+                        {
+                            ["onClick"] = Vue3.WithModifiers(OnClick, modifiers)
+                        }, "Save");
+                    }
+
+                    private static void OnClick()
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h, withModifiers } from ""npm:vue@3"";
+export function render() {
+  let modifiers = [""stop"", ""prevent""];
+  return h(""button"", { onClick: withModifiers(onClick, modifiers) }, ""Save"");
+}
+function onClick() { }
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingWithDirectivesParamsVariable_PreservesArrayArgument()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    private static VueDirective Focus = new VueDirective
+                    {
+                        Mounted = MountedDirective
+                    };
+
+                    public static IVNode Render()
+                    {
+                        var directives = new VueDirectiveArguments[]
+                        {
+                            new VueDirectiveArguments(Focus)
+                        };
+                        var button = H("button", "Save");
+                        return Vue3.WithDirectives(button, directives);
+                    }
+
+                    private static void MountedDirective(Element element, VueDirectiveBinding binding, IVNode vnode)
+                    {
+                        element.SetAttribute("data-focus", "true");
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h, withDirectives } from ""npm:vue@3"";
+let focus = { mounted: mountedDirective };
+export function render() {
+  let directives = [new Array(focus)];
+  let button = h(""button"", ""Save"");
+  return withDirectives(button, directives);
+}
+function mountedDirective(element, binding, vnode) {
+  element.setAttribute(""data-focus"", ""true"");
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -6932,11 +7059,15 @@ function focus() { }
                                     Handler = OnTotalChanged
                                 }
                             },
-                            { "legacy", "onLegacyChanged" }
+                            { "legacy", "onLegacyChanged" },
+                            { "legacyList", new[] { "onLegacyChanged", "onLegacyChangedAgain" } },
+                            { "countList", new[] { OnCountChanged, OnCountChangedAgain } },
+                            { "mixedList", new VueWatchEntry<int>[] { "onLegacyChanged", (Action<int, int>)OnCountChanged } }
                         },
                         Methods = new VueMethodRegistry<Action<int, int>>
                         {
-                            { "onLegacyChanged", OnLegacyChanged }
+                            { "onLegacyChanged", OnLegacyChanged },
+                            { "onLegacyChangedAgain", OnLegacyChangedAgain }
                         },
                         Render = Render
                     });
@@ -6953,6 +7084,14 @@ function focus() { }
                     }
 
                     private static void OnLegacyChanged(int value, int oldValue)
+                    {
+                    }
+
+                    private static void OnLegacyChangedAgain(int value, int oldValue)
+                    {
+                    }
+
+                    private static void OnCountChangedAgain(int value, int oldValue)
                     {
                     }
                 }
@@ -6989,9 +7128,12 @@ export let component = defineComponent({
       deep: 1,
       handler: onTotalChanged
     },
-    legacy: ""onLegacyChanged""
+    legacy: ""onLegacyChanged"",
+    legacyList: [""onLegacyChanged"", ""onLegacyChangedAgain""],
+    countList: [onCountChanged, onCountChangedAgain],
+    mixedList: [""onLegacyChanged"", onCountChanged]
   },
-  methods: { onLegacyChanged: onLegacyChanged },
+  methods: { onLegacyChanged: onLegacyChanged, onLegacyChangedAgain: onLegacyChangedAgain },
   render: render
 });
 export function render() {
@@ -7000,7 +7142,130 @@ export function render() {
 function onCountChanged(value, oldValue) { }
 function onTotalChanged(value, oldValue) { }
 function onLegacyChanged(value, oldValue) { }
+function onLegacyChangedAgain(value, oldValue) { }
+function onCountChangedAgain(value, oldValue) { }
 ", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueComponentOptionsThisBoundCallbacks_GeneratesThisAwareOptionsWrappers()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public abstract class PanelThis
+                {
+                }
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ThisPanel",
+                        Data = Vue3.BindThis<PanelThis>(BuildData),
+                        Computed = new VueComputedRegistry<int>
+                        {
+                            { "double", Vue3.BindThis<PanelThis, int>(GetDouble) },
+                            { "labelLength", new VueWritableComputedOptions<int>
+                                {
+                                    Get = Vue3.BindThis<PanelThis, int>(GetLabelLength),
+                                    Set = Vue3.BindThis<PanelThis, int>(SetLabelLength)
+                                }
+                            }
+                        },
+                        Methods = new VueMethodRegistry<global::System.Action<int>>
+                        {
+                            { "add", Vue3.BindThis<PanelThis, int>(AddCount) }
+                        },
+                        Watch = new VueWatchRegistry<int>
+                        {
+                            { "count", Vue3.BindThis<PanelThis, int, int>(OnCountChanged) },
+                            { "labelSize", new VueWatchCleanupHandlerOptions<int>
+                                {
+                                    Immediate = true,
+                                    Handler = Vue3.BindThis<PanelThis, int>(OnLabelSizeChanged)
+                                }
+                            }
+                        },
+                        Render = Render
+                    });
+
+                    public static IVNode Render()
+                        => H("section", "ready");
+
+                    private static VueProps BuildData(PanelThis self)
+                        => new VueDictionary
+                        {
+                            ["count"] = 1,
+                            ["label"] = "seed"
+                        };
+
+                    private static int GetDouble(PanelThis self)
+                        => 2;
+
+                    private static int GetLabelLength(PanelThis self)
+                        => 0;
+
+                    private static void SetLabelLength(PanelThis self, int length)
+                    {
+                    }
+
+                    private static void AddCount(PanelThis self, int step)
+                    {
+                    }
+
+                    private static void OnCountChanged(PanelThis self, int value, int oldValue)
+                    {
+                    }
+
+                    private static void OnLabelSizeChanged(PanelThis self, int value, int oldValue, VueWatchCleanupRegistration onCleanup)
+                    {
+                        onCleanup(() => {});
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("bindThis", StringComparison.Ordinal));
+        StringAssert.Contains(script, "data: (__cb => function() {");
+        StringAssert.Contains(script, "})(buildData)");
+        StringAssert.Contains(script, "double: (__cb => function() {");
+        StringAssert.Contains(script, "})(getDouble)");
+        StringAssert.Contains(script, "get: (__cb => function() {");
+        StringAssert.Contains(script, "})(getLabelLength)");
+        StringAssert.Contains(script, "set: (__cb => function() {");
+        StringAssert.Contains(script, "})(setLabelLength)");
+        StringAssert.Contains(script, "add: (__cb => function() {");
+        StringAssert.Contains(script, "})(addCount)");
+        StringAssert.Contains(script, "count: (__cb => function() {");
+        StringAssert.Contains(script, "})(onCountChanged)");
+        StringAssert.Contains(script, "handler: (__cb => function() {");
+        StringAssert.Contains(script, "})(onLabelSizeChanged)");
     }
 
     [TestMethod]
@@ -10309,16 +10574,15 @@ function applyFocus(element, binding) {
                     {
                         var button = H("button", new VueObject
                         {
-                            ["onClick"] = Vue3.WithModifiers(OnClick, new[] { "stop", "prevent" })
+                            ["onClick"] = Vue3.WithModifiers(OnClick, "stop", "prevent")
                         }, "Save");
-                        return Vue3.WithDirectives(button, new VueDirectiveArguments[]
-                        {
+                        return Vue3.WithDirectives(
+                            button,
                             new VueDirectiveArguments(Focus),
                             new VueDirectiveArguments<string>(Colorize, "red", "background", new VueDirectiveModifierBag
                             {
                                 ["important"] = true
-                            })
-                        });
+                            }));
                     }
 
                     private static void MountedDirective(Element element, VueDirectiveBinding binding, IVNode vnode)
