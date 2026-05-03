@@ -20,7 +20,8 @@
 | `clr/` | `src/Jazor.CLR/` + Generator | CLR 映射声明与白名单生成链路 |
 | `analyzer/` | `src/Jazor.Analyzer/` | 静态代码分析与 RazorVue 编译时分析宿主 |
 | `razor/` | `src/Jazor.Razor/` + `src/Jazor.Compiler.Razor/` | Razor 基础标记与编译器侧语义前端 |
-| `ecmascript/` | `src/ECMAScript/` | ECMAScript host、Vue3 平衡式目标与映射细节、host/nullish 边界 |
+| `ecmascript/` | `src/ECMAScript/` | ECMAScript host、host/nullish 边界与 WebIDL 相关目标 |
+| `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库映射目标、覆盖矩阵与模块规则 |
 | `razorvue/` | `src/Jazor.Common/RazorVue/` + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 库模式 Razor-to-JS、组件描述与 Vuetify authoring |
 | `jolt/` | `src/Jolt/` | `.jazor` LSP、DevServer、Build、Debug、Deno/Volar 集成 |
 | `common/` | `src/ECMAScript.Contract/` + `src/Jazor.Common/` | 最小契约层与共享实现层 |

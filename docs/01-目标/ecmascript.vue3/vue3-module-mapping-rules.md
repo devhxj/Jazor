@@ -8,11 +8,12 @@
 
 Vue3 映射的目标不是把 Vue 官方示例逐字翻译成 C# API，而是让 C# authoring 通过类型系统、record、overload、delegate 和 attribute 表达清楚，最终生成 Vue runtime 接受的标准 JavaScript。
 
-这份规则约束三件事：
+这份规则约束四件事：
 
-- `src/ECMAScript/Vue3.cs` 如何声明外部 Vue module binding；
+- `src/ECMAScript.Vue3/Vue3.cs` 如何声明外部 Vue module binding；
 - 用户 `[ECMAScriptModule]` 模块如何生成 `.mjs` 和 named export；
 - compiler 允许在哪些稳定通用规则上参与 lowering，哪些 Vue 细节必须留在 public C# surface 中表达。
+- `ECMAScript.Vue3` 作为外部库样例时，如何组织可维护的 partial 文件目录。
 
 ## 2. 模块类型
 
@@ -155,6 +156,14 @@ new VueObject
 - indexer / `Add(string, value)` / initializer 应保持同一 string-key object-literal 语义。
 
 `VueObject` 不应获得 Vue-only compiler 特路。它只是普通 record + dictionary + `[Spread]` 的组合。
+
+同时，`VueObject` 的 convenience member 也必须保持克制：
+
+- 只收高频、直接映射最终 key、类型单义的属性；
+- `aria-*` 保持在 `Attrs` / indexer；
+- `data-*` 保持在 `Dataset` / indexer；
+- 长尾与项目特定属性保持在 typed props bag 或 bag/indexer 路线；
+- 不把“少写几个字符”的诉求演化成新的 prefix magic 或 compiler 特路。
 
 ## 6. `[Spread]` 规则
 
@@ -308,7 +317,25 @@ new VueDictionary
 - 为单个 Vue 示例新增 `SemanticWalker` 分支；
 - 为了输出更短 JS 牺牲 evaluation order、side-effect count 或 usage-site diagnostics。
 
-## 12. 变更检查清单
+## 12. 模块目录规范（外部库样例）
+
+`ECMAScript.Vue3` 采用“壳文件 + 分层 partial”目录规范：
+
+- `src/ECMAScript.Vue3/Vue3.cs`
+  - 仅保留 host module 映射入口（例如 `[ECMAScript("npm:vue@3")]`）。
+  - 保留顶层共享 delegate / handle 等公共契约类型。
+- `src/ECMAScript.Vue3/Api/`
+  - 放 `Vue3.Api*.cs`，只承载 `Vue3` 静态 API 成员（`extern static`）。
+- `src/ECMAScript.Vue3/Types/`
+  - 放 `Vue3.Types.*.cs`，承载 `Vue3` 嵌套类型（props/options/directive/plugin/app 等）。
+
+约束：
+
+- 不把 `Api` 与 `Types` 混在同一文件继续膨胀；
+- 不把 `Vue3.cs` 回流成“超大单文件”；
+- 只允许通用映射特性作为入口硬编码，不在 compiler 中加 `ECMAScript.Vue3` 名称特判。
+
+## 13. 变更检查清单
 
 新增或修改 Vue3 映射时必须检查：
 
@@ -321,11 +348,14 @@ new VueDictionary
 - 是否有 compiler emission 测试和 public reflection/proxy 测试；
 - 是否更新 `vue3-api-coverage-matrix.md` 与 `vue3-mapping-details.md`。
 
-## 13. 参考
+## 14. 参考
 
 - [ECMAScript.Vue3 平衡式目标设计](./vue3-balanced-design.md)
 - [ECMAScript.Vue3 映射细节设计](./vue3-mapping-details.md)
 - [ECMAScript.Vue3 API 覆盖矩阵](./vue3-api-coverage-matrix.md)
-- [src/ECMAScript/Vue3.cs](../../../src/ECMAScript/Vue3.cs)
+- [src/ECMAScript.Vue3/Vue3.cs](../../../src/ECMAScript.Vue3/Vue3.cs)
+- [src/ECMAScript.Vue3/Api](../../../src/ECMAScript.Vue3/Api)
+- [src/ECMAScript.Vue3/Types](../../../src/ECMAScript.Vue3/Types)
 - [src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs](../../../src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+

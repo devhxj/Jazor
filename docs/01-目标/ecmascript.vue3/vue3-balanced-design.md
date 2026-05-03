@@ -2,7 +2,7 @@
 
 > Status: active target
 > Updated: 2026-05-02
-> Positioning: 为 `src/ECMAScript/Vue3.cs` 与相关 lowering 定义新的边界，让 Vue authoring 尽量走 C# 原生语义，compiler 只保留稳定且必要的特性硬编码。
+> Positioning: 为 `src/ECMAScript.Vue3/Vue3.cs` 与相关 lowering 定义新的边界，让 Vue authoring 尽量走 C# 原生语义，compiler 只保留稳定且必要的特性硬编码。
 
 ## 1. 核心问题
 
@@ -119,7 +119,8 @@ structural-lowered record 的静态 `null` 省略应该继续作为通用优化�
 - [ECMAScript.Vue3 映射细节设计](./vue3-mapping-details.md)
 - [ECMAScript.Vue3 模块映射规则](./vue3-module-mapping-rules.md)
 - [ECMAScript.Vue3 API 覆盖矩阵](./vue3-api-coverage-matrix.md)
-- [src/ECMAScript/Vue3.cs](../../../src/ECMAScript/Vue3.cs)
+- [src/ECMAScript.Vue3/Vue3.cs](../../../src/ECMAScript.Vue3/Vue3.cs)
 - [src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs](../../../src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs)
 - [src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs](../../../src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+

@@ -2,7 +2,7 @@
 
 > Status: active inventory
 > Updated: 2026-05-02
-> Source baseline: Vue 官方 API 索引与分组，目标对象是 `src/ECMAScript/Vue3.cs` 的 host binding / authoring surface，而不是 `.vue` SFC 或模板编译器。
+> Source baseline: Vue 官方 API 索引与分组，目标对象是 `src/ECMAScript.Vue3/Vue3.cs` 的 host binding / authoring surface，而不是 `.vue` SFC 或模板编译器。
 
 ## 1. 结论
 
@@ -21,7 +21,7 @@
 - Application config、`app.mixin(...)`、`app.runWithContext(...)`、`version`；
 - async component、render function helper、built-in component/directive/helper；
 - Composition API 的 helpers、utilities、advanced reactivity、dependency injection、完整 lifecycle；
-- Options API 的复杂 provide/inject default/factory、symbol key 等；
+- Options API 的 symbol-key provide/inject、更复杂 this-bound 长尾等；
 - SFC、template syntax、compiler macros、SSR renderer、custom renderer。
 
 因此后续目标不应该直接喊“全功能映射”，而应改成：
@@ -49,13 +49,13 @@
 | Application API | Covered | Target Gap | app 创建、mount、use、component、directive、provide、runWithContext、version、config、mixin 已覆盖；`app.mixin` 是低层兼容 binding，不作为推荐 authoring path |
 | General API | Partial | Target Gap / Design Gap | `nextTick` promise/callback、`defineComponent`、`defineAsyncComponent` loader/options 核心路径已有；剩余主要是 Options API 长尾语义（如 provide/inject 复杂形态） |
 | Composition API: setup | Partial | Design Gap | setup function 已通过 component options 表达；`defineProps` 等 SFC macro 不属于当前 surface |
-| Composition API: Helpers | Partial | Target Gap / Design Gap | `useAttrs`、`useSlots` 已覆盖基础 bag 与 typed projection；`useTemplateRef`、`useId` 已覆盖；`useModel` 底层 helper 已覆盖 ref + get/set options，完整 modifiers / v-model 协议仍需单独设计 |
+| Composition API: Helpers | Partial | Target Gap / Design Gap | `useAttrs`、`useSlots` 已覆盖基础 bag 与 typed projection；`useTemplateRef`、`useId` 已覆盖；`useModel` 已覆盖 typed ref、get/set options 与 modifiers projection，named model / 更高层 v-model 约定仍保持显式 authoring |
 | Composition API: Reactivity Core | Covered | Target Gap | 常用核心、writable computed、watch handle、watch options、debugger event options、reactive object source 与同类 multi-source watch 已覆盖 |
 | Composition API: Reactivity Utilities | Covered | Target Gap | `isRef`、`unref`、`toRef`、`toValue`、`toRefs`、proxy/reactivity predicates 已覆盖 |
 | Composition API: Reactivity Advanced | Covered | Target Gap | `shallowRef`、`customRef`、`triggerRef`、`shallowReactive`、`markRaw`、`effectScope` 等核心 advanced API 已覆盖 |
 | Composition API: Lifecycle Hooks | Covered | Target Gap | mounted/updated/unmounted、before*、errorCaptured、render debug、activated/deactivated、serverPrefetch 已覆盖 |
-| Composition API: Dependency Injection | Covered | Target Gap / Design Gap | composition-level string key 与 typed `VueInjectionKey<T>` provide/inject 已覆盖；Options API provide/inject 基础声明式形态已覆盖，复杂 this/default/factory 另行设计 |
-| Options API | Partial | Target Gap / Design Gap | component option 基础、显式 array/object-form `props` / `emits`、`BindThis<TThis,...>` this-bound `data`/`computed`/`methods`/`watch`/lifecycle、`inheritAttrs`、`expose`、object-form `provide`、array/object-form `inject`、低层 `mixins`/`extends` binding 已覆盖；复杂 provide/inject 形态仍需设计 |
+| Composition API: Dependency Injection | Covered | Target Gap / Design Gap | composition-level string key 与 typed `VueInjectionKey<T>` provide/inject 已覆盖；Options API inject object-form source/default/factory helper 与 provide function-form 已覆盖，symbol-key / this-bound 长尾另行设计 |
+| Options API | Partial | Target Gap / Design Gap | component option 基础、显式 array/object-form `props` / `emits`、`BindThis<TThis,...>` this-bound `data`/`computed`/`methods`/`watch`/lifecycle、`inheritAttrs`、`expose`、object-form `provide`、function-form `provide`、array/object-form `inject`、inject object-form helper surface、低层 `mixins`/`extends` binding 已覆盖；更复杂 this-bound 长尾与 symbol-key 形态仍需设计 |
 | Built-in Directives | Gap | Separate Workstream | 主要属于 template/SFC 语法，不应映射成 `Vue3.cs` 普通方法 |
 | Built-in Components | Partial | Design Gap / Separate Workstream | `Transition` / `TransitionGroup` / `KeepAlive` / `Teleport` / `Suspense` render-function binding 已覆盖；template-only 体验另行设计 |
 | Built-in Special Elements | Gap | Separate Workstream | `<component>`、`<slot>`、`<template>` 属于 template/SFC 语义 |
@@ -106,7 +106,7 @@ Source: <https://vuejs.org/api/composition-api-setup.html>
 | 官方能力 | 当前状态 | 目标 |
 |----------|----------|------|
 | `setup(props, context)` | Covered | 通过 `VueTypedSetupCallback<TProps>` / `VueSetupContext` 表达 |
-| `context.attrs` | Covered | `VueAttributeBag` 已有 indexer / class / style / id / title 读取面；`UseAttrs<T>()` 可投影到 `VueAttributeListeners*` 以读取 callable listener key |
+| `context.attrs` | Covered | `VueAttributeBag` 已有 indexer / class / style / id / title / for / name / type / placeholder / disabled / readonly / required / tabindex / role 读取面；`UseAttrs<T>()` 可投影到 `VueAttributeListeners*` 以读取 callable listener key |
 | `context.slots` | Covered | `VueSlotBag` 已有 indexer / default slot 读取面；typed slots 由 `VueSetupContext<TSlots>` 表达；`UseSlots<T>()` 可投影到 `VueScopedSlots<TScope>` 读取 scoped slots |
 | `context.emit` | Covered | 已有 0-4 payload overload；不使用 `params object[]`，超过 4 个 payload 时按实际需求继续加 overload |
 | `context.expose` | Covered | 保持 |
@@ -122,7 +122,7 @@ Source: <https://vuejs.org/api/composition-api-helpers.html>
 | `useSlots()` | Covered | `UseSlots()` 返回 `VueSlotBag`；`UseSlots<TSlots>()` 返回 typed projection（含 `VueScopedSlots<TScope>` scoped helper） |
 | `useTemplateRef()` | Covered | `UseTemplateRef<TElement>(string key)` 返回 `VueReadonlyRef<TElement?>` |
 | `useId()` | Covered | `UseId()` 返回 string |
-| `useModel()` | Partial | `UseModel<TValue>(props,key[,options])` 覆盖底层 ref helper；调用者仍需显式声明 prop 与 `update:*` emit；modifiers tuple 暂不覆盖 |
+| `useModel()` | Partial | `UseModel<TValue>(props,key[,options])` 覆盖 typed model ref、get/set transform 与 modifiers projection（`VueModelRef<TValue>.GetModifiers()` / `GetModifiers<TModifiers>()`）；调用者仍需显式声明 prop 与 `update:*` emit，named model 仍保持显式 authoring |
 
 `useAttrs` / `useSlots` 与 `setup(context)` 的 read-side bags 共享类型，避免创建另一套不一致的读取面。
 
@@ -241,7 +241,7 @@ Sources:
 | Rendering | `render` | Covered | 当前 `VueRenderCallback` |
 | Rendering | `compilerOptions` | Separate Workstream | 组件/SFC compiler 配置属于 build/Jolt/SFC pipeline；`app.config.compilerOptions` 已由 Application API surface 覆盖 |
 | Lifecycle | created/mounted/updated 等 | Covered | lifecycle callback surface 已覆盖；this-bound lifecycle callback 通过 `BindThis<TThis,...>` 覆盖 |
-| Composition | `provide` / `inject` | Partial | `Provide = VueProps` object form、`Inject = string[] / VueProps` array/object form 已覆盖；function-form provide、复杂 inject default/factory 仍需设计 |
+| Composition | `provide` / `inject` | Partial | `Provide = VueProps` object form、`ProvideFactory = VueDataCallback` function form、`Inject = string[] / VueProps` array/object form、`VueInjectOptions<T>` / `VueInjectEntry<T>` / `VueInjectRegistry<T>` helper 已覆盖；更复杂 this-bound 与 symbol-key 形态仍需设计 |
 | Composition | `mixins` / `extends` | Covered | 低层兼容 binding 已覆盖为 `VueComponentDefinition[]` / `VueComponentDefinition`；不作为新代码推荐复用模型 |
 | Misc | `name` | Covered | 当前 `Name` |
 | Misc | `inheritAttrs` | Covered | `VueComponentDefinition.InheritAttrs` |
@@ -252,7 +252,7 @@ Sources:
 
 - 不把完整 Options API 作为当前第一优先级。
 - 先补不需要 compiler 的 option members：`InheritAttrs`、`Expose`、Options API lifecycle callback、provide/inject 基础声明式形态、computed/methods/watch registry、watch array declarations、this-bound callback bridge（`BindThis<TThis,...>`，由 `ECMAScriptInline` 降级）已落地。
-- function-form provide、inject default/factory 与更细粒度 this contract 仍需按真实需求继续收敛。
+- symbol-key provide/inject、以及更细粒度 this contract 仍需按真实需求继续收敛。
 
 ## 14. Built-ins
 
@@ -278,7 +278,7 @@ Source: <https://vuejs.org/api/render-function.html>
 
 | API | 当前状态 | 目标 |
 |-----|----------|------|
-| `h()` | Covered | 主路径已覆盖；`VueObject` 已覆盖 string `is` / `key` / named `ref` / class / style / events / attrs / dataset / raw；`H(...)` 已按 element/component/props/slots/direct-child canonical 家族收敛，direct-child 统一通过 `IVNode` + `VueChild` 表达 |
+| `h()` | Covered | 主路径已覆盖；`VueObject` 已覆盖 string `is` / `key` / named `ref` / class / style / events / attrs / dataset / raw，并提供一组高频原生 HTML convenience attrs（如 `id` / `title` / `for` / `name` / `type` / `placeholder` / `href` / `src` 等）；`H(...)` 已按 element/component/props/slots/direct-child canonical 家族收敛，direct-child 统一通过 `IVNode` + `VueChild` 表达 |
 | `mergeProps()` | Covered | `MergeProps(params VueProps[])` |
 | `cloneVNode()` | Covered | `CloneVNode(IVNode)` + `CloneVNode(IVNode, VueProps)` |
 | `isVNode()` | Covered | `bool IsVNode<T>(T value)` |
@@ -304,7 +304,7 @@ Sources:
 | compiler macros | Gap | Separate Workstream |
 | scoped CSS / CSS modules / `v-bind()` in CSS | Gap | Separate Workstream |
 
-这些能力不应进入 `src/ECMAScript/Vue3.cs`。如果 Jolt 未来支持 `.vue` 或类 SFC authoring，应在 Jolt/RazorVue/SFC pipeline 里设计，而不是扩张 `SemanticWalker` 的 Vue hardcoding。
+这些能力不应进入 `src/ECMAScript.Vue3/Vue3.cs`。如果 Jolt 未来支持 `.vue` 或类 SFC authoring，应在 Jolt/RazorVue/SFC pipeline 里设计，而不是扩张 `SemanticWalker` 的 Vue hardcoding。
 
 ## 17. Advanced APIs
 
@@ -324,7 +324,7 @@ Sources:
 
 ### P0: 不扩大 compiler 的低风险 binding
 
-Status: 第一批已落地到 `src/ECMAScript/Vue3.cs`，并由 `EcmaScriptVueProxyTests` 与 `AstConverterTests.Convert_ClassUsingVueP0CoverageBindings_GeneratesPlainVueImports` 覆盖。
+Status: 第一批已落地到 `src/ECMAScript.Vue3/Vue3.cs`，并由 `EcmaScriptVueProxyTests` 与 `AstConverterTests.Convert_ClassUsingVueP0CoverageBindings_GeneratesPlainVueImports` 覆盖。
 
 - `version`
 - `app.version`
@@ -403,4 +403,5 @@ Status: 第一批已落地到 `src/ECMAScript/Vue3.cs`，并由 `EcmaScriptVuePr
 - Custom Renderer API: <https://vuejs.org/api/custom-renderer.html>
 - [ECMAScript.Vue3 映射细节设计](./vue3-mapping-details.md)
 - [ECMAScript.Vue3 模块映射规则](./vue3-module-mapping-rules.md)
-- [src/ECMAScript/Vue3.cs](../../../src/ECMAScript/Vue3.cs)
+- [src/ECMAScript.Vue3/Vue3.cs](../../../src/ECMAScript.Vue3/Vue3.cs)
+

@@ -15,9 +15,11 @@
 | `compiler/` | `src/Jazor.Compiler/` | 当前状态快照 + 历史测试审计 |
 | `emit/` | `src/Jazor.Emit/` | 当前状态快照 |
 | `sourcemap/` | `src/Jazor.Common/SourceMaps/` + `src/Jazor.Emit/SourceMaps/` | SourceMap 状态快照 |
+| `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | 外部库 Vue3 线的状态快照 |
 
 ## 推荐入口
 
 - compiler 当前状态 → [compiler/status.md](./compiler/status.md)
 - jolt 当前状态 → [jolt/status.md](./jolt/status.md)
 - emit 当前状态 → [emit/status.md](./emit/status.md)
+- ECMAScript.Vue3 当前状态 → [ecmascript.vue3/status.md](./ecmascript.vue3/status.md)

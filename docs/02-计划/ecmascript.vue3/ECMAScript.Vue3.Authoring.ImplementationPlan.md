@@ -2,7 +2,23 @@
 
 > Status: 活跃计划
 > Updated: 2026-05-02
-> Positioning: 以 [ECMAScript.Vue3 平衡式目标设计](../../01-目标/ecmascript/vue3-balanced-design.md)、[ECMAScript.Vue3 API 覆盖矩阵](../../01-目标/ecmascript/vue3-api-coverage-matrix.md) 和 [ECMAScript.Vue3 映射细节设计](../../01-目标/ecmascript/vue3-mapping-details.md) 为边界，推进 `src/ECMAScript/Vue3.cs` 与相关 compiler lowering 的收口实施。
+> Positioning: 以 [ECMAScript.Vue3 平衡式目标设计](../../01-目标/ecmascript.vue3/vue3-balanced-design.md)、[ECMAScript.Vue3 API 覆盖矩阵](../../01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md) 和 [ECMAScript.Vue3 映射细节设计](../../01-目标/ecmascript.vue3/vue3-mapping-details.md) 为边界，推进 `src/ECMAScript.Vue3/Vue3.cs` 与相关 compiler lowering 的收口实施。
+
+## 0. 三阶段总路线（H -> Razor->H -> Jolt）
+
+`ECMAScript.Vue3` 按三阶段推进，防止把“库映射问题”和“工程化 authoring 问题”混在一个阶段里：
+
+1. **Phase 1: H 函数映射层（已完成结构收口）**
+   - 建立 `H(...)` / `VueObject` / slot sugar / read-side bag 的规范面。
+   - 以 C# 类型系统 + 通用 lowering 为主，不扩张 Vue 专项 compiler 分支。
+
+2. **Phase 2: Razor -> H 规范层（当前主线）**
+   - 目标是把 Razor authoring 稳定映射到 Phase 1 的 `H(...)` 规范层。
+   - 重点是 canonical shape、诊断边界、语义一致性，而不是再扩张 `H(...)` overload。
+
+3. **Phase 3: Jolt 工程化协同（规划）**
+   - 在 Jolt 中承接 authoring、构建、调试的工程化闭环。
+   - 仍保持 Vue3 为外部库：不把 Vue 命名语义反向注入 compiler 核心。
 
 ## 1. 计划目标
 
@@ -42,7 +58,7 @@
 
 当前仍需要收口的不是“功能数量”，而是“边界质量”。
 
-## 4. 实施分解
+## 4. Phase 1 实施分解（已完成主体，持续硬化）
 
 ### Phase A: Compiler Boundary Reduction
 
@@ -182,8 +198,8 @@
 
 重点：
 
-- `src/ECMAScript/README.md`
-- `docs/01-目标/ecmascript/*`
+- `src/ECMAScript.Vue3/README.md`
+- `docs/01-目标/ecmascript.vue3/*`
 - 本计划文档自身
 
 ### Phase D: Vue API Coverage Completion
@@ -208,11 +224,11 @@
 - writable computed options（已落地）
 - `VueEffectScope`（已落地）
 - composition provide/inject（string key 与 typed injection key 已落地）
-- composition helpers（`useAttrs` / `useSlots` 基础 bag 与 typed projection、`useTemplateRef`、`useId` 已落地；`useModel` 底层 helper 已覆盖 ref + get/set options，完整 modifiers / v-model 协议后续设计）
+- composition helpers（`useAttrs` / `useSlots` 基础 bag 与 typed projection、`useTemplateRef`、`useId` 已落地；`useModel` 已覆盖 typed ref + get/set options + modifiers projection，named model / higher-level v-model 协议后续设计）
 - `defineAsyncComponent`（loader/options 核心路径已落地）
 - `customRef`（factory + handlers 已落地）
 - `toRef` / `toRefs`（normalization、source key、typed refs projection 已落地）
-- `data` / `computed` / `methods` / `watch` / `props` / `emits` / `inheritAttrs` / `expose` / lifecycle callbacks / Options provide-inject 基础面 / mixins-extends 兼容面（component definition base option 已落地；explicit `PropNames` / `EmitNames` array-form 已落地；`PropOptions` / `EmitOptions` object-form validators/defaults 已落地；data 和 lifecycle 先覆盖无 `this` callback surface，computed 先覆盖 no-`this` getter/writable registry 与自定义 `VueProps` record，methods 先覆盖 no-`this` delegate registry 与自定义 `VueProps` record，watch 先覆盖 callback / cleanup callback / method-name / options object 基础形态，provide/inject 先覆盖 object/array 声明式形态，mixins/extends 只作为低层兼容 binding）
+- `data` / `computed` / `methods` / `watch` / `props` / `emits` / `inheritAttrs` / `expose` / lifecycle callbacks / Options provide-inject 基础面 / mixins-extends 兼容面（component definition base option 已落地；explicit `PropNames` / `EmitNames` array-form 已落地；`PropOptions` / `EmitOptions` object-form validators/defaults 已落地；data 和 lifecycle 先覆盖无 `this` callback surface，computed 先覆盖 no-`this` getter/writable registry 与自定义 `VueProps` record，methods 先覆盖 no-`this` delegate registry 与自定义 `VueProps` record，watch 先覆盖 callback / cleanup callback / method-name / options object 基础形态，provide/inject 已覆盖 object/array 声明式形态、provide function-form 与 inject object-form source/default/factory helper，mixins/extends 只作为低层兼容 binding）
 - built-in components（`Transition` / `TransitionGroup` / `KeepAlive` / `Teleport` / `Suspense` render-function binding 已落地）
 - `withDirectives` / `withModifiers`（核心 render helper 已落地；后续只做 authoring convenience 优化）
 - custom elements 核心 binding（`DefineCustomElement`、`VueCustomElementOptions`、`UseHost`、`UseShadowRoot` 已落地；完整 props/events/light DOM authoring 策略后续设计）
@@ -224,7 +240,7 @@
 - Options API full surface、custom elements 的完整 authoring 策略先设计再实现。
 - SFC、template、SSR renderer、custom renderer 保持 separate workstream。
 
-## 5. 推荐执行顺序
+## 5. 推荐执行顺序（Phase 1 收口）
 
 1. A1
 2. A2
@@ -246,6 +262,20 @@
 - 先收合同，再补 ergonomics。
 - 先让 public surface 说真话，再谈好用。
 - 最后按覆盖矩阵补 API 面，避免把缺口补成新的 compiler 硬编码。
+
+## 5.1 Phase 2 / Phase 3 前置门槛
+
+进入 Phase 2（Razor -> H）前至少满足：
+
+- `H(...)` canonical 分类文档稳定（element / component / props / slots / direct-child sugar）。
+- object-literal / dictionary 路线（indexer / `Add(string, ...)` / initializer）具备统一语义和诊断边界。
+- read-side bag（`VueAttributeBag` / `VueSlotBag`）可覆盖 Razor 映射的基础读取场景。
+
+进入 Phase 3（Jolt）前至少满足：
+
+- Razor -> H 产物在 compiler 输出语义上可预测、可诊断、可回归测试。
+- Jolt 只承接工程化闭环，不接管 Vue3 API 语义定义。
+- Vue3 相关语义变化能回流到 `ECMAScript.Vue3` 文档与测试，而不是散落到 Jolt 私有逻辑。
 
 ## 6. 验证要求
 
@@ -280,11 +310,12 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQual
 
 ## 9. 参考
 
-- [src/ECMAScript/README.md](../../../src/ECMAScript/README.md)
+- [src/ECMAScript.Vue3/README.md](../../../src/ECMAScript.Vue3/README.md)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-- [docs/01-目标/ecmascript/vue3-balanced-design.md](../../01-目标/ecmascript/vue3-balanced-design.md)
-- [docs/01-目标/ecmascript/vue3-module-mapping-rules.md](../../01-目标/ecmascript/vue3-module-mapping-rules.md)
-- [docs/01-目标/ecmascript/vue3-api-coverage-matrix.md](../../01-目标/ecmascript/vue3-api-coverage-matrix.md)
-- [docs/01-目标/ecmascript/vue3-mapping-details.md](../../01-目标/ecmascript/vue3-mapping-details.md)
+- [docs/01-目标/ecmascript.vue3/vue3-balanced-design.md](../../01-目标/ecmascript.vue3/vue3-balanced-design.md)
+- [docs/01-目标/ecmascript.vue3/vue3-module-mapping-rules.md](../../01-目标/ecmascript.vue3/vue3-module-mapping-rules.md)
+- [docs/01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md](../../01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md)
+- [docs/01-目标/ecmascript.vue3/vue3-mapping-details.md](../../01-目标/ecmascript.vue3/vue3-mapping-details.md)
 - [docs/01-目标/ecmascript/host-alignment.md](../../01-目标/ecmascript/host-alignment.md)
 - [docs/02-计划/workstream-dashboard.md](../workstream-dashboard.md)
+

@@ -2,7 +2,7 @@
 
 > Status: active target
 > Updated: 2026-05-02
-> Positioning: 补足 [ECMAScript.Vue3 平衡式目标设计](./vue3-balanced-design.md) 的细节合同，明确 `src/ECMAScript/Vue3.cs` 每类 authoring surface 应该映射到什么 JavaScript 形态，以及 compiler 允许参与到什么程度。
+> Positioning: 补足 [ECMAScript.Vue3 平衡式目标设计](./vue3-balanced-design.md) 的细节合同，明确 `src/ECMAScript.Vue3/Vue3.cs` 每类 authoring surface 应该映射到什么 JavaScript 形态，以及 compiler 允许参与到什么程度。
 
 ## 1. 设计基线
 
@@ -185,6 +185,23 @@ public sealed record CounterProps : Vue3.VueProps
 | `Raw` | flatten | `[Spread]`，无额外解释 |
 | indexer | final key | 任意 object key |
 
+上表描述的是结构成员与代表性 convenience member。`VueObject` 的内置 convenience attrs 不是“把 HTML 所有属性都搬成 C# property”，而是受以下边界约束：
+
+- 只纳入高频、跨项目稳定、直接映射最终 JS key、类型单义、且不需要额外运行时协议的属性；
+- `aria-*` 不进入一等 property，继续通过 `Attrs` 或 indexer 写最终 key；
+- `data-*` 不进入一等 property，继续通过 `Dataset` 或 indexer 写最终 key；
+- 长尾或项目特定属性不继续堆进 `VueObject`，而是走 typed props bag、`Attrs`、`Dataset`、`Raw` 或 indexer；
+- 不为 convenience attrs 增加 prefix magic、format 推断或其他 Vue-only compiler 行为。
+
+当前 `VueObject` 内置的原生 convenience attrs 主要覆盖：
+
+- 基础 DOM attrs：`Id`、`Title`、`For`、`Role`、`TabIndex`；
+- 表单/输入 attrs：`Name`、`Type`、`Placeholder`、`Value`、`Disabled`、`Checked`、`ReadOnly`、`Required`、`Multiple`、`Selected`、`AutoComplete`、`AutoFocus`；
+- 输入约束 attrs：`Min`、`Max`、`Step`、`MinLength`、`MaxLength`、`Pattern`、`Accept`、`Wrap`；
+- 文本/媒体/链接 attrs：`Rows`、`Cols`、`Href`、`Target`、`Rel`、`Src`、`Alt`、`Action`、`Method`。
+
+这些成员的目标是减少“为了标准元素 props 再自定义一个本地 `VueProps` record”的频率，而不是替代全部 bag/indexer authoring。
+
 `VueObject<TProps>` 在 `VueObject` 之上增加：
 
 | C# 成员 | JS key | 规则 |
@@ -221,6 +238,23 @@ h(child, {
   "aria-label": "Welcome",
   "data-kind": "child",
   role: "button"
+})
+```
+
+`aria-*` / `data-*` 以及其他长尾属性继续按最终 key authoring：
+
+```csharp
+H("button", new Vue3.VueObject
+{
+    Attrs = new Vue3.VueDictionary
+    {
+        ["aria-label"] = "Save"
+    },
+    Dataset = new Vue3.VueDictionary
+    {
+        ["data-kind"] = "primary"
+    },
+    ["enterkeyhint"] = "done"
 })
 ```
 
@@ -434,7 +468,7 @@ new VueComponentOptions
 
 ### 6.6 Options API Provide / Inject
 
-Options composition 先覆盖不依赖 component instance `this` 的声明式形态：
+Options composition 当前覆盖 object-form 与 function-form 两条主路径：
 
 ```csharp
 new VueComponentOptions
@@ -459,8 +493,10 @@ new VueComponentOptions
 设计约束：
 
 - `Provide` 使用 `VueProps?`，既支持用户声明 typed record，也支持 `VueDictionary` 任意 key。
-- `Inject` 使用 `Either<string[], VueProps>?`，覆盖官方 array form 和 object form 的基础 authoring。
-- object-form inject 的复杂 default/factory、Symbol key 细节，以及 function-form provide 仍需单独设计；this-bound Options API 已通过 `BindThis<TThis,...>` + `ECMAScriptInline` 覆盖。
+- `ProvideFactory` 使用 `VueDataCallback?`，直接映射 Vue 的 function-form `provide()`；需要 `this` 时复用 `BindThis<TThis>(VueThisDataCallback<TThis>)`，不再新增专门 compiler 特路。
+- `Inject` 使用 `Either<string[], VueProps>?`，覆盖官方 array form 和 object form。
+- object-form inject 可以直接使用 custom `VueProps` record，也可以使用 `VueInjectOptions<TValue>` / `VueInjectEntry<TValue>` / `VueInjectRegistry<TValue>` 表达 source key、default literal 与 default factory。
+- 更复杂的 `this`-bound Options API 长尾仍作为下一阶段设计项，但 `provide` 本身已经可以通过 `ProvideFactory + BindThis(...)` 收口。
 - Composition API `Provide(...)` / `Inject(...)` 与 Options API `Provide` / `Inject` 是不同入口：前者是 setup-time helper，后者是 component option object member。
 
 ### 6.7 Options API Mixins / Extends
@@ -872,7 +908,8 @@ public sealed record PanelSlots : Vue3.VueSlots
 `VueAttributeBag` 已覆盖的读取面：
 
 - `VueValue? this[string key] { get; }`
-- `Class` / `Style` / `Id` / `Title` convenience reads，均映射到真实 key。
+- `Class` / `Style` / `Id` / `Title` convenience reads。
+- 高频 attrs convenience reads：`For` / `Name` / `Type` / `Placeholder` / `Disabled` / `ReadOnly` / `Required` / `TabIndex` / `Role`。
 - 不做 `data-*`、event listener、kebab-case 推断。
 
 `UseAttrs<TAttrs>()` 的 typed projection 可进一步使用：
@@ -1169,7 +1206,8 @@ app.use(installFeature, { enabled: true });
 - `UseTemplateRef<TElement>(key)` 返回 `VueReadonlyRef<TElement?>`，表达挂载前/卸载后可能为 `null` 的 Vue template ref 生命周期。
 - `UseId()` 返回 string，用于 SSR-safe 的 app-local unique id。
 - `UseModel<TValue>(props,key)` / `UseModel<TValue>(props,key,options)` 映射到底层 `useModel(props,key[,options])` helper；调用者必须显式声明对应 prop 与 `update:*` emit，避免 compiler 自动发明 v-model 协议。
-- `VueModelOptions<TValue>` 只覆盖 get/set transform。官方 helper 的 modifiers tuple / destructuring 形态暂不映射，避免为了少数场景引入不稳定 tuple runtime surface。
+- `VueModelOptions<TValue>` 覆盖 get/set transform。
+- `UseModel(...)` 返回 `VueModelRef<TValue>`：`.Value` 继续映射到 `model.value`，`GetModifiers()` / `GetModifiers<TModifiers>()` 通过 `ECMAScriptInline("__arg1[1]")` 读取官方 tuple-like modifiers bag，而不新增 compiler 特路。
 - `ToRef` 使用 overload 区分 value/ref/getter normalization 与 object property ref；字符串 key 必须是最终 runtime key，C# 不从 string key 反推属性类型。
 - `ToRef<TValue>(VueDictionary<TValue>, string)` 覆盖字典对象 key path；强类型 record path 使用 `ToRef<TSource,TValue>(source,key)` 明确 value contract。
 - `ToRefs(source)` 返回 `VueRefs<TSource>`，提供 `IVueRef<VueValue>? this[string key]` 的兜底读取面。
@@ -1273,7 +1311,7 @@ app.use(installFeature, { enabled: true });
 |------|----------|------|
 | `ChildrenToSlotIntrinsic` | 已从 `SemanticWalker.cs.Vue.cs` 迁出，基于 imported `h` 和同宿主 slot contract 识别 | 继续保持为最小 intrinsic；后续不要回到 Vue 命名空间特判 |
 | default slot sugar | literal child 直接生成值对象；其他 child 使用 single-evaluation IIFE | 后续可继续扩大静态安全表达式集合，但不得改变求值时机、次数或变量快照语义 |
-| `VueAttributeBag` | indexer / class / style / id / title 读取面已落地 | callable listener bridge 已由 `VueAttributeListeners` / `VueAttributeListeners<TEvent>` 补齐；继续按真实需求扩展 |
+| `VueAttributeBag` | indexer / class / style / id / title / for / name / type / placeholder / disabled / readonly / required / tabindex / role 读取面已落地 | callable listener bridge 已由 `VueAttributeListeners` / `VueAttributeListeners<TEvent>` 补齐；继续按真实需求扩展 |
 | `VueSlotBag` | indexer / default 读取入口已落地 | scoped read-side helper 已由 `VueScopedSlots<TScope>` 作为 typed projection 补齐 |
 | `H(...)` overload | 已按 element/component/props/slots/direct-child canonical 分类收敛（direct-child 使用 `IVNode` + `VueChild`） | 后续新增 API 继续复用现有分类，不再按示例组合膨胀 |
 | `VueValue` callable/listener values | arbitrary dictionary key 仍主要用于普通属性值 | listener key 继续优先走 `VueEventHandlers` 或 `VueAttributeListeners*` callable bridge，避免依赖不存在的隐式转换 |
@@ -1312,8 +1350,9 @@ app.use(installFeature, { enabled: true });
 
 - [ECMAScript.Vue3 API 覆盖矩阵](./vue3-api-coverage-matrix.md)
 - [ECMAScript.Vue3 模块映射规则](./vue3-module-mapping-rules.md)
-- [src/ECMAScript/Vue3.cs](../../../src/ECMAScript/Vue3.cs)
+- [src/ECMAScript.Vue3/Vue3.cs](../../../src/ECMAScript.Vue3/Vue3.cs)
 - [src/ECMAScript/attribute/SpreadAttribute.cs](../../../src/ECMAScript/attribute/SpreadAttribute.cs)
 - [src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs](../../../src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs)
 - [src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs](../../../src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+
