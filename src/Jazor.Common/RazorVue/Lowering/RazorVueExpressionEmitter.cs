@@ -14,6 +14,13 @@ namespace Jazor.RazorVue.Lowering;
 internal sealed partial class RazorVueExpressionEmitter
 {
     internal readonly record struct LifecyclePayloadEmission(string Expression, bool UsesFirstRender);
+    // Structural omission must stay distinct from an explicit JS "null" value,
+    // otherwise minimal-arity lowering would drop user-authored null expressions.
+    private readonly record struct OptionalJsArgument(string Expression, bool HasValue)
+    {
+        public static OptionalJsArgument Missing => new(string.Empty, false);
+    }
+
     internal const string LifecycleFirstRenderPlaceholder = "__jazorVueLifecycleFirstRender__";
 
     private readonly RazorVueSemanticSnapshot _snapshot;
@@ -85,17 +92,23 @@ internal sealed partial class RazorVueExpressionEmitter
 
     public string EmitFragment(RazorVueRenderFragment fragment)
     {
+        var emission = EmitFragmentArgument(fragment);
+        return emission.HasValue ? emission.Expression : "null";
+    }
+
+    private OptionalJsArgument EmitFragmentArgument(RazorVueRenderFragment fragment)
+    {
         if (fragment.Children.IsDefaultOrEmpty)
         {
             return _snapshot.Descriptor.Slots.Any(static slot => slot.IsDefault)
-                ? "slots.default ? slots.default() : null"
-                : "null";
+                ? new OptionalJsArgument("slots.default ? slots.default() : null", true)
+                : OptionalJsArgument.Missing;
         }
 
         if (fragment.Children.Length == 1)
-            return EmitNode(fragment.Children[0]);
+            return new OptionalJsArgument(EmitNode(fragment.Children[0]), true);
 
-        return "[" + string.Join(", ", fragment.Children.Select(EmitNode)) + "]";
+        return new OptionalJsArgument("[" + string.Join(", ", fragment.Children.Select(EmitNode)) + "]", true);
     }
 
     public string DescribeFragment(RazorVueRenderFragment fragment)

@@ -38,12 +38,12 @@
 - `Either` 用于真实 union 桥接；方法边界优先 overload 体验。
 - props/object 字面量遵循通用 record lowering，不额外引入 Vue 专用 compiler 特路。
 - `VueObject` 承载 Vue 核心 props 与一组高频原生 HTML convenience attrs；长尾属性继续通过 `Attrs` / indexer / typed props bag 表达。
-- `UseModel(...)` 返回 `VueModelRef<TValue>`，`.Value` 对应 `model.value`，modifiers 通过 `GetModifiers()` / `GetModifiers<T>()` 读取。
-- Options API object-form inject 可通过 `VueInjectOptions<T>` / `VueInjectEntry<T>` / `VueInjectRegistry<T>` 表达，不新增 compiler 特路。
+- `UseModel(...)` 返回 `VueModelRef<TValue>`，`.Value` 对应 `model.value`，modifiers 通过 `GetModifiers()` / `GetModifiers<T>()` 读取；named model 可通过 `VueModelName<TProps,TValue>` + `ModelName/ModelPropName/ModelUpdateEventName` helper 复用同一 typed contract，`setup(context)` 侧可直接 `context.Emit(model, value)` 发出对应 `update:*` 事件。
+- Options API object-form inject 可通过 `VueInjectOptions<T>` / `VueInjectEntry<T>` / `VueInjectRegistry<T>` 表达；`VueDictionary` 现已支持 string / `Symbol` key object authoring，不新增 compiler 特路。
 - `[Spread]` 等语法糖由通用属性机制驱动，不绑定 Vue 命名空间。
 
 ## Roadmap (3 Phases)
 
-1. Phase 1 (`H` mapping): 建立 `H(...)` / `VueObject` / slot contract 的稳定映射层（当前已完成主体收口）。
+1. Phase 1 (`H` mapping): 建立 `H(...)` / `VueObject` / slot contract 的稳定映射层（当前已完成闭环，后续只在新增场景下按同一 contract 增补守护测试）。
 2. Phase 2 (Razor -> `H`): 把 Razor authoring 映射到上述规范层，收敛 canonical shape 与诊断边界。
 3. Phase 3 (Jolt): 在 Jolt 中承接工程化 authoring/build/debug，但不把 Vue 语义反向硬编码进 compiler。

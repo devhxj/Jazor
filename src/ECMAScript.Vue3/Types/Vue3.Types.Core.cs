@@ -108,12 +108,13 @@ public static partial class Vue3
 	/// <summary>
 	/// Generic dictionary-style Vue object authoring surface for arbitrary string keys.
 	/// This remains a record so it participates in structural object lowering and emits
-	/// a plain JavaScript object rather than a runtime <c>Map</c>.
+	/// a plain JavaScript object rather than a runtime <c>Map</c>. String keys emit
+	/// normal object members; <see cref="Symbol"/> keys emit computed properties.
 	/// </summary>
 	/// <typeparam name="TValue">The value contract for each arbitrary key.</typeparam>
 	[ECMAScript]
 	[Description("@#")]
-	public record VueDictionary<TValue> : VueProps
+	public record VueDictionary<TValue> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
 		/// Gets or sets an arbitrary Vue/object property by its final emitted key.
@@ -121,6 +122,32 @@ public static partial class Vue3
 		/// <param name="key">The final JavaScript object key to emit.</param>
 		/// <returns>The value mapped to the given key.</returns>
 		public extern TValue? this[string key] { get; set; }
+
+		/// <summary>
+		/// Gets or sets an arbitrary Vue/object property by a JavaScript symbol key.
+		/// The compiler lowers this to a computed object property.
+		/// </summary>
+		/// <param name="key">The JavaScript symbol used as the property key.</param>
+		/// <returns>The value mapped to the given symbol key.</returns>
+		public extern TValue? this[Symbol key] { get; set; }
+
+		/// <summary>
+		/// CLR bridge kept for collection-initializer authoring of string-keyed entries.
+		/// The compiler lowers this into a plain object literal property instead of a
+		/// runtime <c>Add(...)</c> call.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public extern void Add(string key, TValue value);
+
+		/// <summary>
+		/// CLR bridge kept for collection-initializer authoring of symbol-keyed entries.
+		/// The compiler lowers this into a computed object literal property instead of a
+		/// runtime <c>Add(...)</c> call.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public extern void Add(Symbol key, TValue value);
+
+		extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 	}
 
 	/// <summary>

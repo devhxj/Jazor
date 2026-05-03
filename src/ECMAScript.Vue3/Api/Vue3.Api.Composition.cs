@@ -6,6 +6,12 @@ namespace ECMAScript;
 
 public static partial class Vue3
 {
+	private const string IdentityInlineTemplate = "__arg1";
+
+	private const string DefaultModelNameInlineTemplate = "\"modelValue\"";
+
+	private const string ModelUpdateEventNameInlineTemplate = "`update:${__arg1}`";
+
 	/// <summary>
 	/// Returns the fallthrough attributes from the current setup context.
 	/// </summary>
@@ -69,6 +75,19 @@ public static partial class Vue3
 	public extern static VueModelRef<TValue> UseModel<TValue>(VueProps props, string key);
 
 	/// <summary>
+	/// Creates a writable model ref backed by a strongly typed model-name contract.
+	/// The model wrapper still erases to the final runtime prop key string.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract used by the current component.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	/// <param name="props">The setup props object supplied by Vue.</param>
+	/// <param name="model">The typed model-name contract describing the prop key.</param>
+	/// <returns>A writable ref linked to the named model prop.</returns>
+	[Description("@#useModel")]
+	public extern static VueModelRef<TValue> UseModel<TProps, TValue>(TProps props, VueModelName<TProps, TValue> model)
+		where TProps : VueProps;
+
+	/// <summary>
 	/// Creates a writable model ref with read/write transforms.
 	/// </summary>
 	/// <typeparam name="TValue">The model value type.</typeparam>
@@ -78,6 +97,66 @@ public static partial class Vue3
 	/// <returns>A writable ref linked to the named model prop.</returns>
 	[Description("@#useModel")]
 	public extern static VueModelRef<TValue> UseModel<TValue>(VueProps props, string key, VueModelOptions<TValue> options);
+
+	/// <summary>
+	/// Creates a writable model ref with read/write transforms using a strongly typed
+	/// model-name contract.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract used by the current component.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	/// <param name="props">The setup props object supplied by Vue.</param>
+	/// <param name="model">The typed model-name contract describing the prop key.</param>
+	/// <param name="options">Read/write transforms applied by Vue's model helper.</param>
+	/// <returns>A writable ref linked to the named model prop.</returns>
+	[Description("@#useModel")]
+	public extern static VueModelRef<TValue> UseModel<TProps, TValue>(TProps props, VueModelName<TProps, TValue> model, VueModelOptions<TValue> options)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates the default Vue model-name contract for <c>modelValue</c>.
+	/// This is a compile-time helper only and erases to the final runtime prop key.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract associated with this model.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	/// <returns>A typed model-name contract for <c>modelValue</c>.</returns>
+	[ECMAScriptInline(DefaultModelNameInlineTemplate)]
+	public extern static VueModelName<TProps, TValue> ModelName<TProps, TValue>()
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Creates a strongly typed model-name contract for a named model prop.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract associated with this model.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	/// <param name="key">The final runtime prop key, such as <c>"count"</c>.</param>
+	/// <returns>A typed model-name contract for the supplied runtime prop key.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static VueModelName<TProps, TValue> ModelName<TProps, TValue>(string key)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Reads the runtime prop key from a typed model-name contract.
+	/// This is useful when declaring <c>props</c> arrays without repeating string literals.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract associated with this model.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	/// <param name="model">The typed model-name contract.</param>
+	/// <returns>The final runtime prop key.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static string ModelPropName<TProps, TValue>(VueModelName<TProps, TValue> model)
+		where TProps : VueProps;
+
+	/// <summary>
+	/// Builds the corresponding <c>update:*</c> event name for a typed model-name contract.
+	/// This keeps named-model event declarations aligned with the same source model key.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract associated with this model.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	/// <param name="model">The typed model-name contract.</param>
+	/// <returns>The final runtime update event name, such as <c>"update:count"</c>.</returns>
+	[ECMAScriptInline(ModelUpdateEventNameInlineTemplate)]
+	public extern static string ModelUpdateEventName<TProps, TValue>(VueModelName<TProps, TValue> model)
+		where TProps : VueProps;
 
 	/// <summary>
 	/// Returns the current Vue custom element host while running inside a custom

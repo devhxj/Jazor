@@ -118,6 +118,35 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// Strongly typed named-model contract used to keep <c>useModel()</c>, prop-name
+	/// declarations, and <c>update:*</c> event names aligned without repeating raw
+	/// string literals. At runtime this still erases to the final prop key string.
+	/// </summary>
+	/// <typeparam name="TProps">The typed props contract associated with this model.</typeparam>
+	/// <typeparam name="TValue">The model value type.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public sealed class VueModelName<TProps, TValue>
+		where TProps : VueProps
+	{
+		private VueModelName()
+		{
+		}
+
+		/// <summary>
+		/// Treat a final runtime prop key string as a typed model-name contract.
+		/// </summary>
+		/// <param name="key">The final runtime prop key, such as <c>"modelValue"</c> or <c>"count"</c>.</param>
+		public extern static implicit operator VueModelName<TProps, TValue>(string key);
+
+		/// <summary>
+		/// Exposes the final runtime prop key string when an API expects a raw string.
+		/// </summary>
+		/// <param name="model">The typed model-name contract.</param>
+		public extern static implicit operator string(VueModelName<TProps, TValue> model);
+	}
+
+	/// <summary>
 	/// Read-side bag of model modifiers returned by Vue's <c>useModel()</c> tuple-like
 	/// result. Modifier keys can be accessed through the string indexer or projected to a
 	/// stronger typed subclass when a component defines custom modifiers.
@@ -305,6 +334,19 @@ public static partial class Vue3
 		/// <param name="value">The payload value sent with the event.</param>
 		[Description("@#emit")]
 		public extern void Emit<TValue>(string eventName, TValue value);
+
+		/// <summary>
+		/// Emit the <c>update:*</c> event corresponding to a typed model-name contract.
+		/// This keeps named-model update emits aligned with the same contract used by
+		/// <c>useModel()</c> and runtime prop declarations.
+		/// </summary>
+		/// <typeparam name="TProps">The typed props contract associated with this model.</typeparam>
+		/// <typeparam name="TValue">The emitted model value type.</typeparam>
+		/// <param name="model">The typed model-name contract.</param>
+		/// <param name="value">The payload value sent with the corresponding <c>update:*</c> event.</param>
+		[ECMAScriptInline("__arg1.emit(`update:${__arg2}`, __arg3)")]
+		public extern void Emit<TProps, TValue>(VueModelName<TProps, TValue> model, TValue value)
+			where TProps : VueProps;
 
 		/// <summary>
 		/// Emit a custom event by name with two typed payload values.

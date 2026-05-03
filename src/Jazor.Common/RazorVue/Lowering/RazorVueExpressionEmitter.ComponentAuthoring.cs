@@ -27,9 +27,10 @@ internal sealed partial class RazorVueExpressionEmitter
         };
 
     private string EmitElementNode(RazorVueElementNode element)
-        => "h(" + ToJavaScriptString(element.TagName) + ", " +
-           EmitAttributes(element.Attributes) + ", " +
-           EmitFragment(element.Children) + ")";
+        => EmitVNodeCall(
+            ToJavaScriptString(element.TagName),
+            EmitAttributesArgument(element.Attributes),
+            EmitFragmentArgument(element.Children));
 
     private string EmitComponentNode(RazorVueComponentNode component)
     {
@@ -45,12 +46,15 @@ internal sealed partial class RazorVueExpressionEmitter
         if (!component.Children.Children.IsDefaultOrEmpty)
             slotEntries.Add("default: () => " + EmitFragment(component.Children));
 
-        var attributes = EmitAttributes(component.Attributes, component, slotEntries);
+        var attributes = EmitAttributesArgument(component.Attributes, component, slotEntries);
         var slots = slotEntries.Count == 0
-            ? "null"
-            : "{ " + string.Join(", ", slotEntries) + " }";
+            ? OptionalJsArgument.Missing
+            : new OptionalJsArgument("{ " + string.Join(", ", slotEntries) + " }", true);
 
-        return "h(" + ResolveComponentReference(component) + ", " + attributes + ", " + slots + ")";
+        return EmitVNodeCall(
+            ResolveComponentReference(component),
+            attributes,
+            slots);
     }
 
     private void ValidateDefaultLibrarySlotUsage(
@@ -136,23 +140,40 @@ internal sealed partial class RazorVueExpressionEmitter
     private string EmitLoop(RazorVueForEachNode loop)
         => EmitExpression(loop.Source) + ".map((" + loop.ItemName + ") => " + EmitFragment(loop.Body) + ")";
 
-    private string EmitAttributes(ImmutableArray<RazorVueAttributeNode> attributes)
+    private static string EmitVNodeCall(
+        string target,
+        OptionalJsArgument props,
+        OptionalJsArgument children)
+    {
+        if (!props.HasValue && !children.HasValue)
+            return "h(" + target + ")";
+
+        if (props.HasValue && !children.HasValue)
+            return "h(" + target + ", " + props.Expression + ")";
+
+        if (!props.HasValue)
+            return "h(" + target + ", " + children.Expression + ")";
+
+        return "h(" + target + ", " + props.Expression + ", " + children.Expression + ")";
+    }
+
+    private OptionalJsArgument EmitAttributesArgument(ImmutableArray<RazorVueAttributeNode> attributes)
     {
         if (attributes.IsDefaultOrEmpty)
-            return "null";
+            return OptionalJsArgument.Missing;
 
         var entries = attributes.Select(attribute =>
             ToJavaScriptString(attribute.Name) + ": " + (attribute.Value is null ? "true" : EmitExpression(attribute.Value!)));
-        return "{ " + string.Join(", ", entries) + " }";
+        return new OptionalJsArgument("{ " + string.Join(", ", entries) + " }", true);
     }
 
-    private string EmitAttributes(
+    private OptionalJsArgument EmitAttributesArgument(
         ImmutableArray<RazorVueAttributeNode> attributes,
         RazorVueComponentNode component,
         List<string> slotEntries)
     {
         if (attributes.IsDefaultOrEmpty)
-            return "null";
+            return OptionalJsArgument.Missing;
 
         _componentEmitsByRazorAlias.TryGetValue(component.ComponentName, out var emitsByAlias);
         _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
@@ -197,8 +218,8 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return entries.Count == 0
-            ? "null"
-            : "{ " + string.Join(", ", entries) + " }";
+            ? OptionalJsArgument.Missing
+            : new OptionalJsArgument("{ " + string.Join(", ", entries) + " }", true);
     }
 
     private void ValidateComponentAuthoringAttributes(

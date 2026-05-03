@@ -441,18 +441,20 @@ public static partial class Vue3
 
 	/// <summary>
 	/// Object-form Options API inject declaration for one injected value type.
-	/// Vue accepts either a source key string or an object with <c>from</c> / <c>default</c>;
-	/// this helper models the object form while keeping default literals and default
-	/// factories strongly typed.
+	/// Vue accepts either a source key string/symbol or an object with
+	/// <c>from</c> / <c>default</c>; this helper models the object form while keeping
+	/// typed injection keys, default literals, and default factories strongly typed.
 	/// </summary>
 	/// <typeparam name="TValue">The injected value contract.</typeparam>
 	public record VueInjectOptions<TValue> : IVueOptionsBag
 	{
 		/// <summary>
 		/// Source injection key to resolve. When omitted, Vue uses the local object key.
+		/// Accepts the final string key, a raw JavaScript <see cref="Symbol"/>, or a
+		/// strongly typed <see cref="VueInjectionKey{TValue}"/>.
 		/// </summary>
 		[Description("@#from")]
-		public string? From { get; init; }
+		public Either<string, VueInjectionKey<TValue>, Symbol>? From { get; init; }
 
 		/// <summary>
 		/// Default value used when no provider matches.
@@ -486,6 +488,10 @@ public static partial class Vue3
 		}
 
 		public extern static implicit operator VueInjectEntry<TValue>(string from);
+
+		public extern static implicit operator VueInjectEntry<TValue>(VueInjectionKey<TValue> from);
+
+		public extern static implicit operator VueInjectEntry<TValue>(Symbol from);
 
 		public extern static implicit operator VueInjectEntry<TValue>(VueInjectOptions<TValue> options);
 	}

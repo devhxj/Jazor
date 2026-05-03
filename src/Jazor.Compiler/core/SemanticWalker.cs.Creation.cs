@@ -11,6 +11,7 @@ namespace Jazor.Compiler;
 public partial class SemanticWalker
 {
 	private const string SpreadAttributeFullName = "ECMAScript.SpreadAttribute";
+	private const string SymbolFullName = "ECMAScript.Symbol";
 
 	/// <summary>
 	/// 构建对象创建表达式
@@ -1015,19 +1016,46 @@ public partial class SemanticWalker
 		return true;
 	}
 
-	private static Expression? TryTranslateObjectLiteralPropertyKey(IOperation operation)
+	private bool TryTranslateObjectLiteralPropertyKey(
+		IOperation operation,
+		ITypeSymbol? keyType,
+		SenseArgument argument,
+		out Expression key,
+		out bool computed)
 	{
-		if (operation.ConstantValue is { HasValue: true, Value: string key })
-			return CreateObjectPropertyKey(key);
-		return null;
+		if (operation.ConstantValue is { HasValue: true, Value: string literalKey })
+		{
+			key = CreateObjectPropertyKey(literalKey);
+			computed = false;
+			return true;
+		}
+
+		if (IsObjectLiteralComputedKeyType(keyType))
+		{
+			var translatedKey = TranslateTupleForTarget(operation, keyType, argument);
+			if (translatedKey is not null)
+			{
+				key = translatedKey;
+				computed = true;
+				return true;
+			}
+		}
+
+		key = null!;
+		computed = false;
+		return false;
 	}
+
+	private static bool IsObjectLiteralComputedKeyType(ITypeSymbol? keyType)
+		=> keyType is INamedTypeSymbol namedType &&
+		   namedType.OriginalDefinition.ToDisplayString() == SymbolFullName;
 
 	private void RejectUnsupportedDynamicObjectLiteralKey(IOperation operation, ITypeSymbol? hostType, string usage)
 	{
 		var hostDisplay = hostType?.OriginalDefinition.ToDisplayString(Format.NameFormat) ?? "<unknown>";
 		HandleTransformationFailure<Node>(
 			operation,
-			$"unsupported dynamic object key in {usage} for '{hostDisplay}'. Object-literal host types only support compile-time string literal keys in indexer and Add(string, ...) initializers.");
+			$"unsupported dynamic object key in {usage} for '{hostDisplay}'. Object-literal host types only support compile-time string literal keys, plus computed Symbol keys when the indexer/Add contract explicitly declares ECMAScript.Symbol.");
 	}
 
 	private string ResolveInitializerAssignmentMemberName(IOperation operation, ISymbol symbol, string usage, ITypeSymbol? hostType = null)
@@ -1492,8 +1520,8 @@ public partial class SemanticWalker
 			return false;
 		}
 
-		var key = TryTranslateObjectLiteralPropertyKey(propertyReference.Arguments[0].Value);
-		if (key is null)
+		var keyType = propertyReference.Arguments[0].Parameter?.Type ?? propertyReference.Property.Parameters[0].Type;
+		if (!TryTranslateObjectLiteralPropertyKey(propertyReference.Arguments[0].Value, keyType, argument, out var key, out var computed))
 		{
 			RejectUnsupportedDynamicObjectLiteralKey(
 				propertyReference.Arguments[0].Value,
@@ -1507,7 +1535,7 @@ public partial class SemanticWalker
 			PropertyKind.Init,
 			key: key,
 			value: value,
-			computed: false,
+			computed: computed,
 			shorthand: false,
 			method: false);
 		node = new ObjectLiteralNode(property, GetObjectLiteralNodeName(property), propertyReference.Property);
@@ -1520,16 +1548,16 @@ public partial class SemanticWalker
 		out ObjectLiteralNode node)
 	{
 		node = default;
-		if (!IsStringKeyedObjectLiteralAddInvocation(invocation))
+		if (!IsObjectLiteralAddInvocation(invocation))
 			return false;
 
-		var key = TryTranslateObjectLiteralPropertyKey(invocation.Arguments[0].Value);
-		if (key is null)
+		var keyType = invocation.Arguments[0].Parameter?.Type ?? invocation.TargetMethod.Parameters[0].Type;
+		if (!TryTranslateObjectLiteralPropertyKey(invocation.Arguments[0].Value, keyType, argument, out var key, out var computed))
 		{
 			RejectUnsupportedDynamicObjectLiteralKey(
 				invocation.Arguments[0].Value,
 				invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType,
-				"object-literal Add(string, ...) initialization");
+				"object-literal Add(key, ...) initialization");
 			return false;
 		}
 
@@ -1538,14 +1566,14 @@ public partial class SemanticWalker
 			PropertyKind.Init,
 			key: key,
 			value: value,
-			computed: false,
+			computed: computed,
 			shorthand: false,
 			method: false);
 		node = new ObjectLiteralNode(property, GetObjectLiteralNodeName(property), null);
 		return true;
 	}
 
-	private static bool IsStringKeyedObjectLiteralAddInvocation(IInvocationOperation invocation)
+	private static bool IsObjectLiteralAddInvocation(IInvocationOperation invocation)
 	{
 		var targetMethod = invocation.TargetMethod;
 		if (targetMethod is
@@ -1558,8 +1586,14 @@ public partial class SemanticWalker
 			targetMethod.Parameters.Length != 2 ||
 			invocation.Arguments.Length != 2 ||
 			targetMethod.Parameters[0].RefKind != RefKind.None ||
-			targetMethod.Parameters[1].RefKind != RefKind.None ||
-			targetMethod.Parameters[0].Type.SpecialType != SpecialType.System_String)
+			targetMethod.Parameters[1].RefKind != RefKind.None)
+		{
+			return false;
+		}
+
+		var keyType = targetMethod.Parameters[0].Type;
+		if (keyType.SpecialType != SpecialType.System_String &&
+			!IsObjectLiteralComputedKeyType(keyType))
 		{
 			return false;
 		}
