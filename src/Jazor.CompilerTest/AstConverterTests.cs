@@ -5662,6 +5662,87 @@ export function render() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueObjectSpreadOrderingAndStaticNullOmission_PreservesObservableOrder()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record BaseProps : VueProps
+                {
+                    [Description("@#title")]
+                    public string? Title { get; init; }
+
+                    [Description("@#count")]
+                    public int? Count { get; init; }
+                }
+
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode Render(VueProps raw)
+                        => H("div", new VueObject<BaseProps>
+                        {
+                            Id = "before",
+                            Props = new BaseProps
+                            {
+                                Title = "from-props",
+                                Count = 1
+                            },
+                            Title = "from-local",
+                            Attrs = new VueDictionary
+                            {
+                                ["title"] = "from-attrs",
+                                ["data-a"] = "a"
+                            },
+                            Dataset = null,
+                            Raw = raw,
+                            ["title"] = "from-indexer"
+                        });
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function render(raw) {
+  return h(""div"", {
+    id: ""before"",
+    title: ""from-props"",
+    count: 1,
+    title: ""from-local"",
+    title: ""from-attrs"",
+    ""data-a"": ""a"",
+    ...raw,
+    title: ""from-indexer""
+  });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueObjectWithDynamicIndexerKey_ThrowsOperationTransformationException()
     {
         var code = """
@@ -5833,6 +5914,384 @@ export function renderTracked() {
 function onClick() { }
 function onFocus() { }
 function onMouseMove(mouseEvent) { }
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueObjectHtmlConvenienceMembers_GeneratesFinalAttributeKeys()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode RenderLabel()
+                        => H("label", new VueObject
+                        {
+                            For = "cs-input",
+                            Class = "editor-label"
+                        }, "C# Input");
+
+                    public static IVNode RenderTextArea()
+                        => H("textarea", new VueObject
+                        {
+                            Id = "cs-input",
+                            Class = "editor-input",
+                            Spellcheck = false,
+                            Rows = 18,
+                            Value = "demo",
+                            Events = new VueEventHandlers<Event>
+                            {
+                                ["onInput"] = OnInput
+                            }
+                        });
+
+                    private static void OnInput(Event @event)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function renderLabel() {
+  return h(""label"", { for: ""cs-input"", class: ""editor-label"" }, ""C# Input"");
+}
+export function renderTextArea() {
+  return h(""textarea"", {
+    id: ""cs-input"",
+    class: ""editor-input"",
+    spellcheck: false,
+    rows: 18,
+    value: ""demo"",
+    onInput: onInput
+  });
+}
+function onInput(event) { }
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueObjectAdditionalHtmlConvenienceMembers_GeneratesFinalAttributeKeys()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode RenderInput()
+                        => H("input", new VueObject
+                        {
+                            Name = "source",
+                            Type = "text",
+                            Placeholder = "Type here",
+                            Disabled = true,
+                            ReadOnly = true,
+                            Required = true,
+                            TabIndex = 2
+                        });
+
+                    public static IVNode RenderCheckbox()
+                        => H("input", new VueObject
+                        {
+                            Type = "checkbox",
+                            Checked = true
+                        });
+
+                    public static IVNode RenderLink()
+                        => H("a", new VueObject
+                        {
+                            Href = "/docs"
+                        }, "Docs");
+
+                    public static IVNode RenderImage()
+                        => H("img", new VueObject
+                        {
+                            Src = "/logo.svg",
+                            Alt = "Logo"
+                        });
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function renderInput() {
+  return h(""input"", {
+    name: ""source"",
+    type: ""text"",
+    placeholder: ""Type here"",
+    disabled: true,
+    readonly: true,
+    required: true,
+    tabindex: 2
+  });
+}
+export function renderCheckbox() {
+  return h(""input"", { type: ""checkbox"", checked: true });
+}
+export function renderLink() {
+  return h(""a"", { href: ""/docs"" }, ""Docs"");
+}
+export function renderImage() {
+  return h(""img"", { src: ""/logo.svg"", alt: ""Logo"" });
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueObjectFormAndLinkConvenienceMembers_GeneratesFinalAttributeKeys()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode RenderForm()
+                        => H("form", new VueObject
+                        {
+                            Action = "/submit",
+                            Method = "post",
+                            AutoComplete = "on"
+                        },
+                        [
+                            H("textarea", new VueObject
+                            {
+                                Name = "notes",
+                                AutoFocus = true,
+                                Rows = 4,
+                                Cols = 32
+                            }),
+                            H("select", new VueObject
+                            {
+                                Multiple = true
+                            },
+                            [
+                                H("option", new VueObject
+                                {
+                                    Selected = true,
+                                    Value = "a"
+                                }, "Alpha")
+                            ])
+                        ]);
+
+                    public static IVNode RenderLink()
+                        => H("a", new VueObject
+                        {
+                            Href = "/docs",
+                            Target = "_blank",
+                            Rel = "noopener"
+                        }, "Docs");
+
+                    public static IVNode RenderRegion()
+                        => H("div", new VueObject
+                        {
+                            Role = "button"
+                        }, "Pseudo button");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function renderForm() {
+  return h(""form"", {
+    action: ""/submit"",
+    method: ""post"",
+    autocomplete: ""on""
+  }, [h(""textarea"", {
+    name: ""notes"",
+    autofocus: true,
+    rows: 4,
+    cols: 32
+  }), h(""select"", { multiple: true }, [h(""option"", { selected: true, value: ""a"" }, ""Alpha"")])]);
+}
+export function renderLink() {
+  return h(""a"", {
+    href: ""/docs"",
+    target: ""_blank"",
+    rel: ""noopener""
+  }, ""Docs"");
+}
+export function renderRegion() {
+  return h(""div"", { role: ""button"" }, ""Pseudo button"");
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueObjectInputConstraintConvenienceMembers_GeneratesFinalAttributeKeys()
+    {
+        var code = """
+            using ECMAScript.Contract;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVNode RenderNumberInput()
+                        => H("input", new VueObject
+                        {
+                            Type = "number",
+                            Min = 0,
+                            Max = 100,
+                            Step = 5,
+                            Value = "10"
+                        });
+
+                    public static IVNode RenderDateInput()
+                        => H("input", new VueObject
+                        {
+                            Type = "date",
+                            Min = "2026-01-01",
+                            Max = "2026-12-31",
+                            Step = "any"
+                        });
+
+                    public static IVNode RenderValidatedTextArea()
+                        => H("textarea", new VueObject
+                        {
+                            MinLength = 5,
+                            MaxLength = 120,
+                            Pattern = "[A-Za-z ]+",
+                            Wrap = "soft"
+                        });
+
+                    public static IVNode RenderFileInput()
+                        => H("input", new VueObject
+                        {
+                            Type = "file",
+                            Accept = ".png,.jpg"
+                        });
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { h } from ""npm:vue@3"";
+export function renderNumberInput() {
+  return h(""input"", {
+    type: ""number"",
+    min: 0,
+    max: 100,
+    step: 5,
+    value: ""10""
+  });
+}
+export function renderDateInput() {
+  return h(""input"", {
+    type: ""date"",
+    min: ""2026-01-01"",
+    max: ""2026-12-31"",
+    step: ""any""
+  });
+}
+export function renderValidatedTextArea() {
+  return h(""textarea"", {
+    minlength: 5,
+    maxlength: 120,
+    pattern: ""[A-Za-z ]+"",
+    wrap: ""soft""
+  });
+}
+export function renderFileInput() {
+  return h(""input"", { type: ""file"", accept: "".png,.jpg"" });
+}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
 
@@ -6602,6 +7061,214 @@ export let component = defineComponent({
   inject: [""feature""],
   render: render
 });
+export function render() {
+  return h(""section"", ""ready"");
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueComponentOptionsInjectRegistry_GeneratesObjectFormInjectOptions()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/provider-panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ProviderPanel",
+                        Inject = new VueInjectRegistry<string>
+                        {
+                            ["theme"] = "theme",
+                            ["label"] = new VueInjectOptions<string>
+                            {
+                                From = "message",
+                                Default = "fallback"
+                            }
+                        },
+                        Render = Render
+                    });
+
+                    public static IVNode Render()
+                        => H("section", "ready");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let component = defineComponent({
+  name: ""ProviderPanel"",
+  inject: { theme: ""theme"", label: { from: ""message"", default: ""fallback"" } },
+  render: render
+});
+export function render() {
+  return h(""section"", ""ready"");
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueComponentOptionsProvideFactory_GeneratesFunctionFormProvide()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record ProvidedValues : VueProps
+                {
+                    [Description("@#theme")]
+                    public string? Theme { get; init; }
+                }
+
+                [ECMAScriptModule("components/provider-panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ProviderPanel",
+                        ProvideFactory = BuildProvide,
+                        Render = Render
+                    });
+
+                    private static VueProps BuildProvide()
+                        => new ProvidedValues
+                        {
+                            Theme = "dark"
+                        };
+
+                    public static IVNode Render()
+                        => H("section", "ready");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let component = defineComponent({
+  name: ""ProviderPanel"",
+  provide: buildProvide,
+  render: render
+});
+function buildProvide() {
+  return { theme: ""dark"" };
+}
+export function render() {
+  return h(""section"", ""ready"");
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueComponentOptionsInjectRegistryDefaultFactory_GeneratesFactoryObjectFormInject()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/provider-panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "ProviderPanel",
+                        Inject = new VueInjectRegistry<string>
+                        {
+                            ["label"] = new VueInjectOptions<string>
+                            {
+                                From = "message",
+                                DefaultFactory = BuildDefaultLabel
+                            }
+                        },
+                        Render = Render
+                    });
+
+                    private static string BuildDefaultLabel()
+                        => "fallback";
+
+                    public static IVNode Render()
+                        => H("section", "ready");
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+export let component = defineComponent({
+  name: ""ProviderPanel"",
+  inject: { label: { from: ""message"", default: buildDefaultLabel } },
+  render: render
+});
+function buildDefaultLabel() {
+  return ""fallback"";
+}
 export function render() {
   return h(""section"", ""ready"");
 }
@@ -7862,6 +8529,86 @@ function normalize(value) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueModelTypedModifierProjection_GeneratesTupleModifierAccess()
+    {
+        var code = """
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public abstract class CounterModifiers : VueModelModifiers
+                {
+                    [Description("@#trim")]
+                    public abstract bool? Trimmed { get; }
+                }
+
+                public sealed record CounterProps : VueProps
+                {
+                    [Description("@#modelValue")]
+                    public int? ModelValue { get; init; }
+                }
+
+                [ECMAScriptModule("components/counter-view.mjs")]
+                public static class CounterModule
+                {
+                    public static IVueComponent<CounterProps> Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
+                    {
+                        Name = "CounterView",
+                        PropNames = ["modelValue"],
+                        EmitNames = ["update:modelValue"],
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup(CounterProps props, VueSetupContext context)
+                    {
+                        var model = Vue3.UseModel<int>(props, "modelValue");
+                        var modifiers = model.GetModifiers<CounterModifiers>();
+                        return () => H("button", modifiers.Trimmed == true ? model.Value : 0);
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "CounterModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "CounterModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h, useModel } from ""npm:vue@3"";
+export let component = defineComponent({
+  name: ""CounterView"",
+  props: [""modelValue""],
+  emits: [""update:modelValue""],
+  setup: setup
+});
+function setup(props, context) {
+  let model = useModel(props, ""modelValue"");
+  let modifiers = model[1];
+  return () => {
+    return h(""button"", modifiers.trim === true ? model.value : 0);
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingTypedUseAttrsAndUseSlots_GeneratesPlainHelpers()
     {
         var code = """
@@ -7929,6 +8676,85 @@ function setup() {
   let slots = useSlots();
   return () => {
     return h(""section"", attrs.title === ""ready"" ? slots.default() : h(""span"", ""empty""));
+  };
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueAttributeBagConvenienceMembers_GeneratesPlainMemberAccess()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("components/panel.mjs")]
+                public static class PanelModule
+                {
+                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "PanelView",
+                        Setup = Setup
+                    });
+
+                    private static VueRenderCallback Setup()
+                    {
+                        var attrs = Vue3.UseAttrs();
+                        return () => H("input", new VueObject
+                        {
+                            For = attrs.For,
+                            Name = attrs.Name,
+                            Type = attrs.Type,
+                            Placeholder = attrs.Placeholder,
+                            Disabled = attrs.Disabled,
+                            ReadOnly = attrs.ReadOnly,
+                            Required = attrs.Required,
+                            TabIndex = attrs.TabIndex,
+                            Role = attrs.Role
+                        });
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"import { defineComponent, h, useAttrs } from ""npm:vue@3"";
+export let component = defineComponent({ name: ""PanelView"", setup: setup });
+function setup() {
+  let attrs = useAttrs();
+  return () => {
+    return h(""input"", {
+      for: attrs.for,
+      name: attrs.name,
+      type: attrs.type,
+      placeholder: attrs.placeholder,
+      disabled: attrs.disabled,
+      readonly: attrs.readonly,
+      required: attrs.required,
+      tabindex: attrs.tabindex,
+      role: attrs.role
+    });
   };
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
