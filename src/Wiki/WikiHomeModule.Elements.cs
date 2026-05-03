@@ -5,11 +5,42 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    private static VueEventHandlers<MouseEvent> CreateRouteClickEvents()
+        => new()
+        {
+            ["onClick"] = OnRouteClick
+        };
+
+    private static VueEventHandlers<Event> CreateNavFilterInputEvents()
+        => new()
+        {
+            ["onInput"] = OnNavFilterInput
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateClearNavFilterEvents()
+        => new()
+        {
+            ["onClick"] = ClearNavFilter
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateTocClickEvents()
+        => new()
+        {
+            ["onClick"] = OnTocClick
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateSectionPermalinkEvents()
+        => new()
+        {
+            ["onClick"] = OnSectionPermalinkClick
+        };
+
     private static IVNode HeaderLink(string path, string label)
         => H("a", new VueObject
         {
             Class = "header-link",
-            Href = path
+            Href = path,
+            Events = CreateRouteClickEvents()
         }, label);
 
     private static IVNode NavGroup(string title, IVNode[] links)
@@ -28,7 +59,8 @@ public static partial class WikiHomeModule
         return H("a", new VueObject
         {
             Class = className,
-            Href = path
+            Href = path,
+            Events = CreateRouteClickEvents()
         },
         [
             H("span", new VueObject { Class = "nav-link-title" }, title),
@@ -57,18 +89,26 @@ public static partial class WikiHomeModule
             ])
         ]);
 
-    private static IVNode TocLink(string path, string id, string title)
-        => H("a", new VueObject
+    private static IVNode TocLink(string path, string id, string title, string currentHash)
+    {
+        var className = "toc-link";
+        if (currentHash == id)
+            className = "toc-link toc-link-active";
+
+        return H("a", new VueObject
         {
-            Class = "toc-link",
-            Href = path + "#" + id
+            Class = className,
+            Href = path + "#" + id,
+            Events = CreateTocClickEvents()
         }, title);
+    }
 
     private static IVNode PagerLink(string direction, string path, string title)
         => H("a", new VueObject
         {
             Class = "pager-link",
-            Href = path
+            Href = path,
+            Events = CreateRouteClickEvents()
         },
         [
             H("span", new VueObject { Class = "pager-direction" }, direction),
@@ -79,16 +119,49 @@ public static partial class WikiHomeModule
         => H("div", new VueObject { Class = "pager-slot" }, "");
 
     private static IVNode PageSection(string id, string title, IVNode[] content)
-        => H("section", new VueObject
+    {
+        var className = "doc-section";
+        if (GetCurrentHashRef()?.Value == id)
+            className = "doc-section doc-section-active";
+
+        var permalinkLabel = "Copy link";
+        var permalinkClassName = "section-permalink";
+        var permalinkTitle = "Copy direct link to this section";
+        if (GetCopiedSectionRef()?.Value == id)
+        {
+            permalinkLabel = "Copied";
+            permalinkClassName = "section-permalink section-permalink-copied";
+            permalinkTitle = "Direct link copied to clipboard";
+        }
+        else if (GetPermalinkReadySectionRef()?.Value == id)
+        {
+            permalinkLabel = "Link ready";
+            permalinkClassName = "section-permalink section-permalink-ready";
+            permalinkTitle = "Direct link is ready in the address bar; clipboard copy was not available";
+        }
+
+        return H("section", new VueObject
         {
             Id = id,
-            Class = "doc-section"
+            Class = className
         },
         [
             H("div", new VueObject { Class = "section-anchor" }, id),
-            H("h2", title),
+            H("div", new VueObject { Class = "section-title-row" },
+            [
+                H("h2", title),
+                H("button", new VueObject
+                {
+                    Class = permalinkClassName,
+                    Type = "button",
+                    Value = id,
+                    Title = permalinkTitle,
+                    Events = CreateSectionPermalinkEvents()
+                }, permalinkLabel)
+            ]),
             H("div", new VueObject { Class = "section-body" }, content)
         ]);
+    }
 
     private static IVNode MetricCard(string value, string title, string summary)
         => H("article", new VueObject { Class = "metric-card" },

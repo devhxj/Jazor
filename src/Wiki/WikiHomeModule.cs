@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -11,6 +12,12 @@ public static partial class WikiHomeModule
     private const string ContentModelPath = "/guides/content-model";
     private const string HFunctionAuthoringPath = "/engineering/h-function-authoring";
     private const string DeploymentPath = "/operations/deployment";
+    private static IVueRef<string>? CurrentPathRef;
+    private static IVueRef<string>? CurrentHashRef;
+    private static IVueRef<string>? CopiedSectionRef;
+    private static IVueRef<string>? PermalinkReadySectionRef;
+    private static IVueRef<string>? NavFilterRef;
+    private static int PermalinkFeedbackResetTimerId;
 
     public static readonly IVueComponent Component = DefineComponent(new VueComponentOptions
     {
@@ -21,19 +28,39 @@ public static partial class WikiHomeModule
     private static VueRenderCallback Setup()
     {
         var requestedPath = OverviewPath;
+        var requestedHash = "";
         var location = ECMAScript.Global.Document.Location;
         if (location != null)
+        {
             requestedPath = NormalizePath(location.Pathname);
+            requestedHash = NormalizeHash(location.Hash);
 
-        if (IsKnownPage(requestedPath))
-            ECMAScript.Global.Document.Title = GetPageTitle(requestedPath) + " | jazor.wiki";
-        else
-            ECMAScript.Global.Document.Title = "Page Not Found | jazor.wiki";
+            var requestedUrl = BuildUrl(requestedPath, requestedHash);
+            if (requestedPath != location.Pathname || GetHashFragment(requestedHash) != location.Hash)
+                ECMAScript.Global.Window.History.ReplaceState(requestedUrl, "", requestedUrl);
+        }
 
-        return () => Render(requestedPath);
+        var currentPath = Ref(requestedPath);
+        var currentHash = Ref(requestedHash);
+        var copiedSection = Ref("");
+        var permalinkReadySection = Ref("");
+        var navFilter = Ref("");
+        CurrentPathRef = currentPath;
+        CurrentHashRef = currentHash;
+        CopiedSectionRef = copiedSection;
+        PermalinkReadySectionRef = permalinkReadySection;
+        NavFilterRef = navFilter;
+        SyncDocumentState(requestedPath);
+        ECMAScript.Global.Window.Onpopstate = OnPopState;
+        ECMAScript.Global.Window.Onhashchange = OnHashChange;
+
+        if (requestedHash.Length > 0)
+            QueueScrollToHashAnchor(requestedHash);
+
+        return () => Render(currentPath.Value, currentHash.Value, navFilter.Value);
     }
 
-    private static IVNode Render(string currentPath)
+    private static IVNode Render(string currentPath, string currentHash, string navFilter)
     {
         var article = NotFoundArticle(currentPath);
         var toc = EmptyTocRail();
@@ -41,7 +68,7 @@ public static partial class WikiHomeModule
         if (IsKnownPage(currentPath))
         {
             article = DocumentColumn(currentPath);
-            toc = TocRail(currentPath);
+            toc = TocRail(currentPath, currentHash);
         }
 
         return H("main", new VueObject { Class = "wiki-shell" },
@@ -49,7 +76,7 @@ public static partial class WikiHomeModule
             SiteHeader(),
             H("div", new VueObject { Class = "wiki-layout" },
             [
-                NavigationRail(currentPath),
+                NavigationRail(currentPath, navFilter),
                 article,
                 toc
             ]),
@@ -76,29 +103,92 @@ public static partial class WikiHomeModule
             ])
         ]);
 
-    private static IVNode NavigationRail(string currentPath)
-        => H("aside", new VueObject { Class = "nav-rail" },
-        [
+    private static IVNode NavigationRail(string currentPath, string navFilter)
+    {
+        var foundationLinks = new List<IVNode>();
+        var engineeringLinks = new List<IVNode>();
+        var operationsLinks = new List<IVNode>();
+
+        AppendNavLinkIfVisible(foundationLinks, OverviewPath, "Overview", "What ships now, why the site exists, and the MVP boundary.", currentPath, navFilter);
+        AppendNavLinkIfVisible(foundationLinks, GettingStartedPath, "Getting Started", "Run the site locally, understand routes, and verify the emitted host.", currentPath, navFilter);
+        AppendNavLinkIfVisible(foundationLinks, ContentModelPath, "Content Model", "How pages, anchors, and navigation stay maintainable in a code-first docs site.", currentPath, navFilter);
+        AppendNavLinkIfVisible(engineeringLinks, HFunctionAuthoringPath, "H-Function Authoring", "Why H functions own the shell and what rules keep the authoring path stable.", currentPath, navFilter);
+        AppendNavLinkIfVisible(operationsLinks, DeploymentPath, "Deployment", "Build outputs, route fallback, and the smoke-verification contract.", currentPath, navFilter);
+
+        var visibleCount = foundationLinks.Count + engineeringLinks.Count + operationsLinks.Count;
+        var railChildren = new List<IVNode>
+        {
+            H("div", new VueObject { Class = "rail-card nav-search-card" },
+            [
+                H("p", new VueObject { Class = "rail-kicker" }, "Find a page"),
+                H("p", new VueObject { Class = "rail-copy" }, "Filter routes, titles, summaries, status, and group labels without leaving the current page."),
+                H("div", new VueObject { Class = "nav-search-row" },
+                [
+                    H("input", new VueObject
+                    {
+                        Class = "nav-search-input",
+                        Type = "search",
+                        Placeholder = "Search docs pages",
+                        AutoComplete = "off",
+                        Value = navFilter,
+                        Events = CreateNavFilterInputEvents()
+                    }),
+                    H("button", new VueObject
+                    {
+                        Class = "nav-search-clear",
+                        Type = "button",
+                        Disabled = navFilter.Length == 0,
+                        Events = CreateClearNavFilterEvents()
+                    }, "Clear")
+                ]),
+                H("p", new VueObject { Class = "nav-search-status" }, GetNavFilterStatus(navFilter, visibleCount))
+            ]),
             H("div", new VueObject { Class = "rail-card" },
             [
                 H("p", new VueObject { Class = "rail-kicker" }, "Product map"),
-                H("p", new VueObject { Class = "rail-copy" }, "Wiki is now the product-facing docs shell for Jazor. Routes, structure, and deployment flow are treated as user-facing contracts.")
-            ]),
-            NavGroup("Foundation",
-            [
-                NavLink(OverviewPath, "Overview", "What ships now, why the site exists, and the MVP boundary.", currentPath),
-                NavLink(GettingStartedPath, "Getting Started", "Run the site locally, understand routes, and verify the emitted host.", currentPath),
-                NavLink(ContentModelPath, "Content Model", "How pages, anchors, and navigation stay maintainable in a code-first docs site.", currentPath)
-            ]),
-            NavGroup("Engineering",
-            [
-                NavLink(HFunctionAuthoringPath, "H-Function Authoring", "Why H functions own the shell and what rules keep the authoring path stable.", currentPath)
-            ]),
-            NavGroup("Operations",
-            [
-                NavLink(DeploymentPath, "Deployment", "Build outputs, route fallback, and the smoke-verification contract.", currentPath)
+                H("p", new VueObject { Class = "rail-copy" }, "Wiki is now the product-facing docs shell for Jazor. Routes, structure, deployment flow, and page discovery are treated as user-facing contracts.")
             ])
-        ]);
+        };
+
+        if (foundationLinks.Count > 0)
+            railChildren.Add(NavGroup("Foundation", foundationLinks.ToArray()));
+
+        if (engineeringLinks.Count > 0)
+            railChildren.Add(NavGroup("Engineering", engineeringLinks.ToArray()));
+
+        if (operationsLinks.Count > 0)
+            railChildren.Add(NavGroup("Operations", operationsLinks.ToArray()));
+
+        if (visibleCount == 0)
+        {
+            railChildren.Add(H("div", new VueObject { Class = "rail-card nav-search-empty" },
+            [
+                H("p", new VueObject { Class = "nav-search-empty-title" }, "No pages match the current filter."),
+                H("p", new VueObject { Class = "nav-search-empty-summary" }, "Search by route fragment, product group, page title, status, or summary copy.")
+            ]));
+        }
+
+        return H("aside", new VueObject { Class = "nav-rail" }, railChildren.ToArray());
+    }
+
+    private static void AppendNavLinkIfVisible(List<IVNode> links, string path, string title, string summary, string currentPath, string navFilter)
+    {
+        if (!MatchesPageFilter(path, navFilter))
+            return;
+
+        links.Add(NavLink(path, title, summary, currentPath));
+    }
+
+    private static string GetNavFilterStatus(string navFilter, int visibleCount)
+    {
+        if (navFilter.Length == 0)
+            return "Showing all " + TotalPageCount + " registered docs pages.";
+
+        if (visibleCount == 1)
+            return "1 page matches \"" + navFilter + "\".";
+
+        return visibleCount + " pages match \"" + navFilter + "\".";
+    }
 
     private static IVNode DocumentColumn(string currentPath)
         => H("article", new VueObject { Class = "doc-column" },
@@ -171,7 +261,8 @@ public static partial class WikiHomeModule
                         H("a", new VueObject
                         {
                             Class = "pager-link pager-link-single",
-                            Href = OverviewPath
+                            Href = OverviewPath,
+                            Events = CreateRouteClickEvents()
                         }, "Open the overview page")
                     ])
                 ])
@@ -223,5 +314,275 @@ public static partial class WikiHomeModule
             return OverviewPath;
 
         return normalized;
+    }
+
+    private static string NormalizeHash(string hash)
+    {
+        if (hash.Length == 0)
+            return "";
+
+        if (hash.StartsWith("#"))
+            return hash.Substring(1);
+
+        return hash;
+    }
+
+    private static string GetHashFragment(string hash)
+    {
+        if (hash.Length == 0)
+            return "";
+
+        return "#" + hash;
+    }
+
+    private static string BuildUrl(string path, string hash)
+        => path + GetHashFragment(hash);
+
+    private static void SyncDocumentState(string currentPath)
+    {
+        if (IsKnownPage(currentPath))
+            ECMAScript.Global.Document.Title = GetPageTitle(currentPath) + " | jazor.wiki";
+        else
+            ECMAScript.Global.Document.Title = "Page Not Found | jazor.wiki";
+    }
+
+    private static IVueRef<string>? GetCurrentPathRef()
+        => CurrentPathRef;
+
+    private static IVueRef<string>? GetCurrentHashRef()
+        => CurrentHashRef;
+
+    private static IVueRef<string>? GetCopiedSectionRef()
+        => CopiedSectionRef;
+
+    private static IVueRef<string>? GetPermalinkReadySectionRef()
+        => PermalinkReadySectionRef;
+
+    private static IVueRef<string>? GetNavFilterRef()
+        => NavFilterRef;
+
+    private static void SetNavFilter(string value)
+    {
+        var navFilter = GetNavFilterRef();
+        if (navFilter == null)
+            return;
+
+        navFilter.Value = value.Trim();
+    }
+
+    private static void SetCopiedSection(string value)
+    {
+        var copiedSection = GetCopiedSectionRef();
+        if (copiedSection == null)
+            return;
+
+        copiedSection.Value = value;
+    }
+
+    private static void SetPermalinkReadySection(string value)
+    {
+        var permalinkReadySection = GetPermalinkReadySectionRef();
+        if (permalinkReadySection == null)
+            return;
+
+        permalinkReadySection.Value = value;
+    }
+
+    private static void ShowCopiedSection(string sectionId)
+    {
+        SetPermalinkReadySection("");
+        SetCopiedSection(sectionId);
+        QueuePermalinkFeedbackReset();
+    }
+
+    private static void ShowPermalinkReady(string sectionId)
+    {
+        SetCopiedSection("");
+        SetPermalinkReadySection(sectionId);
+        QueuePermalinkFeedbackReset();
+    }
+
+    private static void QueuePermalinkFeedbackReset()
+    {
+        if (PermalinkFeedbackResetTimerId != 0)
+            ECMAScript.Global.Window.ClearTimeout(PermalinkFeedbackResetTimerId);
+
+        PermalinkFeedbackResetTimerId = ECMAScript.Global.Window.SetTimeout((Delegate)(Action)ResetPermalinkFeedback, 1800);
+    }
+
+    private static void ResetPermalinkFeedback()
+    {
+        SetCopiedSection("");
+        SetPermalinkReadySection("");
+        PermalinkFeedbackResetTimerId = 0;
+    }
+
+    private static void QueueScrollToHashAnchor(string hash)
+    {
+        if (hash.Length == 0)
+            return;
+
+        Vue3.NextTick(() => ScrollToHashAnchor(hash));
+    }
+
+    private static void ScrollToHashAnchor(string hash)
+    {
+        if (ECMAScript.Global.Document.GetElementById(hash) is not Element sectionElement)
+            return;
+
+        sectionElement.ScrollIntoView(true);
+    }
+
+    private static void NavigateTo(string path, string hash, bool updateHistory, bool resetScroll)
+    {
+        var currentPath = GetCurrentPathRef();
+        var currentHash = GetCurrentHashRef();
+        if (currentPath == null || currentHash == null)
+            return;
+
+        var normalizedPath = NormalizePath(path);
+        var normalizedHash = NormalizeHash(hash);
+
+        if (currentPath.Value == normalizedPath && currentHash.Value == normalizedHash)
+        {
+            if (normalizedHash.Length > 0)
+                QueueScrollToHashAnchor(normalizedHash);
+            else if (resetScroll)
+                ECMAScript.Global.Window.ScrollTo(0, 0);
+
+            return;
+        }
+
+        currentPath.Value = normalizedPath;
+        currentHash.Value = normalizedHash;
+        if (updateHistory)
+        {
+            var url = BuildUrl(normalizedPath, normalizedHash);
+            ECMAScript.Global.Window.History.PushState(url, "", url);
+        }
+
+        SyncDocumentState(normalizedPath);
+        if (normalizedHash.Length > 0)
+            QueueScrollToHashAnchor(normalizedHash);
+        else if (resetScroll)
+            ECMAScript.Global.Window.ScrollTo(0, 0);
+    }
+
+    private static void SyncLocationStateFromBrowser()
+    {
+        var location = ECMAScript.Global.Document.Location;
+        var currentPath = GetCurrentPathRef();
+        var currentHash = GetCurrentHashRef();
+        if (location == null || currentPath == null || currentHash == null)
+            return;
+
+        var normalizedPath = NormalizePath(location.Pathname);
+        var normalizedHash = NormalizeHash(location.Hash);
+        currentPath.Value = normalizedPath;
+        currentHash.Value = normalizedHash;
+        SyncDocumentState(normalizedPath);
+
+        if (normalizedHash.Length > 0)
+            QueueScrollToHashAnchor(normalizedHash);
+    }
+
+    private static bool ShouldAllowBrowserDefault(MouseEvent mouseEvent)
+        => mouseEvent.Button != 0 ||
+           mouseEvent.CtrlKey ||
+           mouseEvent.MetaKey ||
+           mouseEvent.ShiftKey ||
+           mouseEvent.AltKey;
+
+    private static void OnRouteClick(MouseEvent mouseEvent)
+    {
+        if (ShouldAllowBrowserDefault(mouseEvent))
+            return;
+
+        if (mouseEvent.CurrentTarget is not HTMLAnchorElement anchor)
+            return;
+
+        mouseEvent.PreventDefault();
+        NavigateTo(anchor.Pathname, "", updateHistory: true, resetScroll: true);
+    }
+
+    private static void OnTocClick(MouseEvent mouseEvent)
+    {
+        if (ShouldAllowBrowserDefault(mouseEvent))
+            return;
+
+        if (mouseEvent.CurrentTarget is not HTMLAnchorElement anchor)
+            return;
+
+        mouseEvent.PreventDefault();
+        NavigateTo(anchor.Pathname, anchor.Hash, updateHistory: true, resetScroll: true);
+    }
+
+    private static void OnSectionPermalinkClick(MouseEvent mouseEvent)
+    {
+        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+            return;
+
+        mouseEvent.PreventDefault();
+
+        var currentPath = GetCurrentPathRef();
+        if (currentPath == null)
+            return;
+
+        var sectionId = NormalizeHash(buttonElement.Value);
+        if (sectionId.Length == 0)
+            return;
+
+        ResetPermalinkFeedback();
+        NavigateTo(currentPath.Value, sectionId, updateHistory: true, resetScroll: true);
+
+        var location = ECMAScript.Global.Document.Location;
+        var sectionUrl = BuildUrl(currentPath.Value, sectionId);
+        var sectionShareUrl = sectionUrl;
+        if (location != null)
+            sectionShareUrl = location.Origin + sectionUrl;
+
+        try
+        {
+            var clipboard = ECMAScript.Global.Window.Navigator.Clipboard;
+            if (clipboard == null)
+            {
+                ShowPermalinkReady(sectionId);
+                return;
+            }
+
+            Promise.Resolve(clipboard.WriteText(sectionShareUrl)).Then(
+                () => ShowCopiedSection(sectionId),
+                () => ShowPermalinkReady(sectionId));
+        }
+        catch
+        {
+            ShowPermalinkReady(sectionId);
+        }
+    }
+
+    private static void OnNavFilterInput(Event @event)
+    {
+        if (@event.CurrentTarget is not HTMLInputElement inputElement)
+            return;
+
+        SetNavFilter(inputElement.Value);
+    }
+
+    private static void ClearNavFilter(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        SetNavFilter("");
+    }
+
+    private static object OnHashChange(Event @event)
+    {
+        SyncLocationStateFromBrowser();
+        return 0;
+    }
+
+    private static object OnPopState(Event @event)
+    {
+        SyncLocationStateFromBrowser();
+        return 0;
     }
 }

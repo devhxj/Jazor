@@ -13,13 +13,17 @@ It currently uses:
 Current product boundary:
 
 - `H(...)` owns the docs shell, navigation, article layout, TOC, and pager
-- content is still code-first, but the shell, content bodies, and leaf render helpers are now split across partial module files
+- content is still code-first, but the shell, route contract, page bodies, and leaf render helpers are split across partial module files
+- in-app docs navigation now upgrades to `history.pushState` / `popstate` shell routing while preserving real URL fallback
+- right-rail TOC now upgrades same-page hash navigation into active-state, scroll-synced section routing while preserving shareable `#anchor` URLs
+- each section now exposes a direct permalink action that updates the hash, copies the full section URL through the browser clipboard, and falls back to a visible "Link ready" state when clipboard write is unavailable
+- left-rail page discovery includes client-side filtering over routes, group labels, titles, statuses, and summaries
 - this is a real docs-site MVP, not a CMS and not an editable wiki backend
 
 ## Project Layout
 
 - `Wiki.csproj`: single web host project for the docs site.
-- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Content.cs`, `WikiHomeModule.Elements.cs`: the route shell, centralized route contract, page bodies, and reusable leaf render helpers for the named-export Vue component.
+- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.Deployment.cs`: the route shell, centralized route contract, page bodies, and reusable leaf render helpers for the named-export Vue component.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `Program.cs`: ASP.NET Core host with static files, `/health`, and fallback to `index.html`.
 - `build-local.ps1`: local build entry that verifies emitted Wiki artifacts exist after build.
@@ -96,6 +100,10 @@ The smoke check verifies:
 - `/health` returns HTTP 200 with `ok`
 - every registered docs route returns HTTP 200 and still contains `#app` plus `./jazor/main.mjs`
 - an unknown docs route still returns the frontend shell through fallback
+- emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, and click interception)
+- emitted `wiki-home.mjs` still contains the section-routing contract (`hashchange`, active TOC markers, and hash-driven section scrolling)
+- emitted `wiki-home.mjs` still contains the section permalink contract (`window.navigator.clipboard`, `clipboard.writeText`, permalink button labels, and copied/fallback-state styling markers)
+- emitted `wiki-home.mjs` still contains the page-discovery filter contract (`Search docs pages`, filter-empty state, and left-rail search styling markers)
 - emitted `wiki-home.mjs` still contains the registered docs-route markers
 
 ## Runtime Dependency Notes

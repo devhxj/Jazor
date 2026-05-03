@@ -36,6 +36,33 @@ $emittedRouteMarkers = @(
     "/engineering/h-function-authoring",
     "/operations/deployment"
 )
+$emittedNavigationMarkers = @(
+    "window.history.replaceState",
+    "window.history.pushState",
+    "window.onpopstate = onPopState",
+    "mouseEvent.preventDefault()",
+    "window.scrollTo(0, 0)"
+)
+$emittedDiscoveryMarkers = @(
+    "Search docs pages",
+    "nav-search-input",
+    "nav-search-empty"
+)
+$emittedSectionNavigationMarkers = @(
+    "window.onhashchange = onHashChange",
+    "scrollIntoView(true)",
+    "toc-link-active",
+    "doc-section-active"
+)
+$emittedPermalinkMarkers = @(
+    "window.navigator.clipboard",
+    "clipboard.writeText",
+    "Copy link",
+    "Copied",
+    "Link ready",
+    "section-permalink-copied",
+    "section-permalink-ready"
+)
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
@@ -81,6 +108,32 @@ function Assert-Contains {
 
     if (-not $Text.Contains($Snippet)) {
         throw "Missing ${Description}: expected to find '$Snippet'."
+    }
+}
+
+function Remove-FileWithRetry {
+    param(
+        [string]$Path,
+        [int]$Attempts = 6,
+        [int]$DelayMilliseconds = 250
+    )
+
+    for ($attempt = 0; $attempt -lt $Attempts; $attempt++) {
+        if (-not (Test-Path $Path)) {
+            return
+        }
+
+        try {
+            Remove-Item -LiteralPath $Path -Force
+            return
+        }
+        catch {
+            if ($attempt -ge ($Attempts - 1)) {
+                throw
+            }
+
+            Start-Sleep -Milliseconds $DelayMilliseconds
+        }
     }
 }
 
@@ -137,6 +190,18 @@ Assert-Contains -Text $moduleContent -Snippet 'requested-route' -Description "no
 foreach ($routeMarker in $emittedRouteMarkers) {
     Assert-Contains -Text $moduleContent -Snippet $routeMarker -Description "real docs route marker in emitted module"
 }
+foreach ($navigationMarker in $emittedNavigationMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $navigationMarker -Description "client-side navigation marker in emitted module"
+}
+foreach ($discoveryMarker in $emittedDiscoveryMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $discoveryMarker -Description "page-discovery filter marker in emitted module"
+}
+foreach ($sectionNavigationMarker in $emittedSectionNavigationMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $sectionNavigationMarker -Description "section navigation marker in emitted module"
+}
+foreach ($permalinkMarker in $emittedPermalinkMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $permalinkMarker -Description "section permalink marker in emitted module"
+}
 
 $previousAspNetCoreUrls = $env:ASPNETCORE_URLS
 $env:ASPNETCORE_URLS = $rootUrl
@@ -178,7 +243,7 @@ try {
     Assert-Contains -Text $unknownRouteResponse.Content -Snippet './jazor/main.mjs' -Description "main module entry in served unknown route $($unknownRoute.Path)"
 
     Write-Host "Wiki smoke verification passed."
-    Write-Host "Verified: build output, emitted module routes, /health, all registered docs routes, and unknown-route fallback"
+    Write-Host "Verified: build output, emitted module routes, nav/filter/section/permalink contracts, /health, all registered docs routes, and unknown-route fallback"
 }
 catch {
     $keepLogs = $true
@@ -194,11 +259,11 @@ finally {
 
     if (-not $keepLogs) {
         if (Test-Path $stdoutLog) {
-            Remove-Item -LiteralPath $stdoutLog -Force
+            Remove-FileWithRetry -Path $stdoutLog
         }
 
         if (Test-Path $stderrLog) {
-            Remove-Item -LiteralPath $stderrLog -Force
+            Remove-FileWithRetry -Path $stderrLog
         }
     }
 }
