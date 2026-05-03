@@ -117,6 +117,13 @@ public sealed class EcmaScriptVueProxyTests
             .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Where(static method => method.Name == nameof(VueSetupContext.Emit))
             .ToArray();
+        var modelEmitOverload = overloads.Single(static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.GetParameters().Length == 2 &&
+            method.GetParameters()[0].ParameterType.IsGenericType &&
+            method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
+            method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1.emit(`update:${__arg2}`, __arg3)");
 
         static bool HasPayloadOverload(MethodInfo[] overloads, int genericArity, int parameterCount)
             => overloads.Any(method =>
@@ -130,6 +137,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(HasPayloadOverload(overloads, 2, 3));
         Assert.IsTrue(HasPayloadOverload(overloads, 3, 4));
         Assert.IsTrue(HasPayloadOverload(overloads, 4, 5));
+        Assert.AreEqual(typeof(void), modelEmitOverload.ReturnType);
 
         AssertNotObject(typeof(VueSetupContext), nameof(VueSetupContext));
     }
@@ -185,10 +193,36 @@ public sealed class EcmaScriptVueProxyTests
         var dataset = typeof(VueObject).GetProperty(nameof(VueObject.Dataset), BindingFlags.Public | BindingFlags.Instance);
         var raw = typeof(VueObject).GetProperty(nameof(VueObject.Raw), BindingFlags.Public | BindingFlags.Instance);
         var @class = typeof(VueObject).GetProperty(nameof(VueObject.Class), BindingFlags.Public | BindingFlags.Instance);
-        var item = typeof(VueObject).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var itemIndexers = typeof(VueObject)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(static property => property.Name == "Item")
+            .ToArray();
         var props = typeof(VueObject<>).GetProperty("Props", BindingFlags.Public | BindingFlags.Instance);
-        var indexer = vueDictionaryType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
-        var rootIndexer = vueDictionary.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var dictionaryIndexers = vueDictionaryType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(static property => property.Name == "Item")
+            .ToArray();
+        var rootIndexers = vueDictionary
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(static property => property.Name == "Item")
+            .ToArray();
+        var dictionaryAddMethods = vueDictionaryType
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == "Add")
+            .ToArray();
+        var dictionaryValueTypeParameter = vueDictionaryType.GetGenericArguments().Single();
+        var item = itemIndexers.Single(static property =>
+            property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
+        var symbolItem = itemIndexers.Single(static property =>
+            property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Symbol) }));
+        var indexer = dictionaryIndexers.Single(static property =>
+            property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
+        var symbolIndexer = dictionaryIndexers.Single(static property =>
+            property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Symbol) }));
+        var rootIndexer = rootIndexers.Single(static property =>
+            property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
+        var rootSymbolIndexer = rootIndexers.Single(static property =>
+            property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Symbol) }));
 
         Assert.IsNotNull(spreadUsage);
         Assert.AreEqual(AttributeTargets.Property, spreadUsage.ValidOn);
@@ -246,9 +280,12 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(raw);
         Assert.IsNotNull(@class);
         Assert.IsNotNull(item);
+        Assert.IsNotNull(symbolItem);
         Assert.IsNotNull(props);
         Assert.IsNotNull(indexer);
+        Assert.IsNotNull(symbolIndexer);
         Assert.IsNotNull(rootIndexer);
+        Assert.IsNotNull(rootSymbolIndexer);
         Assert.AreEqual(typeof(string), isProperty.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueKey), key.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), @ref.PropertyType.UnwrapNullable());
@@ -287,9 +324,18 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(string), method.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueEventHandlers), events.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueValue), item.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueValue), symbolItem.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueValue), rootIndexer.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueValue), rootSymbolIndexer.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        CollectionAssert.AreEqual(new[] { typeof(Symbol) }, symbolIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.AreEqual(new[] { typeof(string) }, rootIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        CollectionAssert.AreEqual(new[] { typeof(Symbol) }, rootSymbolIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        Assert.AreEqual(2, dictionaryAddMethods.Length);
+        Assert.IsTrue(dictionaryAddMethods.Any(method =>
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), dictionaryValueTypeParameter })));
+        Assert.IsTrue(dictionaryAddMethods.Any(method =>
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Symbol), dictionaryValueTypeParameter })));
         CollectionAssert.Contains(
             events.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
             typeof(SpreadAttribute));
@@ -327,7 +373,11 @@ public sealed class EcmaScriptVueProxyTests
         var attrs = vueObjectType.GetProperty(nameof(VueObject.Attrs), BindingFlags.Public | BindingFlags.Instance);
         var dataset = vueObjectType.GetProperty(nameof(VueObject.Dataset), BindingFlags.Public | BindingFlags.Instance);
         var raw = vueObjectType.GetProperty(nameof(VueObject.Raw), BindingFlags.Public | BindingFlags.Instance);
-        var indexer = vueObjectType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var indexer = vueObjectType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Single(static property =>
+                property.Name == "Item" &&
+                property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
         var forbiddenConvenienceMembers = new[]
         {
             "AriaLabel",
@@ -532,8 +582,16 @@ public sealed class EcmaScriptVueProxyTests
         var directiveArgumentsType = typeof(VueDirectiveArguments);
         var typedDirectiveArgumentsType = typeof(VueDirectiveArguments<string>);
         var directiveValueType = typeof(VueDirectiveValue);
-        var modifiersIndexer = modifiersType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
-        var modifierBagIndexer = modifierBagType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var modifiersIndexer = modifiersType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Single(static property =>
+                property.Name == "Item" &&
+                property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
+        var modifierBagIndexer = modifierBagType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Single(static property =>
+                property.Name == "Item" &&
+                property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
         var hookInvoke = typeof(VueDirectiveHook).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var typedHookInvoke = typeof(VueDirectiveHook<string>).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var functionInvoke = typeof(VueDirectiveFunction).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
@@ -980,6 +1038,7 @@ public sealed class EcmaScriptVueProxyTests
         var typedListenerAttrsType = typeof(VueAttributeListeners<>).MakeGenericType(typeof(MouseEvent));
         var scopedSlotsType = typeof(VueScopedSlots<>).MakeGenericType(typeof(string));
         var modelRefType = typeof(VueModelRef<>).MakeGenericType(typeof(string));
+        var modelNameType = typeof(VueModelName<,>).MakeGenericType(typeof(TestVueProps), typeof(string));
         var modifierBagType = typeof(VueModelModifiers);
         var attrsIndexer = attrsType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
         var slotsIndexer = slotsType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
@@ -987,6 +1046,8 @@ public sealed class EcmaScriptVueProxyTests
         var typedListenerIndexer = typedListenerAttrsType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
         var scopedSlotsIndexer = scopedSlotsType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
         var modifierIndexer = modifierBagType.GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var modelNameImplicitFromString = modelNameType.GetMethod("op_Implicit", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string) }, null);
+        var modelNameImplicitToString = modelNameType.GetMethod("op_Implicit", BindingFlags.Public | BindingFlags.Static, null, new[] { modelNameType }, null);
         var attrsClass = attrsType.GetProperty(nameof(VueAttributeBag.Class), BindingFlags.Public | BindingFlags.Instance);
         var attrsStyle = attrsType.GetProperty(nameof(VueAttributeBag.Style), BindingFlags.Public | BindingFlags.Instance);
         var attrsId = attrsType.GetProperty(nameof(VueAttributeBag.Id), BindingFlags.Public | BindingFlags.Instance);
@@ -1017,6 +1078,8 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(typedListenerIndexer);
         Assert.IsNotNull(scopedSlotsIndexer);
         Assert.IsNotNull(modifierIndexer);
+        Assert.IsNotNull(modelNameImplicitFromString);
+        Assert.IsNotNull(modelNameImplicitToString);
         Assert.IsNotNull(attrsClass);
         Assert.IsNotNull(attrsStyle);
         Assert.IsNotNull(attrsId);
@@ -1040,8 +1103,11 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsFalse(listenerAttrsType.IsAbstract);
         Assert.IsFalse(typedListenerAttrsType.IsAbstract);
         Assert.IsFalse(scopedSlotsType.IsAbstract);
+        Assert.IsFalse(modelNameType.IsAbstract);
         Assert.IsTrue(modelRefType.IsAbstract);
         Assert.IsTrue(modifierBagType.IsAbstract);
+        Assert.AreEqual(modelNameType, modelNameImplicitFromString.ReturnType);
+        Assert.AreEqual(typeof(string), modelNameImplicitToString.ReturnType);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(listenerAttrsType));
         Assert.IsTrue(listenerAttrsType.IsAssignableFrom(typedListenerAttrsType));
         Assert.IsTrue(typeof(VueSlots).IsAssignableFrom(scopedSlotsType));
@@ -1124,6 +1190,56 @@ public sealed class EcmaScriptVueProxyTests
             method.GetParameters()[1].ParameterType == typeof(string) &&
             method.GetParameters()[2].ParameterType.IsGenericType &&
             method.GetParameters()[2].ParameterType.GetGenericTypeDefinition() == typeof(VueModelOptions<>));
+        RequiredStatic(staticMethods, nameof(Vue3.UseModel), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.ReturnType.IsGenericType &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelRef<>) &&
+            method.GetParameters().Length == 2 &&
+            method.GetParameters()[0].ParameterType.IsGenericParameter &&
+            method.GetParameters()[1].ParameterType.IsGenericType &&
+            method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>));
+        RequiredStatic(staticMethods, nameof(Vue3.UseModel), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.ReturnType.IsGenericType &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelRef<>) &&
+            method.GetParameters().Length == 3 &&
+            method.GetParameters()[0].ParameterType.IsGenericParameter &&
+            method.GetParameters()[1].ParameterType.IsGenericType &&
+            method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
+            method.GetParameters()[2].ParameterType.IsGenericType &&
+            method.GetParameters()[2].ParameterType.GetGenericTypeDefinition() == typeof(VueModelOptions<>));
+        RequiredStatic(staticMethods, nameof(Vue3.ModelName), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.ReturnType.IsGenericType &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
+            method.GetParameters().Length == 0 &&
+            method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "\"modelValue\"");
+        RequiredStatic(staticMethods, nameof(Vue3.ModelName), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.ReturnType.IsGenericType &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }) &&
+            method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1");
+        RequiredStatic(staticMethods, nameof(Vue3.ModelPropName), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.ReturnType == typeof(string) &&
+            method.GetParameters().Length == 1 &&
+            method.GetParameters()[0].ParameterType.IsGenericType &&
+            method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
+            method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1");
+        RequiredStatic(staticMethods, nameof(Vue3.ModelUpdateEventName), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetGenericArguments().Length == 2 &&
+            method.ReturnType == typeof(string) &&
+            method.GetParameters().Length == 1 &&
+            method.GetParameters()[0].ParameterType.IsGenericType &&
+            method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueModelName<,>) &&
+            method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "`update:${__arg1}`");
 
         Assert.IsTrue(modelModifiers.Any(static method =>
             !method.IsGenericMethodDefinition &&
@@ -1140,6 +1256,7 @@ public sealed class EcmaScriptVueProxyTests
 
         AssertNotObject(typeof(VueModelOptions<string>), "VueModelOptions<string>");
         AssertNotObject(typeof(VueModelRef<string>), "VueModelRef<string>");
+        AssertNotObject(modelNameType, "VueModelName<TestVueProps,string>");
         AssertNotObject(typeof(VueModelModifiers), nameof(VueModelModifiers));
         AssertNotObject(typeof(VueAttributeListeners), nameof(VueAttributeListeners));
         AssertNotObject(typeof(VueAttributeListeners<MouseEvent>), "VueAttributeListeners<MouseEvent>");
@@ -1583,12 +1700,14 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(defaultFactory);
         Assert.IsNotNull(indexer);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(nonGenericRegistryType));
-        Assert.AreEqual(typeof(string), from!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(Either<string, VueInjectionKey<string>, Symbol>), from!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), @default!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Func<string>), defaultFactory!.PropertyType.UnwrapNullable());
         Assert.AreEqual(entryType, indexer!.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.Contains(entryImplicitSources, typeof(string));
+        CollectionAssert.Contains(entryImplicitSources, typeof(VueInjectionKey<string>));
+        CollectionAssert.Contains(entryImplicitSources, typeof(Symbol));
         CollectionAssert.Contains(entryImplicitSources, optionsType);
         Assert.AreEqual(3, addMethods.Length);
         Assert.IsTrue(addMethods.Any(static method =>

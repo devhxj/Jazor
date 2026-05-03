@@ -1300,6 +1300,75 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_RecordObjectInitializer_SymbolIndexer_UsesComputedProperty()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var countKey = SymbolFn(""count"");
+                    var obj = new Bag
+                    {
+                        [countKey] = 1
+                    };
+                }
+
+                public sealed record Bag
+                {
+                    public int this[Symbol key]
+                    {
+                        get => 0;
+                        set { }
+                    }
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ [countKey]: 1 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_RecordCollectionInitializer_SymbolAdd_UsesComputedProperty()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var countKey = SymbolFn(""count"");
+                    var obj = new Bag
+                    {
+                        { countKey, 1 }
+                    };
+                }
+
+                public sealed record Bag : System.Collections.IEnumerable
+                {
+                    public void Add(Symbol key, int value)
+                    {
+                    }
+
+                    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+                        => throw new NotImplementedException();
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block, 1);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ [countKey]: 1 }", script);
+    }
+
+    [TestMethod]
     public void VisitArrayCreation_WithMultipleDimensions_ShouldHandleGracefully()
     {
         var block = GetBlockOperation(@"

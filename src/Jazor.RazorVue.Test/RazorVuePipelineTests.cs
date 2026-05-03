@@ -171,7 +171,7 @@ public sealed class RazorVuePipelineTests
         CollectionAssert.Contains(artifact.Imports.ToArray(), "vue");
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
         StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, null, null);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent);");
     }
 
     [TestMethod]
@@ -218,7 +218,7 @@ public sealed class RazorVuePipelineTests
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
         StringAssert.Contains(artifact.ModuleCode, "import { VBtn as VBtnComponent } from \"vuetify/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(VBtnComponent, { \"text\": \"Save\" }, null);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(VBtnComponent, { \"text\": \"Save\" });");
     }
 
     [TestMethod]
@@ -322,7 +322,7 @@ public sealed class RazorVuePipelineTests
 
         CollectionAssert.Contains(artifact.Imports.ToArray(), "demo/components");
         StringAssert.Contains(artifact.ModuleCode, "import { DemoButton as DemoButtonComponent } from \"demo/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(DemoButtonComponent, { \"text\": \"Save\" }, null);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(DemoButtonComponent, { \"text\": \"Save\" });");
         CollectionAssert.AreEqual(new[] { "demo/button.css" }, artifact.Styles.ToArray());
         CollectionAssert.AreEqual(new[] { "demo-host" }, artifact.PluginRequirements.ToArray());
     }
@@ -1250,6 +1250,98 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithUnknownLibraryParameter_ReportsUnknownParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "Href", "#");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VBtn");
+        StringAssert.Contains(exception.Issue.Message, "Href");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithInvalidLibraryBindTarget_ReportsInvalidBindTarget()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    private bool Disabled { get; set; }
+
+                    private void OnDisabledChanged()
+                    {
+                    }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, nameof(VBtn.Disabled), Disabled);
+                        builder.AddAttribute(2, "DisabledChanged", EventCallback.Factory.Create(this, OnDisabledChanged));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.InvalidBindTarget, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VBtn");
+        StringAssert.Contains(exception.Issue.Message, "Disabled");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersNestedComponentWithPropsAndDefaultSlot()
     {
         var context = CreateContext(
@@ -1303,6 +1395,55 @@ public sealed class RazorVuePipelineTests
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { \"value\": props.value }, { default: () => \"inner\" });");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersNestedComponentWithDefaultSlotContentWithoutProps_ToTwoArgumentCall()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddContent(1, "inner");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = new RazorVuePipeline().Execute(context)
+            .Artifacts
+            .Single(static artifact => artifact.ComponentName == "ParentCard");
+
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { default: () => \"inner\" });");
     }
 
     [TestMethod]
@@ -1367,8 +1508,8 @@ public sealed class RazorVuePipelineTests
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "(props.value > 0) ? h(ChildCardComponent, { \"value\": props.value }, null) : null");
-        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) => h(\"li\", null, item))");
+        StringAssert.Contains(artifact.ModuleCode, "(props.value > 0) ? h(ChildCardComponent, { \"value\": props.value }) : null");
+        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) => h(\"li\", item))");
     }
 
     [TestMethod]
@@ -1423,7 +1564,7 @@ public sealed class RazorVuePipelineTests
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) => h(ChildCardComponent, { \"value\": item }, null))");
+        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) => h(ChildCardComponent, { \"value\": item }))");
     }
 
     [TestMethod]
@@ -1469,7 +1610,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, slots.default ? slots.default() : null);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", slots.default ? slots.default() : null);");
     }
 
     [TestMethod]
@@ -1805,7 +1946,7 @@ public sealed class RazorVuePipelineTests
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", props.value);");
     }
 
     [TestMethod]
@@ -3345,7 +3486,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "let _count = 1;");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, _count);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", _count);");
     }
 
     [TestMethod]
@@ -3390,7 +3531,7 @@ public sealed class RazorVuePipelineTests
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "function calculate()");
         StringAssert.Contains(artifact.ModuleCode, "return 42;");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, calculate());");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", calculate());");
     }
 
     [TestMethod]
@@ -3442,7 +3583,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value)");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + value);");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, formatTitle(props.value));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", formatTitle(props.value));");
     }
 
     [TestMethod]
@@ -3494,7 +3635,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value, scale)");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + (value * scale));");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, formatTitle(props.value, 2));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", formatTitle(props.value, 2));");
     }
 
     [TestMethod]
@@ -7638,7 +7779,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + props.value);");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatTitle());");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", formatTitle());");
     }
 
     [TestMethod]
@@ -7691,7 +7832,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "function formatInner(value)");
         StringAssert.Contains(artifact.ModuleCode, "return (\"Value: \" + formatInner(value));");
         StringAssert.Contains(artifact.ModuleCode, "return ((value * 2)).toString();");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatOuter(props.value));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", formatOuter(props.value));");
     }
 
     [TestMethod]
@@ -10922,4 +11063,3 @@ public sealed class RazorVuePipelineTests
     private static IEnumerable<MetadataReference> CreateReferences()
         => RazorVueMetadataReferences.Create();
 }
-

@@ -720,7 +720,7 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         StringAssert.Contains(generatedSource, "import ChildCardComponent from \\\"./components/child-card.mjs\\\";");
-        StringAssert.Contains(generatedSource, "return () => h(ChildCardComponent, null, null);");
+        StringAssert.Contains(generatedSource, "return () => h(ChildCardComponent);");
     }
 
     [TestMethod]
@@ -10033,7 +10033,7 @@ public sealed class ESGeneratorTests
         CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
         StringAssert.Contains(generatedSource, "let _count = 1;");
-        StringAssert.Contains(generatedSource, "h(\\\"span\\\", null, _count)");
+        StringAssert.Contains(generatedSource, "h(\\\"span\\\", _count)");
     }
 
     private static Compilation CreateCompilation(string assemblyName, string source, params MetadataReference[] extraReferences)
