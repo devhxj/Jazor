@@ -41,6 +41,7 @@
 | **02-计划** | |
 | `02-计划/ecmascript/` | `src/ECMAScript/` |
 | `02-计划/ecmascript.vue3/` | `src/ECMAScript.Vue3/` |
+| `02-计划/wiki/` | `src/Wiki/` |
 | `02-计划/jolt/` | `src/Jolt/` |
 | `02-计划/compiler/` | `src/Jazor.Compiler/` |
 | `02-计划/jolt/razorvue-implementation/` | RazorVue 线路 + `src/Jolt/` 的交叉实施材料 |
@@ -60,6 +61,7 @@
 - ECMAScript Vue3 映射细节 → [01-目标/ecmascript.vue3/vue3-mapping-details.md](./01-目标/ecmascript.vue3/vue3-mapping-details.md)
 - ECMAScript Vue3 落地计划 → [02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md](./02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md)
 - ECMAScript Vue3 当前状态 → [03-完成/ecmascript.vue3/status.md](./03-完成/ecmascript.vue3/status.md)
+- Wiki 阶段计划 → [02-计划/wiki/Wiki.Phases.md](./02-计划/wiki/Wiki.Phases.md)
 - 编译器实现原则 → [../src/Jazor.Compiler/ImplementationPrinciples.md](../src/Jazor.Compiler/ImplementationPrinciples.md)
 - 编译器状态快照 → [03-完成/compiler/status.md](./03-完成/compiler/status.md)
 - RazorVue 设计入口 → [01-目标/razorvue/README.md](./01-目标/razorvue/README.md)

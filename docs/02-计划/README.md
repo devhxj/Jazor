@@ -14,6 +14,7 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 |------|---------|------|
 | `ecmascript/` | `src/ECMAScript/` | ECMAScript 平台内核相关执行级计划 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库 authoring surface 的执行级落地计划 |
+| `wiki/` | `src/Wiki/` | `jazor.wiki` sample 的阶段划分、收口计划与产品化分流边界 |
 | `jolt/` | `src/Jolt/` | Phase 计划、切片实施文档、运行模式收口 |
 | `jolt/razorvue-implementation/` | RazorVue 线路 + `src/Jolt/` | RazorVue 与 Jolt 的交叉实施、HMR/桥接与迁移材料 |
 | `compiler/` | `src/Jazor.Compiler/` | 编译管线实施清单、转换路线图、SourceMap 实施清单 |
