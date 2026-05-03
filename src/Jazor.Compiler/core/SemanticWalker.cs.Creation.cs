@@ -74,7 +74,7 @@ public partial class SemanticWalker
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)
 		{
-			if (operation.Type.ContainingAssembly?.Name == "ECMAScript" &&
+			if (Util.IsECMAScriptRuntimeType(operation.Type) &&
 				Util.HasNameResolutionBoundary(operation.Type))
 				return RecursiveObjectOrCollectionInitializer(operation.Initializer, argument);
 

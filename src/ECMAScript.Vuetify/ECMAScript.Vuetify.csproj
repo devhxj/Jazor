@@ -18,5 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
   </ItemGroup>
 </Project>

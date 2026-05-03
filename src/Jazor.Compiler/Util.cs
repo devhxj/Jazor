@@ -16,7 +16,6 @@ namespace Jazor.Compiler;
 /// </summary>
 public static class Util
 {
-    private const string ECMAScriptAssemblyName = "ECMAScript";
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
 
@@ -284,14 +283,13 @@ public static class Util
     /// 判断一个类型是否属于 ECMAScript 运行时映射类型。
     ///
     /// 这里同时要求：
-    /// - 类型来自 <c>ECMAScript</c> 程序集
     /// - 类型自身带有运行时标记特性
     ///
-    /// 这样可以避免仅凭程序集名或类型名误判普通 CLR 类型。
+    /// 这样可以避免仅凭程序集名或类型名误判普通 CLR 类型，并允许外部库
+    /// 通过同一标记机制参与运行时映射。
     /// </summary>
     public static bool IsECMAScriptRuntimeType(ITypeSymbol? symbol)
-        => symbol?.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
-           IsRuntimeMarkerType(symbol);
+        => IsRuntimeMarkerType(symbol);
 
     /// <summary>
     /// 判断一个符号是否属于 ECMAScript 运行时映射域。
@@ -305,8 +303,7 @@ public static class Util
         {
             null => false,
             ITypeSymbol typeSymbol => IsECMAScriptRuntimeType(typeSymbol),
-            _ => symbol.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
-                 IsECMAScriptRuntimeType(symbol.ContainingType)
+            _ => IsECMAScriptRuntimeType(symbol.ContainingType)
         };
 
     /// <summary>
@@ -316,6 +313,5 @@ public static class Util
     /// 如果在这里追加哈希后缀，会无端扩大 C# / JS 的命名割裂。
     /// </summary>
     private static bool ShouldSkipMethodOverloadSuffix(IMethodSymbol methodSymbol)
-        => methodSymbol.ContainingAssembly?.Name == ECMAScriptAssemblyName &&
-           IsRuntimeMarkerType(methodSymbol.ContainingType);
+        => IsRuntimeMarkerType(methodSymbol.ContainingType);
 }

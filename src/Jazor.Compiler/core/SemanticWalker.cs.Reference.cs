@@ -115,8 +115,8 @@ public partial class SemanticWalker
 
 		// 当前编译器的声明侧会把用户代码中的成员类型扁平化为顶层运行时声明，
 		// 因此引用侧也必须使用同一个运行时名，不能继续保留 Outer.Inner 链。
-		// ECMAScript 绑定里的静态宿主类型例外，它们本身就是运行时宿主层级的一部分。
-		if (namedType.ContainingAssembly?.Name == "ECMAScript" && namedType.ContainingType.IsStatic)
+		// 运行时绑定里的静态宿主类型例外，它们本身就是运行时宿主层级的一部分。
+		if (Util.IsECMAScriptRuntimeType(namedType) && namedType.ContainingType.IsStatic)
 			return false;
 
 		return true;
@@ -640,7 +640,7 @@ public partial class SemanticWalker
 	private Expression? TryBuildExtensionHostTarget(IMethodSymbol method, SenseArgument? context)
 	{
 		if (!method.IsStatic ||
-			method.ContainingAssembly?.Name != "ECMAScript")
+			!Util.IsECMAScriptRuntimeSymbol(method))
 			return null;
 
 		if (method.ReceiverType is null)
@@ -799,7 +799,7 @@ public partial class SemanticWalker
 		expression = null!;
 		if (!symbol.HasConstantValue ||
 			symbol.ContainingType?.TypeKind != TypeKind.Enum ||
-			symbol.ContainingAssembly?.Name != "ECMAScript")
+			!Util.IsECMAScriptRuntimeType(symbol.ContainingType))
 			return false;
 
 		var alias = Util.GetSymbolConfigName(symbol);
@@ -1099,7 +1099,7 @@ private bool TryExpandEcmascriptParamsArgument(
 	SenseArgument argument,
 		List<Expression> destination)
 {
-	if (method.ContainingAssembly?.Name != "ECMAScript" ||
+	if (!Util.IsECMAScriptRuntimeSymbol(method) ||
 		arg.Parameter?.IsParams != true ||
 		arg.Parameter.Type is not IArrayTypeSymbol arrayType)
 		return false;
@@ -2428,7 +2428,7 @@ private bool TryExpandEcmascriptParamsArgument(
 				: argument;
 
 			var isTrailingEcmascriptDefaultArgument =
-				operation.TargetMethod.ContainingAssembly?.Name == "ECMAScript" &&
+				Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod) &&
 				arg.ArgumentKind == ArgumentKind.DefaultValue &&
 				operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue);
 			if (isTrailingEcmascriptDefaultArgument)

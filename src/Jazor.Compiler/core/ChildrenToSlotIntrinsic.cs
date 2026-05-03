@@ -168,6 +168,15 @@ internal static class ChildrenToSlotIntrinsic
 			IsSameOriginalDefinition(arrayType.ElementType, hostContracts.Node))
 			return true;
 
+		if (hostContracts.Node is not null &&
+			type is INamedTypeSymbol namedCollection &&
+			namedCollection.IsGenericType &&
+			namedCollection.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T &&
+			IsSameOriginalDefinition(namedCollection.TypeArguments[0], hostContracts.Node))
+		{
+			return true;
+		}
+
 		if (type is INamedTypeSymbol { Name: "Number", Arity: 0 })
 			return true;
 
