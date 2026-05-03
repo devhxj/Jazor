@@ -96,6 +96,42 @@ public sealed class AstConverterTests
         return (classSymbol, semanticModel);
     }
 
+    private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(
+        (string Path, string Text)[] sources,
+        string className,
+        params MetadataReference[] additionalReferences)
+    {
+        var syntaxTrees = sources
+            .Select(static source => CSharpSyntaxTree.ParseText(source.Text, path: source.Path))
+            .ToArray();
+        var compilation = CSharpCompilation.Create(
+            "TestAssembly",
+            syntaxTrees,
+            Net100.References.All.Concat(additionalReferences),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var diagnostics = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.IsFalse(diagnostics.Length > 0, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+
+        foreach (var syntaxTree in compilation.SyntaxTrees)
+        {
+            var semanticModel = compilation.GetSemanticModel(syntaxTree);
+            var classDeclaration = syntaxTree.GetRoot()
+                .DescendantNodes()
+                .OfType<ClassDeclarationSyntax>()
+                .FirstOrDefault(node => node.Identifier.Text == className);
+            if (classDeclaration is null)
+                continue;
+
+            var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+            Assert.IsNotNull(classSymbol);
+            return (classSymbol, semanticModel);
+        }
+
+        throw new InvalidOperationException($"Class '{className}' was not found.");
+    }
+
     private static async Task AssertCrossModuleStaticFieldMutationThrowsAsync(string fieldDeclaration, string statement)
     {
         var code = $$"""
@@ -5376,6 +5412,62 @@ export function readRef() {
   return count.value;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
+    public async Task Convert_PartialEcmaScriptModuleClassAcrossSyntaxTrees_UsesCorrectSemanticModelPerDeclaration()
+    {
+        var sources = new[]
+        {
+            ("AppModule.Entry.cs", """
+                using System;
+                using ECMAScript;
+
+                namespace Demo
+                {
+                    [ECMAScriptModule("app/main.mjs")]
+                    public static partial class AppModule
+                    {
+                        public static int Read() => Sum(1, 2);
+                    }
+                }
+                """),
+            ("AppModule.Math.cs", """
+                namespace Demo
+                {
+                    public static partial class AppModule
+                    {
+                        public static int Sum(int a, int b)
+                        {
+                            return a + b;
+                        }
+                    }
+                }
+                """)
+        };
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            sources,
+            "AppModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var appModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "AppModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(appModule, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "export function read()");
+        StringAssert.Contains(script, "return sum(1, 2);");
+        StringAssert.Contains(script, "export function sum(a, b)");
+        StringAssert.Contains(script, "return a + b;");
     }
 
     [TestMethod]

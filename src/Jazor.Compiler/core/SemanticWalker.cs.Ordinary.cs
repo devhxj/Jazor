@@ -240,7 +240,13 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitExpressionStatement(IExpressionStatementOperation operation, SenseArgument argument)
 	{
-		return Translate<Node>(operation.Operation, argument);
+		var node = Visit(operation.Operation, argument);
+		return node switch
+		{
+			Statement statement => statement,
+			Expression expression => WithOrigin(new NonSpecialExpressionStatement(expression), operation),
+			_ => HandleTransformationFailure<Node>(operation, "Expression statement could not be translated to JavaScript.")
+		};
 	}
 
 	/// <summary>

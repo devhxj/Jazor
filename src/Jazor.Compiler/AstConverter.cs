@@ -212,6 +212,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => new SenseArgument(sense, UseImportAliases: true)
             .WithImportContext(_importBindings, _importLocalBindings, ReservedImportNames);
 
+    private SemanticModel GetSemanticModel(SyntaxNode syntax)
+        => syntax.SyntaxTree == _classModel.SyntaxTree
+            ? _classModel
+            : _classModel.Compilation.GetSemanticModel(syntax.SyntaxTree);
+
     /// <summary>
     /// 
     /// </summary>
@@ -347,7 +352,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
         else if (blockSyntax is not null)
         {
-            var operation = _classModel.GetOperation(blockSyntax);
+            var operation = GetSemanticModel(blockSyntax).GetOperation(blockSyntax);
             if (operation is not null)
             {
                 var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
@@ -358,7 +363,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
         else if (expressionSyntax is not null)
         {
-            var operation = _classModel.GetOperation(expressionSyntax);
+            var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax);
             if (operation is not null)
             {
                 var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
@@ -546,12 +551,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 if (methodDecl.Body is not null)
                 {
-                    operation = _classModel.GetOperation(methodDecl.Body);
+                    operation = GetSemanticModel(methodDecl.Body).GetOperation(methodDecl.Body);
                     break;
                 }
                 else if (methodDecl.ExpressionBody is not null)
                 {
-                    operation = _classModel.GetOperation(methodDecl.ExpressionBody);
+                    operation = GetSemanticModel(methodDecl.ExpressionBody).GetOperation(methodDecl.ExpressionBody);
                     break;
                 }
             }
@@ -559,18 +564,18 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             {
                 if (accessorDecl.Body is not null)
                 {
-                    operation = _classModel.GetOperation(accessorDecl.Body);
+                    operation = GetSemanticModel(accessorDecl.Body).GetOperation(accessorDecl.Body);
                     break;
                 }
                 else if (accessorDecl.ExpressionBody is not null)
                 {
-                    operation = _classModel.GetOperation(accessorDecl.ExpressionBody);
+                    operation = GetSemanticModel(accessorDecl.ExpressionBody).GetOperation(accessorDecl.ExpressionBody);
                     break;
                 }
             }
             else if (syntax is ArrowExpressionClauseSyntax arrowExpr)
             {
-                operation = _classModel.GetOperation(arrowExpr.Expression);
+                operation = GetSemanticModel(arrowExpr.Expression).GetOperation(arrowExpr.Expression);
                 break;
             }
         }
@@ -970,13 +975,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
             if (ctorDecl.Body is not null)
             {
-                operation = _classModel.GetOperation(ctorDecl.Body);
+                operation = GetSemanticModel(ctorDecl.Body).GetOperation(ctorDecl.Body);
                 break;
             }
 
             if (ctorDecl.ExpressionBody is not null)
             {
-                operation = _classModel.GetOperation(ctorDecl.ExpressionBody);
+                operation = GetSemanticModel(ctorDecl.ExpressionBody).GetOperation(ctorDecl.ExpressionBody);
                 break;
             }
         }
@@ -1275,7 +1280,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         if (value is LiteralExpressionSyntax lit)
             return CreateLiteralExpression(lit.Token.Value);
 
-        var operation = _classModel.GetOperation(value);
+        var operation = GetSemanticModel(value).GetOperation(value);
         if (operation is not null)
         {
             var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);

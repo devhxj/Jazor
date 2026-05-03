@@ -4480,6 +4480,37 @@ public sealed class SemanticWalkerOrdinaryTest
 }", script);
   }
 
+  /// <summary>
+  /// 测试 if/else 语句在分支体为裸表达式语句时仍可稳定转换
+  /// </summary>
+  [TestMethod]
+  public void Visit_Conditional_IfElse_WithBareExpressionStatementBodies()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(bool ready)
+                {
+                    if (ready)
+                        Console.WriteLine(""ready"");
+                    else
+                        Console.WriteLine(""waiting"");
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  if (ready)
+    console.log(""ready"");
+  else
+    console.log(""waiting"");
+}", script);
+  }
+
   #endregion
 
   #region 扩展测试用例 - 更多赋值运算
