@@ -1,7 +1,7 @@
 # ECMAScript.Vue3 模块映射规则
 
 > Status: active target
-> Updated: 2026-05-02
+> Updated: 2026-05-03
 > Positioning: 规定 `ECMAScript.Vue3` host binding、用户生成模块、record/object lowering 与 Vue runtime import/export 之间的映射边界。
 
 ## 1. 目标
@@ -289,7 +289,9 @@ new VueDictionary
 
 规则：
 
-- key 必须是静态可确定字符串；
+- string key 必须是静态可确定字符串；
+- 只有声明了显式 `Symbol` key contract 的 host 才允许 symbol-key object authoring，例如 `this[Symbol]` 或 `Add(Symbol, ...)`；不是所有 string-key object host 都自动支持 `Symbol`；
+- 显式 `Symbol` key contract 生成 computed property；
 - unsupported dynamic key 必须诊断，不静默生成错误 JS；
 - 值类型要由 dictionary/helper type 真实表达；
 - listener key 如 `onClick` 应优先通过 `VueEventHandlers` 或 `VueAttributeListeners*` 这类 callable-aware helper 表达，不依赖不存在的隐式转换。

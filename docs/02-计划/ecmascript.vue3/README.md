@@ -8,4 +8,4 @@
 | 文件 | 说明 |
 |------|------|
 | `ECMAScript.Vue3.Authoring.ImplementationPlan.md` | `ecmascript.vue3` authoring surface 与 compiler lowering 的落地计划 |
-| `ECMAScript.Vue3.RemainingWorkChecklist.md` | 当前阶段仍需推进的收口项、设计项与非目标边界 |
+| `ECMAScript.Vue3.RemainingWorkChecklist.md` | Phase 1 完成后的剩余工作、下一阶段设计项与非目标边界 |

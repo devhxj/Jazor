@@ -120,9 +120,9 @@ new ButtonProps { Label = "Save" }
 - 展开不做 Vue prefix / format 推断；`Dataset` 里的 key 必须已经是最终 key。
 - 展开顺序是可观察语义，不能为了“美观”重排导致覆盖顺序变化。
 
-### 4.3 string-key object literal
+### 4.3 object-literal key authoring
 
-支持 string-key indexer 和 collection initializer 是为了表达 JavaScript object key 的任意性。
+支持 string-key indexer / collection initializer，以及显式 `Symbol` key，是为了表达 JavaScript object key 的任意性。
 
 ```csharp
 new Vue3.VueObject
@@ -139,10 +139,25 @@ new Vue3.VueObject
 { ".name": "some-name", "^width": "100", "data-user-id": "42" }
 ```
 
+```csharp
+var countKey = Global.SymbolFn("count");
+new Vue3.VueDictionary
+{
+    [countKey] = 1
+}
+```
+
+目标 JS：
+
+```js
+{ [countKey]: 1 }
+```
+
 规则：
 
 - key 是最终 emitted key，不做 PascalCase、kebab-case、`data-`、directive prefix 推断。
-- 可稳定翻译的 key 生成 object property；不能稳定翻译时应诊断，而不是退回错误 JS。
+- string literal key 生成普通 object property；`Symbol` key 在 indexer / `Add(...)` contract 显式声明 `ECMAScript.Symbol` 时生成 computed property。
+- 不能稳定翻译的 key 应诊断，而不是退回错误 JS。
 - 重复 key 按 JS object literal 语义处理，后出现的属性覆盖先出现的属性。
 
 ## 5. Props 与 `VueObject`
@@ -260,7 +275,11 @@ H("button", new Vue3.VueObject
 
 ### 5.3 `VueDictionary`、`VueValue` 与 `VueKey`
 
-`VueDictionary<TValue>` 是 string-key object authoring surface，不是 `Map`。
+`VueDictionary<TValue>` 是 plain object authoring surface，不是 `Map`。
+
+- `this[string key]` / `Add(string, value)` 生成普通 object property；
+- `this[Symbol key]` / `Add(Symbol, value)` 生成 computed property；
+- collection initializer 只是 C# authoring 便利，不生成 runtime `Add(...)` 调用。
 
 `VueValue` 是常见 object value 的 bridge contract：
 
@@ -468,16 +487,26 @@ new VueComponentOptions
 
 ### 6.6 Options API Provide / Inject
 
-Options composition 当前覆盖 object-form 与 function-form 两条主路径：
+Options composition 当前覆盖 object-form 与 function-form 两条主路径，并允许 symbol-key provide / inject source：
 
 ```csharp
+var countKey = Global.SymbolFn("count");
+
 new VueComponentOptions
 {
     Provide = new VueDictionary
     {
-        ["theme"] = "dark"
+        [countKey] = 1
     },
-    Inject = new[] { "feature" }
+    Inject = new VueInjectRegistry<int>
+    {
+        ["count"] = countKey,
+        ["optionalCount"] = new VueInjectOptions<int>
+        {
+            From = countKey,
+            Default = 2
+        }
+    }
 }
 ```
 
@@ -485,8 +514,11 @@ new VueComponentOptions
 
 ```js
 {
-  provide: { theme: "dark" },
-  inject: ["feature"]
+  provide: { [countKey]: 1 },
+  inject: {
+    count: countKey,
+    optionalCount: { from: countKey, default: 2 }
+  }
 }
 ```
 
@@ -495,8 +527,8 @@ new VueComponentOptions
 - `Provide` 使用 `VueProps?`，既支持用户声明 typed record，也支持 `VueDictionary` 任意 key。
 - `ProvideFactory` 使用 `VueDataCallback?`，直接映射 Vue 的 function-form `provide()`；需要 `this` 时复用 `BindThis<TThis>(VueThisDataCallback<TThis>)`，不再新增专门 compiler 特路。
 - `Inject` 使用 `Either<string[], VueProps>?`，覆盖官方 array form 和 object form。
-- object-form inject 可以直接使用 custom `VueProps` record，也可以使用 `VueInjectOptions<TValue>` / `VueInjectEntry<TValue>` / `VueInjectRegistry<TValue>` 表达 source key、default literal 与 default factory。
-- 更复杂的 `this`-bound Options API 长尾仍作为下一阶段设计项，但 `provide` 本身已经可以通过 `ProvideFactory + BindThis(...)` 收口。
+- object-form inject 可以直接使用 custom `VueProps` record，也可以使用 `VueInjectOptions<TValue>` / `VueInjectEntry<TValue>` / `VueInjectRegistry<TValue>` 表达 string key、typed `VueInjectionKey<TValue>`、raw `Symbol` source key、default literal 与 default factory。
+- 更复杂的 `this`-bound Options API 长尾仍作为下一阶段设计项，但 `provide` 本身已经可以通过 `ProvideFactory + BindThis(...)` 收口；symbol-key `provide` / `inject` object form 不再要求额外 Vue 编译器特路。
 - Composition API `Provide(...)` / `Inject(...)` 与 Options API `Provide` / `Inject` 是不同入口：前者是 setup-time helper，后者是 component option object member。
 
 ### 6.7 Options API Mixins / Extends
@@ -1206,8 +1238,11 @@ app.use(installFeature, { enabled: true });
 - `UseTemplateRef<TElement>(key)` 返回 `VueReadonlyRef<TElement?>`，表达挂载前/卸载后可能为 `null` 的 Vue template ref 生命周期。
 - `UseId()` 返回 string，用于 SSR-safe 的 app-local unique id。
 - `UseModel<TValue>(props,key)` / `UseModel<TValue>(props,key,options)` 映射到底层 `useModel(props,key[,options])` helper；调用者必须显式声明对应 prop 与 `update:*` emit，避免 compiler 自动发明 v-model 协议。
+- `UseModel<TProps,TValue>(props,model)` / `UseModel<TProps,TValue>(props,model,options)` 复用同一底层 helper，但把 prop key 收敛到 `VueModelName<TProps,TValue>` typed contract。
 - `VueModelOptions<TValue>` 覆盖 get/set transform。
 - `UseModel(...)` 返回 `VueModelRef<TValue>`：`.Value` 继续映射到 `model.value`，`GetModifiers()` / `GetModifiers<TModifiers>()` 通过 `ECMAScriptInline("__arg1[1]")` 读取官方 tuple-like modifiers bag，而不新增 compiler 特路。
+- `ModelName<TProps,TValue>()` / `ModelName<TProps,TValue>(string key)` 分别覆盖 default model (`modelValue`) 与 named model；`ModelPropName(model)` / `ModelUpdateEventName(model)` 用于把同一 typed contract 复用到 `PropNames` / `EmitNames` 声明，减少重复字符串。
+- `VueSetupContext.Emit(model, value)` 通过 instance-inline helper 映射到 `context.emit(\`update:${model}\`, value)`，把同一 `VueModelName<TProps,TValue>` contract 继续复用到 typed update emit。
 - `ToRef` 使用 overload 区分 value/ref/getter normalization 与 object property ref；字符串 key 必须是最终 runtime key，C# 不从 string key 反推属性类型。
 - `ToRef<TValue>(VueDictionary<TValue>, string)` 覆盖字典对象 key path；强类型 record path 使用 `ToRef<TSource,TValue>(source,key)` 明确 value contract。
 - `ToRefs(source)` 返回 `VueRefs<TSource>`，提供 `IVueRef<VueValue>? this[string key]` 的兜底读取面。
@@ -1279,7 +1314,7 @@ app.use(installFeature, { enabled: true });
 
 统一规则：
 
-- indexer 和 `Add(string, value)` 都 lower 成 object property。
+- string indexer / `Add(string, value)` lower 成 object property；`Symbol` indexer / `Add(Symbol, value)` lower 成 computed property。
 - key 是最终 JS key，不做框架专属命名加工。
 - collection initializer 只是一种 C# authoring 便利，不能生成 runtime `Add(...)` 调用。
 
@@ -1305,17 +1340,17 @@ app.use(installFeature, { enabled: true });
 
 诊断信息应命名源 C# symbol、目标 contract 和可行替代写法。
 
-## 18. 当前实现差距
+## 18. 当前实现基线
 
 | 区域 | 当前状态 | 目标 |
 |------|----------|------|
 | `ChildrenToSlotIntrinsic` | 已从 `SemanticWalker.cs.Vue.cs` 迁出，基于 imported `h` 和同宿主 slot contract 识别 | 继续保持为最小 intrinsic；后续不要回到 Vue 命名空间特判 |
-| default slot sugar | literal child 直接生成值对象；其他 child 使用 single-evaluation IIFE | 后续可继续扩大静态安全表达式集合，但不得改变求值时机、次数或变量快照语义 |
+| default slot sugar | literal child 直接生成值对象；其他 child 使用 single-evaluation IIFE；component/props/child 单次求值与顺序已由回归锁定 | 后续可继续扩大静态安全表达式集合，但不得改变求值时机、次数或变量快照语义 |
 | `VueAttributeBag` | indexer / class / style / id / title / for / name / type / placeholder / disabled / readonly / required / tabindex / role 读取面已落地 | callable listener bridge 已由 `VueAttributeListeners` / `VueAttributeListeners<TEvent>` 补齐；继续按真实需求扩展 |
 | `VueSlotBag` | indexer / default 读取入口已落地 | scoped read-side helper 已由 `VueScopedSlots<TScope>` 作为 typed projection 补齐 |
 | `H(...)` overload | 已按 element/component/props/slots/direct-child canonical 分类收敛（direct-child 使用 `IVNode` + `VueChild`） | 后续新增 API 继续复用现有分类，不再按示例组合膨胀 |
 | `VueValue` callable/listener values | arbitrary dictionary key 仍主要用于普通属性值 | listener key 继续优先走 `VueEventHandlers` 或 `VueAttributeListeners*` callable bridge，避免依赖不存在的隐式转换 |
-| object-literal host dynamic key 诊断 | 已覆盖 `VueObject` / `VueDictionary` / `VueDirectiveRegistry` / `VuePluginOptions` / `VuePropRegistry` / `VueEmitRegistry` / `VueComputedRegistry` / `VueMethodRegistry` / `VueWatchRegistry` 的 indexer / `Add(string, ...)` 路线 | 后续新增 object-literal host 必须复用同一路径并补齐动态 key 负向回归 |
+| object-literal host dynamic key 诊断 | 已覆盖 `VueObject` / `VueDictionary` / `VueDirectiveRegistry` / `VuePluginOptions` / `VuePropRegistry` / `VueEmitRegistry` / `VueComputedRegistry` / `VueMethodRegistry` / `VueWatchRegistry` 的 indexer / `Add(...)` 路线；string literal 始终允许，symbol-key 只在 host 显式声明 `Symbol` key contract 时允许 | 后续新增 object-literal host 必须复用同一路径并补齐 string dynamic-key 负向回归；若新增 symbol-key host，还必须补齐 symbol-key 正向回归 |
 | `VueObject` | 已走 record + spread + dictionary 路线 | 保持通用 lowering，不再加 Vue-only 规则 |
 | directive / plugin | 基础 object/function form 已存在 | 补齐文档、测试和 typed retrieval 细节 |
 | custom elements | 核心 runtime binding + merged options authoring 已覆盖 | 后续只需在真实业务场景下补充更多 typed convenience，不再依赖 compiler 特路 |

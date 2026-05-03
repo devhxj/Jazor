@@ -1,14 +1,14 @@
 # ECMAScript.Vue3 Authoring 落地计划
 
 > Status: 活跃计划
-> Updated: 2026-05-02
+> Updated: 2026-05-03
 > Positioning: 以 [ECMAScript.Vue3 平衡式目标设计](../../01-目标/ecmascript.vue3/vue3-balanced-design.md)、[ECMAScript.Vue3 API 覆盖矩阵](../../01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md) 和 [ECMAScript.Vue3 映射细节设计](../../01-目标/ecmascript.vue3/vue3-mapping-details.md) 为边界，推进 `src/ECMAScript.Vue3/Vue3.cs` 与相关 compiler lowering 的收口实施。
 
 ## 0. 三阶段总路线（H -> Razor->H -> Jolt）
 
 `ECMAScript.Vue3` 按三阶段推进，防止把“库映射问题”和“工程化 authoring 问题”混在一个阶段里：
 
-1. **Phase 1: H 函数映射层（已完成结构收口）**
+1. **Phase 1: H 函数映射层（已完成闭环）**
    - 建立 `H(...)` / `VueObject` / slot sugar / read-side bag 的规范面。
    - 以 C# 类型系统 + 通用 lowering 为主，不扩张 Vue 专项 compiler 分支。
 
@@ -54,11 +54,11 @@
 - `PropOptions` / `EmitOptions` 已把 Vue runtime `props` / `emits` 的 object-form 显式声明纳入 record authoring surface，typed generic 不再作为自动 runtime declaration 的理由。
 - `VueComponentOptions*` 不再携带历史 `[Props]` / `[Emits]` 推导特性，避免依赖同 key 成员排序压制推导这种脆弱行为。
 - `H(...)` default-slot sugar 已从 `SemanticWalker` 的 Vue 命名分块迁移到通用 `ChildrenToSlotIntrinsic`，识别条件是 imported `h` + 同宿主 component / props / slot 合同。
-- `H(...)` 已经具备 default-slot 路线，但 overload 家族仍偏大。
+- `H(...)` 已按 element/component/props/slots/direct-child canonical 分类收口，并由 default-slot、typed-slot、host-like contract 与 single-evaluation 回归守护。
 
-当前仍需要收口的不是“功能数量”，而是“边界质量”。
+后续工作的重点不再是“功能数量”，而是“边界质量”。
 
-## 4. Phase 1 实施分解（已完成主体，持续硬化）
+## 4. Phase 1 实施分解（已闭环完成，作为完成记录保留）
 
 ### Phase A: Compiler Boundary Reduction
 
@@ -89,7 +89,7 @@
 
 **目标**
 
-- 统一 `VueDictionary`、`VueObject`、registry、plugin options 的 string-key lowering。
+- 统一 `VueDictionary`、`VueObject`、registry、plugin options 的 object-literal lowering；其中 string literal key 走普通 property，显式 `Symbol` key contract 走 computed property。
 - 维持 `Add(string, ...)`、indexer、initializer 这三条路径的一致性。
 
 **接受标准**
@@ -223,12 +223,12 @@
 - `VueWatchOptions` / `VueWatchEffectOptions`（核心路径、debugger event options、reactive object source、同类 multi-source watch 已落地）
 - writable computed options（已落地）
 - `VueEffectScope`（已落地）
-- composition provide/inject（string key 与 typed injection key 已落地）
-- composition helpers（`useAttrs` / `useSlots` 基础 bag 与 typed projection、`useTemplateRef`、`useId` 已落地；`useModel` 已覆盖 typed ref + get/set options + modifiers projection，named model / higher-level v-model 协议后续设计）
+- composition provide/inject（string key、typed injection key、Options object-form symbol-key source / provide authoring 已落地）
+- composition helpers（`useAttrs` / `useSlots` 基础 bag 与 typed projection、`useTemplateRef`、`useId` 已落地；`useModel` 已覆盖 typed ref + get/set options + modifiers projection，并补入 `VueModelName<TProps,TValue>` + `ModelName/ModelPropName/ModelUpdateEventName` named-model contract，以及 `VueSetupContext.Emit(model, value)` typed update emit helper；higher-level v-model 协议后续设计）
 - `defineAsyncComponent`（loader/options 核心路径已落地）
 - `customRef`（factory + handlers 已落地）
 - `toRef` / `toRefs`（normalization、source key、typed refs projection 已落地）
-- `data` / `computed` / `methods` / `watch` / `props` / `emits` / `inheritAttrs` / `expose` / lifecycle callbacks / Options provide-inject 基础面 / mixins-extends 兼容面（component definition base option 已落地；explicit `PropNames` / `EmitNames` array-form 已落地；`PropOptions` / `EmitOptions` object-form validators/defaults 已落地；data 和 lifecycle 先覆盖无 `this` callback surface，computed 先覆盖 no-`this` getter/writable registry 与自定义 `VueProps` record，methods 先覆盖 no-`this` delegate registry 与自定义 `VueProps` record，watch 先覆盖 callback / cleanup callback / method-name / options object 基础形态，provide/inject 已覆盖 object/array 声明式形态、provide function-form 与 inject object-form source/default/factory helper，mixins/extends 只作为低层兼容 binding）
+- `data` / `computed` / `methods` / `watch` / `props` / `emits` / `inheritAttrs` / `expose` / lifecycle callbacks / Options provide-inject 基础面 / mixins-extends 兼容面（component definition base option 已落地；explicit `PropNames` / `EmitNames` array-form 已落地；`PropOptions` / `EmitOptions` object-form validators/defaults 已落地；data 和 lifecycle 先覆盖无 `this` callback surface，computed 先覆盖 no-`this` getter/writable registry 与自定义 `VueProps` record，methods 先覆盖 no-`this` delegate registry 与自定义 `VueProps` record，watch 先覆盖 callback / cleanup callback / method-name / options object 基础形态，provide/inject 已覆盖 object/array 声明式形态、provide function-form、inject object-form source/default/factory helper，以及 `VueDictionary` symbol-key object authoring，mixins/extends 只作为低层兼容 binding）
 - built-in components（`Transition` / `TransitionGroup` / `KeepAlive` / `Teleport` / `Suspense` render-function binding 已落地）
 - `withDirectives` / `withModifiers`（核心 render helper 已落地；后续只做 authoring convenience 优化）
 - custom elements 核心 binding（`DefineCustomElement`、`VueCustomElementOptions`、`UseHost`、`UseShadowRoot` 已落地；完整 props/events/light DOM authoring 策略后续设计）
@@ -240,28 +240,21 @@
 - Options API full surface、custom elements 的完整 authoring 策略先设计再实现。
 - SFC、template、SSR renderer、custom renderer 保持 separate workstream。
 
-## 5. 推荐执行顺序（Phase 1 收口）
+## 5. 推荐执行顺序（Phase 2 / Phase 3 主线）
 
-1. A1
-2. A2
-3. A3
-4. B1
-5. B2
-6. B3
-7. B4
-8. C1
-9. C2
-10. C3
-11. D1
-12. D2
-13. D3
+1. Razor -> `H(...)` canonical lowering
+2. Razor 产物与手写 `H(...)` diagnostics 对齐
+3. 外部库 layout/proxy/doc guard 模板化
+4. higher-level `v-model` convenience 设计
+5. Options API 长尾与 custom elements authoring 策略
+6. Phase 3 的 Jolt 工程化协同
 
 理由：
 
-- 先减 compiler 硬编码，再收 surface。
-- 先收合同，再补 ergonomics。
-- 先让 public surface 说真话，再谈好用。
-- 最后按覆盖矩阵补 API 面，避免把缺口补成新的 compiler 硬编码。
+- Phase 1 已完成，后续不应再把 canonical `H(...)` / object-literal / read-side bag 当作未收口项反复回填。
+- 下一阶段的核心是承接已完成 contract，而不是继续扩张 compiler Vue 特路。
+- 先把 Razor/Jolt 等上层工作流压到 Phase 1 contract 上，再讨论更高层 ergonomics。
+- 其中 RazorVue `h(...)` 发射已完成最小 arity 对齐：`h(component)` / `h(component, props)` / `h(component, slots)` / `h(element, child)` 等 canonical 形态不再携带多余 `null` 占位。
 
 ## 5.1 Phase 2 / Phase 3 前置门槛
 
@@ -298,14 +291,14 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQual
 | overload 继续膨胀 | 中 | 先收 canonical shape，再补 helper |
 | 文档领先实现 | 中 | 每个切片完成后同步 README |
 
-## 8. 完成定义
+## 8. Phase 1 完成定义（已满足）
 
-当以下条件满足时，这条计划可转入阶段性完成：
+以下条件已经满足，因此 Phase 1 现已转入完成状态：
 
 - `SemanticWalker` 不再以 Vue 示例名作为主要设计中心；
 - `VueObject.Class` 保持为清晰的 bridge shape，并能在 native union 到来时平滑迁移；
 - `VueSetupContext` 的读侧 bag 可实际使用；
-- `H(...)` overload 家族收敛到可治理规模；
+- `H(...)` overload 家族已收敛到 canonical 分类，并由回归测试守护；
 - `record` / `[Spread]` / static `null` 省略继续保持通用。
 
 ## 9. 参考
