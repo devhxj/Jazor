@@ -39,7 +39,7 @@ Both lines share the same compiler infrastructure (SemanticWalker, WhiteList, As
 |----------|-------|
 | **New visitors** | [Docs Hub](docs/README.md) — project overview and navigation |
 | **Maintainers** | [Workstream Dashboard](docs/02-计划/workstream-dashboard.md) — resume work entry point |
-| **Architecture** | [Compiler Architecture](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [Jolt Design](docs/01-目标/jolt/README.md) · [RazorVue Design](docs/01-目标/razorvue/README.md) |
+| **Architecture** | [Compiler Architecture](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [Jolt Design](docs/01-目标/jolt/README.md) · [RazorVue Design](docs/01-目标/razorvue/README.md) · [ECMAScript.Vue3 Design](docs/01-目标/ecmascript.vue3/README.md) |
 
 Docs are organized into five categories: [Goals](docs/01-目标/README.md) · [Plans](docs/02-计划/README.md) · [Completed](docs/03-完成/README.md) · [Supplements](docs/04-补充/README.md) · [Retired](docs/05-遗弃/README.md)
 
@@ -61,6 +61,7 @@ Jazor/
 ├── src/
 │   ├── ECMAScript/                         # ECMAScript AST core types and attributes
 │   ├── ECMAScript.Contract/                # Zero-dependency minimal contract layer (JazorAttribute, Op, IUIComponent)
+│   ├── ECMAScript.Vue3/                    # Vue 3 runtime binding surface (API, Types, Delegates)
 │   ├── ECMAScript.Vuetify/                 # Vuetify bindings and RazorVue component stubs
 │   ├── Jazor.Analyzer/                     # Static analyzer (whitelist compile-time validation)
 │   ├── Jazor.CLR/                          # CLR runtime support (whitelist declarations + JS implementations)
@@ -89,6 +90,7 @@ Jazor/
 - **Jazor.Analyzer** — Static analysis and whitelist validation for compile-time type safety
 - **Jazor.CLR** — .NET type runtime module support, providing JavaScript runtime implementations
 - **Jazor.Emit** — Output and bundling pipeline for host-facing artifacts [→ Docs](src/Jazor.Emit/README.md)
+- **ECMAScript.Vue3** — Vue 3 runtime binding surface: API (Composition, Reactivity, Lifecycle, Render), typed delegates, and component/directive/plugin types [→ Docs](src/ECMAScript.Vue3/README.md)
 - **RazorVue** — Vue-oriented Razor compilation path, Blazor-style component authoring [→ Design](docs/01-目标/razorvue/README.md)
 - **Jolt** — `.jazor` full-featured development boundary: LSP + DevServer + HMR + Debug + Build [→ Design](docs/01-目标/jolt/README.md) [→ Status](docs/03-完成/jolt/status.md)
 

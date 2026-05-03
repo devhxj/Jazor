@@ -40,7 +40,7 @@ Jazor 是一个基于 Roslyn 的 C# → JavaScript 编译器。核心能力是�
 |------|------|
 | **新访客** | [文档中心](docs/README.md) — 项目全貌与导航 |
 | **维护者** | [工作流总览](docs/02-计划/workstream-dashboard.md) — 恢复工作唯一入口 |
-| **架构设计** | [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [Jolt 设计](docs/01-目标/jolt/README.md) · [RazorVue 设计](docs/01-目标/razorvue/README.md) |
+| **架构设计** | [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [Jolt 设计](docs/01-目标/jolt/README.md) · [RazorVue 设计](docs/01-目标/razorvue/README.md) · [ECMAScript.Vue3 设计](docs/01-目标/ecmascript.vue3/README.md) |
 
 文档按五类组织：[目标](docs/01-目标/README.md) · [计划](docs/02-计划/README.md) · [完成](docs/03-完成/README.md) · [补充](docs/04-补充/README.md) · [遗弃](docs/05-遗弃/README.md)
 
@@ -62,6 +62,7 @@ Jazor/
 ├── src/
 │   ├── ECMAScript/                         # ECMAScript AST 核心类型与特性
 │   ├── ECMAScript.Contract/                # 依赖零污染的最小契约层（JazorAttribute、Op、IUIComponent）
+│   ├── ECMAScript.Vue3/                    # Vue 3 运行时绑定面（API、类型、委托）
 │   ├── ECMAScript.Vuetify/                 # Vuetify 绑定与 RazorVue 组件桩
 │   ├── Jazor.Analyzer/                     # 静态代码分析器（白名单编译时验证）
 │   ├── Jazor.CLR/                          # CLR 运行时支持（白名单声明 + JS 实现）
@@ -90,6 +91,7 @@ Jazor/
 - **Jazor.Analyzer** — 静态分析和白名单验证，确保编译时类型安全
 - **Jazor.CLR** — .NET 类型的运行时模块支持，提供 JavaScript 运行时实现
 - **Jazor.Emit** — 产物输出和打包管道，处理 host-facing 输出 [→ 文档](src/Jazor.Emit/README.md)
+- **ECMAScript.Vue3** — Vue 3 运行时绑定面：API（Composition、Reactivity、Lifecycle、Render）、类型化委托、组件/指令/插件类型 [→ 文档](src/ECMAScript.Vue3/README.md)
 - **RazorVue** — Vue 导向的 Razor 编译路径，支持 Blazor 风格的组件编写 [→ 设计](docs/01-目标/razorvue/README.md)
 - **Jolt** — `.jazor` 全功能开发时边界：LSP + DevServer + HMR + Debug + Build [→ 设计](docs/01-目标/jolt/README.md) [→ 状态](docs/03-完成/jolt/status.md)
 
