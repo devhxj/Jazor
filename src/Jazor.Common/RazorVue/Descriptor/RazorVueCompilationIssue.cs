@@ -22,7 +22,8 @@ internal enum RazorVueIssueCode
     InvalidBindTarget,
     UnknownSlot,
     SlotContextMisuse,
-    DuplicateSlotValue
+    DuplicateSlotValue,
+    MissingSlotValue
 }
 
 internal enum RazorVueIssueSeverity

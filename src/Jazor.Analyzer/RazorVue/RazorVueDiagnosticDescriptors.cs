@@ -107,4 +107,12 @@ internal static class RazorVueDiagnosticDescriptors
         category: "RazorVue",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor MissingSlotValue = new(
+        id: "JAZORVUE015",
+        title: "RazorVue child content parameter value is missing",
+        messageFormat: "{0}",
+        category: "RazorVue",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

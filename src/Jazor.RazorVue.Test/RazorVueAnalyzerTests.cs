@@ -35,7 +35,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZORVUE013", "JAZORVUE014", "JAZOR001");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZORVUE013", "JAZORVUE014", "JAZORVUE015", "JAZOR001");
     }
 
     [TestMethod]
@@ -91,7 +91,7 @@ public sealed class RazorVueAnalyzerTests
             """);
 
         AssertHasDiagnostic(diagnostics, "JAZOR001");
-        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZORVUE013", "JAZORVUE014");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE001", "JAZORVUE002", "JAZORVUE004", "JAZORVUE005", "JAZORVUE006", "JAZORVUE007", "JAZORVUE008", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE012", "JAZORVUE013", "JAZORVUE014", "JAZORVUE015");
     }
 
     [TestMethod]
@@ -749,6 +749,51 @@ public sealed class RazorVueAnalyzerTests
     }
 
     [TestMethod]
+    public async Task RazorVue_Misuse_MissingSlotValue_ReportsJAZORVUE015()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "Header");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE015");
+    }
+
+    [TestMethod]
     public async Task RazorVue_Misuse_ValidTypedLibrarySlot_IsAccepted()
     {
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
@@ -784,7 +829,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertNoDiagnostic(diagnostics, "JAZORVUE009", "JAZORVUE010", "JAZORVUE011");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE015");
     }
 
     [TestMethod]
@@ -897,7 +942,7 @@ public sealed class RazorVueAnalyzerTests
             }
             """);
 
-        AssertNoDiagnostic(diagnostics, "JAZORVUE012", "JAZORVUE013", "JAZORVUE014");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE012", "JAZORVUE013", "JAZORVUE014", "JAZORVUE015");
     }
 
     private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)

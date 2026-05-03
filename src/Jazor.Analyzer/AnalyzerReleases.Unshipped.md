@@ -22,6 +22,7 @@ JAZORVUE011 | RazorVue | Error | RazorVue child content parameter is assigned mu
 JAZORVUE012 | RazorVue | Error | RazorVue library component declaration is invalid
 JAZORVUE013 | RazorVue | Error | RazorVue library style dependency declaration is invalid
 JAZORVUE014 | RazorVue | Error | RazorVue library plugin requirement declaration is invalid
+JAZORVUE015 | RazorVue | Error | RazorVue child content parameter value is missing
 JAZORVGA001 | Jazor.RazorVue.Analysis | Error | RazorVue catalog generation failed
 JAZORVGA002 | Jazor.RazorVue.Analysis | Error | RazorVue component not found
 JAZORVGA003 | Jazor.RazorVue.Analysis | Error | RazorVue component name is ambiguous
@@ -36,3 +37,4 @@ JAZORVGA011 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter
 JAZORVGA012 | Jazor.RazorVue.Analysis | Error | RazorVue library component declaration is invalid
 JAZORVGA013 | Jazor.RazorVue.Analysis | Error | RazorVue library style dependency declaration is invalid
 JAZORVGA014 | Jazor.RazorVue.Analysis | Error | RazorVue library plugin requirement declaration is invalid
+JAZORVGA015 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter value is missing

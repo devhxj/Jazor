@@ -188,9 +188,16 @@ internal sealed partial class RazorVueExpressionEmitter
         foreach (var attribute in attributes)
         {
             if (slotsByPublicName is not null &&
-                slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor) &&
-                attribute.Value is not null)
+                slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor))
             {
+                if (attribute.Value is null)
+                {
+                    throw CreateAuthoringIssue(
+                        RazorVueIssueCode.MissingSlotValue,
+                        $"Child content parameter '{attribute.Name}' on component '{GetComponentDisplayName(component)}' must be assigned a value.",
+                        attribute);
+                }
+
                 var slotName = slotDescriptor.Name;
                 var slotExpression = EmitExpression(attribute.Value!);
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty || !IsCallableSlotExpression(attribute.Value!))
@@ -370,4 +377,9 @@ internal sealed partial class RazorVueExpressionEmitter
         throw new NotSupportedException(
             $"RazorVue render could not resolve component node '{component.ComponentName}' in component '{_snapshot.Descriptor.FullName}'.");
     }
+
+    private string GetComponentDisplayName(RazorVueComponentNode component)
+        => _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor)
+            ? descriptor.Name
+            : component.ComponentName;
 }

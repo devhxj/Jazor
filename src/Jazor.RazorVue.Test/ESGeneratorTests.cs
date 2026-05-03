@@ -9745,6 +9745,64 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithMissingSlotValue_ReportsJAZORVGA015()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.MissingSlotValue.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "Header");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA015")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "ChildCard");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Header");
+        Assert.AreEqual(28, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithInvalidLibraryComponentDeclaration_ReportsJAZORVGA012()
     {
         var compilation = CreateCompilation(

@@ -23,6 +23,7 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         RazorVueDiagnosticDescriptors.UnknownSlot,
         RazorVueDiagnosticDescriptors.SlotContextMisuse,
         RazorVueDiagnosticDescriptors.DuplicateSlotValue,
+        RazorVueDiagnosticDescriptors.MissingSlotValue,
         RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryStyleDependencyDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration
@@ -218,6 +219,9 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
                 return true;
             case RazorVueIssueCode.DuplicateSlotValue:
                 descriptor = RazorVueDiagnosticDescriptors.DuplicateSlotValue;
+                return true;
+            case RazorVueIssueCode.MissingSlotValue:
+                descriptor = RazorVueDiagnosticDescriptors.MissingSlotValue;
                 return true;
             case RazorVueIssueCode.InvalidLibraryComponentDeclaration:
                 descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;

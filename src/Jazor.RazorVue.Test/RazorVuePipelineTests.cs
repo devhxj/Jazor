@@ -1250,6 +1250,55 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_WithMissingNamedSlotValue_ReportsMissingSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "Header");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.MissingSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "ChildCard");
+        StringAssert.Contains(exception.Issue.Message, "Header");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_WithUnknownLibraryParameter_ReportsUnknownParameter()
     {
         var context = CreateContext(

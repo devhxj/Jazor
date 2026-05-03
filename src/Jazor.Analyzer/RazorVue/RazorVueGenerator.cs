@@ -124,6 +124,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueMissingSlotValue = new(
+        id: "JAZORVGA015",
+        title: "RazorVue child content parameter value is missing",
+        messageFormat: "{0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -215,6 +223,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.UnknownSlot => RazorVueUnknownSlot,
             RazorVueIssueCode.SlotContextMisuse => RazorVueSlotContextMisuse,
             RazorVueIssueCode.DuplicateSlotValue => RazorVueDuplicateSlotValue,
+            RazorVueIssueCode.MissingSlotValue => RazorVueMissingSlotValue,
             _ => RazorVueGenerationFailed
         };
         var location = TryCreateLocation(issueException.Origin) ?? candidate?.Location ?? Location.None;
@@ -541,4 +550,3 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         INamedTypeSymbol ClassSymbol,
         Location Location);
 }
-
