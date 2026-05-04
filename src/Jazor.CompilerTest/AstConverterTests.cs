@@ -13571,6 +13571,43 @@ export function create() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassWithSameModuleStaticPropertyReferenceAndAssignment_UsesAccessorFunctions()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public static int Value { get; set; } = 42;
+
+                public static int Read() => Value;
+
+                public static void Write() => Value = 7;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code, "TestClass");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.AreEqual(
+@"let _9d512e1fd4b4d93c = 42;
+export function get_Value() {
+  return _9d512e1fd4b4d93c;
+}
+export function set_Value(value) {
+  _9d512e1fd4b4d93c = value;
+}
+export function read() {
+  return get_Value();
+}
+export function write() {
+  set_Value(7);
+}
+".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithNestedRecord_DoesNotEmitRuntimeDeclaration()
     {
         var code = """

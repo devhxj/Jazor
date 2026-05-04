@@ -2045,6 +2045,10 @@ public partial class SemanticWalker
 			if (mapperExpr is not null)
 				return mapperExpr;
 
+			if (TryBuildCurrentModulePropertySetterCall(propertyReference.Property, value, out var currentModuleSetterCall) &&
+				currentModuleSetterCall is not null)
+				return currentModuleSetterCall;
+
 			if (TryBuildImportedModulePropertySetterCall(propertyReference.Property, argument, value, out var importedSetterCall) &&
 				importedSetterCall is not null)
 				return importedSetterCall;

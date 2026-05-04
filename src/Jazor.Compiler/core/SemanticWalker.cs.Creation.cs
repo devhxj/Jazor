@@ -1164,6 +1164,10 @@ public partial class SemanticWalker
 
 				if (propertyReference.Property.IsStatic && propertyReference.Property.ContainingType is not null)
 				{
+					if (TryBuildCurrentModulePropertyGetterCall(propertyReference.Property, out var currentModuleProperty) &&
+						currentModuleProperty is not null)
+						return currentModuleProperty;
+
 					if (TryBuildImportedModulePropertyAccess(propertyReference.Property, argument, out var importedProperty) &&
 						importedProperty is not null)
 						return importedProperty;

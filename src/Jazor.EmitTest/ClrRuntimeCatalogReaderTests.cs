@@ -68,6 +68,20 @@ public sealed class ClrRuntimeCatalogReaderTests
         StringAssert.Contains(comparerModule.Content, "compareCore,");
     }
 
+    [TestMethod]
+    public void CatalogReader_TryRead_StringIndexerGetter_UsesCharAt_WithoutSelfRecursiveImport()
+    {
+        var assembly = typeof(ECMAScript.Number).Assembly;
+
+        var modules = CatalogReader.TryRead(assembly);
+
+        Assert.IsNotNull(modules);
+
+        var stringModule = modules.Single(module => string.Equals(module.RelativePath, "System/StringModule.js", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(stringModule.Content, "return instance.charAt(index);");
+        Assert.IsFalse(stringModule.Content.Contains("return String.fromCharCode(i$8578349aab59a79b(instance, index));", StringComparison.Ordinal));
+    }
+
     private static void AssertContainsModule(IReadOnlyList<EmitModuleRecord> modules, string relativePath)
     {
         var module = modules.SingleOrDefault(module => string.Equals(module.RelativePath, relativePath, StringComparison.OrdinalIgnoreCase));

@@ -668,6 +668,32 @@ public partial class SemanticWalker
 		return true;
 	}
 
+	private bool TryBuildCurrentModulePropertyGetterCall(IPropertySymbol property, out Expression? expression)
+	{
+		expression = null;
+		if (!property.IsStatic || property.GetMethod is null)
+			return false;
+
+		if (!TryGetCurrentModuleDeclaredName(property.GetMethod, out var getterName))
+			return false;
+
+		expression = new CallExpression(new Identifier(getterName), NodeList.Empty<Expression>(), optional: false);
+		return true;
+	}
+
+	private bool TryBuildCurrentModulePropertySetterCall(IPropertySymbol property, Expression value, out Expression? expression)
+	{
+		expression = null;
+		if (!property.IsStatic || property.SetMethod is null)
+			return false;
+
+		if (!TryGetCurrentModuleDeclaredName(property.SetMethod, out var setterName))
+			return false;
+
+		expression = new CallExpression(new Identifier(setterName), NodeList.From(value), optional: false);
+		return true;
+	}
+
 	private bool TryBuildImportedModulePropertySetterCall(IPropertySymbol property, SenseArgument? context, Expression value, out Expression? expression)
 	{
 		expression = null;
@@ -2206,6 +2232,10 @@ private bool TryExpandEcmascriptParamsArgument(
 		// 检查属性是否是静态成员
 		if (operation.Property.IsStatic && operation.Property.ContainingType is not null)
 		{
+			if (TryBuildCurrentModulePropertyGetterCall(operation.Property, out var currentModuleProperty) &&
+				currentModuleProperty is not null)
+				return WithOriginIfMissing(currentModuleProperty, operation);
+
 			if (TryBuildImportedModulePropertyAccess(operation.Property, argument, out var importedProperty) &&
 				importedProperty is not null)
 				return WithOriginIfMissing(importedProperty, operation);
