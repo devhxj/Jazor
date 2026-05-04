@@ -6840,6 +6840,66 @@ line2"";
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_DeclarationPattern_EcmascriptNumber_UsesTypeOfNumber()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = 42;
+                    if (obj is Number n)
+                    {
+                        Console.WriteLine(n);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let n;
+  let obj = 42;
+  if (typeof obj === ""number"" && (n = obj, true)) {
+    console.log(n);
+  }
+}", script);
+  }
+
+  [TestMethod]
+  public void Visit_DeclarationPattern_EcmascriptArray_UsesArrayIsArray()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    object obj = new string[] { "","" };
+                    if (obj is Array<string> items)
+                    {
+                        Console.WriteLine(items.Length);
+                    }
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let items;
+  let obj = ["",""];
+  if (Array.isArray(obj) && (items = obj, true)) {
+    console.log(items.length);
+  }
+}", script);
+  }
+
   #endregion
 
   #region 扩展测试用例 - 更多逻辑模式

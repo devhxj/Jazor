@@ -195,6 +195,9 @@ public sealed class SdkIntegrationTests
 
                 public static string OffsetText() => DateTimeOffset.Parse("2024-01-02T03:04:05+08:00").ToString("O", null);
 
+                public static string DecimalText()
+                    => decimal.Parse("1234.50", null).ToString("N2", CultureInfo.GetCultureInfo("en-US"));
+
                 public static string CultureText()
                 {
                     var culture = new CultureInfo("en-US");
@@ -265,14 +268,32 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(
             "import { _25187a24d190d864, _e856edbfd7db0646 } from \"System/DateTimeOffsetModule.js\";",
             GetImportLine(module, "System/DateTimeOffsetModule.js"));
-        Assert.AreEqual(
-            "import { _559b27327f84f1af, _b7486264ae338f27 } from \"System/Globalization/CultureInfoModule.js\";",
-            GetImportLine(module, "System/Globalization/CultureInfoModule.js"));
+        var decimalImport = GetImportLine(module, "System/DecimalModule.js");
+        StringAssert.Contains(decimalImport, "_01be2a34fe2cda4e");
+        StringAssert.Contains(decimalImport, "_b1e6a06111674f0c");
+
+        var cultureInfoImport = GetImportLine(module, "System/Globalization/CultureInfoModule.js");
+        StringAssert.Contains(cultureInfoImport, "_559b27327f84f1af");
+        StringAssert.Contains(cultureInfoImport, "_b7486264ae338f27");
+        StringAssert.Contains(cultureInfoImport, "_a536c354b66082b9");
 
         StringAssert.Contains(module, "return _e2640560d207afce(\"2024-01-02\").toString();");
         StringAssert.Contains(module, "return _e856edbfd7db0646(_25187a24d190d864(\"2024-01-02T03:04:05+08:00\"), \"O\", null);");
+        StringAssert.Contains(module, "_01be2a34fe2cda4e(\"1234.50\", null)");
+        StringAssert.Contains(module, "_a536c354b66082b9(\"en-US\")");
+        StringAssert.Contains(module, "_b1e6a06111674f0c(");
         StringAssert.Contains(module, "let culture = _b7486264ae338f27(\"en-US\");");
         StringAssert.Contains(module, "return culture + \"|\" + _559b27327f84f1af(culture);");
+
+        using var emittedManifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+        var emittedRelativePaths = emittedManifest.RootElement
+            .GetProperty("Modules")
+            .EnumerateArray()
+            .Select(static module => module.GetProperty("RelativePath").GetString())
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray()!;
+        CollectionAssert.Contains(emittedRelativePaths, "System/DecimalModule.js");
+        CollectionAssert.Contains(emittedRelativePaths, "System/Globalization/CultureInfoModule.js");
     }
 
     [TestMethod]

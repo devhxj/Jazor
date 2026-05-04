@@ -1550,6 +1550,36 @@ AssertScriptEqual(@"{
 }", script);
   }
 
+  [TestMethod]
+  public void Visit_ForLoop_UpdateMethodCallWrappedByExpressionStatement()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    for (int i = 0; i < 3; Next(ref i))
+                    {
+                    }
+                }
+
+                static void Next(ref int value)
+                {
+                    value++;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.AreEqual(@"{
+  let v$0;
+  for (let i = 0; i < 3; v$0 = TestClass.next(i), i = v$0[0]) { }
+}", script);
+  }
+
   /// <summary>
   /// 测试 for 循环多更新表达式
   /// </summary>

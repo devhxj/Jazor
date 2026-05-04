@@ -1407,6 +1407,53 @@ public sealed class SemanticWalkerSwitchTest
 }", script);
 	}
 
+	[TestMethod]
+	public void VisitSwitch_TypePatternWithEcmascriptArrayDeclaration()
+	{
+		var block = GetBlockOperation(@"
+			class TestClass
+			{
+				void TestMethod()
+				{
+					object obj = new string[] { ""a"", ""b"" };
+					switch (obj)
+					{
+						case Array<string> many:
+							Console.WriteLine(many.Length);
+							break;
+						case string single:
+							Console.WriteLine(single.Length);
+							break;
+						default:
+							break;
+					}
+				}
+			}
+		");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(
+			@"{
+  let obj = [""a"", ""b""];
+  (() => {
+    let many, single;
+    const v$0 = obj;
+    if (Array.isArray(v$0) && (many = v$0, true)) {
+      console.log(many.length);
+      return;
+    }
+    if (typeof v$0 === ""string"" && (single = v$0, true)) {
+      console.log(single.length);
+      return;
+    }
+    return;
+  })();
+}", script);
+	}
+
 	/// <summary>
 	/// 测试 switch with when 子句
 	/// </summary>

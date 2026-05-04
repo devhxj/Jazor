@@ -5904,6 +5904,30 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_IComparerNonGenericCompare_UsesInterfaceMapping()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object left, object right)
+                {
+                    System.Collections.IComparer comparer = System.Collections.Generic.Comparer<int>.Default;
+                    var order = comparer.Compare(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let comparer = globalThis.__jazorComparerDefault ??= {};
+  let order = _7dffdd7244581cc5(comparer, left, right);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_StringCompareToObject_UsesClrModuleMapping()
 	{
 		var block = GetBlockOperation(@"
@@ -6234,6 +6258,29 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual("Import", compareOp);
 		Assert.AreEqual("_0289dcf579b8a65e", compareMethod);
 		Assert.AreEqual("System/Collections/Generic/IComparerT1Module.js", comparePath);
+	}
+
+	[TestMethod]
+	public void WhiteList_IComparerNonGenericCompare_IsMapped()
+	{
+		var membersField = typeof(SemanticWalker).Assembly
+			.GetType("Jazor.Compiler.WhiteList", throwOnError: true)!
+			.GetField("Members", BindingFlags.Public | BindingFlags.Static);
+		var members = (IDictionary?)membersField?.GetValue(null);
+
+		Assert.IsNotNull(members);
+		Assert.IsTrue(members.Contains("System.Collections.IComparer.Compare(object, object)"));
+
+		var compareValue = members["System.Collections.IComparer.Compare(object, object)"];
+		Assert.IsNotNull(compareValue);
+		var compareValueType = compareValue.GetType();
+		var compareOp = compareValueType.GetProperty("Op", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue)?.ToString();
+		var compareMethod = (string?)compareValueType.GetProperty("Value", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
+		var comparePath = (string?)compareValueType.GetProperty("Path", BindingFlags.Instance | BindingFlags.Public)?.GetValue(compareValue);
+
+		Assert.AreEqual("Import", compareOp);
+		Assert.AreEqual("_7dffdd7244581cc5", compareMethod);
+		Assert.AreEqual("System/Collections/IComparerModule.js", comparePath);
 	}
 
 	[TestMethod]
