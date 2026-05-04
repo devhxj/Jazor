@@ -18,11 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Jazor.Common\Format.cs" Link="Shared\Format.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
+    <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
   </ItemGroup>
 
 </Project>

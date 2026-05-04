@@ -1,121 +1,139 @@
 using ECMAScript.Contract;
 using Jazor.Common;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Text;
 
 const string Split = $@"
 		";
 
-var repoRoot = FindRepositoryRoot();
+var repoRoot = SharedGeneration.FindRepositoryRoot();
 var references = Basic.Reference.Assemblies.Net100.References.All
-	.Add(MetadataReference.CreateFromFile(typeof(JazorAttribute).Assembly.Location));
-var sourceFiles = GetWhiteListSourceRoots(repoRoot)
-	.SelectMany(GetSourceFiles)
-	.OrderBy(path => path, StringComparer.Ordinal)
-	.ToArray();
-var syntaxTrees = sourceFiles
-	.Select(CreateSyntaxTree)
-	.ToArray();
-var compilation = CSharpCompilation.Create(
-	"Jazor.SourceScan",
-	syntaxTrees,
-	[.. references],
-	new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-var types = new List<(string Op, string Member, string? Value, string? ModulePath)>();
-var members = new List<(string TypeName, string Op, string Member, string? Value, string? ModulePath)>();
-var seenTypes = new HashSet<string>(StringComparer.Ordinal);
-var seenMembers = new HashSet<string>(StringComparer.Ordinal);
+    .Add(MetadataReference.CreateFromFile(typeof(JazorAttribute).Assembly.Location));
 
-// 语法读取 attribute，语义只用于拿声明 symbol，避免被项目本身的语义错误卡死。
-foreach (var syntaxTree in syntaxTrees)
+GenerateWhiteListArtifacts(repoRoot, references);
+ClrRuntimeCatalogEmitter.Generate(repoRoot, references);
+
+Console.WriteLine("生成完成");
+
+static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataReference> references)
 {
-	var semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
-	var root = syntaxTree.GetRoot();
-	foreach (var typeDeclaration in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
-	{
-		var jazorAttr = FindAttribute(typeDeclaration.AttributeLists, "Jazor");
-		if (jazorAttr is null)
-			continue;
+    var sourceFiles = SharedGeneration.GetWhiteListSourceRoots(repoRoot)
+        .SelectMany(SharedGeneration.GetSourceFiles)
+        .OrderBy(path => path, StringComparer.Ordinal)
+        .ToArray();
+    Console.WriteLine($"whitelist sourceFiles={sourceFiles.Length}");
+    var syntaxTrees = sourceFiles
+        .Select(SharedGeneration.CreateSyntaxTree)
+        .ToArray();
+    var compilation = CSharpCompilation.Create(
+        "Jazor.SourceScan",
+        syntaxTrees,
+        [.. references],
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    var types = new List<(string Op, string Member, string? Value, string? ModulePath)>();
+    var members = new List<(string TypeName, string Op, string Member, string? Value, string? ModulePath)>();
+    var seenTypes = new HashSet<string>(StringComparer.Ordinal);
+    var seenMembers = new HashSet<string>(StringComparer.Ordinal);
+    var attributedTypeSyntaxCount = 0;
+    var attributedTypeSymbolCount = 0;
 
-		var type = semanticModel.GetDeclaredSymbol(typeDeclaration);
-		if (type is null)
-			continue;
+    foreach (var syntaxTree in syntaxTrees)
+    {
+        var semanticModel = compilation.GetSemanticModel(syntaxTree, ignoreAccessibility: true);
+        var root = syntaxTree.GetRoot();
+        foreach (var typeDeclaration in root.DescendantNodes().OfType<TypeDeclarationSyntax>())
+        {
+            var jazorAttr = SharedGeneration.FindAttribute(typeDeclaration.AttributeLists, "Jazor");
+            if (jazorAttr is null)
+                continue;
 
-		var (typeOp, typeMemberName, typeValue) = ReadJazorAttribute(jazorAttr, semanticModel);
-		if (typeOp == nameof(Op.Discard))
-			continue;
+            attributedTypeSyntaxCount++;
 
-		var typeName = FormatSymbolName(type);
-		var modulePath = ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
+            if (semanticModel.GetDeclaredSymbol(typeDeclaration) is not INamedTypeSymbol type)
+            {
+                Console.WriteLine($"whitelist missing symbol: {typeDeclaration.Identifier.ValueText} @ {syntaxTree.FilePath}");
+                continue;
+            }
 
-		if (typeOp != nameof(Op.Compile))
-		{
-			var memberName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
-			if (seenTypes.Add(memberName))
-				types.Add((typeOp, memberName, typeValue, modulePath));
-		}
+            attributedTypeSymbolCount++;
 
-		foreach (var memberDeclaration in typeDeclaration.Members)
-		{
-			var attr = FindAttribute(memberDeclaration.AttributeLists, "Jazor");
-			if (attr is null)
-				continue;
+            var (typeOp, typeMemberName, typeValue) = SharedGeneration.ReadJazorAttribute(jazorAttr, semanticModel);
+            if (typeOp == nameof(Op.Discard))
+                continue;
 
-			var member = GetDeclaredSymbol(memberDeclaration, semanticModel);
-			if (member is null)
-				continue;
+            var typeName = SharedGeneration.FormatSymbolName(type);
+            var modulePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
 
-			var (op, memberName, value) = ReadJazorAttribute(attr, semanticModel);
-			if (op == nameof(Op.Discard))
-				continue;
+            if (typeOp != nameof(Op.Compile))
+            {
+                var memberName = string.IsNullOrEmpty(typeMemberName) ? typeName : typeMemberName;
+                if (seenTypes.Add(memberName))
+                    types.Add((typeOp, memberName, typeValue, modulePath));
+            }
 
-			// 默认注解需要生成名称和 hash 值。
-			if ((op == nameof(Op.Compile) || op == nameof(Op.Inline)) && string.IsNullOrEmpty(memberName))
-			{
-				memberName = FormatSymbolName(member);
-				value ??= Format.HashName(memberName);
-			}
+            foreach (var memberDeclaration in typeDeclaration.Members)
+            {
+                var attr = SharedGeneration.FindAttribute(memberDeclaration.AttributeLists, "Jazor");
+                if (attr is null)
+                    continue;
 
-			if (member.Kind == SymbolKind.Method && memberName is not null && value is null)
-				value = member.Name;
+                var member = SharedGeneration.GetDeclaredSymbol(memberDeclaration, semanticModel);
+                if (member is null)
+                    continue;
 
-			if (member is IPropertySymbol property)
-			{
-				if (property.GetMethod is not null)
-				{
-					var getMemberName = FormatSymbolName(property.GetMethod);
-					if (seenMembers.Add(getMemberName))
-						members.Add((typeName, op, getMemberName, value, modulePath));
-				}
+                var (op, memberName, value) = SharedGeneration.ReadJazorAttribute(attr, semanticModel);
+                if (op == nameof(Op.Discard))
+                    continue;
 
-				if (property.SetMethod is not null)
-				{
-					var setMemberName = FormatSymbolName(property.SetMethod);
-					if (seenMembers.Add(setMemberName))
-						members.Add((typeName, op, setMemberName, value, modulePath));
-				}
-			}
-			else if (memberName is not null && seenMembers.Add(memberName))
-				members.Add((typeName, op, memberName, value, modulePath));
-		}
-	}
-}
+                if ((op == nameof(Op.Compile) || op == nameof(Op.Inline)) && string.IsNullOrEmpty(memberName))
+                {
+                    memberName = SharedGeneration.FormatSymbolName(member);
+                    value ??= Format.HashName(memberName);
+                }
 
-var jazorCompilerDir = Path.Combine(repoRoot, "src", "Jazor.Compiler");
-var typesInit = string.Join(Split, types
-	.OrderBy(x => x.Op)
-	.Select(n => $"types[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)});"));
-var membersInit = string.Join(Split, members
-	.Where(x => x.Op != nameof(Op.Compile))
-	.Select(n => $"members[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatModulePath(n.Op, n.ModulePath)});"));
-var compilesInit = string.Join("", members
-	.Where(x => x.Op == nameof(Op.Compile))
-	.GroupBy(x => x.Value, StringComparer.Ordinal)
-	.Select(x => x.First())
-	.Select(n => $@"
+                if (member.Kind == SymbolKind.Method && memberName is not null && value is null)
+                    value = member.Name;
+
+                if (member is IPropertySymbol property)
+                {
+                    if (property.GetMethod is not null)
+                    {
+                        var getMemberName = SharedGeneration.FormatSymbolName(property.GetMethod);
+                        if (seenMembers.Add(getMemberName))
+                            members.Add((typeName, op, getMemberName, value, modulePath));
+                    }
+
+                    if (property.SetMethod is not null)
+                    {
+                        var setMemberName = SharedGeneration.FormatSymbolName(property.SetMethod);
+                        if (seenMembers.Add(setMemberName))
+                            members.Add((typeName, op, setMemberName, value, modulePath));
+                    }
+                }
+                else if (memberName is not null && seenMembers.Add(memberName))
+                {
+                    members.Add((typeName, op, memberName, value, modulePath));
+                }
+            }
+        }
+    }
+
+    Console.WriteLine($"whitelist attributed types syntax={attributedTypeSyntaxCount}, symbols={attributedTypeSymbolCount}, types={types.Count}, members={members.Count}");
+
+    var jazorCompilerDir = Path.Combine(repoRoot, "src", "Jazor.Compiler");
+    var typesInit = string.Join(Split, types
+        .OrderBy(x => x.Op)
+        .Select(n => $"types[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)});"));
+    var membersInit = string.Join(Split, members
+        .Where(x => x.Op != nameof(Op.Compile))
+        .Select(n => $"members[\"{n.Member}\"] = new(Op.{n.Op}{FormatValue(n.Op, n.Value)}{FormatModulePath(n.Op, n.ModulePath)});"));
+    var compilesInit = string.Join("", members
+        .Where(x => x.Op == nameof(Op.Compile))
+        .GroupBy(x => x.Value, StringComparer.Ordinal)
+        .Select(x => x.First())
+        .Select(n => $@"
 	/// <summary>
 	/// {n.Member}
 	/// </summary>
@@ -127,12 +145,13 @@ var compilesInit = string.Join("", members
 	/// <returns></returns>
 	Expression? Compile{n.Value}(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 "));
-var funssInit = string.Join(Split, members
-	.Where(x => x.Op == nameof(Op.Compile))
-	.Select(n => $"\t\tfuncs[\"{n.Member}\"] = Compile{n.Value};"));
+    var funssInit = string.Join(Split, members
+        .Where(x => x.Op == nameof(Op.Compile))
+        .Select(n => $"\t\tfuncs[\"{n.Member}\"] = Compile{n.Value};"));
 
-File.WriteAllText(Path.Combine(jazorCompilerDir, "WhiteList.cs.Generate.cs"),
-$@"// <auto-generated/>
+    File.WriteAllText(
+        Path.Combine(jazorCompilerDir, "WhiteList.cs.Generate.cs"),
+        $@"// <auto-generated/>
 using ECMAScript.Contract;
 using System.Collections.Generic;
 
@@ -148,10 +167,12 @@ internal static partial class WhiteList
 		// 初始化成员
 		{membersInit}
 	}}
-}}");
+}}
+");
 
-File.WriteAllText(Path.Combine(jazorCompilerDir, "WhiteList.cs.Compile.cs"),
-$@"// <auto-generated/>
+    File.WriteAllText(
+        Path.Combine(jazorCompilerDir, "WhiteList.cs.Compile.cs"),
+        $@"// <auto-generated/>
 #nullable enable
 using Acornima.Ast;
 using ECMAScript.Contract;
@@ -166,8 +187,9 @@ partial interface IWhiteList
 }}
 ");
 
-File.WriteAllText(Path.Combine(jazorCompilerDir, "core", "SemanticWalker.cs.Generate.cs"),
-$@"// <auto-generated/>
+    File.WriteAllText(
+        Path.Combine(jazorCompilerDir, "core", "SemanticWalker.cs.Generate.cs"),
+        $@"// <auto-generated/>
 #nullable enable
 using Acornima;
 using Acornima.Ast;
@@ -190,162 +212,30 @@ public partial class SemanticWalker
 }}
 ");
 
-Console.WriteLine("生成完成");
-
-static string FormatValue(string op, string? str) => op == nameof(Op.Allowed) || str is null ? "" : $", \"{EscapeForCSharpStringLiteral(str)}\"";
-
-static string FormatModulePath(string op, string? str) => op != nameof(Op.Import) || str is null ? "" : $", \"{EscapeForCSharpStringLiteral(str)}\"";
-
-static string EscapeForCSharpStringLiteral(string value)
-{
-	return value
-		.Replace("\\", "\\\\", StringComparison.Ordinal)
-		.Replace("\"", "\\\"", StringComparison.Ordinal)
-		.Replace("\r", "\\r", StringComparison.Ordinal)
-		.Replace("\n", "\\n", StringComparison.Ordinal)
-		.Replace("\t", "\\t", StringComparison.Ordinal);
+    WhiteList.ReplaceForCurrentProcess(
+        types.Select(static entry => new KeyValuePair<string, WhiteListValue>(
+            entry.Member,
+            CreateWhiteListValue(entry.Op, entry.Value, entry.ModulePath))),
+        members
+            .Where(static entry => entry.Op != nameof(Op.Compile))
+            .Select(static entry => new KeyValuePair<string, WhiteListValue>(
+                entry.Member,
+                CreateWhiteListValue(entry.Op, entry.Value, entry.ModulePath))));
 }
 
-static string FormatSymbolName(ISymbol symbol)
+static string FormatValue(string op, string? str)
+    => op == nameof(Op.Allowed) || str is null ? "" : $", \"{SharedGeneration.EscapeForCSharpStringLiteral(str)}\"";
+
+static string FormatModulePath(string op, string? str)
+    => op != nameof(Op.Import) || str is null ? "" : $", \"{SharedGeneration.EscapeForCSharpStringLiteral(str)}\"";
+
+static WhiteListValue CreateWhiteListValue(string opName, string? value, string? modulePath)
 {
-	var name = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-	var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-	return string.Join(" ", parts.Where(x => x != "extern"));
-}
-
-static string FindRepositoryRoot()
-{
-	foreach (var start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })
-	{
-		var current = new DirectoryInfo(start);
-		while (current is not null)
-		{
-			var srcDirectory = Path.Combine(current.FullName, "src");
-			if (Directory.Exists(Path.Combine(srcDirectory, "Jazor.Compiler"))
-				&& Directory.Exists(Path.Combine(srcDirectory, "Jazor.CLR"))
-				&& Directory.Exists(Path.Combine(srcDirectory, "ECMAScript")))
-				return current.FullName;
-
-			current = current.Parent;
-		}
-	}
-
-	throw new DirectoryNotFoundException("Could not locate repository root.");
-}
-
-static IEnumerable<string> GetSourceFiles(string root)
-{
-	return Directory.EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
-		.Where(path => !path.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-		.Where(path => !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
-}
-
-static IEnumerable<string> GetWhiteListSourceRoots(string repoRoot)
-{
-	var src = Path.Combine(repoRoot, "src");
-	var roots = new[]
-	{
-		Path.Combine(src, "ECMAScript"),
-		Path.Combine(src, "Jazor.CLR"),
-		Path.Combine(src, "ECMAScript.Vue"),
-		Path.Combine(src, "ECMAScript.Vuetify"),
-	};
-
-	foreach (var root in roots)
-	{
-		if (Directory.Exists(root))
-			yield return root;
-	}
-}
-
-static SyntaxTree CreateSyntaxTree(string path)
-{
-	var text = SourceText.From(File.ReadAllText(path, Encoding.UTF8), Encoding.UTF8);
-	return CSharpSyntaxTree.ParseText(text, new CSharpParseOptions(LanguageVersion.Preview), path);
-}
-
-static AttributeSyntax? FindAttribute(SyntaxList<AttributeListSyntax> attributeLists, string expectedName)
-{
-	foreach (var attribute in attributeLists.SelectMany(x => x.Attributes))
-	{
-		var attributeName = GetAttributeName(attribute.Name);
-		if (attributeName == expectedName || attributeName == expectedName + "Attribute")
-			return attribute;
-	}
-
-	return null;
-}
-
-static string GetAttributeName(NameSyntax name)
-{
-	return name switch
-	{
-		IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
-		QualifiedNameSyntax qualified => GetAttributeName(qualified.Right),
-		AliasQualifiedNameSyntax alias => alias.Name.Identifier.ValueText,
-		GenericNameSyntax generic => generic.Identifier.ValueText,
-		_ => name.ToString()
-	};
-}
-
-static string? ReadModulePath(SyntaxList<AttributeListSyntax> attributeLists, SemanticModel semanticModel)
-{
-	var attr = FindAttribute(attributeLists, "ECMAScriptModule");
-	var argument = attr?.ArgumentList?.Arguments.FirstOrDefault();
-	if (argument is null)
-		return null;
-
-	return ReadString(argument.Expression, semanticModel);
-}
-
-static ISymbol? GetDeclaredSymbol(MemberDeclarationSyntax memberDeclaration, SemanticModel semanticModel)
-{
-	return memberDeclaration switch
-	{
-		BaseMethodDeclarationSyntax method => semanticModel.GetDeclaredSymbol(method),
-		BasePropertyDeclarationSyntax property => semanticModel.GetDeclaredSymbol(property),
-		DelegateDeclarationSyntax @delegate => semanticModel.GetDeclaredSymbol(@delegate),
-		TypeDeclarationSyntax type => semanticModel.GetDeclaredSymbol(type),
-		EnumDeclarationSyntax @enum => semanticModel.GetDeclaredSymbol(@enum),
-		_ => null
-	};
-}
-
-static (string Op, string? Member, string? Value) ReadJazorAttribute(AttributeSyntax attr, SemanticModel semanticModel)
-{
-	var arguments = attr.ArgumentList?.Arguments;
-	if (arguments is null || arguments.Value.Count == 0)
-		return (nameof(Op.Compile), null, null);
-
-	if (arguments.Value.Count == 1)
-		return (nameof(Op.Inline), null, ReadString(arguments.Value[0].Expression, semanticModel));
-
-	return (
-		ReadOp(arguments.Value[0].Expression, semanticModel),
-		ReadString(arguments.Value[1].Expression, semanticModel),
-		arguments.Value.Count > 2 ? ReadString(arguments.Value[2].Expression, semanticModel) : null);
-}
-
-static string ReadOp(ExpressionSyntax expression, SemanticModel semanticModel)
-{
-	var constant = semanticModel.GetConstantValue(expression);
-	if (constant.HasValue && constant.Value is int opValue)
-		return ((Op)opValue).ToString();
-
-	var text = expression.ToString();
-	var index = text.LastIndexOf('.');
-	return index >= 0 ? text[(index + 1)..] : text;
-}
-
-static string? ReadString(ExpressionSyntax expression, SemanticModel semanticModel)
-{
-	var constant = semanticModel.GetConstantValue(expression);
-	if (constant.HasValue)
-		return constant.Value?.ToString();
-
-	return expression switch
-	{
-		LiteralExpressionSyntax literal when literal.IsKind(SyntaxKind.StringLiteralExpression) => literal.Token.ValueText,
-		_ => null
-	};
+    var op = Enum.Parse<Op>(opName, ignoreCase: false);
+    return op switch
+    {
+        Op.Allowed => new WhiteListValue(op),
+        Op.Import => new WhiteListValue(op, value, modulePath),
+        _ => new WhiteListValue(op, value)
+    };
 }
