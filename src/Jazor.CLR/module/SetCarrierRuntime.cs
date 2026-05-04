@@ -1,5 +1,6 @@
 namespace Jazor.CLR;
 
+[ECMAScript]
 internal static class SetCarrierRuntime
 {
 	internal const string ReadOnlyCarrierMarker = "__jazor$readonly_set";

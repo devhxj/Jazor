@@ -24,6 +24,9 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Array", "Array")]
 public static class ArrayModule<T>
 {
+	[ECMAScriptInline("null")]
+	private extern static T? MissingValue();
+
 	#region 属性
 
 	/// <summary>
@@ -901,7 +904,7 @@ public static class ArrayModule<T>
 			if (match(array[i]))
 				return array[i];
 		}
-		return default;
+		return MissingValue();
 	}
 
 	///<summary>Searches for an element that matches the conditions defined by the specified predicate, and returns the zero-based index of the last occurrence within the entire <see cref="T:System.Array" />.</summary>

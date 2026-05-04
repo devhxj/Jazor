@@ -432,7 +432,7 @@ public static class CultureInfoModule
 	{
 		try
 		{
-			return CreateCultureInfo(Global.Window.Navigator.Language);
+			return CreateCultureInfo(new Intl.NumberFormat().ResolvedOptions().Locale);
 		}
 		catch
 		{

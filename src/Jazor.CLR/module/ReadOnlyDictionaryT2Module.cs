@@ -56,7 +56,7 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
-			return [false, default(TValue)];
+			return [false, null];
 
 		return [true, instance.Get(typedKey)];
 	}

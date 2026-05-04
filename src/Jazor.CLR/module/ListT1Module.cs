@@ -17,6 +17,9 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "System.Collections.Generic.List<T>","Array")]
 public static class ListT1Module<T>
 {
+	[ECMAScriptInline("null")]
+	private extern static T? MissingValue();
+
 	private static void EnsureInstance(Array<T> instance)
 	{
 		if (instance is null)
@@ -405,7 +408,7 @@ public static class ListT1Module<T>
 			if (match(instance[i - 1]))
 				return instance[i - 1];
 		}
-		return default;
+		return MissingValue();
 	}
 
 	/// <summary>

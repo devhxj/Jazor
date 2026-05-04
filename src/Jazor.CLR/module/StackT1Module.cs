@@ -14,7 +14,7 @@ public static class StackT1Module<T>
 
 	[Jazor(Op.Import, "System.Collections.Generic.Stack<T>.Stack(int)")]
 	public static RuntimeModule.JStack<T> _f4ca5eb8de25d4a3(Number capacity)
-		=> new(capacity);
+		=> RuntimeModule.JStack<T>.WithCapacity(capacity);
 
 	[Jazor(Op.Import, "System.Collections.Generic.Stack<T>.Stack(System.Collections.Generic.IEnumerable<T>)")]
 	public static RuntimeModule.JStack<T> _60d564060ac5fb0f(IEnumerable<T> collection)

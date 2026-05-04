@@ -14,7 +14,7 @@ public static class QueueT1Module<T>
 
 	[Jazor(Op.Import, "System.Collections.Generic.Queue<T>.Queue(int)")]
 	public static RuntimeModule.JQueue<T> _7fc2b76467c43db9(Number capacity)
-		=> new(capacity);
+		=> RuntimeModule.JQueue<T>.WithCapacity(capacity);
 
 	[Jazor(Op.Import, "System.Collections.Generic.Queue<T>.Queue(System.Collections.Generic.IEnumerable<T>)")]
 	public static RuntimeModule.JQueue<T> _5eae085d83bbe242(IEnumerable<T> collection)

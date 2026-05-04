@@ -181,7 +181,7 @@ public static class DictionaryT2Module<TKey, TValue>
 			instance.Delete(key);
 			return [true, value];
 		}
-		return [false, default(TValue)];
+		return [false, null];
 	}
 
 	/// <summary>
@@ -195,7 +195,7 @@ public static class DictionaryT2Module<TKey, TValue>
 
 		if (instance.Has(key))
 			return [true, instance.Get(key)];
-		return [false, default(TValue)];
+		return [false, null];
 	}
 
 	/// <summary>

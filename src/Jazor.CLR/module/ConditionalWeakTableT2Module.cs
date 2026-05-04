@@ -20,7 +20,7 @@ public static class ConditionalWeakTableT2Module<TKey, TValue> where TKey : clas
 	{
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
-			return [false, default(TValue)];
+			return [false, null];
 
 		return [true, instance.Get(typedKey)];
 	}
@@ -79,7 +79,7 @@ public static class ConditionalWeakTableT2Module<TKey, TValue> where TKey : clas
 	{
 		var typedKey = (TKey)key;
 		if (!instance.Has(typedKey))
-			return [false, default(TValue)];
+			return [false, null];
 
 		var currentValue = instance.Get(typedKey);
 		instance.Delete(typedKey);

@@ -250,15 +250,13 @@ public static class RuntimeModule
 			this.Head = 0;
 		}
 
-		public JQueue(Number capacity)
+		public static JQueue<T> WithCapacity(Number capacity)
 		{
 			EnsureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
 			if (capacity < 0)
 				throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
 
-			this.Kind = "queue";
-			this.Items = new Array<T>();
-			this.Head = 0;
+			return new JQueue<T>();
 		}
 
 		public JQueue(IEnumerable<T> collection)
@@ -283,14 +281,13 @@ public static class RuntimeModule
 			this.Items = new Array<T>();
 		}
 
-		public JStack(Number capacity)
+		public static JStack<T> WithCapacity(Number capacity)
 		{
 			EnsureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
 			if (capacity < 0)
 				throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
 
-			this.Kind = "stack";
-			this.Items = new Array<T>();
+			return new JStack<T>();
 		}
 
 		public JStack(IEnumerable<T> collection)

@@ -1436,7 +1436,7 @@ public static class StringModule
 
 	private static HashSet<string> NormalizeCharSet(object anyOf)
 	{
-		var set = new HashSet<string>(StringComparer.Ordinal);
+		var set = new HashSet<string>();
 
 		switch (anyOf)
 		{

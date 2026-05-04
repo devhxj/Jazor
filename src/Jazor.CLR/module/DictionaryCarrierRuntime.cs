@@ -1,5 +1,6 @@
 namespace Jazor.CLR;
 
+[ECMAScript]
 internal static class DictionaryCarrierRuntime
 {
 	internal const string ReadOnlyCarrierMarker = "__jazor$readonly_dictionary";

@@ -94,6 +94,6 @@ public static class IDictionaryT2Module<TKey, TValue>
 
 		if (instance.Has(key))
 			return [true, instance.Get(key)];
-		return [false, default(TValue)];
+		return [false, null];
 	}
 }

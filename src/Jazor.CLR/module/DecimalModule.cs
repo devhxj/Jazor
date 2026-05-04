@@ -62,7 +62,11 @@ public static class DecimalModule
 		=> (Number)symbols[3]!;
 
 	private static bool HasStyle(Number style, Number flag)
-		=> (((style | 0) & (flag | 0)) == (flag | 0));
+	{
+		var integerStyle = (int)style;
+		var integerFlag = (int)flag;
+		return (integerStyle & integerFlag) == integerFlag;
+	}
 
 	private static Number GetNumberStylesValue(object style)
 	{
@@ -1200,47 +1204,47 @@ public static class DecimalModule
 	///<summary>Defines an implicit conversion of an 8-bit unsigned integer to a <see cref="T:System.Decimal" />.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(byte)")]
 	public static string _c605c67b2cd1973c(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of an 8-bit signed integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(sbyte)")]
 	public static string _e8d5240b7aa52784(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a 16-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(short)")]
 	public static string _8635fe57a74e1249(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a 16-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(ushort)")]
 	public static string _7c3cfa0de18bd43c(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a Unicode character to a <see cref="T:System.Decimal" />.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(char)")]
 	public static string _d4af042bf014fd51(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a 32-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(int)")]
 	public static string _f5a5d600ccd38777(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a 32-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(uint)")]
 	public static string _d8b659cd861d2409(Number value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a 64-bit signed integer to a <see cref="T:System.Decimal" />.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(long)")]
 	public static string _23103e069358ca06(BigInt value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an implicit conversion of a 64-bit unsigned integer to a <see cref="T:System.Decimal" />. This API is not CLS-compliant.</summary>
 	[Jazor(Op.Import ,"static decimal.implicit operator decimal(ulong)")]
 	public static string _7ab8c627f74cb718(BigInt value)
-		=> value.ToString()!;
+		=> value.ToString() ?? "";
 
 	///<summary>Defines an explicit conversion of a single-precision floating-point number to a <see cref="T:System.Decimal" />.</summary>
 	[Jazor(Op.Import ,"static decimal.explicit operator decimal(float)")]

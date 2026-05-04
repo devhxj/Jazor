@@ -114,6 +114,9 @@ public sealed class CollectionInterfaceWhitelistTests
 	[TestMethod]
 	public void ComparerInterfaceMappings_SupportCompareDispatch()
 	{
+		AssertTypeAlias(typeof(Jazor.CLR.IComparerModule), "System.Collections.IComparer", "Object");
+		AssertMemberOp(typeof(Jazor.CLR.IComparerModule), "System.Collections.IComparer.Compare(object, object)", Op.Import);
+
 		AssertTypeAlias(typeof(Jazor.CLR.IComparerT1Module<>), "System.Collections.Generic.IComparer<T>", "Object");
 		AssertMemberOp(typeof(Jazor.CLR.IComparerT1Module<>), "System.Collections.Generic.IComparer<T>.Compare(T, T)", Op.Import);
 	}
