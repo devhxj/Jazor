@@ -3,6 +3,7 @@ param(
     [string]$Configuration = "Debug",
     [switch]$Build,
     [switch]$BuildLocal,
+    [switch]$Publish,
     [int]$StartupTimeoutSeconds = 30
 )
 
@@ -11,8 +12,11 @@ $ErrorActionPreference = "Stop"
 $sampleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
 $hostProject = Join-Path $sampleRoot "Wiki.csproj"
+$publishRoot = Join-Path $repoRoot ".tmp\wiki-publish-smoke-$PID"
+$hostRoot = $sampleRoot
 $webRoot = Join-Path $sampleRoot "wwwroot"
 $jazorRoot = Join-Path $sampleRoot "jazor"
+$publishShadowJazorRoot = $null
 $mainModulePath = Join-Path $jazorRoot "main.mjs"
 $componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
 $manifestPath = Join-Path $jazorRoot "jazor-manifest.json"
@@ -139,6 +143,10 @@ $browserAssetChecks = @(
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 
+if ($Publish -and ($Build -or $BuildLocal)) {
+    throw "-Publish already performs its own publish build. Do not combine it with -Build or -BuildLocal."
+}
+
 function Invoke-DotNet {
     param([string[]]$DotNetArgs)
 
@@ -235,6 +243,39 @@ function Remove-FileWithRetry {
     }
 }
 
+function Remove-PathWithRetry {
+    param(
+        [string]$Path,
+        [switch]$Recurse,
+        [int]$Attempts = 6,
+        [int]$DelayMilliseconds = 250
+    )
+
+    for ($attempt = 0; $attempt -lt $Attempts; $attempt++) {
+        if (-not (Test-Path $Path)) {
+            return
+        }
+
+        try {
+            if ($Recurse) {
+                Remove-Item -LiteralPath $Path -Recurse -Force
+            }
+            else {
+                Remove-Item -LiteralPath $Path -Force
+            }
+
+            return
+        }
+        catch {
+            if ($attempt -ge ($Attempts - 1)) {
+                throw
+            }
+
+            Start-Sleep -Milliseconds $DelayMilliseconds
+        }
+    }
+}
+
 function Wait-ForHttpOk {
     param(
         [string]$Url,
@@ -263,12 +304,32 @@ function Wait-ForHttpOk {
     throw "Timed out waiting for $Url. See logs: $stdoutLog ; $stderrLog"
 }
 
-if ($BuildLocal) {
+if ($Publish) {
+    Invoke-DotNet @("publish", $hostProject, "-c", $Configuration, "-o", $publishRoot, "/m:1", "/p:BuildInParallel=false")
+
+    $hostRoot = $publishRoot
+    $webRoot = Join-Path $hostRoot "wwwroot"
+    $jazorRoot = Join-Path $webRoot "jazor"
+    $publishShadowJazorRoot = Join-Path $hostRoot "jazor"
+    $mainModulePath = Join-Path $jazorRoot "main.mjs"
+    $componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
+    $manifestPath = Join-Path $jazorRoot "jazor-manifest.json"
+    $moduleTextPath = Join-Path $jazorRoot "components\wiki-home.mjs"
+    $indexPath = Join-Path $webRoot "index.html"
+    $faviconPath = Join-Path $webRoot "favicon.svg"
+    $stdoutLog = Join-Path $hostRoot ".wiki-publish-smoke.stdout.log"
+    $stderrLog = Join-Path $hostRoot ".wiki-publish-smoke.stderr.log"
+}
+elseif ($BuildLocal) {
     $buildScript = Join-Path $sampleRoot "build-local.ps1"
     Invoke-Script -Path $buildScript -Args @("-Configuration", $Configuration)
 }
 elseif ($Build) {
     Invoke-DotNet @("build", $hostProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
+}
+
+if ($Publish -and $publishShadowJazorRoot -and (Test-Path $publishShadowJazorRoot)) {
+    throw "Unexpected publish shadow directory: $publishShadowJazorRoot. Publish output must serve /jazor only from wwwroot/jazor."
 }
 
 Assert-PathExists -Path $mainModulePath -Description "emitted main module"
@@ -333,10 +394,19 @@ $process = $null
 $keepLogs = $false
 
 try {
+    $startFilePath = "dotnet"
+    $startArgumentList = @("run", "--project", $hostProject, "--no-launch-profile", "-c", $Configuration, "--no-build", "--no-restore")
+    $startWorkingDirectory = $sampleRoot
+
+    if ($Publish) {
+        $startArgumentList = @("Wiki.dll", "--urls", $rootUrl)
+        $startWorkingDirectory = $hostRoot
+    }
+
     $process = Start-Process `
-        -FilePath "dotnet" `
-        -ArgumentList @("run", "--project", $hostProject, "--no-launch-profile", "-c", $Configuration, "--no-build", "--no-restore") `
-        -WorkingDirectory $sampleRoot `
+        -FilePath $startFilePath `
+        -ArgumentList $startArgumentList `
+        -WorkingDirectory $startWorkingDirectory `
         -RedirectStandardOutput $stdoutLog `
         -RedirectStandardError $stderrLog `
         -PassThru `
@@ -377,8 +447,14 @@ try {
     Assert-Contains -Text $unknownRouteResponse.Content -Snippet '/jazor/main.mjs' -Description "root main module entry in served unknown route $($unknownRoute.Path)"
     Assert-Contains -Text $unknownRouteResponse.Content -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in served unknown route $($unknownRoute.Path)"
 
-    Write-Host "Wiki smoke verification passed."
-    Write-Host "Verified: build output, browser asset routes, CLR runtime import-map wiring, emitted module routes, /health, all registered docs routes, and unknown-route fallback"
+    if ($Publish) {
+        Write-Host "Wiki publish smoke verification passed."
+        Write-Host "Verified: publish output materialization, published /jazor browser asset routes, CLR runtime import-map wiring, published docs routes, /health, and unknown-route fallback"
+    }
+    else {
+        Write-Host "Wiki smoke verification passed."
+        Write-Host "Verified: build output, browser asset routes, CLR runtime import-map wiring, emitted module routes, /health, all registered docs routes, and unknown-route fallback"
+    }
 }
 catch {
     $keepLogs = $true
@@ -399,6 +475,10 @@ finally {
 
         if (Test-Path $stderrLog) {
             Remove-FileWithRetry -Path $stderrLog
+        }
+
+        if ($Publish -and (Test-Path $publishRoot)) {
+            Remove-PathWithRetry -Path $publishRoot -Recurse
         }
     }
 }
