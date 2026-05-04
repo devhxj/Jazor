@@ -10,8 +10,17 @@ public static partial class WikiHomeModule
     private const string OverviewPath = "/";
     private const string GettingStartedPath = "/guides/getting-started";
     private const string ContentModelPath = "/guides/content-model";
+    private const string NavigationDiscoveryPath = "/guides/navigation-discovery";
+    private const string InformationArchitecturePath = "/guides/information-architecture";
     private const string HFunctionAuthoringPath = "/engineering/h-function-authoring";
+    private const string CompilerBoundaryPath = "/engineering/compiler-support-boundary";
+    private const string RouteCatalogContractPath = "/engineering/route-catalog-contract";
+    private const string HostSemanticSeamsPath = "/engineering/host-semantic-seams";
+    private const string ImportEmitContractPath = "/engineering/import-emit-contract";
+    private const string RuntimeCatalogPath = "/engineering/runtime-catalog";
+    private const string ContentGovernancePath = "/operations/content-governance";
     private const string DeploymentPath = "/operations/deployment";
+    private const string TestingVerificationPath = "/operations/testing-verification";
     private static IVueRef<string>? CurrentPathRef;
     private static IVueRef<string>? CurrentHashRef;
     private static IVueRef<string>? CopiedSectionRef;
@@ -19,11 +28,12 @@ public static partial class WikiHomeModule
     private static IVueRef<string>? NavFilterRef;
     private static int PermalinkFeedbackResetTimerId;
 
-    public static readonly IVueComponent Component = DefineComponent(new VueComponentOptions
-    {
-        Name = "WikiHome",
-        Setup = Setup
-    });
+    public static IVueComponent Component
+        => DefineComponent(new VueComponentOptions
+        {
+            Name = "WikiHome",
+            Setup = Setup
+        });
 
     private static VueRenderCallback Setup()
     {
@@ -105,15 +115,9 @@ public static partial class WikiHomeModule
 
     private static IVNode NavigationRail(string currentPath, string navFilter)
     {
-        var foundationLinks = new List<IVNode>();
-        var engineeringLinks = new List<IVNode>();
-        var operationsLinks = new List<IVNode>();
-
-        AppendNavLinkIfVisible(foundationLinks, OverviewPath, "Overview", "What ships now, why the site exists, and the MVP boundary.", currentPath, navFilter);
-        AppendNavLinkIfVisible(foundationLinks, GettingStartedPath, "Getting Started", "Run the site locally, understand routes, and verify the emitted host.", currentPath, navFilter);
-        AppendNavLinkIfVisible(foundationLinks, ContentModelPath, "Content Model", "How pages, anchors, and navigation stay maintainable in a code-first docs site.", currentPath, navFilter);
-        AppendNavLinkIfVisible(engineeringLinks, HFunctionAuthoringPath, "H-Function Authoring", "Why H functions own the shell and what rules keep the authoring path stable.", currentPath, navFilter);
-        AppendNavLinkIfVisible(operationsLinks, DeploymentPath, "Deployment", "Build outputs, route fallback, and the smoke-verification contract.", currentPath, navFilter);
+        var foundationLinks = BuildNavLinksForGroup("Foundation", currentPath, navFilter);
+        var engineeringLinks = BuildNavLinksForGroup("Engineering", currentPath, navFilter);
+        var operationsLinks = BuildNavLinksForGroup("Operations", currentPath, navFilter);
 
         var visibleCount = foundationLinks.Count + engineeringLinks.Count + operationsLinks.Count;
         var railChildren = new List<IVNode>
@@ -171,12 +175,19 @@ public static partial class WikiHomeModule
         return H("aside", new VueObject { Class = "nav-rail" }, railChildren.ToArray());
     }
 
-    private static void AppendNavLinkIfVisible(List<IVNode> links, string path, string title, string summary, string currentPath, string navFilter)
+    private static List<IVNode> BuildNavLinksForGroup(string group, string currentPath, string navFilter)
     {
-        if (!MatchesPageFilter(path, navFilter))
-            return;
+        var links = new List<IVNode>();
+        for (var pageIndex = 0; pageIndex < TotalPageCount; pageIndex++)
+        {
+            var path = GetPagePath(pageIndex);
+            if (GetPageGroup(path) != group || !MatchesPageFilter(path, navFilter))
+                continue;
 
-        links.Add(NavLink(path, title, summary, currentPath));
+            links.Add(NavLink(path, GetPageTitle(path), GetPageSummary(path), currentPath));
+        }
+
+        return links;
     }
 
     private static string GetNavFilterStatus(string navFilter, int visibleCount)
@@ -195,6 +206,7 @@ public static partial class WikiHomeModule
         [
             DocumentHero(currentPath),
             DocumentBody(currentPath),
+            RelatedPagesPanel(currentPath),
             PagePager(currentPath)
         ]);
 
@@ -204,7 +216,8 @@ public static partial class WikiHomeModule
             H("div", new VueObject { Class = "hero-meta-row" },
             [
                 H("span", new VueObject { Class = "hero-group" }, GetPageGroup(currentPath)),
-                H("span", new VueObject { Class = "hero-status" }, GetPageStatus(currentPath))
+                H("span", new VueObject { Class = "hero-status" }, GetPageStatus(currentPath)),
+                H("code", new VueObject { Class = "hero-route" }, currentPath)
             ]),
             H("h1", new VueObject { Class = "doc-title" }, GetPageTitle(currentPath)),
             H("p", new VueObject { Class = "doc-summary" }, GetPageSummary(currentPath))
@@ -213,47 +226,64 @@ public static partial class WikiHomeModule
     private static IVNode DocumentBody(string currentPath)
     {
         var pageIndex = GetPageIndex(currentPath);
-        if (pageIndex == 0)
-            return OverviewBody();
+        return GetPageBody(pageIndex);
+    }
 
-        if (pageIndex == 1)
-            return GettingStartedBody();
+    private static IVNode RelatedPagesPanel(string currentPath)
+    {
+        var pageIndex = GetPageIndex(currentPath);
+        if (pageIndex < 0)
+            return H("div", "");
 
-        if (pageIndex == 2)
-            return ContentModelBody();
-
-        if (pageIndex == 3)
-            return HFunctionAuthoringBody();
-
-        return DeploymentBody();
+        var relatedPaths = GetPageRelatedPaths(pageIndex);
+        return H("section", new VueObject { Class = "doc-section related-pages-panel" },
+        [
+            H("div", new VueObject { Class = "section-title-row" },
+            [
+                H("h2", "Related pages")
+            ]),
+            H("div", new VueObject { Class = "section-body" },
+            [
+                H("p", "Use the central page catalog to keep adjacent concepts connected. These links are curated alongside route metadata, not discovered through brittle heuristics."),
+                RouteCardGrid(relatedPaths)
+            ])
+        ]);
     }
 
     private static IVNode NotFoundArticle(string currentPath)
-        => H("article", new VueObject { Class = "doc-column" },
+    {
+        var suggestedPaths = GetSuggestedPaths(currentPath);
+        return H("article", new VueObject { Class = "doc-column" },
         [
             H("header", new VueObject { Class = "doc-hero" },
             [
                 H("div", new VueObject { Class = "hero-meta-row" },
                 [
                     H("span", new VueObject { Class = "hero-group" }, "Routing"),
-                    H("span", new VueObject { Class = "hero-status" }, "Not Found")
+                    H("span", new VueObject { Class = "hero-status" }, "Not Found"),
+                    H("code", new VueObject { Class = "hero-route" }, currentPath)
                 ]),
                 H("h1", new VueObject { Class = "doc-title" }, "Page Not Found"),
-                H("p", new VueObject { Class = "doc-summary" }, "The current path is not registered in the Wiki route map. Use the navigation rail or return to the overview.")
+                H("p", new VueObject { Class = "doc-summary" }, "The current path is not registered in the Wiki page catalog. Route fallback is working, but this URL is outside the current docs map.")
             ]),
             H("div", new VueObject { Class = "doc-body" },
             [
                 PageSection("requested-route", "Requested route",
                 [
-                    H("p", "Wiki route fallback is working, but this specific path does not map to a registered page."),
+                    H("p", "The frontend shell loaded successfully. What is missing is a registered page contract for this path."),
                     CodeBlock("Requested path", currentPath)
+                ]),
+                PageSection("suggested-routes", "Suggested routes",
+                [
+                    H("p", "Start from one of the closest registered pages below, or return to the overview and navigate from the catalog."),
+                    RouteCardGrid(suggestedPaths)
                 ]),
                 PageSection("recover", "Recover",
                 [
                     H("ul",
                     [
                         H("li", "Return to the overview page and re-enter from the left navigation."),
-                        H("li", "If this route should exist, add it to the route constants and body branch map."),
+                        H("li", "If this route should exist, add it to the central page catalog and body branch map."),
                         H("li", "Rerun `verify-smoke.ps1` after registering the route.")
                     ]),
                     H("p",
@@ -268,6 +298,7 @@ public static partial class WikiHomeModule
                 ])
             ])
         ]);
+    }
 
     private static IVNode PagePager(string currentPath)
     {
@@ -292,8 +323,8 @@ public static partial class WikiHomeModule
     private static IVNode SiteFooter()
         => H("footer", new VueObject { Class = "site-footer" },
         [
-            H("p", "jazor.wiki now runs as a real docs shell: H-function authored, statically emitted, and route-fallback ready."),
-            H("p", "Health endpoint: /health | Primary routes: /, /guides/getting-started, /engineering/h-function-authoring, /operations/deployment")
+            H("p", "jazor.wiki now runs as a real docs shell: H-function authored, statically emitted, route-fallback ready, and backed by a central page catalog."),
+            H("p", "Health endpoint: /health | Registered docs pages: " + TotalPageCount)
         ]);
 
     private static string NormalizePath(string pathname)

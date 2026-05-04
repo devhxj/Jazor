@@ -8,9 +8,9 @@ $ErrorActionPreference = "Stop"
 $sampleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
 $hostProject = Join-Path $sampleRoot "Wiki.csproj"
-$webRoot = Join-Path $sampleRoot "wwwroot"
-$mainModulePath = Join-Path $webRoot "jazor\main.mjs"
-$componentModulePath = Join-Path $webRoot "jazor\components\wiki-home.mjs"
+$jazorRoot = Join-Path $sampleRoot "jazor"
+$mainModulePath = Join-Path $jazorRoot "main.mjs"
+$componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"

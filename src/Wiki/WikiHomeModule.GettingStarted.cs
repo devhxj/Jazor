@@ -26,20 +26,29 @@ dotnet build .\src\Wiki\Wiki.csproj
                     H("li", "`/` for the overview page"),
                     H("li", "`/guides/getting-started` for local workflow"),
                     H("li", "`/guides/content-model` for page authoring rules"),
+                    H("li", "`/guides/navigation-discovery` for grouped navigation, TOC behavior, related pages, and not-found recovery"),
+                    H("li", "`/guides/information-architecture` for route families, naming rules, and page-order discipline"),
                     H("li", "`/engineering/h-function-authoring` for the H-function contract"),
-                    H("li", "`/operations/deployment` for build and hosting details")
+                    H("li", "`/engineering/compiler-support-boundary` for active compiler semantics and failure rules"),
+                    H("li", "`/engineering/route-catalog-contract` for the single-source route registration contract"),
+                    H("li", "`/engineering/host-semantic-seams` for Alias / Inline / Import / Compile responsibility boundaries"),
+                    H("li", "`/engineering/import-emit-contract` for module import flow and file materialization boundaries"),
+                    H("li", "`/engineering/runtime-catalog` for CLR runtime helper generation and browser delivery"),
+                    H("li", "`/operations/content-governance` for content ownership, generated-output review, and release discipline"),
+                    H("li", "`/operations/deployment` for build and hosting details"),
+                    H("li", "`/operations/testing-verification` for focused test and smoke workflow")
                 ])
             ]),
             PageSection("add-a-page", "Add a page safely",
             [
-                H("p", "A new page is introduced by adding one route constant, one route-contract entry, one nav entry, one dedicated page file, and one TOC branch. The point is not to invent a mini CMS inside the codebase."),
+                H("p", "A new page is introduced by adding one route constant, one catalog entry, one dedicated page file, and one body method. Navigation groups, TOC wiring, related links, and pager continuity should all flow from that central page catalog."),
                 CodeBlock("Minimum page shape", """
 private const string NewPagePath = "/guides/new-page";
 
 private static IVNode NewPageBody()
     => H("div", "...");
 """),
-                H("p", "After the route exists, add TOC entries and pager links, then rerun the smoke script.")
+                H("p", "After the route exists, register its summary, status, section anchors, and related pages in the catalog, then rerun the smoke script.")
             ]),
             PageSection("verify-the-result", "Verify the result",
             [

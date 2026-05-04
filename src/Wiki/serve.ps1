@@ -13,8 +13,9 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
 $hostProject = Join-Path $sampleRoot "Wiki.csproj"
 $hostRoot = $sampleRoot
 $webRoot = Join-Path $hostRoot "wwwroot"
-$mainModulePath = Join-Path $webRoot "jazor\main.mjs"
-$componentModulePath = Join-Path $webRoot "jazor\components\wiki-home.mjs"
+$jazorRoot = Join-Path $hostRoot "jazor"
+$mainModulePath = Join-Path $jazorRoot "main.mjs"
+$componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
@@ -72,10 +73,20 @@ $routeUrls = @(
     $url,
     "http://localhost:$Port/guides/getting-started",
     "http://localhost:$Port/guides/content-model",
+    "http://localhost:$Port/guides/navigation-discovery",
+    "http://localhost:$Port/guides/information-architecture",
     "http://localhost:$Port/engineering/h-function-authoring",
-    "http://localhost:$Port/operations/deployment"
+    "http://localhost:$Port/engineering/compiler-support-boundary",
+    "http://localhost:$Port/engineering/route-catalog-contract",
+    "http://localhost:$Port/engineering/host-semantic-seams",
+    "http://localhost:$Port/engineering/import-emit-contract",
+    "http://localhost:$Port/engineering/runtime-catalog",
+    "http://localhost:$Port/operations/content-governance",
+    "http://localhost:$Port/operations/deployment",
+    "http://localhost:$Port/operations/testing-verification"
 )
 Write-Host "Serving jazor.wiki from: $webRoot"
+Write-Host "Serving emitted Jazor modules from: $jazorRoot"
 Write-Host "Open routes:"
 foreach ($routeUrl in $routeUrls) {
     Write-Host " - $routeUrl"

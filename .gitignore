@@ -424,6 +424,9 @@ CLAUDE.md
 .test-results/
 .verify/
 .verify*/
+src/Wiki/jazor/
+src/Wiki/wwwroot/jazor/
+src/Wiki/.devtools-*
 .github/
 !.github/
 .github/*

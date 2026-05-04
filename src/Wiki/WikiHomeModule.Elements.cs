@@ -118,6 +118,29 @@ public static partial class WikiHomeModule
     private static IVNode EmptyPagerSlot()
         => H("div", new VueObject { Class = "pager-slot" }, "");
 
+    private static IVNode RouteCardGrid(string[] paths)
+    {
+        var routeCards = new List<IVNode>();
+        for (var index = 0; index < paths.Length; index++)
+        {
+            var path = paths[index];
+            routeCards.Add(H("a", new VueObject
+            {
+                Class = "route-card",
+                Href = path,
+                Events = CreateRouteClickEvents()
+            },
+            [
+                H("span", new VueObject { Class = "route-card-group" }, GetPageGroup(path)),
+                H("strong", new VueObject { Class = "route-card-title" }, GetPageTitle(path)),
+                H("code", new VueObject { Class = "route-card-path" }, path),
+                H("span", new VueObject { Class = "route-card-summary" }, GetPageSummary(path))
+            ]));
+        }
+
+        return H("div", new VueObject { Class = "route-grid" }, routeCards.ToArray());
+    }
+
     private static IVNode PageSection(string id, string title, IVNode[] content)
     {
         var className = "doc-section";

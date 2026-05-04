@@ -318,6 +318,17 @@ pre {
   background: rgba(255, 214, 151, 0.08);
 }
 
+.hero-route {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(126, 194, 230, 0.2);
+  background: rgba(5, 14, 21, 0.84);
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
 .doc-title {
   margin: 16px 0 10px;
   font-size: clamp(1.95rem, 3.5vw, 3rem);
@@ -400,7 +411,8 @@ pre {
 }
 
 .metric-grid,
-.check-grid {
+.check-grid,
+.route-grid {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -408,6 +420,7 @@ pre {
 
 .metric-card,
 .check-card,
+.route-card,
 .callout,
 .code-frame {
   border-radius: 18px;
@@ -418,6 +431,44 @@ pre {
 .metric-card,
 .check-card {
   padding: 18px;
+}
+
+.route-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.route-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+  background: rgba(12, 27, 38, 0.96);
+}
+
+.route-card-group {
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.route-card-title {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.route-card-path {
+  color: var(--alert);
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+
+.route-card-summary {
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  line-height: 1.58;
 }
 
 .metric-value {
@@ -585,7 +636,8 @@ pre {
   }
 
   .metric-grid,
-  .check-grid {
+  .check-grid,
+  .route-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -615,6 +667,7 @@ pre {
 
   .metric-grid,
   .check-grid,
+  .route-grid,
   .pager {
     grid-template-columns: 1fr;
   }

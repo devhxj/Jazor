@@ -13,7 +13,7 @@ public static partial class WikiHomeModule
                 H("p", "Wiki now runs as a real docs shell instead of a single-page playground. The primary contract is a stable static host, explicit document routes, and H-function-authored layout."),
                 H("div", new VueObject { Class = "metric-grid" },
                 [
-                    MetricCard("5", "Core routes", "Overview, guides, engineering, and operations pages ship as first-class entry points."),
+                    MetricCard("" + TotalPageCount, "Core routes", "Overview, guides, engineering, and operations pages ship as first-class entry points."),
                     MetricCard("1", "Static host", "ASP.NET Core serves assets, health checks, and fallback routing with one small host."),
                     MetricCard("100%", "Shell in H", "Navigation, hero, article sections, TOC, and pager all live on the H-function authoring surface.")
                 ])
@@ -40,7 +40,7 @@ public static partial class WikiHomeModule
             ]),
             PageSection("site-structure", "Site structure",
             [
-                H("p", "The site is intentionally small and explicit. The production proof point is not an abstraction layer; it is that a maintainable docs site can live directly on the H-function authoring surface."),
+                H("p", "The site is intentionally small and explicit. The production proof point is not an abstraction layer; it is that a maintainable docs site can live directly on the H-function authoring surface with one central page catalog driving route metadata and adjacent-page navigation."),
                 CodeBlock("Current production surface", """
 src/Wiki/
   Program.cs
@@ -51,12 +51,26 @@ src/Wiki/
   WikiHomeModule.Overview.cs
   WikiHomeModule.GettingStarted.cs
   WikiHomeModule.ContentModel.cs
+  WikiHomeModule.NavigationDiscovery.cs
+  WikiHomeModule.InformationArchitecture.cs
   WikiHomeModule.HFunctionAuthoring.cs
+  WikiHomeModule.CompilerBoundary.cs
+  WikiHomeModule.RouteCatalogContract.cs
+  WikiHomeModule.HostSemanticSeams.cs
+  WikiHomeModule.ImportEmitContract.cs
+  WikiHomeModule.RuntimeCatalog.cs
+  WikiHomeModule.ContentGovernance.cs
   WikiHomeModule.Deployment.cs
+  WikiHomeModule.TestingVerification.cs
   wwwroot/index.html
   wwwroot/site.css
   verify-smoke.ps1
 """)
+            ]),
+            PageSection("registered-pages", "Registered pages",
+            [
+                H("p", "The overview page is now also the site catalog. Every registered route below is backed by the same page metadata that powers nav grouping, hero copy, related-page suggestions, pager continuity, and the right-rail TOC."),
+                RouteCardGrid(PagePaths)
             ])
         ]);
 }

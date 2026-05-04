@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <JazorEmit>true</JazorEmit>
-    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+    <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
     <JazorBundle>false</JazorBundle>
     <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\Jazor.Emit\bin\$(Configuration)\net10.0\Jazor.Emit.dll</JazorEmitToolPath>
   </PropertyGroup>
@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
+    <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
@@ -28,6 +28,26 @@
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Razor\bin\$(Configuration)\netstandard2.0\Jazor.Razor.dll')" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="PublishWikiJazorArtifacts"
+          AfterTargets="Publish"
+          Condition="'$(JazorEmit)' == 'true' and Exists('$(JazorOutDir)')">
+    <PropertyGroup>
+      <_WikiPublishedJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_WikiPublishedJazorRoot>
+      <_WikiPublishedLocalJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_WikiPublishedLocalJazorRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_WikiJazorArtifact Include="$(JazorOutDir)**\*" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(_WikiPublishedJazorRoot)" />
+    <MakeDir Directories="$(_WikiPublishedJazorRoot)" />
+    <Copy SourceFiles="@(_WikiJazorArtifact)"
+          DestinationFiles="@(_WikiJazorArtifact->'$(_WikiPublishedJazorRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(_WikiPublishedLocalJazorRoot)"
+               Condition="Exists('$(_WikiPublishedLocalJazorRoot)')" />
   </Target>
 
   <Import Project="..\Jazor\buildTransitive\Jazor.targets" />
