@@ -48,17 +48,27 @@ src/Wiki/
   WikiHomeModule.cs
   WikiHomeModule.RouteContract.cs
   WikiHomeModule.Elements.cs
+  WikiCatalogGuard.cs
   WikiHomeModule.Overview.cs
+  WikiHomeModule.Search.cs
   WikiHomeModule.GettingStarted.cs
+  WikiHomeModule.ProjectLines.cs
   WikiHomeModule.ContentModel.cs
   WikiHomeModule.NavigationDiscovery.cs
   WikiHomeModule.InformationArchitecture.cs
+  WikiHomeModule.TopicIndex.cs
+  WikiHomeModule.Glossary.cs
+  WikiHomeModule.Faq.cs
+  WikiHomeModule.Troubleshooting.cs
   WikiHomeModule.HFunctionAuthoring.cs
+  WikiHomeModule.CompilerOverview.cs
   WikiHomeModule.CompilerBoundary.cs
   WikiHomeModule.RouteCatalogContract.cs
   WikiHomeModule.HostSemanticSeams.cs
   WikiHomeModule.ImportEmitContract.cs
   WikiHomeModule.RuntimeCatalog.cs
+  WikiHomeModule.JoltHost.cs
+  WikiHomeModule.RazorVueLibraryMode.cs
   WikiHomeModule.ContentGovernance.cs
   WikiHomeModule.Deployment.cs
   WikiHomeModule.TestingVerification.cs

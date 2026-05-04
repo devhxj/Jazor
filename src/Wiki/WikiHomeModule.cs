@@ -7,26 +7,61 @@ namespace Wiki;
 [ECMAScriptModule("./components/wiki-home.mjs")]
 public static partial class WikiHomeModule
 {
+    private const string NavSearchInputId = "wiki-nav-search-input";
+    private const string SearchInputId = "wiki-search-input";
+    private const string NavRailId = "wiki-nav-rail";
+    private const string TocRailId = "wiki-toc-rail";
+    private const string MainContentId = "wiki-main-content";
+    private const string ThemeStorageKey = "jazor.wiki.theme";
+    private const string FeedbackStoragePrefix = "jazor.wiki.feedback:";
+    private const string RepositoryRootUrl = "https://github.com/devhxj/Jazor";
+    private const string RepositoryBlobBaseUrl = RepositoryRootUrl + "/blob/main/";
+    private const string RepositoryIssueBaseUrl = RepositoryRootUrl + "/issues/new?title=";
+
     private const string OverviewPath = "/";
+    private const string SearchPath = "/search";
     private const string GettingStartedPath = "/guides/getting-started";
+    private const string ProjectLinesPath = "/guides/project-lines";
     private const string ContentModelPath = "/guides/content-model";
     private const string NavigationDiscoveryPath = "/guides/navigation-discovery";
     private const string InformationArchitecturePath = "/guides/information-architecture";
+    private const string TopicIndexPath = "/guides/topic-index";
+    private const string GlossaryPath = "/guides/glossary";
+    private const string FaqPath = "/guides/faq";
+    private const string TroubleshootingPath = "/guides/troubleshooting";
     private const string HFunctionAuthoringPath = "/engineering/h-function-authoring";
+    private const string CompilerOverviewPath = "/engineering/compiler-overview";
     private const string CompilerBoundaryPath = "/engineering/compiler-support-boundary";
     private const string RouteCatalogContractPath = "/engineering/route-catalog-contract";
     private const string HostSemanticSeamsPath = "/engineering/host-semantic-seams";
     private const string ImportEmitContractPath = "/engineering/import-emit-contract";
     private const string RuntimeCatalogPath = "/engineering/runtime-catalog";
+    private const string JoltHostPath = "/engineering/jolt-host";
+    private const string RazorVueLibraryModePath = "/engineering/razorvue-library-mode";
     private const string ContentGovernancePath = "/operations/content-governance";
     private const string DeploymentPath = "/operations/deployment";
     private const string TestingVerificationPath = "/operations/testing-verification";
+
     private static IVueRef<string>? CurrentPathRef;
     private static IVueRef<string>? CurrentHashRef;
+    private static IVueRef<string>? CurrentSearchQueryRef;
+    private static IVueRef<string>? CurrentThemeRef;
     private static IVueRef<string>? CopiedSectionRef;
     private static IVueRef<string>? PermalinkReadySectionRef;
+    private static IVueRef<string>? CopiedPageRef;
+    private static IVueRef<string>? PageLinkReadyRef;
+    private static IVueRef<string>? CopiedCodeBlockRef;
+    private static IVueRef<string>? UnavailableCodeBlockRef;
     private static IVueRef<string>? NavFilterRef;
+    private static IVueRef<string>? CurrentPageFeedbackRef;
+    private static IVueRef<string>? LiveStatusRef;
+    private static IVueRef<bool>? NavDrawerOpenRef;
+    private static IVueRef<bool>? TocDrawerOpenRef;
+
     private static int PermalinkFeedbackResetTimerId;
+    private static int PageLinkFeedbackResetTimerId;
+    private static int CodeBlockFeedbackResetTimerId;
+    private static bool ActiveSectionSyncQueued;
 
     public static IVueComponent Component
         => DefineComponent(new VueComponentOptions
@@ -39,38 +74,71 @@ public static partial class WikiHomeModule
     {
         var requestedPath = OverviewPath;
         var requestedHash = "";
+        var requestedSearchQuery = "";
         var location = ECMAScript.Global.Document.Location;
         if (location != null)
         {
             requestedPath = NormalizePath(location.Pathname);
             requestedHash = NormalizeHash(location.Hash);
+            requestedSearchQuery = GetSearchQueryFromLocation(location, requestedPath);
 
-            var requestedUrl = BuildUrl(requestedPath, requestedHash);
-            if (requestedPath != location.Pathname || GetHashFragment(requestedHash) != location.Hash)
+            var requestedUrl = BuildUrl(requestedPath, requestedHash, requestedSearchQuery);
+            if (requestedPath != location.Pathname ||
+                GetHashFragment(requestedHash) != location.Hash ||
+                GetSearchFragment(requestedPath, requestedSearchQuery) != location.Search)
+            {
                 ECMAScript.Global.Window.History.ReplaceState(requestedUrl, "", requestedUrl);
+            }
         }
 
         var currentPath = Ref(requestedPath);
         var currentHash = Ref(requestedHash);
+        var currentSearchQuery = Ref(requestedSearchQuery);
+        var currentTheme = Ref(ReadStoredPreference(ThemeStorageKey, "dark"));
         var copiedSection = Ref("");
         var permalinkReadySection = Ref("");
+        var copiedPage = Ref("");
+        var pageLinkReady = Ref("");
+        var copiedCodeBlock = Ref("");
+        var unavailableCodeBlock = Ref("");
         var navFilter = Ref("");
+        var currentPageFeedback = Ref(ReadStoredPageFeedback(requestedPath));
+        var liveStatus = Ref("");
+        var navDrawerOpen = Ref(false);
+        var tocDrawerOpen = Ref(false);
+
         CurrentPathRef = currentPath;
         CurrentHashRef = currentHash;
+        CurrentSearchQueryRef = currentSearchQuery;
+        CurrentThemeRef = currentTheme;
         CopiedSectionRef = copiedSection;
         PermalinkReadySectionRef = permalinkReadySection;
+        CopiedPageRef = copiedPage;
+        PageLinkReadyRef = pageLinkReady;
+        CopiedCodeBlockRef = copiedCodeBlock;
+        UnavailableCodeBlockRef = unavailableCodeBlock;
         NavFilterRef = navFilter;
-        SyncDocumentState(requestedPath);
+        CurrentPageFeedbackRef = currentPageFeedback;
+        LiveStatusRef = liveStatus;
+        NavDrawerOpenRef = navDrawerOpen;
+        TocDrawerOpenRef = tocDrawerOpen;
+
+        ApplyTheme(currentTheme.Value);
+        SyncDocumentState(requestedPath, requestedSearchQuery);
         ECMAScript.Global.Window.Onpopstate = OnPopState;
         ECMAScript.Global.Window.Onhashchange = OnHashChange;
+        ECMAScript.Global.Window.Onkeydown = OnGlobalKeyDown;
+        ECMAScript.Global.Window.Onscroll = OnScroll;
 
         if (requestedHash.Length > 0)
             QueueScrollToHashAnchor(requestedHash);
+        else
+            QueueActiveSectionSync();
 
-        return () => Render(currentPath.Value, currentHash.Value, navFilter.Value);
+        return () => Render(currentPath.Value, currentHash.Value, navFilter.Value, currentSearchQuery.Value);
     }
 
-    private static IVNode Render(string currentPath, string currentHash, string navFilter)
+    private static IVNode Render(string currentPath, string currentHash, string navFilter, string currentSearchQuery)
     {
         var article = NotFoundArticle(currentPath);
         var toc = EmptyTocRail();
@@ -81,21 +149,82 @@ public static partial class WikiHomeModule
             toc = TocRail(currentPath, currentHash);
         }
 
-        return H("main", new VueObject { Class = "wiki-shell" },
+        return H("main", new VueObject
+        {
+            Class = GetShellClassName(),
+            Id = "top"
+        },
         [
+            H("a", new VueObject
+            {
+                Class = "skip-link",
+                Href = "#" + MainContentId
+            }, "Skip to content"),
+            H("p", new VueObject
+            {
+                Class = "sr-only",
+                Attrs = new VueDictionary
+                {
+                    ["aria-live"] = "polite",
+                    ["aria-atomic"] = "true"
+                }
+            }, GetLiveStatusRef()?.Value ?? ""),
             SiteHeader(),
+            MobileUtilityBar(currentPath),
+            DrawerBackdrop(),
             H("div", new VueObject { Class = "wiki-layout" },
             [
                 NavigationRail(currentPath, navFilter),
                 article,
                 toc
             ]),
-            SiteFooter()
+            SiteFooter(currentSearchQuery)
         ]);
     }
 
+    private static string GetShellClassName()
+    {
+        var className = "wiki-shell";
+        if (IsNavDrawerOpen())
+            className += " wiki-shell-nav-open";
+        if (IsTocDrawerOpen())
+            className += " wiki-shell-toc-open";
+
+        return className;
+    }
+
+    private static bool IsNavDrawerOpen()
+        => GetNavDrawerOpenRef()?.Value == true;
+
+    private static bool IsTocDrawerOpen()
+        => GetTocDrawerOpenRef()?.Value == true;
+
+    private static IVNode DrawerBackdrop()
+    {
+        var className = "drawer-backdrop";
+        if (IsNavDrawerOpen() || IsTocDrawerOpen())
+            className += " drawer-backdrop-open";
+
+        return H("button", new VueObject
+        {
+            Class = className,
+            Type = "button",
+            Title = "Close navigation panels",
+            Events = CreateCloseDrawersEvents(),
+            Raw = new VueDictionary
+            {
+                ["aria-hidden"] = (IsNavDrawerOpen() || IsTocDrawerOpen()) ? "false" : "true"
+            }
+        }, "");
+    }
+
     private static IVNode SiteHeader()
-        => H("header", new VueObject { Class = "site-header" },
+    {
+        var theme = GetCurrentThemeRef()?.Value ?? "dark";
+        var themeLabel = theme == "light" ? "Theme: Light" : "Theme: Dark";
+        var themeTitle = theme == "light" ? "Switch to dark theme" : "Switch to light theme";
+
+        return H("header", new VueObject { Class = "site-header" },
         [
             H("div", new VueObject { Class = "site-header-inner" },
             [
@@ -103,14 +232,42 @@ public static partial class WikiHomeModule
                 [
                     H("p", new VueObject { Class = "brand-kicker" }, "jazor.wiki"),
                     H("h1", new VueObject { Class = "brand-title" }, "Production Docs Built with Vue 3 H Functions"),
-                    H("p", new VueObject { Class = "brand-summary" }, "A real documentation shell for Jazor, with H-function-authored layout and product-facing routes.")
+                    H("p", new VueObject { Class = "brand-summary" }, "A real documentation shell for Jazor, now with route-driven search, metadata-rich pages, and production-grade reading flow.")
                 ]),
-                H("div", new VueObject { Class = "brand-actions" },
+                H("div", new VueObject { Class = "brand-actions-panel" },
                 [
-                    HeaderLink(GettingStartedPath, "Get Started"),
-                    HeaderLink(DeploymentPath, "Deploy It")
+                    H("div", new VueObject { Class = "brand-actions" },
+                    [
+                        HeaderLink(SearchPath, "Search"),
+                        HeaderLink(GettingStartedPath, "Get Started"),
+                        HeaderLink(TopicIndexPath, "Topic Index")
+                    ]),
+                    H("div", new VueObject { Class = "brand-toggles" },
+                    [
+                        H("button", new VueObject
+                        {
+                            Class = "header-toggle",
+                            Type = "button",
+                            Title = themeTitle,
+                            Events = CreateThemeToggleEvents()
+                        }, themeLabel)
+                    ])
                 ])
             ])
+        ]);
+    }
+
+    private static IVNode MobileUtilityBar(string currentPath)
+        => H("div", new VueObject { Class = "mobile-utility-bar" },
+        [
+            DrawerButton("Browse", "utility-button", NavRailId, IsNavDrawerOpen(), false, CreateOpenNavDrawerEvents()),
+            DrawerButton("On this page", "utility-button", TocRailId, IsTocDrawerOpen(), !IsKnownPage(currentPath), CreateOpenTocDrawerEvents()),
+            H("a", new VueObject
+            {
+                Class = "utility-link",
+                Href = SearchPath,
+                Events = CreateRouteClickEvents()
+            }, "Search")
         ]);
 
     private static IVNode NavigationRail(string currentPath, string navFilter)
@@ -120,16 +277,32 @@ public static partial class WikiHomeModule
         var operationsLinks = BuildNavLinksForGroup("Operations", currentPath, navFilter);
 
         var visibleCount = foundationLinks.Count + engineeringLinks.Count + operationsLinks.Count;
+        var railClassName = "nav-rail";
+        if (IsNavDrawerOpen())
+            railClassName += " nav-rail-open";
+
         var railChildren = new List<IVNode>
         {
+            H("div", new VueObject { Class = "rail-card nav-drawer-head" },
+            [
+                H("p", new VueObject { Class = "rail-kicker" }, "Browse docs"),
+                H("button", new VueObject
+                {
+                    Class = "drawer-close",
+                    Type = "button",
+                    Title = "Close page map",
+                    Events = CreateCloseDrawersEvents()
+                }, "Close")
+            ]),
             H("div", new VueObject { Class = "rail-card nav-search-card" },
             [
                 H("p", new VueObject { Class = "rail-kicker" }, "Find a page"),
-                H("p", new VueObject { Class = "rail-copy" }, "Filter routes, titles, summaries, status, and group labels without leaving the current page."),
+                H("p", new VueObject { Class = "rail-copy" }, "Filter routes, titles, summaries, tags, and status labels without leaving the current page."),
                 H("div", new VueObject { Class = "nav-search-row" },
                 [
                     H("input", new VueObject
                     {
+                        Id = NavSearchInputId,
                         Class = "nav-search-input",
                         Type = "search",
                         Placeholder = "Search docs pages",
@@ -145,12 +318,25 @@ public static partial class WikiHomeModule
                         Events = CreateClearNavFilterEvents()
                     }, "Clear")
                 ]),
+                H("p", new VueObject { Class = "nav-search-hint" }, "Press / or Ctrl+K to focus search. Press Escape to clear or exit."),
                 H("p", new VueObject { Class = "nav-search-status" }, GetNavFilterStatus(navFilter, visibleCount))
             ]),
             H("div", new VueObject { Class = "rail-card" },
             [
-                H("p", new VueObject { Class = "rail-kicker" }, "Product map"),
-                H("p", new VueObject { Class = "rail-copy" }, "Wiki is now the product-facing docs shell for Jazor. Routes, structure, deployment flow, and page discovery are treated as user-facing contracts.")
+                H("p", new VueObject { Class = "rail-kicker" }, "Full-text search"),
+                H("p", new VueObject { Class = "rail-copy" }, "Open the dedicated search route when you want query URLs, body-text matches, and section-level hits."),
+                H("a", new VueObject
+                {
+                    Class = "route-card route-card-inline",
+                    Href = BuildSearchRoute(navFilter),
+                    Events = CreateRouteClickEvents()
+                },
+                [
+                    H("span", new VueObject { Class = "route-card-group" }, "Foundation"),
+                    H("strong", new VueObject { Class = "route-card-title" }, navFilter.Length == 0 ? "Open Search" : "Search all content for \"" + navFilter + "\""),
+                    H("code", new VueObject { Class = "route-card-path" }, BuildSearchRoute(navFilter)),
+                    H("span", new VueObject { Class = "route-card-summary" }, "Use the `/search` route to match page body text, tags, and section titles.")
+                ])
             ])
         };
 
@@ -168,11 +354,20 @@ public static partial class WikiHomeModule
             railChildren.Add(H("div", new VueObject { Class = "rail-card nav-search-empty" },
             [
                 H("p", new VueObject { Class = "nav-search-empty-title" }, "No pages match the current filter."),
-                H("p", new VueObject { Class = "nav-search-empty-summary" }, "Search by route fragment, product group, page title, status, or summary copy.")
+                H("p", new VueObject { Class = "nav-search-empty-summary" }, "Try a broader term or open the dedicated search route for full-text results.")
             ]));
         }
 
-        return H("aside", new VueObject { Class = "nav-rail" }, railChildren.ToArray());
+        return H("aside", new VueObject
+        {
+            Id = NavRailId,
+            Class = railClassName,
+            Role = "navigation",
+            Raw = new VueDictionary
+            {
+                ["aria-label"] = "Page map"
+            }
+        }, railChildren.ToArray());
     }
 
     private static List<IVNode> BuildNavLinksForGroup(string group, string currentPath, string navFilter)
@@ -202,17 +397,42 @@ public static partial class WikiHomeModule
     }
 
     private static IVNode DocumentColumn(string currentPath)
-        => H("article", new VueObject { Class = "doc-column" },
+        => H("article", new VueObject
+        {
+            Class = "doc-column",
+            Id = MainContentId,
+            TabIndex = -1
+        },
         [
             DocumentHero(currentPath),
+            PageMetaPanel(currentPath),
             DocumentBody(currentPath),
             RelatedPagesPanel(currentPath),
+            PageFeedbackPanel(currentPath),
             PagePager(currentPath)
         ]);
 
     private static IVNode DocumentHero(string currentPath)
-        => H("header", new VueObject { Class = "doc-hero" },
+    {
+        var pageButtonLabel = "Copy page link";
+        var pageButtonClassName = "page-permalink";
+        var pageButtonTitle = "Copy direct link to this page";
+        if (GetCopiedPageRef()?.Value == currentPath)
+        {
+            pageButtonLabel = "Copied";
+            pageButtonClassName = "page-permalink page-permalink-copied";
+            pageButtonTitle = "Page link copied to clipboard";
+        }
+        else if (GetPageLinkReadyRef()?.Value == currentPath)
+        {
+            pageButtonLabel = "Link ready";
+            pageButtonClassName = "page-permalink page-permalink-ready";
+            pageButtonTitle = "Page link is ready in the address bar; clipboard copy was not available";
+        }
+
+        return H("header", new VueObject { Class = "doc-hero" },
         [
+            Breadcrumbs(currentPath),
             H("div", new VueObject { Class = "hero-meta-row" },
             [
                 H("span", new VueObject { Class = "hero-group" }, GetPageGroup(currentPath)),
@@ -220,8 +440,120 @@ public static partial class WikiHomeModule
                 H("code", new VueObject { Class = "hero-route" }, currentPath)
             ]),
             H("h1", new VueObject { Class = "doc-title" }, GetPageTitle(currentPath)),
-            H("p", new VueObject { Class = "doc-summary" }, GetPageSummary(currentPath))
+            H("p", new VueObject { Class = "doc-summary" }, GetPageSummary(currentPath)),
+            H("div", new VueObject { Class = "hero-tags-row" }, BuildTagLinks(currentPath)),
+            H("div", new VueObject { Class = "hero-actions-row" },
+            [
+                H("button", new VueObject
+                {
+                    Class = pageButtonClassName,
+                    Type = "button",
+                    Title = pageButtonTitle,
+                    Value = currentPath,
+                    Events = CreatePagePermalinkEvents()
+                }, pageButtonLabel),
+                H("a", new VueObject
+                {
+                    Class = "hero-action-link",
+                    Href = BuildSourceUrl(currentPath),
+                    Target = "_blank",
+                    Rel = "noreferrer"
+                }, "View source"),
+                H("a", new VueObject
+                {
+                    Class = "hero-action-link",
+                    Href = BuildIssueUrl(currentPath),
+                    Target = "_blank",
+                    Rel = "noreferrer"
+                }, "Report issue")
+            ])
         ]);
+    }
+
+    private static IVNode[] BuildTagLinks(string currentPath)
+    {
+        var tags = GetPageTags(currentPath);
+        var nodes = new IVNode[tags.Length];
+        for (var tagIndex = 0; tagIndex < tags.Length; tagIndex++)
+            nodes[tagIndex] = TagLink(tags[tagIndex]);
+
+        return nodes;
+    }
+
+    private static IVNode Breadcrumbs(string currentPath)
+    {
+        var group = GetPageGroup(currentPath);
+        var children = new List<IVNode>
+        {
+            H("a", new VueObject
+            {
+                Class = "breadcrumb-link",
+                Href = OverviewPath,
+                Events = CreateRouteClickEvents()
+            }, "Home")
+        };
+
+        if (currentPath != OverviewPath)
+        {
+            children.Add(H("span", new VueObject { Class = "breadcrumb-separator" }, "/"));
+
+            if (group != "Unregistered")
+            {
+                children.Add(H("a", new VueObject
+                {
+                    Class = "breadcrumb-link",
+                    Href = GetGroupLandingPath(group),
+                    Events = CreateRouteClickEvents()
+                }, group));
+                children.Add(H("span", new VueObject { Class = "breadcrumb-separator" }, "/"));
+            }
+
+            children.Add(H("span", new VueObject { Class = "breadcrumb-current" }, GetPageTitle(currentPath)));
+        }
+
+        return H("nav", new VueObject
+        {
+            Class = "breadcrumbs",
+            Role = "navigation",
+            Raw = new VueDictionary
+            {
+                ["aria-label"] = "Breadcrumbs"
+            }
+        }, children.ToArray());
+    }
+
+    private static string GetGroupLandingPath(string group)
+    {
+        if (group == "Foundation")
+            return TopicIndexPath;
+
+        if (group == "Engineering")
+            return CompilerOverviewPath;
+
+        if (group == "Operations")
+            return DeploymentPath;
+
+        return OverviewPath;
+    }
+
+    private static IVNode PageMetaPanel(string currentPath)
+        => H("section", new VueObject { Class = "meta-grid" },
+        [
+            MetaCard("Owner", GetPageOwner(currentPath), "Who owns the accuracy and maintenance of this page."),
+            MetaCard("Audience", GetPageAudience(currentPath), "Who should read this page first when choosing an entry point."),
+            MetaCard("Updated", GetPageLastUpdated(currentPath), "Exact date of the latest catalog-backed edit on this route."),
+            MetaCard("Reading time", GetReadingTimeLabel(GetPageReadingMinutes(currentPath)), "Estimated scan time based on the current page contract."),
+            MetaCard("Source file", GetPageSourceFile(currentPath), "Primary source file that owns the page body content."),
+            MetaCard("Status", GetPageStatus(currentPath), "Current maturity marker exposed in navigation and search.")
+        ]);
+
+    private static string GetReadingTimeLabel(int minutes)
+    {
+        if (minutes == 1)
+            return "1 min read";
+
+        return minutes + " min read";
+    }
 
     private static IVNode DocumentBody(string currentPath)
     {
@@ -250,13 +582,56 @@ public static partial class WikiHomeModule
         ]);
     }
 
+    private static IVNode PageFeedbackPanel(string currentPath)
+    {
+        var currentFeedback = GetCurrentPageFeedbackRef()?.Value ?? "";
+        var summary = "Use this quick signal to mark the page as helpful or needing work. For concrete gaps, open a GitHub issue from the hero action row.";
+        if (currentFeedback == "helpful")
+            summary = "Thanks. This page is currently marked as helpful in your local browser state.";
+        else if (currentFeedback == "needs-work")
+            summary = "This page is currently marked as needing work in your local browser state. The report-issue link can capture the concrete gap.";
+
+        return H("section", new VueObject { Class = "doc-section feedback-panel" },
+        [
+            H("div", new VueObject { Class = "section-title-row" },
+            [
+                H("h2", "Page feedback")
+            ]),
+            H("div", new VueObject { Class = "section-body" },
+            [
+                H("p", summary),
+                H("div", new VueObject { Class = "feedback-row" },
+                [
+                    FeedbackButton("Helpful", "helpful", currentFeedback),
+                    FeedbackButton("Needs work", "needs-work", currentFeedback)
+                ])
+            ])
+        ]);
+    }
+
     private static IVNode NotFoundArticle(string currentPath)
     {
         var suggestedPaths = GetSuggestedPaths(currentPath);
-        return H("article", new VueObject { Class = "doc-column" },
+        return H("article", new VueObject
+        {
+            Class = "doc-column",
+            Id = MainContentId,
+            TabIndex = -1
+        },
         [
             H("header", new VueObject { Class = "doc-hero" },
             [
+                H("nav", new VueObject { Class = "breadcrumbs" },
+                [
+                    H("a", new VueObject
+                    {
+                        Class = "breadcrumb-link",
+                        Href = OverviewPath,
+                        Events = CreateRouteClickEvents()
+                    }, "Home"),
+                    H("span", new VueObject { Class = "breadcrumb-separator" }, "/"),
+                    H("span", new VueObject { Class = "breadcrumb-current" }, "Not Found")
+                ]),
                 H("div", new VueObject { Class = "hero-meta-row" },
                 [
                     H("span", new VueObject { Class = "hero-group" }, "Routing"),
@@ -264,7 +639,22 @@ public static partial class WikiHomeModule
                     H("code", new VueObject { Class = "hero-route" }, currentPath)
                 ]),
                 H("h1", new VueObject { Class = "doc-title" }, "Page Not Found"),
-                H("p", new VueObject { Class = "doc-summary" }, "The current path is not registered in the Wiki page catalog. Route fallback is working, but this URL is outside the current docs map.")
+                H("p", new VueObject { Class = "doc-summary" }, "The current path is not registered in the Wiki page catalog. Route fallback is working, but this URL is outside the current docs map."),
+                H("div", new VueObject { Class = "hero-actions-row" },
+                [
+                    H("a", new VueObject
+                    {
+                        Class = "hero-action-link",
+                        Href = SearchPath,
+                        Events = CreateRouteClickEvents()
+                    }, "Open Search"),
+                    H("a", new VueObject
+                    {
+                        Class = "hero-action-link",
+                        Href = TopicIndexPath,
+                        Events = CreateRouteClickEvents()
+                    }, "Open Topic Index")
+                ])
             ]),
             H("div", new VueObject { Class = "doc-body" },
             [
@@ -283,6 +673,7 @@ public static partial class WikiHomeModule
                     H("ul",
                     [
                         H("li", "Return to the overview page and re-enter from the left navigation."),
+                        H("li", "Use `/search` if you only remember a subsystem or route fragment."),
                         H("li", "If this route should exist, add it to the central page catalog and body branch map."),
                         H("li", "Rerun `verify-smoke.ps1` after registering the route.")
                     ]),
@@ -302,6 +693,9 @@ public static partial class WikiHomeModule
 
     private static IVNode PagePager(string currentPath)
     {
+        if (currentPath == SearchPath)
+            return H("div", "");
+
         var previousNode = EmptyPagerSlot();
         var nextNode = EmptyPagerSlot();
         var previousPath = GetPreviousPath(currentPath);
@@ -313,19 +707,46 @@ public static partial class WikiHomeModule
         if (nextPath.Length > 0)
             nextNode = PagerLink("Next", nextPath, GetPageTitle(nextPath));
 
-        return H("nav", new VueObject { Class = "pager" },
+        return H("nav", new VueObject
+        {
+            Class = "pager",
+            Role = "navigation",
+            Raw = new VueDictionary
+            {
+                ["aria-label"] = "Page pager"
+            }
+        },
         [
             previousNode,
             nextNode
         ]);
     }
 
-    private static IVNode SiteFooter()
-        => H("footer", new VueObject { Class = "site-footer" },
+    private static IVNode SiteFooter(string currentSearchQuery)
+    {
+        var footerSummary = "jazor.wiki now runs as a real docs shell: H-function authored, statically emitted, route-fallback ready, and backed by a central page catalog.";
+        if (currentSearchQuery.Length > 0)
+            footerSummary = "Current search query: \"" + currentSearchQuery + "\" | " + footerSummary;
+
+        return H("footer", new VueObject { Class = "site-footer" },
         [
-            H("p", "jazor.wiki now runs as a real docs shell: H-function authored, statically emitted, route-fallback ready, and backed by a central page catalog."),
-            H("p", "Health endpoint: /health | Registered docs pages: " + TotalPageCount)
+            H("p", footerSummary),
+            H("p", "Health endpoint: /health | Registered docs pages: " + TotalPageCount + " | Latest catalog refresh: " + GetLatestCatalogRefreshDate())
         ]);
+    }
+
+    private static string GetLatestCatalogRefreshDate()
+    {
+        var latest = "";
+        for (var index = 0; index < PageLastUpdatedDates.Length; index++)
+        {
+            var current = PageLastUpdatedDates[index];
+            if (string.CompareOrdinal(current, latest) > 0)
+                latest = current;
+        }
+
+        return latest;
+    }
 
     private static string NormalizePath(string pathname)
     {
@@ -358,6 +779,9 @@ public static partial class WikiHomeModule
         return hash;
     }
 
+    private static string NormalizeSearchQuery(string query)
+        => query.Trim();
+
     private static string GetHashFragment(string hash)
     {
         if (hash.Length == 0)
@@ -366,15 +790,103 @@ public static partial class WikiHomeModule
         return "#" + hash;
     }
 
-    private static string BuildUrl(string path, string hash)
-        => path + GetHashFragment(hash);
-
-    private static void SyncDocumentState(string currentPath)
+    private static string GetSearchFragment(string path, string searchQuery)
     {
-        if (IsKnownPage(currentPath))
-            ECMAScript.Global.Document.Title = GetPageTitle(currentPath) + " | jazor.wiki";
-        else
-            ECMAScript.Global.Document.Title = "Page Not Found | jazor.wiki";
+        if (path != SearchPath)
+            return "";
+
+        var normalizedQuery = NormalizeSearchQuery(searchQuery);
+        if (normalizedQuery.Length == 0)
+            return "";
+
+        return "?q=" + ECMAScript.Global.EncodeURIComponent(normalizedQuery);
+    }
+
+    private static string BuildUrl(string path, string hash, string searchQuery)
+        => path + GetSearchFragment(path, searchQuery) + GetHashFragment(hash);
+
+    private static string BuildSearchRoute(string query)
+        => BuildUrl(SearchPath, "", query);
+
+    private static string GetSearchQueryFromLocation(Location location, string normalizedPath)
+    {
+        if (normalizedPath != SearchPath || location.Search.Length == 0)
+            return "";
+
+        return GetSearchQueryFromSearchString(location.Search, normalizedPath);
+    }
+
+    private static string GetSearchQueryFromSearchString(string search, string normalizedPath)
+    {
+        if (normalizedPath != SearchPath || search.Length == 0)
+            return "";
+
+        try
+        {
+            var query = new URLSearchParams(search).Get("q") ?? "";
+            return NormalizeSearchQuery(query);
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static void SyncDocumentState(string currentPath, string currentSearchQuery)
+    {
+        var pageTitle = "Page Not Found";
+        var pageSummary = "The current path is not registered in the Wiki page catalog.";
+        var canonicalPath = currentPath;
+
+        if (currentPath == SearchPath)
+        {
+            pageTitle = currentSearchQuery.Length == 0
+                ? "Search"
+                : "Search: " + currentSearchQuery;
+            pageSummary = currentSearchQuery.Length == 0
+                ? "Search the full Wiki corpus by subsystem, route fragment, workflow, or tag."
+                : "Search results for \"" + currentSearchQuery + "\" across route metadata, tags, curated page body text, and section titles.";
+        }
+        else if (IsKnownPage(currentPath))
+        {
+            pageTitle = GetPageTitle(currentPath);
+            pageSummary = GetPageSummary(currentPath);
+        }
+
+        ECMAScript.Global.Document.Title = pageTitle + " | jazor.wiki";
+        UpdateDocumentMeta(pageTitle, pageSummary, BuildUrl(canonicalPath, "", currentSearchQuery));
+    }
+
+    private static void UpdateDocumentMeta(string pageTitle, string pageSummary, string relativeUrl)
+    {
+        var location = ECMAScript.Global.Document.Location;
+        var absoluteUrl = relativeUrl;
+        if (location != null)
+            absoluteUrl = location.Origin + relativeUrl;
+
+        SetMetaContent("meta[name=\"description\"]", pageSummary);
+        SetMetaContent("meta[property=\"og:title\"]", pageTitle + " | jazor.wiki");
+        SetMetaContent("meta[property=\"og:description\"]", pageSummary);
+        SetMetaContent("meta[property=\"og:url\"]", absoluteUrl);
+        SetMetaContent("meta[name=\"twitter:title\"]", pageTitle + " | jazor.wiki");
+        SetMetaContent("meta[name=\"twitter:description\"]", pageSummary);
+        SetLinkHref("link[rel=\"canonical\"]", absoluteUrl);
+    }
+
+    private static void SetMetaContent(string selector, string value)
+    {
+        if (ECMAScript.Global.Document.QuerySelector(selector) is not Element metaElement)
+            return;
+
+        metaElement.SetAttribute("content", value);
+    }
+
+    private static void SetLinkHref(string selector, string value)
+    {
+        if (ECMAScript.Global.Document.QuerySelector(selector) is not Element linkElement)
+            return;
+
+        linkElement.SetAttribute("href", value);
     }
 
     private static IVueRef<string>? GetCurrentPathRef()
@@ -383,14 +895,44 @@ public static partial class WikiHomeModule
     private static IVueRef<string>? GetCurrentHashRef()
         => CurrentHashRef;
 
+    private static IVueRef<string>? GetCurrentSearchQueryRef()
+        => CurrentSearchQueryRef;
+
+    private static IVueRef<string>? GetCurrentThemeRef()
+        => CurrentThemeRef;
+
     private static IVueRef<string>? GetCopiedSectionRef()
         => CopiedSectionRef;
 
     private static IVueRef<string>? GetPermalinkReadySectionRef()
         => PermalinkReadySectionRef;
 
+    private static IVueRef<string>? GetCopiedPageRef()
+        => CopiedPageRef;
+
+    private static IVueRef<string>? GetPageLinkReadyRef()
+        => PageLinkReadyRef;
+
     private static IVueRef<string>? GetNavFilterRef()
         => NavFilterRef;
+
+    private static IVueRef<string>? GetCopiedCodeBlockRef()
+        => CopiedCodeBlockRef;
+
+    private static IVueRef<string>? GetUnavailableCodeBlockRef()
+        => UnavailableCodeBlockRef;
+
+    private static IVueRef<string>? GetCurrentPageFeedbackRef()
+        => CurrentPageFeedbackRef;
+
+    private static IVueRef<string>? GetLiveStatusRef()
+        => LiveStatusRef;
+
+    private static IVueRef<bool>? GetNavDrawerOpenRef()
+        => NavDrawerOpenRef;
+
+    private static IVueRef<bool>? GetTocDrawerOpenRef()
+        => TocDrawerOpenRef;
 
     private static void SetNavFilter(string value)
     {
@@ -399,6 +941,25 @@ public static partial class WikiHomeModule
             return;
 
         navFilter.Value = value.Trim();
+    }
+
+    private static void SetSearchQuery(string value, bool updateLocation)
+    {
+        var searchQuery = GetCurrentSearchQueryRef();
+        var currentPath = GetCurrentPathRef();
+        var currentHash = GetCurrentHashRef();
+        if (searchQuery == null || currentPath == null || currentHash == null)
+            return;
+
+        var normalizedQuery = NormalizeSearchQuery(value);
+        searchQuery.Value = normalizedQuery;
+
+        if (updateLocation && currentPath.Value == SearchPath)
+        {
+            var url = BuildUrl(currentPath.Value, currentHash.Value, normalizedQuery);
+            ECMAScript.Global.Window.History.ReplaceState(url, "", url);
+            SyncDocumentState(currentPath.Value, normalizedQuery);
+        }
     }
 
     private static void SetCopiedSection(string value)
@@ -419,10 +980,89 @@ public static partial class WikiHomeModule
         permalinkReadySection.Value = value;
     }
 
+    private static void SetCopiedPage(string value)
+    {
+        var copiedPage = GetCopiedPageRef();
+        if (copiedPage == null)
+            return;
+
+        copiedPage.Value = value;
+    }
+
+    private static void SetPageLinkReady(string value)
+    {
+        var pageLinkReady = GetPageLinkReadyRef();
+        if (pageLinkReady == null)
+            return;
+
+        pageLinkReady.Value = value;
+    }
+
+    private static void SetCopiedCodeBlock(string value)
+    {
+        var copiedCodeBlock = GetCopiedCodeBlockRef();
+        if (copiedCodeBlock == null)
+            return;
+
+        copiedCodeBlock.Value = value;
+    }
+
+    private static void SetUnavailableCodeBlock(string value)
+    {
+        var unavailableCodeBlock = GetUnavailableCodeBlockRef();
+        if (unavailableCodeBlock == null)
+            return;
+
+        unavailableCodeBlock.Value = value;
+    }
+
+    private static void SetCurrentPageFeedback(string value)
+    {
+        var currentPageFeedback = GetCurrentPageFeedbackRef();
+        if (currentPageFeedback == null)
+            return;
+
+        currentPageFeedback.Value = value;
+    }
+
+    private static void SetLiveStatus(string value)
+    {
+        var liveStatus = GetLiveStatusRef();
+        if (liveStatus == null)
+            return;
+
+        liveStatus.Value = value;
+    }
+
+    private static void SetNavDrawerOpen(bool value)
+    {
+        var navDrawer = GetNavDrawerOpenRef();
+        if (navDrawer == null)
+            return;
+
+        navDrawer.Value = value;
+    }
+
+    private static void SetTocDrawerOpen(bool value)
+    {
+        var tocDrawer = GetTocDrawerOpenRef();
+        if (tocDrawer == null)
+            return;
+
+        tocDrawer.Value = value;
+    }
+
+    private static void CloseDrawers()
+    {
+        SetNavDrawerOpen(false);
+        SetTocDrawerOpen(false);
+    }
+
     private static void ShowCopiedSection(string sectionId)
     {
         SetPermalinkReadySection("");
         SetCopiedSection(sectionId);
+        SetLiveStatus("Section link copied.");
         QueuePermalinkFeedbackReset();
     }
 
@@ -430,6 +1070,7 @@ public static partial class WikiHomeModule
     {
         SetCopiedSection("");
         SetPermalinkReadySection(sectionId);
+        SetLiveStatus("Section link ready in the address bar.");
         QueuePermalinkFeedbackReset();
     }
 
@@ -448,6 +1089,148 @@ public static partial class WikiHomeModule
         PermalinkFeedbackResetTimerId = 0;
     }
 
+    private static void ShowCopiedPage(string path)
+    {
+        SetPageLinkReady("");
+        SetCopiedPage(path);
+        SetLiveStatus("Page link copied.");
+        QueuePageLinkFeedbackReset();
+    }
+
+    private static void ShowPageLinkReady(string path)
+    {
+        SetCopiedPage("");
+        SetPageLinkReady(path);
+        SetLiveStatus("Page link ready in the address bar.");
+        QueuePageLinkFeedbackReset();
+    }
+
+    private static void QueuePageLinkFeedbackReset()
+    {
+        if (PageLinkFeedbackResetTimerId != 0)
+            ECMAScript.Global.Window.ClearTimeout(PageLinkFeedbackResetTimerId);
+
+        PageLinkFeedbackResetTimerId = ECMAScript.Global.Window.SetTimeout((Delegate)(Action)ResetPageLinkFeedback, 1800);
+    }
+
+    private static void ResetPageLinkFeedback()
+    {
+        SetCopiedPage("");
+        SetPageLinkReady("");
+        PageLinkFeedbackResetTimerId = 0;
+    }
+
+    private static void ShowCopiedCodeBlock(string codeBlockId)
+    {
+        SetUnavailableCodeBlock("");
+        SetCopiedCodeBlock(codeBlockId);
+        SetLiveStatus("Code block copied.");
+        QueueCodeBlockFeedbackReset();
+    }
+
+    private static void ShowUnavailableCodeBlock(string codeBlockId)
+    {
+        SetCopiedCodeBlock("");
+        SetUnavailableCodeBlock(codeBlockId);
+        SetLiveStatus("Code block copy is unavailable in this browser.");
+        QueueCodeBlockFeedbackReset();
+    }
+
+    private static void QueueCodeBlockFeedbackReset()
+    {
+        if (CodeBlockFeedbackResetTimerId != 0)
+            ECMAScript.Global.Window.ClearTimeout(CodeBlockFeedbackResetTimerId);
+
+        CodeBlockFeedbackResetTimerId = ECMAScript.Global.Window.SetTimeout((Delegate)(Action)ResetCodeBlockFeedback, 1800);
+    }
+
+    private static void ResetCodeBlockFeedback()
+    {
+        SetCopiedCodeBlock("");
+        SetUnavailableCodeBlock("");
+        CodeBlockFeedbackResetTimerId = 0;
+    }
+
+    private static string ReadStoredPreference(string key, string fallback)
+    {
+        try
+        {
+            var storage = ECMAScript.Global.Window.LocalStorage;
+            if (storage == null)
+                return fallback;
+
+            return storage.GetItem(key) ?? fallback;
+        }
+        catch
+        {
+            return fallback;
+        }
+    }
+
+    private static void WriteStoredPreference(string key, string value)
+    {
+        try
+        {
+            var storage = ECMAScript.Global.Window.LocalStorage;
+            if (storage == null)
+                return;
+
+            storage.SetItem(key, value);
+        }
+        catch
+        {
+        }
+    }
+
+    private static string ReadStoredPageFeedback(string currentPath)
+    {
+        if (!IsKnownPage(currentPath))
+            return "";
+
+        return ReadStoredPreference(FeedbackStoragePrefix + currentPath, "");
+    }
+
+    private static void PersistCurrentPageFeedback(string currentPath, string value)
+    {
+        if (!IsKnownPage(currentPath))
+            return;
+
+        WriteStoredPreference(FeedbackStoragePrefix + currentPath, value);
+    }
+
+    private static void ApplyTheme(string theme)
+    {
+        if (ECMAScript.Global.Document.QuerySelector("html") is not Element htmlElement)
+            return;
+
+        htmlElement.SetAttribute("data-theme", theme);
+    }
+
+    private static string BuildCodeBlockId(string label, string code)
+    {
+        var seed = label + "\n" + code;
+        var hash = 17;
+        for (var index = 0; index < seed.Length; index++)
+            hash = (hash * 31) + seed[index];
+
+        if (hash == int.MinValue)
+            return "code-block-2147483648";
+
+        if (hash < 0)
+            hash = 0 - hash;
+
+        return "code-block-" + hash;
+    }
+
+    private static string BuildSourceUrl(string currentPath)
+        => RepositoryBlobBaseUrl + GetPageSourceFile(currentPath);
+
+    private static string BuildIssueUrl(string currentPath)
+    {
+        var issueTitle = "Wiki: " + GetPageTitle(currentPath) + " (" + currentPath + ")";
+        return RepositoryIssueBaseUrl + ECMAScript.Global.EncodeURIComponent(issueTitle);
+    }
+
     private static void QueueScrollToHashAnchor(string hash)
     {
         if (hash.Length == 0)
@@ -462,19 +1245,87 @@ public static partial class WikiHomeModule
             return;
 
         sectionElement.ScrollIntoView(true);
+        QueueActiveSectionSync();
     }
 
-    private static void NavigateTo(string path, string hash, bool updateHistory, bool resetScroll)
+    private static void QueueActiveSectionSync()
+    {
+        if (ActiveSectionSyncQueued)
+            return;
+
+        ActiveSectionSyncQueued = true;
+        ECMAScript.Global.Window.RequestAnimationFrame(SyncActiveSectionOnFrame);
+    }
+
+    private static void SyncActiveSectionOnFrame(double time)
+    {
+        ActiveSectionSyncQueued = false;
+        SyncActiveSectionFromScrollPosition();
+    }
+
+    private static void SyncActiveSectionFromScrollPosition()
     {
         var currentPath = GetCurrentPathRef();
         var currentHash = GetCurrentHashRef();
-        if (currentPath == null || currentHash == null)
+        if (currentPath == null || currentHash == null || !IsKnownPage(currentPath.Value))
+            return;
+
+        var pageIndex = GetPageIndex(currentPath.Value);
+        var sectionIds = GetPageSectionIds(pageIndex);
+        if (sectionIds.Length == 0)
+            return;
+
+        var activeSectionId = "";
+        var nearestDistance = double.MaxValue;
+        const double activationLine = 148;
+
+        for (var sectionIndex = 0; sectionIndex < sectionIds.Length; sectionIndex++)
+        {
+            var sectionId = sectionIds[sectionIndex];
+            if (ECMAScript.Global.Document.GetElementById(sectionId) is not Element sectionElement)
+                continue;
+
+            var bounds = sectionElement.GetBoundingClientRect();
+            if (bounds.Top <= activationLine && bounds.Bottom > activationLine)
+            {
+                activeSectionId = sectionId;
+                break;
+            }
+
+            var distance = bounds.Top > activationLine
+                ? bounds.Top - activationLine
+                : activationLine - bounds.Bottom;
+
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                activeSectionId = sectionId;
+            }
+        }
+
+        if (activeSectionId.Length == 0 || currentHash.Value == activeSectionId)
+            return;
+
+        currentHash.Value = activeSectionId;
+    }
+
+    private static void NavigateTo(string path, string hash, string searchQuery, bool updateHistory, bool resetScroll)
+    {
+        var currentPath = GetCurrentPathRef();
+        var currentHash = GetCurrentHashRef();
+        var currentSearchQuery = GetCurrentSearchQueryRef();
+        if (currentPath == null || currentHash == null || currentSearchQuery == null)
             return;
 
         var normalizedPath = NormalizePath(path);
         var normalizedHash = NormalizeHash(hash);
+        var normalizedSearchQuery = normalizedPath == SearchPath
+            ? NormalizeSearchQuery(searchQuery)
+            : "";
 
-        if (currentPath.Value == normalizedPath && currentHash.Value == normalizedHash)
+        if (currentPath.Value == normalizedPath &&
+            currentHash.Value == normalizedHash &&
+            currentSearchQuery.Value == normalizedSearchQuery)
         {
             if (normalizedHash.Length > 0)
                 QueueScrollToHashAnchor(normalizedHash);
@@ -486,17 +1337,28 @@ public static partial class WikiHomeModule
 
         currentPath.Value = normalizedPath;
         currentHash.Value = normalizedHash;
+        currentSearchQuery.Value = normalizedSearchQuery;
+        CloseDrawers();
+        SetCurrentPageFeedback(ReadStoredPageFeedback(normalizedPath));
+
         if (updateHistory)
         {
-            var url = BuildUrl(normalizedPath, normalizedHash);
+            var url = BuildUrl(normalizedPath, normalizedHash, normalizedSearchQuery);
             ECMAScript.Global.Window.History.PushState(url, "", url);
         }
 
-        SyncDocumentState(normalizedPath);
+        SyncDocumentState(normalizedPath, normalizedSearchQuery);
         if (normalizedHash.Length > 0)
             QueueScrollToHashAnchor(normalizedHash);
         else if (resetScroll)
+        {
             ECMAScript.Global.Window.ScrollTo(0, 0);
+            QueueActiveSectionSync();
+        }
+        else
+        {
+            QueueActiveSectionSync();
+        }
     }
 
     private static void SyncLocationStateFromBrowser()
@@ -504,17 +1366,25 @@ public static partial class WikiHomeModule
         var location = ECMAScript.Global.Document.Location;
         var currentPath = GetCurrentPathRef();
         var currentHash = GetCurrentHashRef();
-        if (location == null || currentPath == null || currentHash == null)
+        var currentSearchQuery = GetCurrentSearchQueryRef();
+        if (location == null || currentPath == null || currentHash == null || currentSearchQuery == null)
             return;
 
         var normalizedPath = NormalizePath(location.Pathname);
         var normalizedHash = NormalizeHash(location.Hash);
+        var normalizedSearchQuery = GetSearchQueryFromLocation(location, normalizedPath);
+
         currentPath.Value = normalizedPath;
         currentHash.Value = normalizedHash;
-        SyncDocumentState(normalizedPath);
+        currentSearchQuery.Value = normalizedSearchQuery;
+        CloseDrawers();
+        SetCurrentPageFeedback(ReadStoredPageFeedback(normalizedPath));
+        SyncDocumentState(normalizedPath, normalizedSearchQuery);
 
         if (normalizedHash.Length > 0)
             QueueScrollToHashAnchor(normalizedHash);
+        else
+            QueueActiveSectionSync();
     }
 
     private static bool ShouldAllowBrowserDefault(MouseEvent mouseEvent)
@@ -533,7 +1403,7 @@ public static partial class WikiHomeModule
             return;
 
         mouseEvent.PreventDefault();
-        NavigateTo(anchor.Pathname, "", updateHistory: true, resetScroll: true);
+        NavigateTo(anchor.Pathname, "", GetSearchQueryFromSearchString(anchor.Search, NormalizePath(anchor.Pathname)), updateHistory: true, resetScroll: true);
     }
 
     private static void OnTocClick(MouseEvent mouseEvent)
@@ -545,7 +1415,7 @@ public static partial class WikiHomeModule
             return;
 
         mouseEvent.PreventDefault();
-        NavigateTo(anchor.Pathname, anchor.Hash, updateHistory: true, resetScroll: true);
+        NavigateTo(anchor.Pathname, anchor.Hash, GetSearchQueryFromSearchString(anchor.Search, NormalizePath(anchor.Pathname)), updateHistory: true, resetScroll: true);
     }
 
     private static void OnSectionPermalinkClick(MouseEvent mouseEvent)
@@ -556,7 +1426,8 @@ public static partial class WikiHomeModule
         mouseEvent.PreventDefault();
 
         var currentPath = GetCurrentPathRef();
-        if (currentPath == null)
+        var currentSearchQuery = GetCurrentSearchQueryRef();
+        if (currentPath == null || currentSearchQuery == null)
             return;
 
         var sectionId = NormalizeHash(buttonElement.Value);
@@ -564,10 +1435,10 @@ public static partial class WikiHomeModule
             return;
 
         ResetPermalinkFeedback();
-        NavigateTo(currentPath.Value, sectionId, updateHistory: true, resetScroll: true);
+        NavigateTo(currentPath.Value, sectionId, currentSearchQuery.Value, updateHistory: true, resetScroll: true);
 
         var location = ECMAScript.Global.Document.Location;
-        var sectionUrl = BuildUrl(currentPath.Value, sectionId);
+        var sectionUrl = BuildUrl(currentPath.Value, sectionId, currentSearchQuery.Value);
         var sectionShareUrl = sectionUrl;
         if (location != null)
             sectionShareUrl = location.Origin + sectionUrl;
@@ -591,6 +1462,85 @@ public static partial class WikiHomeModule
         }
     }
 
+    private static void OnPagePermalinkClick(MouseEvent mouseEvent)
+    {
+        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+            return;
+
+        mouseEvent.PreventDefault();
+
+        var currentPath = GetCurrentPathRef();
+        var currentSearchQuery = GetCurrentSearchQueryRef();
+        if (currentPath == null || currentSearchQuery == null)
+            return;
+
+        var targetPath = NormalizePath(buttonElement.Value);
+        ResetPageLinkFeedback();
+
+        var location = ECMAScript.Global.Document.Location;
+        var pageUrl = BuildUrl(targetPath, "", currentSearchQuery.Value);
+        var shareUrl = pageUrl;
+        if (location != null)
+            shareUrl = location.Origin + pageUrl;
+
+        try
+        {
+            var clipboard = ECMAScript.Global.Window.Navigator.Clipboard;
+            if (clipboard == null)
+            {
+                ShowPageLinkReady(targetPath);
+                return;
+            }
+
+            Promise.Resolve(clipboard.WriteText(shareUrl)).Then(
+                () => ShowCopiedPage(targetPath),
+                () => ShowPageLinkReady(targetPath));
+        }
+        catch
+        {
+            ShowPageLinkReady(targetPath);
+        }
+    }
+
+    private static void OnCodeBlockCopyClick(MouseEvent mouseEvent)
+    {
+        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+            return;
+
+        mouseEvent.PreventDefault();
+
+        var codeBlockId = buttonElement.Value;
+        if (codeBlockId.Length == 0)
+            return;
+
+        if (ECMAScript.Global.Document.GetElementById(codeBlockId) is not Element codeBlockElement)
+            return;
+
+        var code = codeBlockElement.TextContent ?? "";
+        if (code.Length == 0)
+            return;
+
+        ResetCodeBlockFeedback();
+
+        try
+        {
+            var clipboard = ECMAScript.Global.Window.Navigator.Clipboard;
+            if (clipboard == null)
+            {
+                ShowUnavailableCodeBlock(codeBlockId);
+                return;
+            }
+
+            Promise.Resolve(clipboard.WriteText(code)).Then(
+                () => ShowCopiedCodeBlock(codeBlockId),
+                () => ShowUnavailableCodeBlock(codeBlockId));
+        }
+        catch
+        {
+            ShowUnavailableCodeBlock(codeBlockId);
+        }
+    }
+
     private static void OnNavFilterInput(Event @event)
     {
         if (@event.CurrentTarget is not HTMLInputElement inputElement)
@@ -605,9 +1555,193 @@ public static partial class WikiHomeModule
         SetNavFilter("");
     }
 
+    private static void OnSearchInput(Event @event)
+    {
+        if (@event.CurrentTarget is not HTMLInputElement inputElement)
+            return;
+
+        SetSearchQuery(inputElement.Value, updateLocation: true);
+    }
+
+    private static void ClearSearch(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        SetSearchQuery("", updateLocation: true);
+    }
+
+    private static void ToggleTheme(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+
+        var theme = GetCurrentThemeRef();
+        if (theme == null)
+            return;
+
+        theme.Value = theme.Value == "light" ? "dark" : "light";
+        ApplyTheme(theme.Value);
+        WriteStoredPreference(ThemeStorageKey, theme.Value);
+        SetLiveStatus("Theme switched to " + theme.Value + ".");
+    }
+
+    private static void OpenNavDrawer(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        SetNavDrawerOpen(true);
+        SetTocDrawerOpen(false);
+    }
+
+    private static void OpenTocDrawer(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        SetTocDrawerOpen(true);
+        SetNavDrawerOpen(false);
+    }
+
+    private static void CloseAllDrawers(MouseEvent mouseEvent)
+    {
+        mouseEvent.PreventDefault();
+        CloseDrawers();
+    }
+
+    private static void OnPageFeedbackClick(MouseEvent mouseEvent)
+    {
+        if (mouseEvent.CurrentTarget is not HTMLButtonElement buttonElement)
+            return;
+
+        mouseEvent.PreventDefault();
+
+        var currentPath = GetCurrentPathRef();
+        if (currentPath == null)
+            return;
+
+        var feedbackValue = buttonElement.Value;
+        SetCurrentPageFeedback(feedbackValue);
+        PersistCurrentPageFeedback(currentPath.Value, feedbackValue);
+
+        if (feedbackValue == "helpful")
+            SetLiveStatus("Page marked as helpful.");
+        else
+            SetLiveStatus("Page marked as needing work.");
+    }
+
+    private static void FocusNavSearch()
+    {
+        if (ECMAScript.Global.Document.GetElementById(NavSearchInputId) is not HTMLInputElement inputElement)
+            return;
+
+        inputElement.Focus();
+        inputElement.Select();
+    }
+
+    private static void FocusPageSearch()
+    {
+        if (ECMAScript.Global.Document.GetElementById(SearchInputId) is not HTMLInputElement inputElement)
+            return;
+
+        inputElement.Focus();
+        inputElement.Select();
+    }
+
+    private static void FocusPrimarySearch()
+    {
+        if (GetCurrentPathRef()?.Value == SearchPath)
+        {
+            FocusPageSearch();
+            return;
+        }
+
+        FocusNavSearch();
+    }
+
+    private static bool IsEditableActiveElement()
+    {
+        if (ECMAScript.Global.Document.ActiveElement is HTMLInputElement)
+            return true;
+
+        if (ECMAScript.Global.Document.ActiveElement is HTMLTextAreaElement)
+            return true;
+
+        return false;
+    }
+
+    private static bool IsNavSearchFocused()
+        => ECMAScript.Global.Document.ActiveElement is HTMLInputElement activeInput &&
+           activeInput.Id == NavSearchInputId;
+
+    private static bool IsPageSearchFocused()
+        => ECMAScript.Global.Document.ActiveElement is HTMLInputElement activeInput &&
+           activeInput.Id == SearchInputId;
+
+    private static object OnGlobalKeyDown(Event @event)
+    {
+        if (@event is not KeyboardEvent keyboardEvent)
+            return 0;
+
+        var key = keyboardEvent.Key;
+        var hasPrimaryModifier = keyboardEvent.CtrlKey || keyboardEvent.MetaKey;
+
+        if (!keyboardEvent.AltKey && !keyboardEvent.ShiftKey && !hasPrimaryModifier && key == "/")
+        {
+            if (!IsEditableActiveElement())
+            {
+                keyboardEvent.PreventDefault();
+                FocusPrimarySearch();
+            }
+
+            return 0;
+        }
+
+        if (!keyboardEvent.AltKey && !keyboardEvent.ShiftKey && hasPrimaryModifier && (key == "k" || key == "K"))
+        {
+            keyboardEvent.PreventDefault();
+            FocusPrimarySearch();
+            return 0;
+        }
+
+        if (key == "Escape")
+        {
+            if (IsPageSearchFocused())
+            {
+                keyboardEvent.PreventDefault();
+                if ((GetCurrentSearchQueryRef()?.Value ?? "").Length > 0)
+                    SetSearchQuery("", updateLocation: true);
+                else if (ECMAScript.Global.Document.ActiveElement is HTMLInputElement searchInput)
+                    searchInput.Blur();
+
+                return 0;
+            }
+
+            if (IsNavSearchFocused())
+            {
+                keyboardEvent.PreventDefault();
+                if ((GetNavFilterRef()?.Value ?? "").Length > 0)
+                    SetNavFilter("");
+                else if (ECMAScript.Global.Document.ActiveElement is HTMLInputElement activeInput)
+                    activeInput.Blur();
+
+                return 0;
+            }
+
+            if (IsNavDrawerOpen() || IsTocDrawerOpen())
+            {
+                keyboardEvent.PreventDefault();
+                CloseDrawers();
+                return 0;
+            }
+        }
+
+        return 0;
+    }
+
     private static object OnHashChange(Event @event)
     {
         SyncLocationStateFromBrowser();
+        return 0;
+    }
+
+    private static object OnScroll(Event @event)
+    {
+        QueueActiveSectionSync();
         return 0;
     }
 

@@ -30,64 +30,101 @@ $healthUrl = "$rootUrl/health"
 $homeUrl = "$rootUrl/"
 $docsRoutes = @(
     @{ Url = $homeUrl; Path = "/" },
+    @{ Url = "$rootUrl/search"; Path = "/search" },
     @{ Url = "$rootUrl/guides/getting-started"; Path = "/guides/getting-started" },
+    @{ Url = "$rootUrl/guides/project-lines"; Path = "/guides/project-lines" },
     @{ Url = "$rootUrl/guides/content-model"; Path = "/guides/content-model" },
     @{ Url = "$rootUrl/guides/navigation-discovery"; Path = "/guides/navigation-discovery" },
     @{ Url = "$rootUrl/guides/information-architecture"; Path = "/guides/information-architecture" },
+    @{ Url = "$rootUrl/guides/topic-index"; Path = "/guides/topic-index" },
+    @{ Url = "$rootUrl/guides/glossary"; Path = "/guides/glossary" },
+    @{ Url = "$rootUrl/guides/faq"; Path = "/guides/faq" },
+    @{ Url = "$rootUrl/guides/troubleshooting"; Path = "/guides/troubleshooting" },
     @{ Url = "$rootUrl/engineering/h-function-authoring"; Path = "/engineering/h-function-authoring" },
+    @{ Url = "$rootUrl/engineering/compiler-overview"; Path = "/engineering/compiler-overview" },
     @{ Url = "$rootUrl/engineering/compiler-support-boundary"; Path = "/engineering/compiler-support-boundary" },
     @{ Url = "$rootUrl/engineering/route-catalog-contract"; Path = "/engineering/route-catalog-contract" },
     @{ Url = "$rootUrl/engineering/host-semantic-seams"; Path = "/engineering/host-semantic-seams" },
     @{ Url = "$rootUrl/engineering/import-emit-contract"; Path = "/engineering/import-emit-contract" },
     @{ Url = "$rootUrl/engineering/runtime-catalog"; Path = "/engineering/runtime-catalog" },
+    @{ Url = "$rootUrl/engineering/jolt-host"; Path = "/engineering/jolt-host" },
+    @{ Url = "$rootUrl/engineering/razorvue-library-mode"; Path = "/engineering/razorvue-library-mode" },
     @{ Url = "$rootUrl/operations/content-governance"; Path = "/operations/content-governance" },
     @{ Url = "$rootUrl/operations/deployment"; Path = "/operations/deployment" },
     @{ Url = "$rootUrl/operations/testing-verification"; Path = "/operations/testing-verification" }
 )
+$searchQueryRoute = @{ Url = "$rootUrl/search?q=compiler"; Path = "/search?q=compiler" }
 $unknownRoute = @{ Url = "$rootUrl/guides/missing-page"; Path = "/guides/missing-page" }
 $emittedRouteMarkers = @(
+    "/search",
     "/guides/getting-started",
+    "/guides/project-lines",
     "/guides/content-model",
     "/guides/navigation-discovery",
     "/guides/information-architecture",
+    "/guides/topic-index",
+    "/guides/glossary",
+    "/guides/faq",
+    "/guides/troubleshooting",
     "/engineering/h-function-authoring",
+    "/engineering/compiler-overview",
     "/engineering/compiler-support-boundary",
     "/engineering/route-catalog-contract",
     "/engineering/host-semantic-seams",
     "/engineering/import-emit-contract",
     "/engineering/runtime-catalog",
+    "/engineering/jolt-host",
+    "/engineering/razorvue-library-mode",
     "/operations/content-governance",
     "/operations/deployment",
     "/operations/testing-verification"
 )
 $emittedPageTitleMarkers = @(
     "Overview",
+    "Search",
     "Getting Started",
+    "Project Lines",
     "Content Model",
     "Navigation and Discovery",
     "Information Architecture",
+    "Topic Index",
+    "Glossary",
+    "FAQ",
+    "Troubleshooting",
     "H-Function Authoring",
+    "Compiler Overview",
     "Compiler Support Boundary",
     "Route Catalog Contract",
     "Host Semantic Seams",
     "Import and Emit Contract",
     "CLR Runtime Catalog",
+    "Jolt Host",
+    "RazorVue Library Mode",
     "Content Governance",
     "Deployment",
     "Testing and Verification"
 )
 $emittedSectionContractMarkers = @(
     "what-ships-now",
+    "full-text",
     "boot-the-site",
+    "two-lines",
     "page-contract",
     "left-rail",
     "concern-groups",
+    "topic-clusters",
+    "compiler-terms",
+    "using-jazor",
+    "route-and-host",
     "layout-composition",
+    "what-it-is",
     "controlled-domain",
     "single-source",
     "why-seams-exist",
     "boundary-split",
     "why-catalog-exists",
+    "why-jolt",
+    "why-razorvue",
     "ownership-model",
     "build-output",
     "verification-layers"
@@ -102,7 +139,11 @@ $emittedNavigationMarkers = @(
 $emittedDiscoveryMarkers = @(
     "Search docs pages",
     "nav-search-input",
-    "nav-search-empty"
+    "nav-search-empty",
+    "nav-search-hint",
+    "Press / or Ctrl+K to focus search. Press Escape to clear or exit.",
+    "window.onkeydown = onGlobalKeyDown",
+    "wiki-nav-search-input"
 )
 $emittedRelatedPageMarkers = @(
     "Related pages",
@@ -111,6 +152,8 @@ $emittedRelatedPageMarkers = @(
 )
 $emittedSectionNavigationMarkers = @(
     "window.onhashchange = onHashChange",
+    "window.onscroll = onScroll",
+    "requestAnimationFrame(syncActiveSectionOnFrame)",
     "scrollIntoView(true)",
     "toc-link-active",
     "doc-section-active"
@@ -123,6 +166,56 @@ $emittedPermalinkMarkers = @(
     "Link ready",
     "section-permalink-copied",
     "section-permalink-ready"
+)
+$emittedCodeCopyMarkers = @(
+    "Copy code",
+    "Copy unavailable",
+    "code-copy-button",
+    "code-copy-button-copied",
+    "code-copy-button-unavailable",
+    "code-block-"
+)
+$emittedProductShellMarkers = @(
+    "Theme: Dark",
+    "Copy page link",
+    "View source",
+    "Report issue",
+    "Owner",
+    "Audience",
+    "Reading time",
+    "Page feedback",
+    "Helpful",
+    "Needs work",
+    "breadcrumbs",
+    "drawer-backdrop",
+    "utility-button"
+)
+$emittedSearchMarkers = @(
+    "Full-text search",
+    "Section matches",
+    "Current search URL",
+    "search-shell-card",
+    "search-result-card",
+    "search-mark"
+)
+$indexMetaMarkers = @(
+    'meta name="description"',
+    'link rel="canonical"',
+    'meta property="og:title"',
+    'meta property="og:description"',
+    'meta property="og:url"',
+    'meta name="twitter:title"',
+    'meta name="twitter:description"'
+)
+$siteCssMarkers = @(
+    '.skip-link',
+    '.breadcrumbs',
+    '.meta-card',
+    '.feedback-button',
+    '.search-result-card',
+    '.mobile-utility-bar',
+    '.drawer-backdrop',
+    'html[data-theme="light"]'
 )
 $mainEntryMarkers = @(
     'createApp(',
@@ -145,6 +238,10 @@ $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 
 if ($Publish -and ($Build -or $BuildLocal)) {
     throw "-Publish already performs its own publish build. Do not combine it with -Build or -BuildLocal."
+}
+
+if ($Publish -and -not $PSBoundParameters.ContainsKey("Configuration")) {
+    $Configuration = "Release"
 }
 
 function Invoke-DotNet {
@@ -345,8 +442,16 @@ Assert-Contains -Text $indexContent -Snippet '/site.css' -Description "root styl
 Assert-Contains -Text $indexContent -Snippet '/favicon.svg' -Description "favicon entry in index.html"
 Assert-Contains -Text $indexContent -Snippet '/jazor/main.mjs' -Description "root main module entry in index.html"
 Assert-Contains -Text $indexContent -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in index.html"
+foreach ($indexMetaMarker in $indexMetaMarkers) {
+    Assert-Contains -Text $indexContent -Snippet $indexMetaMarker -Description "meta contract marker in index.html"
+}
 foreach ($forbiddenBrowserEntryMarker in $forbiddenBrowserEntryMarkers) {
     Assert-NotContains -Text $indexContent -Snippet $forbiddenBrowserEntryMarker -Description "forbidden browser entry marker in index.html"
+}
+
+$siteCssContent = Get-Content (Join-Path $webRoot "site.css") -Raw
+foreach ($siteCssMarker in $siteCssMarkers) {
+    Assert-Contains -Text $siteCssContent -Snippet $siteCssMarker -Description "Wiki shell CSS marker"
 }
 
 $mainModuleContent = Get-Content $mainModulePath -Raw
@@ -386,6 +491,15 @@ foreach ($sectionNavigationMarker in $emittedSectionNavigationMarkers) {
 }
 foreach ($permalinkMarker in $emittedPermalinkMarkers) {
     Assert-Contains -Text $moduleContent -Snippet $permalinkMarker -Description "section permalink marker in emitted module"
+}
+foreach ($codeCopyMarker in $emittedCodeCopyMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $codeCopyMarker -Description "code copy marker in emitted module"
+}
+foreach ($productShellMarker in $emittedProductShellMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $productShellMarker -Description "product shell marker in emitted module"
+}
+foreach ($searchMarker in $emittedSearchMarkers) {
+    Assert-Contains -Text $moduleContent -Snippet $searchMarker -Description "search experience marker in emitted module"
 }
 
 $previousAspNetCoreUrls = $env:ASPNETCORE_URLS
@@ -438,6 +552,15 @@ try {
         Assert-Contains -Text $response.Content -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in served route $($route.Path)"
     }
 
+    $searchQueryResponse = Invoke-WebRequest -Uri $searchQueryRoute.Url -TimeoutSec 5
+    if ($searchQueryResponse.StatusCode -ne 200) {
+        throw "Unexpected $($searchQueryRoute.Path) status code: $($searchQueryResponse.StatusCode)"
+    }
+
+    Assert-Contains -Text $searchQueryResponse.Content -Snippet 'id="app"' -Description "Vue mount root in served route $($searchQueryRoute.Path)"
+    Assert-Contains -Text $searchQueryResponse.Content -Snippet '/jazor/main.mjs' -Description "root main module entry in served route $($searchQueryRoute.Path)"
+    Assert-Contains -Text $searchQueryResponse.Content -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in served route $($searchQueryRoute.Path)"
+
     $unknownRouteResponse = Invoke-WebRequest -Uri $unknownRoute.Url -TimeoutSec 5
     if ($unknownRouteResponse.StatusCode -ne 200) {
         throw "Unexpected $($unknownRoute.Path) status code: $($unknownRouteResponse.StatusCode)"
@@ -449,11 +572,11 @@ try {
 
     if ($Publish) {
         Write-Host "Wiki publish smoke verification passed."
-        Write-Host "Verified: publish output materialization, published /jazor browser asset routes, CLR runtime import-map wiring, published docs routes, /health, and unknown-route fallback"
+        Write-Host "Verified: publish output materialization, published /jazor browser asset routes, CLR runtime import-map wiring, published docs routes including /search?q=..., /health, and unknown-route fallback"
     }
     else {
         Write-Host "Wiki smoke verification passed."
-        Write-Host "Verified: build output, browser asset routes, CLR runtime import-map wiring, emitted module routes, /health, all registered docs routes, and unknown-route fallback"
+        Write-Host "Verified: build output, browser asset routes, CLR runtime import-map wiring, emitted product-shell markers, /health, all registered docs routes including /search?q=..., and unknown-route fallback"
     }
 }
 catch {

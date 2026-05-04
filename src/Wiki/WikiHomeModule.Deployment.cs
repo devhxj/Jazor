@@ -34,11 +34,13 @@ src/Wiki/jazor/jazor-manifest.json
                 CodeBlock("Recommended verification", """
 .\src\Wiki\verify-smoke.ps1 -BuildLocal
 .\src\Wiki\verify-smoke.ps1 -Publish
+.\src\Wiki\serve.ps1 -Publish
 """),
                 H("ul",
                 [
                     H("li", "Local smoke proves the development mount serves `/jazor/*` from the project-local emit directory."),
-                    H("li", "Publish smoke proves production serves `/jazor/*` from `wwwroot/jazor` without a shadow root `jazor/` directory overriding it.")
+                    H("li", "Publish smoke proves production serves `/jazor/*` from `wwwroot/jazor` without a shadow root `jazor/` directory overriding it."),
+                    H("li", "Published preview starts the actual published host so manual browser checks can use the same directory shape that production will deploy.")
                 ]),
                 Callout("Dependency note", "CDN-backed Vue remains acceptable for MVP, but productization should decide whether to lock, mirror, or localize that browser dependency.")
             ])

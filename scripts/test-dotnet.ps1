@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("all", "compiler", "clr", "razorvue", "jolt", "jolt-build", "emit")]
+    [ValidateSet("all", "compiler", "clr", "razorvue", "jolt", "jolt-build", "emit", "wiki", "wiki-publish")]
     [string]$Project = "all",
     [string]$Configuration = "Debug",
     [string]$Filter = ""
@@ -10,12 +10,55 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$configurationWasExplicit = $PSBoundParameters.ContainsKey("Configuration")
 
 $compilerTestProject = Join-Path $repoRoot "src\Jazor.CompilerTest\Jazor.CompilerTest.csproj"
 $clrTestProject = Join-Path $repoRoot "src\Jazor.CLR.Test\Jazor.CLR.Test.csproj"
 $razorVueTestProject = Join-Path $repoRoot "src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj"
 $joltTestProject = Join-Path $repoRoot "src\Jolt.Test\Jolt.Test.csproj"
 $emitTestProject = Join-Path $repoRoot "src\Jazor.EmitTest\Jazor.EmitTest.csproj"
+$wikiSmokeScript = Join-Path $repoRoot "src\Wiki\verify-smoke.ps1"
+
+function Invoke-WikiSmoke {
+    param(
+        [switch]$Publish
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($Filter)) {
+        throw "-Filter is not supported for Wiki smoke targets."
+    }
+
+    $effectiveWikiConfiguration = $Configuration
+    if ($Publish -and -not $configurationWasExplicit) {
+        $effectiveWikiConfiguration = "Release"
+    }
+
+    $scriptArgs = @{
+        Configuration = $effectiveWikiConfiguration
+    }
+    if ($Publish) {
+        $scriptArgs.Publish = $true
+    }
+    else {
+        $scriptArgs.Build = $true
+    }
+
+    & $wikiSmokeScript @scriptArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "Wiki smoke verification failed for '$Project' with exit code $LASTEXITCODE."
+    }
+}
+
+switch ($Project) {
+    "wiki" {
+        Invoke-WikiSmoke
+        return
+    }
+    "wiki-publish" {
+        Invoke-WikiSmoke -Publish
+        return
+    }
+}
 
 $joltBuildFilter = @(
     "FullyQualifiedName~JoltBuildTests",

@@ -24,16 +24,21 @@ dotnet build .\src\Wiki\Wiki.csproj
                 H("ul",
                 [
                     H("li", "`/` for the overview page"),
+                    H("li", "`/search?q=compiler` for a shareable query-driven search entry"),
                     H("li", "`/guides/getting-started` for local workflow"),
+                    H("li", "`/guides/project-lines` for the active product lines"),
                     H("li", "`/guides/content-model` for page authoring rules"),
                     H("li", "`/guides/navigation-discovery` for grouped navigation, TOC behavior, related pages, and not-found recovery"),
                     H("li", "`/guides/information-architecture` for route families, naming rules, and page-order discipline"),
+                    H("li", "`/guides/topic-index`, `/guides/glossary`, `/guides/faq`, and `/guides/troubleshooting` for discovery and support"),
                     H("li", "`/engineering/h-function-authoring` for the H-function contract"),
+                    H("li", "`/engineering/compiler-overview` for the compiler pipeline entry point"),
                     H("li", "`/engineering/compiler-support-boundary` for active compiler semantics and failure rules"),
                     H("li", "`/engineering/route-catalog-contract` for the single-source route registration contract"),
                     H("li", "`/engineering/host-semantic-seams` for Alias / Inline / Import / Compile responsibility boundaries"),
                     H("li", "`/engineering/import-emit-contract` for module import flow and file materialization boundaries"),
                     H("li", "`/engineering/runtime-catalog` for CLR runtime helper generation and browser delivery"),
+                    H("li", "`/engineering/jolt-host` and `/engineering/razorvue-library-mode` for the two active delivery lines"),
                     H("li", "`/operations/content-governance` for content ownership, generated-output review, and release discipline"),
                     H("li", "`/operations/deployment` for build and hosting details"),
                     H("li", "`/operations/testing-verification` for focused test and smoke workflow")
@@ -57,7 +62,7 @@ private static IVNode NewPageBody()
                 [
                     H("li", "Confirm `main.mjs` and `components/wiki-home.mjs` exist after build."),
                     H("li", "Confirm all registered docs routes return the frontend shell through route fallback."),
-                    H("li", "Confirm emitted module text still contains expected route identifiers and page labels.")
+                    H("li", "Confirm emitted module text still contains expected route identifiers, search shell markers, and page labels.")
                 ])
             ])
         ]);

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -23,6 +24,18 @@ public static partial class WikiHomeModule
             ["onClick"] = ClearNavFilter
         };
 
+    private static VueEventHandlers<Event> CreateSearchInputEvents()
+        => new()
+        {
+            ["onInput"] = OnSearchInput
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateClearSearchEvents()
+        => new()
+        {
+            ["onClick"] = ClearSearch
+        };
+
     private static VueEventHandlers<MouseEvent> CreateTocClickEvents()
         => new()
         {
@@ -35,12 +48,68 @@ public static partial class WikiHomeModule
             ["onClick"] = OnSectionPermalinkClick
         };
 
+    private static VueEventHandlers<MouseEvent> CreatePagePermalinkEvents()
+        => new()
+        {
+            ["onClick"] = OnPagePermalinkClick
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateCodeBlockCopyEvents()
+        => new()
+        {
+            ["onClick"] = OnCodeBlockCopyClick
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateThemeToggleEvents()
+        => new()
+        {
+            ["onClick"] = ToggleTheme
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateOpenNavDrawerEvents()
+        => new()
+        {
+            ["onClick"] = OpenNavDrawer
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateOpenTocDrawerEvents()
+        => new()
+        {
+            ["onClick"] = OpenTocDrawer
+        };
+
+    private static VueEventHandlers<MouseEvent> CreateCloseDrawersEvents()
+        => new()
+        {
+            ["onClick"] = CloseAllDrawers
+        };
+
+    private static VueEventHandlers<MouseEvent> CreatePageFeedbackEvents()
+        => new()
+        {
+            ["onClick"] = OnPageFeedbackClick
+        };
+
     private static IVNode HeaderLink(string path, string label)
         => H("a", new VueObject
         {
             Class = "header-link",
             Href = path,
             Events = CreateRouteClickEvents()
+        }, label);
+
+    private static IVNode DrawerButton(string label, string className, string controlsId, bool isExpanded, bool isDisabled, VueEventHandlers<MouseEvent> events)
+        => H("button", new VueObject
+        {
+            Class = className,
+            Type = "button",
+            Disabled = isDisabled,
+            Events = events,
+            Raw = new VueDictionary
+            {
+                ["aria-controls"] = controlsId,
+                ["aria-expanded"] = isExpanded ? "true" : "false"
+            }
         }, label);
 
     private static IVNode NavGroup(string title, IVNode[] links)
@@ -53,14 +122,22 @@ public static partial class WikiHomeModule
     private static IVNode NavLink(string path, string title, string summary, string currentPath)
     {
         var className = "nav-link";
+        VueDictionary? raw = null;
         if (path == currentPath)
+        {
             className = "nav-link nav-link-active";
+            raw = new VueDictionary
+            {
+                ["aria-current"] = "page"
+            };
+        }
 
         return H("a", new VueObject
         {
             Class = className,
             Href = path,
-            Events = CreateRouteClickEvents()
+            Events = CreateRouteClickEvents(),
+            Raw = raw
         },
         [
             H("span", new VueObject { Class = "nav-link-title" }, title),
@@ -69,37 +146,90 @@ public static partial class WikiHomeModule
     }
 
     private static IVNode TocRail(string title, IVNode[] links)
-        => H("aside", new VueObject { Class = "toc-rail" },
+    {
+        var className = "toc-rail";
+        if (IsTocDrawerOpen())
+            className += " toc-rail-open";
+
+        return H("aside", new VueObject
+        {
+            Id = TocRailId,
+            Class = className,
+            Role = "navigation",
+            Raw = new VueDictionary
+            {
+                ["aria-label"] = title
+            }
+        },
         [
             H("div", new VueObject { Class = "rail-card toc-card" },
             [
-                H("p", new VueObject { Class = "rail-kicker" }, title),
+                H("div", new VueObject { Class = "toc-drawer-head" },
+                [
+                    H("p", new VueObject { Class = "rail-kicker" }, title),
+                    H("button", new VueObject
+                    {
+                        Class = "drawer-close",
+                        Type = "button",
+                        Title = "Close table of contents",
+                        Events = CreateCloseDrawersEvents()
+                    }, "Close")
+                ]),
                 H("p", new VueObject { Class = "rail-copy" }, "Stable anchors are part of the docs contract. Treat them as user-facing entry points."),
                 H("div", new VueObject { Class = "toc-links" }, links)
             ])
         ]);
+    }
 
     private static IVNode EmptyTocRail()
-        => H("aside", new VueObject { Class = "toc-rail toc-rail-empty" },
+    {
+        var className = "toc-rail toc-rail-empty";
+        if (IsTocDrawerOpen())
+            className += " toc-rail-open";
+
+        return H("aside", new VueObject
+        {
+            Id = TocRailId,
+            Class = className
+        },
         [
             H("div", new VueObject { Class = "rail-card toc-card" },
             [
-                H("p", new VueObject { Class = "rail-kicker" }, "Missing page"),
+                H("div", new VueObject { Class = "toc-drawer-head" },
+                [
+                    H("p", new VueObject { Class = "rail-kicker" }, "Missing page"),
+                    H("button", new VueObject
+                    {
+                        Class = "drawer-close",
+                        Type = "button",
+                        Title = "Close table of contents",
+                        Events = CreateCloseDrawersEvents()
+                    }, "Close")
+                ]),
                 H("p", new VueObject { Class = "rail-copy" }, "The requested route is not registered in the current Wiki route map.")
             ])
         ]);
+    }
 
     private static IVNode TocLink(string path, string id, string title, string currentHash)
     {
         var className = "toc-link";
+        VueDictionary? raw = null;
         if (currentHash == id)
+        {
             className = "toc-link toc-link-active";
+            raw = new VueDictionary
+            {
+                ["aria-current"] = "location"
+            };
+        }
 
         return H("a", new VueObject
         {
             Class = className,
             Href = path + "#" + id,
-            Events = CreateTocClickEvents()
+            Events = CreateTocClickEvents(),
+            Raw = raw
         }, title);
     }
 
@@ -139,6 +269,37 @@ public static partial class WikiHomeModule
         }
 
         return H("div", new VueObject { Class = "route-grid" }, routeCards.ToArray());
+    }
+
+    private static IVNode TagLink(string tag)
+        => H("a", new VueObject
+        {
+            Class = "tag-pill",
+            Href = BuildSearchRoute(tag),
+            Events = CreateRouteClickEvents()
+        }, tag);
+
+    private static IVNode MetaCard(string title, string value, string summary)
+        => H("article", new VueObject { Class = "meta-card" },
+        [
+            H("p", new VueObject { Class = "meta-card-title" }, title),
+            H("strong", new VueObject { Class = "meta-card-value" }, value),
+            H("p", new VueObject { Class = "meta-card-summary" }, summary)
+        ]);
+
+    private static IVNode FeedbackButton(string label, string value, string currentValue)
+    {
+        var className = "feedback-button";
+        if (currentValue == value)
+            className += " feedback-button-active";
+
+        return H("button", new VueObject
+        {
+            Class = className,
+            Type = "button",
+            Value = value,
+            Events = CreatePageFeedbackEvents()
+        }, label);
     }
 
     private static IVNode PageSection(string id, string title, IVNode[] content)
@@ -209,9 +370,44 @@ public static partial class WikiHomeModule
         ]);
 
     private static IVNode CodeBlock(string label, string code)
-        => H("div", new VueObject { Class = "code-frame" },
+    {
+        var codeBlockId = BuildCodeBlockId(label, code);
+        var copyLabel = "Copy code";
+        var copyClassName = "code-copy-button";
+        var copyTitle = "Copy this code block";
+
+        if (GetCopiedCodeBlockRef()?.Value == codeBlockId)
+        {
+            copyLabel = "Copied";
+            copyClassName = "code-copy-button code-copy-button-copied";
+            copyTitle = "Code block copied to clipboard";
+        }
+        else if (GetUnavailableCodeBlockRef()?.Value == codeBlockId)
+        {
+            copyLabel = "Copy unavailable";
+            copyClassName = "code-copy-button code-copy-button-unavailable";
+            copyTitle = "Clipboard copy is not available in this browser";
+        }
+
+        return H("div", new VueObject { Class = "code-frame" },
         [
-            H("div", new VueObject { Class = "code-label" }, label),
-            H("pre", new VueObject { Class = "code-block" }, code)
+            H("div", new VueObject { Class = "code-label-row" },
+            [
+                H("div", new VueObject { Class = "code-label" }, label),
+                H("button", new VueObject
+                {
+                    Class = copyClassName,
+                    Type = "button",
+                    Value = codeBlockId,
+                    Title = copyTitle,
+                    Events = CreateCodeBlockCopyEvents()
+                }, copyLabel)
+            ]),
+            H("pre", new VueObject
+            {
+                Id = codeBlockId,
+                Class = "code-block"
+            }, code)
         ]);
+    }
 }

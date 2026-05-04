@@ -18,19 +18,26 @@ Current product boundary:
 - the ASP.NET Core host now validates that the route catalog stays internally aligned before serving requests, so array drift fails fast instead of leaking into runtime behavior
 - in-app docs navigation now upgrades to `history.pushState` / `popstate` shell routing while preserving real URL fallback
 - right-rail TOC now upgrades same-page hash navigation into active-state, scroll-synced section routing while preserving shareable `#anchor` URLs
+- the shell now keeps page title, description, canonical URL, and social metadata in sync with the active route
+- page heroes now expose catalog-backed metadata cards, tag-driven search entry points, source links, and issue-report actions
 - each section now exposes a direct permalink action that updates the hash, copies the full section URL through the browser clipboard, and falls back to a visible "Link ready" state when clipboard write is unavailable
+- each page now exposes a direct page permalink action with the same clipboard / fallback behavior as section links
+- each code block now exposes a direct copy action with visible copied / unavailable feedback instead of forcing manual selection
+- docs search now supports keyboard focus shortcuts: `/` and `Ctrl/Cmd+K` jump to search, `Escape` clears or exits the field
 - left-rail page discovery includes client-side filtering over routes, group labels, titles, statuses, and summaries
+- `/search` is now a real route with `?q=` query support, result highlighting, section-level matches, and shareable search URLs
+- theme preference and page feedback are now persisted in browser `localStorage`, and mobile nav / TOC drawers are first-class shell behaviors
 - unknown docs routes now recover into a real not-found document that shows the requested path plus suggested registered pages instead of a dead-end shell
 - this is a real docs-site MVP, not a CMS and not an editable wiki backend
 
 ## Project Layout
 
 - `Wiki.csproj`: single web host project for the docs site.
-- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, page bodies, and reusable leaf render helpers for the named-export Vue component.
+- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.Search.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ProjectLines.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.TopicIndex.cs`, `WikiHomeModule.Glossary.cs`, `WikiHomeModule.Faq.cs`, `WikiHomeModule.Troubleshooting.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerOverview.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.JoltHost.cs`, `WikiHomeModule.RazorVueLibraryMode.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `Program.cs`: ASP.NET Core host with `/health`, route fallback, and an explicit `/jazor` mount for the local emit directory when present.
 - `build-local.ps1`: local build entry that verifies emitted Wiki artifacts exist after build.
-- `serve.ps1`: local preview entry that can build first and refuses to run when emitted modules are missing.
+- `serve.ps1`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
 - `verify-smoke.ps1`: focused smoke verification for build output, `/health`, all registered docs routes, and unknown-route fallback.
 - `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
 - `wwwroot/`: static entry (`index.html`, `site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
@@ -65,19 +72,35 @@ One-command preview:
 .\src\Wiki\serve.ps1 -Build
 ```
 
+Production-shape preview:
+
+```powershell
+.\src\Wiki\serve.ps1 -Publish
+```
+
 Then open:
 
 - `http://localhost:4173/`
+- `http://localhost:4173/search`
+- `http://localhost:4173/search?q=compiler`
 - `http://localhost:4173/guides/getting-started`
+- `http://localhost:4173/guides/project-lines`
 - `http://localhost:4173/guides/content-model`
 - `http://localhost:4173/guides/navigation-discovery`
 - `http://localhost:4173/guides/information-architecture`
+- `http://localhost:4173/guides/topic-index`
+- `http://localhost:4173/guides/glossary`
+- `http://localhost:4173/guides/faq`
+- `http://localhost:4173/guides/troubleshooting`
 - `http://localhost:4173/engineering/h-function-authoring`
+- `http://localhost:4173/engineering/compiler-overview`
 - `http://localhost:4173/engineering/compiler-support-boundary`
 - `http://localhost:4173/engineering/route-catalog-contract`
 - `http://localhost:4173/engineering/host-semantic-seams`
 - `http://localhost:4173/engineering/import-emit-contract`
 - `http://localhost:4173/engineering/runtime-catalog`
+- `http://localhost:4173/engineering/jolt-host`
+- `http://localhost:4173/engineering/razorvue-library-mode`
 - `http://localhost:4173/operations/content-governance`
 - `http://localhost:4173/operations/deployment`
 - `http://localhost:4173/operations/testing-verification`
@@ -90,13 +113,16 @@ If you want to call the local build script first:
 
 The page mounts the emitted Vue component via Vue runtime and serves the docs shell from real route paths.
 
+`-Publish` defaults to `Release`, publishes into a repo-local `.tmp/wiki-publish-preview/<Configuration>/` directory, and starts the published host from that output so `/jazor/*` is exercised through `wwwroot/jazor` instead of the local emit mount.
+
 Dry-run only:
 
 ```powershell
 .\src\Wiki\serve.ps1 -Build -DryRun
+.\src\Wiki\serve.ps1 -Publish -DryRun
 ```
 
-This verifies the emitted modules and prints the preview URL without starting the host.
+This verifies the selected preview artifacts and prints the preview URL without starting the host.
 
 ## Smoke Verification
 
@@ -112,6 +138,17 @@ Production-shape publish verification:
 .\src\Wiki\verify-smoke.ps1 -Publish
 ```
 
+`-Publish` defaults to `Release` unless you pass `-Configuration` explicitly.
+
+Repository-root shortcuts:
+
+```powershell
+pwsh .\scripts\test-dotnet.ps1 -Project wiki
+pwsh .\scripts\test-dotnet.ps1 -Project wiki-publish
+```
+
+`pwsh .\scripts\test-dotnet.ps1 -Project wiki-publish` also defaults to `Release` unless you pass `-Configuration` explicitly.
+
 The smoke check verifies:
 
 - `dotnet build` succeeds when `-Build` is used
@@ -122,9 +159,13 @@ The smoke check verifies:
 - an unknown docs route still returns the frontend shell through fallback
 - browser-served assets such as `/jazor/main.mjs`, `/jazor/System/StringModule.js`, `/site.css`, and `/favicon.svg` resolve successfully
 - emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, and click interception)
-- emitted `wiki-home.mjs` still contains the section-routing contract (`hashchange`, active TOC markers, and hash-driven section scrolling)
+- emitted `wiki-home.mjs` still contains the section-routing contract (`hashchange`, scroll listeners, active TOC markers, and section-driven reading-state sync)
 - emitted `wiki-home.mjs` still contains the section permalink contract (`window.navigator.clipboard`, `clipboard.writeText`, permalink button labels, and copied/fallback-state styling markers)
-- emitted `wiki-home.mjs` still contains the page-discovery filter contract (`Search docs pages`, filter-empty state, and left-rail search styling markers)
+- emitted `wiki-home.mjs` still contains the code-block copy contract (`Copy code`, copied/unavailable state labels, and code-copy button styling markers)
+- emitted `wiki-home.mjs` still contains the page-discovery filter contract (`Search docs pages`, keyboard focus shortcuts, filter-empty state, and left-rail search styling markers)
+- emitted `wiki-home.mjs` still contains the product-shell contract for theme toggle, page metadata cards, source/report actions, page feedback, mobile drawers, and search-route results
+- `wwwroot/index.html` still carries the base description, canonical, and social metadata placeholders that the shell updates at runtime
+- `wwwroot/site.css` still carries the shell selectors for skip link, breadcrumbs, metadata cards, feedback actions, search results, drawers, and light-theme overrides
 - emitted `wiki-home.mjs` still contains the registered docs-route markers, page-title labels, and section-anchor contract markers
 - host startup now rejects route-catalog drift such as mismatched page-array lengths, duplicate page paths, duplicate section ids, empty metadata entries, or related links that point at unknown pages
 - `-Publish` verifies production-shape output under `wwwroot/jazor`, confirms that no shadow root `jazor/` directory survives publish, and proves the published host still serves `/jazor/main.mjs` plus `System/*` runtime assets

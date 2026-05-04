@@ -24,7 +24,7 @@ public static partial class WikiHomeModule
                 H("ul",
                 [
                     H("li", "Hash links remain shareable and refresh-safe."),
-                    H("li", "The active section state follows the current hash so readers can see where they are."),
+                    H("li", "The active section state now follows both direct hash entry and live reading scroll so readers can see where they are without clicking first."),
                     H("li", "Permalink actions expose direct links to each section without inventing a second routing system.")
                 ])
             ]),

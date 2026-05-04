@@ -26,6 +26,8 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter SemanticWalkerReferenceTest
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 pwsh ./scripts/test-dotnet.ps1
+pwsh ./scripts/test-dotnet.ps1 -Project wiki
+pwsh ./scripts/test-dotnet.ps1 -Project wiki-publish
 .\src\Wiki\verify-smoke.ps1 -BuildLocal
 """),
                 H("ul",
