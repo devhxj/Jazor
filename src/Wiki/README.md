@@ -106,6 +106,12 @@ From repository root:
 .\src\Wiki\verify-smoke.ps1 -Build
 ```
 
+Production-shape publish verification:
+
+```powershell
+.\src\Wiki\verify-smoke.ps1 -Publish
+```
+
 The smoke check verifies:
 
 - `dotnet build` succeeds when `-Build` is used
@@ -121,6 +127,7 @@ The smoke check verifies:
 - emitted `wiki-home.mjs` still contains the page-discovery filter contract (`Search docs pages`, filter-empty state, and left-rail search styling markers)
 - emitted `wiki-home.mjs` still contains the registered docs-route markers, page-title labels, and section-anchor contract markers
 - host startup now rejects route-catalog drift such as mismatched page-array lengths, duplicate page paths, duplicate section ids, empty metadata entries, or related links that point at unknown pages
+- `-Publish` verifies production-shape output under `wwwroot/jazor`, confirms that no shadow root `jazor/` directory survives publish, and proves the published host still serves `/jazor/main.mjs` plus `System/*` runtime assets
 
 ## Runtime Dependency Notes
 

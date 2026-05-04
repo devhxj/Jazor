@@ -54,7 +54,8 @@ pwsh ./scripts/test-dotnet.ps1
                     H("li", "Build output must include `src/Wiki/jazor/main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json`."),
                     H("li", "Registered docs routes must return the shell with `#app`, `/jazor/main.mjs`, and the `System/` import-map prefix."),
                     H("li", "Browser assets such as `/jazor/System/StringModule.js`, `/site.css`, and `/favicon.svg` must resolve successfully."),
-                    H("li", "Unknown docs routes must still fall back to `index.html` so the frontend shell can recover instead of failing at the host boundary.")
+                    H("li", "Unknown docs routes must still fall back to `index.html` so the frontend shell can recover instead of failing at the host boundary."),
+                    H("li", "Publish verification must prove `wwwroot/jazor` serves production assets and that no root shadow `jazor/` directory survives to override that contract.")
                 ]),
                 Callout("Practical rule", "A compiler or emit change is not ready for product use if unit tests pass but the Wiki smoke contract regresses.")
             ])

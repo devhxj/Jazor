@@ -33,7 +33,13 @@ src/Wiki/jazor/jazor-manifest.json
                 H("p", "The minimum release discipline for Wiki is build, route, and entry verification. This is what keeps the site from silently drifting back into sample-only quality."),
                 CodeBlock("Recommended verification", """
 .\src\Wiki\verify-smoke.ps1 -BuildLocal
+.\src\Wiki\verify-smoke.ps1 -Publish
 """),
+                H("ul",
+                [
+                    H("li", "Local smoke proves the development mount serves `/jazor/*` from the project-local emit directory."),
+                    H("li", "Publish smoke proves production serves `/jazor/*` from `wwwroot/jazor` without a shadow root `jazor/` directory overriding it.")
+                ]),
                 Callout("Dependency note", "CDN-backed Vue remains acceptable for MVP, but productization should decide whether to lock, mirror, or localize that browser dependency.")
             ])
         ]);
