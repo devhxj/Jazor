@@ -1,0 +1,632 @@
+const baseUrl = process.argv[2];
+const cdpPort = Number(process.argv[3]);
+
+if (!baseUrl || !Number.isFinite(cdpPort)) {
+  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort>");
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function formatRemoteArg(arg) {
+  if (Object.prototype.hasOwnProperty.call(arg, "value")) {
+    return String(arg.value);
+  }
+  if (arg.description) {
+    return String(arg.description);
+  }
+  return arg.type || "unknown";
+}
+
+async function connectToPageTarget() {
+  const targets = await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then(response => response.json());
+  const pageTarget =
+    targets.find(target => target.type === "page" && target.url === "about:blank") ||
+    targets.find(target => target.type === "page");
+
+  if (!pageTarget?.webSocketDebuggerUrl) {
+    throw new Error("No page target with webSocketDebuggerUrl was found.");
+  }
+
+  const ws = new WebSocket(pageTarget.webSocketDebuggerUrl);
+  await new Promise((resolve, reject) => {
+    ws.addEventListener("open", () => resolve(), { once: true });
+    ws.addEventListener("error", event => reject(event.error || new Error("WebSocket open failed.")), { once: true });
+  });
+
+  return ws;
+}
+
+async function main() {
+  const ws = await connectToPageTarget();
+  let nextId = 1;
+  const pending = new Map();
+  const consoleErrors = [];
+  const exceptions = [];
+  const networkFailures = [];
+  let loadResolvers = [];
+  let withinDocumentResolvers = [];
+
+  ws.addEventListener("message", event => {
+    const message = JSON.parse(event.data);
+
+    if (message.id) {
+      const entry = pending.get(message.id);
+      if (!entry) {
+        return;
+      }
+
+      pending.delete(message.id);
+      if (message.error) {
+        entry.reject(new Error(message.error.message || JSON.stringify(message.error)));
+      } else {
+        entry.resolve(message.result);
+      }
+      return;
+    }
+
+    if (message.method === "Runtime.consoleAPICalled") {
+      if (message.params && (message.params.type === "error" || message.params.type === "assert")) {
+        consoleErrors.push((message.params.args || []).map(formatRemoteArg).join(" "));
+      }
+    }
+
+    if (message.method === "Runtime.exceptionThrown") {
+      const details = message.params?.exceptionDetails;
+      exceptions.push(details?.text || details?.exception?.description || "Unknown runtime exception");
+    }
+
+    if (message.method === "Network.loadingFailed") {
+      networkFailures.push({
+        url: message.params?.url || "",
+        errorText: message.params?.errorText || "",
+        canceled: message.params?.canceled === true,
+        type: message.params?.type || ""
+      });
+    }
+
+    if (message.method === "Page.loadEventFired") {
+      const resolvers = loadResolvers;
+      loadResolvers = [];
+      for (const resolve of resolvers) {
+        resolve();
+      }
+    }
+
+    if (message.method === "Page.navigatedWithinDocument") {
+      const resolvers = withinDocumentResolvers;
+      withinDocumentResolvers = [];
+      for (const resolve of resolvers) {
+        resolve(message.params?.url || "");
+      }
+    }
+  });
+
+  function send(method, params = {}) {
+    const id = nextId++;
+    const promise = new Promise((resolve, reject) => pending.set(id, { resolve, reject }));
+    ws.send(JSON.stringify({ id, method, params }));
+    return promise;
+  }
+
+  function waitForLoad(timeoutMs = 15000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("Timed out waiting for Page.loadEventFired.")), timeoutMs);
+      loadResolvers.push(() => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+  }
+
+  function waitForWithinDocumentNavigation(timeoutMs = 15000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("Timed out waiting for Page.navigatedWithinDocument.")), timeoutMs);
+      withinDocumentResolvers.push(url => {
+        clearTimeout(timer);
+        resolve(url);
+      });
+    });
+  }
+
+  async function evaluate(expression) {
+    const result = await send("Runtime.evaluate", {
+      expression,
+      returnByValue: true,
+      awaitPromise: true
+    });
+
+    if (result.exceptionDetails) {
+      throw new Error(result.exceptionDetails.text || "Runtime.evaluate failed.");
+    }
+
+    return result.result?.value;
+  }
+
+  async function navigate(url) {
+    const load = waitForLoad();
+    const sameDocument = waitForWithinDocumentNavigation();
+    await send("Page.navigate", { url });
+    await Promise.race([load, sameDocument]);
+    await delay(1200);
+  }
+
+  async function waitUntil(expression, timeoutMs = 8000, intervalMs = 100) {
+    const started = Date.now();
+    while (Date.now() - started < timeoutMs) {
+      const value = await evaluate(expression);
+      if (value) {
+        return value;
+      }
+      await delay(intervalMs);
+    }
+
+    throw new Error(`Timed out waiting for condition: ${expression}`);
+  }
+
+  await send("Page.enable");
+  await send("Runtime.enable");
+  await send("Network.enable");
+  await send("Emulation.setDeviceMetricsOverride", {
+    width: 1440,
+    height: 1024,
+    deviceScaleFactor: 1,
+    mobile: false
+  });
+
+  const report = {};
+  const failures = [];
+
+  await navigate(baseUrl + "/");
+  report.home = {
+    title: await evaluate("document.title || ''"),
+    mounted: await evaluate("document.querySelector('#app') ? document.querySelector('#app').textContent.includes('Production Docs Built with Vue 3 H Functions') : false"),
+    emptyShell: await evaluate(`(function(){
+      const element = document.querySelector('#app');
+      if (!element) return true;
+      const html = (element.innerHTML || '').trim();
+      return html === '' || html === '<!---->';
+    })()`),
+    gettingStartedLinkCount: await evaluate("Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '/guides/getting-started').length")
+  };
+
+  if (!report.home.mounted) {
+    failures.push("Home page did not mount the expected shell content.");
+  }
+  if (report.home.emptyShell) {
+    failures.push("Home page rendered an empty app shell.");
+  }
+  if (report.home.gettingStartedLinkCount < 1) {
+    failures.push("Home page did not render a Getting Started route link.");
+  }
+
+  report.home.clickedGettingStarted = await evaluate(`(function(){
+    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '/guides/getting-started');
+    if (!link) return false;
+    link.click();
+    return true;
+  })()`);
+
+  if (!report.home.clickedGettingStarted) {
+    failures.push("Could not click the Getting Started link from the mounted home page.");
+  } else {
+    await waitUntil("location.pathname === '/guides/getting-started'");
+    await delay(800);
+
+    report.home.pathAfterClick = await evaluate("location.pathname || ''");
+    report.home.activeElementId = await evaluate("document.activeElement ? document.activeElement.id : ''");
+    report.home.liveText = await evaluate(`(function(){
+      const element = document.querySelector('p[aria-live="polite"]');
+      return element ? (element.textContent || '').trim() : '';
+    })()`);
+
+    if (report.home.pathAfterClick !== "/guides/getting-started") {
+      failures.push(`SPA navigation from home did not reach Getting Started: ${report.home.pathAfterClick}`);
+    }
+    if (report.home.activeElementId !== "wiki-main-content") {
+      failures.push(`Route change did not focus the main content region: ${report.home.activeElementId}`);
+    }
+    if (report.home.liveText !== "Opened Getting Started.") {
+      failures.push(`Route change live-region announcement was unexpected: ${report.home.liveText}`);
+    }
+  }
+
+  report.gettingStarted = {
+    initialTheme: await evaluate("document.documentElement.getAttribute('data-theme') || ''")
+  };
+
+  await evaluate(`(function(){
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', bubbles: true }));
+    return true;
+  })()`);
+  await delay(200);
+  report.gettingStarted.focusAfterSlashShortcut = await evaluate("document.activeElement ? document.activeElement.id : ''");
+  if (report.gettingStarted.focusAfterSlashShortcut !== "wiki-nav-search-input") {
+    failures.push(`Slash shortcut did not focus nav search: ${report.gettingStarted.focusAfterSlashShortcut}`);
+  }
+
+  report.gettingStarted.themeToggleClicked = await evaluate(`(function(){
+    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').includes('Theme:'));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.gettingStarted.themeToggleClicked) {
+    failures.push("Theme toggle button was not found.");
+  }
+  await delay(300);
+
+  report.gettingStarted.themeAfterToggle = await evaluate("document.documentElement.getAttribute('data-theme') || ''");
+  report.gettingStarted.storedTheme = await evaluate("localStorage.getItem('jazor.wiki.theme') || ''");
+
+  if (report.gettingStarted.themeToggleClicked && report.gettingStarted.themeAfterToggle === report.gettingStarted.initialTheme) {
+    failures.push("Theme did not change after toggling.");
+  }
+  if (report.gettingStarted.themeToggleClicked && report.gettingStarted.storedTheme !== report.gettingStarted.themeAfterToggle) {
+    failures.push("Theme preference was not persisted to localStorage.");
+  }
+
+  report.gettingStarted.feedbackClicked = await evaluate(`(function(){
+    const button = Array.from(document.querySelectorAll('.feedback-button')).find(node => (node.textContent || '').includes('Helpful'));
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.gettingStarted.feedbackClicked) {
+    failures.push("Helpful feedback button was not found.");
+  }
+  await delay(300);
+
+  report.gettingStarted.feedback = {
+    stored: await evaluate("localStorage.getItem('jazor.wiki.feedback:/guides/getting-started') || ''"),
+    activeCount: await evaluate("document.querySelectorAll('.feedback-button-active').length"),
+    liveText: await evaluate(`(function(){
+      const element = document.querySelector('p[aria-live="polite"]');
+      return element ? (element.textContent || '').trim() : '';
+    })()`)
+  };
+
+  if (report.gettingStarted.feedbackClicked && report.gettingStarted.feedback.stored !== "helpful") {
+    failures.push(`Feedback preference did not persist the expected value: ${report.gettingStarted.feedback.stored}`);
+  }
+  if (report.gettingStarted.feedbackClicked && report.gettingStarted.feedback.activeCount < 1) {
+    failures.push("Feedback active state was not applied.");
+  }
+
+  report.gettingStarted.pagePermalinkClicked = await evaluate(`(function(){
+    const button = document.querySelector('.page-permalink');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.gettingStarted.pagePermalinkClicked) {
+    failures.push("Page permalink button was not found.");
+  }
+  await delay(500);
+
+  report.gettingStarted.pagePermalinkLabel = await evaluate(`(function(){
+    const button = document.querySelector('.page-permalink');
+    return button ? (button.textContent || '').trim() : '';
+  })()`);
+  if (report.gettingStarted.pagePermalinkClicked && !["Copied", "Link ready"].includes(report.gettingStarted.pagePermalinkLabel)) {
+    failures.push(`Page permalink feedback was unexpected: ${report.gettingStarted.pagePermalinkLabel}`);
+  }
+
+  report.gettingStarted.codeCopyClicked = await evaluate(`(function(){
+    const button = document.querySelector('.code-copy-button');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.gettingStarted.codeCopyClicked) {
+    failures.push("Code copy button was not found.");
+  }
+  await delay(500);
+
+  report.gettingStarted.codeCopyLabel = await evaluate(`(function(){
+    const button = document.querySelector('.code-copy-button');
+    return button ? (button.textContent || '').trim() : '';
+  })()`);
+  if (report.gettingStarted.codeCopyClicked && !["Copied", "Copy unavailable"].includes(report.gettingStarted.codeCopyLabel)) {
+    failures.push(`Code copy feedback was unexpected: ${report.gettingStarted.codeCopyLabel}`);
+  }
+
+  report.gettingStarted.sectionPermalinkClicked = await evaluate(`(function(){
+    const button = document.querySelector('.section-permalink');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.gettingStarted.sectionPermalinkClicked) {
+    failures.push("Section permalink button was not found.");
+  }
+  await delay(500);
+
+  report.gettingStarted.sectionPermalinkLabel = await evaluate(`(function(){
+    const button = document.querySelector('.section-permalink');
+    return button ? (button.textContent || '').trim() : '';
+  })()`);
+  report.gettingStarted.hashAfterSectionPermalink = await evaluate("location.hash || ''");
+  if (report.gettingStarted.sectionPermalinkClicked && !["Copied", "Link ready"].includes(report.gettingStarted.sectionPermalinkLabel)) {
+    failures.push(`Section permalink feedback was unexpected: ${report.gettingStarted.sectionPermalinkLabel}`);
+  }
+  if (report.gettingStarted.sectionPermalinkClicked && report.gettingStarted.hashAfterSectionPermalink.length === 0) {
+    failures.push("Section permalink did not update location hash.");
+  }
+
+  await navigate(baseUrl + "/guides/getting-started");
+  report.gettingStarted.persistedAfterReload = {
+    theme: await evaluate("document.documentElement.getAttribute('data-theme') || ''"),
+    storedTheme: await evaluate("localStorage.getItem('jazor.wiki.theme') || ''"),
+    feedbackStored: await evaluate("localStorage.getItem('jazor.wiki.feedback:/guides/getting-started') || ''"),
+    feedbackActiveCount: await evaluate("document.querySelectorAll('.feedback-button-active').length")
+  };
+
+  if (report.gettingStarted.persistedAfterReload.theme !== report.gettingStarted.themeAfterToggle) {
+    failures.push(`Theme did not rehydrate after reload: ${report.gettingStarted.persistedAfterReload.theme}`);
+  }
+  if (report.gettingStarted.persistedAfterReload.feedbackStored !== "helpful") {
+    failures.push(`Feedback did not persist after reload: ${report.gettingStarted.persistedAfterReload.feedbackStored}`);
+  }
+  if (report.gettingStarted.persistedAfterReload.feedbackActiveCount < 1) {
+    failures.push("Feedback active state did not rehydrate after reload.");
+  }
+
+  await evaluate(`(function(){
+    window.scrollTo(0, Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
+    return true;
+  })()`);
+  await delay(1000);
+  report.scrollRestore = {
+    scrollBeforeRouteChange: await evaluate("window.pageYOffset || 0")
+  };
+
+  report.scrollRestore.projectLinesClicked = await evaluate(`(function(){
+    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '/guides/project-lines');
+    if (!link) return false;
+    link.click();
+    return true;
+  })()`);
+  if (!report.scrollRestore.projectLinesClicked) {
+    failures.push("Could not find the Project Lines link for scroll restoration verification.");
+  } else {
+    await waitUntil("location.pathname === '/guides/project-lines'");
+    await evaluate("history.back(); true");
+    await waitUntil("location.pathname === '/guides/getting-started'");
+    await delay(1000);
+
+    report.scrollRestore.pathAfterBack = await evaluate("location.pathname || ''");
+    report.scrollRestore.hashAfterBack = await evaluate("location.hash || ''");
+    report.scrollRestore.scrollAfterBack = await evaluate("window.pageYOffset || 0");
+
+    if (report.scrollRestore.pathAfterBack !== "/guides/getting-started") {
+      failures.push(`Back navigation did not return to Getting Started: ${report.scrollRestore.pathAfterBack}`);
+    }
+    if (report.scrollRestore.hashAfterBack !== "") {
+      failures.push(`Back navigation returned an unexpected hash-bearing URL: ${report.scrollRestore.hashAfterBack}`);
+    }
+    if (report.scrollRestore.scrollBeforeRouteChange > 120 && report.scrollRestore.scrollAfterBack < 120) {
+      failures.push(`Scroll position did not restore after back navigation: ${report.scrollRestore.scrollBeforeRouteChange} -> ${report.scrollRestore.scrollAfterBack}`);
+    }
+  }
+
+  await navigate(baseUrl + "/search?q=compiler");
+  report.search = {
+    title: await evaluate("document.title || ''"),
+    inputValue: await evaluate("document.querySelector('#wiki-search-input') ? document.querySelector('#wiki-search-input').value : ''"),
+    resultCount: await evaluate("document.querySelectorAll('.search-result-card').length"),
+    markCount: await evaluate("document.querySelectorAll('.search-mark').length")
+  };
+
+  if (report.search.inputValue !== "compiler") {
+    failures.push(`Search query did not hydrate correctly: ${report.search.inputValue}`);
+  }
+  if (report.search.resultCount < 1) {
+    failures.push("Search route returned no results for compiler.");
+  }
+  if (report.search.markCount < 1) {
+    failures.push("Search route rendered no highlighted matches.");
+  }
+
+  report.search.clearClicked = await evaluate(`(function(){
+    const button = document.querySelector('.search-clear');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.search.clearClicked) {
+    failures.push("Search clear button was not found.");
+  }
+  await delay(300);
+
+  report.search.clearedInputValue = await evaluate("document.querySelector('#wiki-search-input') ? document.querySelector('#wiki-search-input').value : ''");
+  report.search.searchAfterClear = await evaluate("location.search || ''");
+  if (report.search.clearClicked && report.search.clearedInputValue !== "") {
+    failures.push(`Search clear did not empty the input: ${report.search.clearedInputValue}`);
+  }
+  if (report.search.clearClicked && report.search.searchAfterClear !== "") {
+    failures.push(`Search clear did not remove the query string: ${report.search.searchAfterClear}`);
+  }
+
+  await navigate(baseUrl + "/guides/missing-page");
+  report.notFound = {
+    title: await evaluate("document.title || ''"),
+    hasHeading: await evaluate("Array.from(document.querySelectorAll('h1,h2,h3')).some(node => (node.textContent || '').includes('Page Not Found'))"),
+    suggestionCount: await evaluate("document.querySelectorAll('.route-card').length"),
+    requestedPathShown: await evaluate("document.body.textContent.includes('/guides/missing-page')")
+  };
+
+  if (!report.notFound.hasHeading) {
+    failures.push("Not-found route did not render the expected heading.");
+  }
+  if (report.notFound.suggestionCount < 1) {
+    failures.push("Not-found route rendered no recovery suggestions.");
+  }
+  if (!report.notFound.requestedPathShown) {
+    failures.push("Not-found route did not show the requested path.");
+  }
+
+  report.notFound.recoveryClicked = await evaluate(`(function(){
+    const link = document.querySelector('.route-card');
+    if (!link) return false;
+    link.click();
+    return true;
+  })()`);
+  if (!report.notFound.recoveryClicked) {
+    failures.push("Not-found recovery card was not found.");
+  } else {
+    await waitUntil("location.pathname !== '/guides/missing-page'");
+    report.notFound.recoveredPath = await evaluate("location.pathname || ''");
+    if (report.notFound.recoveredPath === "/guides/missing-page") {
+      failures.push("Not-found recovery card did not navigate away from the missing route.");
+    }
+  }
+
+  await navigate(baseUrl + "/guides/getting-started#boot-the-site");
+  report.hashNavigation = {
+    locationHash: await evaluate("location.hash || ''"),
+    tocActiveCount: await evaluate("document.querySelectorAll('.toc-link-active').length"),
+    docActiveCount: await evaluate("document.querySelectorAll('.doc-section-active').length"),
+    activeSectionId: await evaluate(`(function(){
+      const section = document.querySelector('.doc-section-active');
+      return section ? (section.id || '') : '';
+    })()`)
+  };
+
+  if (report.hashNavigation.locationHash !== "#boot-the-site") {
+    failures.push(`Direct hash navigation did not preserve the expected hash: ${report.hashNavigation.locationHash}`);
+  }
+  if (report.hashNavigation.activeSectionId !== "boot-the-site") {
+    failures.push(`Direct hash navigation did not activate the expected section: ${report.hashNavigation.activeSectionId}`);
+  }
+  if (report.hashNavigation.tocActiveCount < 1 || report.hashNavigation.docActiveCount < 1) {
+    failures.push("Direct hash navigation did not activate both TOC and document section state.");
+  }
+
+  await send("Emulation.setDeviceMetricsOverride", {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: true
+  });
+  await delay(300);
+
+  report.mobile = {};
+  report.mobile.navClicked = await evaluate(`(function(){
+    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === 'Browse');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.mobile.navClicked) {
+    failures.push("Mobile Browse drawer button was not found.");
+  }
+  await delay(300);
+
+  report.mobile.shellClassAfterNavOpen = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className : ''");
+  report.mobile.backdropOpenAfterNavOpen = await evaluate(`(function(){
+    const backdrop = document.querySelector('.drawer-backdrop');
+    return backdrop ? backdrop.className.includes('drawer-backdrop-open') : false;
+  })()`);
+
+  if (report.mobile.navClicked && !report.mobile.shellClassAfterNavOpen.includes("wiki-shell-nav-open")) {
+    failures.push("Mobile nav drawer did not apply the expected open class.");
+  }
+  if (report.mobile.navClicked && !report.mobile.backdropOpenAfterNavOpen) {
+    failures.push("Mobile nav drawer did not open the backdrop.");
+  }
+
+  report.mobile.backdropClicked = await evaluate(`(function(){
+    const backdrop = document.querySelector('.drawer-backdrop');
+    if (!backdrop) return false;
+    backdrop.click();
+    return true;
+  })()`);
+  await delay(300);
+
+  report.mobile.navStillOpenAfterBackdrop = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className.includes('wiki-shell-nav-open') : false");
+  if (report.mobile.backdropClicked && report.mobile.navStillOpenAfterBackdrop) {
+    failures.push("Mobile nav drawer did not close after clicking the backdrop.");
+  }
+
+  report.mobile.tocClicked = await evaluate(`(function(){
+    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === 'On this page');
+    if (!button) return false;
+    button.click();
+    return true;
+  })()`);
+  if (!report.mobile.tocClicked) {
+    failures.push("Mobile TOC drawer button was not found.");
+  }
+  await delay(300);
+
+  report.mobile.shellClassAfterTocOpen = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className : ''");
+  report.mobile.backdropOpenAfterTocOpen = await evaluate(`(function(){
+    const backdrop = document.querySelector('.drawer-backdrop');
+    return backdrop ? backdrop.className.includes('drawer-backdrop-open') : false;
+  })()`);
+  report.mobile.tocLinkCount = await evaluate("document.querySelectorAll('.toc-link').length");
+
+  if (report.mobile.tocClicked && !report.mobile.shellClassAfterTocOpen.includes("wiki-shell-toc-open")) {
+    failures.push("Mobile TOC drawer did not apply the expected open class.");
+  }
+  if (report.mobile.tocClicked && !report.mobile.backdropOpenAfterTocOpen) {
+    failures.push("Mobile TOC drawer did not open the backdrop.");
+  }
+  if (report.mobile.tocClicked && report.mobile.tocLinkCount < 1) {
+    failures.push("Mobile TOC drawer opened without visible TOC links.");
+  }
+
+  report.mobile.tocLinkClicked = await evaluate(`(function(){
+    const link = document.querySelector('.toc-rail-open .toc-link');
+    if (!link) return false;
+    link.click();
+    return true;
+  })()`);
+  if (!report.mobile.tocLinkClicked) {
+    failures.push("Mobile TOC link was not found.");
+  }
+  await delay(500);
+
+  report.mobile.hashAfterTocClick = await evaluate("location.hash || ''");
+  report.mobile.tocOpenAfterLinkClick = await evaluate("document.querySelector('.wiki-shell') ? document.querySelector('.wiki-shell').className.includes('wiki-shell-toc-open') : false");
+  if (report.mobile.tocLinkClicked && report.mobile.hashAfterTocClick.length === 0) {
+    failures.push("Mobile TOC link did not update the hash.");
+  }
+  if (report.mobile.tocLinkClicked && report.mobile.tocOpenAfterLinkClick) {
+    failures.push("Mobile TOC drawer remained open after selecting a section link.");
+  }
+
+  const actionableNetworkFailures = networkFailures.filter(entry => !entry.canceled && entry.errorText !== "net::ERR_ABORTED");
+  if (actionableNetworkFailures.length > 0) {
+    failures.push(`Network failures observed: ${actionableNetworkFailures.map(entry => `${entry.type}:${entry.errorText}:${entry.url}`).join(" | ")}`);
+  }
+  if (consoleErrors.length > 0) {
+    failures.push(`Console errors observed: ${consoleErrors.join(" | ")}`);
+  }
+  if (exceptions.length > 0) {
+    failures.push(`Runtime exceptions observed: ${exceptions.join(" | ")}`);
+  }
+
+  console.log(JSON.stringify({
+    report,
+    consoleErrors,
+    exceptions,
+    networkFailures: actionableNetworkFailures
+  }, null, 2));
+
+  ws.close();
+
+  if (failures.length > 0) {
+    for (const failure of failures) {
+      console.error(failure);
+    }
+    process.exit(1);
+  }
+}
+
+main().catch(error => {
+  console.error(error && error.stack ? error.stack : String(error));
+  process.exit(1);
+});

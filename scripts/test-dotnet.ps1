@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("all", "compiler", "clr", "razorvue", "jolt", "jolt-build", "emit", "wiki", "wiki-publish")]
+    [ValidateSet("all", "compiler", "clr", "razorvue", "jolt", "jolt-build", "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish")]
     [string]$Project = "all",
     [string]$Configuration = "Debug",
     [string]$Filter = ""
@@ -18,9 +18,12 @@ $razorVueTestProject = Join-Path $repoRoot "src\Jazor.RazorVue.Test\Jazor.RazorV
 $joltTestProject = Join-Path $repoRoot "src\Jolt.Test\Jolt.Test.csproj"
 $emitTestProject = Join-Path $repoRoot "src\Jazor.EmitTest\Jazor.EmitTest.csproj"
 $wikiSmokeScript = Join-Path $repoRoot "src\Wiki\verify-smoke.ps1"
+$wikiBrowserScript = Join-Path $repoRoot "src\Wiki\verify-browser.ps1"
 
-function Invoke-WikiSmoke {
+function Invoke-WikiVerification {
     param(
+        [string]$ScriptPath,
+        [string]$FailureName,
         [switch]$Publish
     )
 
@@ -43,19 +46,27 @@ function Invoke-WikiSmoke {
         $scriptArgs.Build = $true
     }
 
-    & $wikiSmokeScript @scriptArgs
+    & $ScriptPath @scriptArgs
     if ($LASTEXITCODE -ne 0) {
-        throw "Wiki smoke verification failed for '$Project' with exit code $LASTEXITCODE."
+        throw "$FailureName failed for '$Project' with exit code $LASTEXITCODE."
     }
 }
 
 switch ($Project) {
     "wiki" {
-        Invoke-WikiSmoke
+        Invoke-WikiVerification -ScriptPath $wikiSmokeScript -FailureName "Wiki smoke verification"
         return
     }
     "wiki-publish" {
-        Invoke-WikiSmoke -Publish
+        Invoke-WikiVerification -ScriptPath $wikiSmokeScript -FailureName "Wiki smoke verification" -Publish
+        return
+    }
+    "wiki-browser" {
+        Invoke-WikiVerification -ScriptPath $wikiBrowserScript -FailureName "Wiki browser verification"
+        return
+    }
+    "wiki-browser-publish" {
+        Invoke-WikiVerification -ScriptPath $wikiBrowserScript -FailureName "Wiki browser verification" -Publish
         return
     }
 }

@@ -15,7 +15,8 @@ public static partial class WikiHomeModule
                 [
                     CheckCard("Compiler regressions", "`Jazor.CompilerTest` locks semantic lowering, import/header stability, naming, and source-map or catalog determinism."),
                     CheckCard("Emit regressions", "`Jazor.EmitTest` checks bundle and file-materialization behavior instead of trusting compiler output alone."),
-                    CheckCard("Operational smoke", "`src/Wiki/verify-smoke.ps1` proves that emitted assets, route fallback, browser entry wiring, and static hosting still behave as a real site.")
+                    CheckCard("Operational smoke", "`src/Wiki/verify-smoke.ps1` proves that emitted assets, route fallback, browser entry wiring, and static hosting still behave as a real site."),
+                    CheckCard("Browser runtime", "`src/Wiki/verify-browser.ps1` drives a headless Edge session through mount, SPA navigation, search, not-found recovery, persisted shell state, hash routing, and mobile drawer behavior.")
                 ])
             ]),
             PageSection("focused-commands", "Focused commands",
@@ -28,13 +29,17 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 pwsh ./scripts/test-dotnet.ps1
 pwsh ./scripts/test-dotnet.ps1 -Project wiki
 pwsh ./scripts/test-dotnet.ps1 -Project wiki-publish
+pwsh ./scripts/test-dotnet.ps1 -Project wiki-browser
+pwsh ./scripts/test-dotnet.ps1 -Project wiki-browser-publish
 .\src\Wiki\verify-smoke.ps1 -BuildLocal
+.\src\Wiki\verify-browser.ps1 -BuildLocal
 """),
                 H("ul",
                 [
                     H("li", "Use focused `--filter` runs while iterating on one lowering route or one contract family."),
                     H("li", "Use the repo test script when a change crosses compiler, emit, CLR, or host boundaries."),
-                    H("li", "Use Wiki smoke when a change touches generated browser assets, route registration, or hosting behavior.")
+                    H("li", "Use Wiki smoke when a change touches generated browser assets, route registration, or hosting behavior."),
+                    H("li", "Use Wiki browser verification when a change touches history routing, hash navigation, clipboard flows, `localStorage`, focus/live-region behavior, or mobile drawers.")
                 ])
             ]),
             PageSection("coverage-and-determinism", "Coverage and determinism",
@@ -56,10 +61,11 @@ pwsh ./scripts/test-dotnet.ps1 -Project wiki-publish
                     H("li", "Build output must include `src/Wiki/jazor/main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json`."),
                     H("li", "Registered docs routes must return the shell with `#app`, `/jazor/main.mjs`, and the `System/` import-map prefix."),
                     H("li", "Browser assets such as `/jazor/System/StringModule.js`, `/site.css`, and `/favicon.svg` must resolve successfully."),
+                    H("li", "Headless browser verification must prove real mount, SPA route transitions, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawer behavior without console or runtime errors."),
                     H("li", "Unknown docs routes must still fall back to `index.html` so the frontend shell can recover instead of failing at the host boundary."),
                     H("li", "Publish verification must prove `wwwroot/jazor` serves production assets and that no root shadow `jazor/` directory survives to override that contract.")
                 ]),
-                Callout("Practical rule", "A compiler or emit change is not ready for product use if unit tests pass but the Wiki smoke contract regresses.")
+                Callout("Practical rule", "A compiler or emit change is not ready for product use if unit tests pass but the Wiki smoke contract or the headless browser contract regresses.")
             ])
         ]);
 }

@@ -40,6 +40,7 @@ Current product boundary:
 - `build-local.ps1`: local build entry that verifies emitted Wiki artifacts exist after build.
 - `serve.ps1`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
 - `verify-smoke.ps1`: focused smoke verification for build output, `/health`, all registered docs routes, and unknown-route fallback.
+- `verify-browser.ps1` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
 - `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
 - `wwwroot/`: static entry (`index.html`, `site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
 
@@ -170,6 +171,47 @@ The smoke check verifies:
 - emitted `wiki-home.mjs` still contains the registered docs-route markers, page-title labels, and section-anchor contract markers
 - host startup now rejects route-catalog drift such as mismatched page-array lengths, duplicate page paths, duplicate section ids, empty metadata entries, or related links that point at unknown pages
 - `-Publish` verifies production-shape output under `wwwroot/jazor`, confirms that no shadow root `jazor/` directory survives publish, and proves the published host still serves `/jazor/main.mjs` plus `System/*` runtime assets
+
+## Browser Verification
+
+From repository root:
+
+```powershell
+.\src\Wiki\verify-browser.ps1 -BuildLocal
+```
+
+Production-shape browser verification:
+
+```powershell
+.\src\Wiki\verify-browser.ps1 -Publish
+```
+
+Repository-root shortcuts:
+
+```powershell
+pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser
+pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser-publish
+```
+
+`verify-browser.ps1` starts the Wiki host, launches headless Microsoft Edge with CDP enabled, and runs the project-owned `verify-browser.mjs` assertions through Node.js. The local path exercises `src/Wiki/jazor`, while `-Publish` exercises published assets from `wwwroot/jazor`.
+
+The browser check verifies:
+
+- the home route mounts the real shell instead of an empty app root
+- SPA navigation from home reaches `Getting Started`, focuses `#wiki-main-content`, and announces the route change through the live region
+- search query hydration, highlighted results, and clear-button query reset work on `/search?q=compiler`
+- unknown routes render the not-found document and recover through suggested route cards
+- theme preference and page feedback persist through `localStorage` and rehydrate after a full reload
+- page permalink, section permalink, and code-copy actions expose copied/fallback feedback instead of silent failure
+- back navigation restores scroll position on hash-free reading routes
+- direct `#anchor` loads activate the expected document section and TOC state
+- mobile navigation and TOC drawers open, close, and update the hash as expected
+- the browser session finishes without actionable network failures, console errors, or runtime exceptions
+
+Requirements:
+
+- Node.js available on `PATH`
+- Microsoft Edge installed at `C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`
 
 ## Runtime Dependency Notes
 

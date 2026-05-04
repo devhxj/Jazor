@@ -1674,6 +1674,7 @@ public static partial class WikiHomeModule
             return;
 
         mouseEvent.PreventDefault();
+        CloseDrawers();
         NavigateTo(anchor.Pathname, anchor.Hash, GetSearchQueryFromSearchString(anchor.Search, NormalizePath(anchor.Pathname)), updateHistory: true, resetScroll: true);
     }
 
