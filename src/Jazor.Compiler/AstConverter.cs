@@ -29,7 +29,7 @@ namespace Jazor.Compiler;
 /// 其他的如接口、委托、事件等，都忽略
 /// 对于代码段，基于operationwalker 根据 IOperation 生成 Acornima AST
 /// </summary>
-public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel)
+public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel, AstConverterOptions? options = null)
 {
     private sealed record MemberConstructorLowering(
         IMethodSymbol Symbol,
@@ -41,10 +41,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
+    private readonly AstConverterOptions _options = options ?? AstConverterOptions.Default;
     private readonly Dictionary<string, List<ImportDeclarationSpecifier>> _imports = [];
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
-    private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(classSymbol);
+    private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(classSymbol, options?.MemberFilter);
+    private readonly record struct ModuleNamespaceExportMember(string LocalName, string ExportName);
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
 
@@ -63,7 +65,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         cancellationToken.ThrowIfCancellationRequested();
 
         // 检查是否为 public 顶层类型
-        if (_classSymbol.DeclaredAccessibility != Accessibility.Public)
+        if (!IsAllowedTopLevelAccessibility(_classSymbol.DeclaredAccessibility))
             throw new NotSupportedException($"类 {_classSymbol.Name} 不是 public，无法转换");
 
         if (_classSymbol.ContainingType != null)
@@ -76,6 +78,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         foreach (var member in _classSymbol.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (!ShouldIncludeModuleMember(member))
+                continue;
 
             switch (member)
             {
@@ -105,6 +110,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 default:
                     throw new NotSupportedException($"Jazor 模块类不支持{member.Kind}:{member.Name}。");
             }
+        }
+
+        if (_options.Profile == AstConverterProfile.ClrRuntime &&
+            CreateClrRuntimeModuleNamespaceExport() is { } moduleNamespaceExport)
+        {
+            members.Add(moduleNamespaceExport);
         }
 
         var statements = NodeList.From(BuildImportDeclarations().Concat(members));
@@ -360,6 +371,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 body = MaterializeFunctionBody(walker.Visit(operation, argument), argument, symbol.ReturnsVoid);
                 MergeImports(argument);
             }
+            else
+            {
+                throw CreateMissingOperationException(symbol, blockSyntax);
+            }
         }
         else if (expressionSyntax is not null)
         {
@@ -371,6 +386,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 var visited = walker.Visit(operation, argument);
                 MergeImports(argument);
                 body = MaterializeFunctionBody(visited, argument, symbol.ReturnsVoid);
+            }
+            else
+            {
+                throw CreateMissingOperationException(symbol, expressionSyntax);
             }
         }
         if (body is null)
@@ -404,6 +423,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             statements.Add(declaration);
             statements.Add(CreateNamedExport(localName, GetModuleNamedExportName(symbol)));
         }
+    }
+
+    private static NotSupportedException CreateMissingOperationException(ISymbol symbol, SyntaxNode syntax)
+    {
+        var lineSpan = syntax.GetLocation().GetLineSpan();
+        var path = string.IsNullOrWhiteSpace(lineSpan.Path) ? "<unknown>" : lineSpan.Path;
+        var start = lineSpan.StartLinePosition;
+        var kind = syntax.Kind().ToString();
+        var snippet = syntax.ToString().Replace("\r", string.Empty).Replace("\n", "\\n");
+        return new NotSupportedException(
+            $"Jazor 不支持转换方法 {symbol.Name}，Roslyn 未返回操作树。Kind={kind} Location={path}:{start.Line + 1}:{start.Character + 1} Syntax={snippet}");
     }
     private async Task<(VariableDeclaration Declaration, string LocalName)> ConvertVariableField(IFieldSymbol symbol, CancellationToken cancellationToken)
     {
@@ -472,6 +502,47 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier(exportName))]),
             null,
             NodeList.From<ImportAttribute>([]));
+
+    private Statement? CreateClrRuntimeModuleNamespaceExport()
+    {
+        var exportName = GetModuleNamedExportName(_classSymbol);
+        if (string.IsNullOrWhiteSpace(exportName))
+            return null;
+
+        var members = CollectClrRuntimeModuleNamespaceExports().ToArray();
+        if (members.Length == 0)
+            return null;
+
+        var objectMembers = string.Join(
+            ", ",
+            members.Select(static member => string.Equals(member.LocalName, member.ExportName, System.StringComparison.Ordinal)
+                ? member.ExportName
+                : $"{member.ExportName}: {member.LocalName}"));
+        var exportScript = $"export const {exportName} = {{ {objectMembers} }};";
+        return new Parser().ParseModule(exportScript).Body.Single();
+    }
+
+    private IEnumerable<ModuleNamespaceExportMember> CollectClrRuntimeModuleNamespaceExports()
+    {
+        foreach (var member in _classSymbol.GetMembers())
+        {
+            if (!ShouldIncludeModuleMember(member))
+                continue;
+
+            switch (member)
+            {
+                case IFieldSymbol field:
+                    yield return new ModuleNamespaceExportMember(GetModuleDeclaredName(field), GetModuleNamedExportName(field));
+                    break;
+                case IMethodSymbol method when ShouldReserveModuleMethodName(method):
+                    yield return new ModuleNamespaceExportMember(GetModuleDeclaredName(method), GetModuleNamedExportName(method));
+                    break;
+                case INamedTypeSymbol type when IsRuntimeMemberClass(type):
+                    yield return new ModuleNamespaceExportMember(GetModuleDeclaredName(type), GetModuleNamedExportName(type));
+                    break;
+            }
+        }
+    }
 
     private PropertyDefinition ConvertMemberField(IFieldSymbol symbol)
     {
@@ -845,6 +916,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         foreach (var member in symbol.GetMembers())
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (!ShouldIncludeMemberClassMember(member))
+                continue;
 
             switch (member)
             {
@@ -1466,11 +1540,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         Dictionary<ISymbol, string> DeclaredNames,
         HashSet<string> ReservedImportNames);
 
-    private static ModuleNamePlan BuildModuleNamePlan(INamedTypeSymbol classSymbol)
+    private static ModuleNamePlan BuildModuleNamePlan(INamedTypeSymbol classSymbol, Func<ISymbol, bool>? includeMember)
     {
         var localNames = BuildModuleLocalNames(classSymbol);
-        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames);
-        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames);
+        var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember);
+        var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember);
         return new ModuleNamePlan(localNames, declaredNames, reservedImportNames);
     }
 
@@ -1490,6 +1564,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         foreach (var member in _classSymbol.GetMembers())
         {
+            if (!ShouldIncludeModuleMember(member))
+                continue;
+
             switch (member)
             {
                 case IFieldSymbol field:
@@ -1536,13 +1613,17 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static Dictionary<ISymbol, string> BuildModuleDeclaredNames(
         INamedTypeSymbol classSymbol,
-        HashSet<string> localNames)
+        HashSet<string> localNames,
+        Func<ISymbol, bool>? includeMember)
     {
         var declaredNames = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
         var usedDeclaredNames = new HashSet<string>(System.StringComparer.Ordinal);
 
         foreach (var member in classSymbol.GetMembers())
         {
+            if (includeMember is not null && !includeMember(member))
+                continue;
+
             switch (member)
             {
                 case IFieldSymbol field:
@@ -1619,12 +1700,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private static HashSet<string> BuildReservedImportNames(
         INamedTypeSymbol classSymbol,
         IReadOnlyDictionary<ISymbol, string> declaredNames,
-        HashSet<string> localNames)
+        HashSet<string> localNames,
+        Func<ISymbol, bool>? includeMember)
     {
         var names = new HashSet<string>(System.StringComparer.Ordinal);
 
         foreach (var member in classSymbol.GetMembers())
         {
+            if (includeMember is not null && !includeMember(member))
+                continue;
+
             switch (member)
             {
                 case IFieldSymbol field when declaredNames.TryGetValue(field.OriginalDefinition, out var fieldName):
@@ -1663,6 +1748,19 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static bool IsRuntimeMemberClass(INamedTypeSymbol type)
         => type.TypeKind == TypeKind.Class && !type.IsRecord;
+
+    private bool IsAllowedTopLevelAccessibility(Accessibility accessibility)
+        => _options.Profile switch
+        {
+            AstConverterProfile.ClrRuntime => accessibility is Accessibility.Public or Accessibility.Internal,
+            _ => accessibility == Accessibility.Public
+        };
+
+    private bool ShouldIncludeModuleMember(ISymbol member)
+        => _options.MemberFilter?.Invoke(member) ?? true;
+
+    private bool ShouldIncludeMemberClassMember(ISymbol member)
+        => _options.MemberFilter?.Invoke(member) ?? true;
 
     private static string GetPreferredModuleFieldDeclaredName(IFieldSymbol symbol)
     {

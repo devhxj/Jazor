@@ -40,6 +40,43 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private static MemberExpression IsArrayExpr
         => new(new Identifier("Array"), new Identifier("isArray"), computed: false, optional: false);
 
+    private static bool TryMapKnownRuntimeTypeName(string runtimeTypeName, out (TypeMapper Mapper, string TypeName) mapped)
+    {
+        switch (runtimeTypeName)
+        {
+            case "String":
+                mapped = (TypeMapper.String, "String");
+                return true;
+            case "Object":
+                mapped = (TypeMapper.Object, "Object");
+                return true;
+            case "Array":
+                mapped = (TypeMapper.Array, "Array");
+                return true;
+            case "Number":
+                mapped = (TypeMapper.Number, "Number");
+                return true;
+            case "Date":
+                mapped = (TypeMapper.Date, "Date");
+                return true;
+            case "BigInt":
+                mapped = (TypeMapper.BigInt, "BigInt");
+                return true;
+            case "Map":
+                mapped = (TypeMapper.Map, "Map");
+                return true;
+            case "Set":
+                mapped = (TypeMapper.Set, "Set");
+                return true;
+            case "Boolean":
+                mapped = (TypeMapper.Boolean, "Boolean");
+                return true;
+            default:
+                mapped = default;
+                return false;
+        }
+    }
+
     private static bool TryMapKnownWhiteListAlias(ITypeSymbol typeSymbol, out (TypeMapper Mapper, string TypeName) mapped)
     {
         mapped = default;
@@ -49,20 +86,20 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             string.IsNullOrWhiteSpace(entry.Value))
             return false;
 
-        mapped = entry.Value! switch
-        {
-            "String" => (TypeMapper.String, "String"),
-            "Object" => (TypeMapper.Object, "Object"),
-            "Array" => (TypeMapper.Array, "Array"),
-            "Number" => (TypeMapper.Number, "Number"),
-            "Date" => (TypeMapper.Date, "Date"),
-            "BigInt" => (TypeMapper.BigInt, "BigInt"),
-            "Map" => (TypeMapper.Map, "Map"),
-            "Set" => (TypeMapper.Set, "Set"),
-            _ => default
-        };
+        return TryMapKnownRuntimeTypeName(entry.Value!, out mapped);
+    }
 
-        return mapped != default;
+    private static bool TryMapKnownEcmascriptRuntimeHost(ITypeSymbol typeSymbol, out (TypeMapper Mapper, string TypeName) mapped)
+    {
+        mapped = default;
+        if (!Util.IsECMAScriptRuntimeType(typeSymbol))
+            return false;
+
+        var runtimeTypeName = GetTypeConfigOrWhiteListName(typeSymbol);
+        if (string.IsNullOrWhiteSpace(runtimeTypeName))
+            return false;
+
+        return TryMapKnownRuntimeTypeName(runtimeTypeName!, out mapped);
     }
 
     /// <summary>
@@ -90,6 +127,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         var displayName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
         if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
             return (TypeMapper.Object, "Object");
+
+        if (TryMapKnownEcmascriptRuntimeHost(typeSymbol, out var runtimeHost))
+            return runtimeHost;
 
         // 使用 SpecialType 进行基础类型检查，更加类型安全和高效
         switch (typeSymbol.OriginalDefinition.SpecialType)

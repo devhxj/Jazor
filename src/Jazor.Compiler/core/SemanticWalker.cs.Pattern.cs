@@ -1542,7 +1542,12 @@ public partial class SemanticWalker
 		}
 
 		if (result is null)
-			return HandleTransformationFailure<Expression>(operation, "Unsupported type in is-type operation.");
+		{
+			var mapped = GetMapperType(typeSymbol);
+			return HandleTransformationFailure<Expression>(
+				operation,
+				$"Unsupported type in is-type operation. Target='{typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}', Mapper='{mapped.Mapper}', RuntimeName='{mapped.TypeName}'.");
+		}
 
 		return PrependEvaluation(initialization, result);
 

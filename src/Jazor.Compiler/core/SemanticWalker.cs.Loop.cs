@@ -77,8 +77,7 @@ public partial class SemanticWalker
 			// 如果只有一个操作，直接使用
 			if (operation.AtLoopBottom.Length == 1)
 			{
-				updateExpression = TranslateExpression(operation.AtLoopBottom[0], argument);
-				var updateStatement = new NonSpecialExpressionStatement(updateExpression);
+				updateExpression = TranslateForLoopUpdateExpression(operation.AtLoopBottom[0], argument);
 			}
 			else
 			{
@@ -86,7 +85,7 @@ public partial class SemanticWalker
 				var expressions = new List<Expression>();
 				foreach (var atLoopBottomOp in operation.AtLoopBottom)
 				{
-					var expr = TranslateExpression(atLoopBottomOp, argument);
+					var expr = TranslateForLoopUpdateExpression(atLoopBottomOp, argument);
 					expressions.Add(expr);
 				}
 
@@ -110,6 +109,19 @@ public partial class SemanticWalker
 
 		var body = Translate<Statement>(operation.Body, argument);
 		return new ForStatement(init, test, updateExpression, body);
+	}
+
+	private Expression TranslateForLoopUpdateExpression(IOperation operation, SenseArgument argument)
+	{
+		var node = Visit(operation, argument);
+		return node switch
+		{
+			Expression expression => expression,
+			NonSpecialExpressionStatement statement => statement.Expression,
+			_ => HandleTransformationFailure<Expression>(
+				operation,
+				"For loop update expression could not be translated to JavaScript.")
+		};
 	}
 
 	private StatementOrExpression? CreateForLoopInitializer(IEnumerable<IOperation> beforeOperations, SenseArgument argument)

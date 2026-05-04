@@ -21,6 +21,8 @@ internal sealed class WhiteListValue
 
 internal static partial class WhiteList
 {
+	private static readonly object Gate = new();
+
 	public static readonly Dictionary<string, WhiteListValue> Types;
 
 	public static readonly Dictionary<string, WhiteListValue> Members;
@@ -30,6 +32,22 @@ internal static partial class WhiteList
 		Types = [];
 		Members = [];
 		Generate(ref Types, ref Members);
+	}
+
+	internal static void ReplaceForCurrentProcess(
+		IEnumerable<KeyValuePair<string, WhiteListValue>> types,
+		IEnumerable<KeyValuePair<string, WhiteListValue>> members)
+	{
+		lock (Gate)
+		{
+			Types.Clear();
+			foreach (var pair in types)
+				Types[pair.Key] = pair.Value;
+
+			Members.Clear();
+			foreach (var pair in members)
+				Members[pair.Key] = pair.Value;
+		}
 	}
 
 	static partial void Generate(ref Dictionary<string, WhiteListValue> types, ref Dictionary<string, WhiteListValue> members);

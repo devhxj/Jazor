@@ -38,6 +38,7 @@ internal static partial class WhiteList
 		types["System.Collections.Generic.ICollection<T>"] = new(Op.Alias, "Array");
 		types["System.IComparable"] = new(Op.Alias, "Object");
 		types["System.IComparable<T>"] = new(Op.Alias, "Object");
+		types["System.Collections.IComparer"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.IComparer<T>"] = new(Op.Alias, "Object");
 		types["System.Collections.Generic.IDictionary<TKey, TValue>"] = new(Op.Alias, "Map");
 		types["System.Collections.IEnumerable"] = new(Op.Alias, "Array");
@@ -1018,6 +1019,7 @@ internal static partial class WhiteList
 		members["System.Collections.Generic.ICollection<T>.CopyTo(T[], int)"] = new(Op.Import, "_03c4a0ae3554065f", "System/Collections/Generic/ICollectionT1Module.js");
 		members["System.IComparable.CompareTo(object)"] = new(Op.Import, "_7d491b9d00d63609", "System/IComparableModule.js");
 		members["System.IComparable<T>.CompareTo(T)"] = new(Op.Import, "_797b5246c9b12c8d", "System/IComparableT1Module.js");
+		members["System.Collections.IComparer.Compare(object, object)"] = new(Op.Import, "_7dffdd7244581cc5", "System/Collections/IComparerModule.js");
 		members["System.Collections.Generic.IComparer<T>.Compare(T, T)"] = new(Op.Import, "_0289dcf579b8a65e", "System/Collections/Generic/IComparerT1Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].get"] = new(Op.Import, "_371fad9265e864a1", "System/Collections/Generic/IDictionaryT2Module.js");
 		members["System.Collections.Generic.IDictionary<TKey, TValue>.this[TKey].set"] = new(Op.Import, "_f3b177bfce76ed5c", "System/Collections/Generic/IDictionaryT2Module.js");
