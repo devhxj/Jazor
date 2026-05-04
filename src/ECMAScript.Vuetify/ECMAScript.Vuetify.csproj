@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackageId>ECMAScript.Vuetify</PackageId>
-    <Version Condition="'$(Version)' == ''">0.1.15</Version>
+    <Version Condition="'$(Version)' == ''">0.1.17</Version>
     <Authors>hanxj</Authors>
     <Description>Vuetify bindings and RazorVue authoring component stubs for ECMAScript.</Description>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>

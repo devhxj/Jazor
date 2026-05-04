@@ -2,6 +2,6 @@
   <Import Project="..\..\Directory.Build.props" />
 
   <PropertyGroup>
-    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.1.15</JazorPackageVersion>
+    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.1.17</JazorPackageVersion>
   </PropertyGroup>
 </Project>
