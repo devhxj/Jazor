@@ -154,7 +154,9 @@ $emittedSectionNavigationMarkers = @(
     "window.onhashchange = onHashChange",
     "window.onscroll = onScroll",
     "requestAnimationFrame(syncActiveSectionOnFrame)",
+    "storedScrollRouteKeys",
     "scrollIntoView(true)",
+    "focus({ preventScroll: true, focusVisible: true })",
     "toc-link-active",
     "doc-section-active"
 )
@@ -177,6 +179,7 @@ $emittedCodeCopyMarkers = @(
 )
 $emittedProductShellMarkers = @(
     "Theme: Dark",
+    "Reading progress",
     "Copy page link",
     "View source",
     "Report issue",
@@ -212,6 +215,8 @@ $siteCssMarkers = @(
     '.breadcrumbs',
     '.meta-card',
     '.feedback-button',
+    '.reading-progress-track',
+    '.reading-progress-bar',
     '.search-result-card',
     '.mobile-utility-bar',
     '.drawer-backdrop',

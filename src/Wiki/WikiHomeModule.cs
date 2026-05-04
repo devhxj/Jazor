@@ -12,6 +12,7 @@ public static partial class WikiHomeModule
     private const string NavRailId = "wiki-nav-rail";
     private const string TocRailId = "wiki-toc-rail";
     private const string MainContentId = "wiki-main-content";
+    private const double SectionActivationLine = 148;
     private const string ThemeStorageKey = "jazor.wiki.theme";
     private const string FeedbackStoragePrefix = "jazor.wiki.feedback:";
     private const string RepositoryRootUrl = "https://github.com/devhxj/Jazor";
@@ -55,8 +56,12 @@ public static partial class WikiHomeModule
     private static IVueRef<string>? NavFilterRef;
     private static IVueRef<string>? CurrentPageFeedbackRef;
     private static IVueRef<string>? LiveStatusRef;
+    private static IVueRef<int>? ReadingProgressPercentRef;
     private static IVueRef<bool>? NavDrawerOpenRef;
     private static IVueRef<bool>? TocDrawerOpenRef;
+
+    private static readonly List<string> StoredScrollRouteKeys = [];
+    private static readonly List<double> StoredScrollOffsets = [];
 
     private static int PermalinkFeedbackResetTimerId;
     private static int PageLinkFeedbackResetTimerId;
@@ -104,6 +109,7 @@ public static partial class WikiHomeModule
         var navFilter = Ref("");
         var currentPageFeedback = Ref(ReadStoredPageFeedback(requestedPath));
         var liveStatus = Ref("");
+        var readingProgressPercent = Ref(0);
         var navDrawerOpen = Ref(false);
         var tocDrawerOpen = Ref(false);
 
@@ -120,6 +126,7 @@ public static partial class WikiHomeModule
         NavFilterRef = navFilter;
         CurrentPageFeedbackRef = currentPageFeedback;
         LiveStatusRef = liveStatus;
+        ReadingProgressPercentRef = readingProgressPercent;
         NavDrawerOpenRef = navDrawerOpen;
         TocDrawerOpenRef = tocDrawerOpen;
 
@@ -169,7 +176,7 @@ public static partial class WikiHomeModule
                     ["aria-atomic"] = "true"
                 }
             }, GetLiveStatusRef()?.Value ?? ""),
-            SiteHeader(),
+            SiteHeader(currentPath),
             MobileUtilityBar(currentPath),
             DrawerBackdrop(),
             H("div", new VueObject { Class = "wiki-layout" },
@@ -218,7 +225,7 @@ public static partial class WikiHomeModule
         }, "");
     }
 
-    private static IVNode SiteHeader()
+    private static IVNode SiteHeader(string currentPath)
     {
         var theme = GetCurrentThemeRef()?.Value ?? "dark";
         var themeLabel = theme == "light" ? "Theme: Light" : "Theme: Dark";
@@ -253,8 +260,58 @@ public static partial class WikiHomeModule
                         }, themeLabel)
                     ])
                 ])
+            ]),
+            ReadingProgressStrip(currentPath)
+        ]);
+    }
+
+    private static IVNode ReadingProgressStrip(string currentPath)
+    {
+        var progressPercent = GetReadingProgressPercent();
+        return H("div", new VueObject { Class = "reading-progress-shell" },
+        [
+            H("div", new VueObject { Class = "reading-progress-row" },
+            [
+                H("span", new VueObject { Class = "reading-progress-title" }, GetReadingProgressTitle(currentPath)),
+                H("span", new VueObject { Class = "reading-progress-value" }, progressPercent + "%")
+            ]),
+            H("div", new VueObject
+            {
+                Class = "reading-progress-track",
+                Role = "progressbar",
+                Raw = new VueDictionary
+                {
+                    ["aria-label"] = "Reading progress",
+                    ["aria-valuemin"] = "0",
+                    ["aria-valuemax"] = "100",
+                    ["aria-valuenow"] = progressPercent + ""
+                }
+            },
+            [
+                H("span", new VueObject
+                {
+                    Class = "reading-progress-bar",
+                    Style = new VueDictionary
+                    {
+                        ["width"] = progressPercent + "%"
+                    }
+                }, "")
             ])
         ]);
+    }
+
+    private static string GetReadingProgressTitle(string currentPath)
+    {
+        if (currentPath == SearchPath)
+        {
+            var currentSearchQuery = GetCurrentSearchQueryRef()?.Value ?? "";
+            return currentSearchQuery.Length == 0 ? "Search view" : "Search results";
+        }
+
+        if (IsKnownPage(currentPath))
+            return GetPageTitle(currentPath);
+
+        return "Page shell";
     }
 
     private static IVNode MobileUtilityBar(string currentPath)
@@ -832,6 +889,23 @@ public static partial class WikiHomeModule
         }
     }
 
+    private static bool IsBrowserLocationSynchronized(string path, string hash, string searchQuery)
+    {
+        var location = ECMAScript.Global.Document.Location;
+        if (location == null)
+            return false;
+
+        var normalizedBrowserPath = NormalizePath(location.Pathname);
+        var normalizedBrowserHash = NormalizeHash(location.Hash);
+        var normalizedBrowserSearchQuery = normalizedBrowserPath == SearchPath
+            ? GetSearchQueryFromLocation(location, normalizedBrowserPath)
+            : "";
+
+        return normalizedBrowserPath == path &&
+            normalizedBrowserHash == hash &&
+            normalizedBrowserSearchQuery == searchQuery;
+    }
+
     private static void SyncDocumentState(string currentPath, string currentSearchQuery)
     {
         var pageTitle = "Page Not Found";
@@ -927,6 +1001,9 @@ public static partial class WikiHomeModule
 
     private static IVueRef<string>? GetLiveStatusRef()
         => LiveStatusRef;
+
+    private static IVueRef<int>? GetReadingProgressPercentRef()
+        => ReadingProgressPercentRef;
 
     private static IVueRef<bool>? GetNavDrawerOpenRef()
         => NavDrawerOpenRef;
@@ -1032,6 +1109,23 @@ public static partial class WikiHomeModule
             return;
 
         liveStatus.Value = value;
+    }
+
+    private static int GetReadingProgressPercent()
+        => GetReadingProgressPercentRef()?.Value ?? 0;
+
+    private static void SetReadingProgressPercent(int value)
+    {
+        if (value < 0)
+            value = 0;
+        else if (value > 100)
+            value = 100;
+
+        var readingProgressPercent = GetReadingProgressPercentRef();
+        if (readingProgressPercent == null)
+            return;
+
+        readingProgressPercent.Value = value;
     }
 
     private static void SetNavDrawerOpen(bool value)
@@ -1239,12 +1333,86 @@ public static partial class WikiHomeModule
         Vue3.NextTick(() => ScrollToHashAnchor(hash));
     }
 
+    private static void QueueRouteChangeFocus(string path, string searchQuery)
+    {
+        var routeKey = BuildScrollRouteKey(path, searchQuery);
+        Vue3.NextTick(() => FocusMainContentForRoute(routeKey));
+    }
+
+    private static void QueueStoredScrollRestore(string path, string searchQuery, bool fallbackToTop)
+        => Vue3.NextTick(() => RestoreStoredScrollPosition(path, searchQuery, fallbackToTop));
+
     private static void ScrollToHashAnchor(string hash)
     {
         if (ECMAScript.Global.Document.GetElementById(hash) is not Element sectionElement)
             return;
 
         sectionElement.ScrollIntoView(true);
+        RememberCurrentScrollPosition();
+        QueueActiveSectionSync();
+    }
+
+    private static string BuildScrollRouteKey(string path, string searchQuery)
+        => path + GetSearchFragment(path, searchQuery);
+
+    private static void RememberCurrentScrollPosition()
+    {
+        var currentPath = GetCurrentPathRef();
+        var currentSearchQuery = GetCurrentSearchQueryRef();
+        if (currentPath == null || currentSearchQuery == null)
+            return;
+
+        RememberScrollPosition(currentPath.Value, currentSearchQuery.Value, ECMAScript.Global.Window.PageYOffset);
+    }
+
+    private static void RememberScrollPosition(string path, string searchQuery, double offset)
+    {
+        var routeKey = BuildScrollRouteKey(path, searchQuery);
+        for (var index = 0; index < StoredScrollRouteKeys.Count; index++)
+        {
+            if (StoredScrollRouteKeys[index] != routeKey)
+                continue;
+
+            StoredScrollOffsets[index] = offset;
+            return;
+        }
+
+        StoredScrollRouteKeys.Add(routeKey);
+        StoredScrollOffsets.Add(offset);
+    }
+
+    private static bool TryGetStoredScrollPosition(string path, string searchQuery, out double offset)
+    {
+        var routeKey = BuildScrollRouteKey(path, searchQuery);
+        for (var index = 0; index < StoredScrollRouteKeys.Count; index++)
+        {
+            if (StoredScrollRouteKeys[index] != routeKey)
+                continue;
+
+            offset = StoredScrollOffsets[index];
+            return true;
+        }
+
+        offset = 0;
+        return false;
+    }
+
+    private static void RestoreStoredScrollPosition(string path, string searchQuery, bool fallbackToTop)
+    {
+        if (TryGetStoredScrollPosition(path, searchQuery, out var offset))
+        {
+            ECMAScript.Global.Window.ScrollTo(0, offset);
+            QueueActiveSectionSync();
+            return;
+        }
+
+        if (!fallbackToTop)
+        {
+            QueueActiveSectionSync();
+            return;
+        }
+
+        ECMAScript.Global.Window.ScrollTo(0, 0);
         QueueActiveSectionSync();
     }
 
@@ -1265,6 +1433,8 @@ public static partial class WikiHomeModule
 
     private static void SyncActiveSectionFromScrollPosition()
     {
+        SyncReadingProgressFromScrollPosition();
+
         var currentPath = GetCurrentPathRef();
         var currentHash = GetCurrentHashRef();
         if (currentPath == null || currentHash == null || !IsKnownPage(currentPath.Value))
@@ -1277,7 +1447,6 @@ public static partial class WikiHomeModule
 
         var activeSectionId = "";
         var nearestDistance = double.MaxValue;
-        const double activationLine = 148;
 
         for (var sectionIndex = 0; sectionIndex < sectionIds.Length; sectionIndex++)
         {
@@ -1286,15 +1455,15 @@ public static partial class WikiHomeModule
                 continue;
 
             var bounds = sectionElement.GetBoundingClientRect();
-            if (bounds.Top <= activationLine && bounds.Bottom > activationLine)
+            if (bounds.Top <= SectionActivationLine && bounds.Bottom > SectionActivationLine)
             {
                 activeSectionId = sectionId;
                 break;
             }
 
-            var distance = bounds.Top > activationLine
-                ? bounds.Top - activationLine
-                : activationLine - bounds.Bottom;
+            var distance = bounds.Top > SectionActivationLine
+                ? bounds.Top - SectionActivationLine
+                : SectionActivationLine - bounds.Bottom;
 
             if (distance < nearestDistance)
             {
@@ -1309,6 +1478,70 @@ public static partial class WikiHomeModule
         currentHash.Value = activeSectionId;
     }
 
+    private static void SyncReadingProgressFromScrollPosition()
+    {
+        if (ECMAScript.Global.Document.GetElementById(MainContentId) is not Element mainContentElement)
+        {
+            SetReadingProgressPercent(0);
+            return;
+        }
+
+        var bounds = mainContentElement.GetBoundingClientRect();
+        if (bounds.Height <= 0)
+        {
+            SetReadingProgressPercent(0);
+            return;
+        }
+
+        var rawProgress = (SectionActivationLine - bounds.Top) / bounds.Height;
+        if (rawProgress <= 0)
+        {
+            SetReadingProgressPercent(0);
+            return;
+        }
+
+        if (rawProgress >= 1)
+        {
+            SetReadingProgressPercent(100);
+            return;
+        }
+
+        SetReadingProgressPercent((int)(rawProgress * 100));
+    }
+
+    private static void FocusMainContentForRoute(string routeKey)
+    {
+        var currentPath = GetCurrentPathRef();
+        var currentSearchQuery = GetCurrentSearchQueryRef();
+        if (currentPath == null || currentSearchQuery == null)
+            return;
+
+        if (BuildScrollRouteKey(currentPath.Value, currentSearchQuery.Value) != routeKey)
+            return;
+
+        if (ECMAScript.Global.Document.GetElementById(MainContentId) is not HTMLElement mainContentElement)
+            return;
+
+        mainContentElement.Focus(new FocusOptions(PreventScroll: true, FocusVisible: true));
+        SetLiveStatus(BuildRouteChangeAnnouncement(currentPath.Value, currentSearchQuery.Value));
+    }
+
+    private static string BuildRouteChangeAnnouncement(string currentPath, string currentSearchQuery)
+    {
+        if (currentPath == SearchPath)
+        {
+            if (currentSearchQuery.Length == 0)
+                return "Opened search.";
+
+            return "Opened search results for \"" + currentSearchQuery + "\".";
+        }
+
+        if (IsKnownPage(currentPath))
+            return "Opened " + GetPageTitle(currentPath) + ".";
+
+        return "Opened page not found for " + currentPath + ".";
+    }
+
     private static void NavigateTo(string path, string hash, string searchQuery, bool updateHistory, bool resetScroll)
     {
         var currentPath = GetCurrentPathRef();
@@ -1317,20 +1550,35 @@ public static partial class WikiHomeModule
         if (currentPath == null || currentHash == null || currentSearchQuery == null)
             return;
 
+        RememberScrollPosition(currentPath.Value, currentSearchQuery.Value, ECMAScript.Global.Window.PageYOffset);
+
         var normalizedPath = NormalizePath(path);
         var normalizedHash = NormalizeHash(hash);
         var normalizedSearchQuery = normalizedPath == SearchPath
             ? NormalizeSearchQuery(searchQuery)
             : "";
+        var primaryRouteChanged = currentPath.Value != normalizedPath ||
+            currentSearchQuery.Value != normalizedSearchQuery;
+        var browserLocationSynchronized = IsBrowserLocationSynchronized(normalizedPath, normalizedHash, normalizedSearchQuery);
 
         if (currentPath.Value == normalizedPath &&
             currentHash.Value == normalizedHash &&
             currentSearchQuery.Value == normalizedSearchQuery)
         {
+            if (updateHistory && !browserLocationSynchronized)
+            {
+                var url = BuildUrl(normalizedPath, normalizedHash, normalizedSearchQuery);
+                ECMAScript.Global.Window.History.PushState(url, "", url);
+            }
+
             if (normalizedHash.Length > 0)
                 QueueScrollToHashAnchor(normalizedHash);
             else if (resetScroll)
+            {
                 ECMAScript.Global.Window.ScrollTo(0, 0);
+                RememberScrollPosition(normalizedPath, normalizedSearchQuery, 0);
+                QueueActiveSectionSync();
+            }
 
             return;
         }
@@ -1353,12 +1601,16 @@ public static partial class WikiHomeModule
         else if (resetScroll)
         {
             ECMAScript.Global.Window.ScrollTo(0, 0);
+            RememberScrollPosition(normalizedPath, normalizedSearchQuery, 0);
             QueueActiveSectionSync();
         }
         else
         {
-            QueueActiveSectionSync();
+            QueueStoredScrollRestore(normalizedPath, normalizedSearchQuery, fallbackToTop: false);
         }
+
+        if (primaryRouteChanged)
+            QueueRouteChangeFocus(normalizedPath, normalizedSearchQuery);
     }
 
     private static void SyncLocationStateFromBrowser()
@@ -1370,9 +1622,13 @@ public static partial class WikiHomeModule
         if (location == null || currentPath == null || currentHash == null || currentSearchQuery == null)
             return;
 
+        RememberScrollPosition(currentPath.Value, currentSearchQuery.Value, ECMAScript.Global.Window.PageYOffset);
+
         var normalizedPath = NormalizePath(location.Pathname);
         var normalizedHash = NormalizeHash(location.Hash);
         var normalizedSearchQuery = GetSearchQueryFromLocation(location, normalizedPath);
+        var primaryRouteChanged = currentPath.Value != normalizedPath ||
+            currentSearchQuery.Value != normalizedSearchQuery;
 
         currentPath.Value = normalizedPath;
         currentHash.Value = normalizedHash;
@@ -1384,7 +1640,10 @@ public static partial class WikiHomeModule
         if (normalizedHash.Length > 0)
             QueueScrollToHashAnchor(normalizedHash);
         else
-            QueueActiveSectionSync();
+            QueueStoredScrollRestore(normalizedPath, normalizedSearchQuery, fallbackToTop: false);
+
+        if (primaryRouteChanged)
+            QueueRouteChangeFocus(normalizedPath, normalizedSearchQuery);
     }
 
     private static bool ShouldAllowBrowserDefault(MouseEvent mouseEvent)
@@ -1741,6 +2000,7 @@ public static partial class WikiHomeModule
 
     private static object OnScroll(Event @event)
     {
+        RememberCurrentScrollPosition();
         QueueActiveSectionSync();
         return 0;
     }

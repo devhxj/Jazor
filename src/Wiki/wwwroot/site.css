@@ -79,6 +79,11 @@ pre {
   padding: 28px 0 48px;
 }
 
+.site-header {
+  display: grid;
+  gap: 14px;
+}
+
 .site-header,
 .nav-rail,
 .doc-column,
@@ -88,6 +93,7 @@ pre {
 }
 
 .site-header-inner,
+.reading-progress-shell,
 .rail-card,
 .doc-hero,
 .doc-section,
@@ -142,6 +148,54 @@ pre {
   font-size: 1rem;
 }
 
+.reading-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.reading-progress-title,
+.reading-progress-value {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.reading-progress-title {
+  min-width: 0;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reading-progress-value {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.reading-progress-track {
+  position: relative;
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(5, 14, 21, 0.88);
+}
+
+.reading-progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent) 0%, rgba(78, 174, 255, 0.92) 100%);
+  box-shadow: 0 0 18px rgba(104, 243, 199, 0.24);
+  transition: width 120ms linear;
+}
+
 .brand-actions {
   display: flex;
   align-items: flex-start;
@@ -189,6 +243,7 @@ pre {
 .rail-card,
 .doc-hero,
 .doc-section,
+.reading-progress-shell,
 .site-footer {
   padding: 24px;
 }
@@ -1172,6 +1227,10 @@ html[data-theme="light"] .callout {
   background: linear-gradient(180deg, rgba(239, 249, 246, 0.94), rgba(245, 251, 252, 0.96));
 }
 
+html[data-theme="light"] .reading-progress-track {
+  background: rgba(235, 244, 247, 0.96);
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -1210,6 +1269,11 @@ html[data-theme="light"] .callout {
 
   .site-header-inner {
     grid-template-columns: 1fr;
+  }
+
+  .reading-progress-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
   .brand-actions {

@@ -18,6 +18,7 @@ Current product boundary:
 - the ASP.NET Core host now validates that the route catalog stays internally aligned before serving requests, so array drift fails fast instead of leaking into runtime behavior
 - in-app docs navigation now upgrades to `history.pushState` / `popstate` shell routing while preserving real URL fallback
 - right-rail TOC now upgrades same-page hash navigation into active-state, scroll-synced section routing while preserving shareable `#anchor` URLs
+- route changes now keep session-local scroll memory, so browser back or forward returns to the previous reading position when the URL has no explicit section hash
 - the shell now keeps page title, description, canonical URL, and social metadata in sync with the active route
 - page heroes now expose catalog-backed metadata cards, tag-driven search entry points, source links, and issue-report actions
 - each section now exposes a direct permalink action that updates the hash, copies the full section URL through the browser clipboard, and falls back to a visible "Link ready" state when clipboard write is unavailable
@@ -158,7 +159,7 @@ The smoke check verifies:
 - every registered docs route still carries the CLR runtime import-map prefix `"System/": "/jazor/System/"`
 - an unknown docs route still returns the frontend shell through fallback
 - browser-served assets such as `/jazor/main.mjs`, `/jazor/System/StringModule.js`, `/site.css`, and `/favicon.svg` resolve successfully
-- emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, and click interception)
+- emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, click interception, and session-local scroll restoration)
 - emitted `wiki-home.mjs` still contains the section-routing contract (`hashchange`, scroll listeners, active TOC markers, and section-driven reading-state sync)
 - emitted `wiki-home.mjs` still contains the section permalink contract (`window.navigator.clipboard`, `clipboard.writeText`, permalink button labels, and copied/fallback-state styling markers)
 - emitted `wiki-home.mjs` still contains the code-block copy contract (`Copy code`, copied/unavailable state labels, and code-copy button styling markers)
