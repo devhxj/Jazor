@@ -14,6 +14,16 @@
 
 Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是将 `IOperation` 语义降低为 ECMAScript AST。用 `[ECMAScriptModule]` 标注 C# 类，构建时自动生成 `.mjs` 文件。内含 `ECMAScript.Vue3` 提供类型化的 Vue 3 `h()` 渲染函数绑定。
 
+## 特性
+
+- **C# 语法覆盖** — 基本支持 C# 14 全部语言特性：变量声明、基础类型、模式匹配、可空类型、async/await、字符串插值、对象和集合初始化、元组与解构、switch 语句/表达式，以及循环（for/foreach/while/do-while）
+- **Roslyn `IOperation` lowering** — 通过 `IOperation` → ECMAScript AST 的语义驱动编译，而非语法层面的翻译
+- **静态分析安全** — `Jazor.Analyzer` 在编译期强制执行白名单边界，在不支持的类型和成员进入发射之前即诊断报错
+- **CLR 运行时模块** — 常见 BCL 类型（`string`、`int`、`double`、`List<T>`、`Dictionary<TKey, TValue>`、`Task<T>` 等）通过 `Jazor.CLR` 映射到 JavaScript 运行时实现
+- **ECMAScript 模块发射** — `[ECMAScriptModule]` 标注的类编译为 `.mjs` 文件，自动处理跨模块 import 解析和 source map
+- **Vue 3 集成** — `ECMAScript.Vue3` 提供 Vue 3 Composition API 和 `h()` 渲染函数的类型化 C# 绑定，支持纯 C# 编写组件
+- **MSBuild 集成** — 通过标准 MSBuild 属性配置发射、打包和输出路径
+
 ## 项目状态
 
 | 层级 | 组件 | 状态 |
@@ -134,7 +144,6 @@ using static ECMAScript.Vue3;
 
 namespace MyApp;
 
-[ECMAScript("npm:vue@3")]
 [ECMAScriptModule("app/counter.mjs")]
 public static class CounterModule
 {
