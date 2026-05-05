@@ -93,7 +93,7 @@ public static partial class Vue3
 	/// <param name="rootComponent">The root component definition, produced by <c>defineComponent()</c>.</param>
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp(IVueComponent rootComponent);
+	public extern static VueApp CreateSSRApp(IVueComponent rootComponent);
 
 	/// <summary>
 	/// Creates a Vue application instance in SSR mode with root props.
@@ -102,7 +102,7 @@ public static partial class Vue3
 	/// <param name="rootProps">Props to pass to the root component during server-side rendering.</param>
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp(IVueComponent rootComponent, VueProps rootProps);
+	public extern static VueApp CreateSSRApp(IVueComponent rootComponent, VueProps rootProps);
 
 	/// <summary>
 	/// Creates a Vue SSR application instance with strongly typed root props.
@@ -112,7 +112,7 @@ public static partial class Vue3
 	/// <param name="rootProps">The strongly typed root props object.</param>
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp<TProps>(IVueComponent<TProps> rootComponent, TProps rootProps)
+	public extern static VueApp CreateSSRApp<TProps>(IVueComponent<TProps> rootComponent, TProps rootProps)
 		where TProps : VueProps;
 
 	/// <summary>
@@ -125,7 +125,7 @@ public static partial class Vue3
 	/// also allows common authoring conveniences such as <c>class</c>, <c>style</c>, and spreads.</param>
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp<TProps>(IVueComponent<TProps> rootComponent, VueObject<TProps> rootProps)
+	public extern static VueApp CreateSSRApp<TProps>(IVueComponent<TProps> rootComponent, VueObject<TProps> rootProps)
 		where TProps : VueProps;
 
 	/// <summary>
@@ -138,7 +138,7 @@ public static partial class Vue3
 	/// <param name="rootProps">The strongly typed root props object.</param>
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, TProps rootProps)
+	public extern static VueApp CreateSSRApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, TProps rootProps)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 
@@ -154,7 +154,7 @@ public static partial class Vue3
 	/// also allows common authoring conveniences such as <c>class</c>, <c>style</c>, and spreads.</param>
 	/// <returns>A new <see cref="VueApp"/> instance configured for server-side rendering.</returns>
 	[Description("@#createSSRApp")]
-	public extern static VueApp CreateSsrApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, VueObject<TProps> rootProps)
+	public extern static VueApp CreateSSRApp<TProps, TSlots>(IVueComponent<TProps, TSlots> rootComponent, VueObject<TProps> rootProps)
 		where TProps : VueProps
 		where TSlots : VueSlots;
 

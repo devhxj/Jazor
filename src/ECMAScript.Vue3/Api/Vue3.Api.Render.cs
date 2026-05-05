@@ -15,7 +15,6 @@ public static partial class Vue3
 	private const string BindThisInlineTemplate = "((__cb) => function(){ return __cb(this, ...arguments); })(__arg1)";
 
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static VueDataCallback BindThis<TThis>(VueThisDataCallback<TThis> callback)
 		where TThis : class;
 
@@ -23,7 +22,6 @@ public static partial class Vue3
 	/// Binds a this-aware action callback with no explicit runtime arguments.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Action BindThis<TThis>(VueThisAction<TThis> callback)
 		where TThis : class;
 
@@ -31,7 +29,6 @@ public static partial class Vue3
 	/// Binds a this-aware action callback with one runtime argument.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Action<T1> BindThis<TThis, T1>(VueThisAction<TThis, T1> callback)
 		where TThis : class;
 
@@ -39,7 +36,6 @@ public static partial class Vue3
 	/// Binds a this-aware action callback with two runtime arguments.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Action<T1, T2> BindThis<TThis, T1, T2>(VueThisAction<TThis, T1, T2> callback)
 		where TThis : class;
 
@@ -47,7 +43,6 @@ public static partial class Vue3
 	/// Binds a this-aware action callback with three runtime arguments.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Action<T1, T2, T3> BindThis<TThis, T1, T2, T3>(VueThisAction<TThis, T1, T2, T3> callback)
 		where TThis : class;
 
@@ -55,7 +50,6 @@ public static partial class Vue3
 	/// Binds a this-aware watch cleanup callback.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static VueWatchCleanupCallback<TValue> BindThis<TThis, TValue>(VueThisWatchCleanupCallback<TThis, TValue> callback)
 		where TThis : class;
 
@@ -63,7 +57,6 @@ public static partial class Vue3
 	/// Binds a this-aware function callback with no explicit runtime arguments.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Func<TResult> BindThis<TThis, TResult>(VueThisFunc<TThis, TResult> callback)
 		where TThis : class;
 
@@ -71,7 +64,6 @@ public static partial class Vue3
 	/// Binds a this-aware function callback with one runtime argument.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Func<T1, TResult> BindThis<TThis, T1, TResult>(VueThisFunc<TThis, T1, TResult> callback)
 		where TThis : class;
 
@@ -79,7 +71,6 @@ public static partial class Vue3
 	/// Binds a this-aware function callback with two runtime arguments.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Func<T1, T2, TResult> BindThis<TThis, T1, T2, TResult>(VueThisFunc<TThis, T1, T2, TResult> callback)
 		where TThis : class;
 
@@ -87,7 +78,6 @@ public static partial class Vue3
 	/// Binds a this-aware function callback with three runtime arguments.
 	/// </summary>
 	[ECMAScriptInline(BindThisInlineTemplate)]
-	[Description("@#bindThis")]
 	public extern static Func<T1, T2, T3, TResult> BindThis<TThis, T1, T2, T3, TResult>(VueThisFunc<TThis, T1, T2, T3, TResult> callback)
 		where TThis : class;
 

@@ -312,7 +312,7 @@ public delegate void VueDirectiveUpdateHook<TValue>(Element element, Vue3.VueDir
 /// <param name="binding">The current directive binding payload.</param>
 /// <param name="vnode">The current VNode associated with the element.</param>
 /// <returns>Additional props that should be merged into the SSR-rendered element.</returns>
-public delegate Vue3.VueProps? VueDirectiveSsrPropsCallback(Vue3.VueDirectiveBinding binding, Vue3.IVNode vnode);
+public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback(Vue3.VueDirectiveBinding binding, Vue3.IVNode vnode);
 
 /// <summary>
 /// Callback signature for a typed Vue directive SSR hook that returns props to merge into the rendered element.
@@ -321,7 +321,7 @@ public delegate Vue3.VueProps? VueDirectiveSsrPropsCallback(Vue3.VueDirectiveBin
 /// <param name="binding">The current typed directive binding payload.</param>
 /// <param name="vnode">The current VNode associated with the element.</param>
 /// <returns>Additional props that should be merged into the SSR-rendered element.</returns>
-public delegate Vue3.VueProps? VueDirectiveSsrPropsCallback<TValue>(Vue3.VueDirectiveBinding<TValue> binding, Vue3.IVNode vnode);
+public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback<TValue>(Vue3.VueDirectiveBinding<TValue> binding, Vue3.IVNode vnode);
 
 /// <summary>
 /// Loader callback for a Vue async component. It returns a JavaScript promise that

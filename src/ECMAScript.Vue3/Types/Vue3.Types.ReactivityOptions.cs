@@ -491,7 +491,7 @@ public static partial class Vue3
 	/// Reads the fallthrough <c>readonly</c> attribute.
 	/// </summary>
 	[Description("@#readonly")]
-	public extern bool? ReadOnly { get; }
+	public extern bool? Readonly { get; }
 
 	/// <summary>
 	/// Reads the fallthrough <c>required</c> attribute.
@@ -503,7 +503,7 @@ public static partial class Vue3
 	/// Reads the fallthrough <c>tabindex</c> attribute.
 	/// </summary>
 	[Description("@#tabindex")]
-	public extern int? TabIndex { get; }
+	public extern int? Tabindex { get; }
 
 	/// <summary>
 	/// Reads the fallthrough <c>role</c> attribute.

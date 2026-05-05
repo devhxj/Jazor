@@ -49,7 +49,7 @@ public static partial class Vue3
 		/// record or <see cref="VueDictionary"/>.
 		/// </summary>
 		[Description("@#inject")]
-		public Either<string[], VueProps>? Inject { get; init; }
+		public VueNamesOrOptions? Inject { get; init; }
 
 		/// <summary>
 		/// Local mixins merged into this component by Vue's Options API merge strategy.
@@ -601,33 +601,18 @@ public static partial class Vue3
 		public VueDirectiveRegistry? Directives { get; init; }
 
 		/// <summary>
-		/// Object-form prop declarations for validators, defaults, and runtime type checks.
-		/// Use either this member or <see cref="PropNames"/>, not both.
+		/// Explicit Vue <c>props</c> declaration, using either array-form names or
+		/// object-form validators/defaults/type checks.
 		/// </summary>
 		[Description("@#props")]
-		public VueProps? PropOptions { get; init; }
+		public VueNamesOrOptions? Props { get; init; }
 
 		/// <summary>
-		/// Explicit array-form prop names for untyped components. Use
-		/// <see cref="VueComponentOptions{TProps}"/> when a strong props contract is available.
-		/// </summary>
-		[Description("@#props")]
-		public string[]? PropNames { get; init; }
-
-		/// <summary>
-		/// Object-form emit declarations with runtime validators. Use either this member
-		/// or <see cref="EmitNames"/>, not both.
+		/// Explicit Vue <c>emits</c> declaration, using either array-form event names or
+		/// object-form validators.
 		/// </summary>
 		[Description("@#emits")]
-		public VueProps? EmitOptions { get; init; }
-
-		/// <summary>
-		/// Declared emit event names for this component. Only events listed here will
-		/// be emitted to the parent. If omitted, all event listeners passed by the
-		/// parent are treated as fallthrough attributes.
-		/// </summary>
-		[Description("@#emits")]
-		public string[]? EmitNames { get; init; }
+		public VueNamesOrOptions? Emits { get; init; }
 
 		/// <summary>
 		/// Setup function called before the component is mounted. Receives no props and
@@ -676,32 +661,18 @@ public static partial class Vue3
 		public VueDirectiveRegistry? Directives { get; init; }
 
 		/// <summary>
-		/// Object-form prop declarations for validators, defaults, and runtime type checks.
-		/// Use either this member or <see cref="PropNames"/>, not both.
+		/// Explicit Vue <c>props</c> declaration, using either array-form names or
+		/// object-form validators/defaults/type checks.
 		/// </summary>
 		[Description("@#props")]
-		public VueProps? PropOptions { get; init; }
+		public VueNamesOrOptions? Props { get; init; }
 
 		/// <summary>
-		/// Explicit array-form prop names. Set this when Vue runtime prop declaration is
-		/// needed but validators/defaults are not.
-		/// </summary>
-		[Description("@#props")]
-		public string[]? PropNames { get; init; }
-
-		/// <summary>
-		/// Object-form emit declarations with runtime validators. Use either this member
-		/// or <see cref="EmitNames"/>, not both.
+		/// Explicit Vue <c>emits</c> declaration, using either array-form event names or
+		/// object-form validators.
 		/// </summary>
 		[Description("@#emits")]
-		public VueProps? EmitOptions { get; init; }
-
-		/// <summary>
-		/// Explicit array-form emit event names. Set this when Vue should distinguish
-		/// component events from fallthrough listener attributes.
-		/// </summary>
-		[Description("@#emits")]
-		public string[]? EmitNames { get; init; }
+		public VueNamesOrOptions? Emits { get; init; }
 
 		/// <summary>
 		/// Setup function called before the component is mounted. Receives the typed props
@@ -745,32 +716,18 @@ public static partial class Vue3
 		public VueDirectiveRegistry? Directives { get; init; }
 
 		/// <summary>
-		/// Object-form prop declarations for validators, defaults, and runtime type checks.
-		/// Use either this member or <see cref="PropNames"/>, not both.
+		/// Explicit Vue <c>props</c> declaration, using either array-form names or
+		/// object-form validators/defaults/type checks.
 		/// </summary>
 		[Description("@#props")]
-		public VueProps? PropOptions { get; init; }
+		public VueNamesOrOptions? Props { get; init; }
 
 		/// <summary>
-		/// Explicit array-form prop names. Set this when Vue runtime prop declaration is
-		/// needed but validators/defaults are not.
-		/// </summary>
-		[Description("@#props")]
-		public string[]? PropNames { get; init; }
-
-		/// <summary>
-		/// Object-form emit declarations with runtime validators. Use either this member
-		/// or <see cref="EmitNames"/>, not both.
+		/// Explicit Vue <c>emits</c> declaration, using either array-form event names or
+		/// object-form validators.
 		/// </summary>
 		[Description("@#emits")]
-		public VueProps? EmitOptions { get; init; }
-
-		/// <summary>
-		/// Explicit array-form emit event names. Set this when Vue should distinguish
-		/// component events from fallthrough listener attributes.
-		/// </summary>
-		[Description("@#emits")]
-		public string[]? EmitNames { get; init; }
+		public VueNamesOrOptions? Emits { get; init; }
 
 		/// <summary>
 		/// Setup function called before the component is mounted. Receives the typed props
@@ -811,32 +768,18 @@ public static partial class Vue3
 		public VueDirectiveRegistry? Directives { get; init; }
 
 		/// <summary>
-		/// Object-form prop declarations for validators, defaults, and runtime type checks.
-		/// Use either this member or <see cref="PropNames"/>, not both.
+		/// Explicit Vue <c>props</c> declaration, using either array-form names or
+		/// object-form validators/defaults/type checks.
 		/// </summary>
 		[Description("@#props")]
-		public VueProps? PropOptions { get; init; }
+		public VueNamesOrOptions? Props { get; init; }
 
 		/// <summary>
-		/// Explicit array-form prop names for slot-typed components that do not declare
-		/// a typed props record.
-		/// </summary>
-		[Description("@#props")]
-		public string[]? PropNames { get; init; }
-
-		/// <summary>
-		/// Object-form emit declarations with runtime validators. Use either this member
-		/// or <see cref="EmitNames"/>, not both.
+		/// Explicit Vue <c>emits</c> declaration, using either array-form event names or
+		/// object-form validators.
 		/// </summary>
 		[Description("@#emits")]
-		public VueProps? EmitOptions { get; init; }
-
-		/// <summary>
-		/// Emit event names declared by this component. If omitted, all event listeners
-		/// passed by the parent are treated as fallthrough attributes.
-		/// </summary>
-		[Description("@#emits")]
-		public string[]? EmitNames { get; init; }
+		public VueNamesOrOptions? Emits { get; init; }
 
 		/// <summary>
 		/// Setup function called before the component is mounted. Receives a typed setup

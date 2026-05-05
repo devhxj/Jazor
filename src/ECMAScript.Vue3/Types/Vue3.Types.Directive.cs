@@ -275,7 +275,7 @@ public static partial class Vue3
 		/// Called during SSR to contribute additional props to the rendered element.
 		/// </summary>
 		[Description("@#getSSRProps")]
-		public VueDirectiveSsrPropsCallback? GetSsrProps { get; init; }
+		public VueDirectiveSSRPropsCallback? GetSSRProps { get; init; }
 	}
 
 	/// <summary>
@@ -333,7 +333,7 @@ public static partial class Vue3
 		/// Called during SSR to contribute additional props to the rendered element.
 		/// </summary>
 		[Description("@#getSSRProps")]
-		public new VueDirectiveSsrPropsCallback<TValue>? GetSsrProps { get; init; }
+		public new VueDirectiveSSRPropsCallback<TValue>? GetSSRProps { get; init; }
 	}
 
 }

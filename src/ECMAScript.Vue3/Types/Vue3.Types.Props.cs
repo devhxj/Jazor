@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using ECMAScript.Contract;
 
 namespace ECMAScript;
@@ -72,6 +75,62 @@ public static partial class Vue3
 		/// <param name="key">The final listener key to read.</param>
 		/// <returns>The typed listener callback when present.</returns>
 		public new extern VueEventHandler<TEvent>? this[string key] { get; set; }
+	}
+
+	/// <summary>
+	/// Explicit Vue option declaration that accepts either an array-form name list or
+	/// an object-form <see cref="VueProps"/> record.
+	/// This wrapper preserves collection-expression authoring such as <c>["title"]</c>
+	/// on canonical members like <c>Props</c>, <c>Emits</c>, and <c>Inject</c>.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	[CollectionBuilder(typeof(VueNamesOrOptionsCollectionBuilder), nameof(VueNamesOrOptionsCollectionBuilder.Create))]
+	public readonly struct VueNamesOrOptions : IEither, IEnumerable<string>
+	{
+		private readonly string[]? _names;
+		private readonly VueProps? _options;
+
+		private VueNamesOrOptions(string[] names)
+		{
+			_names = names;
+			_options = null;
+		}
+
+		private VueNamesOrOptions(VueProps options)
+		{
+			_names = null;
+			_options = options;
+		}
+
+		/// <summary>
+		/// Gets the array-form names when this value was created from a string collection.
+		/// </summary>
+		public string[]? AsNames => _names;
+
+		/// <summary>
+		/// Gets the object-form options when this value was created from a Vue options record.
+		/// </summary>
+		public VueProps? AsOptions => _options;
+
+		public static implicit operator VueNamesOrOptions(string[] names)
+			=> new(names);
+
+		public static implicit operator VueNamesOrOptions(VueProps options)
+			=> new(options);
+
+		IEnumerator<string> IEnumerable<string>.GetEnumerator()
+			=> ((IEnumerable<string>)(_names ?? Array.Empty<string>())).GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator()
+			=> ((IEnumerable<string>)this).GetEnumerator();
+	}
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public static class VueNamesOrOptionsCollectionBuilder
+	{
+		public static VueNamesOrOptions Create(ReadOnlySpan<string> items)
+			=> items.ToArray();
 	}
 
 	/// <summary>
@@ -178,7 +237,7 @@ public static partial class Vue3
 	/// <summary>
 	/// String-keyed object-form emits registry for no-payload validators.
 	/// For plain event declarations without validators, prefer the existing
-	/// array-form <c>EmitNames</c> surface.
+	/// array-form <c>Emits</c> surface.
 	/// </summary>
 	[ECMAScript]
 	[Description("@#")]
@@ -360,13 +419,13 @@ public static partial class Vue3
 		/// Standard <c>minlength</c> attribute.
 		/// </summary>
 		[Description("@#minlength")]
-		public int? MinLength { get; init; }
+		public int? Minlength { get; init; }
 
 		/// <summary>
 		/// Standard <c>maxlength</c> attribute.
 		/// </summary>
 		[Description("@#maxlength")]
-		public int? MaxLength { get; init; }
+		public int? Maxlength { get; init; }
 
 		/// <summary>
 		/// Standard <c>pattern</c> attribute.
@@ -408,13 +467,13 @@ public static partial class Vue3
 		/// Standard <c>autocomplete</c> attribute.
 		/// </summary>
 		[Description("@#autocomplete")]
-		public string? AutoComplete { get; init; }
+		public string? Autocomplete { get; init; }
 
 		/// <summary>
 		/// Standard <c>autofocus</c> attribute.
 		/// </summary>
 		[Description("@#autofocus")]
-		public bool? AutoFocus { get; init; }
+		public bool? Autofocus { get; init; }
 
 		/// <summary>
 		/// Standard <c>disabled</c> attribute.
@@ -432,7 +491,7 @@ public static partial class Vue3
 		/// Standard <c>readonly</c> attribute.
 		/// </summary>
 		[Description("@#readonly")]
-		public bool? ReadOnly { get; init; }
+		public bool? Readonly { get; init; }
 
 		/// <summary>
 		/// Standard <c>required</c> attribute.
@@ -456,7 +515,7 @@ public static partial class Vue3
 		/// Standard <c>tabindex</c> attribute.
 		/// </summary>
 		[Description("@#tabindex")]
-		public int? TabIndex { get; init; }
+		public int? Tabindex { get; init; }
 
 		/// <summary>
 		/// Standard <c>role</c> attribute.
