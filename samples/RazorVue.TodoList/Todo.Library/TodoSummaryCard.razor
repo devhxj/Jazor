@@ -1,0 +1,14 @@
+<VCard>
+    <VCardTitle Text="Overview" />
+    <VCardText>
+        <VList Density="compact">
+            <VListItem Title="All tasks" Subtitle="@TotalLabel" />
+            <VListItem Title="Completed" Subtitle="@CompletedLabel" />
+            <VListItem Title="Open" Subtitle="@OpenLabel" />
+            @if (PinnedCount > 0)
+            {
+                <VListItem Title="Pinned" Subtitle="@PinnedLabel" />
+            }
+        </VList>
+    </VCardText>
+</VCard>

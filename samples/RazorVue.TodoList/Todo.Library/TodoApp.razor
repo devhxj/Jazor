@@ -1,0 +1,88 @@
+<VContainer Fluid="true">
+    <VRow Justify="center">
+        <VCol Cols="12" Md="10" Lg="8">
+            <VCard>
+                <VCardTitle Text="RazorVue Todo Workspace" />
+                <VCardText>
+                    <VRow>
+                        <VCol Cols="12" Md="8">
+                            <VTextField Label="New task title"
+                                        ModelValue="@DraftTitle"
+                                        ModelValueChanged="@DraftTitleChanged" />
+                        </VCol>
+                        <VCol Cols="12" Md="4">
+                            <VTextField Label="Category"
+                                        ModelValue="@DraftCategory"
+                                        ModelValueChanged="@DraftCategoryChanged" />
+                        </VCol>
+                    </VRow>
+
+                    <VRow>
+                        <VCol Cols="12" Md="4">
+                            <VCheckbox Label="Create pinned task"
+                                       ModelValue="@DraftPinned"
+                                       ModelValueChanged="@DraftPinnedChanged" />
+                        </VCol>
+                        <VCol Cols="12" Md="4">
+                            <VSwitch Label="Show completed"
+                                     ModelValue="@ShowCompleted"
+                                     ModelValueChanged="@ShowCompletedChanged" />
+                        </VCol>
+                        <VCol Cols="12" Md="4">
+                            <VBtn Text="Add task"
+                                  OnClick="@AddTask" />
+                        </VCol>
+                    </VRow>
+
+                    @if (!string.IsNullOrWhiteSpace(StatusMessage))
+                    {
+                        <p>@StatusMessage</p>
+                    }
+                </VCardText>
+            </VCard>
+        </VCol>
+    </VRow>
+
+    <VRow Justify="center">
+        <VCol Cols="12" Md="10" Lg="8">
+            <TodoSummaryCard TotalCount="@Tasks.Length"
+                             CompletedCount="@CompletedCount"
+                             OpenCount="@OpenCount"
+                             PinnedCount="@PinnedCount" />
+        </VCol>
+    </VRow>
+
+    <VRow Justify="center">
+        <VCol Cols="12" Md="10" Lg="8">
+            <VCard>
+                <VCardTitle Text="Tasks" />
+                <VCardText>
+                    @if (VisibleTasks.Length == 0)
+                    {
+                        <p>No tasks match the current filter.</p>
+                    }
+                    else
+                    {
+                        <VList Density="comfortable">
+                            @foreach (var item in VisibleTasks)
+                            {
+                                <VListItem Title="@item.Title"
+                                           Subtitle="@BuildSubtitle(item)">
+                                    <VCheckbox Label="Done"
+                                               ModelValue="@item.IsDone"
+                                               ModelValueChanged="@CreateDoneChanged(item.Id)" />
+                                    @if (item.IsPinned)
+                                    {
+                                        <VChip Text="Pinned" Color="primary" />
+                                    }
+                                    <VBtn Text="@BuildPinButtonText(item)"
+                                          OnClick="@CreatePinToggle(item.Id)" />
+                                </VListItem>
+                            }
+                        </VList>
+                    }
+                </VCardText>
+            </VCard>
+        </VCol>
+    </VRow>
+</VContainer>

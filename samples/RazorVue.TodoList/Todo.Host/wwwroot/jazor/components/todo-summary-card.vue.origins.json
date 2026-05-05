@@ -1,0 +1,22 @@
+{
+  "componentId": "Todo.Library.TodoSummaryCard",
+  "moduleId": "components/todo-summary-card.vue",
+  "componentName": "TodoSummaryCard",
+  "relativeSfcPath": "components/todo-summary-card.vue",
+  "descriptorHash": "2003525C5D1C81A9C813986767DAE13B9F79052900E31F3F84085D1D4CA3F193",
+  "templateHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+  "logicHash": "F46C300B59C7ACE0610576700FCA047879CA82A1F3313678482D01CCBE791DCD",
+  "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+  "templateBlock": {
+    "textLength": 0,
+    "origins": []
+  },
+  "scriptSetupBlock": {
+    "language": "ts",
+    "textLength": 142,
+    "origins": []
+  },
+  "styleBlocks": [],
+  "customBlocks": [],
+  "origins": []
+}

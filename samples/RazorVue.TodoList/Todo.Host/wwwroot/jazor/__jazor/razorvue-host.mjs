@@ -1,0 +1,12 @@
+export const razorVueHostAssemblyName = "Todo.Host";
+export const razorVueHostGeneratedAtUtc = "2026-05-05T14:13:14.8108338Z";
+export const razorVueStyles = Object.freeze([]);
+export const razorVuePluginRequirements = Object.freeze([]);
+export const razorVueHostModules = Object.freeze([{"assemblyName":"Todo.Host","componentId":"Todo.Library.TodoApp","moduleId":"components/todo-app.vue","componentName":"TodoApp","relativeModulePath":"components/todo-app.vue","sourceMapPath":"components/todo-app.vue.map","originMapPath":"components/todo-app.vue.origins.json","styles":[],"pluginRequirements":[],"descriptorHash":"0AE1F2C84A169A9F4906AD6DDBB48655197EF973D537744DB931B98805632B80","templateHash":"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855","logicHash":"3254C9642B8D178243BD5AF6B85487F9AE56790FC588DCB3AE474872FBEA0FAB","contentHash":"65969AD7B45C6179A1360D9463EF3F11B8FD415C530B4A713728596C20FAA2B3","styleHash":"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855","hmrBoundaryKind":0,"requiresHydration":false,"supportsSsr":true},{"assemblyName":"Todo.Host","componentId":"Todo.Library.TodoSummaryCard","moduleId":"components/todo-summary-card.vue","componentName":"TodoSummaryCard","relativeModulePath":"components/todo-summary-card.vue","sourceMapPath":"components/todo-summary-card.vue.map","originMapPath":"components/todo-summary-card.vue.origins.json","styles":[],"pluginRequirements":[],"descriptorHash":"2003525C5D1C81A9C813986767DAE13B9F79052900E31F3F84085D1D4CA3F193","templateHash":"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855","logicHash":"F46C300B59C7ACE0610576700FCA047879CA82A1F3313678482D01CCBE791DCD","contentHash":"8D05992B642AC750DA75C2548173AAB6E605B2BF4A78FD9AB512DD6C078B81C1","styleHash":"E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855","hmrBoundaryKind":0,"requiresHydration":false,"supportsSsr":true}]);
+export const razorVueHostRequirements = Object.freeze({
+  assemblyName: razorVueHostAssemblyName,
+  generatedAtUtc: razorVueHostGeneratedAtUtc,
+  styles: razorVueStyles,
+  pluginRequirements: razorVuePluginRequirements,
+  modules: razorVueHostModules
+});

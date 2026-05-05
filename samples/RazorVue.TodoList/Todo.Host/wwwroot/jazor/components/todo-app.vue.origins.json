@@ -1,0 +1,22 @@
+{
+  "componentId": "Todo.Library.TodoApp",
+  "moduleId": "components/todo-app.vue",
+  "componentName": "TodoApp",
+  "relativeSfcPath": "components/todo-app.vue",
+  "descriptorHash": "0AE1F2C84A169A9F4906AD6DDBB48655197EF973D537744DB931B98805632B80",
+  "templateHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+  "logicHash": "3254C9642B8D178243BD5AF6B85487F9AE56790FC588DCB3AE474872FBEA0FAB",
+  "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+  "templateBlock": {
+    "textLength": 0,
+    "origins": []
+  },
+  "scriptSetupBlock": {
+    "language": "ts",
+    "textLength": 67,
+    "origins": []
+  },
+  "styleBlocks": [],
+  "customBlocks": [],
+  "origins": []
+}
