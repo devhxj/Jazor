@@ -5,6 +5,7 @@ using Jazor.RazorVue.Analysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -666,6 +667,104 @@ public sealed class ESGeneratorTests
         StringAssert.Contains(generatedSource, "CounterCard");
         StringAssert.Contains(generatedSource, "defineComponent");
         StringAssert.Contains(generatedSource, "h(\\\"section\\\", { \\\"data-count\\\": props.value }, props.value)");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSfcOutputMode_EmitsVueSfcCatalog()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Sfc.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.ModuleCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "RelativeSfcPath");
+        StringAssert.Contains(generatedSource, "components/counter-card.vue");
+        StringAssert.Contains(generatedSource, "<script setup lang=\\\"ts\\\">");
+        StringAssert.Contains(generatedSource, "defineProps");
+        StringAssert.Contains(generatedSource, "GeneratedTemplateBlock");
+        StringAssert.Contains(generatedSource, "GeneratedOriginKind.Template");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithInvalidRazorVueOutputMode_ReportsJAZORVGA016()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.InvalidOutputMode.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "broken-mode");
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA016")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "broken-mode");
     }
 
     [TestMethod]
@@ -10134,7 +10233,7 @@ public sealed class ESGeneratorTests
         return (outputCompilation, runResult);
     }
 
-    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(Compilation compilation)
+    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(Compilation compilation, string? razorVueOutputMode = null)
     {
         ISourceGenerator[] generators =
         [
@@ -10142,10 +10241,45 @@ public sealed class ESGeneratorTests
             new RazorVueGenerator().AsSourceGenerator()
         ];
 
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators,
+            additionalTexts: null,
+            parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options,
+            optionsProvider: CreateAnalyzerConfigOptionsProvider(razorVueOutputMode),
+            driverOptions: default);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
 
         var runResult = driver.GetRunResult();
         return (outputCompilation, runResult);
+    }
+
+    private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string? razorVueOutputMode)
+        => new TestAnalyzerConfigOptionsProvider(razorVueOutputMode is null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["build_property.JazorRazorVueOutputMode"] = razorVueOutputMode
+            });
+
+    private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
+    {
+        private readonly AnalyzerConfigOptions _globalOptions = new TestAnalyzerConfigOptions(globalOptions);
+        private static readonly AnalyzerConfigOptions EmptyOptions = new TestAnalyzerConfigOptions(new Dictionary<string, string>(StringComparer.Ordinal));
+
+        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree)
+            => EmptyOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)
+            => EmptyOptions;
+    }
+
+    private sealed class TestAnalyzerConfigOptions(IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptions
+    {
+        private readonly IReadOnlyDictionary<string, string> _values = values;
+
+        public override bool TryGetValue(string key, out string value)
+            => _values.TryGetValue(key, out value!);
     }
 }

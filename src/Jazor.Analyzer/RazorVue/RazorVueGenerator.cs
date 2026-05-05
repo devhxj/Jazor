@@ -12,6 +12,8 @@ namespace Jazor.RazorVue.Analysis;
 [Generator]
 public sealed class RazorVueGenerator : IIncrementalGenerator
 {
+    private const string RazorVueOutputModePropertyName = "build_property.JazorRazorVueOutputMode";
+
     private static readonly DiagnosticDescriptor RazorVueGenerationFailed = new(
         id: "JAZORVGA001",
         title: "RazorVue catalog generation failed",
@@ -132,6 +134,14 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueInvalidOutputMode = new(
+        id: "JAZORVGA016",
+        title: "RazorVue output mode is invalid",
+        messageFormat: "Unsupported RazorVue output mode '{0}'. Supported values: legacy, sfc.",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -140,11 +150,20 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             transform: static (syntaxContext, _) => CreateCandidate(syntaxContext))
             .Where(static candidate => candidate is not null);
 
-        var combined = context.CompilationProvider.Combine(componentCandidates.Collect());
+        var outputMode = context.AnalyzerConfigOptionsProvider
+            .Select(static (optionsProvider, _) =>
+                optionsProvider.GlobalOptions.TryGetValue(RazorVueOutputModePropertyName, out var value)
+                    ? value
+                    : null);
+
+        var combined = context.CompilationProvider
+            .Combine(componentCandidates.Collect())
+            .Combine(outputMode);
+
         context.RegisterSourceOutput(combined, static (outputContext, source) =>
         {
-            var (compilation, candidates) = source;
-            EmitRazorVueCatalog(outputContext, compilation, candidates);
+            var ((compilation, candidates), outputModeText) = source;
+            EmitRazorVueCatalog(outputContext, compilation, candidates, outputModeText);
         });
     }
 
@@ -162,7 +181,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private static void EmitRazorVueCatalog(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<ModuleCandidate?> candidates)
+        ImmutableArray<ModuleCandidate?> candidates,
+        string? outputModeText)
     {
         var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
         if (razorVueContext is null)
@@ -178,15 +198,40 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             // Keep generator diagnostics aligned with the analyzer by validating
             // descriptor-only library stubs before any consuming component resolves them.
             _ = razorVueContext.DiscoverLibraryComponents();
-            var catalog = new RazorVuePipeline().Execute(compilation);
-            if (catalog.Artifacts.IsDefaultOrEmpty)
-                return;
+            switch (ResolveOutputMode(outputModeText))
+            {
+                case RazorVueGeneratorOutputMode.Legacy:
+                {
+                    var catalog = new RazorVuePipeline().Execute(compilation);
+                    if (catalog.Artifacts.IsDefaultOrEmpty)
+                        return;
 
-            context.AddSource("Jazor.Generated.RazorVueCatalog.g.cs", BuildRazorVueCatalogSource(catalog));
+                    context.AddSource("Jazor.Generated.RazorVueCatalog.g.cs", BuildRazorVueCatalogSource(catalog));
+                    return;
+                }
+                case RazorVueGeneratorOutputMode.Sfc:
+                {
+                    var catalog = new RazorVueSfcPipeline().Execute(compilation);
+                    if (catalog.Artifacts.IsDefaultOrEmpty)
+                        return;
+
+                    context.AddSource("Jazor.Generated.RazorVueCatalog.g.cs", BuildRazorVueSfcCatalogSource(catalog));
+                    return;
+                }
+                default:
+                    throw new InvalidOperationException("Unhandled RazorVue output mode.");
+            }
         }
         catch (RazorVueCompilationIssueException issueException)
         {
             context.ReportDiagnostic(CreateCompilationIssueDiagnostic(issueException, candidate));
+        }
+        catch (InvalidRazorVueOutputModeException outputModeException)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                RazorVueInvalidOutputMode,
+                candidate?.Location ?? Location.None,
+                outputModeException.Mode));
         }
         catch (NotSupportedException ex) when (TryCreateUnsupportedSetupLogicIssueException(ex, candidate, out var issueException))
         {
@@ -224,10 +269,27 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             RazorVueIssueCode.SlotContextMisuse => RazorVueSlotContextMisuse,
             RazorVueIssueCode.DuplicateSlotValue => RazorVueDuplicateSlotValue,
             RazorVueIssueCode.MissingSlotValue => RazorVueMissingSlotValue,
+            RazorVueIssueCode.CanonicalizationFailed => RazorVueGenerationFailed,
+            RazorVueIssueCode.UnsupportedTemplateEncoding => RazorVueGenerationFailed,
             _ => RazorVueGenerationFailed
         };
         var location = TryCreateLocation(issueException.Origin) ?? candidate?.Location ?? Location.None;
         return Diagnostic.Create(descriptor, location, issueException.Issue.Message);
+    }
+
+    private static RazorVueGeneratorOutputMode ResolveOutputMode(string? modeText)
+    {
+        if (string.IsNullOrWhiteSpace(modeText))
+        {
+            return RazorVueGeneratorOutputMode.Legacy;
+        }
+
+        if (string.Equals(modeText, "legacy", StringComparison.OrdinalIgnoreCase))
+            return RazorVueGeneratorOutputMode.Legacy;
+        if (string.Equals(modeText, "sfc", StringComparison.OrdinalIgnoreCase))
+            return RazorVueGeneratorOutputMode.Sfc;
+
+        throw new InvalidRazorVueOutputModeException(modeText ?? string.Empty);
     }
 
     private static bool TryCreateUnsupportedSetupLogicIssueException(
@@ -467,6 +529,393 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
+    private static string BuildRazorVueSfcCatalogSource(RazorVueSfcCatalog catalog)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("// <auto-generated/>");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine("namespace Jazor.Generated");
+        builder.AppendLine("{");
+        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("    public static partial class RazorVueCatalog");
+        builder.AppendLine("    {");
+        builder.Append("        public static string AssemblyName { get; } = ");
+        builder.Append(EscapeCSharpString(catalog.AssemblyName));
+        builder.AppendLine(";");
+        builder.AppendLine();
+        builder.AppendLine("        public static global::System.Collections.IEnumerable GetArtifacts()");
+        builder.AppendLine("        {");
+        builder.AppendLine("            return _artifacts;");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedArtifact");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedArtifact(string componentName, string relativeSfcPath, string sfcText, GeneratedTemplateBlock templateBlock, GeneratedScriptSetupBlock scriptSetupBlock, GeneratedStyleBlock[] styleBlocks, GeneratedCustomBlock[] customBlocks, string[] imports, string[] styles, string[] pluginRequirements, GeneratedIdentity identity, GeneratedHints hints, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                ComponentName = componentName;");
+        builder.AppendLine("                RelativeSfcPath = relativeSfcPath;");
+        builder.AppendLine("                SfcText = sfcText;");
+        builder.AppendLine("                TemplateBlock = templateBlock;");
+        builder.AppendLine("                ScriptSetupBlock = scriptSetupBlock;");
+        builder.AppendLine("                StyleBlocks = styleBlocks;");
+        builder.AppendLine("                CustomBlocks = customBlocks;");
+        builder.AppendLine("                Imports = imports;");
+        builder.AppendLine("                Styles = styles;");
+        builder.AppendLine("                PluginRequirements = pluginRequirements;");
+        builder.AppendLine("                Identity = identity;");
+        builder.AppendLine("                Hints = hints;");
+        builder.AppendLine("                SourceOrigins = sourceOrigins;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string ComponentName { get; }");
+        builder.AppendLine("            public string RelativeSfcPath { get; }");
+        builder.AppendLine("            public string SfcText { get; }");
+        builder.AppendLine("            public GeneratedTemplateBlock TemplateBlock { get; }");
+        builder.AppendLine("            public GeneratedScriptSetupBlock ScriptSetupBlock { get; }");
+        builder.AppendLine("            public GeneratedStyleBlock[] StyleBlocks { get; }");
+        builder.AppendLine("            public GeneratedCustomBlock[] CustomBlocks { get; }");
+        builder.AppendLine("            public string[] Imports { get; }");
+        builder.AppendLine("            public string[] Styles { get; }");
+        builder.AppendLine("            public string[] PluginRequirements { get; }");
+        builder.AppendLine("            public GeneratedIdentity Identity { get; }");
+        builder.AppendLine("            public GeneratedHints Hints { get; }");
+        builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedTemplateBlock");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedTemplateBlock(string text, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                Text = text;");
+        builder.AppendLine("                SourceOrigins = sourceOrigins;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string Text { get; }");
+        builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedScriptSetupBlock");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedScriptSetupBlock(string text, string? language, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                Text = text;");
+        builder.AppendLine("                Language = language;");
+        builder.AppendLine("                SourceOrigins = sourceOrigins;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string Text { get; }");
+        builder.AppendLine("            public string? Language { get; }");
+        builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedStyleBlock");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedStyleBlock(string text, bool isScoped, string? moduleName, string? language, string? sourceFilePath, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                Text = text;");
+        builder.AppendLine("                IsScoped = isScoped;");
+        builder.AppendLine("                ModuleName = moduleName;");
+        builder.AppendLine("                Language = language;");
+        builder.AppendLine("                SourceFilePath = sourceFilePath;");
+        builder.AppendLine("                SourceOrigins = sourceOrigins;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string Text { get; }");
+        builder.AppendLine("            public bool IsScoped { get; }");
+        builder.AppendLine("            public string? ModuleName { get; }");
+        builder.AppendLine("            public string? Language { get; }");
+        builder.AppendLine("            public string? SourceFilePath { get; }");
+        builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedCustomBlock");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedCustomBlock(string name, string text, string? language, GeneratedAttribute[] attributes, string? sourceFilePath, GeneratedOrigin[] sourceOrigins)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                Name = name;");
+        builder.AppendLine("                Text = text;");
+        builder.AppendLine("                Language = language;");
+        builder.AppendLine("                Attributes = attributes;");
+        builder.AppendLine("                SourceFilePath = sourceFilePath;");
+        builder.AppendLine("                SourceOrigins = sourceOrigins;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string Name { get; }");
+        builder.AppendLine("            public string Text { get; }");
+        builder.AppendLine("            public string? Language { get; }");
+        builder.AppendLine("            public GeneratedAttribute[] Attributes { get; }");
+        builder.AppendLine("            public string? SourceFilePath { get; }");
+        builder.AppendLine("            public GeneratedOrigin[] SourceOrigins { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedAttribute");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedAttribute(string name, string? value)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                Name = name;");
+        builder.AppendLine("                Value = value;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string Name { get; }");
+        builder.AppendLine("            public string? Value { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedIdentity");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedIdentity(string componentId, string moduleId, string descriptorHash, string templateHash, string logicHash, string styleHash, GeneratedHmrBoundaryKind hmrBoundaryKind)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                ComponentId = componentId;");
+        builder.AppendLine("                ModuleId = moduleId;");
+        builder.AppendLine("                DescriptorHash = descriptorHash;");
+        builder.AppendLine("                TemplateHash = templateHash;");
+        builder.AppendLine("                LogicHash = logicHash;");
+        builder.AppendLine("                StyleHash = styleHash;");
+        builder.AppendLine("                HmrBoundaryKind = hmrBoundaryKind;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public string ComponentId { get; }");
+        builder.AppendLine("            public string ModuleId { get; }");
+        builder.AppendLine("            public string DescriptorHash { get; }");
+        builder.AppendLine("            public string TemplateHash { get; }");
+        builder.AppendLine("            public string LogicHash { get; }");
+        builder.AppendLine("            public string StyleHash { get; }");
+        builder.AppendLine("            public GeneratedHmrBoundaryKind HmrBoundaryKind { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedHints");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedHints(bool requiresVueRuntime, bool requiresHydration, bool supportsSsr, bool usesTeleport, bool usesSuspense, bool usesKeepAlive)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                RequiresVueRuntime = requiresVueRuntime;");
+        builder.AppendLine("                RequiresHydration = requiresHydration;");
+        builder.AppendLine("                SupportsSsr = supportsSsr;");
+        builder.AppendLine("                UsesTeleport = usesTeleport;");
+        builder.AppendLine("                UsesSuspense = usesSuspense;");
+        builder.AppendLine("                UsesKeepAlive = usesKeepAlive;");
+        builder.AppendLine("            }");
+        builder.AppendLine();
+        builder.AppendLine("            public bool RequiresVueRuntime { get; }");
+        builder.AppendLine("            public bool RequiresHydration { get; }");
+        builder.AppendLine("            public bool SupportsSsr { get; }");
+        builder.AppendLine("            public bool UsesTeleport { get; }");
+        builder.AppendLine("            public bool UsesSuspense { get; }");
+        builder.AppendLine("            public bool UsesKeepAlive { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("        private sealed class GeneratedOrigin");
+        builder.AppendLine("        {");
+        builder.AppendLine("            public GeneratedOrigin(GeneratedOriginKind originKind, string sourceFilePath, int sourceSpanStart, int sourceSpanLength, string? generatedFilePath, int? generatedSpanStart, int? generatedSpanLength, int startLine, int startColumn, GeneratedMappingQuality mappingQuality, GeneratedOriginProvenance provenance)");
+        builder.AppendLine("            {");
+        builder.AppendLine("                OriginKind = originKind;");
+        builder.AppendLine("                SourceFilePath = sourceFilePath;");
+        builder.AppendLine("                SourceSpanStart = sourceSpanStart;");
+        builder.AppendLine("                SourceSpanLength = sourceSpanLength;");
+        builder.AppendLine("                GeneratedFilePath = generatedFilePath;");
+        builder.AppendLine("                GeneratedSpanStart = generatedSpanStart;");
+        builder.AppendLine("                GeneratedSpanLength = generatedSpanLength;");
+        builder.AppendLine("                StartLine = startLine;");
+        builder.AppendLine("                StartColumn = startColumn;");
+        builder.AppendLine("                MappingQuality = mappingQuality;");
+        builder.AppendLine("                Provenance = provenance;");
+        builder.AppendLine("            }");
+        builder.AppendLine("            public GeneratedOriginKind OriginKind { get; }");
+        builder.AppendLine("            public string SourceFilePath { get; }");
+        builder.AppendLine("            public int SourceSpanStart { get; }");
+        builder.AppendLine("            public int SourceSpanLength { get; }");
+        builder.AppendLine("            public string? GeneratedFilePath { get; }");
+        builder.AppendLine("            public int? GeneratedSpanStart { get; }");
+        builder.AppendLine("            public int? GeneratedSpanLength { get; }");
+        builder.AppendLine("            public int StartLine { get; }");
+        builder.AppendLine("            public int StartColumn { get; }");
+        builder.AppendLine("            public GeneratedMappingQuality MappingQuality { get; }");
+        builder.AppendLine("            public GeneratedOriginProvenance Provenance { get; }");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private enum GeneratedHmrBoundaryKind");
+        builder.AppendLine("        {");
+        builder.AppendLine("            Unknown,");
+        builder.AppendLine("            TemplateOnly,");
+        builder.AppendLine("            LogicSafe,");
+        builder.AppendLine("            FullReloadRequired");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private enum GeneratedOriginKind");
+        builder.AppendLine("        {");
+        builder.AppendLine("            Component,");
+        builder.AppendLine("            Descriptor,");
+        builder.AppendLine("            Template,");
+        builder.AppendLine("            Logic,");
+        builder.AppendLine("            GeneratedRender,");
+        builder.AppendLine("            Style,");
+        builder.AppendLine("            CustomBlock");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private enum GeneratedMappingQuality");
+        builder.AppendLine("        {");
+        builder.AppendLine("            ExactSource,");
+        builder.AppendLine("            MappedFromGenerated,");
+        builder.AppendLine("            GeneratedOnly");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private enum GeneratedOriginProvenance");
+        builder.AppendLine("        {");
+        builder.AppendLine("            RazorSourceMap,");
+        builder.AppendLine("            GeneratedSyntaxLocation,");
+        builder.AppendLine("            GeneratedFallback");
+        builder.AppendLine("        }");
+        builder.AppendLine();
+        builder.AppendLine("        private static readonly GeneratedArtifact[] _artifacts = new GeneratedArtifact[]");
+        builder.AppendLine("        {");
+
+        foreach (var artifact in catalog.Artifacts)
+        {
+            builder.AppendLine("            new GeneratedArtifact(");
+            builder.Append("                componentName: ").Append(EscapeCSharpString(artifact.ComponentName)).AppendLine(",");
+            builder.Append("                relativeSfcPath: ").Append(EscapeCSharpString(artifact.RelativeSfcPath)).AppendLine(",");
+            builder.Append("                sfcText: ").Append(EscapeCSharpString(artifact.SfcText)).AppendLine(",");
+            builder.Append("                templateBlock: ").Append(BuildTemplateBlockLiteral(artifact.TemplateBlock)).AppendLine(",");
+            builder.Append("                scriptSetupBlock: ").Append(BuildScriptSetupBlockLiteral(artifact.ScriptSetupBlock)).AppendLine(",");
+            builder.Append("                styleBlocks: ").Append(BuildStyleBlocksArrayLiteral(artifact.StyleBlocks)).AppendLine(",");
+            builder.Append("                customBlocks: ").Append(BuildCustomBlocksArrayLiteral(artifact.CustomBlocks)).AppendLine(",");
+            builder.Append("                imports: ").Append(BuildStringArrayLiteral(artifact.Imports)).AppendLine(",");
+            builder.Append("                styles: ").Append(BuildStringArrayLiteral(artifact.Styles)).AppendLine(",");
+            builder.Append("                pluginRequirements: ").Append(BuildStringArrayLiteral(artifact.PluginRequirements)).AppendLine(",");
+            builder.AppendLine("                identity: new GeneratedIdentity(");
+            builder.Append("                    componentId: ").Append(EscapeCSharpString(artifact.Identity.ComponentId)).AppendLine(",");
+            builder.Append("                    moduleId: ").Append(EscapeCSharpString(artifact.Identity.ModuleId)).AppendLine(",");
+            builder.Append("                    descriptorHash: ").Append(EscapeCSharpString(artifact.Identity.DescriptorHash)).AppendLine(",");
+            builder.Append("                    templateHash: ").Append(EscapeCSharpString(artifact.Identity.TemplateHash)).AppendLine(",");
+            builder.Append("                    logicHash: ").Append(EscapeCSharpString(artifact.Identity.LogicHash)).AppendLine(",");
+            builder.Append("                    styleHash: ").Append(EscapeCSharpString(artifact.Identity.StyleHash)).AppendLine(",");
+            builder.Append("                    hmrBoundaryKind: GeneratedHmrBoundaryKind.").Append(artifact.Identity.HmrBoundaryKind).AppendLine("),");
+            builder.AppendLine("                hints: new GeneratedHints(");
+            builder.Append("                    requiresVueRuntime: ").Append(ToCSharpBool(artifact.Hints.RequiresVueRuntime)).AppendLine(",");
+            builder.Append("                    requiresHydration: ").Append(ToCSharpBool(artifact.Hints.RequiresHydration)).AppendLine(",");
+            builder.Append("                    supportsSsr: ").Append(ToCSharpBool(artifact.Hints.SupportsSsr)).AppendLine(",");
+            builder.Append("                    usesTeleport: ").Append(ToCSharpBool(artifact.Hints.UsesTeleport)).AppendLine(",");
+            builder.Append("                    usesSuspense: ").Append(ToCSharpBool(artifact.Hints.UsesSuspense)).AppendLine(",");
+            builder.Append("                    usesKeepAlive: ").Append(ToCSharpBool(artifact.Hints.UsesKeepAlive)).AppendLine("),");
+            builder.Append("                sourceOrigins: ").Append(BuildSfcOriginsArrayLiteral(artifact.SourceOrigins)).AppendLine("),");
+        }
+
+        builder.AppendLine("        };");
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+        return builder.ToString();
+    }
+
+    private static string BuildTemplateBlockLiteral(VueSfcTemplateBlock block)
+        => "new GeneratedTemplateBlock(" + EscapeCSharpString(block.Text) + ", " + BuildSfcOriginsArrayLiteral(block.SourceOrigins) + ")";
+
+    private static string BuildScriptSetupBlockLiteral(VueSfcScriptSetupBlock block)
+        => "new GeneratedScriptSetupBlock(" + EscapeCSharpString(block.Text) + ", " + EscapeNullableCSharpString(block.Language) + ", " + BuildSfcOriginsArrayLiteral(block.SourceOrigins) + ")";
+
+    private static string BuildStyleBlocksArrayLiteral(ImmutableArray<VueSfcStyleBlock> blocks)
+    {
+        if (blocks.IsDefaultOrEmpty)
+            return "new GeneratedStyleBlock[0]";
+
+        var builder = new StringBuilder();
+        builder.AppendLine("new GeneratedStyleBlock[]");
+        builder.AppendLine("                {");
+        foreach (var block in blocks)
+        {
+            builder.Append("                    new GeneratedStyleBlock(")
+                .Append(EscapeCSharpString(block.Text)).Append(", ")
+                .Append(ToCSharpBool(block.IsScoped)).Append(", ")
+                .Append(EscapeNullableCSharpString(block.ModuleName)).Append(", ")
+                .Append(EscapeNullableCSharpString(block.Language)).Append(", ")
+                .Append(EscapeNullableCSharpString(block.SourceFilePath)).Append(", ")
+                .Append(BuildSfcOriginsArrayLiteral(block.SourceOrigins))
+                .AppendLine("),");
+        }
+
+        builder.Append("                }");
+        return builder.ToString();
+    }
+
+    private static string BuildCustomBlocksArrayLiteral(ImmutableArray<VueSfcCustomBlock> blocks)
+    {
+        if (blocks.IsDefaultOrEmpty)
+            return "new GeneratedCustomBlock[0]";
+
+        var builder = new StringBuilder();
+        builder.AppendLine("new GeneratedCustomBlock[]");
+        builder.AppendLine("                {");
+        foreach (var block in blocks)
+        {
+            builder.Append("                    new GeneratedCustomBlock(")
+                .Append(EscapeCSharpString(block.Name)).Append(", ")
+                .Append(EscapeCSharpString(block.Text)).Append(", ")
+                .Append(EscapeNullableCSharpString(block.Language)).Append(", ")
+                .Append(BuildAttributesArrayLiteral(block.Attributes)).Append(", ")
+                .Append(EscapeNullableCSharpString(block.SourceFilePath)).Append(", ")
+                .Append(BuildSfcOriginsArrayLiteral(block.SourceOrigins))
+                .AppendLine("),");
+        }
+
+        builder.Append("                }");
+        return builder.ToString();
+    }
+
+    private static string BuildAttributesArrayLiteral(ImmutableArray<VueSfcAttribute> attributes)
+    {
+        if (attributes.IsDefaultOrEmpty)
+            return "new GeneratedAttribute[0]";
+
+        var builder = new StringBuilder("new GeneratedAttribute[] { ");
+        for (var i = 0; i < attributes.Length; i++)
+        {
+            if (i > 0)
+                builder.Append(", ");
+            builder.Append("new GeneratedAttribute(")
+                .Append(EscapeCSharpString(attributes[i].Name))
+                .Append(", ")
+                .Append(EscapeNullableCSharpString(attributes[i].Value))
+                .Append(")");
+        }
+
+        builder.Append(" }");
+        return builder.ToString();
+    }
+
+    private static string BuildSfcOriginsArrayLiteral(ImmutableArray<RazorVueSourceOrigin> origins)
+    {
+        if (origins.IsDefaultOrEmpty)
+            return "new GeneratedOrigin[0]";
+
+        var builder = new StringBuilder();
+        builder.AppendLine("new GeneratedOrigin[]");
+        builder.AppendLine("                {");
+        foreach (var origin in origins)
+        {
+            builder.AppendLine("                    new GeneratedOrigin(");
+            builder.Append("                        originKind: GeneratedOriginKind.").Append(origin.OriginKind).AppendLine(",");
+            builder.Append("                        sourceFilePath: ").Append(EscapeCSharpString(origin.SourceFilePath)).AppendLine(",");
+            builder.Append("                        sourceSpanStart: ").Append(origin.SourceSpanStart).AppendLine(",");
+            builder.Append("                        sourceSpanLength: ").Append(origin.SourceSpanLength).AppendLine(",");
+            builder.Append("                        generatedFilePath: ").Append(EscapeNullableCSharpString(origin.GeneratedFilePath)).AppendLine(",");
+            builder.Append("                        generatedSpanStart: ").Append(ToNullableCSharpInt(origin.GeneratedSpanStart)).AppendLine(",");
+            builder.Append("                        generatedSpanLength: ").Append(ToNullableCSharpInt(origin.GeneratedSpanLength)).AppendLine(",");
+            builder.Append("                        startLine: ").Append(origin.StartLine).AppendLine(",");
+            builder.Append("                        startColumn: ").Append(origin.StartColumn).AppendLine(",");
+            builder.Append("                        mappingQuality: GeneratedMappingQuality.").Append(origin.MappingQuality).AppendLine(",");
+            builder.Append("                        provenance: GeneratedOriginProvenance.").Append(origin.Provenance).AppendLine("),");
+        }
+
+        builder.Append("                }");
+        return builder.ToString();
+    }
+
     private static string BuildOriginsArrayLiteral(ImmutableArray<RazorVueSourceOrigin> origins)
     {
         if (origins.IsDefaultOrEmpty)
@@ -549,4 +998,16 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private sealed record ModuleCandidate(
         INamedTypeSymbol ClassSymbol,
         Location Location);
+
+    private enum RazorVueGeneratorOutputMode
+    {
+        Legacy,
+        Sfc
+    }
+
+    private sealed class InvalidRazorVueOutputModeException(string mode)
+        : Exception($"Unsupported RazorVue output mode '{mode}'.")
+    {
+        public string Mode { get; } = mode;
+    }
 }

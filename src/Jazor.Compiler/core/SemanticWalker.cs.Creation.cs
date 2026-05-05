@@ -35,6 +35,9 @@ public partial class SemanticWalker
 		for (var index = 0; index < operation.Arguments.Length; index++)
 		{
 			var arg = operation.Arguments[index];
+			if (arg.ArgumentKind == ArgumentKind.DefaultValue &&
+				operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue))
+				continue;
 			var targetType = operation.Constructor?.Parameters.Length > index
 				? operation.Constructor.Parameters[index].Type
 				: arg.Parameter?.Type;
@@ -573,7 +576,7 @@ public partial class SemanticWalker
 		{
 			return HandleTransformationFailure<List<string>>(
 				originOperation,
-				$"[Emits] could not analyze the setup callback assigned in '{recordType.ToDisplayString(Format.NameFormat)}'. Use an inline lambda or a source-declared method group, or set EmitNames explicitly.");
+				$"[Emits] could not analyze the setup callback assigned in '{recordType.ToDisplayString(Format.NameFormat)}'. Use an inline lambda or a source-declared method group, or set Emits explicitly.");
 		}
 
 		if (emitContextParameter is null)
@@ -589,7 +592,7 @@ public partial class SemanticWalker
 			{
 				return HandleTransformationFailure<List<string>>(
 					originOperation,
-					$"[Emits] only supports direct setup-context member usage in '{recordType.ToDisplayString(Format.NameFormat)}'. If the context is passed around or aliased, set EmitNames explicitly.");
+					$"[Emits] only supports direct setup-context member usage in '{recordType.ToDisplayString(Format.NameFormat)}'. If the context is passed around or aliased, set Emits explicitly.");
 			}
 
 			if (operation is not IInvocationOperation invocation ||
@@ -605,7 +608,7 @@ public partial class SemanticWalker
 			{
 				return HandleTransformationFailure<List<string>>(
 					originOperation,
-					$"[Emits] requires literal non-empty event names in setup emit calls for '{recordType.ToDisplayString(Format.NameFormat)}'. Use context.Emit(\"event\") or set EmitNames explicitly.");
+					$"[Emits] requires literal non-empty event names in setup emit calls for '{recordType.ToDisplayString(Format.NameFormat)}'. Use context.Emit(\"event\") or set Emits explicitly.");
 			}
 
 			if (seen.Add(emitName))

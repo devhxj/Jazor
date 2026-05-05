@@ -52,8 +52,24 @@ static async Task<int> RunEmitAsync(string[] args)
 
         var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(options.ManifestPath);
         var razorVueWriteResult = WriteResult.Success(0, 0, 0);
-        if (collectResult.RazorVueArtifactCount > 0 ||
-            (options.Clean && File.Exists(razorVueManifestPath)))
+        if (collectResult.RazorVueSfcArtifactCount > 0)
+        {
+            var razorVueWriter = new RazorVueSfcModuleWriter();
+            razorVueWriteResult = razorVueWriter.Write(
+                options.RootAssemblyPath,
+                options.OutputDirectory,
+                razorVueManifestPath,
+                collectResult.RazorVueSfcCatalogs,
+                options.Clean);
+
+            if (!razorVueWriteResult.IsSuccess)
+            {
+                Console.Error.WriteLine(razorVueWriteResult.Error);
+                return razorVueWriteResult.ExitCode;
+            }
+        }
+        else if (collectResult.RazorVueArtifactCount > 0 ||
+                 (options.Clean && File.Exists(razorVueManifestPath)))
         {
             var razorVueWriter = new RazorVueModuleWriter();
             razorVueWriteResult = razorVueWriter.Write(
@@ -71,7 +87,7 @@ static async Task<int> RunEmitAsync(string[] args)
         }
 
         Console.WriteLine(
-            $"assemblies={collectResult.AssemblyCount} catalogs={collectResult.CatalogCount} razorvueCatalogs={collectResult.RazorVueCatalogCount} modules={collectResult.Modules.Count} razorvueArtifacts={collectResult.RazorVueArtifactCount} written={writeResult.Written + razorVueWriteResult.Written} skipped={writeResult.Skipped + razorVueWriteResult.Skipped} deleted={writeResult.Deleted + razorVueWriteResult.Deleted}");
+            $"assemblies={collectResult.AssemblyCount} catalogs={collectResult.CatalogCount} razorvueCatalogs={collectResult.RazorVueCatalogCount} razorvueSfcCatalogs={collectResult.RazorVueSfcCatalogCount} modules={collectResult.Modules.Count} razorvueArtifacts={collectResult.RazorVueArtifactCount} razorvueSfcArtifacts={collectResult.RazorVueSfcArtifactCount} written={writeResult.Written + razorVueWriteResult.Written} skipped={writeResult.Skipped + razorVueWriteResult.Skipped} deleted={writeResult.Deleted + razorVueWriteResult.Deleted}");
         return 0;
     }
     catch (Exception ex)

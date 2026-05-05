@@ -1,23 +1,27 @@
-using Jazor.Emit.SourceMaps;
-using Jazor.Common.SourceMaps;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Jazor.Common.SourceMaps;
+using Jazor.Emit.SourceMaps;
 
 namespace Jazor.Emit;
 
-internal sealed class RazorVueModuleWriter
+internal sealed class RazorVueSfcModuleWriter
 {
-    private const string HostRequirementsModuleRelativePath = "__jazor/razorvue-host.mjs";
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly SourceMapBuilder ModuleMapBuilder = new();
     private static readonly SourceMapWriter ModuleMapWriter = new();
-    private static readonly JsonSerializerOptions OriginJsonOptions = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions OriginJsonOptions = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     public WriteResult Write(
         string rootAssemblyPath,
         string outputDirectory,
         string manifestPath,
-        IReadOnlyList<RazorVueCatalogRecord> catalogs,
+        IReadOnlyList<RazorVueSfcCatalogRecord> catalogs,
         bool clean)
     {
         Directory.CreateDirectory(outputDirectory);
@@ -26,7 +30,7 @@ internal sealed class RazorVueModuleWriter
         var existingManifest = RazorVueManifestSerializer.TryLoad(manifestPath);
         var artifacts = catalogs
             .SelectMany(static catalog => catalog.Artifacts)
-            .OrderBy(static artifact => artifact.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static artifact => artifact.RelativeSfcPath, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static artifact => artifact.ComponentName, StringComparer.Ordinal)
             .ToArray();
 
@@ -34,31 +38,30 @@ internal sealed class RazorVueModuleWriter
         var skipped = 0;
         var deleted = 0;
 
-        var nextManifest = RazorVueManifestFactory.Create(rootAssemblyPath, catalogs);
-        var hostRequirementsModulePath = GetHostRequirementsModulePath(normalizedOutputDirectory);
+        var nextManifest = RazorVueSfcManifestFactory.Create(rootAssemblyPath, catalogs);
+        var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
 
         foreach (var artifact in artifacts)
         {
-            var targetPath = GetTargetPath(normalizedOutputDirectory, artifact.RelativeModulePath);
-            var mapPath = GetSourceMapPath(targetPath);
-            var originMapPath = GetOriginMapPath(targetPath);
+            var targetPath = GetTargetPath(normalizedOutputDirectory, artifact.RelativeSfcPath);
+            var mapPath = targetPath + ".map";
+            var originMapPath = targetPath + ".origins.json";
             var targetDirectory = Path.GetDirectoryName(targetPath);
             if (!string.IsNullOrEmpty(targetDirectory))
                 Directory.CreateDirectory(targetDirectory);
 
             var sourceMap = ModuleMapBuilder.BuildModuleMap(
-                artifact.RelativeModulePath,
-                artifact.ModuleCode,
-                artifact.SourceOrigins,
+                artifact.RelativeSfcPath,
+                artifact.SfcText,
+                artifact.SourceOrigins.Select(ToLegacyOrigin).ToArray(),
                 TryReadSourceContent);
-            var moduleCode = ModuleMapWriter.AppendSourceMappingUrl(artifact.ModuleCode, Path.GetFileName(mapPath));
             var mapJson = ModuleMapWriter.Write(sourceMap);
             var originJson = BuildOriginMapJson(artifact);
 
-            var moduleChanged = !File.Exists(targetPath)
-                || !string.Equals(File.ReadAllText(targetPath), moduleCode, StringComparison.Ordinal);
-            if (moduleChanged)
-                File.WriteAllText(targetPath, moduleCode, Utf8WithoutBom);
+            var artifactChanged = !File.Exists(targetPath)
+                || !string.Equals(File.ReadAllText(targetPath), artifact.SfcText, StringComparison.Ordinal);
+            if (artifactChanged)
+                File.WriteAllText(targetPath, artifact.SfcText, Utf8WithoutBom);
 
             var mapChanged = !File.Exists(mapPath)
                 || !string.Equals(File.ReadAllText(mapPath), mapJson, StringComparison.Ordinal);
@@ -70,7 +73,7 @@ internal sealed class RazorVueModuleWriter
             if (originChanged)
                 File.WriteAllText(originMapPath, originJson, Utf8WithoutBom);
 
-            if (moduleChanged || mapChanged || originChanged)
+            if (artifactChanged || mapChanged || originChanged)
                 written++;
             else
                 skipped++;
@@ -121,16 +124,18 @@ internal sealed class RazorVueModuleWriter
         return WriteResult.Success(written, skipped, deleted);
     }
 
-    public static string GetManifestPath(string baseManifestPath)
-    {
-        var directory = Path.GetDirectoryName(baseManifestPath) ?? string.Empty;
-        var fileName = Path.GetFileNameWithoutExtension(baseManifestPath);
-        var extension = Path.GetExtension(baseManifestPath);
-        return Path.Combine(directory, fileName + "-razorvue" + extension);
-    }
-
-    public static string GetHostRequirementsModulePath(string outputDirectory)
-        => GetTargetPath(EnsureDirectorySeparator(Path.GetFullPath(outputDirectory)), HostRequirementsModuleRelativePath);
+    private static RazorVueEmitSourceOriginRecord ToLegacyOrigin(RazorVueEmitSfcSourceOriginRecord origin)
+        => new(
+            origin.SourceFilePath,
+            origin.SourceSpanStart,
+            origin.SourceSpanLength,
+            origin.GeneratedFilePath,
+            origin.GeneratedSpanStart,
+            origin.GeneratedSpanLength,
+            origin.StartLine,
+            origin.StartColumn,
+            origin.MappingQuality,
+            origin.Provenance);
 
     private static string? TryReadSourceContent(string sourcePath)
     {
@@ -159,12 +164,6 @@ internal sealed class RazorVueModuleWriter
         }
     }
 
-    private static string GetSourceMapPath(string modulePath)
-        => modulePath + ".map";
-
-    private static string GetOriginMapPath(string modulePath)
-        => modulePath + ".origins.json";
-
     private static void DeleteIfExists(string path, ref int deleted)
     {
         if (!File.Exists(path))
@@ -189,14 +188,12 @@ internal sealed class RazorVueModuleWriter
 
     private static string BuildHostRequirementsModule(RazorVueManifestModel manifest)
     {
-        var assemblyNameLiteral = System.Text.Json.JsonSerializer.Serialize(manifest.AssemblyName);
-        var generatedAtUtcLiteral = System.Text.Json.JsonSerializer.Serialize(manifest.GeneratedAtUtc.ToString("O"));
+        var assemblyNameLiteral = JsonSerializer.Serialize(manifest.AssemblyName);
+        var generatedAtUtcLiteral = JsonSerializer.Serialize(manifest.GeneratedAtUtc.ToString("O"));
         var stylesLiteral = BuildStringArrayLiteral(manifest.Styles ?? []);
         var modulesLiteral = BuildHostModulesLiteral(manifest.Modules);
         var pluginRequirementsLiteral = BuildStringArrayLiteral(manifest.PluginRequirements ?? []);
 
-        // Keep unbundled host metadata on the same explicit contract shape the bundle
-        // sidecars expose, so host consumers do not need separate parsing branches.
         return $$"""
         export const razorVueHostAssemblyName = {{assemblyNameLiteral}};
         export const razorVueHostGeneratedAtUtc = {{generatedAtUtcLiteral}};
@@ -214,7 +211,7 @@ internal sealed class RazorVueModuleWriter
     }
 
     private static string BuildHostModulesLiteral(IReadOnlyList<RazorVueManifestEntry> modules)
-        => System.Text.Json.JsonSerializer.Serialize(
+        => JsonSerializer.Serialize(
             modules.Select(static module => new
             {
                 assemblyName = module.AssemblyName,
@@ -237,29 +234,70 @@ internal sealed class RazorVueModuleWriter
             }));
 
     private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
-        => "[" + string.Join(", ", values.Select(static value => System.Text.Json.JsonSerializer.Serialize(value))) + "]";
+        => "[" + string.Join(", ", values.Select(static value => JsonSerializer.Serialize(value))) + "]";
 
-    private static string BuildOriginMapJson(RazorVueEmitArtifactRecord artifact)
+    private static string BuildOriginMapJson(RazorVueEmitSfcArtifactRecord artifact)
         => JsonSerializer.Serialize(
             new
             {
                 componentId = artifact.Identity.ComponentId,
                 moduleId = artifact.Identity.ModuleId,
                 componentName = artifact.ComponentName,
-                relativeModulePath = artifact.RelativeModulePath,
-                origins = artifact.SourceOrigins.Select(static origin => new
+                relativeSfcPath = artifact.RelativeSfcPath,
+                descriptorHash = artifact.Identity.DescriptorHash,
+                templateHash = artifact.Identity.TemplateHash,
+                logicHash = artifact.Identity.LogicHash,
+                styleHash = artifact.Identity.StyleHash,
+                templateBlock = new
                 {
-                    sourceFilePath = origin.SourceFilePath,
-                    sourceSpanStart = origin.SourceSpanStart,
-                    sourceSpanLength = origin.SourceSpanLength,
-                    generatedFilePath = origin.GeneratedFilePath,
-                    generatedSpanStart = origin.GeneratedSpanStart,
-                    generatedSpanLength = origin.GeneratedSpanLength,
-                    startLine = origin.StartLine,
-                    startColumn = origin.StartColumn,
-                    mappingQuality = origin.MappingQuality,
-                    provenance = origin.Provenance
-                })
+                    textLength = artifact.TemplateBlock.Text.Length,
+                    origins = artifact.TemplateBlock.SourceOrigins.Select(ToOriginJsonModel).ToArray()
+                },
+                scriptSetupBlock = new
+                {
+                    language = artifact.ScriptSetupBlock.Language,
+                    textLength = artifact.ScriptSetupBlock.Text.Length,
+                    origins = artifact.ScriptSetupBlock.SourceOrigins.Select(ToOriginJsonModel).ToArray()
+                },
+                styleBlocks = artifact.StyleBlocks.Select(static block => new
+                {
+                    isScoped = block.IsScoped,
+                    moduleName = block.ModuleName,
+                    language = block.Language,
+                    sourceFilePath = block.SourceFilePath,
+                    textLength = block.Text.Length,
+                    origins = block.SourceOrigins.Select(ToOriginJsonModel).ToArray()
+                }).ToArray(),
+                customBlocks = artifact.CustomBlocks.Select(static block => new
+                {
+                    name = block.Name,
+                    language = block.Language,
+                    sourceFilePath = block.SourceFilePath,
+                    textLength = block.Text.Length,
+                    attributes = block.Attributes.Select(static attribute => new
+                    {
+                        name = attribute.Name,
+                        value = attribute.Value
+                    }).ToArray(),
+                    origins = block.SourceOrigins.Select(ToOriginJsonModel).ToArray()
+                }).ToArray(),
+                origins = artifact.SourceOrigins.Select(ToOriginJsonModel).ToArray()
             },
             OriginJsonOptions);
+
+    private static object ToOriginJsonModel(RazorVueEmitSfcSourceOriginRecord origin)
+        => new
+        {
+            originKind = origin.OriginKind,
+            sourceFilePath = origin.SourceFilePath,
+            sourceSpanStart = origin.SourceSpanStart,
+            sourceSpanLength = origin.SourceSpanLength,
+            generatedFilePath = origin.GeneratedFilePath,
+            generatedSpanStart = origin.GeneratedSpanStart,
+            generatedSpanLength = origin.GeneratedSpanLength,
+            startLine = origin.StartLine,
+            startColumn = origin.StartColumn,
+            mappingQuality = origin.MappingQuality,
+            provenance = origin.Provenance
+        };
 }

@@ -42,7 +42,9 @@ internal enum RazorVueOriginKind
     Descriptor,
     Template,
     Logic,
-    GeneratedRender
+    GeneratedRender,
+    Style,
+    CustomBlock
 }
 
 internal enum RazorVueMappingQuality

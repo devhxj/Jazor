@@ -32,6 +32,19 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private readonly RazorVueRenderTreeExtractor _renderTreeExtractor = new();
 
+    internal static RazorVueExpressionEmitter CreateExpressionEmitterForCanonicalization(
+        RazorVueSemanticSnapshot snapshot,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    {
+        var componentReferences = BuildComponentReferences(resolvedComponents);
+        var componentEmitsByRazorAlias = BuildComponentEmitsByRazorAlias(resolvedComponents);
+        return new RazorVueExpressionEmitter(
+            snapshot,
+            componentReferences,
+            resolvedComponents,
+            componentEmitsByRazorAlias);
+    }
+
     public VueCompiledArtifact Lower(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
     {
         if (context is null)
@@ -151,15 +164,15 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
         var descriptor = snapshot.Descriptor;
         var logicShape = new StringBuilder();
-        var onInitializedShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedMethod, false);
-        var onInitializedAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedAsyncMethod, false);
-        var onParametersSetShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetMethod, false);
-        var onParametersSetAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetAsyncMethod, false);
-        var setParametersAsyncShape = DescribeSetParametersAsyncShape(snapshot, snapshot.SetParametersAsyncMethod);
-        var onAfterRenderShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderMethod, true);
-        var onAfterRenderAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
-        var disposeShape = DescribeLifecycleLoweringShape(snapshot, snapshot.DisposeMethod, false);
-        var disposeAsyncShape = DescribeLifecycleLoweringShape(snapshot, snapshot.DisposeAsyncMethod, false);
+        var onInitializedShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedMethod, false);
+        var onInitializedAsyncShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.OnInitializedAsyncMethod, false);
+        var onParametersSetShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetMethod, false);
+        var onParametersSetAsyncShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.OnParametersSetAsyncMethod, false);
+        var setParametersAsyncShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeSetParametersAsyncShape(snapshot, snapshot.SetParametersAsyncMethod);
+        var onAfterRenderShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderMethod, true);
+        var onAfterRenderAsyncShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.OnAfterRenderAsyncMethod, true);
+        var disposeShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.DisposeMethod, false);
+        var disposeAsyncShape = RazorVueSetupAndLifecycleLoweringSupport.DescribeLifecycleLoweringShape(snapshot, snapshot.DisposeAsyncMethod, false);
         logicShape.AppendLine("component:" + descriptor.FullName);
         logicShape.AppendLine("module:" + descriptor.ImportSpecifier);
         // LogicHash should reflect emitted runtime behavior. No-op lifecycle methods
@@ -171,7 +184,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         logicShape.AppendLine("lifecycle:setParametersAsync=" + setParametersAsyncShape);
         logicShape.AppendLine("lifecycle:onAfterRender=" + onAfterRenderShape);
         logicShape.AppendLine("lifecycle:onAfterRenderAsync=" + onAfterRenderAsyncShape);
-        logicShape.AppendLine("lifecycle:shouldRender=" + DescribeShouldRenderShape(snapshot.Compilation, snapshot.ShouldRenderMethod));
+        logicShape.AppendLine("lifecycle:shouldRender=" + RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot.Compilation, snapshot.ShouldRenderMethod));
         logicShape.AppendLine("lifecycle:dispose=" + disposeShape);
         logicShape.AppendLine("lifecycle:disposeAsync=" + disposeAsyncShape);
 
@@ -203,26 +216,26 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             return HmrBoundaryKind.FullReloadRequired;
 
         if (snapshot.Lifecycle.HasShouldRender &&
-            !AnalyzeShouldRender(snapshot.Compilation, snapshot.ShouldRenderMethod).IsSupported)
+            RazorVueSetupAndLifecycleLoweringSupport.DescribeShouldRenderShape(snapshot.Compilation, snapshot.ShouldRenderMethod) == "unsupported")
         {
             return HmrBoundaryKind.FullReloadRequired;
         }
 
         if (snapshot.Lifecycle.HasSetParametersAsync &&
-            !AnalyzeSetParametersAsync(snapshot, snapshot.SetParametersAsyncMethod).IsSupported)
+            RazorVueSetupAndLifecycleLoweringSupport.DescribeSetParametersAsyncShape(snapshot, snapshot.SetParametersAsyncMethod) == "unsupported")
         {
             return HmrBoundaryKind.FullReloadRequired;
         }
 
-        var hasSupportedLifecycleLowering = HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedMethod, false) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedAsyncMethod, false) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetMethod, false) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetAsyncMethod, false) ||
-                                           HasSupportedSetParametersAsyncLowering(snapshot) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderMethod, true) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.DisposeMethod, false) ||
-                                           HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
+        var hasSupportedLifecycleLowering = RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedMethod, false) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnInitializedAsyncMethod, false) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetMethod, false) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnParametersSetAsyncMethod, false) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedSetParametersAsyncLowering(snapshot) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderMethod, true) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.OnAfterRenderAsyncMethod, true) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.DisposeMethod, false) ||
+                                           RazorVueSetupAndLifecycleLoweringSupport.HasSupportedLifecycleLowering(snapshot, snapshot.DisposeAsyncMethod, false);
         // HMR should only escalate to LogicSafe when lifecycle methods actually lower
         // into runtime hooks; no-op methods should behave like pure template changes.
         if (hasSupportedLifecycleLowering || snapshot.Logic.Fields.Length > 0 || snapshot.Logic.Methods.Length > 0)
@@ -295,6 +308,45 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             UsesTeleport: moduleCode.Contains("Teleport", StringComparison.Ordinal),
             UsesSuspense: moduleCode.Contains("Suspense", StringComparison.Ordinal),
             UsesKeepAlive: moduleCode.Contains("KeepAlive", StringComparison.Ordinal));
+
+    internal static VueRuntimeHints BuildHintsForCanonicalization(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree)
+        => new(
+            RequiresVueRuntime: true,
+            RequiresHydration: false,
+            SupportsSsr: true,
+            UsesTeleport: ContainsComponentName(renderTree, snapshot, "Teleport"),
+            UsesSuspense: ContainsComponentName(renderTree, snapshot, "Suspense"),
+            UsesKeepAlive: ContainsComponentName(renderTree, snapshot, "KeepAlive"));
+
+    private static bool ContainsComponentName(
+        RazorVueRenderFragment fragment,
+        RazorVueSemanticSnapshot snapshot,
+        string componentName)
+    {
+        _ = snapshot;
+
+        foreach (var child in fragment.Children)
+        {
+            switch (child)
+            {
+                case RazorVueComponentNode component when string.Equals(component.ComponentName, componentName, StringComparison.Ordinal):
+                    return true;
+                case RazorVueElementNode element when ContainsComponentName(element.Children, snapshot, componentName):
+                    return true;
+                case RazorVueComponentNode component when ContainsComponentName(component.Children, snapshot, componentName):
+                    return true;
+                case RazorVueConditionalNode conditional when ContainsComponentName(conditional.WhenTrue, snapshot, componentName) ||
+                                                             ContainsComponentName(conditional.WhenFalse, snapshot, componentName):
+                    return true;
+                case RazorVueForEachNode loop when ContainsComponentName(loop.Body, snapshot, componentName):
+                    return true;
+            }
+        }
+
+        return false;
+    }
 
     private static string ComputeSha256Hex(string content)
     {

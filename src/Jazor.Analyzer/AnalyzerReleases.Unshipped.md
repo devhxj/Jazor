@@ -38,3 +38,4 @@ JAZORVGA012 | Jazor.RazorVue.Analysis | Error | RazorVue library component decla
 JAZORVGA013 | Jazor.RazorVue.Analysis | Error | RazorVue library style dependency declaration is invalid
 JAZORVGA014 | Jazor.RazorVue.Analysis | Error | RazorVue library plugin requirement declaration is invalid
 JAZORVGA015 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter value is missing
+JAZORVGA016 | Jazor.RazorVue.Analysis | Error | RazorVue output mode is invalid

@@ -15,6 +15,8 @@ internal enum RazorVueIssueCode
     ReservedIntrinsicNameCollision,
     UnsupportedLifecycleLowering,
     UnsupportedSetupLogicLowering,
+    CanonicalizationFailed,
+    UnsupportedTemplateEncoding,
     InvalidLibraryComponentDeclaration,
     InvalidLibraryStyleDependencyDeclaration,
     InvalidLibraryPluginRequirementDeclaration,

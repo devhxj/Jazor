@@ -6,6 +6,22 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueArtifactFactory
 {
+    internal static ImmutableArray<string> BuildImportsForCanonicalization(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        => BuildImports(resolvedComponents);
+
+    internal static ImmutableArray<string> BuildStylesForCanonicalization(
+        VueComponentDescriptor descriptor,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        => BuildStyles(descriptor, resolvedComponents);
+
+    internal static ImmutableArray<string> BuildPluginRequirementsForCanonicalization(
+        VueComponentDescriptor descriptor,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        => BuildPluginRequirements(descriptor, resolvedComponents);
+
+    internal static string NormalizeRelativePathForCanonicalization(string relativePath)
+        => NormalizeRelativePath(relativePath);
+
     private static ImmutableArray<string> BuildImports(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
     {
         if (resolvedComponents.IsEmpty)

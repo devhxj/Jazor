@@ -96,6 +96,9 @@ internal sealed partial class RazorVueExpressionEmitter
         return emission.HasValue ? emission.Expression : "null";
     }
 
+    internal string EmitTemplateExpression(IOperation operation)
+        => EmitExpression(operation);
+
     private OptionalJsArgument EmitFragmentArgument(RazorVueRenderFragment fragment)
     {
         if (fragment.Children.IsDefaultOrEmpty)

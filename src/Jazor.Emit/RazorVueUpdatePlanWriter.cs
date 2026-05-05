@@ -36,7 +36,8 @@ internal sealed class RazorVueUpdatePlanWriter
                 module.DescriptorChanged,
                 module.TemplateChanged,
                 module.LogicChanged,
-                module.ContentChanged)).ToList());
+                module.ContentChanged,
+                module.StyleChanged)).ToList());
 
         File.WriteAllText(outputPath, JsonSerializer.Serialize(plan, JsonOptions));
     }
@@ -67,4 +68,5 @@ internal sealed record RazorVueUpdatePlanModule(
     bool DescriptorChanged,
     bool TemplateChanged,
     bool LogicChanged,
-    bool ContentChanged);
+    bool ContentChanged,
+    bool StyleChanged);

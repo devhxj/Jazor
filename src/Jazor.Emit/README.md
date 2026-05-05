@@ -9,7 +9,7 @@
 
 - 载入 root assembly 和被引用程序集。
 - 收集 ECMAScript module catalog 与 RazorVue catalog。
-- 物化 `.mjs`、manifest、RazorVue sidecar manifest 与 `.map` 文件。
+- 物化 `.mjs` 或 `.vue`、manifest、RazorVue sidecar manifest 与 `.map` / origins 文件。
 - 通过 `DenoHost` 执行 bundle。
 - 生成 RazorVue manifest diff / update plan。
 
@@ -25,7 +25,9 @@
 - `ModuleCollector.cs`: 汇总程序集中的发射 catalog。
 - `ModuleWriter.cs`: 写出 ECMAScript 模块和 manifest。
 - `RazorVueCatalogReader.cs`: 读取 RazorVue catalog。
-- `RazorVueModuleWriter.cs`: 写出 RazorVue 模块、manifest 和 `.map`。
+- `RazorVueModuleWriter.cs`: 写出 legacy RazorVue 模块、manifest 和 `.map`。
+- `RazorVueSfcCatalogReader.cs`: 读取 `VueSfcArtifact` catalog。
+- `RazorVueSfcModuleWriter.cs`: 写出 RazorVue `.vue` artifact、manifest 和 sidecar metadata。
 - `ModuleBundler.cs`: bundle 编排。
 - `RazorVueUpdatePlanWriter.cs`: 生成 RazorVue diff/update plan。
 

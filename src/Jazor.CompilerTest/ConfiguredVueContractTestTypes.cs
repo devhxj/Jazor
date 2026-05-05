@@ -13,11 +13,11 @@ public sealed record TestShiftedContractComponentOptions<TMarker, TProps> : VueC
 
 	[ComponentDescription("@#props")]
 	[Props(TypeArgumentIndex = 1)]
-	public string[]? PropNames { get; init; }
+	public string[]? Props { get; init; }
 
 	[ComponentDescription("@#emits")]
 	[Emits(SourceMemberName = "Bootstrap")]
-	public string[]? EmitNames { get; init; }
+	public string[]? Emits { get; init; }
 
 	[ComponentDescription("@#setup")]
 	public VueTypedSetupCallback<TProps>? Bootstrap { get; init; }
@@ -28,11 +28,11 @@ public abstract record TestInheritedContractComponentOptionsBase<TProps> : VueCo
 {
 	[ComponentDescription("@#props")]
 	[Props]
-	public string[]? PropNames { get; init; }
+	public string[]? Props { get; init; }
 
 	[ComponentDescription("@#emits")]
 	[Emits]
-	public string[]? EmitNames { get; init; }
+	public string[]? Emits { get; init; }
 }
 
 public sealed record TestInheritedContractComponentOptions<TProps> : TestInheritedContractComponentOptionsBase<TProps>

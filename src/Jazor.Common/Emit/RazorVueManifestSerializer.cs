@@ -39,6 +39,7 @@ public static class RazorVueManifestSerializer
                 OriginMapPath = NormalizeOriginMapPath(
                     module.OriginMapPath,
                     module.RelativeModulePath),
+                StyleHash = module.StyleHash ?? string.Empty,
                 Styles = NormalizeHostRequirementList(module.Styles),
                 PluginRequirements = NormalizeHostRequirementList(module.PluginRequirements)
             })

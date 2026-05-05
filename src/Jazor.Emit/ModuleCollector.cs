@@ -34,11 +34,17 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 
         var byKey = new Dictionary<string, EmitModuleRecord>(StringComparer.Ordinal);
         var razorVueByKey = new Dictionary<string, RazorVueEmitArtifactRecord>(StringComparer.Ordinal);
+        var razorVueSfcByKey = new Dictionary<string, RazorVueEmitSfcArtifactRecord>(StringComparer.Ordinal);
         var byRelativePath = new Dictionary<string, EmitModuleRecord>(StringComparer.OrdinalIgnoreCase);
         var razorVueByRelativePath = new Dictionary<string, RazorVueEmitArtifactRecord>(StringComparer.OrdinalIgnoreCase);
+        var razorVueSfcByRelativePath = new Dictionary<string, RazorVueEmitSfcArtifactRecord>(StringComparer.OrdinalIgnoreCase);
         var catalogCount = 0;
         var razorVueCatalogCount = 0;
+        var razorVueSfcCatalogCount = 0;
         var razorVueCatalogs = new List<RazorVueCatalogRecord>();
+        var razorVueSfcCatalogs = new List<RazorVueSfcCatalogRecord>();
+        var sawLegacyRazorVueCatalog = false;
+        var sawSfcRazorVueCatalog = false;
 
         foreach (var assembly in assemblies)
         {
@@ -99,62 +105,175 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                 byRelativePath[module.RelativePath] = module;
             }
 
-            RazorVueCatalogRecord? razorVueCatalog;
+            RazorVueCatalogRecord? razorVueCatalog = null;
+            Exception? legacyCatalogReadException = null;
             try
             {
                 razorVueCatalog = RazorVueCatalogReader.TryRead(assembly);
             }
             catch (Exception ex)
             {
-                return CollectResult.Fail(3, $"Failed to read RazorVue catalog from '{assembly.Location}': {ex.Message}");
+                legacyCatalogReadException = ex;
             }
 
-            if (razorVueCatalog is null)
-                continue;
-
-            razorVueCatalogCount++;
-            var acceptedArtifacts = new List<RazorVueEmitArtifactRecord>();
-
-            foreach (var artifact in razorVueCatalog.Artifacts)
+            RazorVueSfcCatalogRecord? razorVueSfcCatalog = null;
+            Exception? sfcCatalogReadException = null;
+            try
             {
-                var key = $"{razorVueCatalog.AssemblyName}::{artifact.Identity.ComponentId}";
-                if (razorVueByKey.TryGetValue(key, out var existing))
-                {
-                    if (!StringComparer.Ordinal.Equals(existing.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
-                        !StringComparer.Ordinal.Equals(existing.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
-                        !StringComparer.Ordinal.Equals(existing.Identity.LogicHash, artifact.Identity.LogicHash) ||
-                        !StringComparer.Ordinal.Equals(existing.ModuleCode, artifact.ModuleCode))
-                    {
-                        return CollectResult.Fail(4, $"Conflicting RazorVue artifact content for '{key}'.");
-                    }
+                razorVueSfcCatalog = RazorVueSfcCatalogReader.TryRead(assembly);
+            }
+            catch (Exception ex)
+            {
+                sfcCatalogReadException = ex;
+            }
 
-                    continue;
+            if (razorVueCatalog is not null && razorVueSfcCatalog is not null)
+            {
+                return CollectResult.Fail(
+                    4,
+                    $"Assembly '{assembly.Location}' exposes both legacy and SFC RazorVue catalogs. Only one catalog shape is allowed per assembly.");
+            }
+
+            if (razorVueCatalog is null && razorVueSfcCatalog is null)
+            {
+                if (legacyCatalogReadException is not null && sfcCatalogReadException is not null)
+                {
+                    return CollectResult.Fail(
+                        3,
+                        $"Failed to read RazorVue catalog from '{assembly.Location}': legacy={legacyCatalogReadException.Message}; sfc={sfcCatalogReadException.Message}");
                 }
 
-                if (byRelativePath.ContainsKey(artifact.RelativeModulePath))
-                {
-                    if (failOnPathConflict)
-                    {
-                        return CollectResult.Fail(
-                            4,
-                            $"Path conflict for '{artifact.RelativeModulePath}' between a static module and RazorVue artifact '{artifact.ComponentName}'.");
-                    }
+                continue;
+            }
 
-                    continue;
+            if (razorVueCatalog is not null)
+            {
+                if (sawSfcRazorVueCatalog)
+                {
+                    return CollectResult.Fail(
+                        4,
+                        "Mixed legacy and SFC RazorVue catalogs are not supported in one emit run.");
                 }
 
-                if (razorVueByRelativePath.TryGetValue(artifact.RelativeModulePath, out var existingArtifact))
+                sawLegacyRazorVueCatalog = true;
+                razorVueCatalogCount++;
+                var acceptedArtifacts = new List<RazorVueEmitArtifactRecord>();
+
+                foreach (var artifact in razorVueCatalog.Artifacts)
                 {
-                    if (!StringComparer.Ordinal.Equals(existingArtifact.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
-                        !StringComparer.Ordinal.Equals(existingArtifact.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
-                        !StringComparer.Ordinal.Equals(existingArtifact.Identity.LogicHash, artifact.Identity.LogicHash) ||
-                        !StringComparer.Ordinal.Equals(existingArtifact.ModuleCode, artifact.ModuleCode))
+                    var key = $"{razorVueCatalog.AssemblyName}::{artifact.Identity.ComponentId}";
+                    if (razorVueByKey.TryGetValue(key, out var existing))
+                    {
+                        if (!StringComparer.Ordinal.Equals(existing.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
+                            !StringComparer.Ordinal.Equals(existing.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
+                            !StringComparer.Ordinal.Equals(existing.Identity.LogicHash, artifact.Identity.LogicHash) ||
+                            !StringComparer.Ordinal.Equals(existing.ModuleCode, artifact.ModuleCode))
+                        {
+                            return CollectResult.Fail(4, $"Conflicting RazorVue artifact content for '{key}'.");
+                        }
+
+                        continue;
+                    }
+
+                    if (byRelativePath.ContainsKey(artifact.RelativeModulePath))
                     {
                         if (failOnPathConflict)
                         {
                             return CollectResult.Fail(
                                 4,
-                                $"Path conflict for '{artifact.RelativeModulePath}' between RazorVue artifacts '{existingArtifact.ComponentName}' and '{artifact.ComponentName}'.");
+                                $"Path conflict for '{artifact.RelativeModulePath}' between a static module and RazorVue artifact '{artifact.ComponentName}'.");
+                        }
+
+                        continue;
+                    }
+
+                    if (razorVueByRelativePath.TryGetValue(artifact.RelativeModulePath, out var existingArtifact))
+                    {
+                        if (!StringComparer.Ordinal.Equals(existingArtifact.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
+                            !StringComparer.Ordinal.Equals(existingArtifact.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
+                            !StringComparer.Ordinal.Equals(existingArtifact.Identity.LogicHash, artifact.Identity.LogicHash) ||
+                            !StringComparer.Ordinal.Equals(existingArtifact.ModuleCode, artifact.ModuleCode))
+                        {
+                            if (failOnPathConflict)
+                            {
+                                return CollectResult.Fail(
+                                    4,
+                                    $"Path conflict for '{artifact.RelativeModulePath}' between RazorVue artifacts '{existingArtifact.ComponentName}' and '{artifact.ComponentName}'.");
+                            }
+
+                            continue;
+                        }
+
+                        continue;
+                    }
+
+                    razorVueByKey[key] = artifact;
+                    razorVueByRelativePath[artifact.RelativeModulePath] = artifact;
+                    acceptedArtifacts.Add(artifact);
+                }
+
+                razorVueCatalogs.Add(new RazorVueCatalogRecord(
+                    razorVueCatalog.AssemblyName,
+                    acceptedArtifacts
+                        .OrderBy(static artifact => artifact.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(static artifact => artifact.ComponentName, StringComparer.Ordinal)
+                        .ToArray()));
+                continue;
+            }
+
+            if (sawLegacyRazorVueCatalog)
+            {
+                return CollectResult.Fail(
+                    4,
+                    "Mixed legacy and SFC RazorVue catalogs are not supported in one emit run.");
+            }
+
+            sawSfcRazorVueCatalog = true;
+            razorVueSfcCatalogCount++;
+            var acceptedSfcArtifacts = new List<RazorVueEmitSfcArtifactRecord>();
+
+            foreach (var artifact in razorVueSfcCatalog!.Artifacts)
+            {
+                var key = $"{razorVueSfcCatalog.AssemblyName}::{artifact.Identity.ComponentId}";
+                if (razorVueSfcByKey.TryGetValue(key, out var existingArtifactByKey))
+                {
+                    if (!StringComparer.Ordinal.Equals(existingArtifactByKey.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
+                        !StringComparer.Ordinal.Equals(existingArtifactByKey.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
+                        !StringComparer.Ordinal.Equals(existingArtifactByKey.Identity.LogicHash, artifact.Identity.LogicHash) ||
+                        !StringComparer.Ordinal.Equals(existingArtifactByKey.Identity.StyleHash, artifact.Identity.StyleHash) ||
+                        !StringComparer.Ordinal.Equals(existingArtifactByKey.SfcText, artifact.SfcText))
+                    {
+                        return CollectResult.Fail(4, $"Conflicting RazorVue SFC artifact content for '{key}'.");
+                    }
+
+                    continue;
+                }
+
+                if (byRelativePath.ContainsKey(artifact.RelativeSfcPath))
+                {
+                    if (failOnPathConflict)
+                    {
+                        return CollectResult.Fail(
+                            4,
+                            $"Path conflict for '{artifact.RelativeSfcPath}' between a static module and RazorVue SFC artifact '{artifact.ComponentName}'.");
+                    }
+
+                    continue;
+                }
+
+                if (razorVueSfcByRelativePath.TryGetValue(artifact.RelativeSfcPath, out var existingSfcArtifact))
+                {
+                    if (!StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
+                        !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
+                        !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.LogicHash, artifact.Identity.LogicHash) ||
+                        !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.StyleHash, artifact.Identity.StyleHash) ||
+                        !StringComparer.Ordinal.Equals(existingSfcArtifact.SfcText, artifact.SfcText))
+                    {
+                        if (failOnPathConflict)
+                        {
+                            return CollectResult.Fail(
+                                4,
+                                $"Path conflict for '{artifact.RelativeSfcPath}' between RazorVue SFC artifacts '{existingSfcArtifact.ComponentName}' and '{artifact.ComponentName}'.");
                         }
 
                         continue;
@@ -163,15 +282,15 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                     continue;
                 }
 
-                razorVueByKey[key] = artifact;
-                razorVueByRelativePath[artifact.RelativeModulePath] = artifact;
-                acceptedArtifacts.Add(artifact);
+                razorVueSfcByKey[key] = artifact;
+                razorVueSfcByRelativePath[artifact.RelativeSfcPath] = artifact;
+                acceptedSfcArtifacts.Add(artifact);
             }
 
-            razorVueCatalogs.Add(new RazorVueCatalogRecord(
-                razorVueCatalog.AssemblyName,
-                acceptedArtifacts
-                    .OrderBy(static artifact => artifact.RelativeModulePath, StringComparer.OrdinalIgnoreCase)
+            razorVueSfcCatalogs.Add(new RazorVueSfcCatalogRecord(
+                razorVueSfcCatalog.AssemblyName,
+                acceptedSfcArtifacts
+                    .OrderBy(static artifact => artifact.RelativeSfcPath, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(static artifact => artifact.ComponentName, StringComparer.Ordinal)
                     .ToArray()));
         }
@@ -184,7 +303,16 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
             .OrderBy(static catalog => catalog.AssemblyName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        return CollectResult.Success(assemblies.Count, catalogCount, razorVueCatalogCount, orderedModules, orderedCatalogs);
+        return CollectResult.Success(
+            assemblies.Count,
+            catalogCount,
+            razorVueCatalogCount,
+            razorVueSfcCatalogCount,
+            orderedModules,
+            orderedCatalogs,
+            razorVueSfcCatalogs
+                .OrderBy(static catalog => catalog.AssemblyName, StringComparer.OrdinalIgnoreCase)
+                .ToArray());
     }
 }
 
@@ -207,8 +335,10 @@ internal sealed record CollectResult(
     int AssemblyCount,
     int CatalogCount,
     int RazorVueCatalogCount,
+    int RazorVueSfcCatalogCount,
     IReadOnlyList<EmitModuleRecord> Modules,
-    IReadOnlyList<RazorVueCatalogRecord> RazorVueCatalogs)
+    IReadOnlyList<RazorVueCatalogRecord> RazorVueCatalogs,
+    IReadOnlyList<RazorVueSfcCatalogRecord> RazorVueSfcCatalogs)
 {
     public int RazorVueArtifactCount
         => RazorVueCatalogs.Sum(static catalog => catalog.Artifacts.Count);
@@ -216,14 +346,22 @@ internal sealed record CollectResult(
     public IReadOnlyList<RazorVueEmitArtifactRecord> RazorVueArtifacts
         => RazorVueCatalogs.SelectMany(static catalog => catalog.Artifacts).ToArray();
 
+    public int RazorVueSfcArtifactCount
+        => RazorVueSfcCatalogs.Sum(static catalog => catalog.Artifacts.Count);
+
+    public IReadOnlyList<RazorVueEmitSfcArtifactRecord> RazorVueSfcArtifacts
+        => RazorVueSfcCatalogs.SelectMany(static catalog => catalog.Artifacts).ToArray();
+
     public static CollectResult Success(
         int assemblyCount,
         int catalogCount,
         int razorVueCatalogCount,
+        int razorVueSfcCatalogCount,
         IReadOnlyList<EmitModuleRecord> modules,
-        IReadOnlyList<RazorVueCatalogRecord> razorVueCatalogs)
-        => new(true, 0, null, assemblyCount, catalogCount, razorVueCatalogCount, modules, razorVueCatalogs);
+        IReadOnlyList<RazorVueCatalogRecord> razorVueCatalogs,
+        IReadOnlyList<RazorVueSfcCatalogRecord> razorVueSfcCatalogs)
+        => new(true, 0, null, assemblyCount, catalogCount, razorVueCatalogCount, razorVueSfcCatalogCount, modules, razorVueCatalogs, razorVueSfcCatalogs);
 
     public static CollectResult Fail(int exitCode, string error)
-        => new(false, exitCode, error, 0, 0, 0, [], []);
+        => new(false, exitCode, error, 0, 0, 0, 0, [], [], []);
 }

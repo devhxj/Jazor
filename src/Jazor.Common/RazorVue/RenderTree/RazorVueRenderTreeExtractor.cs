@@ -228,9 +228,12 @@ internal sealed class RazorVueRenderTreeExtractor
                 return;
             }
 
-            if (TryResolveSlotOutlet(value) is string slotName)
+            if (TryResolveSlotOutlet(value, out var slotName))
             {
-                AddNode(new RazorVueSlotOutletNode(slotName, null, origins));
+                AddNode(new RazorVueSlotOutletNode(
+                    slotName,
+                    GetInvocationArgument(invocation, 2),
+                    origins));
                 return;
             }
 
@@ -278,20 +281,22 @@ internal sealed class RazorVueRenderTreeExtractor
                    _builderParameters.Contains(parameterReference.Parameter);
         }
 
-        private string? TryResolveSlotOutlet(IOperation operation)
+        private bool TryResolveSlotOutlet(IOperation operation, out string slotName)
         {
+            slotName = string.Empty;
             if (Unwrap(operation) is not IPropertyReferenceOperation propertyReference)
-                return null;
+                return false;
 
             if (!IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance))
-                return null;
+                return false;
 
             if (!IsRenderFragment(propertyReference.Property.Type))
-                return null;
+                return false;
 
-            return string.Equals(propertyReference.Property.Name, "ChildContent", StringComparison.Ordinal)
+            slotName = string.Equals(propertyReference.Property.Name, "ChildContent", StringComparison.Ordinal)
                 ? "default"
                 : ToLowerCamelCase(propertyReference.Property.Name);
+            return true;
         }
 
         private bool IsRenderFragment(ITypeSymbol typeSymbol)
@@ -398,4 +403,3 @@ internal sealed class RazorVueRenderTreeExtractor
             => new RazorVueComponentNode(componentName, componentFullName, resolutionName, BuildAttributes(), BuildChildren(), Origins);
     }
 }
-

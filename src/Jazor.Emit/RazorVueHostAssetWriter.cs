@@ -60,6 +60,7 @@ internal sealed class RazorVueHostAssetWriter
                     module.TemplateHash,
                     module.LogicHash,
                     module.ContentHash,
+                    module.StyleHash,
                     module.HmrBoundaryKind,
                     module.RequiresHydration,
                     module.SupportsSsr))
@@ -116,6 +117,7 @@ internal sealed record RazorVueHostContractModule(
     string TemplateHash,
     string LogicHash,
     string ContentHash,
+    string StyleHash,
     RazorVueHmrBoundaryKind HmrBoundaryKind,
     bool RequiresHydration,
     bool SupportsSsr);

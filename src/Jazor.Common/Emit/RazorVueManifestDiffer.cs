@@ -79,21 +79,22 @@ public static class RazorVueManifestDiffer
         var descriptorChanged = !StringComparer.Ordinal.Equals(previous.DescriptorHash, current.DescriptorHash);
         var templateChanged = !StringComparer.Ordinal.Equals(previous.TemplateHash, current.TemplateHash);
         var logicChanged = !StringComparer.Ordinal.Equals(previous.LogicHash, current.LogicHash);
+        var styleChanged = !StringComparer.Ordinal.Equals(previous.StyleHash, current.StyleHash);
         var contentChanged = !StringComparer.Ordinal.Equals(previous.ContentHash, current.ContentHash);
 
         if (HasIdentityOrContractDrift(previous, current))
-            return CreateFullReloadDiff(current, "Component identity or host contract changed.", descriptorChanged, templateChanged, logicChanged, contentChanged);
+            return CreateFullReloadDiff(current, "Component identity or host contract changed.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
 
-        if (!descriptorChanged && !templateChanged && !logicChanged && !contentChanged)
-            return new RazorVueManifestModuleDiff(current.AssemblyName, current.ComponentId, current.ModuleId, current.ComponentName, current.RelativeModulePath, RazorVueHotUpdateAction.None, "No material change.", false, false, false, false);
+        if (!descriptorChanged && !templateChanged && !logicChanged && !contentChanged && !styleChanged)
+            return new RazorVueManifestModuleDiff(current.AssemblyName, current.ComponentId, current.ModuleId, current.ComponentName, current.RelativeModulePath, RazorVueHotUpdateAction.None, "No material change.", false, false, false, false, false);
 
         if (descriptorChanged)
-            return CreateFullReloadDiff(current, "Public component descriptor changed.", descriptorChanged, templateChanged, logicChanged, contentChanged);
+            return CreateFullReloadDiff(current, "Public component descriptor changed.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
 
         if (current.HmrBoundaryKind is RazorVueHmrBoundaryKind.FullReloadRequired or RazorVueHmrBoundaryKind.Unknown ||
             previous.HmrBoundaryKind is RazorVueHmrBoundaryKind.FullReloadRequired or RazorVueHmrBoundaryKind.Unknown)
         {
-            return CreateFullReloadDiff(current, "HMR boundary does not prove a hot-safe update.", descriptorChanged, templateChanged, logicChanged, contentChanged);
+            return CreateFullReloadDiff(current, "HMR boundary does not prove a hot-safe update.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
         }
 
         if (logicChanged)
@@ -113,10 +114,11 @@ public static class RazorVueManifestDiffer
                     descriptorChanged,
                     templateChanged,
                     logicChanged,
-                    contentChanged);
+                    contentChanged,
+                    styleChanged);
             }
 
-            return CreateFullReloadDiff(current, "Logic changed outside a logic-safe boundary.", descriptorChanged, templateChanged, logicChanged, contentChanged);
+            return CreateFullReloadDiff(current, "Logic changed outside a logic-safe boundary.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
         }
 
         if (templateChanged)
@@ -132,10 +134,23 @@ public static class RazorVueManifestDiffer
                 descriptorChanged,
                 templateChanged,
                 logicChanged,
-                contentChanged);
+                contentChanged,
+                styleChanged);
         }
 
-        return CreateFullReloadDiff(current, "Module content changed outside split hash classification.", descriptorChanged, templateChanged, logicChanged, contentChanged);
+        if (styleChanged)
+        {
+            return CreateFullReloadDiff(
+                current,
+                "Style block content changed.",
+                descriptorChanged,
+                templateChanged,
+                logicChanged,
+                contentChanged,
+                styleChanged);
+        }
+
+        return CreateFullReloadDiff(current, "Module content changed outside split hash classification.", descriptorChanged, templateChanged, logicChanged, contentChanged, styleChanged);
     }
 
     private static bool HasIdentityOrContractDrift(RazorVueManifestEntry previous, RazorVueManifestEntry current)
@@ -168,7 +183,8 @@ public static class RazorVueManifestDiffer
         bool descriptorChanged = false,
         bool templateChanged = false,
         bool logicChanged = false,
-        bool contentChanged = false)
+        bool contentChanged = false,
+        bool styleChanged = false)
         => new(
             module.AssemblyName,
             module.ComponentId,
@@ -180,7 +196,8 @@ public static class RazorVueManifestDiffer
             descriptorChanged,
             templateChanged,
             logicChanged,
-            contentChanged);
+            contentChanged,
+            styleChanged);
 
     private static RazorVueHotUpdateAction ComputeOverallAction(IReadOnlyList<RazorVueManifestModuleDiff> moduleDiffs, bool topLevelMetadataChanged)
     {
@@ -221,7 +238,8 @@ public sealed record RazorVueManifestModuleDiff(
     bool DescriptorChanged,
     bool TemplateChanged,
     bool LogicChanged,
-    bool ContentChanged);
+    bool ContentChanged,
+    bool StyleChanged = false);
 
 public enum RazorVueHotUpdateAction
 {

@@ -6108,9 +6108,9 @@ function onInput(event) { }
                             Type = "text",
                             Placeholder = "Type here",
                             Disabled = true,
-                            ReadOnly = true,
+                            Readonly = true,
                             Required = true,
-                            TabIndex = 2
+                            Tabindex = 2
                         });
 
                     public static IVNode RenderCheckbox()
@@ -6198,13 +6198,13 @@ export function renderImage() {
                         {
                             Action = "/submit",
                             Method = "post",
-                            AutoComplete = "on"
+                            Autocomplete = "on"
                         },
                         [
                             H("textarea", new VueObject
                             {
                                 Name = "notes",
-                                AutoFocus = true,
+                                Autofocus = true,
                                 Rows = 4,
                                 Cols = 32
                             }),
@@ -6285,6 +6285,170 @@ export function renderRegion() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingWebIdlEitherCollectionExpressionArguments_GeneratesNativeUnionShapes()
+    {
+        var code = """
+            using ECMAScript;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("webidl/either-collections.mjs")]
+                public static class WebIdlEitherModule
+                {
+                    public static WebSocket CreateSocket()
+                        => new WebSocket("wss://example.test/socket", ["chat", "superchat"]);
+
+                    public static URLSearchParams CreateSearchParams()
+                        => new URLSearchParams([["q", "term"], ["page", "1"]]);
+
+                    public static IntersectionObserver CreateObserver()
+                        => new IntersectionObserver(HandleIntersections, new IntersectionObserverInit
+                        {
+                            Threshold = [0.25, 0.5],
+                            RootMargin = "10px"
+                        });
+
+                    private static void HandleIntersections(IntersectionObserverEntry[] entries, IntersectionObserver observer)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "WebIdlEitherModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "WebIdlEitherModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function createSocket() {
+  return new WebSocket(""wss://example.test/socket"", [""chat"", ""superchat""]);
+}
+export function createSearchParams() {
+  return new URLSearchParams([[""q"", ""term""], [""page"", ""1""]]);
+}
+export function createObserver() {
+  return new IntersectionObserver(handleIntersections, { threshold: [0.25, 0.5], rootMargin: ""10px"" });
+}
+function handleIntersections(entries, observer) { }
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingWebIdlEitherUnionProperties_GeneratesExpectedObjectLiterals()
+    {
+        var code = """
+            using ECMAScript;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("webidl/either-properties.mjs")]
+                public static class WebIdlEitherPropertyModule
+                {
+                    public static MediaStreamConstraints CreateConstraints()
+                        => new MediaStreamConstraints
+                        {
+                            Video = true,
+                            Audio = new MediaTrackConstraints
+                            {
+                                Advanced = []
+                            }
+                        };
+
+                    public static ConstrainDOMStringParameters CreateFacingMode()
+                        => new ConstrainDOMStringParameters
+                        {
+                            Exact = ["user", "environment"]
+                        };
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "WebIdlEitherPropertyModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "WebIdlEitherPropertyModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function createConstraints() {
+  return { video: true, audio: { advanced: [] } };
+}
+export function createFacingMode() {
+  return { exact: [""user"", ""environment""] };
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingNamedWebIdlUnionMethodParameters_GeneratesNativeArguments()
+    {
+        var code = """
+            using ECMAScript;
+
+            namespace Demo
+            {
+                [ECMAScriptModule("webidl/named-union-method-parameters.mjs")]
+                public static class WebIdlNamedUnionMethodModule
+                {
+                    public static void UpdateValue(ElementInternals internals)
+                    {
+                        internals.SetFormValue("draft");
+                        internals.SetFormValue("published", new FormData());
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "WebIdlNamedUnionMethodModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "WebIdlNamedUnionMethodModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function updateValue(internals) {
+  internals.setFormValue(""draft"");
+  internals.setFormValue(""published"", new FormData);
+}
+", script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueObjectInputConstraintConvenienceMembers_GeneratesFinalAttributeKeys()
     {
         var code = """
@@ -6319,8 +6483,8 @@ export function renderRegion() {
                     public static IVNode RenderValidatedTextArea()
                         => H("textarea", new VueObject
                         {
-                            MinLength = 5,
-                            MaxLength = 120,
+                            Minlength = 5,
+                            Maxlength = 120,
                             Pattern = "[A-Za-z ]+",
                             Wrap = "soft"
                         });
@@ -6656,7 +6820,7 @@ export function render() {
                     public static IVueComponent<LabelProps> Component = Vue3.DefineComponent(new VueComponentOptions<LabelProps>
                     {
                         Name = "ValidatedLabel",
-                        PropOptions = new LabelPropOptions
+                        Props = new LabelPropOptions
                         {
                             Label = new VuePropOptions<string>
                             {
@@ -6672,7 +6836,7 @@ export function render() {
                                 ValidatorWithProps = ValidateCount
                             }
                         },
-                        EmitOptions = new VueEmitRegistry<string>
+                        Emits = new VueEmitRegistry<string>
                         {
                             { "save", ValidateSave }
                         },
@@ -6776,7 +6940,7 @@ function validateSave(value) {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
                     {
                         Name = "PropRegistryPanel",
-                        PropOptions = new VuePropRegistry
+                        Props = new VuePropRegistry
                         {
                             { "label", new VuePropOptions
                                 {
@@ -6842,7 +7006,7 @@ export function render() {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
                     {
                         Name = "PropRegistryPanel",
-                        PropOptions = BuildProps(),
+                        Props = BuildProps(),
                         Render = Render
                     });
 
@@ -6897,7 +7061,7 @@ export function render() {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
                     {
                         Name = "EmitRegistryPanel",
-                        EmitOptions = BuildEmits(),
+                        Emits = BuildEmits(),
                         Render = Render
                     });
 
@@ -8494,8 +8658,8 @@ function setup() {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        PropNames = ["message"],
-                        EmitNames = ["ready"],
+                        Props = ["message"],
+                        Emits = ["ready"],
                         Setup = Setup
                     });
 
@@ -8561,7 +8725,7 @@ function setup(props, context) {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        EmitNames = ["batch"],
+                        Emits = ["batch"],
                         Setup = Setup
                     });
 
@@ -8631,8 +8795,8 @@ function setup(props, context) {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        PropNames = ["modelValue"],
-                        EmitNames = ["update:modelValue"],
+                        Props = ["modelValue"],
+                        Emits = ["update:modelValue"],
                         Setup = Setup
                     });
 
@@ -8718,8 +8882,8 @@ function normalize(value) {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        PropNames = [Vue3.ModelPropName(CounterModel)],
-                        EmitNames = [CounterUpdate],
+                        Props = [Vue3.ModelPropName(CounterModel)],
+                        Emits = [CounterUpdate],
                         Setup = Setup
                     });
 
@@ -8795,8 +8959,8 @@ function setup(props, context) {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        PropNames = [Vue3.ModelPropName(CountModel)],
-                        EmitNames = [CountUpdate],
+                        Props = [Vue3.ModelPropName(CountModel)],
+                        Emits = [CountUpdate],
                         Setup = Setup
                     });
 
@@ -8882,8 +9046,8 @@ function normalize(value) {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        PropNames = [Vue3.ModelPropName(CountModel)],
-                        EmitNames = [CountUpdate],
+                        Props = [Vue3.ModelPropName(CountModel)],
+                        Emits = [CountUpdate],
                         Setup = Setup
                     });
 
@@ -8964,8 +9128,8 @@ function setup(props, context) {
                     public static IVueComponent<CounterProps> Component = Vue3.DefineComponent(new VueComponentOptions<CounterProps>
                     {
                         Name = "CounterView",
-                        PropNames = ["modelValue"],
-                        EmitNames = ["update:modelValue"],
+                        Props = ["modelValue"],
+                        Emits = ["update:modelValue"],
                         Setup = Setup
                     });
 
@@ -9117,9 +9281,9 @@ function setup() {
                             Type = attrs.Type,
                             Placeholder = attrs.Placeholder,
                             Disabled = attrs.Disabled,
-                            ReadOnly = attrs.ReadOnly,
+                            Readonly = attrs.Readonly,
                             Required = attrs.Required,
-                            TabIndex = attrs.TabIndex,
+                            Tabindex = attrs.Tabindex,
                             Role = attrs.Role
                         });
                     }
@@ -9247,7 +9411,7 @@ function setup() {
     }
 
     [TestMethod]
-    public async Task Convert_ClassUsingUntypedVueComponentOptionsPropNames_GeneratesPropsArray()
+    public async Task Convert_ClassUsingUntypedVueComponentOptionsProps_GeneratesPropsArray()
     {
         var code = """
             using ECMAScript;
@@ -9261,8 +9425,8 @@ function setup() {
                     public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
                     {
                         Name = "PanelView",
-                        PropNames = ["title", "active"],
-                        EmitNames = ["ready"],
+                        Props = ["title", "active"],
+                        Emits = ["ready"],
                         Setup = Setup
                     });
 
@@ -10514,7 +10678,7 @@ export function render() {
     }
 
     [TestMethod]
-    public async Task Convert_ClassUsingTypedVueSlotOnlyComponent_GeneratesTypedSlotReadsAndExplicitEmitNames()
+    public async Task Convert_ClassUsingTypedVueSlotOnlyComponent_GeneratesTypedSlotReadsAndExplicitEmits()
     {
         var code = """
             using System.ComponentModel;
@@ -10535,7 +10699,7 @@ export function render() {
                     public static IVueSlotComponent<ChildSlots> Child = Vue3.DefineComponent(new VueSlotComponentOptions<ChildSlots>
                     {
                         Name = "ChildView",
-                        EmitNames = ["ready"],
+                        Emits = ["ready"],
                         Setup = SetupChild
                     });
 
@@ -12722,8 +12886,8 @@ function prefetch() {
                         var typedCtor = Vue3.DefineCustomElement(new VueComponentOptions<BadgeProps>
                         {
                             Name = "TypedBadge",
-                            PropNames = ["label"],
-                            EmitNames = [],
+                            Props = ["label"],
+                            Emits = [],
                             Setup = Setup
                         });
                         var host = Vue3.UseHost();
@@ -12822,8 +12986,8 @@ function configureElementApp(app) {
                         var elementCtor = Vue3.DefineCustomElement(new VueCustomElementComponentOptions<BadgeProps>
                         {
                             Name = "UserBadge",
-                            PropNames = ["label"],
-                            EmitNames = ["ready"],
+                            Props = ["label"],
+                            Emits = ["ready"],
                             Setup = Setup,
                             Styles = [":host { display: block; }"],
                             ConfigureApp = ConfigureElementApp,

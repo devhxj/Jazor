@@ -89,6 +89,20 @@ public sealed class RazorVueManifestDifferTests
         Assert.IsTrue(diff.Modules[0].ContentChanged);
     }
 
+    [TestMethod]
+    public void RazorVueManifestDiffer_ClassifiesFullReload_WhenOnlyStyleHashChanges()
+    {
+        var previous = CreateManifest(CreateEntry(styleHash: "style-a", contentHash: "content-a", boundaryKind: RazorVueHmrBoundaryKind.LogicSafe));
+        var current = CreateManifest(CreateEntry(styleHash: "style-b", contentHash: "content-b", boundaryKind: RazorVueHmrBoundaryKind.LogicSafe));
+
+        var diff = RazorVueManifestDiffer.Diff(previous, current);
+
+        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Action);
+        Assert.AreEqual(RazorVueHotUpdateAction.FullReload, diff.Modules[0].Action);
+        Assert.IsTrue(diff.Modules[0].StyleChanged);
+        StringAssert.Contains(diff.Modules[0].Reason, "Style block content changed");
+    }
+
     private static RazorVueManifestModel CreateManifest(
         RazorVueManifestEntry first,
         string[]? styles = null,
@@ -111,6 +125,7 @@ public sealed class RazorVueManifestDifferTests
         string templateHash = "template-hash",
         string logicHash = "logic-hash",
         string contentHash = "content-hash",
+        string styleHash = "",
         RazorVueHmrBoundaryKind boundaryKind = RazorVueHmrBoundaryKind.LogicSafe)
         => new(
             AssemblyName: "Demo.Host",
@@ -129,5 +144,6 @@ public sealed class RazorVueManifestDifferTests
             ContentHash: contentHash,
             HmrBoundaryKind: boundaryKind,
             RequiresHydration: false,
-            SupportsSsr: true);
+            SupportsSsr: true,
+            StyleHash: styleHash);
 }

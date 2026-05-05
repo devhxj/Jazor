@@ -8,6 +8,12 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueArtifactFactory
 {
+    internal static ImmutableDictionary<string, VueComponentDescriptor> ResolveComponentsForCanonicalization(
+        RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRenderFragment renderTree)
+        => ResolveComponents(context, snapshot, renderTree);
+
     private static ImmutableDictionary<string, VueComponentDescriptor> ResolveComponents(
         RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,

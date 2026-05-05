@@ -27,4 +27,5 @@ public sealed record RazorVueManifestEntry(
     string ContentHash,
     RazorVueHmrBoundaryKind HmrBoundaryKind,
     bool RequiresHydration,
-    bool SupportsSsr);
+    bool SupportsSsr,
+    string StyleHash = "");

@@ -86,28 +86,37 @@ public sealed class EcmaScriptVueProxyTests
     {
         var setup = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.Setup), BindingFlags.Public | BindingFlags.Instance);
         var render = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.Render), BindingFlags.Public | BindingFlags.Instance);
-        var propOptions = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.PropOptions), BindingFlags.Public | BindingFlags.Instance);
-        var props = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.PropNames), BindingFlags.Public | BindingFlags.Instance);
-        var emitOptions = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.EmitOptions), BindingFlags.Public | BindingFlags.Instance);
-        var emits = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.EmitNames), BindingFlags.Public | BindingFlags.Instance);
-        var slotProps = typeof(VueSlotComponentOptions<>)
-            .MakeGenericType(typeof(TestVueSlots))
-            .GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance);
+        var canonicalProps = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.Props), BindingFlags.Public | BindingFlags.Instance);
+        var canonicalEmits = typeof(VueComponentOptions).GetProperty(nameof(VueComponentOptions.Emits), BindingFlags.Public | BindingFlags.Instance);
+        var slotComponentOptions = typeof(VueSlotComponentOptions<>).MakeGenericType(typeof(TestVueSlots));
+        var slotCanonicalProps = slotComponentOptions.GetProperty(nameof(VueSlotComponentOptions<TestVueSlots>.Props), BindingFlags.Public | BindingFlags.Instance);
+        var slotCanonicalEmits = slotComponentOptions.GetProperty(nameof(VueSlotComponentOptions<TestVueSlots>.Emits), BindingFlags.Public | BindingFlags.Instance);
 
         Assert.IsNotNull(setup);
         Assert.IsNotNull(render);
-        Assert.IsNotNull(propOptions);
-        Assert.IsNotNull(props);
-        Assert.IsNotNull(emitOptions);
-        Assert.IsNotNull(emits);
-        Assert.IsNotNull(slotProps);
+        Assert.IsNotNull(canonicalProps);
+        Assert.IsNotNull(canonicalEmits);
+        Assert.IsNotNull(slotCanonicalProps);
+        Assert.IsNotNull(slotCanonicalEmits);
         Assert.AreEqual(typeof(VueSetupCallback), setup.PropertyType);
         Assert.AreEqual(typeof(VueRenderCallback), render.PropertyType);
-        Assert.AreEqual(typeof(VueProps), propOptions.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string[]), props.PropertyType);
-        Assert.AreEqual(typeof(VueProps), emitOptions.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string[]), emits.PropertyType);
-        Assert.AreEqual(typeof(string[]), slotProps.PropertyType);
+        Assert.AreEqual(typeof(VueNamesOrOptions), canonicalProps.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueNamesOrOptions), canonicalEmits.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalProps.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalEmits.PropertyType.UnwrapNullable());
+        Assert.IsTrue(typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(typeof(VueNamesOrOptions)));
+        var collectionBuilder = typeof(VueNamesOrOptions).GetCustomAttribute<System.Runtime.CompilerServices.CollectionBuilderAttribute>();
+        Assert.IsNotNull(collectionBuilder);
+        Assert.AreEqual(typeof(VueNamesOrOptionsCollectionBuilder), collectionBuilder!.BuilderType);
+        Assert.AreEqual(nameof(VueNamesOrOptionsCollectionBuilder.Create), collectionBuilder.MethodName);
+        Assert.IsNull(typeof(VueComponentOptions).GetProperty("PropOptions", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueComponentOptions).GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueComponentOptions).GetProperty("EmitOptions", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueComponentOptions).GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(slotComponentOptions.GetProperty("PropOptions", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(slotComponentOptions.GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(slotComponentOptions.GetProperty("EmitOptions", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(slotComponentOptions.GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance));
     }
 
     [TestMethod]
@@ -163,23 +172,23 @@ public sealed class EcmaScriptVueProxyTests
         var min = typeof(VueObject).GetProperty(nameof(VueObject.Min), BindingFlags.Public | BindingFlags.Instance);
         var max = typeof(VueObject).GetProperty(nameof(VueObject.Max), BindingFlags.Public | BindingFlags.Instance);
         var step = typeof(VueObject).GetProperty(nameof(VueObject.Step), BindingFlags.Public | BindingFlags.Instance);
-        var minLength = typeof(VueObject).GetProperty(nameof(VueObject.MinLength), BindingFlags.Public | BindingFlags.Instance);
-        var maxLength = typeof(VueObject).GetProperty(nameof(VueObject.MaxLength), BindingFlags.Public | BindingFlags.Instance);
+        var minlength = typeof(VueObject).GetProperty(nameof(VueObject.Minlength), BindingFlags.Public | BindingFlags.Instance);
+        var maxLength = typeof(VueObject).GetProperty(nameof(VueObject.Maxlength), BindingFlags.Public | BindingFlags.Instance);
         var pattern = typeof(VueObject).GetProperty(nameof(VueObject.Pattern), BindingFlags.Public | BindingFlags.Instance);
         var accept = typeof(VueObject).GetProperty(nameof(VueObject.Accept), BindingFlags.Public | BindingFlags.Instance);
         var wrap = typeof(VueObject).GetProperty(nameof(VueObject.Wrap), BindingFlags.Public | BindingFlags.Instance);
         var name = typeof(VueObject).GetProperty(nameof(VueObject.Name), BindingFlags.Public | BindingFlags.Instance);
         var type = typeof(VueObject).GetProperty(nameof(VueObject.Type), BindingFlags.Public | BindingFlags.Instance);
         var placeholder = typeof(VueObject).GetProperty(nameof(VueObject.Placeholder), BindingFlags.Public | BindingFlags.Instance);
-        var autoComplete = typeof(VueObject).GetProperty(nameof(VueObject.AutoComplete), BindingFlags.Public | BindingFlags.Instance);
-        var autoFocus = typeof(VueObject).GetProperty(nameof(VueObject.AutoFocus), BindingFlags.Public | BindingFlags.Instance);
+        var autocomplete = typeof(VueObject).GetProperty(nameof(VueObject.Autocomplete), BindingFlags.Public | BindingFlags.Instance);
+        var autofocus = typeof(VueObject).GetProperty(nameof(VueObject.Autofocus), BindingFlags.Public | BindingFlags.Instance);
         var disabled = typeof(VueObject).GetProperty(nameof(VueObject.Disabled), BindingFlags.Public | BindingFlags.Instance);
         var @checked = typeof(VueObject).GetProperty(nameof(VueObject.Checked), BindingFlags.Public | BindingFlags.Instance);
-        var readOnly = typeof(VueObject).GetProperty(nameof(VueObject.ReadOnly), BindingFlags.Public | BindingFlags.Instance);
+        var readOnly = typeof(VueObject).GetProperty(nameof(VueObject.Readonly), BindingFlags.Public | BindingFlags.Instance);
         var required = typeof(VueObject).GetProperty(nameof(VueObject.Required), BindingFlags.Public | BindingFlags.Instance);
         var multiple = typeof(VueObject).GetProperty(nameof(VueObject.Multiple), BindingFlags.Public | BindingFlags.Instance);
         var selected = typeof(VueObject).GetProperty(nameof(VueObject.Selected), BindingFlags.Public | BindingFlags.Instance);
-        var tabIndex = typeof(VueObject).GetProperty(nameof(VueObject.TabIndex), BindingFlags.Public | BindingFlags.Instance);
+        var tabindex = typeof(VueObject).GetProperty(nameof(VueObject.Tabindex), BindingFlags.Public | BindingFlags.Instance);
         var role = typeof(VueObject).GetProperty(nameof(VueObject.Role), BindingFlags.Public | BindingFlags.Instance);
         var href = typeof(VueObject).GetProperty(nameof(VueObject.Href), BindingFlags.Public | BindingFlags.Instance);
         var target = typeof(VueObject).GetProperty(nameof(VueObject.Target), BindingFlags.Public | BindingFlags.Instance);
@@ -249,7 +258,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(min);
         Assert.IsNotNull(max);
         Assert.IsNotNull(step);
-        Assert.IsNotNull(minLength);
+        Assert.IsNotNull(minlength);
         Assert.IsNotNull(maxLength);
         Assert.IsNotNull(pattern);
         Assert.IsNotNull(accept);
@@ -257,15 +266,15 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(name);
         Assert.IsNotNull(type);
         Assert.IsNotNull(placeholder);
-        Assert.IsNotNull(autoComplete);
-        Assert.IsNotNull(autoFocus);
+        Assert.IsNotNull(autocomplete);
+        Assert.IsNotNull(autofocus);
         Assert.IsNotNull(disabled);
         Assert.IsNotNull(@checked);
         Assert.IsNotNull(readOnly);
         Assert.IsNotNull(required);
         Assert.IsNotNull(multiple);
         Assert.IsNotNull(selected);
-        Assert.IsNotNull(tabIndex);
+        Assert.IsNotNull(tabindex);
         Assert.IsNotNull(role);
         Assert.IsNotNull(href);
         Assert.IsNotNull(target);
@@ -297,7 +306,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(Either<double, string>), min.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Either<double, string>), max.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Either<double, string>), step.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(int), minLength.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(int), minlength.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(int), maxLength.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), pattern.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), accept.PropertyType.UnwrapNullable());
@@ -305,15 +314,15 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(string), name.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), type.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), placeholder.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(string), autoComplete.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(bool), autoFocus.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(string), autocomplete.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(bool), autofocus.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), disabled.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), @checked.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), readOnly.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), required.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), multiple.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), selected.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(int), tabIndex.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(int), tabindex.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), role.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), href.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), target.PropertyType.UnwrapNullable());
@@ -351,6 +360,12 @@ public sealed class EcmaScriptVueProxyTests
         CollectionAssert.Contains(
             props.CustomAttributes.Select(static attribute => attribute.AttributeType).ToArray(),
             typeof(SpreadAttribute));
+        Assert.IsNull(typeof(VueObject).GetProperty("MinLength", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueObject).GetProperty("MaxLength", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueObject).GetProperty("AutoComplete", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueObject).GetProperty("AutoFocus", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueObject).GetProperty("ReadOnly", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(VueObject).GetProperty("TabIndex", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsTrue(@class.PropertyType.UnwrapNullable().IsGenericType);
         Assert.AreEqual(typeof(Either<,,,>), @class.PropertyType.UnwrapNullable().GetGenericTypeDefinition());
 
@@ -804,11 +819,11 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void Vue_CreateApp_And_CreateSsrApp_ExposeTypedRootPropsOverloads()
+    public void Vue_CreateApp_And_CreateSSRApp_ExposeTypedRootPropsOverloads()
     {
         var methods = typeof(Vue3)
             .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name is nameof(Vue3.CreateApp) or nameof(Vue3.CreateSsrApp))
+            .Where(static method => method.Name is nameof(Vue3.CreateApp) or nameof(Vue3.CreateSSRApp))
             .ToArray();
 
         static bool HasTypedRootPropsOverload(MethodInfo[] methods, string methodName, int genericArity, Func<ParameterInfo[], bool> predicate)
@@ -858,7 +873,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSsrApp),
+            nameof(Vue3.CreateSSRApp),
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
@@ -867,7 +882,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSsrApp),
+            nameof(Vue3.CreateSSRApp),
             1,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
@@ -877,7 +892,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSsrApp),
+            nameof(Vue3.CreateSSRApp),
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
@@ -886,13 +901,168 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(HasTypedRootPropsOverload(
             methods,
-            nameof(Vue3.CreateSsrApp),
+            nameof(Vue3.CreateSSRApp),
             2,
             parameters => parameters.Length == 2 &&
                           parameters[0].ParameterType.IsGenericType &&
                           parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>) &&
                           parameters[1].ParameterType.IsGenericType &&
                           parameters[1].ParameterType.GetGenericTypeDefinition() == typeof(VueObject<>)));
+    }
+
+    [TestMethod]
+    public void Vue_PublicApiNames_Follow_VueJsNameProjection_Policy()
+    {
+        var staticMethods = typeof(Vue3)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => !method.IsSpecialName)
+            .ToArray();
+
+        Assert.IsTrue(staticMethods.Any(static method => method.Name == nameof(Vue3.CreateSSRApp)));
+        Assert.IsFalse(staticMethods.Any(static method => method.Name == "CreateSsrApp"));
+        Assert.IsFalse(staticMethods.Any(static method => method.Name == "CreateSSRAppFn"));
+
+        AssertDirectVueName(staticMethods, nameof(Vue3.CreateApp), "createApp");
+        AssertDirectVueName(staticMethods, nameof(Vue3.CreateSSRApp), "createSSRApp");
+        AssertDirectVueName(staticMethods, nameof(Vue3.DefineComponent), "defineComponent");
+        AssertDirectVueName(staticMethods, nameof(Vue3.DefineAsyncComponent), "defineAsyncComponent");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ResolveComponent), "resolveComponent");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ResolveDirective), "resolveDirective");
+        AssertDirectVueName(staticMethods, nameof(Vue3.MergeProps), "mergeProps");
+        AssertDirectVueName(staticMethods, nameof(Vue3.CloneVNode), "cloneVNode");
+        AssertDirectVueName(staticMethods, nameof(Vue3.WithDirectives), "withDirectives");
+        AssertDirectVueName(staticMethods, nameof(Vue3.WithModifiers), "withModifiers");
+        AssertDirectVueName(staticMethods, nameof(Vue3.H), "h");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Ref), "ref");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Reactive), "reactive");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Readonly), "readonly");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ShallowRef), "shallowRef");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ShallowReactive), "shallowReactive");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ShallowReadonly), "shallowReadonly");
+        AssertDirectVueName(staticMethods, nameof(Vue3.TriggerRef), "triggerRef");
+        AssertDirectVueName(staticMethods, nameof(Vue3.CustomRef), "customRef");
+        AssertDirectVueName(staticMethods, nameof(Vue3.IsRef), "isRef");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Unref), "unref");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ToRef), "toRef");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ToRefs), "toRefs");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ToRaw), "toRaw");
+        AssertDirectVueName(staticMethods, nameof(Vue3.ToValue), "toValue");
+        AssertDirectVueName(staticMethods, nameof(Vue3.MarkRaw), "markRaw");
+        AssertDirectVueName(staticMethods, nameof(Vue3.IsProxy), "isProxy");
+        AssertDirectVueName(staticMethods, nameof(Vue3.IsReactive), "isReactive");
+        AssertDirectVueName(staticMethods, nameof(Vue3.IsReadonly), "isReadonly");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Computed), "computed");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Watch), "watch");
+        AssertDirectVueName(staticMethods, nameof(Vue3.WatchEffect), "watchEffect");
+        AssertDirectVueName(staticMethods, nameof(Vue3.WatchPostEffect), "watchPostEffect");
+        AssertDirectVueName(staticMethods, nameof(Vue3.WatchSyncEffect), "watchSyncEffect");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnWatcherCleanup), "onWatcherCleanup");
+        AssertDirectVueName(staticMethods, nameof(Vue3.NextTick), "nextTick");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseAttrs), "useAttrs");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseSlots), "useSlots");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseTemplateRef), "useTemplateRef");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseId), "useId");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseModel), "useModel");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseHost), "useHost");
+        AssertDirectVueName(staticMethods, nameof(Vue3.UseShadowRoot), "useShadowRoot");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Provide), "provide");
+        AssertDirectVueName(staticMethods, nameof(Vue3.Inject), "inject");
+        AssertDirectVueName(staticMethods, nameof(Vue3.HasInjectionContext), "hasInjectionContext");
+        AssertDirectVueName(staticMethods, nameof(Vue3.EffectScope), "effectScope");
+        AssertDirectVueName(staticMethods, nameof(Vue3.GetCurrentScope), "getCurrentScope");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnScopeDispose), "onScopeDispose");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnMounted), "onMounted");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnBeforeMount), "onBeforeMount");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnBeforeUnmount), "onBeforeUnmount");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnUnmounted), "onUnmounted");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnUpdated), "onUpdated");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnBeforeUpdate), "onBeforeUpdate");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnActivated), "onActivated");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnDeactivated), "onDeactivated");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnErrorCaptured), "onErrorCaptured");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnRenderTracked), "onRenderTracked");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnRenderTriggered), "onRenderTriggered");
+        AssertDirectVueName(staticMethods, nameof(Vue3.OnServerPrefetch), "onServerPrefetch");
+
+        AssertHelperVueName(staticMethods, nameof(Vue3.BindThis), null);
+        AssertHelperVueName(staticMethods, nameof(Vue3.ModelName), null);
+        AssertHelperVueName(staticMethods, nameof(Vue3.ModelPropName), null);
+        AssertHelperVueName(staticMethods, nameof(Vue3.ModelUpdateEventName), null);
+
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                nameof(Vue3.BindThis),
+                nameof(Vue3.ModelName),
+                nameof(Vue3.ModelPropName),
+                nameof(Vue3.ModelUpdateEventName)
+            },
+            staticMethods
+                .Where(static method =>
+                {
+                    var description = method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description;
+                    return description is null;
+                })
+                .Select(static method => method.Name)
+                .Distinct()
+                .Where(static name => name is nameof(Vue3.BindThis)
+                    or nameof(Vue3.ModelName)
+                    or nameof(Vue3.ModelPropName)
+                    or nameof(Vue3.ModelUpdateEventName))
+                .ToArray());
+
+        static void AssertDirectVueName(MethodInfo[] methods, string methodName, string runtimeName)
+        {
+            var matchingMethods = methods.Where(method => method.Name == methodName).ToArray();
+            Assert.IsTrue(matchingMethods.Length > 0, $"Missing Vue3.{methodName}.");
+            Assert.IsTrue(
+                matchingMethods.All(method => method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description == "@#" + runtimeName),
+                $"Vue3.{methodName} must map directly to Vue runtime name '{runtimeName}'.");
+        }
+
+        static void AssertHelperVueName(MethodInfo[] methods, string methodName, string? runtimeName)
+        {
+            var matchingMethods = methods.Where(method => method.Name == methodName).ToArray();
+            Assert.IsTrue(matchingMethods.Length > 0, $"Missing Vue3 helper {methodName}.");
+
+            if (runtimeName is null)
+            {
+                Assert.IsTrue(
+                    matchingMethods.All(method => method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>() is null),
+                    $"Vue3 helper {methodName} should not pretend to be a direct Vue runtime API.");
+                return;
+            }
+
+            Assert.IsTrue(
+                matchingMethods.All(method => method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description == "@#" + runtimeName),
+                $"Vue3 helper alias {methodName} must preserve runtime mapping '{runtimeName}'.");
+        }
+    }
+
+    [TestMethod]
+    public void Vue_DirectiveSSRBindings_Follow_CanonicalProjectionPolicy()
+    {
+        var directiveType = typeof(VueDirective);
+        var typedDirectiveType = typeof(VueDirective<string>);
+        var getSSRProps = directiveType.GetProperty(nameof(VueDirective.GetSSRProps), BindingFlags.Public | BindingFlags.Instance);
+        var typedGetSSRProps = typedDirectiveType
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Single(static property =>
+                property.Name == nameof(VueDirective<string>.GetSSRProps) &&
+                property.PropertyType.UnwrapNullable() == typeof(VueDirectiveSSRPropsCallback<string>));
+
+        Assert.IsNotNull(getSSRProps);
+        Assert.IsNotNull(typedGetSSRProps);
+
+        Assert.AreEqual(typeof(VueDirectiveSSRPropsCallback), getSSRProps!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueDirectiveSSRPropsCallback<string>), typedGetSSRProps!.PropertyType.UnwrapNullable());
+
+        Assert.AreEqual("@#getSSRProps", getSSRProps.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description);
+        Assert.AreEqual("@#getSSRProps", typedGetSSRProps.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description);
+        Assert.IsNull(directiveType.GetProperty("GetSsrProps", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typedDirectiveType.GetProperty("GetSsrProps", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(typeof(Vue3).Assembly.GetType("ECMAScript.VueDirectiveSsrPropsCallback"));
+        Assert.IsNull(typeof(Vue3).Assembly.GetType("ECMAScript.VueDirectiveSsrPropsCallback`1"));
     }
 
     [TestMethod]
@@ -1057,9 +1227,9 @@ public sealed class EcmaScriptVueProxyTests
         var attrsTypeProp = attrsType.GetProperty(nameof(VueAttributeBag.Type), BindingFlags.Public | BindingFlags.Instance);
         var attrsPlaceholder = attrsType.GetProperty(nameof(VueAttributeBag.Placeholder), BindingFlags.Public | BindingFlags.Instance);
         var attrsDisabled = attrsType.GetProperty(nameof(VueAttributeBag.Disabled), BindingFlags.Public | BindingFlags.Instance);
-        var attrsReadOnly = attrsType.GetProperty(nameof(VueAttributeBag.ReadOnly), BindingFlags.Public | BindingFlags.Instance);
+        var attrsReadOnly = attrsType.GetProperty(nameof(VueAttributeBag.Readonly), BindingFlags.Public | BindingFlags.Instance);
         var attrsRequired = attrsType.GetProperty(nameof(VueAttributeBag.Required), BindingFlags.Public | BindingFlags.Instance);
-        var attrsTabIndex = attrsType.GetProperty(nameof(VueAttributeBag.TabIndex), BindingFlags.Public | BindingFlags.Instance);
+        var attrsTabIndex = attrsType.GetProperty(nameof(VueAttributeBag.Tabindex), BindingFlags.Public | BindingFlags.Instance);
         var attrsRole = attrsType.GetProperty(nameof(VueAttributeBag.Role), BindingFlags.Public | BindingFlags.Instance);
         var defaultSlot = slotsType.GetProperty(nameof(VueSlotBag.Default), BindingFlags.Public | BindingFlags.Instance);
         var scopedDefaultSlot = scopedSlotsType.GetProperty("Default", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -1130,6 +1300,8 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(bool), attrsRequired.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(int), attrsTabIndex.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), attrsRole.PropertyType.UnwrapNullable());
+        Assert.IsNull(attrsType.GetProperty("ReadOnly", BindingFlags.Public | BindingFlags.Instance));
+        Assert.IsNull(attrsType.GetProperty("TabIndex", BindingFlags.Public | BindingFlags.Instance));
         Assert.AreEqual(typeof(VueSlotCallback), defaultSlot.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueSlotCallback<string>), scopedDefaultSlot.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Func<string, string>), modelOptionsType.GetProperty(nameof(VueModelOptions<string>.Get))!.PropertyType.UnwrapNullable());
@@ -1824,14 +1996,14 @@ public sealed class EcmaScriptVueProxyTests
     {
         var componentOptions = typeof(VueComponentOptions<>).MakeGenericType(typeof(TestVueProps));
         var setup = componentOptions.GetProperty("Setup", BindingFlags.Public | BindingFlags.Instance);
-        var propNames = componentOptions.GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance);
-        var emitNames = componentOptions.GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance);
+        var props = componentOptions.GetProperty("Props", BindingFlags.Public | BindingFlags.Instance);
+        var emits = componentOptions.GetProperty("Emits", BindingFlags.Public | BindingFlags.Instance);
         Assert.IsNotNull(setup);
-        Assert.IsNotNull(propNames);
-        Assert.IsNotNull(emitNames);
+        Assert.IsNotNull(props);
+        Assert.IsNotNull(emits);
         Assert.AreEqual(typeof(VueTypedSetupCallback<TestVueProps>), setup.PropertyType);
-        Assert.AreEqual(typeof(string[]), propNames.PropertyType);
-        Assert.AreEqual(typeof(string[]), emitNames.PropertyType);
+        Assert.AreEqual(typeof(VueNamesOrOptions), props.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueNamesOrOptions), emits.PropertyType.UnwrapNullable());
 
         foreach (var optionType in new[]
         {
@@ -1841,10 +2013,12 @@ public sealed class EcmaScriptVueProxyTests
             typeof(VueSlotComponentOptions<>).MakeGenericType(typeof(TestVueSlots))
         })
         {
-            AssertNoHostInferenceAttribute(optionType, "PropOptions");
-            AssertNoHostInferenceAttribute(optionType, "PropNames");
-            AssertNoHostInferenceAttribute(optionType, "EmitOptions");
-            AssertNoHostInferenceAttribute(optionType, "EmitNames");
+            AssertNoHostInferenceAttribute(optionType, "Props");
+            AssertNoHostInferenceAttribute(optionType, "Emits");
+            Assert.IsNull(optionType.GetProperty("PropOptions", BindingFlags.Public | BindingFlags.Instance), $"{optionType.FullName}.PropOptions");
+            Assert.IsNull(optionType.GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance), $"{optionType.FullName}.PropNames");
+            Assert.IsNull(optionType.GetProperty("EmitOptions", BindingFlags.Public | BindingFlags.Instance), $"{optionType.FullName}.EmitOptions");
+            Assert.IsNull(optionType.GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance), $"{optionType.FullName}.EmitNames");
         }
     }
 
@@ -1855,13 +2029,13 @@ public sealed class EcmaScriptVueProxyTests
         var emitsUsage = typeof(EmitsAttribute).GetCustomAttribute<AttributeUsageAttribute>();
         var propsDefaults = new PropsAttribute();
         var emitsDefaults = new EmitsAttribute();
-        var configuredPropNames = typeof(TestShiftedContractComponentOptions<,>).GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance);
-        var configuredEmitNames = typeof(TestShiftedContractComponentOptions<,>).GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance);
+        var configuredProps = typeof(TestShiftedContractComponentOptions<,>).GetProperty("Props", BindingFlags.Public | BindingFlags.Instance);
+        var configuredEmits = typeof(TestShiftedContractComponentOptions<,>).GetProperty("Emits", BindingFlags.Public | BindingFlags.Instance);
 
         Assert.IsNotNull(propsUsage);
         Assert.IsNotNull(emitsUsage);
-        Assert.IsNotNull(configuredPropNames);
-        Assert.IsNotNull(configuredEmitNames);
+        Assert.IsNotNull(configuredProps);
+        Assert.IsNotNull(configuredEmits);
         Assert.AreEqual(AttributeTargets.Property, propsUsage.ValidOn);
         Assert.AreEqual(AttributeTargets.Property, emitsUsage.ValidOn);
         Assert.AreEqual(false, propsUsage.AllowMultiple);
@@ -1869,10 +2043,10 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(PropsAttribute.DefaultTypeArgumentIndex, propsDefaults.TypeArgumentIndex);
         Assert.AreEqual(EmitsAttribute.DefaultSourceMemberName, emitsDefaults.SourceMemberName);
         CollectionAssert.Contains(
-            configuredPropNames.CustomAttributes.Select(static attribute => attribute.AttributeType.FullName).ToArray(),
+            configuredProps.CustomAttributes.Select(static attribute => attribute.AttributeType.FullName).ToArray(),
             "ECMAScript.Contract.PropsAttribute");
         CollectionAssert.Contains(
-            configuredEmitNames.CustomAttributes.Select(static attribute => attribute.AttributeType.FullName).ToArray(),
+            configuredEmits.CustomAttributes.Select(static attribute => attribute.AttributeType.FullName).ToArray(),
             "ECMAScript.Contract.EmitsAttribute");
     }
 
@@ -2036,7 +2210,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(extends);
         Assert.AreEqual(typeof(VueProps), provide!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueDataCallback), provideFactory!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<string[], VueProps>), inject!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueNamesOrOptions), inject!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueComponentDefinition[]), mixins!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueComponentDefinition), extends!.PropertyType.UnwrapNullable());
         CollectionAssert.Contains(
