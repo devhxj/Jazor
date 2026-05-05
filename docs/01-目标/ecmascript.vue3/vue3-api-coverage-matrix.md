@@ -231,11 +231,11 @@ Sources:
 | 分类 | API | 当前状态 | 目标 |
 |------|-----|----------|------|
 | State | `data` | Covered | `VueDataCallback` + `BindThis<TThis>(VueThisDataCallback<TThis>)` 已覆盖无 `this` 与 this-bound `data(vm)` authoring |
-| State | `props` | Covered | `PropNames` 覆盖 array-form；`PropOptions` + `VuePropOptions<T>` / `VuePropRegistry<T>` / 自定义 `VueProps` record 覆盖 object-form validators/defaults；typed generic 只提供 C# authoring contract，不自动生成 runtime declaration |
+| State | `props` | Covered | `Props` 覆盖 array-form 与 object-form；object-form 继续通过 `VuePropOptions<T>` / `VuePropRegistry<T>` / 自定义 `VueProps` record 表达 validators/defaults；typed generic 只提供 C# authoring contract，不自动生成 runtime declaration |
 | State | `computed` | Covered | `VueComputedRegistry<T>` / writable options / custom `VueProps` record 已覆盖；this-bound getter/setter 通过 `BindThis<TThis,...>(VueThisFunc<...>/VueThisAction<...>)` 覆盖 |
 | State | `methods` | Covered | `VueMethodRegistry<TDelegate>` / custom `VueProps` record 已覆盖；this-bound method delegates 通过 `BindThis<TThis,...>(VueThisAction<...>/VueThisFunc<...>)` 覆盖 |
 | State | `watch` | Covered | `VueWatchRegistry<T>` + `VueWatchEntry<T>` / `VueWatchEntries<T>` 覆盖基础与数组声明；this-bound callback / cleanup callback 通过 `BindThis<TThis,...>` 覆盖 |
-| State | `emits` | Covered | `EmitNames` 覆盖 array-form；`EmitOptions` + `VueEmitRegistry` / `VueEmitRegistry<T0...T3>` 覆盖 object-form validators；超过 4 payload 再按需求加 overload |
+| State | `emits` | Covered | `Emits` 覆盖 array-form 与 object-form；object-form 继续通过 `VueEmitRegistry` / `VueEmitRegistry<T0...T3>` 表达 validators；超过 4 payload 再按需求加 overload |
 | State | `expose` | Covered | `VueComponentDefinition.Expose` |
 | Rendering | `template` | Separate Workstream | template compiler 不属于 `Vue3.cs` |
 | Rendering | `render` | Covered | 当前 `VueRenderCallback` |

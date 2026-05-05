@@ -55,7 +55,7 @@ Vue3 映射不是把 Vue 文档示例逐字镜像成 C# API，而是在 C# autho
 | `Vue3.DefineComponent(...)` | `defineComponent(...)` |
 | `Vue3.H(...)` | `h(...)` |
 | `Vue3.CreateApp(...)` | `createApp(...)` |
-| `Vue3.CreateSsrApp(...)` | `createSSRApp(...)` |
+| `Vue3.CreateSSRApp(...)` | `createSSRApp(...)` |
 | `Vue3.Ref(...)` | `ref(...)` |
 | `Vue3.Computed(...)` | `computed(...)` |
 | `Vue3.Transition` | `Transition` |
@@ -177,7 +177,7 @@ public sealed record CounterProps : Vue3.VueProps
 映射规则：
 
 - object creation lower 成 plain props object。
-- public instance property name 参与 C# typed props authoring；是否生成 Vue runtime `props` declaration 由 `PropNames` / `PropOptions` 显式决定。
+- public instance property name 参与 C# typed props authoring；是否生成 Vue runtime `props` declaration 由 `Props` 显式决定。
 - 属性值类型只用于 C# authoring 和 IntelliSense，运行时不生成 CLR 类型元数据。
 - 如果需要 Vue runtime prop validators/defaults，使用显式 `VuePropOptions<T>` / `VuePropRegistry<T>` 或自定义 `VueProps` options record，不能把普通 typed props record 偷偷升级成 validator object。
 
@@ -210,9 +210,9 @@ public sealed record CounterProps : Vue3.VueProps
 
 当前 `VueObject` 内置的原生 convenience attrs 主要覆盖：
 
-- 基础 DOM attrs：`Id`、`Title`、`For`、`Role`、`TabIndex`；
-- 表单/输入 attrs：`Name`、`Type`、`Placeholder`、`Value`、`Disabled`、`Checked`、`ReadOnly`、`Required`、`Multiple`、`Selected`、`AutoComplete`、`AutoFocus`；
-- 输入约束 attrs：`Min`、`Max`、`Step`、`MinLength`、`MaxLength`、`Pattern`、`Accept`、`Wrap`；
+- 基础 DOM attrs：`Id`、`Title`、`For`、`Role`、`Tabindex`；
+- 表单/输入 attrs：`Name`、`Type`、`Placeholder`、`Value`、`Disabled`、`Checked`、`Readonly`、`Required`、`Multiple`、`Selected`、`Autocomplete`、`Autofocus`；
+- 输入约束 attrs：`Min`、`Max`、`Step`、`Minlength`、`Maxlength`、`Pattern`、`Accept`、`Wrap`；
 - 文本/媒体/链接 attrs：`Rows`、`Cols`、`Href`、`Target`、`Rel`、`Src`、`Alt`、`Action`、`Method`。
 
 这些成员的目标是减少“为了标准元素 props 再自定义一个本地 `VueProps` record”的频率，而不是替代全部 bag/indexer authoring。
@@ -366,10 +366,8 @@ new Vue3.VueObject
 | `RenderTracked` | `renderTracked` | `VueDebuggerCallback` |
 | `RenderTriggered` | `renderTriggered` | `VueDebuggerCallback` |
 | `ServerPrefetch` | `serverPrefetch` | `VueServerPrefetchPromiseCallback` |
-| `PropOptions` | `props` | object-form validators/defaults declaration，`VueProps` record |
-| `PropNames` | `props` | explicit array-form declaration |
-| `EmitOptions` | `emits` | object-form validator declaration，`VueProps` record |
-| `EmitNames` | `emits` | explicit array-form declaration |
+| `Props` | `props` | `string[]` array-form 或 `VueProps` object-form declaration |
+| `Emits` | `emits` | `string[]` array-form 或 `VueProps` object-form declaration |
 | `Setup` | `setup` | delegate/function |
 | `Render` | `render` | delegate/function |
 
@@ -377,14 +375,14 @@ new Vue3.VueObject
 
 泛型 component options 的 `TProps` / `TSlots` 是 C# authoring contract。它们约束 `Setup(...)`、`VueSetupContext<TSlots>` 和 `H(...)` 调用，但不自动发明 Vue runtime `props` / `emits` 选项。
 
-运行时声明必须显式选择一种形态：
+运行时声明通过同一个 canonical 成员显式选择形态：
 
 | C# | JS | 使用场景 |
 |----|----|----------|
-| `PropNames = ["title"]` | `props: ["title"]` | 只需要 Vue array-form props |
-| `PropOptions = new MyPropOptions { ... }` | `props: { ... }` | 需要 runtime type/default/validator |
-| `EmitNames = ["save"]` | `emits: ["save"]` | 只需要事件名声明 |
-| `EmitOptions = new VueEmitRegistry<T> { ... }` | `emits: { ... }` | 需要 emit validator |
+| `Props = ["title"]` | `props: ["title"]` | 只需要 Vue array-form props |
+| `Props = new MyPropOptions { ... }` | `props: { ... }` | 需要 runtime type/default/validator |
+| `Emits = ["save"]` | `emits: ["save"]` | 只需要事件名声明 |
+| `Emits = new VueEmitRegistry<T> { ... }` | `emits: { ... }` | 需要 emit validator |
 
 `VuePropOptions<TValue>` 覆盖 Vue object-form prop declaration：
 
@@ -414,7 +412,7 @@ public sealed record LabelPropOptions : VueProps
 
 `VueEmitRegistry` / `VueEmitRegistry<T0...T3>` 覆盖 0 到 4 个 payload 的 object-form validator。超过 4 个 payload 时再按真实需求增加 overload，不使用 `object[]`。
 
-同一个 options object 上按约定只使用 `PropOptions` 或 `PropNames` 之一、`EmitOptions` 或 `EmitNames` 之一。当前这不是 Vue-specific diagnostic；它依赖普通 object literal 的同名 key 语义，因此不要让两个 C# 成员同时映射到同一个 JS key。
+`Props` / `Emits` 的 canonical public surface 通过 `VueNamesOrOptions` bridge 同时覆盖 array-form 与 object-form，并保留 `Props = ["title"]` / `Emits = ["save"]` 这类 collection-expression authoring。
 
 ### 6.3 Host-Level `[Props]` / `[Emits]`
 
@@ -425,7 +423,7 @@ public sealed record LabelPropOptions : VueProps
 - `[Props]` 目标成员必须是 `string[]`，来源是指定 generic type argument 的 public instance properties。
 - `[Emits]` 目标成员必须是 `string[]`，来源是指定 setup-like 成员中的稳定 emit 调用。
 - 这两个特性只用于受控 host contract；外部库不应依赖它们扩展 Vue 语义。
-- Vue runtime `props` / `emits` 必须通过 `PropNames` / `PropOptions` / `EmitNames` / `EmitOptions` 显式声明，不能依赖同 key 成员排序或推导成员被“碰巧跳过”。
+- Vue runtime `props` / `emits` 必须通过 `Props` / `Emits` 显式声明，不能依赖推导成员被“碰巧跳过”。
 - Vue3 public surface 新增功能时，优先使用显式 record 成员、overload、generic、delegate、`Description("@#...")` 和通用 record lowering。
 
 ### 6.4 Setup / Render
@@ -526,7 +524,7 @@ new VueComponentOptions
 
 - `Provide` 使用 `VueProps?`，既支持用户声明 typed record，也支持 `VueDictionary` 任意 key。
 - `ProvideFactory` 使用 `VueDataCallback?`，直接映射 Vue 的 function-form `provide()`；需要 `this` 时复用 `BindThis<TThis>(VueThisDataCallback<TThis>)`，不再新增专门 compiler 特路。
-- `Inject` 使用 `Either<string[], VueProps>?`，覆盖官方 array form 和 object form。
+- `Inject` 使用 `VueNamesOrOptions?`，覆盖官方 array form 和 object form，并保留 `Inject = ["feature"]` 这类 collection-expression authoring。
 - object-form inject 可以直接使用 custom `VueProps` record，也可以使用 `VueInjectOptions<TValue>` / `VueInjectEntry<TValue>` / `VueInjectRegistry<TValue>` 表达 string key、typed `VueInjectionKey<TValue>`、raw `Symbol` source key、default literal 与 default factory。
 - 更复杂的 `this`-bound Options API 长尾仍作为下一阶段设计项，但 `provide` 本身已经可以通过 `ProvideFactory + BindThis(...)` 收口；symbol-key `provide` / `inject` object form 不再要求额外 Vue 编译器特路。
 - Composition API `Provide(...)` / `Inject(...)` 与 Options API `Provide` / `Inject` 是不同入口：前者是 setup-time helper，后者是 component option object member。
@@ -941,7 +939,7 @@ public sealed record PanelSlots : Vue3.VueSlots
 
 - `VueValue? this[string key] { get; }`
 - `Class` / `Style` / `Id` / `Title` convenience reads。
-- 高频 attrs convenience reads：`For` / `Name` / `Type` / `Placeholder` / `Disabled` / `ReadOnly` / `Required` / `TabIndex` / `Role`。
+- 高频 attrs convenience reads：`For` / `Name` / `Type` / `Placeholder` / `Disabled` / `Readonly` / `Required` / `Tabindex` / `Role`。
 - 不做 `data-*`、event listener、kebab-case 推断。
 
 `UseAttrs<TAttrs>()` 的 typed projection 可进一步使用：
@@ -955,14 +953,14 @@ public sealed record PanelSlots : Vue3.VueSlots
 
 ## 10. App 映射
 
-### 10.1 CreateApp / CreateSsrApp
+### 10.1 CreateApp / CreateSSRApp
 
 | C# | JS |
 |----|----|
 | `CreateApp(component)` | `createApp(component)` |
 | `CreateApp(component, props)` | `createApp(component, props)` |
-| `CreateSsrApp(component)` | `createSSRApp(component)` |
-| `CreateSsrApp(component, props)` | `createSSRApp(component, props)` |
+| `CreateSSRApp(component)` | `createSSRApp(component)` |
+| `CreateSSRApp(component, props)` | `createSSRApp(component, props)` |
 
 typed root props：
 
@@ -1053,7 +1051,7 @@ app.config.optionMergeStrategies["route"] = mergeRoute;
 | `Updated` | `updated` |
 | `BeforeUnmount` | `beforeUnmount` |
 | `Unmounted` | `unmounted` |
-| `GetSsrProps` | `getSSRProps` |
+| `GetSSRProps` | `getSSRProps` |
 
 typed directive 只改变 C# binding value 类型，不改变 JS object shape。
 
@@ -1241,7 +1239,7 @@ app.use(installFeature, { enabled: true });
 - `UseModel<TProps,TValue>(props,model)` / `UseModel<TProps,TValue>(props,model,options)` 复用同一底层 helper，但把 prop key 收敛到 `VueModelName<TProps,TValue>` typed contract。
 - `VueModelOptions<TValue>` 覆盖 get/set transform。
 - `UseModel(...)` 返回 `VueModelRef<TValue>`：`.Value` 继续映射到 `model.value`，`GetModifiers()` / `GetModifiers<TModifiers>()` 通过 `ECMAScriptInline("__arg1[1]")` 读取官方 tuple-like modifiers bag，而不新增 compiler 特路。
-- `ModelName<TProps,TValue>()` / `ModelName<TProps,TValue>(string key)` 分别覆盖 default model (`modelValue`) 与 named model；`ModelPropName(model)` / `ModelUpdateEventName(model)` 用于把同一 typed contract 复用到 `PropNames` / `EmitNames` 声明，减少重复字符串。
+- `ModelName<TProps,TValue>()` / `ModelName<TProps,TValue>(string key)` 分别覆盖 default model (`modelValue`) 与 named model；`ModelPropName(model)` / `ModelUpdateEventName(model)` 用于把同一 typed contract 复用到 `Props` / `Emits` 声明，减少重复字符串。
 - `VueSetupContext.Emit(model, value)` 通过 instance-inline helper 映射到 `context.emit(\`update:${model}\`, value)`，把同一 `VueModelName<TProps,TValue>` contract 继续复用到 typed update emit。
 - `ToRef` 使用 overload 区分 value/ref/getter normalization 与 object property ref；字符串 key 必须是最终 runtime key，C# 不从 string key 反推属性类型。
 - `ToRef<TValue>(VueDictionary<TValue>, string)` 覆盖字典对象 key path；强类型 record path 使用 `ToRef<TSource,TValue>(source,key)` 明确 value contract。
@@ -1300,7 +1298,7 @@ app.use(installFeature, { enabled: true });
 - `UseHost()` 当前返回 `HTMLElement?`，这是 `VueElement | null` 在现有 WebIDL surface 下的稳定 DOM 上界；不臆造 VueElement runtime 类型。
 - `UseHost<THost>()` 是 typed projection，保持 runtime 调用形态不变（仍是 `useHost()`）。
 - `UseShadowRoot()` 返回 `ShadowRoot?`，表达 `shadowRoot: false` 或非 custom-element setup context 下可能为 `null`。
-- CE props/events/light DOM 策略：props/emits 继续复用 component options 的 `PropNames/PropOptions` 与 `EmitNames/EmitOptions`；light DOM 通过 `ShadowRoot = false` 显式表达。
+- CE props/events/light DOM 策略：props/emits 继续复用 component options 的 `Props` / `Emits`；light DOM 通过 `ShadowRoot = false` 显式表达。
 
 ## 16. Registry 映射
 
@@ -1329,8 +1327,8 @@ app.use(installFeature, { enabled: true });
 | `[Props]` 目标不是 `string[]` | compiler error |
 | `[Props]` 无法解析 generic source type | compiler error |
 | `[Emits]` 目标不是 `string[]` | compiler error |
-| `[Emits]` 无法分析 setup callback | compiler error，并提示显式 `EmitNames` |
-| `[Emits]` 遇到非字面量 event name | compiler error，并提示显式 `EmitNames` |
+| `[Emits]` 无法分析 setup callback | compiler error，并提示显式 `Emits` |
+| `[Emits]` 遇到非字面量 event name | compiler error，并提示显式 `Emits` |
 | object literal key 无法稳定翻译 | compiler error |
 | typed default slot sugar 缺少 default slot | compiler error |
 | typed default slot sugar default slot 重复 | compiler error |

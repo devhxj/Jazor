@@ -35,4 +35,4 @@ RazorVueCompilationContext / SemanticSnapshot
      ↓ 下游消费（Compiler / RazorVue / Jolt）
 ```
 
-这里的输出边界不是固定的 `.vue SFC`。具体产物形态取决于下游消费者：可以是 RazorVue 的编译时 JS artifact，也可以是 Jolt 的投影和工具工件。
+这里的输出边界不是由 `Razor` 基础层单独固定的。具体产物形态取决于下游消费者：可以是 RazorVue 的 design-time SFC artifact（过渡期仍可能存在 legacy JS artifact 实现），也可以是 Jolt 的投影和工具工件。

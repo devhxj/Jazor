@@ -1,7 +1,7 @@
 # Jazor 工作流总览
 
 > Status: 活跃计划
-> Updated: 2026-05-02
+> Updated: 2026-05-05
 > Positioning: 仓库级恢复入口，用于查看各工作流当前阶段、依赖顺序与下一步行动。
 > Note: 更窄的 active plan 可以覆盖这里的具体执行切片，但不应反向改写这里对工作流边界和先后依赖的判断。
 
@@ -10,7 +10,7 @@
 | 工作流 | 当前阶段 | 下一步行动 | 状态文档 |
 |--------|---------|-----------|---------|
 | Compiler 主线 | 接近稳定 | 巩固 output closure、import closure、host seam | [详情](../03-完成/compiler/status.md) |
-| ECMAScript.Vue3 外部库线 | 三阶段：Phase 1 完成，Phase 2 启动 | 收敛 `H(...)` 规范层、推进 Razor->H authoring 对齐、定义 Jolt 集成边界 | [详情](../03-完成/ecmascript.vue3/status.md) |
+| ECMAScript.Vue3 外部库线 | 三阶段：Phase 1 完成，Phase 2 收口中 | 收敛 `H(...)` 规范层、补齐 Razor->H->SFC parity（重点 slot forwarding）、把 RazorVue 库模式切到 design-time SFC artifact | [详情](../03-完成/ecmascript.vue3/status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](../03-完成/emit/status.md) |
 | Jolt | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](../03-完成/jolt/status.md) |
 | SourceMap | 局部活跃（narrow lane） | 继续补齐调试消费链路与精度提升 | [详情](../03-完成/sourcemap/status.md) |
@@ -69,7 +69,7 @@
 
 ### ECMAScript.Vue3 外部库线
 
-**当前状态**：三阶段路线已明确，当前位于 Phase 2 起步（Phase 1 已完成收口）
+**当前状态**：三阶段路线已明确，当前位于 Phase 2 收口阶段（Phase 1 已完成收口）
 
 `ECMAScript.Vue3` 已从 `ECMAScript` 内核文档与模块布局独立出来，当前重点是维持外部库边界并避免 compiler 名称耦合回流。
 
@@ -81,7 +81,8 @@
 
 2. **Phase 2: Razor -> H**
    - 目标：把 Razor authoring 映射到稳定 `H(...)` 规范层，避免在 compiler 中扩张 Vue 专项分支。
-   - 状态：启动中（当前主线）。
+   - 状态：收口中（当前主线）。
+   - RazorVue 库模式的当前 Phase 2 下游目标：在 Roslyn design-time compilation 中生成 `.vue` SFC artifact，由 emit 只负责物化；当前剩余重点是 slot parity、generator topology 与默认 output 切换。
 
 3. **Phase 3: Jolt**
    - 目标：在 Jolt 内完成工程化 authoring、调试与构建协同，但保持 Vue3 作为外部库边界。
@@ -89,15 +90,21 @@
 
 **下一步行动（Phase 2 主线）**：
 
-1. **覆盖矩阵驱动补齐**
+1. **Razor -> H -> SFC 主线收口**
+   - canonical `H(...)` 与 SFC semantic 主边界已落地
+   - 下一步补齐 callable scoped slot forwarding 等剩余 parity
+   - 再将 RazorVue 库模式切到 design-time SFC artifact 默认主工件
+   - 不引入 render fallback
+
+2. **覆盖矩阵驱动补齐**
    - 按 `vue3-api-coverage-matrix` 的优先级持续补齐 API
    - 仅走 record/overload/delegate/attribute 等公共语义路径
 
-2. **host contract 收口**
+3. **host contract 收口**
    - 继续降低 compiler 对 Vue 名称耦合
    - 保持 `ChildrenToSlotIntrinsic` 与通用 contract 路线
 
-3. **分层治理模板化**
+4. **分层治理模板化**
    - 将 `Api/` + `Types/` + 壳文件约束抽象为外部库可复用模板
 
 **深度文档**：

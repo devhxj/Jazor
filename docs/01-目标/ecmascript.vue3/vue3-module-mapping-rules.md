@@ -131,7 +131,7 @@ Vue3 中大量类型只参与 C# 语义，不生成 JS：
 
 - 类型参数是编译期约束，不自动生成 Vue runtime declaration；
 - `VueComponentOptions<TProps>` 不因为 `TProps` 自动生成 `props`；
-- runtime `props` / `emits` 必须通过 `PropNames` / `PropOptions`、`EmitNames` / `EmitOptions` 显式声明。
+- runtime `props` / `emits` 必须通过 `Props` / `Emits` 显式声明。
 
 ## 5. Record 到 object literal
 
@@ -261,8 +261,8 @@ runtime `props` / `emits` 声明必须显式：
 ```csharp
 new VueComponentOptions<CounterProps>
 {
-    PropNames = ["value"],
-    EmitNames = ["update:value"],
+    Props = ["value"],
+    Emits = ["update:value"],
     Setup = Setup
 }
 ```
@@ -271,7 +271,7 @@ new VueComponentOptions<CounterProps>
 
 - generic type 提供 authoring 类型约束；
 - runtime declaration 由显式 property 生成；
-- object-form props/emits 使用 `PropOptions` / `EmitOptions`；
+- `Props` / `Emits` 分别同时覆盖 array-form 与 object-form；
 - `[Props]` / `[Emits]` 只保留为底层 compiler host contract，不作为 Vue3 public authoring API 推广。
 
 ## 9. Dictionary 与 arbitrary key

@@ -6,7 +6,7 @@
 
 ## 1. 文档定位
 
-本文档是 RazorVue 技术线路的架构总览，解释其作为 **库模式** 的设计理念、项目组织、Source Generator 管线流程，以及与 **Jolt 全功能模式** 的对比。
+本文档是 RazorVue 技术线路的架构总览，解释其作为 **库模式** 的设计理念、项目组织、design-time Source Generator 管线流程，以及与 **Jolt 全功能模式** 的对比。
 
 ## 目录
 
@@ -48,14 +48,14 @@ src/
 - `Descriptor/` - Vue 组件描述符 (`VueComponentDescriptor`, `VuePropDescriptor`, `VueEmitDescriptor`, `VueSlotDescriptor`)
 - `RenderTree/` - Razor 渲染树到 Vue 渲染树的转换 (`RazorVueRenderTreeExtractor`)
 - `Lowering/` - 语义快照到 Vue 编译产物的 Lowering (`RazorVueArtifactFactory`, `RazorVueExpressionEmitter`)
-- `Artifacts/` - 编译产物模型 (`VueCompiledArtifact`, `VueArtifactIdentity`, `VueRuntimeHints`)
+- `Artifacts/` - 编译产物模型（legacy `VueCompiledArtifact` 与过渡中的 `VueSfcArtifact` / block-aware identity）
 - `Extensibility/` - 扩展点接口 (`IRazorSemanticFrontend`, `IRazorVueArtifactLowerer`)
 - `RazorVuePipeline.cs` - 管线编排入口
 - `RazorVueCompilationContext.cs` - 编译上下文，共享符号和语义视图
 - `IVueComponent.cs` - Vue 组件的基础接口 (继承 `IJazorComponent`)
 
 **核心设计原则**:
-> **Vue-first 语义**: RazorVue 不是简单的 Razor 语法转换，而是将 Razor 组件模型映射到 Vue 3 的 Composition API (`defineComponent` + `setup` + `render` 函数)。
+> **Vue-first 语义**: RazorVue 不是简单的 Razor 语法转换，而是先把 Razor 组件模型收口到 canonical Vue semantics，再在库模式下于 design time 生成 `.vue` SFC artifact。当前代码仍保留 `defineComponent` + `setup` + `render` 的 legacy 过渡车道。
 
 ### 2.2 Jazor.RazorVue.Analysis (Roslyn 接入)
 
@@ -137,7 +137,7 @@ public class VBtn : VueLibraryComponent<VBtn>
 
 ## 4. Source Generator 管线
 
-RazorVue 的编译流程采用 **增量式 Source Generator** 管线，从 C# 源代码到 Vue 模块的完整转换：
+RazorVue 的编译流程采用 **增量式 Source Generator** 管线，从 C# 源代码到 compiler-owned Vue artifact 的完整转换：
 
 ### 4.1 管线阶段概览
 
@@ -184,15 +184,17 @@ RazorVue 的编译流程采用 **增量式 Source Generator** 管线，从 C# �
 └────────────────────────┬────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 6. Artifact Lowering (RazorVueArtifactFactory)             │
+│ 6. Artifact Lowering                                       │
 │    └─ Lower(context, snapshot)                             │
 │       ├─ 表达式发射 (RazorVueExpressionEmitter)            │
 │       │  └─ C# 表达式 → JavaScript 表达式                  │
 │       ├─ 组件解析 (ResolveComponents)                      │
 │       │  └─ 子组件引用 → import 语句                       │
-│       ├─ 代码生成 (BuildModuleCode)                        │
+│       ├─ legacy 代码生成 (BuildModuleCode)                 │
 │       │  └─ defineComponent + setup + render 函数          │
-│       └─ 产物构建 (VueCompiledArtifact)                    │
+│       └─ 产物构建                                          │
+│          ├─ 当前基线: VueCompiledArtifact                  │
+│          └─ 目标主线: VueSfcArtifact                       │
 └────────────────────────┬────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -225,7 +227,7 @@ public class MyComponent : IVueComponent
     }
 }
 
-// 输出: Vue 模块 (字符串形式嵌入生成的 C# 代码)
+// 输出: 当前 legacy Vue 模块（字符串形式嵌入生成的 C# 代码）
 import { defineComponent, h } from 'vue';
 
 export default defineComponent({
@@ -238,6 +240,8 @@ export default defineComponent({
   }
 });
 ```
+
+上面的例子反映的是当前 legacy lowering 车道。RazorVue 库模式的 active target 已改为：在 design-time compilation 中生成 `.vue` SFC artifact，并在 build/emit 阶段只做物化。
 
 ## 5. 核心设计原则
 
@@ -255,6 +259,15 @@ RazorVue 不是简单的 Razor 语法转换，而是将 **Razor 组件模型映�
 | 生命周期方法 | Vue 生命周期钩子 (`onMounted`, `onUpdated`, etc.) |
 | `ref` 字段 | `setup` 中的 `ref`/`reactive` |
 
+其中 `RenderFragment<T>` 的 Phase 2 下游 contract 不是单一“slot value”概念。
+它至少要区分：
+
+- 当前组件消费 typed slot outlet；
+- 父组件把 callable `RenderFragment<T>` forwarding 给子组件；
+- 非 callable 值误传给 typed slot 参数时的 fail-fast 边界。
+
+库模式的 design-time SFC lane 必须显式保持这三者的差异，不能回退到 render fallback，也不能把 typed slot 退化成普通插值。
+
 ### 5.2 编译时转换
 
 与 Jolt 全功能模式不同，RazorVue 在 **编译时** 完成所有转换：
@@ -262,11 +275,11 @@ RazorVue 不是简单的 Razor 语法转换，而是将 **Razor 组件模型映�
 | 特性 | RazorVue (库模式) | Jolt (全功能模式) |
 |------|------------------|------------------|
 | 转换时机 | 编译时 (Source Generator) | 运行时 (DevServer) |
-| 输出形式 | 静态 `.js` 模块 | 内存中编译 + HMR |
+| 输出形式 | design-time 生成 `.vue` SFC artifact（过渡期仍存在 legacy `.js` lane） | 内存中编译 + HMR |
 | 开发体验 | 需要重新编译 | 即时热更新 |
 | 部署方式 | 纯静态 JS 文件 | 需要 Jolt 服务器 |
 | 调试支持 | 生成 SourceMap | 完整 DAP 调试 |
-| 文件格式 | 不使用 `.vue` SFC | 支持 `.jazor` + `.vue` SFC |
+| 文件格式 | 无手写 `.vue` 输入；主工件目标为生成 `.vue` SFC | 支持 `.jazor` + `.vue` SFC |
 
 ### 5.3 语义保持
 
@@ -293,12 +306,12 @@ RazorVue 通过以下机制保证 C# 到 JavaScript 的语义等价：
 
 | 维度 | RazorVue (库模式) | Jolt (全功能模式) |
 |------|------------------|-------------------|
-| **核心定位** | 编译时库，生成纯 JS 模块 | 运行时服务器，类似 Vite |
-| **输入格式** | C# Razor 组件 (不使用 .vue SFC) | `.jazor` + `.vue` SFC |
+| **核心定位** | 编译时库，在 design time 生成 Vue SFC artifact | 运行时服务器，类似 Vite |
+| **输入格式** | C# Razor 组件（无手写 `.vue` SFC 输入） | `.jazor` + `.vue` SFC |
 | **转换时机** | 编译时 (Source Generator) | 运行时 (按需编译) |
-| **输出形式** | 静态 `.js` 文件 | 内存模块 + HMR WebSocket |
+| **输出形式** | `.vue` SFC artifact，由后段 bundler/host 消费 | 内存模块 + HMR WebSocket |
 | **开发工具** | 无需额外工具，直接编译 | 需要 LSP Server + DevServer |
-| **部署方式** | 纯前端部署，无运行时依赖 | 需要 Jolt 服务器运行 |
+| **部署方式** | 无需 Jolt 服务器；由后段 bundler/host 处理 `.vue` | 需要 Jolt 服务器运行 |
 | **调试支持** | 生成 SourceMap，断点映射到 C# | 完整 DAP 调试协议 |
 | **热更新** | 需要重新编译 | 增量 HMR，毫秒级更新 |
 | **适用场景** | 静态站点生成，组件库 | 开发环境，SPA 应用 |
@@ -307,7 +320,7 @@ RazorVue 通过以下机制保证 C# 到 JavaScript 的语义等价：
 
 **选择 RazorVue (库模式) 当**:
 - 你只需要组件库的编译时转换
-- 你希望输出纯静态 JS 文件，无需运行时服务器
+- 你希望在 design time 生成 `.vue` SFC artifact，而无需 Jolt 服务器
 - 你的应用部署在 CDN 或静态托管上
 - 你可以接受重新编译的开发体验
 

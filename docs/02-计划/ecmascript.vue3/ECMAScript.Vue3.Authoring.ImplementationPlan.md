@@ -243,11 +243,12 @@
 ## 5. 推荐执行顺序（Phase 2 / Phase 3 主线）
 
 1. Razor -> `H(...)` canonical lowering
-2. Razor 产物与手写 `H(...)` diagnostics 对齐
-3. 外部库 layout/proxy/doc guard 模板化
-4. higher-level `v-model` convenience 设计
-5. Options API 长尾与 custom elements authoring 策略
-6. Phase 3 的 Jolt 工程化协同
+2. 基于 canonical `H(...)` 的 RazorVue 库模式 design-time SFC artifact 方案落地
+3. Razor 产物与手写 `H(...)` diagnostics 对齐
+4. 外部库 layout/proxy/doc guard 模板化
+5. higher-level `v-model` convenience 设计
+6. Options API 长尾与 custom elements authoring 策略
+7. Phase 3 的 Jolt 工程化协同
 
 理由：
 
@@ -255,6 +256,7 @@
 - 下一阶段的核心是承接已完成 contract，而不是继续扩张 compiler Vue 特路。
 - 先把 Razor/Jolt 等上层工作流压到 Phase 1 contract 上，再讨论更高层 ergonomics。
 - 其中 RazorVue `h(...)` 发射已完成最小 arity 对齐：`h(component)` / `h(component, props)` / `h(component, slots)` / `h(element, child)` 等 canonical 形态不再携带多余 `null` 占位。
+- 若库模式主工件改为 `.vue` SFC，则 SFC 生成必须视为 Phase 2 的直接下游，而不是独立于 canonical `H(...)` 的第二套模板语义；详见 [RazorVue 库模式 Design-Time SFC 方案](./RazorVue.LibraryMode.DesignTimeSfcPlan.md)。
 
 ## 5.1 Phase 2 / Phase 3 前置门槛
 
@@ -304,6 +306,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQual
 ## 9. 参考
 
 - [src/ECMAScript.Vue3/README.md](../../../src/ECMAScript.Vue3/README.md)
+- [RazorVue.LibraryMode.DesignTimeSfcPlan.md](./RazorVue.LibraryMode.DesignTimeSfcPlan.md)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 - [docs/01-目标/ecmascript.vue3/vue3-balanced-design.md](../../01-目标/ecmascript.vue3/vue3-balanced-design.md)
 - [docs/01-目标/ecmascript.vue3/vue3-module-mapping-rules.md](../../01-目标/ecmascript.vue3/vue3-module-mapping-rules.md)

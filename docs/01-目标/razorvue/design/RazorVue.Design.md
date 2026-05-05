@@ -18,6 +18,12 @@
 - `OnInitialized*`、`OnParametersSet*` 和 `OnAfterRender*` 的生命周期安全子集降低
 - 工件标识/哈希塑造和基本 HMR 边界分类
 
+当前还处于库模式主工件切换过渡期：
+
+- 当前 compiler 主链仍以 `defineComponent + setup + render` ESM artifact 为实现基线；
+- 但 RazorVue 库模式的 active direction 已明确切到 **design-time 生成 `.vue` SFC artifact**；
+- 该切换建立在 `ECMAScript.Vue3` Phase 2 的 canonical `Razor -> H(...)` contract 之上，不允许 render fallback。
+
 仓库尚未跨越第一阶段关闭里程碑。
 不支持的提取/降低形状仍会在广义情况下回退到通用 `JAZORVGA001` 诊断表面，但瘦 `Jazor.RazorVue.Analysis` 主机路径现在为 `JAZORVGA002`（组件未找到）、`JAZORVGA003`（歧义短组件名称）、`JAZORVGA004`（保留内置名称冲突）和 `JAZORVGA005`（不支持的生命周期降低）投影结构化编译器问题。
 
@@ -87,7 +93,7 @@ RazorVue 的存在是让 Razor 组件进入 ECMAScript 前端编译域并成为 
 - 保持 Razor 作为面向创作的模板语法
 - 使用 Vue 作为真实运行时组件模型
 - 保持构建所有权与 `DenoHost`
-- 发送稳定的 Vue ESM 工件
+- 发送稳定的 compiler-owned Vue 工件，其中库模式的主目标是 design-time 生成的 `.vue` SFC artifact
 - 保留足够的元数据以支持后续 HMR 和 sourcemap
 
 ## 2. 非目标
@@ -97,7 +103,7 @@ RazorVue 的存在是让 Razor 组件进入 ECMAScript 前端编译域并成为 
 1. 为 React/Vue/Svelte 构建跨框架 UI 抽象
 2. 完全模拟 Blazor 运行时语义
 3. 在编译器中构建新的打包器
-4. 输出 `.vue` SFC 作为主要工件
+4. 引入手写 `.vue` SFC authoring 或要求 Volar/LSP 虚拟文档作为库模式前提
 5. 完全解决 SSR/hydration 策略
 6. 完全支持所有 Razor 语法
 7. 完全实现 sourcemap 或 HMR 运行时行为
@@ -387,6 +393,16 @@ RazorVue 需要自己的阶段：
 - `Foo + FooChanged` -> 绑定/模型元数据
 - 显式 `Emit("...")` 用法 -> 附加 emit 契约信息
 
+其中 `RenderFragment<T>` 不能被视为“带一个参数的普通 slot 值”。
+它至少覆盖三条不同语义路径：
+
+- 当前组件消费自身 slot outlet；
+- 父组件把 callable `RenderFragment<T>` forwarding 给子组件；
+- 非 callable 值错误传给 typed slot 参数。
+
+design-time SFC lane 必须显式区分这三者。
+不能把 callable forwarding 降成普通插值，也不能把 non-callable misuse 伪装成可调用 scoped slot。
+
 此契约必须在渲染树降低之前提取。
 
 ## 11. 逻辑提取
@@ -497,7 +513,16 @@ Blazor 生命周期成员仅保留为编译时糖。
 
 ## 15. Vue 输出模型
 
-第一阶段输出固定为带有 `defineComponent + setup + render` 的标准 Vue ESM。
+当前实现基线仍然包含带有 `defineComponent + setup + render` 的标准 Vue ESM 车道。
+
+但 RazorVue 库模式的 active route 已经改变：
+
+- 主工件目标是 design-time 生成的 `.vue` SFC artifact；
+- SFC emitter 的唯一上游真相源是 canonical `Razor -> H(...)` 语义层；
+- 不允许 `RenderTree -> template string` 直出；
+- 不允许 render fallback。
+
+因此，这里的 ESM 形状应被视为**过渡实现基线**，而不是长期的库模式主输出协议。
 
 规范形状是：
 
@@ -512,7 +537,9 @@ export default defineComponent({
 })
 ```
 
-第一阶段不定位 `.vue` SFC。
+库模式后续的固定主链应为：
+
+`Compilation -> SemanticSnapshot -> RenderTree -> Canonical H Model -> SFC Semantic Model -> VueSfcArtifact -> catalog -> emit materialisation`
 
 ## 16. 生态系统扩展
 
@@ -690,7 +717,7 @@ HMR 和 sourcemap 必须保持元数据扩展。
 - `@bind`、`@ref`、`@key`
 - `if`、`foreach`
 - 生命周期糖降低
-- Vue 渲染函数 ESM 发送
+- design-time SFC artifact 生成与物化边界
 - 工件 + 清单元数据生成
 - `DenoHost` 消费路径
 
@@ -702,7 +729,8 @@ HMR 和 sourcemap 必须保持元数据扩展。
 - `JazorComponent` / `VueComponent` 约束
 - props / emits / slots 提取
 - 带有结构化未找到/歧义/保留名称问题表面的组件解析
-- 真实的 Vue ESM 工件发送
+- 当前 legacy Vue ESM 工件发送基线
+- SFC artifact / emit / manifest materialisation contract
 - 工件 + 清单元数据生成
 - 面向 `DenoHost` 的发送侧主机移交形状
 - 组件节点降低，带有 props、监听器和默认/命名/作用域插槽流
@@ -733,7 +761,7 @@ HMR 和 sourcemap 必须保持元数据扩展。
 - 深度 SSR/hydration 策略
 - 完整的 HMR 运行时
 - 完整的 sourcemap 发送
-- `.vue` SFC 输出
+- compiler 主链切换到 canonical `H(...) -> VueSfcArtifact`
 - 通用多框架抽象
 
 ## 21. 设计结论
@@ -745,5 +773,5 @@ RazorVue 不是"Razor 加上一点 Vue 支持"。
 - 重用 Razor 作为创作语法
 - 使用分析器而非生成的 Razor 组件代码
 - 提取稳定的组件契约和渲染结构
-- 发送标准 Vue ESM 工件
+- 发送 compiler-owned Vue artifact，并将库模式收口到 design-time `.vue` SFC
 - 将统一构建所有权交给 `DenoHost`
