@@ -25,18 +25,19 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 
 ## Status
 
-| Tier | Component | Status |
-|------|-----------|--------|
-| **Working** | Compiler core (SemanticWalker, AstConverter) | Stable — the most mature part |
-| **Working** | ECMAScript module emission (`[ECMAScriptModule]` → `.mjs`) | Stable |
-| **Working** | ECMAScript.Vue3 bindings (h, ref, reactive, lifecycle, createApp) | Stable |
-| **Working** | MSBuild integration (JazorEmit, JazorBundle, JazorOutDir) | Stable |
-| **Working** | Jazor.Analyzer (whitelist compile-time validation) | Stable |
-| **In progress** | SourceMap | Narrow lane — module-level `.mjs.map`, not full coverage yet |
-| **In progress** | Deno bundling | `JazorBundle` target works for basic cases |
-| **In progress** | Debugging | Design and milestone code exist, not user-facing yet |
-| **Long-term** | RazorVue | Full Razor component framework with Source Generator — [Design](docs/01-目标/razorvue/README.md) |
-| **Long-term** | Jolt | Dev toolchain: LSP, HMR, DevServer, debug, build — [Design](docs/01-目标/jolt/README.md) |
+<table>
+<tr><th nowrap>Tier</th><th>Component</th><th>Status</th></tr>
+<tr><td nowrap><strong>Working</strong></td><td>Compiler core (SemanticWalker, AstConverter)</td><td>Stable — the most mature part</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>ECMAScript module emission (<code>[ECMAScriptModule]</code> → <code>.mjs</code>)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>ECMAScript.Vue3 bindings (h, ref, reactive, lifecycle, createApp)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>MSBuild integration (JazorEmit, JazorBundle, JazorOutDir)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>Jazor.Analyzer (whitelist compile-time validation)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>SourceMap</td><td>Narrow lane — module-level <code>.mjs.map</code>, not full coverage yet</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>Deno bundling</td><td><code>JazorBundle</code> target works for basic cases</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>Debugging</td><td>Design and milestone code exist, not user-facing yet</td></tr>
+<tr><td nowrap><strong>Long-term</strong></td><td>RazorVue</td><td>Full Razor component framework with Source Generator — <a href="docs/01-目标/razorvue/README.md">Design</a></td></tr>
+<tr><td nowrap><strong>Long-term</strong></td><td>Jolt</td><td>Dev toolchain: LSP, HMR, DevServer, debug, build — <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
+</table>
 
 Users today should target the **Working** tier. The Long-term items have extensive design documents and milestone code but are not ready for external consumption.
 
