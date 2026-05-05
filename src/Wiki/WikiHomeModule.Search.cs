@@ -56,7 +56,7 @@ public static partial class WikiHomeModule
                     Class = "search-input",
                     Type = "search",
                     Placeholder = "Search compiler, runtime, Jolt, RazorVue, verification...",
-                    AutoComplete = "off",
+                    Autocomplete = "off",
                     Value = query,
                     Events = CreateSearchInputEvents()
                 }),

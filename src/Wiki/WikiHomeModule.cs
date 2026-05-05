@@ -363,7 +363,7 @@ public static partial class WikiHomeModule
                         Class = "nav-search-input",
                         Type = "search",
                         Placeholder = "Search docs pages",
-                        AutoComplete = "off",
+                        Autocomplete = "off",
                         Value = navFilter,
                         Events = CreateNavFilterInputEvents()
                     }),
@@ -458,7 +458,7 @@ public static partial class WikiHomeModule
         {
             Class = "doc-column",
             Id = MainContentId,
-            TabIndex = -1
+            Tabindex = -1
         },
         [
             DocumentHero(currentPath),
@@ -673,7 +673,7 @@ public static partial class WikiHomeModule
         {
             Class = "doc-column",
             Id = MainContentId,
-            TabIndex = -1
+            Tabindex = -1
         },
         [
             H("header", new VueObject { Class = "doc-hero" },
