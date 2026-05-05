@@ -23,6 +23,7 @@
 - 当前 compiler 主链仍以 `defineComponent + setup + render` ESM artifact 为实现基线；
 - 但 RazorVue 库模式的 active direction 已明确切到 **design-time 生成 `.vue` SFC artifact**；
 - 该切换建立在 `ECMAScript.Vue3` Phase 2 的 canonical `Razor -> H(...)` contract 之上，不允许 render fallback。
+- 在这个 design-time SFC contract 中，default slot forwarding 已固定为 nested slot template 语义，`RenderFragment<T>` 的 non-callable misuse 也已固定为 `SlotContextMisuse` fail-fast。
 
 仓库尚未跨越第一阶段关闭里程碑。
 不支持的提取/降低形状仍会在广义情况下回退到通用 `JAZORVGA001` 诊断表面，但瘦 `Jazor.RazorVue.Analysis` 主机路径现在为 `JAZORVGA002`（组件未找到）、`JAZORVGA003`（歧义短组件名称）、`JAZORVGA004`（保留内置名称冲突）和 `JAZORVGA005`（不支持的生命周期降低）投影结构化编译器问题。
@@ -274,14 +275,16 @@ RazorVue 使用基于分析器的语义提取，并启用生成代码分析。
 推荐的内部阶段是：
 
 - `RazorVueSemanticSnapshot`
-- `VueCompiledArtifact`
+- `RazorVueCanonicalHComponentModel`
+- `RazorVueSfcSemanticModel`
+- `VueSfcArtifact`
 - `RazorVueCatalog` 或等效面向主机的载体
 
 推荐职责拆分：
 
 - 分析器验证并提取语义输入
 - 编译器拥有的提取/降低构建 `RazorVueSemanticSnapshot`
-- 降低将快照转换为 `VueCompiledArtifact`
+- canonical / SFC lowering 将快照转换为 `VueSfcArtifact`
 - 后续面向构建的阶段物化 `RazorVueCatalog` 和清单/侧车
 - `DenoHost` 仅消费物化的编译器拥有的输出
 
@@ -300,14 +303,14 @@ RazorVue 使用基于分析器的语义提取，并启用生成代码分析。
 
 1. 分析器仅作为诊断/发现运行
 2. 编译器拥有的提取驱动器从最终编译视图构建 `RazorVueSemanticSnapshot`
-3. 降低消费 `RazorVueSemanticSnapshot` 并生产 `VueCompiledArtifact`
-4. 目录/物化阶段消费 `VueCompiledArtifact` 并发送 `RazorVueCatalog` 加上清单/侧车
+3. lowering 消费 `RazorVueSemanticSnapshot` 并生产 `VueSfcArtifact`
+4. 目录/物化阶段消费 `VueSfcArtifact` 并发送 `RazorVueCatalog` 加上清单/侧车
 5. `DenoHost` 仅消费物化的编译器拥有的输出
 
 重要约束：
 
 - `RazorVueSemanticSnapshot` 不得依赖隐藏的分析器状态
-- `VueCompiledArtifact` 不得由 `DenoHost` 重建
+- `VueSfcArtifact` 不得由 `DenoHost` 重建
 - 编译器拥有的提取必须在生成的 Razor 组件代码已经可用的编译视图上运行
 
 第一阶段不需要冻结驱动器的最终类名，
@@ -402,6 +405,11 @@ RazorVue 需要自己的阶段：
 
 design-time SFC lane 必须显式区分这三者。
 不能把 callable forwarding 降成普通插值，也不能把 non-callable misuse 伪装成可调用 scoped slot。
+
+另外，`RenderFragment` 默认 slot forwarding 也不能被退化成普通模板表达式。
+当父组件把 `ChildContent` 之类的当前默认 slot 继续传给下游 slot 参数时，
+必须保留 slot forwarding contract，并在目标组件处 materialize 为 nested slot template；
+不能生成 `{{ props.childContent }}` 之类的近似输出。
 
 此契约必须在渲染树降低之前提取。
 
@@ -729,7 +737,7 @@ HMR 和 sourcemap 必须保持元数据扩展。
 - `JazorComponent` / `VueComponent` 约束
 - props / emits / slots 提取
 - 带有结构化未找到/歧义/保留名称问题表面的组件解析
-- 当前 legacy Vue ESM 工件发送基线
+- 当前 legacy Vue ESM 过渡车道
 - SFC artifact / emit / manifest materialisation contract
 - 工件 + 清单元数据生成
 - 面向 `DenoHost` 的发送侧主机移交形状

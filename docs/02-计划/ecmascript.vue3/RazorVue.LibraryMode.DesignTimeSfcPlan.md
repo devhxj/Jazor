@@ -214,6 +214,101 @@ generator 应生成两类 carrier：
    - 提供 `GetArtifacts()`
    - 只聚合各组件 artifact provider
 
+### 7.4 触发实现约束
+
+“design-time 触发”在库模式里不是泛指某个 IDE 事件。
+这里的精确定义是：
+
+- 由 Roslyn incremental generator 在 compilation graph 中完成触发；
+- 只要影响某个组件 `VueSfcArtifact` 语义输入的节点失效，该组件对应 carrier 必须重生成；
+- `Jazor.Emit` 不负责再次触发语义生成，它只消费已生成的程序集 catalog。
+
+因此，正确的问题不是“要不要 LSP”，而是 generator graph 如何组织：
+
+1. **组件候选节点**
+   - 基于 `ForAttributeWithMetadataName(...)` 发现候选组件
+   - 以稳定 component identity 作为 key，而不是以最终 catalog 全量文本作为 key
+
+2. **编译共享节点**
+   - `Compilation -> RazorVueCompilationContext`
+   - `Compilation -> library descriptor registry`
+   - 这两类节点允许 compilation 级共享，但不能把所有组件 artifact 再重新坍缩成一个大文本输出节点
+
+3. **组件语义节点**
+   - `component candidate + compilation context + shared registry`
+   - `-> RazorVueSemanticSnapshot`
+   - `-> RazorVueCanonicalHComponentModel`
+   - `-> RazorVueSfcSemanticModel`
+   - `-> VueSfcArtifact`
+
+4. **catalog 聚合节点**
+   - 只聚合稳定 artifact provider 列表
+   - 不重新内联每个组件的大段 SFC 文本
+
+### 7.5 与当前 generator 形状的差距
+
+当前实现仍偏向：
+
+- `CompilationProvider.Combine(componentCandidates.Collect()).Combine(outputMode)`
+- 最终只 `AddSource("Jazor.Generated.RazorVueCatalog.g.cs", ...)`
+
+这满足“能生成”的最低要求，但不满足库模式 design-time 主工件的鲁棒性要求。
+
+具体问题不是功能正确性，而是 topology：
+
+1. 任意单组件文本变化都可能导致大 catalog 整体重发。
+2. SFC 文本体积远大于 legacy render module，设计时抖动会被放大。
+3. generator 测试和 emit reader 都会被单一大 carrier 形状绑定，后续切换成本上升。
+
+因此，Phase 2 的 generator 收口必须把“能生成 SFC”升级为“以 per-component carrier 形状生成 SFC”。
+
+### 7.6 index catalog 兼容边界
+
+即使切到 per-component carrier，程序集对外暴露的反射入口仍应保持单一 catalog 类型：
+
+- `Jazor.Generated.RazorVueCatalog`
+- `AssemblyName`
+- `GetArtifacts()`
+
+原因不是偏好旧形状，而是为了把兼容边界固定在 catalog reflection surface，而不是固定在 source-emission topology。
+
+也就是说：
+
+- source generator 内部可以从“大一统文本 carrier”切到“per-component carrier + small index catalog”
+- `Jazor.Emit` reader 只依赖最终 catalog reflection contract
+- 不要求 emit 读取侧知道 generator 内部是单文件还是多文件 carrier
+
+### 7.7 output-mode 切换顺序
+
+`JazorRazorVueOutputMode` 的最终目标是：
+
+- 库模式默认值从 `legacy` 切到 `sfc`
+
+但这件事不能先于 topology 收口。
+
+推荐顺序固定为：
+
+1. 先收口 callable scoped slot parity
+2. 再切 generator source emission topology
+3. 再验证 catalog reader / emit / manifest 在新 topology 下不漂移
+4. 最后把默认 output-mode 从 `legacy` 切到 `sfc`
+
+不推荐的顺序是：
+
+- 在仍然只有大一统 catalog carrier 时直接把默认值切到 `sfc`
+
+那样虽然“功能上能跑”，但会把 design-time 抖动、测试耦合和 source-emission topology 问题一起放大。
+
+### 7.8 默认切换的验收门槛
+
+只有同时满足以下条件，才允许把默认 output-mode 切到 `sfc`：
+
+1. generator 已按 per-component carrier + small index catalog 发射；
+2. `Jazor.Emit` 读取侧无需理解 generator 内部多 carrier 细节；
+3. slot/scoping/TemplateViaSetupBinding 的 parity 回归已覆盖当前主 authoring 形态；
+4. mixed legacy/SFC catalog 仍保持显式禁止，不引入“双主工件并存”过渡态；
+5. `Jazor.Generated.RazorVueCatalog` 的 reflection contract 在新旧 source emission topology 下保持稳定。
+
 ## 8. Canonical H 模型合同
 
 ### 8.1 定位
@@ -510,6 +605,8 @@ style block 不能简化成一个字符串数组。
 8. typed slot outlet argument 已进入 canonical/SFC contract，可生成 `<slot ... :value="...">`。
 9. 组件级 `LocalReference` 在无法安全提升时已 fail-fast，避免生成“字符串可写出、Vue 无法消费”的非法 `.vue`。
 10. 相关 emit/test 回归已建立，证明“程序集 catalog -> `.vue` materialisation”这条后段链路可工作。
+11. default slot forwarding 已进入 canonical/SFC contract；`ChildContent -> Header/Footer/...` 不再被当成普通值表达式，而是 materialize 为 nested slot template。
+12. `RenderFragment<T>` 的 non-callable misuse 已在 canonical / SFC / legacy render 三条车道统一为 `SlotContextMisuse` fail-fast，不再允许静默降级。
 
 ### 16.2 仍在过渡
 
@@ -517,15 +614,15 @@ style block 不能简化成一个字符串数组。
 2. mixed legacy/SFC catalog 仍被禁止；当前过渡态不是“双主工件并存”，而是显式选择其中一条 lane。
 3. `RazorVuePipeline` / generator 主路径仍保留 legacy `defineComponent + render` 作为过渡车道，尚未把 SFC 设为默认主发射格式。
 4. 增量 topology 仍偏向 `CompilationProvider.Combine(componentCandidates.Collect())`，per-component carrier 的 design-time 抖动控制尚未完全收口。
-5. child component 的 callable scoped slot forwarding 在 SFC lane 中仍需以显式 canonical/semantic contract 收口；当前不能把它视为已完成 parity。
+5. child component 的 callable scoped slot forwarding 的核心 contract 已收口：callable forwarding、default slot forwarding、non-callable typed misuse 的边界已固定；当前剩余问题主要转为更广覆盖与 generator topology。
 
 ### 16.3 下一执行切片
 
 推荐按以下顺序推进，不要跳步硬切：
 
 1. 收口 child component callable scoped slot forwarding
-   - 新增 canonical/SFC 显式 contract，区分 callable forwarding、普通 slot value、typed slot misuse
-   - SFC template/script 必须保持与 legacy lane 同一调用语义
+   - 在已固定 contract 之上扩更多 authoring 形态覆盖
+   - 继续验证 SFC template/script 与 legacy lane 保持同一调用语义
 
 2. 切换 generator/catalog source emission
    - 从大一统 legacy catalog 切到 per-component SFC carrier + small index catalog
@@ -770,6 +867,53 @@ SFC lane 不能把这一形态退化为：
    - generated `.vue` 文本可消费
    - artifact `Imports` / manifest metadata 与文本一致
    - unsupported 场景仍然 design-time fail-fast
+
+### 18.10 default slot forwarding 已固定为 canonical / SFC contract
+
+当前有一个已经完成决议、不能再回退成开放问题的边界：
+
+- 当父组件把自己接收到的默认 slot（通常是 `ChildContent`）继续传给子组件的任意 slot 参数时，
+- 例如 `builder.AddAttribute(1, "Footer", ChildContent)`，
+- design-time 语义不是“输出一个普通模板表达式”，
+- 而是“保留 slot forwarding contract，并在目标组件处 materialize 为 nested slot template”。
+
+因此，后续实现和文档都必须遵守以下固定规则：
+
+1. forwarding 判定先看“这是不是当前组件自己的 slot 属性引用”，而不是先看目标 slot 是否 typed；
+2. 一旦命中 forwarding，canonical model 必须保留 `ForwardedSlotName`；
+3. 对 default source slot forwarding，SFC template emission 应输出 `<slot />`，不能退化成 `{{ props.childContent }}`；
+4. 这条规则同时适用于 named target slot 与 default target slot，不能只在 typed scoped slot 上成立。
+
+这意味着：
+
+- `ChildContent -> Header/Footer/...` 这条路径已经不再是 Phase 2 剩余风险点；
+- 后续 parity 重点应继续集中在更广泛的 callable scoped slot authoring 形态，以及 generator topology / output-mode 切换。
+
+### 18.11 non-callable typed slot 的最终语义已固定为 fail-fast
+
+此前 legacy render 车道曾保留过一条更弱的历史性测试意图：
+
+- 只要求 non-callable typed slot 输入“不生成坏 JS”，
+- 但不强制它在 design-time 立即失败。
+
+对于 design-time SFC 主工件路线，这个边界是不够的。
+
+当前必须固定的最终规则是：
+
+1. 只要目标 slot 是 `RenderFragment<T>` / typed slot；
+2. 且传入值既不是 callable slot 值，也不是当前组件的 typed slot forwarding 源；
+3. 则 canonical / SFC / legacy render 三条车道都必须统一报 `SlotContextMisuse`；
+4. 不允许再保留“静默降级成普通内容或仅避免 invoked scoped slot 形状”的过渡语义。
+
+原因很直接：
+
+- SFC 是库模式主工件；
+- render fallback 被明确禁止；
+- 如果 design-time 仍然容忍近似输出，Phase 2 的 canonical contract 就不再是唯一真相源。
+
+因此，关于 `non-callable typed slot` 的决策可以视为已完成：
+
+- **最终语义是 fail-fast，不是静态内容保留。**
 
 ## 17. 参考
 

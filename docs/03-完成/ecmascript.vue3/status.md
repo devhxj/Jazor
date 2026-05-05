@@ -26,7 +26,7 @@
    - 当前结果：RazorVue `h(...)` lowering 已完成第一轮 canonical 对齐，最小 arity / 无多余 `null` 占位 / component direct-child default-slot 形态已与 Phase 1 contract 收口。
    - 当前结果（新增）：RazorVue 库模式的 SFC emit/materialisation contract 已落地，`VueSfcArtifact`、catalog reader、`.vue` writer、manifest/style-hash diff 已进入真实代码和回归测试。
    - 当前结果（新增）：`RazorVueCanonicalHComponentModel` / `RazorVueSfcSemanticModel` / SFC lowerer 已进入真实代码；control-flow、attribute、interpolation 的 lifted binding 消费、setup/lifecycle shared lowering、component import/path 闭环、typed slot outlet argument 都已有聚焦回归守护。
-   - 当前目标：继续把 Razor authoring 的 diagnostics 边界压到与手写 `H(...)` 一致，补齐 child component callable scoped slot forwarding 等剩余 slot parity，然后再把 library mode 主工件默认切到 design-time 生成的 `.vue` SFC。
+   - 当前目标：继续把 Razor authoring 的 diagnostics 边界压到与手写 `H(...)` 一致，在已收口的 slot contract 基础上扩更多 parity 覆盖，然后再把 library mode 主工件默认切到 design-time 生成的 `.vue` SFC。
 
 3. **Phase 3: Jolt 工程化协同**
    - 状态：规划中。
@@ -66,10 +66,10 @@
 ## 下一步行动（Phase 2 主线）
 
 1. Razor -> `H(...)` canonical lowering  
-   已完成最小 arity / `null` 占位清理；下一步继续保证 Razor authoring 其它路径都落到与手写 `H(...)` 相同的 props / children / slots contract，重点补齐 child component callable scoped slot forwarding 与负例边界。
+   已完成最小 arity / `null` 占位清理；default slot forwarding 已进入 canonical/SFC contract，`RenderFragment<T>` 的 non-callable misuse 也已在 canonical / SFC / legacy render 三条车道统一为 `SlotContextMisuse` fail-fast。下一步继续扩更多 slot authoring parity，而不是回到“是否允许近似降级”的旧问题。
 
 2. design-time SFC compiler 主链切换  
-   emit 侧 `.vue` contract、canonical H model、SFC semantic model 都已就绪；下一步是切 generator/catalog topology 与默认 output mode，禁止 render fallback。
+   emit 侧 `.vue` contract、canonical H model、SFC semantic model 都已就绪；下一步是先切 generator/catalog topology 到 per-component carrier + small index，再做默认 output mode 切换，禁止 render fallback。
 
 3. diagnostics 与 contract 对齐  
    保持 Razor 产物与手写 Vue3 authoring 在 object-literal / slot / attrs / props 等边界上的同一诊断语义。

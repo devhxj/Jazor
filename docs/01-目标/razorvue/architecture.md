@@ -55,7 +55,7 @@ src/
 - `IVueComponent.cs` - Vue 组件的基础接口 (继承 `IJazorComponent`)
 
 **核心设计原则**:
-> **Vue-first 语义**: RazorVue 不是简单的 Razor 语法转换，而是先把 Razor 组件模型收口到 canonical Vue semantics，再在库模式下于 design time 生成 `.vue` SFC artifact。当前代码仍保留 `defineComponent` + `setup` + `render` 的 legacy 过渡车道。
+> **Vue-first 语义**: RazorVue 不是简单的 Razor 语法转换，而是先把 Razor 组件模型收口到 canonical Vue semantics，再在库模式下于 design time 生成 `.vue` SFC artifact。当前代码仍保留 `defineComponent` + `setup` + `render` 的 legacy 过渡车道，但 slot contract 已要求 default slot forwarding 生成 nested slot template，`RenderFragment<T>` 的 non-callable misuse 统一 design-time fail-fast。
 
 ### 2.2 Jazor.RazorVue.Analysis (Roslyn 接入)
 
@@ -170,7 +170,7 @@ RazorVue 的编译流程采用 **增量式 Source Generator** 管线，从 C# �
 │    └─ Create(candidate, context)                           │
 │       ├─ Props → VuePropDescriptor (从 [Parameter] 提取)   │
 │       ├─ Emits → VueEmitDescriptor (从 EventCallback 提取) │
-│       └─ Slots → VueSlotDescriptor (从 RenderFragment 提取)│
+│       └─ Slots → VueSlotDescriptor (从 RenderFragment 提取；typed slot / default slot forwarding contract 在此后继续参与 canonical 判定)│
 └────────────────────────┬────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -190,23 +190,24 @@ RazorVue 的编译流程采用 **增量式 Source Generator** 管线，从 C# �
 │       │  └─ C# 表达式 → JavaScript 表达式                  │
 │       ├─ 组件解析 (ResolveComponents)                      │
 │       │  └─ 子组件引用 → import 语句                       │
-│       ├─ legacy 代码生成 (BuildModuleCode)                 │
-│       │  └─ defineComponent + setup + render 函数          │
-│       └─ 产物构建                                          │
-│          ├─ 当前基线: VueCompiledArtifact                  │
-│          └─ 目标主线: VueSfcArtifact                       │
+│       ├─ canonical / SFC 语义生成                          │
+│       │  └─ Canonical H Model -> SFC Semantic Model        │
+│       ├─ SFC artifact 生成                                 │
+│       │  └─ VueSfcArtifact                                 │
+│       └─ legacy render lane                                │
+│          └─ 仅作为过渡车道保留                             │
 └────────────────────────┬────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 7. Catalog 构建 (RazorVueCatalogBuilder)                   │
 │    └─ Build(assemblyName, artifacts)                       │
-│       └─ 聚合所有组件的编译产物                            │
+│       └─ 目标形状为 per-component carrier + small index    │
 └────────────────────────┬────────────────────────────────────┘
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 8. 代码生成 (RazorVueGenerator.EmitRazorVueCatalog)        │
-│    └─ 生成 Jazor.Generated.RazorVueCatalog.g.cs           │
-│       └─ 包含所有组件的序列化数据                          │
+│    └─ 生成 per-component artifact carrier + index catalog  │
+│       └─ 对外仍暴露稳定的 RazorVueCatalog 反射入口         │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -267,6 +268,12 @@ RazorVue 不是简单的 Razor 语法转换，而是将 **Razor 组件模型映�
 - 非 callable 值误传给 typed slot 参数时的 fail-fast 边界。
 
 库模式的 design-time SFC lane 必须显式保持这三者的差异，不能回退到 render fallback，也不能把 typed slot 退化成普通插值。
+
+同时，默认 slot forwarding 也必须保持 forwarding 语义：
+
+- `ChildContent -> Header/Footer/...` 这类 authoring 不能被当成普通值表达式；
+- canonical / SFC lane 必须把它 materialize 为 nested slot template；
+- 对无法无损表达的 typed slot misuse，统一以 `SlotContextMisuse` design-time fail-fast，而不是静默近似输出。
 
 ### 5.2 编译时转换
 
@@ -382,19 +389,20 @@ src/Jazor.RazorVue.Vuetify/
 
 ### 7.2 生成的代码
 
-Source Generator 会生成以下文件：
+Source Generator 的目标生成形状为：
 
 ```
+$(GeneratedCode)/Jazor.Generated.RazorVue.Artifact_<stable-id>.g.cs
+├── 单组件 VueSfcArtifact carrier
+│   ├── SfcText / TemplateBlock / ScriptSetupBlock
+│   ├── StyleBlocks / CustomBlocks
+│   ├── Identity / Hints
+│   └── SourceOrigins
+
 $(GeneratedCode)/Jazor.Generated.RazorVueCatalog.g.cs
 ├── RazorVueCatalog 静态类
 │   ├── AssemblyName
-│   ├── GetArtifacts()
-│   └── _artifacts[]               # 所有组件的序列化数据
-└── 嵌套类型
-    ├── GeneratedArtifact
-    ├── GeneratedIdentity
-    ├── GeneratedHints
-    └── GeneratedOrigin
+│   └── GetArtifacts()             # 只聚合 artifact provider
 ```
 
 ## 8. 关键依赖
@@ -436,7 +444,7 @@ public interface IRazorSemanticFrontend
 
 **用途**: 自定义语义快照提取逻辑，支持非标准的组件发现方式。
 
-### 9.2 IRazorVueArtifactLowerer
+### 9.2 IRazorVueArtifactLowerer / IRazorVueSfcArtifactLowerer
 
 ```csharp
 public interface IRazorVueArtifactLowerer
@@ -444,9 +452,16 @@ public interface IRazorVueArtifactLowerer
     VueCompiledArtifact Lower(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot);
     VueCompiledArtifact Lower(RazorVueSemanticSnapshot snapshot);
 }
+
+public interface IRazorVueSfcArtifactLowerer
+{
+    VueSfcArtifact Lower(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot);
+}
 ```
 
-**用途**: 自定义 Lowering 逻辑，支持不同的 JavaScript 生成策略。
+**用途**:
+- `IRazorVueArtifactLowerer` 仍承载 legacy render module 过渡车道。
+- `IRazorVueSfcArtifactLowerer` 承载库模式 design-time SFC 主线的 canonical-to-SFC materialisation。
 
 ## 10. 诊断规则
 
