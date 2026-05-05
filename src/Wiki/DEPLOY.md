@@ -1,0 +1,64 @@
+# Deployment Guide
+
+## Publish Command
+
+```powershell
+dotnet publish src/Wiki/Wiki.csproj -c Release -o <deploy-dir>
+```
+
+## Directory Structure Contract
+
+Published output must follow this layout:
+
+```
+<deploy-dir>/
+  Wiki.dll
+  Wiki.exe
+  wwwroot/
+    index.html
+    site.css
+    favicon.svg
+    vendor/
+      vue@3.5.16.mjs
+    jazor/
+      main.mjs
+      main.mjs.map
+      jazor-manifest.json
+      components/
+        wiki-home.mjs
+        wiki-home.mjs.map
+      System/
+        <CLR runtime modules>
+```
+
+## Key Invariants
+
+The following invariants are enforced by `verify-smoke.ps1 -Publish`:
+
+1. `/jazor/*` must only be served from `wwwroot/jazor/`, never from a shadow `<deploy-dir>/jazor/` at the publish root
+2. `jazor-manifest.json` must exist under `wwwroot/jazor/`
+3. `main.mjs` and `components/wiki-home.mjs` must exist under `wwwroot/jazor/`
+4. `<deploy-dir>/jazor/` (shadow root) must not exist after publish
+5. `/vendor/vue@3.5.16.mjs` must exist and be servable
+6. All SPA routes resolve through `MapFallbackToFile("index.html")`
+7. `index.html` must not reference any external CDN URL
+
+## Verification
+
+Run before every deployment:
+
+```powershell
+.\src\Wiki\verify-smoke.ps1 -Publish
+```
+
+This checks all structural invariants, all 23 registered docs routes, browser asset resolution, and emitted module markers.
+
+## Rollback Procedure
+
+1. Keep the previous publish output as `<deploy-dir>.previous/`
+2. Deploy the new version by renaming the current directory to `.previous` and extracting the new output
+3. If verification fails, roll back by renaming `.previous` back
+
+## Health Check
+
+`/health` returns HTTP 200 with body `ok`. Use this endpoint for load balancer or monitoring probes.

@@ -42,7 +42,7 @@ src/Wiki/jazor/jazor-manifest.json
                     H("li", "Publish smoke proves production serves `/jazor/*` from `wwwroot/jazor` without a shadow root `jazor/` directory overriding it."),
                     H("li", "Published preview starts the actual published host so manual browser checks can use the same directory shape that production will deploy.")
                 ]),
-                Callout("Dependency note", "CDN-backed Vue remains acceptable for MVP, but productization should decide whether to lock, mirror, or localize that browser dependency.")
+                Callout("Dependency note", "Vue 3 is vendored locally at `wwwroot/vendor/`. The site runs fully offline with no CDN dependencies.")
             ])
         ]);
 }

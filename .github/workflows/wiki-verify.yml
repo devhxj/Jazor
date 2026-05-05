@@ -1,0 +1,70 @@
+name: Wiki Verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/Wiki/**'
+      - 'src/ECMAScript/**'
+      - 'src/ECMAScript.Vue3/**'
+      - 'src/ECMAScript.Contract/**'
+      - 'src/Jazor.CLR/**'
+      - 'src/Jazor.Compiler/**'
+      - 'src/Jazor.Analyzer/**'
+      - 'src/Jazor.Emit/**'
+      - 'src/Jazor.Common/**'
+      - 'src/Jazor/**'
+      - 'Jazor.slnx'
+      - 'global.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/Wiki/**'
+      - 'src/ECMAScript/**'
+      - 'src/ECMAScript.Vue3/**'
+      - 'src/ECMAScript.Contract/**'
+      - 'src/Jazor.CLR/**'
+      - 'src/Jazor.Compiler/**'
+      - 'src/Jazor.Analyzer/**'
+      - 'src/Jazor.Emit/**'
+      - 'src/Jazor.Common/**'
+      - 'src/Jazor/**'
+      - 'Jazor.slnx'
+      - 'global.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Wiki smoke verification
+        shell: pwsh
+        run: |
+          .\src\Wiki\verify-smoke.ps1 -Build -StartupTimeoutSeconds 60
+
+  publish-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Wiki publish smoke verification
+        shell: pwsh
+        run: |
+          .\src\Wiki\verify-smoke.ps1 -Publish -StartupTimeoutSeconds 60

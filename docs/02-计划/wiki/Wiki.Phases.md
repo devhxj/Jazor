@@ -1,8 +1,8 @@
 # Wiki 阶段计划
 
-> Status: Phase 1–3 已完成，Phase 4 待启动
+> Status: Phase 1–4 已完成
 > Updated: 2026-05-05
-> Positioning: `src/Wiki/` 当前是已完成的真实文档站 MVP，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 23 个注册页面、全文搜索、导航壳层和完整验证管线。
+> Positioning: `src/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 23 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化和部署契约。
 
 ## 1. 当前定位
 
@@ -81,22 +81,15 @@
 
 - 已完成。23 个注册页面（Foundation 11 + Engineering 9 + Operations 3），三栏导航壳层，SPA 路由，全文搜索，Glossary，FAQ，Troubleshooting，Topic Index，阅读进度条，session scroll memory，暗色/亮色主题，移动端响应式，无障碍，SEO 元数据，WikiCatalogGuard 启动校验，HTTP smoke + headless Edge CDP 浏览器验证。
 
-### Phase 4: Productization（待启动）
+### Phase 4: Productization（已完成）
 
 目标：
 
 - 把 MVP 收口成可维护、可验证、可部署的站点。
 
-范围：
+当前状态：
 
-- 依赖策略、构建验证、部署约束、运维边界。
-
-验收标准：
-
-- CDN 依赖有明确策略：继续使用、锁版本、或提供本地 fallback；
-- 有最小自动化 smoke check；
-- 构建、静态资源、入口模块、部署目录结构有稳定约束；
-- 文档更新和 sample 更新不会无声漂移。
+- 已完成。Vue 3 已本地化到 `wwwroot/vendor/`，站点完全离线可用；GitHub Actions CI workflow 在 PR/push 时自动运行 smoke + publish-smoke 验证；`DEPLOY.md` 文档化了发布命令、目录结构契约、关键不变量和回滚程序；`verify-smoke.ps1` 包含漂移检测和 vendor 断言。
 
 ## 4. 推荐推进路径
 

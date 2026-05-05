@@ -230,12 +230,19 @@ $forbiddenBrowserEntryMarkers = @(
     'vuetify',
     'materialdesignicons'
 )
+$vendorLocalMarkers = @(
+    '/vendor/vue@3.5.16.mjs'
+)
+$forbiddenCdnMarkers = @(
+    'unpkg.com'
+)
 $browserAssetChecks = @(
     @{ Url = "$rootUrl/jazor/main.mjs"; Path = "/jazor/main.mjs"; Snippet = 'createApp(' },
     @{ Url = "$rootUrl/jazor/components/wiki-home.mjs"; Path = "/jazor/components/wiki-home.mjs"; Snippet = 'Search docs pages' },
     @{ Url = "$rootUrl/jazor/System/StringModule.js"; Path = "/jazor/System/StringModule.js"; Snippet = 'export' },
     @{ Url = "$rootUrl/site.css"; Path = "/site.css"; Snippet = '.wiki-shell' },
-    @{ Url = "$rootUrl/favicon.svg"; Path = "/favicon.svg"; Snippet = '<svg' }
+    @{ Url = "$rootUrl/favicon.svg"; Path = "/favicon.svg"; Snippet = '<svg' },
+    @{ Url = "$rootUrl/vendor/vue@3.5.16.mjs"; Path = "/vendor/vue@3.5.16.mjs"; Snippet = 'createApp(' }
 )
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
@@ -453,6 +460,13 @@ foreach ($indexMetaMarker in $indexMetaMarkers) {
 foreach ($forbiddenBrowserEntryMarker in $forbiddenBrowserEntryMarkers) {
     Assert-NotContains -Text $indexContent -Snippet $forbiddenBrowserEntryMarker -Description "forbidden browser entry marker in index.html"
 }
+foreach ($vendorLocalMarker in $vendorLocalMarkers) {
+    Assert-Contains -Text $indexContent -Snippet $vendorLocalMarker -Description "vendored dependency marker in index.html"
+}
+foreach ($forbiddenCdnMarker in $forbiddenCdnMarkers) {
+    Assert-NotContains -Text $indexContent -Snippet $forbiddenCdnMarker -Description "forbidden CDN URL in index.html"
+}
+Assert-PathExists -Path (Join-Path $webRoot "vendor\vue@3.5.16.mjs") -Description "vendored Vue ESM module"
 
 $siteCssContent = Get-Content (Join-Path $webRoot "site.css") -Raw
 foreach ($siteCssMarker in $siteCssMarkers) {
@@ -505,6 +519,46 @@ foreach ($productShellMarker in $emittedProductShellMarkers) {
 }
 foreach ($searchMarker in $emittedSearchMarkers) {
     Assert-Contains -Text $moduleContent -Snippet $searchMarker -Description "search experience marker in emitted module"
+}
+
+$expectedPageSourceFiles = @(
+    "WikiHomeModule.Overview.cs",
+    "WikiHomeModule.Search.cs",
+    "WikiHomeModule.GettingStarted.cs",
+    "WikiHomeModule.ProjectLines.cs",
+    "WikiHomeModule.ContentModel.cs",
+    "WikiHomeModule.NavigationDiscovery.cs",
+    "WikiHomeModule.InformationArchitecture.cs",
+    "WikiHomeModule.TopicIndex.cs",
+    "WikiHomeModule.Glossary.cs",
+    "WikiHomeModule.Faq.cs",
+    "WikiHomeModule.Troubleshooting.cs",
+    "WikiHomeModule.HFunctionAuthoring.cs",
+    "WikiHomeModule.CompilerOverview.cs",
+    "WikiHomeModule.CompilerBoundary.cs",
+    "WikiHomeModule.RouteCatalogContract.cs",
+    "WikiHomeModule.HostSemanticSeams.cs",
+    "WikiHomeModule.ImportEmitContract.cs",
+    "WikiHomeModule.RuntimeCatalog.cs",
+    "WikiHomeModule.JoltHost.cs",
+    "WikiHomeModule.RazorVueLibraryMode.cs",
+    "WikiHomeModule.ContentGovernance.cs",
+    "WikiHomeModule.Deployment.cs",
+    "WikiHomeModule.TestingVerification.cs"
+)
+foreach ($expectedPageFile in $expectedPageSourceFiles) {
+    Assert-PathExists -Path (Join-Path $sampleRoot $expectedPageFile) -Description "expected page source file"
+}
+$onDiskPageFiles = Get-ChildItem -Path $sampleRoot -Filter "WikiHomeModule.*.cs" -Name |
+    Where-Object { $_ -notin @("WikiHomeModule.cs", "WikiHomeModule.RouteContract.cs", "WikiHomeModule.Elements.cs") }
+$expectedFileNames = $expectedPageSourceFiles | ForEach-Object { $_ }
+$missingFromSmoke = $expectedFileNames | Where-Object { $_ -notin $onDiskPageFiles }
+$extraOnDisk = $onDiskPageFiles | Where-Object { $_ -notin $expectedFileNames }
+if ($missingFromSmoke.Count -gt 0) {
+    throw "Page source files registered in smoke but missing from disk: $($missingFromSmoke -join ', ')"
+}
+if ($extraOnDisk.Count -gt 0) {
+    Write-Warning "Page source files on disk but not registered in smoke drift check: $($extraOnDisk -join ', ')"
 }
 
 $previousAspNetCoreUrls = $env:ASPNETCORE_URLS

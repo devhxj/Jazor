@@ -159,7 +159,8 @@ The smoke check verifies:
 - every registered docs route returns HTTP 200 and still contains `#app` plus `/jazor/main.mjs`
 - every registered docs route still carries the CLR runtime import-map prefix `"System/": "/jazor/System/"`
 - an unknown docs route still returns the frontend shell through fallback
-- browser-served assets such as `/jazor/main.mjs`, `/jazor/System/StringModule.js`, `/site.css`, and `/favicon.svg` resolve successfully
+- browser-served assets such as `/jazor/main.mjs`, `/jazor/System/StringModule.js`, `/site.css`, `/favicon.svg`, and `/vendor/vue@3.5.16.mjs` resolve successfully
+- `wwwroot/index.html` references the vendored Vue module and contains no external CDN URLs
 - emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, click interception, and session-local scroll restoration)
 - emitted `wiki-home.mjs` still contains the section-routing contract (`hashchange`, scroll listeners, active TOC markers, and section-driven reading-state sync)
 - emitted `wiki-home.mjs` still contains the section permalink contract (`window.navigator.clipboard`, `clipboard.writeText`, permalink button labels, and copied/fallback-state styling markers)
@@ -215,19 +216,31 @@ Requirements:
 
 ## Runtime Dependency Notes
 
-`wwwroot/index.html` now keeps the browser import map deliberately explicit:
+`wwwroot/index.html` keeps the browser import map deliberately explicit:
 
-- `System/`
-- `vue`
-- `npm:vue@3`
+- `System/` — CLR runtime support modules emitted by `Jazor.CLR`
+- `vue` — Vue 3.5.16 ESM browser production build, vendored locally at `/vendor/vue@3.5.16.mjs`
+- `npm:vue@3` — alias to the same vendored Vue build
 
-The Wiki shell is authored with plain Vue `h()` calls and site-local CSS. That keeps the browser entry compatible with direct ESM loading instead of relying on library-distribution modules that recursively import component CSS as JavaScript modules.
+The Wiki shell has **no runtime external CDN dependencies**. Vue 3 is served from `wwwroot/vendor/` alongside site-local CSS and emitted Jazor modules, making the site fully deployable offline.
 
 The browser entry and static assets are rooted with absolute paths (`/jazor/main.mjs`, `/site.css`, `/favicon.svg`) so direct refreshes on nested docs URLs keep resolving against the site root instead of the current route segment.
 
 In development, the host serves `/jazor/*` from the project-local `src/Wiki/jazor/` emit directory. During publish, the same artifacts are copied into `wwwroot/jazor/` so production still uses standard web-root static hosting.
 
 When the generated shell uses CLR-backed helper members such as `string.Contains(..., StringComparison.OrdinalIgnoreCase)`, `Jazor.CLR` support modules are emitted locally under `src/Wiki/jazor/System/...`, published into `wwwroot/jazor/System/...`, and resolved in the browser through the import-map prefix `"System/": "/jazor/System/"`.
+
+## Deployment Contract
+
+See [DEPLOY.md](DEPLOY.md) for the full deployment guide, directory structure contract, key invariants, and rollback procedure.
+
+Summary of invariants enforced by `verify-smoke.ps1 -Publish`:
+
+- Published output serves `/jazor/*` only from `wwwroot/jazor/`, with no shadow root directory
+- `main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json` exist under `wwwroot/jazor/`
+- `/vendor/vue@3.5.16.mjs` is servable (Vue 3 vendored locally, no CDN dependency)
+- All 23 registered docs routes return HTTP 200 with the SPA shell
+- `index.html` contains no external CDN URLs
 
 ## Positioning
 
