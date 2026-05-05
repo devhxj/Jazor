@@ -1,11 +1,49 @@
 namespace ECMAScript.CSS;
 
 /// <summary>
+/// AppendValues
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AppendValues
+{
+    private readonly byte _kind;
+    private readonly CSSStyleValue? _value1;
+    private readonly string? _value2;
+
+    private AppendValues(CSSStyleValue value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AppendValues(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CSSStyleValue? AsCSSStyleValue => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AppendValues(CSSStyleValue value)
+        => new(value);
+
+    public static implicit operator AppendValues(string value)
+        => new(value);
+}
+
+/// <summary>
 /// CSSColorAngle
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSColorAngle : IEither
+public readonly struct CSSColorAngle
 {
     private readonly byte _kind;
     private readonly CSSNumberish? _value1;
@@ -40,8 +78,9 @@ public readonly struct CSSColorAngle : IEither
 /// CSSColorNumber
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSColorNumber : IEither
+public readonly struct CSSColorNumber
 {
     private readonly byte _kind;
     private readonly CSSNumberish? _value1;
@@ -76,8 +115,9 @@ public readonly struct CSSColorNumber : IEither
 /// CSSColorPercent
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSColorPercent : IEither
+public readonly struct CSSColorPercent
 {
     private readonly byte _kind;
     private readonly CSSNumberish? _value1;
@@ -112,8 +152,9 @@ public readonly struct CSSColorPercent : IEither
 /// CSSColorRGBComp
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSColorRGBComp : IEither
+public readonly struct CSSColorRGBComp
 {
     private readonly byte _kind;
     private readonly CSSNumberish? _value1;
@@ -148,8 +189,9 @@ public readonly struct CSSColorRGBComp : IEither
 /// CSSColorValueParseResult
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSColorValueParseResult : IEither
+public readonly struct CSSColorValueParseResult
 {
     private readonly byte _kind;
     private readonly CSSColorValue? _value1;
@@ -184,8 +226,9 @@ public readonly struct CSSColorValueParseResult : IEither
 /// CSSKeywordish
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSKeywordish : IEither
+public readonly struct CSSKeywordish
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -220,8 +263,9 @@ public readonly struct CSSKeywordish : IEither
 /// CSSNumberish
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSNumberish : IEither
+public readonly struct CSSNumberish
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -256,8 +300,9 @@ public readonly struct CSSNumberish : IEither
 /// CSSPerspectiveValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSPerspectiveValue : IEither
+public readonly struct CSSPerspectiveValue
 {
     private readonly byte _kind;
     private readonly CSSNumericValue? _value1;
@@ -292,8 +337,9 @@ public readonly struct CSSPerspectiveValue : IEither
 /// CSSStringSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSStringSource : IEither
+public readonly struct CSSStringSource
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -328,8 +374,9 @@ public readonly struct CSSStringSource : IEither
 /// CSSStyleSheetInitMedia
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSStyleSheetInitMedia : IEither
+public readonly struct CSSStyleSheetInitMedia
 {
     private readonly byte _kind;
     private readonly MediaList? _value1;
@@ -364,8 +411,9 @@ public readonly struct CSSStyleSheetInitMedia : IEither
 /// CSSToken
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSToken : IEither
+public readonly struct CSSToken
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -416,8 +464,9 @@ public readonly struct CSSToken : IEither
 /// CSSUnparsedSegment
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSUnparsedSegment : IEither
+public readonly struct CSSUnparsedSegment
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -449,11 +498,211 @@ public readonly struct CSSUnparsedSegment : IEither
 }
 
 /// <summary>
+/// SetValues
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct SetValues
+{
+    private readonly byte _kind;
+    private readonly CSSStyleValue? _value1;
+    private readonly string? _value2;
+
+    private SetValues(CSSStyleValue value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private SetValues(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CSSStyleValue? AsCSSStyleValue => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator SetValues(CSSStyleValue value)
+        => new(value);
+
+    public static implicit operator SetValues(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCache
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheCollectionBuilder), nameof(StructuralCacheCollectionBuilder.Create))]
+public readonly struct StructuralCache : IEnumerable<AnimationEffect>
+{
+    private readonly byte _kind;
+    private readonly AnimationEffect? _value1;
+    private readonly AnimationEffect[]? _value2;
+
+    private StructuralCache(AnimationEffect value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCache(AnimationEffect[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public AnimationEffect? AsAnimationEffect => _kind == 1 ? _value1 : default;
+
+    public AnimationEffect[]? AsAnimationEffectArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCache(AnimationEffect value)
+        => new(value);
+
+    public static implicit operator StructuralCache(AnimationEffect[] value)
+        => new(value);
+
+    IEnumerator<AnimationEffect> IEnumerable<AnimationEffect>.GetEnumerator()
+        => ((IEnumerable<AnimationEffect>)(AsAnimationEffectArray ?? Array.Empty<AnimationEffect>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<AnimationEffect>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheCollectionBuilder
+{
+    public static StructuralCache Create(ReadOnlySpan<AnimationEffect> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue
+{
+    private readonly byte _kind;
+    private readonly CSSStyleValue? _value1;
+    private readonly string? _value2;
+
+    private StructuralCacheValue(CSSStyleValue value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CSSStyleValue? AsCSSStyleValue => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue(CSSStyleValue value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue2
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue2
+{
+    private readonly byte _kind;
+    private readonly CSSColorValue? _value1;
+    private readonly CSSStyleValue? _value2;
+
+    private StructuralCacheValue2(CSSColorValue value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue2(CSSStyleValue value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CSSColorValue? AsCSSColorValue => _kind == 1 ? _value1 : default;
+
+    public CSSStyleValue? AsCSSStyleValue => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue2(CSSColorValue value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue2(CSSStyleValue value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue3
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue3
+{
+    private readonly byte _kind;
+    private readonly Element? _value1;
+    private readonly ProcessingInstruction? _value2;
+
+    private StructuralCacheValue3(Element value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue3(ProcessingInstruction value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _value1 : default;
+
+    public ProcessingInstruction? AsProcessingInstruction => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue3(Element value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue3(ProcessingInstruction value)
+        => new(value);
+}
+
+/// <summary>
 /// StylePropertyMapAppendValues
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct StylePropertyMapAppendValues : IEither
+public readonly struct StylePropertyMapAppendValues
 {
     private readonly byte _kind;
     private readonly CSSStyleValue? _value1;
@@ -488,8 +737,9 @@ public readonly struct StylePropertyMapAppendValues : IEither
 /// StylePropertyMapSetValues
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct StylePropertyMapSetValues : IEither
+public readonly struct StylePropertyMapSetValues
 {
     private readonly byte _kind;
     private readonly CSSStyleValue? _value1;
@@ -524,8 +774,9 @@ public readonly struct StylePropertyMapSetValues : IEither
 /// StyleSheetOwnerNode
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct StyleSheetOwnerNode : IEither
+public readonly struct StyleSheetOwnerNode
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -560,9 +811,10 @@ public readonly struct StyleSheetOwnerNode : IEither
 /// WorkletAnimationEffects
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WorkletAnimationEffectsCollectionBuilder), nameof(WorkletAnimationEffectsCollectionBuilder.Create))]
-public readonly struct WorkletAnimationEffects : IEither, IEnumerable<AnimationEffect>
+public readonly struct WorkletAnimationEffects : IEnumerable<AnimationEffect>
 {
     private readonly byte _kind;
     private readonly AnimationEffect? _value1;

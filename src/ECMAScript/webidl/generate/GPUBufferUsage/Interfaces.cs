@@ -792,7 +792,7 @@ public class GPUPipelineError(string message, string name) : DOMException(messag
     /// </summary>
     /// <param name="message">message</param>
     /// <param name="options">options</param>
-    public extern GPUPipelineError(string message, GPUPipelineErrorInit options);
+    public extern GPUPipelineError(string message = "", GPUPipelineErrorInit? options = default);
 
     /// <summary>
     /// reason

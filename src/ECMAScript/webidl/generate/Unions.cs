@@ -1,12 +1,304 @@
 namespace ECMAScript;
 
 /// <summary>
+/// AddBefore
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AddBefore
+{
+    private readonly byte _kind;
+    private readonly HTMLElement? _value1;
+    private readonly int? _value2;
+
+    private AddBefore(HTMLElement value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AddBefore(int value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public HTMLElement? AsHTMLElement => _kind == 1 ? _value1 : default;
+
+    public int? AsInt => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AddBefore(HTMLElement value)
+        => new(value);
+
+    public static implicit operator AddBefore(int value)
+        => new(value);
+}
+
+/// <summary>
+/// AddEventListenerOptionsValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AddEventListenerOptionsValue
+{
+    private readonly byte _kind;
+    private readonly AddEventListenerOptions? _value1;
+    private readonly bool? _value2;
+
+    private AddEventListenerOptionsValue(AddEventListenerOptions value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AddEventListenerOptionsValue(bool value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public AddEventListenerOptions? AsAddEventListenerOptions => _kind == 1 ? _value1 : default;
+
+    public bool? AsBool => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AddEventListenerOptionsValue(AddEventListenerOptions value)
+        => new(value);
+
+    public static implicit operator AddEventListenerOptionsValue(bool value)
+        => new(value);
+}
+
+/// <summary>
+/// AddRoutesRules
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(AddRoutesRulesCollectionBuilder), nameof(AddRoutesRulesCollectionBuilder.Create))]
+public readonly struct AddRoutesRules : IEnumerable<RouterRule>
+{
+    private readonly byte _kind;
+    private readonly RouterRule? _value1;
+    private readonly RouterRule[]? _value2;
+
+    private AddRoutesRules(RouterRule value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AddRoutesRules(RouterRule[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public RouterRule? AsRouterRule => _kind == 1 ? _value1 : default;
+
+    public RouterRule[]? AsRouterRuleArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AddRoutesRules(RouterRule value)
+        => new(value);
+
+    public static implicit operator AddRoutesRules(RouterRule[] value)
+        => new(value);
+
+    IEnumerator<RouterRule> IEnumerable<RouterRule>.GetEnumerator()
+        => ((IEnumerable<RouterRule>)(AsRouterRuleArray ?? Array.Empty<RouterRule>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<RouterRule>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class AddRoutesRulesCollectionBuilder
+{
+    public static AddRoutesRules Create(ReadOnlySpan<RouterRule> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// AfterNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AfterNodes
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private AfterNodes(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AfterNodes(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AfterNodes(Node value)
+        => new(value);
+
+    public static implicit operator AfterNodes(string value)
+        => new(value);
+}
+
+/// <summary>
+/// AlgorithmIdentifier
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AlgorithmIdentifier
+{
+    private readonly byte _kind;
+    private readonly object? _value1;
+    private readonly string? _value2;
+
+    private AlgorithmIdentifier(object value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AlgorithmIdentifier(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public object? AsObject => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static AlgorithmIdentifier FromObject(object value)
+        => new(value);
+
+    public static implicit operator AlgorithmIdentifier(string value)
+        => new(value);
+}
+
+/// <summary>
+/// AllowSharedBufferSource
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AllowSharedBufferSource
+{
+    private readonly byte _kind;
+    private readonly ArrayBuffer? _value1;
+    private readonly SharedArrayBuffer? _value2;
+    private readonly IArrayBufferView? _value3;
+
+    private AllowSharedBufferSource(ArrayBuffer value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private AllowSharedBufferSource(SharedArrayBuffer value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private AllowSharedBufferSource(IArrayBufferView value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public ArrayBuffer? AsArrayBuffer => _kind == 1 ? _value1 : default;
+
+    public SharedArrayBuffer? AsSharedArrayBuffer => _kind == 2 ? _value2 : default;
+
+    public IArrayBufferView? AsIArrayBufferView => _kind == 3 ? _value3 : default;
+
+    public static implicit operator AllowSharedBufferSource(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(SharedArrayBuffer value)
+        => new(value);
+
+    public static AllowSharedBufferSource FromIArrayBufferView(IArrayBufferView value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(DataView value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Uint8Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Int8Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Int16Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Uint16Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Int32Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Uint32Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Float16Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Float32Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(Float64Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator AllowSharedBufferSource(BigUint64Array value)
+        => new(value);
+}
+
+/// <summary>
 /// AllowedBluetoothDeviceAllowedServices
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(AllowedBluetoothDeviceAllowedServicesCollectionBuilder), nameof(AllowedBluetoothDeviceAllowedServicesCollectionBuilder.Create))]
-public readonly struct AllowedBluetoothDeviceAllowedServices : IEither, IEnumerable<UUID>
+public readonly struct AllowedBluetoothDeviceAllowedServices : IEnumerable<UUID>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -51,11 +343,86 @@ public static class AllowedBluetoothDeviceAllowedServicesCollectionBuilder
 }
 
 /// <summary>
+/// AnimateOptions
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AnimateOptions
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly KeyframeAnimationOptions? _value2;
+
+    private AnimateOptions(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AnimateOptions(KeyframeAnimationOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public KeyframeAnimationOptions? AsKeyframeAnimationOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AnimateOptions(double value)
+        => new(value);
+
+    public static implicit operator AnimateOptions(KeyframeAnimationOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// AppendNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AppendNodes
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private AppendNodes(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AppendNodes(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AppendNodes(Node value)
+        => new(value);
+
+    public static implicit operator AppendNodes(string value)
+        => new(value);
+}
+
+/// <summary>
 /// ArrayBufferView
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ArrayBufferView : IEither
+public readonly struct ArrayBufferView
 {
     private readonly byte _kind;
     private readonly Int8Array? _value1;
@@ -373,11 +740,49 @@ public readonly struct ArrayBufferView : IEither
 }
 
 /// <summary>
+/// AssignNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct AssignNodes
+{
+    private readonly byte _kind;
+    private readonly Element? _value1;
+    private readonly Text? _value2;
+
+    private AssignNodes(Element value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private AssignNodes(Text value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _value1 : default;
+
+    public Text? AsText => _kind == 2 ? _value2 : default;
+
+    public static implicit operator AssignNodes(Element value)
+        => new(value);
+
+    public static implicit operator AssignNodes(Text value)
+        => new(value);
+}
+
+/// <summary>
 /// AudioContextOptionsLatencyHint
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct AudioContextOptionsLatencyHint : IEither
+public readonly struct AudioContextOptionsLatencyHint
 {
     private readonly byte _kind;
     private readonly AudioContextLatencyCategory? _value1;
@@ -412,8 +817,9 @@ public readonly struct AudioContextOptionsLatencyHint : IEither
 /// AudioContextOptionsRenderSizeHint
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct AudioContextOptionsRenderSizeHint : IEither
+public readonly struct AudioContextOptionsRenderSizeHint
 {
     private readonly byte _kind;
     private readonly AudioContextRenderSizeCategory? _value1;
@@ -448,8 +854,9 @@ public readonly struct AudioContextOptionsRenderSizeHint : IEither
 /// AudioContextOptionsSinkId
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct AudioContextOptionsSinkId : IEither
+public readonly struct AudioContextOptionsSinkId
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -484,8 +891,9 @@ public readonly struct AudioContextOptionsSinkId : IEither
 /// AudioContextSetSinkId
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct AudioContextSetSinkId : IEither
+public readonly struct AudioContextSetSinkId
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -520,8 +928,9 @@ public readonly struct AudioContextSetSinkId : IEither
 /// AudioContextSinkId
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct AudioContextSinkId : IEither
+public readonly struct AudioContextSinkId
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -556,9 +965,10 @@ public readonly struct AudioContextSinkId : IEither
 /// BackgroundFetchManagerFetchRequests
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BackgroundFetchManagerFetchRequestsCollectionBuilder), nameof(BackgroundFetchManagerFetchRequestsCollectionBuilder.Create))]
-public readonly struct BackgroundFetchManagerFetchRequests : IEither, IEnumerable<RequestInfo>
+public readonly struct BackgroundFetchManagerFetchRequests : IEnumerable<RequestInfo>
 {
     private readonly byte _kind;
     private readonly RequestInfo? _value1;
@@ -606,9 +1016,10 @@ public static class BackgroundFetchManagerFetchRequestsCollectionBuilder
 /// BasePropertyIndexedKeyframeComposite
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeCompositeCollectionBuilder), nameof(BasePropertyIndexedKeyframeCompositeCollectionBuilder.Create))]
-public readonly struct BasePropertyIndexedKeyframeComposite : IEither, IEnumerable<CompositeOperationOrAuto>
+public readonly struct BasePropertyIndexedKeyframeComposite : IEnumerable<CompositeOperationOrAuto>
 {
     private readonly byte _kind;
     private readonly CompositeOperationOrAuto? _value1;
@@ -656,9 +1067,10 @@ public static class BasePropertyIndexedKeyframeCompositeCollectionBuilder
 /// BasePropertyIndexedKeyframeEasing
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeEasingCollectionBuilder), nameof(BasePropertyIndexedKeyframeEasingCollectionBuilder.Create))]
-public readonly struct BasePropertyIndexedKeyframeEasing : IEither, IEnumerable<string>
+public readonly struct BasePropertyIndexedKeyframeEasing : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -706,9 +1118,10 @@ public static class BasePropertyIndexedKeyframeEasingCollectionBuilder
 /// BasePropertyIndexedKeyframeOffset
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeOffsetCollectionBuilder), nameof(BasePropertyIndexedKeyframeOffsetCollectionBuilder.Create))]
-public readonly struct BasePropertyIndexedKeyframeOffset : IEither, IEnumerable<double?>
+public readonly struct BasePropertyIndexedKeyframeOffset : IEnumerable<double?>
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -753,11 +1166,220 @@ public static class BasePropertyIndexedKeyframeOffsetCollectionBuilder
 }
 
 /// <summary>
+/// BeforeNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct BeforeNodes
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private BeforeNodes(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private BeforeNodes(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator BeforeNodes(Node value)
+        => new(value);
+
+    public static implicit operator BeforeNodes(string value)
+        => new(value);
+}
+
+/// <summary>
+/// BinaryData
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct BinaryData
+{
+    private readonly byte _kind;
+    private readonly ArrayBuffer? _value1;
+    private readonly IArrayBufferView? _value2;
+
+    private BinaryData(ArrayBuffer value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private BinaryData(IArrayBufferView value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public ArrayBuffer? AsArrayBuffer => _kind == 1 ? _value1 : default;
+
+    public IArrayBufferView? AsIArrayBufferView => _kind == 2 ? _value2 : default;
+
+    public static implicit operator BinaryData(ArrayBuffer value)
+        => new(value);
+
+    public static BinaryData FromIArrayBufferView(IArrayBufferView value)
+        => new(value);
+
+    public static implicit operator BinaryData(DataView value)
+        => new(value);
+
+    public static implicit operator BinaryData(Uint8Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator BinaryData(Int8Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Int16Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Uint16Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Int32Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Uint32Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Float16Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Float32Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(Float64Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator BinaryData(BigUint64Array value)
+        => new(value);
+}
+
+/// <summary>
+/// BlobPart
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct BlobPart
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly Blob? _value2;
+    private readonly string? _value3;
+
+    private BlobPart(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private BlobPart(Blob value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private BlobPart(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public Blob? AsBlob => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static BlobPart FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator BlobPart(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator BlobPart(DataView value)
+        => new(value);
+
+    public static implicit operator BlobPart(Uint8Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator BlobPart(Int8Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Int16Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Uint16Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Int32Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Uint32Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Float16Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Float32Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Float64Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator BlobPart(Blob value)
+        => new(value);
+
+    public static implicit operator BlobPart(string value)
+        => new(value);
+}
+
+/// <summary>
 /// BluetoothAdvertisingEventInitUUIDs
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothAdvertisingEventInitUUIDs : IEither
+public readonly struct BluetoothAdvertisingEventInitUUIDs
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -792,8 +1414,9 @@ public readonly struct BluetoothAdvertisingEventInitUUIDs : IEither
 /// BluetoothCharacteristicUUID
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothCharacteristicUUID : IEither
+public readonly struct BluetoothCharacteristicUUID
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -828,8 +1451,9 @@ public readonly struct BluetoothCharacteristicUUID : IEither
 /// BluetoothDescriptorUUID
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothDescriptorUUID : IEither
+public readonly struct BluetoothDescriptorUUID
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -864,8 +1488,9 @@ public readonly struct BluetoothDescriptorUUID : IEither
 /// BluetoothServiceUUID
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothServiceUUID : IEither
+public readonly struct BluetoothServiceUUID
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -900,8 +1525,9 @@ public readonly struct BluetoothServiceUUID : IEither
 /// BluetoothUUIDGetCharacteristicName
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothUUIDGetCharacteristicName : IEither
+public readonly struct BluetoothUUIDGetCharacteristicName
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -936,8 +1562,9 @@ public readonly struct BluetoothUUIDGetCharacteristicName : IEither
 /// BluetoothUUIDGetDescriptorName
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothUUIDGetDescriptorName : IEither
+public readonly struct BluetoothUUIDGetDescriptorName
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -972,8 +1599,9 @@ public readonly struct BluetoothUUIDGetDescriptorName : IEither
 /// BluetoothUUIDGetServiceName
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BluetoothUUIDGetServiceName : IEither
+public readonly struct BluetoothUUIDGetServiceName
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1008,8 +1636,9 @@ public readonly struct BluetoothUUIDGetServiceName : IEither
 /// BodyInit
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct BodyInit : IEither
+public readonly struct BodyInit
 {
     private readonly byte _kind;
     private readonly ReadableStream? _value1;
@@ -1041,12 +1670,89 @@ public readonly struct BodyInit : IEither
 }
 
 /// <summary>
+/// BufferSource
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct BufferSource
+{
+    private readonly byte _kind;
+    private readonly IArrayBufferView? _value1;
+    private readonly ArrayBuffer? _value2;
+
+    private BufferSource(IArrayBufferView value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private BufferSource(ArrayBuffer value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IArrayBufferView? AsIArrayBufferView => _kind == 1 ? _value1 : default;
+
+    public ArrayBuffer? AsArrayBuffer => _kind == 2 ? _value2 : default;
+
+    public static BufferSource FromIArrayBufferView(IArrayBufferView value)
+        => new(value);
+
+    public static implicit operator BufferSource(DataView value)
+        => new(value);
+
+    public static implicit operator BufferSource(Uint8Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator BufferSource(Int8Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Int16Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Uint16Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Int32Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Uint32Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Float16Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Float32Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(Float64Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator BufferSource(ArrayBuffer value)
+        => new(value);
+}
+
+/// <summary>
 /// CSSFontFeatureValuesMapSetValues
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CSSFontFeatureValuesMapSetValuesCollectionBuilder), nameof(CSSFontFeatureValuesMapSetValuesCollectionBuilder.Create))]
-public readonly struct CSSFontFeatureValuesMapSetValues : IEither, IEnumerable<uint>
+public readonly struct CSSFontFeatureValuesMapSetValues : IEnumerable<uint>
 {
     private readonly byte _kind;
     private readonly uint? _value1;
@@ -1094,8 +1800,9 @@ public static class CSSFontFeatureValuesMapSetValuesCollectionBuilder
 /// CSSPseudoElementParent
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CSSPseudoElementParent : IEither
+public readonly struct CSSPseudoElementParent
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -1130,8 +1837,9 @@ public readonly struct CSSPseudoElementParent : IEither
 /// CanvasImageSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CanvasImageSource : IEither
+public readonly struct CanvasImageSource
 {
     private readonly byte _kind;
     private readonly HTMLOrSVGImageElement? _value1;
@@ -1242,8 +1950,9 @@ public readonly struct CanvasImageSource : IEither
 /// CanvasRenderingContext2DFillStyle
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CanvasRenderingContext2DFillStyle : IEither
+public readonly struct CanvasRenderingContext2DFillStyle
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1294,8 +2003,9 @@ public readonly struct CanvasRenderingContext2DFillStyle : IEither
 /// CanvasRenderingContext2DRoundRectRadii
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CanvasRenderingContext2DRoundRectRadii : IEither
+public readonly struct CanvasRenderingContext2DRoundRectRadii
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -1330,9 +2040,10 @@ public readonly struct CanvasRenderingContext2DRoundRectRadii : IEither
 /// CanvasRenderingContext2DRoundRectRadiiValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder), nameof(CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder.Create))]
-public readonly struct CanvasRenderingContext2DRoundRectRadiiValue : IEither, IEnumerable<CanvasRenderingContext2DRoundRectRadii>
+public readonly struct CanvasRenderingContext2DRoundRectRadiiValue : IEnumerable<CanvasRenderingContext2DRoundRectRadii>
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -1396,8 +2107,9 @@ public static class CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder
 /// CanvasRenderingContext2DStrokeStyle
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CanvasRenderingContext2DStrokeStyle : IEither
+public readonly struct CanvasRenderingContext2DStrokeStyle
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1448,8 +2160,9 @@ public readonly struct CanvasRenderingContext2DStrokeStyle : IEither
 /// CharacterDataAfterNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CharacterDataAfterNodes : IEither
+public readonly struct CharacterDataAfterNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -1484,8 +2197,9 @@ public readonly struct CharacterDataAfterNodes : IEither
 /// CharacterDataBeforeNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CharacterDataBeforeNodes : IEither
+public readonly struct CharacterDataBeforeNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -1520,8 +2234,9 @@ public readonly struct CharacterDataBeforeNodes : IEither
 /// CharacterDataReplaceWithNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CharacterDataReplaceWithNodes : IEither
+public readonly struct CharacterDataReplaceWithNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -1556,8 +2271,9 @@ public readonly struct CharacterDataReplaceWithNodes : IEither
 /// ClipboardItemDataValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ClipboardItemDataValue : IEither
+public readonly struct ClipboardItemDataValue
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1592,8 +2308,9 @@ public readonly struct ClipboardItemDataValue : IEither
 /// ConstrainBoolean
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ConstrainBoolean : IEither
+public readonly struct ConstrainBoolean
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -1628,9 +2345,10 @@ public readonly struct ConstrainBoolean : IEither
 /// ConstrainDOMString
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringCollectionBuilder), nameof(ConstrainDOMStringCollectionBuilder.Create))]
-public readonly struct ConstrainDOMString : IEither, IEnumerable<string>
+public readonly struct ConstrainDOMString : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1694,9 +2412,10 @@ public static class ConstrainDOMStringCollectionBuilder
 /// ConstrainDOMStringParametersExact
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringParametersExactCollectionBuilder), nameof(ConstrainDOMStringParametersExactCollectionBuilder.Create))]
-public readonly struct ConstrainDOMStringParametersExact : IEither, IEnumerable<string>
+public readonly struct ConstrainDOMStringParametersExact : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1744,9 +2463,10 @@ public static class ConstrainDOMStringParametersExactCollectionBuilder
 /// ConstrainDOMStringParametersIdeal
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringParametersIdealCollectionBuilder), nameof(ConstrainDOMStringParametersIdealCollectionBuilder.Create))]
-public readonly struct ConstrainDOMStringParametersIdeal : IEither, IEnumerable<string>
+public readonly struct ConstrainDOMStringParametersIdeal : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -1794,8 +2514,9 @@ public static class ConstrainDOMStringParametersIdealCollectionBuilder
 /// ConstrainDouble
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ConstrainDouble : IEither
+public readonly struct ConstrainDouble
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -1830,9 +2551,10 @@ public readonly struct ConstrainDouble : IEither
 /// ConstrainPoint2D
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainPoint2DCollectionBuilder), nameof(ConstrainPoint2DCollectionBuilder.Create))]
-public readonly struct ConstrainPoint2D : IEither, IEnumerable<Point2D>
+public readonly struct ConstrainPoint2D : IEnumerable<Point2D>
 {
     private readonly byte _kind;
     private readonly Point2D[]? _value1;
@@ -1880,8 +2602,9 @@ public static class ConstrainPoint2DCollectionBuilder
 /// ConstrainULong
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ConstrainULong : IEither
+public readonly struct ConstrainULong
 {
     private readonly byte _kind;
     private readonly uint? _value1;
@@ -1913,11 +2636,123 @@ public readonly struct ConstrainULong : IEither
 }
 
 /// <summary>
+/// CreateElementNSOptions
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct CreateElementNSOptions
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly ElementCreationOptions? _value2;
+
+    private CreateElementNSOptions(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private CreateElementNSOptions(ElementCreationOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public ElementCreationOptions? AsElementCreationOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator CreateElementNSOptions(string value)
+        => new(value);
+
+    public static implicit operator CreateElementNSOptions(ElementCreationOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// CreateElementOptions
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct CreateElementOptions
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly ElementCreationOptions? _value2;
+
+    private CreateElementOptions(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private CreateElementOptions(ElementCreationOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public ElementCreationOptions? AsElementCreationOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator CreateElementOptions(string value)
+        => new(value);
+
+    public static implicit operator CreateElementOptions(ElementCreationOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// CreateObjectURLObj
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct CreateObjectURLObj
+{
+    private readonly byte _kind;
+    private readonly Blob? _value1;
+    private readonly MediaSource? _value2;
+
+    private CreateObjectURLObj(Blob value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private CreateObjectURLObj(MediaSource value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Blob? AsBlob => _kind == 1 ? _value1 : default;
+
+    public MediaSource? AsMediaSource => _kind == 2 ? _value2 : default;
+
+    public static implicit operator CreateObjectURLObj(Blob value)
+        => new(value);
+
+    public static implicit operator CreateObjectURLObj(MediaSource value)
+        => new(value);
+}
+
+/// <summary>
 /// CryptoKeyID
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct CryptoKeyID : IEither
+public readonly struct CryptoKeyID
 {
     private readonly byte _kind;
     private readonly SmallCryptoKeyID? _value1;
@@ -1952,9 +2787,10 @@ public readonly struct CryptoKeyID : IEither
 /// DOMMatrixInitValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DOMMatrixInitValueCollectionBuilder), nameof(DOMMatrixInitValueCollectionBuilder.Create))]
-public readonly struct DOMMatrixInitValue : IEither, IEnumerable<double>
+public readonly struct DOMMatrixInitValue : IEnumerable<double>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -2002,9 +2838,10 @@ public static class DOMMatrixInitValueCollectionBuilder
 /// DOMMatrixReadOnlyInit
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DOMMatrixReadOnlyInitCollectionBuilder), nameof(DOMMatrixReadOnlyInitCollectionBuilder.Create))]
-public readonly struct DOMMatrixReadOnlyInit : IEither, IEnumerable<double>
+public readonly struct DOMMatrixReadOnlyInit : IEnumerable<double>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -2049,11 +2886,216 @@ public static class DOMMatrixReadOnlyInitCollectionBuilder
 }
 
 /// <summary>
+/// DefaultValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueCollectionBuilder), nameof(DefaultValueCollectionBuilder.Create))]
+public readonly struct DefaultValue : IEnumerable<double?>
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly double?[]? _value2;
+
+    private DefaultValue(double? value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private DefaultValue(double?[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public double?[]? AsDoubleArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator DefaultValue(double? value)
+        => new(value);
+
+    public static implicit operator DefaultValue(double?[] value)
+        => new(value);
+
+    IEnumerator<double?> IEnumerable<double?>.GetEnumerator()
+        => ((IEnumerable<double?>)(AsDoubleArray ?? Array.Empty<double?>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<double?>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class DefaultValueCollectionBuilder
+{
+    public static DefaultValue Create(ReadOnlySpan<double?> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// DefaultValueValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValueCollectionBuilder), nameof(DefaultValueValueCollectionBuilder.Create))]
+public readonly struct DefaultValueValue : IEnumerable<string>
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly string[]? _value2;
+
+    private DefaultValueValue(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private DefaultValueValue(string[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public string[]? AsStringArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator DefaultValueValue(string value)
+        => new(value);
+
+    public static implicit operator DefaultValueValue(string[] value)
+        => new(value);
+
+    IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        => ((IEnumerable<string>)(AsStringArray ?? Array.Empty<string>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<string>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class DefaultValueValueCollectionBuilder
+{
+    public static DefaultValueValue Create(ReadOnlySpan<string> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// DefaultValueValue2
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValue2CollectionBuilder), nameof(DefaultValueValue2CollectionBuilder.Create))]
+public readonly struct DefaultValueValue2 : IEnumerable<CompositeOperationOrAuto>
+{
+    private readonly byte _kind;
+    private readonly CompositeOperationOrAuto? _value1;
+    private readonly CompositeOperationOrAuto[]? _value2;
+
+    private DefaultValueValue2(CompositeOperationOrAuto value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private DefaultValueValue2(CompositeOperationOrAuto[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public CompositeOperationOrAuto? AsCompositeOperationOrAuto => _kind == 1 ? _value1 : default;
+
+    public CompositeOperationOrAuto[]? AsCompositeOperationOrAutoArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator DefaultValueValue2(CompositeOperationOrAuto value)
+        => new(value);
+
+    public static implicit operator DefaultValueValue2(CompositeOperationOrAuto[] value)
+        => new(value);
+
+    IEnumerator<CompositeOperationOrAuto> IEnumerable<CompositeOperationOrAuto>.GetEnumerator()
+        => ((IEnumerable<CompositeOperationOrAuto>)(AsCompositeOperationOrAutoArray ?? Array.Empty<CompositeOperationOrAuto>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<CompositeOperationOrAuto>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class DefaultValueValue2CollectionBuilder
+{
+    public static DefaultValueValue2 Create(ReadOnlySpan<CompositeOperationOrAuto> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// DefaultValueValue3
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValue3CollectionBuilder), nameof(DefaultValueValue3CollectionBuilder.Create))]
+public readonly struct DefaultValueValue3 : IEnumerable<string>
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly string[]? _value2;
+
+    private DefaultValueValue3(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private DefaultValueValue3(string[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public string[]? AsStringArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator DefaultValueValue3(string value)
+        => new(value);
+
+    public static implicit operator DefaultValueValue3(string[] value)
+        => new(value);
+
+    IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        => ((IEnumerable<string>)(AsStringArray ?? Array.Empty<string>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<string>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class DefaultValueValue3CollectionBuilder
+{
+    public static DefaultValueValue3 Create(ReadOnlySpan<string> items)
+        => items.ToArray();
+}
+
+/// <summary>
 /// DisplayMediaStreamOptionsAudio
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DisplayMediaStreamOptionsAudio : IEither
+public readonly struct DisplayMediaStreamOptionsAudio
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -2088,8 +3130,9 @@ public readonly struct DisplayMediaStreamOptionsAudio : IEither
 /// DisplayMediaStreamOptionsVideo
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DisplayMediaStreamOptionsVideo : IEither
+public readonly struct DisplayMediaStreamOptionsVideo
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -2124,8 +3167,9 @@ public readonly struct DisplayMediaStreamOptionsVideo : IEither
 /// DocumentAppendNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentAppendNodes : IEither
+public readonly struct DocumentAppendNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2160,8 +3204,9 @@ public readonly struct DocumentAppendNodes : IEither
 /// DocumentCreateElementNSOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentCreateElementNSOptions : IEither
+public readonly struct DocumentCreateElementNSOptions
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -2196,8 +3241,9 @@ public readonly struct DocumentCreateElementNSOptions : IEither
 /// DocumentCreateElementOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentCreateElementOptions : IEither
+public readonly struct DocumentCreateElementOptions
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -2232,8 +3278,9 @@ public readonly struct DocumentCreateElementOptions : IEither
 /// DocumentFragmentAppendNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentFragmentAppendNodes : IEither
+public readonly struct DocumentFragmentAppendNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2268,8 +3315,9 @@ public readonly struct DocumentFragmentAppendNodes : IEither
 /// DocumentFragmentPrependNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentFragmentPrependNodes : IEither
+public readonly struct DocumentFragmentPrependNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2304,8 +3352,9 @@ public readonly struct DocumentFragmentPrependNodes : IEither
 /// DocumentFragmentReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentFragmentReplaceChildrenNodes : IEither
+public readonly struct DocumentFragmentReplaceChildrenNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2340,8 +3389,9 @@ public readonly struct DocumentFragmentReplaceChildrenNodes : IEither
 /// DocumentPrependNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentPrependNodes : IEither
+public readonly struct DocumentPrependNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2376,8 +3426,9 @@ public readonly struct DocumentPrependNodes : IEither
 /// DocumentReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentReplaceChildrenNodes : IEither
+public readonly struct DocumentReplaceChildrenNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2412,8 +3463,9 @@ public readonly struct DocumentReplaceChildrenNodes : IEither
 /// DocumentStartViewTransitionCallbackOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentStartViewTransitionCallbackOptions : IEither
+public readonly struct DocumentStartViewTransitionCallbackOptions
 {
     private readonly byte _kind;
     private readonly UpdateCallback? _value1;
@@ -2448,8 +3500,9 @@ public readonly struct DocumentStartViewTransitionCallbackOptions : IEither
 /// DocumentTypeAfterNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentTypeAfterNodes : IEither
+public readonly struct DocumentTypeAfterNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2484,8 +3537,9 @@ public readonly struct DocumentTypeAfterNodes : IEither
 /// DocumentTypeBeforeNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentTypeBeforeNodes : IEither
+public readonly struct DocumentTypeBeforeNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2520,8 +3574,9 @@ public readonly struct DocumentTypeBeforeNodes : IEither
 /// DocumentTypeReplaceWithNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DocumentTypeReplaceWithNodes : IEither
+public readonly struct DocumentTypeReplaceWithNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2556,8 +3611,9 @@ public readonly struct DocumentTypeReplaceWithNodes : IEither
 /// EffectTimingDuration
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct EffectTimingDuration : IEither
+public readonly struct EffectTimingDuration
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -2608,8 +3664,9 @@ public readonly struct EffectTimingDuration : IEither
 /// ElementAfterNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementAfterNodes : IEither
+public readonly struct ElementAfterNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2644,8 +3701,9 @@ public readonly struct ElementAfterNodes : IEither
 /// ElementAnimateOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementAnimateOptions : IEither
+public readonly struct ElementAnimateOptions
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -2680,8 +3738,9 @@ public readonly struct ElementAnimateOptions : IEither
 /// ElementAppendNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementAppendNodes : IEither
+public readonly struct ElementAppendNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2716,8 +3775,9 @@ public readonly struct ElementAppendNodes : IEither
 /// ElementBeforeNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementBeforeNodes : IEither
+public readonly struct ElementBeforeNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2752,8 +3812,9 @@ public readonly struct ElementBeforeNodes : IEither
 /// ElementInternalsSetFormValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementInternalsSetFormValue : IEither
+public readonly struct ElementInternalsSetFormValue
 {
     private readonly byte _kind;
     private readonly File? _value1;
@@ -2804,8 +3865,9 @@ public readonly struct ElementInternalsSetFormValue : IEither
 /// ElementInternalsSetFormValueState
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementInternalsSetFormValueState : IEither
+public readonly struct ElementInternalsSetFormValueState
 {
     private readonly byte _kind;
     private readonly File? _value1;
@@ -2856,8 +3918,9 @@ public readonly struct ElementInternalsSetFormValueState : IEither
 /// ElementPrependNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementPrependNodes : IEither
+public readonly struct ElementPrependNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2892,8 +3955,9 @@ public readonly struct ElementPrependNodes : IEither
 /// ElementReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementReplaceChildrenNodes : IEither
+public readonly struct ElementReplaceChildrenNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2928,8 +3992,9 @@ public readonly struct ElementReplaceChildrenNodes : IEither
 /// ElementReplaceWithNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementReplaceWithNodes : IEither
+public readonly struct ElementReplaceWithNodes
 {
     private readonly byte _kind;
     private readonly Node? _value1;
@@ -2964,8 +4029,9 @@ public readonly struct ElementReplaceWithNodes : IEither
 /// ElementScrollIntoViewArg
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ElementScrollIntoViewArg : IEither
+public readonly struct ElementScrollIntoViewArg
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -2997,11 +4063,49 @@ public readonly struct ElementScrollIntoViewArg : IEither
 }
 
 /// <summary>
+/// EventListenerValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct EventListenerValue
+{
+    private readonly byte _kind;
+    private readonly EventListenerLiteral? _value1;
+    private readonly HandleEventCallback? _value2;
+
+    private EventListenerValue(EventListenerLiteral value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private EventListenerValue(HandleEventCallback value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public EventListenerLiteral? AsEventListenerLiteral => _kind == 1 ? _value1 : default;
+
+    public HandleEventCallback? AsHandleEventCallback => _kind == 2 ? _value2 : default;
+
+    public static implicit operator EventListenerValue(EventListenerLiteral value)
+        => new(value);
+
+    public static implicit operator EventListenerValue(HandleEventCallback value)
+        => new(value);
+}
+
+/// <summary>
 /// EventTargetAddEventListenerOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct EventTargetAddEventListenerOptions : IEither
+public readonly struct EventTargetAddEventListenerOptions
 {
     private readonly byte _kind;
     private readonly AddEventListenerOptions? _value1;
@@ -3036,8 +4140,9 @@ public readonly struct EventTargetAddEventListenerOptions : IEither
 /// EventTargetRemoveEventListenerOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct EventTargetRemoveEventListenerOptions : IEither
+public readonly struct EventTargetRemoveEventListenerOptions
 {
     private readonly byte _kind;
     private readonly EventListenerOptions? _value1;
@@ -3072,8 +4177,9 @@ public readonly struct EventTargetRemoveEventListenerOptions : IEither
 /// ExtendableMessageEventInitSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ExtendableMessageEventInitSource : IEither
+public readonly struct ExtendableMessageEventInitSource
 {
     private readonly byte _kind;
     private readonly Client? _value1;
@@ -3124,8 +4230,9 @@ public readonly struct ExtendableMessageEventInitSource : IEither
 /// ExtendableMessageEventSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ExtendableMessageEventSource : IEither
+public readonly struct ExtendableMessageEventSource
 {
     private readonly byte _kind;
     private readonly Client? _value1;
@@ -3176,8 +4283,9 @@ public readonly struct ExtendableMessageEventSource : IEither
 /// FencedFrameConfigSize
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct FencedFrameConfigSize : IEither
+public readonly struct FencedFrameConfigSize
 {
     private readonly byte _kind;
     private readonly uint? _value1;
@@ -3212,9 +4320,10 @@ public readonly struct FencedFrameConfigSize : IEither
 /// FilePickerAcceptTypeAcceptValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(FilePickerAcceptTypeAcceptValueCollectionBuilder), nameof(FilePickerAcceptTypeAcceptValueCollectionBuilder.Create))]
-public readonly struct FilePickerAcceptTypeAcceptValue : IEither, IEnumerable<string>
+public readonly struct FilePickerAcceptTypeAcceptValue : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -3262,8 +4371,9 @@ public static class FilePickerAcceptTypeAcceptValueCollectionBuilder
 /// FileReaderResult
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct FileReaderResult : IEither
+public readonly struct FileReaderResult
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -3295,12 +4405,126 @@ public readonly struct FileReaderResult : IEither
 }
 
 /// <summary>
+/// FileSystemWriteChunkType
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct FileSystemWriteChunkType
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly Blob? _value2;
+    private readonly string? _value3;
+    private readonly WriteParams? _value4;
+
+    private FileSystemWriteChunkType(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+        _value4 = default;
+    }
+
+    private FileSystemWriteChunkType(Blob value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+        _value4 = default;
+    }
+
+    private FileSystemWriteChunkType(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+        _value4 = default;
+    }
+
+    private FileSystemWriteChunkType(WriteParams value)
+    {
+        _kind = 4;
+        _value1 = default;
+        _value2 = default;
+        _value3 = default;
+        _value4 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public Blob? AsBlob => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public WriteParams? AsWriteParams => _kind == 4 ? _value4 : default;
+
+    public static FileSystemWriteChunkType FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(DataView value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Uint8Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Int8Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Int16Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Uint16Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Int32Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Uint32Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Float16Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Float32Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Float64Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(Blob value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(string value)
+        => new(value);
+
+    public static implicit operator FileSystemWriteChunkType(WriteParams value)
+        => new(value);
+}
+
+/// <summary>
 /// Float32List
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Float32ListCollectionBuilder), nameof(Float32ListCollectionBuilder.Create))]
-public readonly struct Float32List : IEither, IEnumerable<GLfloat>
+public readonly struct Float32List : IEnumerable<GLfloat>
 {
     private readonly byte _kind;
     private readonly Float32Array? _value1;
@@ -3348,8 +4572,9 @@ public static class Float32ListCollectionBuilder
 /// FontFaceSourceValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct FontFaceSourceValue : IEither
+public readonly struct FontFaceSourceValue
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -3384,8 +4609,9 @@ public readonly struct FontFaceSourceValue : IEither
 /// FormDataEntryValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct FormDataEntryValue : IEither
+public readonly struct FormDataEntryValue
 {
     private readonly byte _kind;
     private readonly File? _value1;
@@ -3420,8 +4646,9 @@ public readonly struct FormDataEntryValue : IEither
 /// GenerateBidOutputAdComponents
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GenerateBidOutputAdComponents : IEither
+public readonly struct GenerateBidOutputAdComponents
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -3456,8 +4683,9 @@ public readonly struct GenerateBidOutputAdComponents : IEither
 /// GenerateBidOutputRender
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GenerateBidOutputRender : IEither
+public readonly struct GenerateBidOutputRender
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -3492,8 +4720,9 @@ public readonly struct GenerateBidOutputRender : IEither
 /// GeometryNode
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GeometryNode : IEither
+public readonly struct GeometryNode
 {
     private readonly byte _kind;
     private readonly Text? _value1;
@@ -3559,11 +4788,123 @@ public readonly struct GeometryNode : IEither
 }
 
 /// <summary>
+/// GetCharacteristicName
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct GetCharacteristicName
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly uint? _value2;
+
+    private GetCharacteristicName(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private GetCharacteristicName(uint value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public uint? AsUint => _kind == 2 ? _value2 : default;
+
+    public static implicit operator GetCharacteristicName(string value)
+        => new(value);
+
+    public static implicit operator GetCharacteristicName(uint value)
+        => new(value);
+}
+
+/// <summary>
+/// GetDescriptorName
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct GetDescriptorName
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly uint? _value2;
+
+    private GetDescriptorName(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private GetDescriptorName(uint value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public uint? AsUint => _kind == 2 ? _value2 : default;
+
+    public static implicit operator GetDescriptorName(string value)
+        => new(value);
+
+    public static implicit operator GetDescriptorName(uint value)
+        => new(value);
+}
+
+/// <summary>
+/// GetServiceName
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct GetServiceName
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly uint? _value2;
+
+    private GetServiceName(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private GetServiceName(uint value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public uint? AsUint => _kind == 2 ? _value2 : default;
+
+    public static implicit operator GetServiceName(string value)
+        => new(value);
+
+    public static implicit operator GetServiceName(uint value)
+        => new(value);
+}
+
+/// <summary>
 /// GroupEffectTiming
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GroupEffectTiming : IEither
+public readonly struct GroupEffectTiming
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -3598,8 +4939,9 @@ public readonly struct GroupEffectTiming : IEither
 /// HTMLAllCollectionItemResult
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLAllCollectionItemResult : IEither
+public readonly struct HTMLAllCollectionItemResult
 {
     private readonly byte _kind;
     private readonly HTMLCollection? _value1;
@@ -3634,8 +4976,9 @@ public readonly struct HTMLAllCollectionItemResult : IEither
 /// HTMLAllCollectionNamedItemResult
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLAllCollectionNamedItemResult : IEither
+public readonly struct HTMLAllCollectionNamedItemResult
 {
     private readonly byte _kind;
     private readonly HTMLCollection? _value1;
@@ -3670,8 +5013,9 @@ public readonly struct HTMLAllCollectionNamedItemResult : IEither
 /// HTMLElementHidden
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLElementHidden : IEither
+public readonly struct HTMLElementHidden
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -3722,8 +5066,9 @@ public readonly struct HTMLElementHidden : IEither
 /// HTMLFormControlsCollectionNamedItemResult
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLFormControlsCollectionNamedItemResult : IEither
+public readonly struct HTMLFormControlsCollectionNamedItemResult
 {
     private readonly byte _kind;
     private readonly RadioNodeList? _value1;
@@ -3758,8 +5103,9 @@ public readonly struct HTMLFormControlsCollectionNamedItemResult : IEither
 /// HTMLFormElementResult
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLFormElementResult : IEither
+public readonly struct HTMLFormElementResult
 {
     private readonly byte _kind;
     private readonly RadioNodeList? _value1;
@@ -3794,8 +5140,9 @@ public readonly struct HTMLFormElementResult : IEither
 /// HTMLOptionsCollectionAddBefore
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLOptionsCollectionAddBefore : IEither
+public readonly struct HTMLOptionsCollectionAddBefore
 {
     private readonly byte _kind;
     private readonly HTMLElement? _value1;
@@ -3830,8 +5177,9 @@ public readonly struct HTMLOptionsCollectionAddBefore : IEither
 /// HTMLOptionsCollectionAddElement
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLOptionsCollectionAddElement : IEither
+public readonly struct HTMLOptionsCollectionAddElement
 {
     private readonly byte _kind;
     private readonly HTMLOptionElement? _value1;
@@ -3866,8 +5214,9 @@ public readonly struct HTMLOptionsCollectionAddElement : IEither
 /// HTMLOrSVGImageElement
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLOrSVGImageElement : IEither
+public readonly struct HTMLOrSVGImageElement
 {
     private readonly byte _kind;
     private readonly HTMLImageElement? _value1;
@@ -3902,8 +5251,9 @@ public readonly struct HTMLOrSVGImageElement : IEither
 /// HTMLOrSVGScriptElement
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLOrSVGScriptElement : IEither
+public readonly struct HTMLOrSVGScriptElement
 {
     private readonly byte _kind;
     private readonly HTMLScriptElement? _value1;
@@ -3938,8 +5288,9 @@ public readonly struct HTMLOrSVGScriptElement : IEither
 /// HTMLSelectElementAddBefore
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLSelectElementAddBefore : IEither
+public readonly struct HTMLSelectElementAddBefore
 {
     private readonly byte _kind;
     private readonly HTMLElement? _value1;
@@ -3974,8 +5325,9 @@ public readonly struct HTMLSelectElementAddBefore : IEither
 /// HTMLSelectElementAddElement
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLSelectElementAddElement : IEither
+public readonly struct HTMLSelectElementAddElement
 {
     private readonly byte _kind;
     private readonly HTMLOptionElement? _value1;
@@ -4010,8 +5362,9 @@ public readonly struct HTMLSelectElementAddElement : IEither
 /// HTMLSlotElementAssignNodes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HTMLSlotElementAssignNodes : IEither
+public readonly struct HTMLSlotElementAssignNodes
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -4046,9 +5399,10 @@ public readonly struct HTMLSlotElementAssignNodes : IEither
 /// HeadersInit
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(HeadersInitCollectionBuilder), nameof(HeadersInitCollectionBuilder.Create))]
-public readonly struct HeadersInit : IEither, IEnumerable<byte[][]>
+public readonly struct HeadersInit : IEnumerable<byte[][]>
 {
     private readonly byte _kind;
     private readonly byte[][][]? _value1;
@@ -4093,12 +5447,50 @@ public static class HeadersInitCollectionBuilder
 }
 
 /// <summary>
+/// IDBCursorSource
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct IDBCursorSource
+{
+    private readonly byte _kind;
+    private readonly IDBObjectStore? _value1;
+    private readonly IDBIndex? _value2;
+
+    private IDBCursorSource(IDBObjectStore value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private IDBCursorSource(IDBIndex value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IDBObjectStore? AsIDBObjectStore => _kind == 1 ? _value1 : default;
+
+    public IDBIndex? AsIDBIndex => _kind == 2 ? _value2 : default;
+
+    public static IDBCursorSource FromIDBObjectStore(IDBObjectStore value)
+        => new(value);
+
+    public static IDBCursorSource FromIDBIndex(IDBIndex value)
+        => new(value);
+}
+
+/// <summary>
 /// IDBDatabaseTransactionStoreNames
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBDatabaseTransactionStoreNamesCollectionBuilder), nameof(IDBDatabaseTransactionStoreNamesCollectionBuilder.Create))]
-public readonly struct IDBDatabaseTransactionStoreNames : IEither, IEnumerable<string>
+public readonly struct IDBDatabaseTransactionStoreNames : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -4146,9 +5538,10 @@ public static class IDBDatabaseTransactionStoreNamesCollectionBuilder
 /// IDBObjectStoreCreateIndexKeyPath
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBObjectStoreCreateIndexKeyPathCollectionBuilder), nameof(IDBObjectStoreCreateIndexKeyPathCollectionBuilder.Create))]
-public readonly struct IDBObjectStoreCreateIndexKeyPath : IEither, IEnumerable<string>
+public readonly struct IDBObjectStoreCreateIndexKeyPath : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -4196,9 +5589,10 @@ public static class IDBObjectStoreCreateIndexKeyPathCollectionBuilder
 /// IDBObjectStoreParametersKeyPath
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBObjectStoreParametersKeyPathCollectionBuilder), nameof(IDBObjectStoreParametersKeyPathCollectionBuilder.Create))]
-public readonly struct IDBObjectStoreParametersKeyPath : IEither, IEnumerable<string>
+public readonly struct IDBObjectStoreParametersKeyPath : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -4243,11 +5637,65 @@ public static class IDBObjectStoreParametersKeyPathCollectionBuilder
 }
 
 /// <summary>
+/// IDBRequestSource
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct IDBRequestSource
+{
+    private readonly byte _kind;
+    private readonly IDBObjectStore? _value1;
+    private readonly IDBIndex? _value2;
+    private readonly IDBCursor? _value3;
+
+    private IDBRequestSource(IDBObjectStore value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private IDBRequestSource(IDBIndex value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private IDBRequestSource(IDBCursor value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IDBObjectStore? AsIDBObjectStore => _kind == 1 ? _value1 : default;
+
+    public IDBIndex? AsIDBIndex => _kind == 2 ? _value2 : default;
+
+    public IDBCursor? AsIDBCursor => _kind == 3 ? _value3 : default;
+
+    public static IDBRequestSource FromIDBObjectStore(IDBObjectStore value)
+        => new(value);
+
+    public static IDBRequestSource FromIDBIndex(IDBIndex value)
+        => new(value);
+
+    public static IDBRequestSource FromIDBCursor(IDBCursor value)
+        => new(value);
+}
+
+/// <summary>
 /// ImageBitmapRenderingContextCanvas
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ImageBitmapRenderingContextCanvas : IEither
+public readonly struct ImageBitmapRenderingContextCanvas
 {
     private readonly byte _kind;
     private readonly HTMLCanvasElement? _value1;
@@ -4282,8 +5730,9 @@ public readonly struct ImageBitmapRenderingContextCanvas : IEither
 /// ImageBitmapSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ImageBitmapSource : IEither
+public readonly struct ImageBitmapSource
 {
     private readonly byte _kind;
     private readonly CanvasImageSource? _value1;
@@ -4331,12 +5780,92 @@ public readonly struct ImageBitmapSource : IEither
 }
 
 /// <summary>
+/// ImageBufferSource
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct ImageBufferSource
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly ReadableStream? _value2;
+
+    private ImageBufferSource(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private ImageBufferSource(ReadableStream value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public ReadableStream? AsReadableStream => _kind == 2 ? _value2 : default;
+
+    public static ImageBufferSource FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(DataView value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Uint8Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Int8Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Int16Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Uint16Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Int32Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Uint32Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Float16Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Float32Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(Float64Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator ImageBufferSource(ReadableStream value)
+        => new(value);
+}
+
+/// <summary>
 /// InstallEventAddRoutesRules
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(InstallEventAddRoutesRulesCollectionBuilder), nameof(InstallEventAddRoutesRulesCollectionBuilder.Create))]
-public readonly struct InstallEventAddRoutesRules : IEither, IEnumerable<RouterRule>
+public readonly struct InstallEventAddRoutesRules : IEnumerable<RouterRule>
 {
     private readonly byte _kind;
     private readonly RouterRule? _value1;
@@ -4384,9 +5913,10 @@ public static class InstallEventAddRoutesRulesCollectionBuilder
 /// Int32List
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Int32ListCollectionBuilder), nameof(Int32ListCollectionBuilder.Create))]
-public readonly struct Int32List : IEither, IEnumerable<GLint>
+public readonly struct Int32List : IEnumerable<GLint>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -4434,8 +5964,9 @@ public static class Int32ListCollectionBuilder
 /// IntersectionObserverInitRoot
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntersectionObserverInitRoot : IEither
+public readonly struct IntersectionObserverInitRoot
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -4470,9 +6001,10 @@ public readonly struct IntersectionObserverInitRoot : IEither
 /// IntersectionObserverInitThreshold
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IntersectionObserverInitThresholdCollectionBuilder), nameof(IntersectionObserverInitThresholdCollectionBuilder.Create))]
-public readonly struct IntersectionObserverInitThreshold : IEither, IEnumerable<double>
+public readonly struct IntersectionObserverInitThreshold : IEnumerable<double>
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -4520,8 +6052,9 @@ public static class IntersectionObserverInitThresholdCollectionBuilder
 /// IntersectionObserverRoot
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntersectionObserverRoot : IEither
+public readonly struct IntersectionObserverRoot
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -4556,8 +6089,9 @@ public readonly struct IntersectionObserverRoot : IEither
 /// KeyframeAnimationOptionsRangeEnd
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct KeyframeAnimationOptionsRangeEnd : IEither
+public readonly struct KeyframeAnimationOptionsRangeEnd
 {
     private readonly byte _kind;
     private readonly TimelineRangeOffset? _value1;
@@ -4626,8 +6160,9 @@ public readonly struct KeyframeAnimationOptionsRangeEnd : IEither
 /// KeyframeAnimationOptionsRangeStart
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct KeyframeAnimationOptionsRangeStart : IEither
+public readonly struct KeyframeAnimationOptionsRangeStart
 {
     private readonly byte _kind;
     private readonly TimelineRangeOffset? _value1;
@@ -4696,8 +6231,9 @@ public readonly struct KeyframeAnimationOptionsRangeStart : IEither
 /// KeyframeEffectOptionsValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct KeyframeEffectOptionsValue : IEither
+public readonly struct KeyframeEffectOptionsValue
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -4732,8 +6268,9 @@ public readonly struct KeyframeEffectOptionsValue : IEither
 /// LineAndPositionSetting
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct LineAndPositionSetting : IEither
+public readonly struct LineAndPositionSetting
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -4768,9 +6305,10 @@ public readonly struct LineAndPositionSetting : IEither
 /// MLGraphBuilderSplitSplits
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(MLGraphBuilderSplitSplitsCollectionBuilder), nameof(MLGraphBuilderSplitSplitsCollectionBuilder.Create))]
-public readonly struct MLGraphBuilderSplitSplits : IEither, IEnumerable<uint>
+public readonly struct MLGraphBuilderSplitSplits : IEnumerable<uint>
 {
     private readonly byte _kind;
     private readonly uint? _value1;
@@ -4818,8 +6356,9 @@ public static class MLGraphBuilderSplitSplitsCollectionBuilder
 /// MediaProvider
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MediaProvider : IEither
+public readonly struct MediaProvider
 {
     private readonly byte _kind;
     private readonly MediaStream? _value1;
@@ -4870,8 +6409,9 @@ public readonly struct MediaProvider : IEither
 /// MediaStreamConstraintsAudio
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MediaStreamConstraintsAudio : IEither
+public readonly struct MediaStreamConstraintsAudio
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -4906,8 +6446,9 @@ public readonly struct MediaStreamConstraintsAudio : IEither
 /// MediaStreamConstraintsVideo
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MediaStreamConstraintsVideo : IEither
+public readonly struct MediaStreamConstraintsVideo
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -4942,8 +6483,9 @@ public readonly struct MediaStreamConstraintsVideo : IEither
 /// MediaTrackConstraintSetPan
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MediaTrackConstraintSetPan : IEither
+public readonly struct MediaTrackConstraintSetPan
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -4978,8 +6520,9 @@ public readonly struct MediaTrackConstraintSetPan : IEither
 /// MediaTrackConstraintSetTilt
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MediaTrackConstraintSetTilt : IEither
+public readonly struct MediaTrackConstraintSetTilt
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -5014,8 +6557,9 @@ public readonly struct MediaTrackConstraintSetTilt : IEither
 /// MediaTrackConstraintSetZoom
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MediaTrackConstraintSetZoom : IEither
+public readonly struct MediaTrackConstraintSetZoom
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -5050,8 +6594,9 @@ public readonly struct MediaTrackConstraintSetZoom : IEither
 /// MessageEventSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MessageEventSource : IEither
+public readonly struct MessageEventSource
 {
     private readonly byte _kind;
     private readonly WindowProxy? _value1;
@@ -5099,11 +6644,107 @@ public readonly struct MessageEventSource : IEither
 }
 
 /// <summary>
+/// NDEFMessageSource
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct NDEFMessageSource
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly IBufferSource? _value2;
+    private readonly NDEFMessageInit? _value3;
+
+    private NDEFMessageSource(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private NDEFMessageSource(IBufferSource value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private NDEFMessageSource(NDEFMessageInit value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public IBufferSource? AsIBufferSource => _kind == 2 ? _value2 : default;
+
+    public NDEFMessageInit? AsNDEFMessageInit => _kind == 3 ? _value3 : default;
+
+    public static implicit operator NDEFMessageSource(string value)
+        => new(value);
+
+    public static NDEFMessageSource FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(DataView value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Uint8Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Int8Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Int16Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Uint16Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Int32Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Uint32Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Float16Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Float32Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(Float64Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator NDEFMessageSource(NDEFMessageInit value)
+        => new(value);
+}
+
+/// <summary>
 /// NavigatorRunAdAuctionResultValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct NavigatorRunAdAuctionResultValue : IEither
+public readonly struct NavigatorRunAdAuctionResultValue
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5135,11 +6776,49 @@ public readonly struct NavigatorRunAdAuctionResultValue : IEither
 }
 
 /// <summary>
+/// NodeFilterValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct NodeFilterValue
+{
+    private readonly byte _kind;
+    private readonly NodeFilterLiteral? _value1;
+    private readonly AcceptNodeCallback? _value2;
+
+    private NodeFilterValue(NodeFilterLiteral value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private NodeFilterValue(AcceptNodeCallback value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public NodeFilterLiteral? AsNodeFilterLiteral => _kind == 1 ? _value1 : default;
+
+    public AcceptNodeCallback? AsAcceptNodeCallback => _kind == 2 ? _value2 : default;
+
+    public static implicit operator NodeFilterValue(NodeFilterLiteral value)
+        => new(value);
+
+    public static implicit operator NodeFilterValue(AcceptNodeCallback value)
+        => new(value);
+}
+
+/// <summary>
 /// OfflineAudioContextOptionsRenderSizeHint
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct OfflineAudioContextOptionsRenderSizeHint : IEither
+public readonly struct OfflineAudioContextOptionsRenderSizeHint
 {
     private readonly byte _kind;
     private readonly AudioContextRenderSizeCategory? _value1;
@@ -5174,8 +6853,9 @@ public readonly struct OfflineAudioContextOptionsRenderSizeHint : IEither
 /// OffscreenCanvasRenderingContext2DFillStyle
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct OffscreenCanvasRenderingContext2DFillStyle : IEither
+public readonly struct OffscreenCanvasRenderingContext2DFillStyle
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5226,8 +6906,9 @@ public readonly struct OffscreenCanvasRenderingContext2DFillStyle : IEither
 /// OffscreenCanvasRenderingContext2DRoundRectRadii
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadii : IEither
+public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadii
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -5262,9 +6943,10 @@ public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadii : IEither
 /// OffscreenCanvasRenderingContext2DRoundRectRadiiValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder), nameof(OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder.Create))]
-public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadiiValue : IEither, IEnumerable<OffscreenCanvasRenderingContext2DRoundRectRadii>
+public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadiiValue : IEnumerable<OffscreenCanvasRenderingContext2DRoundRectRadii>
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -5328,8 +7010,9 @@ public static class OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollecti
 /// OffscreenCanvasRenderingContext2DStrokeStyle
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct OffscreenCanvasRenderingContext2DStrokeStyle : IEither
+public readonly struct OffscreenCanvasRenderingContext2DStrokeStyle
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5380,8 +7063,9 @@ public readonly struct OffscreenCanvasRenderingContext2DStrokeStyle : IEither
 /// OffscreenRenderingContext
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct OffscreenRenderingContext : IEither
+public readonly struct OffscreenRenderingContext
 {
     private readonly byte _kind;
     private readonly OffscreenCanvasRenderingContext2D? _value1;
@@ -5470,8 +7154,9 @@ public readonly struct OffscreenRenderingContext : IEither
 /// OptionalEffectTimingDuration
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct OptionalEffectTimingDuration : IEither
+public readonly struct OptionalEffectTimingDuration
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -5506,8 +7191,9 @@ public readonly struct OptionalEffectTimingDuration : IEither
 /// ParameterCurrentTarget
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ParameterCurrentTarget : IEither
+public readonly struct ParameterCurrentTarget
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -5542,8 +7228,9 @@ public readonly struct ParameterCurrentTarget : IEither
 /// ParameterEvent
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ParameterEvent : IEither
+public readonly struct ParameterEvent
 {
     private readonly byte _kind;
     private readonly Event? _value1;
@@ -5578,8 +7265,9 @@ public readonly struct ParameterEvent : IEither
 /// PasswordCredentialInit
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct PasswordCredentialInit : IEither
+public readonly struct PasswordCredentialInit
 {
     private readonly byte _kind;
     private readonly PasswordCredentialData? _value1;
@@ -5614,8 +7302,9 @@ public readonly struct PasswordCredentialInit : IEither
 /// Path2DPath
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct Path2DPath : IEither
+public readonly struct Path2DPath
 {
     private readonly byte _kind;
     private readonly Path2D? _value1;
@@ -5650,8 +7339,9 @@ public readonly struct Path2DPath : IEither
 /// Path2DRoundRectRadii
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct Path2DRoundRectRadii : IEither
+public readonly struct Path2DRoundRectRadii
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -5686,9 +7376,10 @@ public readonly struct Path2DRoundRectRadii : IEither
 /// Path2DRoundRectRadiiValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Path2DRoundRectRadiiValueCollectionBuilder), nameof(Path2DRoundRectRadiiValueCollectionBuilder.Create))]
-public readonly struct Path2DRoundRectRadiiValue : IEither, IEnumerable<Path2DRoundRectRadii>
+public readonly struct Path2DRoundRectRadiiValue : IEnumerable<Path2DRoundRectRadii>
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -5752,8 +7443,9 @@ public static class Path2DRoundRectRadiiValueCollectionBuilder
 /// PerformanceMeasureOptionsEnd
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct PerformanceMeasureOptionsEnd : IEither
+public readonly struct PerformanceMeasureOptionsEnd
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5788,8 +7480,9 @@ public readonly struct PerformanceMeasureOptionsEnd : IEither
 /// PerformanceMeasureOptionsStart
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct PerformanceMeasureOptionsStart : IEither
+public readonly struct PerformanceMeasureOptionsStart
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5824,8 +7517,9 @@ public readonly struct PerformanceMeasureOptionsStart : IEither
 /// PerformanceMeasureStartOrMeasureOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct PerformanceMeasureStartOrMeasureOptions : IEither
+public readonly struct PerformanceMeasureStartOrMeasureOptions
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5857,12 +7551,208 @@ public readonly struct PerformanceMeasureStartOrMeasureOptions : IEither
 }
 
 /// <summary>
+/// PrependNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct PrependNodes
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private PrependNodes(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private PrependNodes(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator PrependNodes(Node value)
+        => new(value);
+
+    public static implicit operator PrependNodes(string value)
+        => new(value);
+}
+
+/// <summary>
+/// PushMessageDataInit
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct PushMessageDataInit
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly string? _value2;
+
+    private PushMessageDataInit(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private PushMessageDataInit(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static PushMessageDataInit FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(DataView value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Uint8Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Int8Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Int16Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Uint16Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Int32Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Uint32Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Float16Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Float32Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(Float64Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator PushMessageDataInit(string value)
+        => new(value);
+}
+
+/// <summary>
+/// PushSubscriptionOptionsInitApplicationServerKey
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct PushSubscriptionOptionsInitApplicationServerKey
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly string? _value2;
+
+    private PushSubscriptionOptionsInitApplicationServerKey(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private PushSubscriptionOptionsInitApplicationServerKey(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static PushSubscriptionOptionsInitApplicationServerKey FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(DataView value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Uint8Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Int8Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Int16Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Uint16Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Int32Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Uint32Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Float16Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Float32Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Float64Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(string value)
+        => new(value);
+}
+
+/// <summary>
 /// RTCIceServerUrls
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(RTCIceServerUrlsCollectionBuilder), nameof(RTCIceServerUrlsCollectionBuilder.Create))]
-public readonly struct RTCIceServerUrls : IEither, IEnumerable<string>
+public readonly struct RTCIceServerUrls : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -5910,8 +7800,9 @@ public static class RTCIceServerUrlsCollectionBuilder
 /// RTCPeerConnectionAddTransceiverTrackOrKind
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RTCPeerConnectionAddTransceiverTrackOrKind : IEither
+public readonly struct RTCPeerConnectionAddTransceiverTrackOrKind
 {
     private readonly byte _kind;
     private readonly MediaStreamTrack? _value1;
@@ -5946,8 +7837,9 @@ public readonly struct RTCPeerConnectionAddTransceiverTrackOrKind : IEither
 /// RTCRtpTransform
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RTCRtpTransform : IEither
+public readonly struct RTCRtpTransform
 {
     private readonly byte _kind;
     private readonly SFrameTransform? _value1;
@@ -5982,8 +7874,9 @@ public readonly struct RTCRtpTransform : IEither
 /// ReadableStreamController
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ReadableStreamController : IEither
+public readonly struct ReadableStreamController
 {
     private readonly byte _kind;
     private readonly ReadableStreamDefaultController? _value1;
@@ -6018,8 +7911,9 @@ public readonly struct ReadableStreamController : IEither
 /// ReadableStreamReader
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ReadableStreamReader : IEither
+public readonly struct ReadableStreamReader
 {
     private readonly byte _kind;
     private readonly ReadableStreamDefaultReader? _value1;
@@ -6051,11 +7945,49 @@ public readonly struct ReadableStreamReader : IEither
 }
 
 /// <summary>
+/// RemoveEventListenerOptions
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RemoveEventListenerOptions
+{
+    private readonly byte _kind;
+    private readonly EventListenerOptions? _value1;
+    private readonly bool? _value2;
+
+    private RemoveEventListenerOptions(EventListenerOptions value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private RemoveEventListenerOptions(bool value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public EventListenerOptions? AsEventListenerOptions => _kind == 1 ? _value1 : default;
+
+    public bool? AsBool => _kind == 2 ? _value2 : default;
+
+    public static implicit operator RemoveEventListenerOptions(EventListenerOptions value)
+        => new(value);
+
+    public static implicit operator RemoveEventListenerOptions(bool value)
+        => new(value);
+}
+
+/// <summary>
 /// RenderingContext
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RenderingContext : IEither
+public readonly struct RenderingContext
 {
     private readonly byte _kind;
     private readonly CanvasRenderingContext2D? _value1;
@@ -6141,11 +8073,86 @@ public readonly struct RenderingContext : IEither
 }
 
 /// <summary>
+/// ReplaceChildrenNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct ReplaceChildrenNodes
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private ReplaceChildrenNodes(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private ReplaceChildrenNodes(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator ReplaceChildrenNodes(Node value)
+        => new(value);
+
+    public static implicit operator ReplaceChildrenNodes(string value)
+        => new(value);
+}
+
+/// <summary>
+/// ReplaceWithNodes
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct ReplaceWithNodes
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private ReplaceWithNodes(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private ReplaceWithNodes(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator ReplaceWithNodes(Node value)
+        => new(value);
+
+    public static implicit operator ReplaceWithNodes(string value)
+        => new(value);
+}
+
+/// <summary>
 /// ReportEventType
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ReportEventType : IEither
+public readonly struct ReportEventType
 {
     private readonly byte _kind;
     private readonly FenceEvent? _value1;
@@ -6180,8 +8187,9 @@ public readonly struct ReportEventType : IEither
 /// RequestInfo
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RequestInfo : IEither
+public readonly struct RequestInfo
 {
     private readonly byte _kind;
     private readonly Request? _value1;
@@ -6216,8 +8224,9 @@ public readonly struct RequestInfo : IEither
 /// RotationMatrixType
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RotationMatrixType : IEither
+public readonly struct RotationMatrixType
 {
     private readonly byte _kind;
     private readonly Float32Array? _value1;
@@ -6268,8 +8277,9 @@ public readonly struct RotationMatrixType : IEither
 /// RoundRectRadii
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RoundRectRadii : IEither
+public readonly struct RoundRectRadii
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -6301,11 +8311,79 @@ public readonly struct RoundRectRadii : IEither
 }
 
 /// <summary>
+/// RoundRectRadiiValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(RoundRectRadiiValueCollectionBuilder), nameof(RoundRectRadiiValueCollectionBuilder.Create))]
+public readonly struct RoundRectRadiiValue : IEnumerable<RoundRectRadii>
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly DOMPointInit? _value2;
+    private readonly RoundRectRadii[]? _value3;
+
+    private RoundRectRadiiValue(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private RoundRectRadiiValue(DOMPointInit value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private RoundRectRadiiValue(RoundRectRadii[] value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public DOMPointInit? AsDOMPointInit => _kind == 2 ? _value2 : default;
+
+    public RoundRectRadii[]? AsRoundRectRadiiArray => _kind == 3 ? _value3 : default;
+
+    public static implicit operator RoundRectRadiiValue(double value)
+        => new(value);
+
+    public static implicit operator RoundRectRadiiValue(DOMPointInit value)
+        => new(value);
+
+    public static implicit operator RoundRectRadiiValue(RoundRectRadii[] value)
+        => new(value);
+
+    IEnumerator<RoundRectRadii> IEnumerable<RoundRectRadii>.GetEnumerator()
+        => ((IEnumerable<RoundRectRadii>)(AsRoundRectRadiiArray ?? Array.Empty<RoundRectRadii>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<RoundRectRadii>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class RoundRectRadiiValueCollectionBuilder
+{
+    public static RoundRectRadiiValue Create(ReadOnlySpan<RoundRectRadii> items)
+        => items.ToArray();
+}
+
+/// <summary>
 /// RouterSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouterSource : IEither
+public readonly struct RouterSource
 {
     private readonly byte _kind;
     private readonly RouterSourceDict? _value1;
@@ -6340,8 +8418,9 @@ public readonly struct RouterSource : IEither
 /// SanitizerAttribute
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct SanitizerAttribute : IEither
+public readonly struct SanitizerAttribute
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -6376,8 +8455,9 @@ public readonly struct SanitizerAttribute : IEither
 /// SanitizerElement
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct SanitizerElement : IEither
+public readonly struct SanitizerElement
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -6412,8 +8492,9 @@ public readonly struct SanitizerElement : IEither
 /// SanitizerElementWithAttributes
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct SanitizerElementWithAttributes : IEither
+public readonly struct SanitizerElementWithAttributes
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -6445,11 +8526,181 @@ public readonly struct SanitizerElementWithAttributes : IEither
 }
 
 /// <summary>
+/// ScrollIntoViewArg
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct ScrollIntoViewArg
+{
+    private readonly byte _kind;
+    private readonly bool? _value1;
+    private readonly ScrollIntoViewOptions? _value2;
+
+    private ScrollIntoViewArg(bool value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private ScrollIntoViewArg(ScrollIntoViewOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _value1 : default;
+
+    public ScrollIntoViewOptions? AsScrollIntoViewOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator ScrollIntoViewArg(bool value)
+        => new(value);
+
+    public static implicit operator ScrollIntoViewArg(ScrollIntoViewOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// SendBody
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct SendBody
+{
+    private readonly byte _kind;
+    private readonly Document? _value1;
+    private readonly XMLHttpRequestBodyInit? _value2;
+
+    private SendBody(Document value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private SendBody(XMLHttpRequestBodyInit value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Document? AsDocument => _kind == 1 ? _value1 : default;
+
+    public XMLHttpRequestBodyInit? AsXMLHttpRequestBodyInit => _kind == 2 ? _value2 : default;
+
+    public static implicit operator SendBody(Document value)
+        => new(value);
+
+    public static implicit operator SendBody(XMLHttpRequestBodyInit value)
+        => new(value);
+}
+
+/// <summary>
+/// SendData
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct SendData
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly Blob? _value2;
+    private readonly string? _value3;
+
+    private SendData(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private SendData(Blob value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private SendData(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public Blob? AsBlob => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static SendData FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator SendData(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator SendData(DataView value)
+        => new(value);
+
+    public static implicit operator SendData(Uint8Array value)
+        => new(value);
+
+    public static implicit operator SendData(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator SendData(Int8Array value)
+        => new(value);
+
+    public static implicit operator SendData(Int16Array value)
+        => new(value);
+
+    public static implicit operator SendData(Uint16Array value)
+        => new(value);
+
+    public static implicit operator SendData(Int32Array value)
+        => new(value);
+
+    public static implicit operator SendData(Uint32Array value)
+        => new(value);
+
+    public static implicit operator SendData(Float16Array value)
+        => new(value);
+
+    public static implicit operator SendData(Float32Array value)
+        => new(value);
+
+    public static implicit operator SendData(Float64Array value)
+        => new(value);
+
+    public static implicit operator SendData(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator SendData(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator SendData(Blob value)
+        => new(value);
+
+    public static implicit operator SendData(string value)
+        => new(value);
+}
+
+/// <summary>
 /// SequenceEffectTiming
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct SequenceEffectTiming : IEither
+public readonly struct SequenceEffectTiming
 {
     private readonly byte _kind;
     private readonly double? _value1;
@@ -6481,11 +8732,153 @@ public readonly struct SequenceEffectTiming : IEither
 }
 
 /// <summary>
+/// SetFormValueState
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct SetFormValueState
+{
+    private readonly byte _kind;
+    private readonly File? _value1;
+    private readonly string? _value2;
+    private readonly FormData? _value3;
+
+    private SetFormValueState(File value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private SetFormValueState(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private SetFormValueState(FormData value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public File? AsFile => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public FormData? AsFormData => _kind == 3 ? _value3 : default;
+
+    public static implicit operator SetFormValueState(File value)
+        => new(value);
+
+    public static implicit operator SetFormValueState(string value)
+        => new(value);
+
+    public static implicit operator SetFormValueState(FormData value)
+        => new(value);
+}
+
+/// <summary>
+/// SetSinkId
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct SetSinkId
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly AudioSinkOptions? _value2;
+
+    private SetSinkId(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private SetSinkId(AudioSinkOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public AudioSinkOptions? AsAudioSinkOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator SetSinkId(string value)
+        => new(value);
+
+    public static implicit operator SetSinkId(AudioSinkOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// SetValues
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(SetValuesCollectionBuilder), nameof(SetValuesCollectionBuilder.Create))]
+public readonly struct SetValues : IEnumerable<uint>
+{
+    private readonly byte _kind;
+    private readonly uint? _value1;
+    private readonly uint[]? _value2;
+
+    private SetValues(uint value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private SetValues(uint[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public uint? AsUint => _kind == 1 ? _value1 : default;
+
+    public uint[]? AsUintArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator SetValues(uint value)
+        => new(value);
+
+    public static implicit operator SetValues(uint[] value)
+        => new(value);
+
+    IEnumerator<uint> IEnumerable<uint>.GetEnumerator()
+        => ((IEnumerable<uint>)(AsUintArray ?? Array.Empty<uint>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<uint>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class SetValuesCollectionBuilder
+{
+    public static SetValues Create(ReadOnlySpan<uint> items)
+        => items.ToArray();
+}
+
+/// <summary>
 /// ShadowAnimationNewTarget
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ShadowAnimationNewTarget : IEither
+public readonly struct ShadowAnimationNewTarget
 {
     private readonly byte _kind;
     private readonly Element? _value1;
@@ -6520,8 +8913,9 @@ public readonly struct ShadowAnimationNewTarget : IEither
 /// SharedStorageResponse
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct SharedStorageResponse : IEither
+public readonly struct SharedStorageResponse
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -6556,8 +8950,9 @@ public readonly struct SharedStorageResponse : IEither
 /// SharedWorkerOptions
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct SharedWorkerOptions : IEither
+public readonly struct SharedWorkerOptions
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -6592,8 +8987,9 @@ public readonly struct SharedWorkerOptions : IEither
 /// StartInDirectory
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct StartInDirectory : IEither
+public readonly struct StartInDirectory
 {
     private readonly byte _kind;
     private readonly WellKnownDirectory? _value1;
@@ -6625,11 +9021,2434 @@ public readonly struct StartInDirectory : IEither
 }
 
 /// <summary>
+/// StartViewTransitionCallbackOptions
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StartViewTransitionCallbackOptions
+{
+    private readonly byte _kind;
+    private readonly UpdateCallback? _value1;
+    private readonly StartViewTransitionOptions? _value2;
+
+    private StartViewTransitionCallbackOptions(UpdateCallback value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StartViewTransitionCallbackOptions(StartViewTransitionOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public UpdateCallback? AsUpdateCallback => _kind == 1 ? _value1 : default;
+
+    public StartViewTransitionOptions? AsStartViewTransitionOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StartViewTransitionCallbackOptions(UpdateCallback value)
+        => new(value);
+
+    public static implicit operator StartViewTransitionCallbackOptions(StartViewTransitionOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCache
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCache
+{
+    private readonly byte _kind;
+    private readonly Node? _value1;
+    private readonly string? _value2;
+
+    private StructuralCache(Node value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCache(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Node? AsNode => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCache(Node value)
+        => new(value);
+
+    public static implicit operator StructuralCache(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly CanvasGradient? _value2;
+    private readonly CanvasPattern? _value3;
+
+    private StructuralCacheValue(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue(CanvasGradient value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue(CanvasPattern value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public CanvasGradient? AsCanvasGradient => _kind == 2 ? _value2 : default;
+
+    public CanvasPattern? AsCanvasPattern => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue(CanvasGradient value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue(CanvasPattern value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue10
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue10
+{
+    private readonly byte _kind;
+    private readonly bool? _value1;
+    private readonly ScrollIntoViewOptions? _value2;
+
+    private StructuralCacheValue10(bool value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue10(ScrollIntoViewOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _value1 : default;
+
+    public ScrollIntoViewOptions? AsScrollIntoViewOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue10(bool value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue10(ScrollIntoViewOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue11
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue11
+{
+    private readonly byte _kind;
+    private readonly Element? _value1;
+    private readonly CSSPseudoElement? _value2;
+
+    private StructuralCacheValue11(Element value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue11(CSSPseudoElement value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _value1 : default;
+
+    public CSSPseudoElement? AsCSSPseudoElement => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue11(Element value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue11(CSSPseudoElement value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue12
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue12
+{
+    private readonly byte _kind;
+    private readonly UpdateCallback? _value1;
+    private readonly StartViewTransitionOptions? _value2;
+
+    private StructuralCacheValue12(UpdateCallback value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue12(StartViewTransitionOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public UpdateCallback? AsUpdateCallback => _kind == 1 ? _value1 : default;
+
+    public StartViewTransitionOptions? AsStartViewTransitionOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue12(UpdateCallback value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue12(StartViewTransitionOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue13
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue13
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly ElementCreationOptions? _value2;
+
+    private StructuralCacheValue13(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue13(ElementCreationOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public ElementCreationOptions? AsElementCreationOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue13(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue13(ElementCreationOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue14
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue14
+{
+    private readonly byte _kind;
+    private readonly bool? _value1;
+    private readonly double? _value2;
+    private readonly string? _value3;
+
+    private StructuralCacheValue14(bool value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue14(double value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue14(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _value1 : default;
+
+    public double? AsDouble => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue14(bool value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue14(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue14(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue15
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue15
+{
+    private readonly byte _kind;
+    private readonly AddEventListenerOptions? _value1;
+    private readonly bool? _value2;
+
+    private StructuralCacheValue15(AddEventListenerOptions value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue15(bool value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public AddEventListenerOptions? AsAddEventListenerOptions => _kind == 1 ? _value1 : default;
+
+    public bool? AsBool => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue15(AddEventListenerOptions value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue15(bool value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue16
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue16
+{
+    private readonly byte _kind;
+    private readonly EventListenerOptions? _value1;
+    private readonly bool? _value2;
+
+    private StructuralCacheValue16(EventListenerOptions value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue16(bool value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public EventListenerOptions? AsEventListenerOptions => _kind == 1 ? _value1 : default;
+
+    public bool? AsBool => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue16(EventListenerOptions value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue16(bool value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue17
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue17
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly PerformanceMeasureOptions? _value2;
+
+    private StructuralCacheValue17(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue17(PerformanceMeasureOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public PerformanceMeasureOptions? AsPerformanceMeasureOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue17(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue17(PerformanceMeasureOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue18
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue18
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly ArrayBuffer? _value2;
+
+    private StructuralCacheValue18(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue18(ArrayBuffer value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public ArrayBuffer? AsArrayBuffer => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue18(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue18(ArrayBuffer value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue19
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue19
+{
+    private readonly byte _kind;
+    private readonly Blob? _value1;
+    private readonly MediaSource? _value2;
+
+    private StructuralCacheValue19(Blob value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue19(MediaSource value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Blob? AsBlob => _kind == 1 ? _value1 : default;
+
+    public MediaSource? AsMediaSource => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue19(Blob value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue19(MediaSource value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue2
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue2
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly DOMPointInit? _value2;
+
+    private StructuralCacheValue2(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue2(DOMPointInit value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public DOMPointInit? AsDOMPointInit => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue2(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue2(DOMPointInit value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue20
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue20CollectionBuilder), nameof(StructuralCacheValue20CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue20 : IEnumerable<double>
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly double[]? _value2;
+
+    private StructuralCacheValue20(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue20(double[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public double[]? AsDoubleArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue20(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue20(double[] value)
+        => new(value);
+
+    IEnumerator<double> IEnumerable<double>.GetEnumerator()
+        => ((IEnumerable<double>)(AsDoubleArray ?? Array.Empty<double>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<double>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue20CollectionBuilder
+{
+    public static StructuralCacheValue20 Create(ReadOnlySpan<double> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue21
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue21
+{
+    private readonly byte _kind;
+    private readonly HTMLCollection? _value1;
+    private readonly Element? _value2;
+
+    private StructuralCacheValue21(HTMLCollection value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue21(Element value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public HTMLCollection? AsHTMLCollection => _kind == 1 ? _value1 : default;
+
+    public Element? AsElement => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue21(HTMLCollection value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue21(Element value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue22
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue22
+{
+    private readonly byte _kind;
+    private readonly RadioNodeList? _value1;
+    private readonly Element? _value2;
+
+    private StructuralCacheValue22(RadioNodeList value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue22(Element value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public RadioNodeList? AsRadioNodeList => _kind == 1 ? _value1 : default;
+
+    public Element? AsElement => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue22(RadioNodeList value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue22(Element value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue23
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue23
+{
+    private readonly byte _kind;
+    private readonly HTMLOptionElement? _value1;
+    private readonly HTMLOptGroupElement? _value2;
+
+    private StructuralCacheValue23(HTMLOptionElement value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue23(HTMLOptGroupElement value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public HTMLOptionElement? AsHTMLOptionElement => _kind == 1 ? _value1 : default;
+
+    public HTMLOptGroupElement? AsHTMLOptGroupElement => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue23(HTMLOptionElement value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue23(HTMLOptGroupElement value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue24
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue24
+{
+    private readonly byte _kind;
+    private readonly HTMLElement? _value1;
+    private readonly int? _value2;
+
+    private StructuralCacheValue24(HTMLElement value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue24(int value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public HTMLElement? AsHTMLElement => _kind == 1 ? _value1 : default;
+
+    public int? AsInt => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue24(HTMLElement value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue24(int value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue25
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue25
+{
+    private readonly byte _kind;
+    private readonly VideoTrack? _value1;
+    private readonly AudioTrack? _value2;
+    private readonly TextTrack? _value3;
+
+    private StructuralCacheValue25(VideoTrack value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue25(AudioTrack value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue25(TextTrack value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public VideoTrack? AsVideoTrack => _kind == 1 ? _value1 : default;
+
+    public AudioTrack? AsAudioTrack => _kind == 2 ? _value2 : default;
+
+    public TextTrack? AsTextTrack => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue25(VideoTrack value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue25(AudioTrack value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue25(TextTrack value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue26
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue26
+{
+    private readonly byte _kind;
+    private readonly RadioNodeList? _value1;
+    private readonly Element? _value2;
+
+    private StructuralCacheValue26(RadioNodeList value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue26(Element value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public RadioNodeList? AsRadioNodeList => _kind == 1 ? _value1 : default;
+
+    public Element? AsElement => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue26(RadioNodeList value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue26(Element value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue27
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue27
+{
+    private readonly byte _kind;
+    private readonly Element? _value1;
+    private readonly Text? _value2;
+
+    private StructuralCacheValue27(Element value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue27(Text value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _value1 : default;
+
+    public Text? AsText => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue27(Element value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue27(Text value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue28
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue28
+{
+    private readonly byte _kind;
+    private readonly Path2D? _value1;
+    private readonly string? _value2;
+
+    private StructuralCacheValue28(Path2D value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue28(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Path2D? AsPath2D => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue28(Path2D value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue28(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue29
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue29
+{
+    private readonly byte _kind;
+    private readonly File? _value1;
+    private readonly string? _value2;
+    private readonly FormData? _value3;
+
+    private StructuralCacheValue29(File value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue29(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue29(FormData value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public File? AsFile => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public FormData? AsFormData => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue29(File value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue29(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue29(FormData value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue3
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue3CollectionBuilder), nameof(StructuralCacheValue3CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue3 : IEnumerable<StructuralCacheValue2>
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly DOMPointInit? _value2;
+    private readonly StructuralCacheValue2[]? _value3;
+
+    private StructuralCacheValue3(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue3(DOMPointInit value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue3(StructuralCacheValue2[] value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public DOMPointInit? AsDOMPointInit => _kind == 2 ? _value2 : default;
+
+    public StructuralCacheValue2[]? AsStructuralCacheValue2Array => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue3(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue3(DOMPointInit value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue3(StructuralCacheValue2[] value)
+        => new(value);
+
+    IEnumerator<StructuralCacheValue2> IEnumerable<StructuralCacheValue2>.GetEnumerator()
+        => ((IEnumerable<StructuralCacheValue2>)(AsStructuralCacheValue2Array ?? Array.Empty<StructuralCacheValue2>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<StructuralCacheValue2>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue3CollectionBuilder
+{
+    public static StructuralCacheValue3 Create(ReadOnlySpan<StructuralCacheValue2> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue30
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue30
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly WorkerOptions? _value2;
+
+    private StructuralCacheValue30(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue30(WorkerOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public WorkerOptions? AsWorkerOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue30(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue30(WorkerOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue31
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue31
+{
+    private readonly byte _kind;
+    private readonly IDBObjectStore? _value1;
+    private readonly IDBIndex? _value2;
+    private readonly IDBCursor? _value3;
+
+    private StructuralCacheValue31(IDBObjectStore value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue31(IDBIndex value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue31(IDBCursor value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IDBObjectStore? AsIDBObjectStore => _kind == 1 ? _value1 : default;
+
+    public IDBIndex? AsIDBIndex => _kind == 2 ? _value2 : default;
+
+    public IDBCursor? AsIDBCursor => _kind == 3 ? _value3 : default;
+
+    public static StructuralCacheValue31 FromIDBObjectStore(IDBObjectStore value)
+        => new(value);
+
+    public static StructuralCacheValue31 FromIDBIndex(IDBIndex value)
+        => new(value);
+
+    public static StructuralCacheValue31 FromIDBCursor(IDBCursor value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue32
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue32CollectionBuilder), nameof(StructuralCacheValue32CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue32 : IEnumerable<string>
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly string[]? _value2;
+
+    private StructuralCacheValue32(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue32(string[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public string[]? AsStringArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue32(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue32(string[] value)
+        => new(value);
+
+    IEnumerator<string> IEnumerable<string>.GetEnumerator()
+        => ((IEnumerable<string>)(AsStringArray ?? Array.Empty<string>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<string>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue32CollectionBuilder
+{
+    public static StructuralCacheValue32 Create(ReadOnlySpan<string> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue33
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue33
+{
+    private readonly byte _kind;
+    private readonly IDBObjectStore? _value1;
+    private readonly IDBIndex? _value2;
+
+    private StructuralCacheValue33(IDBObjectStore value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue33(IDBIndex value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IDBObjectStore? AsIDBObjectStore => _kind == 1 ? _value1 : default;
+
+    public IDBIndex? AsIDBIndex => _kind == 2 ? _value2 : default;
+
+    public static StructuralCacheValue33 FromIDBObjectStore(IDBObjectStore value)
+        => new(value);
+
+    public static StructuralCacheValue33 FromIDBIndex(IDBIndex value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue34
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue34
+{
+    private readonly byte _kind;
+    private readonly Element? _value1;
+    private readonly Document? _value2;
+
+    private StructuralCacheValue34(Element value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue34(Document value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _value1 : default;
+
+    public Document? AsDocument => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue34(Element value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue34(Document value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue35
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue35CollectionBuilder), nameof(StructuralCacheValue35CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue35 : IEnumerable<RouterRule>
+{
+    private readonly byte _kind;
+    private readonly RouterRule? _value1;
+    private readonly RouterRule[]? _value2;
+
+    private StructuralCacheValue35(RouterRule value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue35(RouterRule[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public RouterRule? AsRouterRule => _kind == 1 ? _value1 : default;
+
+    public RouterRule[]? AsRouterRuleArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue35(RouterRule value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue35(RouterRule[] value)
+        => new(value);
+
+    IEnumerator<RouterRule> IEnumerable<RouterRule>.GetEnumerator()
+        => ((IEnumerable<RouterRule>)(AsRouterRuleArray ?? Array.Empty<RouterRule>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<RouterRule>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue35CollectionBuilder
+{
+    public static StructuralCacheValue35 Create(ReadOnlySpan<RouterRule> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue36
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue36
+{
+    private readonly byte _kind;
+    private readonly Client? _value1;
+    private readonly ServiceWorker? _value2;
+    private readonly MessagePort? _value3;
+
+    private StructuralCacheValue36(Client value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue36(ServiceWorker value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue36(MessagePort value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public Client? AsClient => _kind == 1 ? _value1 : default;
+
+    public ServiceWorker? AsServiceWorker => _kind == 2 ? _value2 : default;
+
+    public MessagePort? AsMessagePort => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue36(Client value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue36(ServiceWorker value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue36(MessagePort value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue37
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue37
+{
+    private readonly byte _kind;
+    private readonly Element? _value1;
+    private readonly CSSPseudoElement? _value2;
+
+    private StructuralCacheValue37(Element value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue37(CSSPseudoElement value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _value1 : default;
+
+    public CSSPseudoElement? AsCSSPseudoElement => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue37(Element value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue37(CSSPseudoElement value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue38
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue38CollectionBuilder), nameof(StructuralCacheValue38CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue38 : IEnumerable<string[]>
+{
+    private readonly byte _kind;
+    private readonly string[][]? _value1;
+    private readonly Dictionary<string, string>? _value2;
+    private readonly string? _value3;
+
+    private StructuralCacheValue38(string[][] value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue38(Dictionary<string, string> value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue38(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public string[][]? AsStringArrayArray => _kind == 1 ? _value1 : default;
+
+    public Dictionary<string, string>? AsDictionaryStringString => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static implicit operator StructuralCacheValue38(string[][] value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue38(Dictionary<string, string> value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue38(string value)
+        => new(value);
+
+    IEnumerator<string[]> IEnumerable<string[]>.GetEnumerator()
+        => ((IEnumerable<string[]>)(AsStringArrayArray ?? Array.Empty<string[]>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<string[]>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue38CollectionBuilder
+{
+    public static StructuralCacheValue38 Create(ReadOnlySpan<string[]> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue39
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue39
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly KeyframeEffectOptions? _value2;
+
+    private StructuralCacheValue39(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue39(KeyframeEffectOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public KeyframeEffectOptions? AsKeyframeEffectOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue39(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue39(KeyframeEffectOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue4
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue4
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly KeyframeAnimationOptions? _value2;
+
+    private StructuralCacheValue4(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue4(KeyframeAnimationOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public KeyframeAnimationOptions? AsKeyframeAnimationOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue4(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue4(KeyframeAnimationOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue40
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue40
+{
+    private readonly byte _kind;
+    private readonly double? _value1;
+    private readonly EffectTiming? _value2;
+
+    private StructuralCacheValue40(double value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue40(EffectTiming value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public double? AsDouble => _kind == 1 ? _value1 : default;
+
+    public EffectTiming? AsEffectTiming => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue40(double value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue40(EffectTiming value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue41
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue41
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly uint? _value2;
+
+    private StructuralCacheValue41(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue41(uint value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public uint? AsUint => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue41(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue41(uint value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue42
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue42
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly AudioSinkInfo? _value2;
+
+    private StructuralCacheValue42(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue42(AudioSinkInfo value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public AudioSinkInfo? AsAudioSinkInfo => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue42(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue42(AudioSinkInfo value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue43
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue43
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly AudioSinkOptions? _value2;
+
+    private StructuralCacheValue43(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue43(AudioSinkOptions value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public AudioSinkOptions? AsAudioSinkOptions => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue43(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue43(AudioSinkOptions value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue44
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue44
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly JsonWebKey? _value2;
+
+    private StructuralCacheValue44(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue44(JsonWebKey value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public JsonWebKey? AsJsonWebKey => _kind == 2 ? _value2 : default;
+
+    public static StructuralCacheValue44 FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(DataView value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Uint8Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Int8Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Int16Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Uint16Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Int32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Uint32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Float16Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Float32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(Float64Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue44(JsonWebKey value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue45
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue45CollectionBuilder), nameof(StructuralCacheValue45CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue45 : IEnumerable<GLint>
+{
+    private readonly byte _kind;
+    private readonly Int32Array? _value1;
+    private readonly GLint[]? _value2;
+
+    private StructuralCacheValue45(Int32Array value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue45(GLint[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Int32Array? AsInt32Array => _kind == 1 ? _value1 : default;
+
+    public GLint[]? AsGLintArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue45(Int32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue45(GLint[] value)
+        => new(value);
+
+    IEnumerator<GLint> IEnumerable<GLint>.GetEnumerator()
+        => ((IEnumerable<GLint>)(AsGLintArray ?? Array.Empty<GLint>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<GLint>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue45CollectionBuilder
+{
+    public static StructuralCacheValue45 Create(ReadOnlySpan<GLint> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue46
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue46CollectionBuilder), nameof(StructuralCacheValue46CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue46 : IEnumerable<GLsizei>
+{
+    private readonly byte _kind;
+    private readonly Int32Array? _value1;
+    private readonly GLsizei[]? _value2;
+
+    private StructuralCacheValue46(Int32Array value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue46(GLsizei[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Int32Array? AsInt32Array => _kind == 1 ? _value1 : default;
+
+    public GLsizei[]? AsGLsizeiArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue46(Int32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue46(GLsizei[] value)
+        => new(value);
+
+    IEnumerator<GLsizei> IEnumerable<GLsizei>.GetEnumerator()
+        => ((IEnumerable<GLsizei>)(AsGLsizeiArray ?? Array.Empty<GLsizei>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<GLsizei>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue46CollectionBuilder
+{
+    public static StructuralCacheValue46 Create(ReadOnlySpan<GLsizei> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue47
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue47CollectionBuilder), nameof(StructuralCacheValue47CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue47 : IEnumerable<GLuint>
+{
+    private readonly byte _kind;
+    private readonly Uint32Array? _value1;
+    private readonly GLuint[]? _value2;
+
+    private StructuralCacheValue47(Uint32Array value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue47(GLuint[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Uint32Array? AsUint32Array => _kind == 1 ? _value1 : default;
+
+    public GLuint[]? AsGLuintArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue47(Uint32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue47(GLuint[] value)
+        => new(value);
+
+    IEnumerator<GLuint> IEnumerable<GLuint>.GetEnumerator()
+        => ((IEnumerable<GLuint>)(AsGLuintArray ?? Array.Empty<GLuint>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<GLuint>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue47CollectionBuilder
+{
+    public static StructuralCacheValue47 Create(ReadOnlySpan<GLuint> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue48
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue48CollectionBuilder), nameof(StructuralCacheValue48CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue48 : IEnumerable<uint>
+{
+    private readonly byte _kind;
+    private readonly uint? _value1;
+    private readonly uint[]? _value2;
+
+    private StructuralCacheValue48(uint value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue48(uint[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public uint? AsUint => _kind == 1 ? _value1 : default;
+
+    public uint[]? AsUintArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue48(uint value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue48(uint[] value)
+        => new(value);
+
+    IEnumerator<uint> IEnumerable<uint>.GetEnumerator()
+        => ((IEnumerable<uint>)(AsUintArray ?? Array.Empty<uint>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<uint>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue48CollectionBuilder
+{
+    public static StructuralCacheValue48 Create(ReadOnlySpan<uint> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue49
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue49
+{
+    private readonly byte _kind;
+    private readonly MediaStreamTrack? _value1;
+    private readonly string? _value2;
+
+    private StructuralCacheValue49(MediaStreamTrack value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue49(string value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public MediaStreamTrack? AsMediaStreamTrack => _kind == 1 ? _value1 : default;
+
+    public string? AsString => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue49(MediaStreamTrack value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue49(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue5
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue5
+{
+    private readonly byte _kind;
+    private readonly HTMLCanvasElement? _value1;
+    private readonly OffscreenCanvas? _value2;
+
+    private StructuralCacheValue5(HTMLCanvasElement value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue5(OffscreenCanvas value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public HTMLCanvasElement? AsHTMLCanvasElement => _kind == 1 ? _value1 : default;
+
+    public OffscreenCanvas? AsOffscreenCanvas => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue5(HTMLCanvasElement value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue5(OffscreenCanvas value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue50
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue50
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly Blob? _value2;
+    private readonly string? _value3;
+
+    private StructuralCacheValue50(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue50(Blob value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private StructuralCacheValue50(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public Blob? AsBlob => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static StructuralCacheValue50 FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(DataView value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Uint8Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Int8Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Int16Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Uint16Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Int32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Uint32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Float16Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Float32Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Float64Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(Blob value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue50(string value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue6
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue6
+{
+    private readonly byte _kind;
+    private readonly Document? _value1;
+    private readonly XMLHttpRequestBodyInit? _value2;
+
+    private StructuralCacheValue6(Document value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue6(XMLHttpRequestBodyInit value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public Document? AsDocument => _kind == 1 ? _value1 : default;
+
+    public XMLHttpRequestBodyInit? AsXMLHttpRequestBodyInit => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue6(Document value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue6(XMLHttpRequestBodyInit value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue7
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue7CollectionBuilder), nameof(StructuralCacheValue7CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue7 : IEnumerable<RequestInfo>
+{
+    private readonly byte _kind;
+    private readonly RequestInfo? _value1;
+    private readonly RequestInfo[]? _value2;
+
+    private StructuralCacheValue7(RequestInfo value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue7(RequestInfo[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public RequestInfo? AsRequestInfo => _kind == 1 ? _value1 : default;
+
+    public RequestInfo[]? AsRequestInfoArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue7(RequestInfo value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue7(RequestInfo[] value)
+        => new(value);
+
+    IEnumerator<RequestInfo> IEnumerable<RequestInfo>.GetEnumerator()
+        => ((IEnumerable<RequestInfo>)(AsRequestInfoArray ?? Array.Empty<RequestInfo>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<RequestInfo>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue7CollectionBuilder
+{
+    public static StructuralCacheValue7 Create(ReadOnlySpan<RequestInfo> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValue8
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValue8
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly BinaryData? _value2;
+
+    private StructuralCacheValue8(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue8(BinaryData value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public BinaryData? AsBinaryData => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue8(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue8(BinaryData value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCacheValue9
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue9CollectionBuilder), nameof(StructuralCacheValue9CollectionBuilder.Create))]
+public readonly struct StructuralCacheValue9 : IEnumerable<uint>
+{
+    private readonly byte _kind;
+    private readonly uint? _value1;
+    private readonly uint[]? _value2;
+
+    private StructuralCacheValue9(uint value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValue9(uint[] value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public uint? AsUint => _kind == 1 ? _value1 : default;
+
+    public uint[]? AsUintArray => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValue9(uint value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValue9(uint[] value)
+        => new(value);
+
+    IEnumerator<uint> IEnumerable<uint>.GetEnumerator()
+        => ((IEnumerable<uint>)(AsUintArray ?? Array.Empty<uint>())).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<uint>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class StructuralCacheValue9CollectionBuilder
+{
+    public static StructuralCacheValue9 Create(ReadOnlySpan<uint> items)
+        => items.ToArray();
+}
+
+/// <summary>
+/// StructuralCacheValueValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCacheValueValue
+{
+    private readonly byte _kind;
+    private readonly string? _value1;
+    private readonly FencedFrameConfig? _value2;
+
+    private StructuralCacheValueValue(string value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCacheValueValue(FencedFrameConfig value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public string? AsString => _kind == 1 ? _value1 : default;
+
+    public FencedFrameConfig? AsFencedFrameConfig => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCacheValueValue(string value)
+        => new(value);
+
+    public static implicit operator StructuralCacheValueValue(FencedFrameConfig value)
+        => new(value);
+}
+
+/// <summary>
+/// SubtleCryptoImportKeyKeyData
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct SubtleCryptoImportKeyKeyData
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly JsonWebKey? _value2;
+
+    private SubtleCryptoImportKeyKeyData(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private SubtleCryptoImportKeyKeyData(JsonWebKey value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public JsonWebKey? AsJsonWebKey => _kind == 2 ? _value2 : default;
+
+    public static SubtleCryptoImportKeyKeyData FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(DataView value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Uint8Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Int8Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Int16Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Uint16Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Int32Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Uint32Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Float16Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Float32Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(Float64Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator SubtleCryptoImportKeyKeyData(JsonWebKey value)
+        => new(value);
+}
+
+/// <summary>
 /// TaskSignalAnyInitPriority
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct TaskSignalAnyInitPriority : IEither
+public readonly struct TaskSignalAnyInitPriority
 {
     private readonly byte _kind;
     private readonly TaskPriority? _value1;
@@ -6664,8 +11483,9 @@ public readonly struct TaskSignalAnyInitPriority : IEither
 /// TexImageSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct TexImageSource : IEither
+public readonly struct TexImageSource
 {
     private readonly byte _kind;
     private readonly ImageBitmap? _value1;
@@ -6800,8 +11620,9 @@ public readonly struct TexImageSource : IEither
 /// TimerHandler
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct TimerHandler : IEither
+public readonly struct TimerHandler
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -6836,8 +11657,9 @@ public readonly struct TimerHandler : IEither
 /// TrackEventInitTrack
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct TrackEventInitTrack : IEither
+public readonly struct TrackEventInitTrack
 {
     private readonly byte _kind;
     private readonly VideoTrack? _value1;
@@ -6888,8 +11710,9 @@ public readonly struct TrackEventInitTrack : IEither
 /// TrackEventTrack
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct TrackEventTrack : IEither
+public readonly struct TrackEventTrack
 {
     private readonly byte _kind;
     private readonly VideoTrack? _value1;
@@ -6940,8 +11763,9 @@ public readonly struct TrackEventTrack : IEither
 /// TrustedType
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct TrustedType : IEither
+public readonly struct TrustedType
 {
     private readonly byte _kind;
     private readonly TrustedHTML? _value1;
@@ -6992,8 +11816,9 @@ public readonly struct TrustedType : IEither
 /// URLCreateObjectURLObj
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct URLCreateObjectURLObj : IEither
+public readonly struct URLCreateObjectURLObj
 {
     private readonly byte _kind;
     private readonly Blob? _value1;
@@ -7028,8 +11853,9 @@ public readonly struct URLCreateObjectURLObj : IEither
 /// URLPatternCompatible
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct URLPatternCompatible : IEither
+public readonly struct URLPatternCompatible
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -7080,8 +11906,9 @@ public readonly struct URLPatternCompatible : IEither
 /// URLPatternInput
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct URLPatternInput : IEither
+public readonly struct URLPatternInput
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -7116,9 +11943,10 @@ public readonly struct URLPatternInput : IEither
 /// URLSearchParamsInit
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(URLSearchParamsInitCollectionBuilder), nameof(URLSearchParamsInitCollectionBuilder.Create))]
-public readonly struct URLSearchParamsInit : IEither, IEnumerable<string[]>
+public readonly struct URLSearchParamsInit : IEnumerable<string[]>
 {
     private readonly byte _kind;
     private readonly string[][]? _value1;
@@ -7182,9 +12010,10 @@ public static class URLSearchParamsInitCollectionBuilder
 /// Uint32List
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Uint32ListCollectionBuilder), nameof(Uint32ListCollectionBuilder.Create))]
-public readonly struct Uint32List : IEither, IEnumerable<GLuint>
+public readonly struct Uint32List : IEnumerable<GLuint>
 {
     private readonly byte _kind;
     private readonly Uint32Array? _value1;
@@ -7232,8 +12061,9 @@ public static class Uint32ListCollectionBuilder
 /// UrnOrConfig
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct UrnOrConfig : IEither
+public readonly struct UrnOrConfig
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -7268,9 +12098,10 @@ public readonly struct UrnOrConfig : IEither
 /// VibratePattern
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(VibratePatternCollectionBuilder), nameof(VibratePatternCollectionBuilder.Create))]
-public readonly struct VibratePattern : IEither, IEnumerable<uint>
+public readonly struct VibratePattern : IEnumerable<uint>
 {
     private readonly byte _kind;
     private readonly uint? _value1;
@@ -7318,8 +12149,9 @@ public static class VibratePatternCollectionBuilder
 /// ViewTimelineOptionsInset
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ViewTimelineOptionsInset : IEither
+public readonly struct ViewTimelineOptionsInset
 {
     private readonly byte _kind;
     private readonly CSSNumericValue? _value1;
@@ -7354,9 +12186,10 @@ public readonly struct ViewTimelineOptionsInset : IEither
 /// ViewTimelineOptionsInsetValue
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ViewTimelineOptionsInsetValueCollectionBuilder), nameof(ViewTimelineOptionsInsetValueCollectionBuilder.Create))]
-public readonly struct ViewTimelineOptionsInsetValue : IEither, IEnumerable<ViewTimelineOptionsInset>
+public readonly struct ViewTimelineOptionsInsetValue : IEnumerable<ViewTimelineOptionsInset>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -7404,8 +12237,9 @@ public static class ViewTimelineOptionsInsetValueCollectionBuilder
 /// ViewportMediaStreamConstraintsAudio
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ViewportMediaStreamConstraintsAudio : IEither
+public readonly struct ViewportMediaStreamConstraintsAudio
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -7440,8 +12274,9 @@ public readonly struct ViewportMediaStreamConstraintsAudio : IEither
 /// ViewportMediaStreamConstraintsVideo
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ViewportMediaStreamConstraintsVideo : IEither
+public readonly struct ViewportMediaStreamConstraintsVideo
 {
     private readonly byte _kind;
     private readonly bool? _value1;
@@ -7476,9 +12311,10 @@ public readonly struct ViewportMediaStreamConstraintsVideo : IEither
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList : IEither, IEnumerable<GLuint>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList : IEnumerable<GLuint>
 {
     private readonly byte _kind;
     private readonly Uint32Array? _value1;
@@ -7526,9 +12362,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7576,9 +12413,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList : IEither, IEnumerable<GLint>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList : IEnumerable<GLint>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7626,9 +12464,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7676,9 +12515,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList : IEither, IEnumerable<GLuint>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList : IEnumerable<GLuint>
 {
     private readonly byte _kind;
     private readonly Uint32Array? _value1;
@@ -7726,9 +12566,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList : IEither, IEnumerable<GLint>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList : IEnumerable<GLint>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7776,9 +12617,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7826,9 +12668,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7876,9 +12719,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7926,9 +12770,10 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -7976,9 +12821,10 @@ public static class WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollect
 /// WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList : IEither, IEnumerable<GLint>
+public readonly struct WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList : IEnumerable<GLint>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8026,9 +12872,10 @@ public static class WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollect
 /// WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8076,9 +12923,10 @@ public static class WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsLis
 /// WEBGLMultiDrawMultiDrawArraysWEBGLCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawArraysWEBGLCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawArraysWEBGLCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8126,9 +12974,10 @@ public static class WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilde
 /// WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList : IEither, IEnumerable<GLint>
+public readonly struct WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList : IEnumerable<GLint>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8176,9 +13025,10 @@ public static class WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilde
 /// WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8226,9 +13076,10 @@ public static class WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListColle
 /// WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8276,9 +13127,10 @@ public static class WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsL
 /// WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8326,9 +13178,10 @@ public static class WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListColl
 /// WEBGLMultiDrawMultiDrawElementsWEBGLCountsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawElementsWEBGLCountsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawElementsWEBGLCountsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8376,9 +13229,10 @@ public static class WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuil
 /// WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBuilder.Create))]
-public readonly struct WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList : IEither, IEnumerable<GLsizei>
+public readonly struct WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList : IEnumerable<GLsizei>
 {
     private readonly byte _kind;
     private readonly Int32Array? _value1;
@@ -8426,8 +13280,9 @@ public static class WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBui
 /// WebGL2RenderingContextCanvas
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct WebGL2RenderingContextCanvas : IEither
+public readonly struct WebGL2RenderingContextCanvas
 {
     private readonly byte _kind;
     private readonly HTMLCanvasElement? _value1;
@@ -8462,8 +13317,9 @@ public readonly struct WebGL2RenderingContextCanvas : IEither
 /// WebGLRenderingContextCanvas
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct WebGLRenderingContextCanvas : IEither
+public readonly struct WebGLRenderingContextCanvas
 {
     private readonly byte _kind;
     private readonly HTMLCanvasElement? _value1;
@@ -8498,9 +13354,10 @@ public readonly struct WebGLRenderingContextCanvas : IEither
 /// WebSocketProtocols
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WebSocketProtocolsCollectionBuilder), nameof(WebSocketProtocolsCollectionBuilder.Create))]
-public readonly struct WebSocketProtocols : IEither, IEnumerable<string>
+public readonly struct WebSocketProtocols : IEnumerable<string>
 {
     private readonly byte _kind;
     private readonly string? _value1;
@@ -8545,11 +13402,335 @@ public static class WebSocketProtocolsCollectionBuilder
 }
 
 /// <summary>
+/// WebSocketSendData
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct WebSocketSendData
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly Blob? _value2;
+    private readonly string? _value3;
+
+    private WebSocketSendData(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private WebSocketSendData(Blob value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private WebSocketSendData(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public Blob? AsBlob => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static WebSocketSendData FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(DataView value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Uint8Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Int8Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Int16Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Uint16Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Int32Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Uint32Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Float16Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Float32Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Float64Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(Blob value)
+        => new(value);
+
+    public static implicit operator WebSocketSendData(string value)
+        => new(value);
+}
+
+/// <summary>
+/// WriteParamsData
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct WriteParamsData
+{
+    private readonly byte _kind;
+    private readonly IBufferSource? _value1;
+    private readonly Blob? _value2;
+    private readonly string? _value3;
+
+    private WriteParamsData(IBufferSource value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+    }
+
+    private WriteParamsData(Blob value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+    }
+
+    private WriteParamsData(string value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+    }
+
+    public IBufferSource? AsIBufferSource => _kind == 1 ? _value1 : default;
+
+    public Blob? AsBlob => _kind == 2 ? _value2 : default;
+
+    public string? AsString => _kind == 3 ? _value3 : default;
+
+    public static WriteParamsData FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(DataView value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Uint8Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Int8Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Int16Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Uint16Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Int32Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Uint32Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Float16Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Float32Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Float64Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(Blob value)
+        => new(value);
+
+    public static implicit operator WriteParamsData(string value)
+        => new(value);
+}
+
+/// <summary>
+/// XMLHttpRequestBodyInit
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct XMLHttpRequestBodyInit
+{
+    private readonly byte _kind;
+    private readonly Blob? _value1;
+    private readonly IBufferSource? _value2;
+    private readonly FormData? _value3;
+    private readonly URLSearchParams? _value4;
+    private readonly string? _value5;
+
+    private XMLHttpRequestBodyInit(Blob value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+        _value3 = default;
+        _value4 = default;
+        _value5 = default;
+    }
+
+    private XMLHttpRequestBodyInit(IBufferSource value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+        _value3 = default;
+        _value4 = default;
+        _value5 = default;
+    }
+
+    private XMLHttpRequestBodyInit(FormData value)
+    {
+        _kind = 3;
+        _value1 = default;
+        _value2 = default;
+        _value3 = value;
+        _value4 = default;
+        _value5 = default;
+    }
+
+    private XMLHttpRequestBodyInit(URLSearchParams value)
+    {
+        _kind = 4;
+        _value1 = default;
+        _value2 = default;
+        _value3 = default;
+        _value4 = value;
+        _value5 = default;
+    }
+
+    private XMLHttpRequestBodyInit(string value)
+    {
+        _kind = 5;
+        _value1 = default;
+        _value2 = default;
+        _value3 = default;
+        _value4 = default;
+        _value5 = value;
+    }
+
+    public Blob? AsBlob => _kind == 1 ? _value1 : default;
+
+    public IBufferSource? AsIBufferSource => _kind == 2 ? _value2 : default;
+
+    public FormData? AsFormData => _kind == 3 ? _value3 : default;
+
+    public URLSearchParams? AsURLSearchParams => _kind == 4 ? _value4 : default;
+
+    public string? AsString => _kind == 5 ? _value5 : default;
+
+    public static implicit operator XMLHttpRequestBodyInit(Blob value)
+        => new(value);
+
+    public static XMLHttpRequestBodyInit FromIBufferSource(IBufferSource value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(ArrayBuffer value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(DataView value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Uint8Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Uint8ClampedArray value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Int8Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Int16Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Uint16Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Int32Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Uint32Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Float16Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Float32Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(Float64Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(BigInt64Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(BigUint64Array value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(FormData value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(URLSearchParams value)
+        => new(value);
+
+    public static implicit operator XMLHttpRequestBodyInit(string value)
+        => new(value);
+}
+
+/// <summary>
 /// XMLHttpRequestSendBody
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct XMLHttpRequestSendBody : IEither
+public readonly struct XMLHttpRequestSendBody
 {
     private readonly byte _kind;
     private readonly Document? _value1;
@@ -8581,11 +13762,49 @@ public readonly struct XMLHttpRequestSendBody : IEither
 }
 
 /// <summary>
+/// XPathNSResolverValue
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct XPathNSResolverValue
+{
+    private readonly byte _kind;
+    private readonly XPathNSResolverLiteral? _value1;
+    private readonly LookupNamespaceURICallback? _value2;
+
+    private XPathNSResolverValue(XPathNSResolverLiteral value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private XPathNSResolverValue(LookupNamespaceURICallback value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public XPathNSResolverLiteral? AsXPathNSResolverLiteral => _kind == 1 ? _value1 : default;
+
+    public LookupNamespaceURICallback? AsLookupNamespaceURICallback => _kind == 2 ? _value2 : default;
+
+    public static implicit operator XPathNSResolverValue(XPathNSResolverLiteral value)
+        => new(value);
+
+    public static implicit operator XPathNSResolverValue(LookupNamespaceURICallback value)
+        => new(value);
+}
+
+/// <summary>
 /// XRWebGLRenderingContext
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct XRWebGLRenderingContext : IEither
+public readonly struct XRWebGLRenderingContext
 {
     private readonly byte _kind;
     private readonly WebGLRenderingContext? _value1;

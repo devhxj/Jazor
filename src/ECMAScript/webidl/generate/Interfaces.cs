@@ -133,7 +133,7 @@ public class AbsoluteOrientationSensor : OrientationSensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern AbsoluteOrientationSensor(OrientationSensorOptions sensorOptions);
+    public extern AbsoluteOrientationSensor(OrientationSensorOptions? sensorOptions = default);
 }
 
 /// <summary>
@@ -185,7 +185,7 @@ public class Accelerometer : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern Accelerometer(AccelerometerSensorOptions options);
+    public extern Accelerometer(AccelerometerSensorOptions? options = default);
 
     /// <summary>
     /// x
@@ -217,7 +217,7 @@ public class AmbientLightSensor : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern AmbientLightSensor(SensorOptions sensorOptions);
+    public extern AmbientLightSensor(SensorOptions? sensorOptions = default);
 
     /// <summary>
     /// illuminance
@@ -238,7 +238,7 @@ public class AnalyserNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern AnalyserNode(BaseAudioContext context, AnalyserOptions options);
+    public extern AnalyserNode(BaseAudioContext context, AnalyserOptions? options = default);
 
     /// <summary>
     /// getFloatFrequencyData
@@ -311,7 +311,7 @@ public partial class Animation : EventTarget
     /// </summary>
     /// <param name="effect">effect</param>
     /// <param name="timeline">timeline</param>
-    public extern Animation(AnimationEffect? effect, AnimationTimeline? timeline);
+    public extern Animation(AnimationEffect? effect = default, AnimationTimeline? timeline = default);
 
     /// <summary>
     /// id
@@ -537,7 +537,7 @@ public class AnimationEvent(string type, EventInit eventInitDict) : Event(type, 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="animationEventInitDict">animationEventInitDict</param>
-    public extern AnimationEvent(string type, AnimationEventInit animationEventInitDict);
+    public extern AnimationEvent(string type, AnimationEventInit? animationEventInitDict = default);
 
     /// <summary>
     /// animationName
@@ -591,7 +591,7 @@ public class AnimationPlaybackEvent(string type, EventInit eventInitDict) : Even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern AnimationPlaybackEvent(string type, AnimationPlaybackEventInit eventInitDict);
+    public extern AnimationPlaybackEvent(string type, AnimationPlaybackEventInit? eventInitDict = default);
 
     /// <summary>
     /// currentTime
@@ -758,7 +758,7 @@ public class AudioBufferSourceNode : AudioScheduledSourceNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern AudioBufferSourceNode(BaseAudioContext context, AudioBufferSourceOptions options);
+    public extern AudioBufferSourceNode(BaseAudioContext context, AudioBufferSourceOptions? options = default);
 
     /// <summary>
     /// buffer
@@ -817,7 +817,7 @@ public class AudioContext : BaseAudioContext
     /// Constructor 
     /// </summary>
     /// <param name="contextOptions">contextOptions</param>
-    public extern AudioContext(AudioContextOptions contextOptions);
+    public extern AudioContext(AudioContextOptions? contextOptions = default);
 
     /// <summary>
     /// baseLatency
@@ -1544,7 +1544,7 @@ public class AudioRenderCapacityEvent(string type, EventInit eventInitDict) : Ev
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern AudioRenderCapacityEvent(string type, AudioRenderCapacityEventInit eventInitDict);
+    public extern AudioRenderCapacityEvent(string type, AudioRenderCapacityEventInit? eventInitDict = default);
 
     /// <summary>
     /// timestamp
@@ -1798,7 +1798,7 @@ public class AudioWorkletNode : AudioNode
     /// <param name="context">context</param>
     /// <param name="name">name</param>
     /// <param name="options">options</param>
-    public extern AudioWorkletNode(BaseAudioContext context, string name, AudioWorkletNodeOptions options);
+    public extern AudioWorkletNode(BaseAudioContext context, string name, AudioWorkletNodeOptions? options = default);
 
     /// <summary>
     /// parameters
@@ -2118,7 +2118,7 @@ public class BarcodeDetector
     /// Constructor 
     /// </summary>
     /// <param name="barcodeDetectorOptions">barcodeDetectorOptions</param>
-    public extern BarcodeDetector(BarcodeDetectorOptions barcodeDetectorOptions);
+    public extern BarcodeDetector(BarcodeDetectorOptions? barcodeDetectorOptions = default);
 
     /// <summary>
     /// getSupportedFormats
@@ -2409,7 +2409,7 @@ public class BeforeInstallPromptEvent : Event
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern BeforeInstallPromptEvent(string type, EventInit eventInitDict);
+    public extern BeforeInstallPromptEvent(string type, EventInit? eventInitDict = default);
 
     /// <summary>
     /// prompt
@@ -2444,7 +2444,7 @@ public class BiquadFilterNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern BiquadFilterNode(BaseAudioContext context, BiquadFilterOptions options);
+    public extern BiquadFilterNode(BaseAudioContext context, BiquadFilterOptions? options = default);
 
     /// <summary>
     /// type
@@ -2498,7 +2498,7 @@ public class Blob
     /// </summary>
     /// <param name="blobParts">blobParts</param>
     /// <param name="options">options</param>
-    public extern Blob(BlobPart[] blobParts, BlobPropertyBag options);
+    public extern Blob(BlobPart[]? blobParts = default, BlobPropertyBag? options = default);
 
     /// <summary>
     /// size
@@ -2791,7 +2791,7 @@ public class BluetoothDataFilter
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern BluetoothDataFilter(BluetoothDataFilterInit init);
+    public extern BluetoothDataFilter(BluetoothDataFilterInit? init = default);
 
     /// <summary>
     /// dataPrefix
@@ -2942,7 +2942,7 @@ public class BluetoothLEScanFilter
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern BluetoothLEScanFilter(BluetoothLEScanFilterInit init);
+    public extern BluetoothLEScanFilter(BluetoothLEScanFilterInit? init = default);
 
     /// <summary>
     /// name
@@ -3000,7 +3000,7 @@ public class BluetoothManufacturerDataFilter : IDictionary<ushort, BluetoothData
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern BluetoothManufacturerDataFilter(object init);
+    public extern BluetoothManufacturerDataFilter(object? init = default);
 
     #region Dictionary
     extern BluetoothDataFilter IDictionary<ushort, BluetoothDataFilter>.this[ushort key] { get; set; }
@@ -3334,7 +3334,7 @@ public class BluetoothServiceDataFilter : IDictionary<UUID, BluetoothDataFilter>
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern BluetoothServiceDataFilter(object init);
+    public extern BluetoothServiceDataFilter(object? init = default);
 
     #region Dictionary
     extern BluetoothDataFilter IDictionary<UUID, BluetoothDataFilter>.this[UUID key] { get; set; }
@@ -3546,7 +3546,7 @@ public class BufferedChangeEvent(string type, EventInit eventInitDict) : Event(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern BufferedChangeEvent(string type, BufferedChangeEventInit eventInitDict);
+    public extern BufferedChangeEvent(string type, BufferedChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// addedRanges
@@ -9738,7 +9738,7 @@ public class CaptureActionEvent(string type, EventInit eventInitDict) : Event(ty
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern CaptureActionEvent(CaptureActionEventInit init);
+    public extern CaptureActionEvent(CaptureActionEventInit? init = default);
 
     /// <summary>
     /// action
@@ -9785,7 +9785,7 @@ public class CapturedMouseEvent(string type, EventInit eventInitDict) : Event(ty
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern CapturedMouseEvent(string type, CapturedMouseEventInit eventInitDict);
+    public extern CapturedMouseEvent(string type, CapturedMouseEventInit? eventInitDict = default);
 
     /// <summary>
     /// surfaceX
@@ -9838,7 +9838,7 @@ public class ChannelMergerNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern ChannelMergerNode(BaseAudioContext context, ChannelMergerOptions options);
+    public extern ChannelMergerNode(BaseAudioContext context, ChannelMergerOptions? options = default);
 }
 
 /// <summary>
@@ -9853,7 +9853,7 @@ public class ChannelSplitterNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern ChannelSplitterNode(BaseAudioContext context, ChannelSplitterOptions options);
+    public extern ChannelSplitterNode(BaseAudioContext context, ChannelSplitterOptions? options = default);
 }
 
 /// <summary>
@@ -9894,7 +9894,7 @@ public class CharacterBoundsUpdateEvent(string type, EventInit eventInitDict) : 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="options">options</param>
-    public extern CharacterBoundsUpdateEvent(string type, CharacterBoundsUpdateEventInit options);
+    public extern CharacterBoundsUpdateEvent(string type, CharacterBoundsUpdateEventInit? options = default);
 
     /// <summary>
     /// rangeStart
@@ -10190,7 +10190,7 @@ public class ClipboardEvent(string type, EventInit eventInitDict) : Event(type, 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ClipboardEvent(string type, ClipboardEventInit eventInitDict);
+    public extern ClipboardEvent(string type, ClipboardEventInit? eventInitDict = default);
 
     /// <summary>
     /// clipboardData
@@ -10211,7 +10211,7 @@ public class ClipboardItem
     /// </summary>
     /// <param name="items">items</param>
     /// <param name="options">options</param>
-    public extern ClipboardItem(Dictionary<string, ClipboardItemData> items, ClipboardItemOptions options);
+    public extern ClipboardItem(Dictionary<string, ClipboardItemData> items, ClipboardItemOptions? options = default);
 
     /// <summary>
     /// presentationStyle
@@ -10252,7 +10252,7 @@ public class CloseEvent(string type, EventInit eventInitDict) : Event(type, even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern CloseEvent(string type, CloseEventInit eventInitDict);
+    public extern CloseEvent(string type, CloseEventInit? eventInitDict = default);
 
     /// <summary>
     /// wasClean
@@ -10284,7 +10284,7 @@ public class CloseWatcher : EventTarget
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern CloseWatcher(CloseWatcherOptions options);
+    public extern CloseWatcher(CloseWatcherOptions? options = default);
 
     /// <summary>
     /// requestClose
@@ -10328,7 +10328,7 @@ public class Comment : CharacterData
     /// Constructor 
     /// </summary>
     /// <param name="data">data</param>
-    public extern Comment(string data);
+    public extern Comment(string data = "");
 }
 
 /// <summary>
@@ -10343,7 +10343,7 @@ public partial class CompositionEvent(string type, UIEventInit eventInitDict) : 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern CompositionEvent(string type, CompositionEventInit eventInitDict);
+    public extern CompositionEvent(string type, CompositionEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -10403,7 +10403,7 @@ public class ConstantSourceNode : AudioScheduledSourceNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern ConstantSourceNode(BaseAudioContext context, ConstantSourceOptions options);
+    public extern ConstantSourceNode(BaseAudioContext context, ConstantSourceOptions? options = default);
 
     /// <summary>
     /// offset
@@ -10569,7 +10569,7 @@ public class ContentVisibilityAutoStateChangeEvent(string type, EventInit eventI
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ContentVisibilityAutoStateChangeEvent(string type, ContentVisibilityAutoStateChangeEventInit eventInitDict);
+    public extern ContentVisibilityAutoStateChangeEvent(string type, ContentVisibilityAutoStateChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// skipped
@@ -10590,7 +10590,7 @@ public class ConvolverNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern ConvolverNode(BaseAudioContext context, ConvolverOptions options);
+    public extern ConvolverNode(BaseAudioContext context, ConvolverOptions? options = default);
 
     /// <summary>
     /// buffer
@@ -10617,7 +10617,7 @@ public class CookieChangeEvent(string type, EventInit eventInitDict) : Event(typ
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern CookieChangeEvent(string type, CookieChangeEventInit eventInitDict);
+    public extern CookieChangeEvent(string type, CookieChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// changed
@@ -10963,7 +10963,7 @@ public class CustomEvent(string type, EventInit eventInitDict) : Event(type, eve
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern CustomEvent(string type, CustomEventInit eventInitDict);
+    public extern CustomEvent(string type, CustomEventInit? eventInitDict = default);
 
     /// <summary>
     /// detail
@@ -11025,7 +11025,7 @@ public class DOMException
     /// </summary>
     /// <param name="message">message</param>
     /// <param name="name">name</param>
-    public extern DOMException(string message, string name);
+    public extern DOMException(string message = "", string name = "Error");
 
     /// <summary>
     /// name
@@ -11246,7 +11246,7 @@ public class DOMMatrix : DOMMatrixReadOnly
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern DOMMatrix(DOMMatrixInitValue init);
+    public extern DOMMatrix(DOMMatrixInitValue? init = default);
 
     /// <summary>
     /// fromMatrix
@@ -11380,7 +11380,7 @@ public class DOMMatrixReadOnly
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern DOMMatrixReadOnly(DOMMatrixReadOnlyInit init);
+    public extern DOMMatrixReadOnly(DOMMatrixReadOnlyInit? init = default);
 
     /// <summary>
     /// fromMatrix
@@ -11713,7 +11713,7 @@ public class DOMPoint : DOMPointReadOnly
     /// <param name="y">y</param>
     /// <param name="z">z</param>
     /// <param name="w">w</param>
-    public extern DOMPoint(double x, double y, double z, double w);
+    public extern DOMPoint(double x = 0d, double y = 0d, double z = 0d, double w = 1d);
 
     /// <summary>
     /// fromPoint
@@ -11737,7 +11737,7 @@ public class DOMPointReadOnly
     /// <param name="y">y</param>
     /// <param name="z">z</param>
     /// <param name="w">w</param>
-    public extern DOMPointReadOnly(double x, double y, double z, double w);
+    public extern DOMPointReadOnly(double x = 0d, double y = 0d, double z = 0d, double w = 1d);
 
     /// <summary>
     /// fromPoint
@@ -11798,7 +11798,7 @@ public class DOMQuad
     /// <param name="p2">p2</param>
     /// <param name="p3">p3</param>
     /// <param name="p4">p4</param>
-    public extern DOMQuad(DOMPointInit p1, DOMPointInit p2, DOMPointInit p3, DOMPointInit p4);
+    public extern DOMQuad(DOMPointInit? p1 = default, DOMPointInit? p2 = default, DOMPointInit? p3 = default, DOMPointInit? p4 = default);
 
     /// <summary>
     /// fromRect
@@ -11865,7 +11865,7 @@ public class DOMRect : DOMRectReadOnly
     /// <param name="y">y</param>
     /// <param name="width">width</param>
     /// <param name="height">height</param>
-    public extern DOMRect(double x, double y, double width, double height);
+    public extern DOMRect(double x = 0d, double y = 0d, double width = 0d, double height = 0d);
 
     /// <summary>
     /// fromRect
@@ -11910,7 +11910,7 @@ public class DOMRectReadOnly
     /// <param name="y">y</param>
     /// <param name="width">width</param>
     /// <param name="height">height</param>
-    public extern DOMRectReadOnly(double x, double y, double width, double height);
+    public extern DOMRectReadOnly(double x = 0d, double y = 0d, double width = 0d, double height = 0d);
 
     /// <summary>
     /// fromRect
@@ -12105,7 +12105,7 @@ public class DataCue : TextTrackCue
     /// <param name="endTime">endTime</param>
     /// <param name="value">value</param>
     /// <param name="type">type</param>
-    public extern DataCue(double startTime, double endTime, object value, string type);
+    public extern DataCue(double startTime, double endTime, object value, string? type = default);
 
     /// <summary>
     /// value
@@ -12394,7 +12394,7 @@ public class DelayNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern DelayNode(BaseAudioContext context, DelayOptions options);
+    public extern DelayNode(BaseAudioContext context, DelayOptions? options = default);
 
     /// <summary>
     /// delayTime
@@ -12459,7 +12459,7 @@ public class DeviceMotionEvent(string type, EventInit eventInitDict) : Event(typ
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern DeviceMotionEvent(string type, DeviceMotionEventInit eventInitDict);
+    public extern DeviceMotionEvent(string type, DeviceMotionEventInit? eventInitDict = default);
 
     /// <summary>
     /// acceleration
@@ -12556,7 +12556,7 @@ public class DeviceOrientationEvent(string type, EventInit eventInitDict) : Even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern DeviceOrientationEvent(string type, DeviceOrientationEventInit eventInitDict);
+    public extern DeviceOrientationEvent(string type, DeviceOrientationEventInit? eventInitDict = default);
 
     /// <summary>
     /// alpha
@@ -14447,7 +14447,7 @@ public class DocumentTimeline : AnimationTimeline
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern DocumentTimeline(DocumentTimelineOptions options);
+    public extern DocumentTimeline(DocumentTimelineOptions? options = default);
 }
 
 /// <summary>
@@ -14559,7 +14559,7 @@ public class DragEvent(string type, MouseEventInit eventInitDict) : MouseEvent(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern DragEvent(string type, DragEventInit eventInitDict);
+    public extern DragEvent(string type, DragEventInit? eventInitDict = default);
 
     /// <summary>
     /// dataTransfer
@@ -14580,7 +14580,7 @@ public class DynamicsCompressorNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern DynamicsCompressorNode(BaseAudioContext context, DynamicsCompressorOptions options);
+    public extern DynamicsCompressorNode(BaseAudioContext context, DynamicsCompressorOptions? options = default);
 
     /// <summary>
     /// threshold
@@ -15039,7 +15039,7 @@ public class EditContext : EventTarget
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern EditContext(EditContextInit options);
+    public extern EditContext(EditContextInit? options = default);
 
     /// <summary>
     /// updateText
@@ -16760,7 +16760,7 @@ public class ErrorEvent(string type, EventInit eventInitDict) : Event(type, even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ErrorEvent(string type, ErrorEventInit eventInitDict);
+    public extern ErrorEvent(string type, ErrorEventInit? eventInitDict = default);
 
     /// <summary>
     /// message
@@ -16805,7 +16805,7 @@ public class Event
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern Event(string type, EventInit eventInitDict);
+    public extern Event(string type, EventInit? eventInitDict = default);
 
     /// <summary>
     /// type
@@ -16982,7 +16982,7 @@ public class EventSource : EventTarget
     /// </summary>
     /// <param name="url">url</param>
     /// <param name="eventSourceInitDict">eventSourceInitDict</param>
-    public extern EventSource(string url, EventSourceInit eventSourceInitDict);
+    public extern EventSource(string url, EventSourceInit? eventSourceInitDict = default);
 
     /// <summary>
     /// url
@@ -17131,7 +17131,7 @@ public class ExtendableCookieChangeEvent(string type, ExtendableEventInit eventI
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ExtendableCookieChangeEvent(string type, ExtendableCookieChangeEventInit eventInitDict);
+    public extern ExtendableCookieChangeEvent(string type, ExtendableCookieChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// changed
@@ -17158,7 +17158,7 @@ public class ExtendableEvent(string type, EventInit eventInitDict) : Event(type,
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ExtendableEvent(string type, ExtendableEventInit eventInitDict);
+    public extern ExtendableEvent(string type, ExtendableEventInit? eventInitDict = default);
 
     /// <summary>
     /// waitUntil
@@ -17180,7 +17180,7 @@ public class ExtendableMessageEvent(string type, ExtendableEventInit eventInitDi
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ExtendableMessageEvent(string type, ExtendableMessageEventInit eventInitDict);
+    public extern ExtendableMessageEvent(string type, ExtendableMessageEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -17264,7 +17264,7 @@ public class FaceDetector
     /// Constructor 
     /// </summary>
     /// <param name="faceDetectorOptions">faceDetectorOptions</param>
-    public extern FaceDetector(FaceDetectorOptions faceDetectorOptions);
+    public extern FaceDetector(FaceDetectorOptions? faceDetectorOptions = default);
 
     /// <summary>
     /// detect
@@ -17458,7 +17458,7 @@ public partial class File(BlobPart[] blobParts, BlobPropertyBag options) : Blob(
     /// <param name="fileBits">fileBits</param>
     /// <param name="fileName">fileName</param>
     /// <param name="options">options</param>
-    public extern File(BlobPart[] fileBits, string fileName, FilePropertyBag options);
+    public extern File(BlobPart[] fileBits, string fileName, FilePropertyBag? options = default);
 
     /// <summary>
     /// name
@@ -17988,7 +17988,7 @@ public class FocusEvent(string type, UIEventInit eventInitDict) : UIEvent(type, 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern FocusEvent(string type, FocusEventInit eventInitDict);
+    public extern FocusEvent(string type, FocusEventInit? eventInitDict = default);
 
     /// <summary>
     /// relatedTarget
@@ -18068,7 +18068,7 @@ public partial class FontFace
     /// <param name="family">family</param>
     /// <param name="source">source</param>
     /// <param name="descriptors">descriptors</param>
-    public extern FontFace(string family, FontFaceSourceValue source, FontFaceDescriptors descriptors);
+    public extern FontFace(string family, FontFaceSourceValue source, FontFaceDescriptors? descriptors = default);
 
     /// <summary>
     /// family
@@ -18349,7 +18349,7 @@ public class FontFaceSetLoadEvent(string type, EventInit eventInitDict) : Event(
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern FontFaceSetLoadEvent(string type, FontFaceSetLoadEventInit eventInitDict);
+    public extern FontFaceSetLoadEvent(string type, FontFaceSetLoadEventInit? eventInitDict = default);
 
     /// <summary>
     /// fontfaces
@@ -18663,7 +18663,7 @@ public class GainNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern GainNode(BaseAudioContext context, GainOptions options);
+    public extern GainNode(BaseAudioContext context, GainOptions? options = default);
 
     /// <summary>
     /// gain
@@ -19075,7 +19075,7 @@ public class GeolocationSensor : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern GeolocationSensor(GeolocationSensorOptions options);
+    public extern GeolocationSensor(GeolocationSensorOptions? options = default);
 
     /// <summary>
     /// read
@@ -19138,7 +19138,7 @@ public class GravitySensor : Accelerometer
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern GravitySensor(AccelerometerSensorOptions options);
+    public extern GravitySensor(AccelerometerSensorOptions? options = default);
 }
 
 /// <summary>
@@ -19153,7 +19153,7 @@ public class GroupEffect
     /// </summary>
     /// <param name="children">children</param>
     /// <param name="timing">timing</param>
-    public extern GroupEffect(AnimationEffect[]? children, GroupEffectTiming timing);
+    public extern GroupEffect(AnimationEffect[]? children, GroupEffectTiming? timing = default);
 
     /// <summary>
     /// children
@@ -19205,7 +19205,7 @@ public class Gyroscope : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern Gyroscope(GyroscopeSensorOptions sensorOptions);
+    public extern Gyroscope(GyroscopeSensorOptions? sensorOptions = default);
 
     /// <summary>
     /// x
@@ -25487,7 +25487,7 @@ public class HashChangeEvent(string type, EventInit eventInitDict) : Event(type,
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern HashChangeEvent(string type, HashChangeEventInit eventInitDict);
+    public extern HashChangeEvent(string type, HashChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// oldURL
@@ -25513,7 +25513,7 @@ public class Headers : IEnumerable<(byte[], byte[])>
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern Headers(HeadersInit init);
+    public extern Headers(HeadersInit? init = default);
 
     /// <summary>
     /// append
@@ -25636,7 +25636,7 @@ public class IDBCursor
     /// source
     /// </summary>
     [Description("@#source")]
-    public extern Either<IDBObjectStore, IDBIndex> Source { get; }
+    public extern IDBCursorSource Source { get; }
 
     /// <summary>
     /// direction
@@ -26178,7 +26178,7 @@ public class IDBRequest : EventTarget
     /// source
     /// </summary>
     [Description("@#source")]
-    public extern Either<IDBObjectStore, IDBIndex, IDBCursor>? Source { get; }
+    public extern IDBRequestSource? Source { get; }
 
     /// <summary>
     /// transaction
@@ -26292,7 +26292,7 @@ public class IDBVersionChangeEvent(string type, EventInit eventInitDict) : Event
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern IDBVersionChangeEvent(string type, IDBVersionChangeEventInit eventInitDict);
+    public extern IDBVersionChangeEvent(string type, IDBVersionChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// oldVersion
@@ -26548,7 +26548,7 @@ public class ImageData
     /// <param name="sw">sw</param>
     /// <param name="sh">sh</param>
     /// <param name="settings">settings</param>
-    public extern ImageData(uint sw, uint sh, ImageDataSettings settings);
+    public extern ImageData(uint sw, uint sh, ImageDataSettings? settings = default);
 
     /// <summary>
     /// Constructor 
@@ -26557,7 +26557,7 @@ public class ImageData
     /// <param name="sw">sw</param>
     /// <param name="sh">sh</param>
     /// <param name="settings">settings</param>
-    public extern ImageData(Uint8ClampedArray data, uint sw, uint sh, ImageDataSettings settings);
+    public extern ImageData(Uint8ClampedArray data, uint sw, uint? sh = default, ImageDataSettings? settings = default);
 
     /// <summary>
     /// width
@@ -26769,7 +26769,7 @@ public class InputDeviceCapabilities
     /// Constructor 
     /// </summary>
     /// <param name="deviceInitDict">deviceInitDict</param>
-    public extern InputDeviceCapabilities(InputDeviceCapabilitiesInit deviceInitDict);
+    public extern InputDeviceCapabilities(InputDeviceCapabilitiesInit? deviceInitDict = default);
 
     /// <summary>
     /// firesTouchEvents
@@ -26822,7 +26822,7 @@ public partial class InputEvent(string type, UIEventInit eventInitDict) : UIEven
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern InputEvent(string type, InputEventInit eventInitDict);
+    public extern InputEvent(string type, InputEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -26976,7 +26976,7 @@ public class IntersectionObserver
     /// </summary>
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
-    public extern IntersectionObserver(IntersectionObserverCallback callback, IntersectionObserverInit options);
+    public extern IntersectionObserver(IntersectionObserverCallback callback, IntersectionObserverInit? options = default);
 
     /// <summary>
     /// root
@@ -27149,7 +27149,7 @@ public class KeyFrameRequestEvent(string type, EventInit eventInitDict) : Event(
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="rid">rid</param>
-    public extern KeyFrameRequestEvent(string type, string rid);
+    public extern KeyFrameRequestEvent(string type, string? rid = default);
 
     /// <summary>
     /// rid
@@ -27203,7 +27203,7 @@ public partial class KeyboardEvent(string type, UIEventInit eventInitDict) : UIE
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern KeyboardEvent(string type, KeyboardEventInit eventInitDict);
+    public extern KeyboardEvent(string type, KeyboardEventInit? eventInitDict = default);
 
     /// <summary>
     /// DOM_KEY_LOCATION_STANDARD
@@ -27359,7 +27359,7 @@ public partial class KeyframeEffect : AnimationEffect
     /// <param name="target">target</param>
     /// <param name="keyframes">keyframes</param>
     /// <param name="options">options</param>
-    public extern KeyframeEffect(Element? target, object? keyframes, KeyframeEffectOptionsValue options);
+    public extern KeyframeEffect(Element? target, object? keyframes, KeyframeEffectOptionsValue? options = default);
 
     /// <summary>
     /// Constructor 
@@ -27553,7 +27553,7 @@ public class LinearAccelerationSensor : Accelerometer
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern LinearAccelerationSensor(AccelerometerSensorOptions options);
+    public extern LinearAccelerationSensor(AccelerometerSensorOptions? options = default);
 }
 
 /// <summary>
@@ -27739,7 +27739,7 @@ public class MIDIConnectionEvent(string type, EventInit eventInitDict) : Event(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern MIDIConnectionEvent(string type, MIDIConnectionEventInit eventInitDict);
+    public extern MIDIConnectionEvent(string type, MIDIConnectionEventInit? eventInitDict = default);
 
     /// <summary>
     /// port
@@ -27801,7 +27801,7 @@ public class MIDIMessageEvent(string type, EventInit eventInitDict) : Event(type
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern MIDIMessageEvent(string type, MIDIMessageEventInit eventInitDict);
+    public extern MIDIMessageEvent(string type, MIDIMessageEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -28775,7 +28775,7 @@ public class Magnetometer : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern Magnetometer(MagnetometerSensorOptions sensorOptions);
+    public extern Magnetometer(MagnetometerSensorOptions? sensorOptions = default);
 
     /// <summary>
     /// x
@@ -29663,7 +29663,7 @@ public class MediaEncryptedEvent(string type, EventInit eventInitDict) : Event(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern MediaEncryptedEvent(string type, MediaEncryptedEventInit eventInitDict);
+    public extern MediaEncryptedEvent(string type, MediaEncryptedEventInit? eventInitDict = default);
 
     /// <summary>
     /// initDataType
@@ -29924,7 +29924,7 @@ public class MediaMetadata
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern MediaMetadata(MediaMetadataInit init);
+    public extern MediaMetadata(MediaMetadataInit? init = default);
 
     /// <summary>
     /// title
@@ -30009,7 +30009,7 @@ public class MediaQueryListEvent(string type, EventInit eventInitDict) : Event(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern MediaQueryListEvent(string type, MediaQueryListEventInit eventInitDict);
+    public extern MediaQueryListEvent(string type, MediaQueryListEventInit? eventInitDict = default);
 
     /// <summary>
     /// media
@@ -30036,7 +30036,7 @@ public class MediaRecorder : EventTarget
     /// </summary>
     /// <param name="stream">stream</param>
     /// <param name="options">options</param>
-    public extern MediaRecorder(MediaStream stream, MediaRecorderOptions options);
+    public extern MediaRecorder(MediaStream stream, MediaRecorderOptions? options = default);
 
     /// <summary>
     /// stream
@@ -30422,7 +30422,7 @@ public class MediaStreamAudioDestinationNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern MediaStreamAudioDestinationNode(AudioContext context, AudioNodeOptions options);
+    public extern MediaStreamAudioDestinationNode(AudioContext context, AudioNodeOptions? options = default);
 
     /// <summary>
     /// stream
@@ -30687,7 +30687,7 @@ public class MessageEvent(string type, EventInit eventInitDict) : Event(type, ev
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern MessageEvent(string type, MessageEventInit eventInitDict);
+    public extern MessageEvent(string type, MessageEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -30908,7 +30908,7 @@ public partial class MouseEvent(string type, UIEventInit eventInitDict) : UIEven
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern MouseEvent(string type, MouseEventInit eventInitDict);
+    public extern MouseEvent(string type, MouseEventInit? eventInitDict = default);
 
     /// <summary>
     /// screenX
@@ -31779,7 +31779,7 @@ public class NavigationEvent(string type, UIEventInit eventInitDict) : UIEvent(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern NavigationEvent(string type, NavigationEventInit eventInitDict);
+    public extern NavigationEvent(string type, NavigationEventInit? eventInitDict = default);
 
     /// <summary>
     /// dir
@@ -33070,7 +33070,7 @@ public class Notification : EventTarget
     /// </summary>
     /// <param name="title">title</param>
     /// <param name="options">options</param>
-    public extern Notification(string title, NotificationOptions options);
+    public extern Notification(string title, NotificationOptions? options = default);
 
     /// <summary>
     /// permission
@@ -34359,7 +34359,7 @@ public class OscillatorNode : AudioScheduledSourceNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern OscillatorNode(BaseAudioContext context, OscillatorOptions options);
+    public extern OscillatorNode(BaseAudioContext context, OscillatorOptions? options = default);
 
     /// <summary>
     /// type
@@ -34399,7 +34399,7 @@ public class OverconstrainedError : DOMException
     /// </summary>
     /// <param name="constraint">constraint</param>
     /// <param name="message">message</param>
-    public extern OverconstrainedError(string constraint, string message);
+    public extern OverconstrainedError(string constraint, string message = "");
 
     /// <summary>
     /// constraint
@@ -34420,7 +34420,7 @@ public class PageRevealEvent(string type, EventInit eventInitDict) : Event(type,
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PageRevealEvent(string type, PageRevealEventInit eventInitDict);
+    public extern PageRevealEvent(string type, PageRevealEventInit? eventInitDict = default);
 
     /// <summary>
     /// viewTransition
@@ -34441,7 +34441,7 @@ public class PageSwapEvent(string type, EventInit eventInitDict) : Event(type, e
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PageSwapEvent(string type, PageSwapEventInit eventInitDict);
+    public extern PageSwapEvent(string type, PageSwapEventInit? eventInitDict = default);
 
     /// <summary>
     /// activation
@@ -34468,7 +34468,7 @@ public class PageTransitionEvent(string type, EventInit eventInitDict) : Event(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PageTransitionEvent(string type, PageTransitionEventInit eventInitDict);
+    public extern PageTransitionEvent(string type, PageTransitionEventInit? eventInitDict = default);
 
     /// <summary>
     /// persisted
@@ -34489,7 +34489,7 @@ public class PannerNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern PannerNode(BaseAudioContext context, PannerOptions options);
+    public extern PannerNode(BaseAudioContext context, PannerOptions? options = default);
 
     /// <summary>
     /// panningModel
@@ -34645,7 +34645,7 @@ public class Path2D
     /// Constructor 
     /// </summary>
     /// <param name="path">path</param>
-    public extern Path2D(Path2DPath path);
+    public extern Path2D(Path2DPath? path = default);
 
     /// <summary>
     /// addPath
@@ -34826,7 +34826,7 @@ public class PaymentMethodChangeEvent(string type, PaymentRequestUpdateEventInit
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PaymentMethodChangeEvent(string type, PaymentMethodChangeEventInit eventInitDict);
+    public extern PaymentMethodChangeEvent(string type, PaymentMethodChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// methodName
@@ -34905,7 +34905,7 @@ public class PaymentRequestEvent(string type, ExtendableEventInit eventInitDict)
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PaymentRequestEvent(string type, PaymentRequestEventInit eventInitDict);
+    public extern PaymentRequestEvent(string type, PaymentRequestEventInit? eventInitDict = default);
 
     /// <summary>
     /// topOrigin
@@ -35004,7 +35004,7 @@ public class PaymentRequestUpdateEvent(string type, EventInit eventInitDict) : E
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PaymentRequestUpdateEvent(string type, PaymentRequestUpdateEventInit eventInitDict);
+    public extern PaymentRequestUpdateEvent(string type, PaymentRequestUpdateEventInit? eventInitDict = default);
 
     /// <summary>
     /// updateWith
@@ -35402,7 +35402,7 @@ public class PerformanceMark : PerformanceEntry
     /// </summary>
     /// <param name="markName">markName</param>
     /// <param name="markOptions">markOptions</param>
-    public extern PerformanceMark(string markName, PerformanceMarkOptions markOptions);
+    public extern PerformanceMark(string markName, PerformanceMarkOptions? markOptions = default);
 
     /// <summary>
     /// detail
@@ -36086,7 +36086,7 @@ public class PeriodicWave
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern PeriodicWave(BaseAudioContext context, PeriodicWaveOptions options);
+    public extern PeriodicWave(BaseAudioContext context, PeriodicWaveOptions? options = default);
 }
 
 /// <summary>
@@ -36356,7 +36356,7 @@ public class PointerEvent(string type, MouseEventInit eventInitDict) : MouseEven
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PointerEvent(string type, PointerEventInit eventInitDict);
+    public extern PointerEvent(string type, PointerEventInit? eventInitDict = default);
 
     /// <summary>
     /// pointerId
@@ -36455,7 +36455,7 @@ public class PopStateEvent(string type, EventInit eventInitDict) : Event(type, e
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PopStateEvent(string type, PopStateEventInit eventInitDict);
+    public extern PopStateEvent(string type, PopStateEventInit? eventInitDict = default);
 
     /// <summary>
     /// state
@@ -36482,7 +36482,7 @@ public class PortalActivateEvent(string type, EventInit eventInitDict) : Event(t
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PortalActivateEvent(string type, PortalActivateEventInit eventInitDict);
+    public extern PortalActivateEvent(string type, PortalActivateEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -36925,7 +36925,7 @@ public class ProgressEvent(string type, EventInit eventInitDict) : Event(type, e
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ProgressEvent(string type, ProgressEventInit eventInitDict);
+    public extern ProgressEvent(string type, ProgressEventInit? eventInitDict = default);
 
     /// <summary>
     /// lengthComputable
@@ -36999,7 +36999,7 @@ public class ProximitySensor : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern ProximitySensor(SensorOptions sensorOptions);
+    public extern ProximitySensor(SensorOptions? sensorOptions = default);
 
     /// <summary>
     /// distance
@@ -37096,7 +37096,7 @@ public class PushEvent(string type, ExtendableEventInit eventInitDict) : Extenda
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PushEvent(string type, PushEventInit eventInitDict);
+    public extern PushEvent(string type, PushEventInit? eventInitDict = default);
 
     /// <summary>
     /// data
@@ -37228,7 +37228,7 @@ public class PushSubscriptionChangeEvent(string type, ExtendableEventInit eventI
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern PushSubscriptionChangeEvent(string type, PushSubscriptionChangeEventInit eventInitDict);
+    public extern PushSubscriptionChangeEvent(string type, PushSubscriptionChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// newSubscription
@@ -37330,7 +37330,7 @@ public class RTCDTMFToneChangeEvent(string type, EventInit eventInitDict) : Even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern RTCDTMFToneChangeEvent(string type, RTCDTMFToneChangeEventInit eventInitDict);
+    public extern RTCDTMFToneChangeEvent(string type, RTCDTMFToneChangeEventInit? eventInitDict = default);
 
     /// <summary>
     /// tone
@@ -37606,7 +37606,7 @@ public partial class RTCError(string message, string name) : DOMException(messag
     /// </summary>
     /// <param name="init">init</param>
     /// <param name="message">message</param>
-    public extern RTCError(RTCErrorInit init, string message);
+    public extern RTCError(RTCErrorInit init, string message = "");
 
     /// <summary>
     /// errorDetail
@@ -37677,7 +37677,7 @@ public class RTCIceCandidate
     /// Constructor 
     /// </summary>
     /// <param name="candidateInitDict">candidateInitDict</param>
-    public extern RTCIceCandidate(RTCIceCandidateInit candidateInitDict);
+    public extern RTCIceCandidate(RTCIceCandidateInit? candidateInitDict = default);
 
     /// <summary>
     /// candidate
@@ -37974,7 +37974,7 @@ public partial class RTCPeerConnection : EventTarget
     /// Constructor 
     /// </summary>
     /// <param name="configuration">configuration</param>
-    public extern RTCPeerConnection(RTCConfiguration configuration);
+    public extern RTCPeerConnection(RTCConfiguration? configuration = default);
 
     /// <summary>
     /// createOffer
@@ -38359,7 +38359,7 @@ public class RTCPeerConnectionIceEvent(string type, EventInit eventInitDict) : E
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern RTCPeerConnectionIceEvent(string type, RTCPeerConnectionIceEventInit eventInitDict);
+    public extern RTCPeerConnectionIceEvent(string type, RTCPeerConnectionIceEventInit? eventInitDict = default);
 
     /// <summary>
     /// candidate
@@ -38450,7 +38450,7 @@ public class RTCRtpScriptTransform
     /// <param name="worker">worker</param>
     /// <param name="options">options</param>
     /// <param name="transfer">transfer</param>
-    public extern RTCRtpScriptTransform(Worker worker, object options, object[] transfer);
+    public extern RTCRtpScriptTransform(Worker worker, object? options = default, object[]? transfer = default);
 }
 
 /// <summary>
@@ -39047,7 +39047,7 @@ public class ReadableStream : IEnumerable<object>
     /// </summary>
     /// <param name="underlyingSource">underlyingSource</param>
     /// <param name="strategy">strategy</param>
-    public extern ReadableStream(object underlyingSource, QueuingStrategy strategy);
+    public extern ReadableStream(object? underlyingSource = default, QueuingStrategy? strategy = default);
 
     /// <summary>
     /// from
@@ -39259,7 +39259,7 @@ public class RelativeOrientationSensor : OrientationSensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern RelativeOrientationSensor(OrientationSensorOptions sensorOptions);
+    public extern RelativeOrientationSensor(OrientationSensorOptions? sensorOptions = default);
 }
 
 /// <summary>
@@ -39372,7 +39372,7 @@ public class ReportingObserver
     /// </summary>
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
-    public extern ReportingObserver(ReportingObserverCallback callback, ReportingObserverOptions options);
+    public extern ReportingObserver(ReportingObserverCallback callback, ReportingObserverOptions? options = default);
 
     /// <summary>
     /// observe
@@ -39405,7 +39405,7 @@ public partial class Request
     /// </summary>
     /// <param name="input">input</param>
     /// <param name="init">init</param>
-    public extern Request(RequestInfo input, RequestInit init);
+    public extern Request(RequestInfo input, RequestInit? init = default);
 
     /// <summary>
     /// method
@@ -39665,7 +39665,7 @@ public class Response
     /// </summary>
     /// <param name="body">body</param>
     /// <param name="init">init</param>
-    public extern Response(BodyInit? body, ResponseInit init);
+    public extern Response(BodyInit? body = default, ResponseInit? init = default);
 
     /// <summary>
     /// error
@@ -39808,7 +39808,7 @@ public class SFrameTransform : EventTarget
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern SFrameTransform(SFrameTransformOptions options);
+    public extern SFrameTransform(SFrameTransformOptions? options = default);
 
     /// <summary>
     /// setEncryptionKey
@@ -45421,7 +45421,7 @@ public class ScrollTimeline : AnimationTimeline
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern ScrollTimeline(ScrollTimelineOptions options);
+    public extern ScrollTimeline(ScrollTimelineOptions? options = default);
 
     /// <summary>
     /// source
@@ -45448,7 +45448,7 @@ public class SecurityPolicyViolationEvent(string type, EventInit eventInitDict) 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern SecurityPolicyViolationEvent(string type, SecurityPolicyViolationEventInit eventInitDict);
+    public extern SecurityPolicyViolationEvent(string type, SecurityPolicyViolationEventInit? eventInitDict = default);
 
     /// <summary>
     /// documentURI
@@ -45784,7 +45784,7 @@ public class SequenceEffect : GroupEffect
     /// </summary>
     /// <param name="children">children</param>
     /// <param name="timing">timing</param>
-    public extern SequenceEffect(AnimationEffect[]? children, SequenceEffectTiming timing);
+    public extern SequenceEffect(AnimationEffect[]? children, SequenceEffectTiming? timing = default);
 
     /// <summary>
     /// clone
@@ -46534,7 +46534,7 @@ public class SharedWorker : EventTarget
     /// </summary>
     /// <param name="scriptURL">scriptURL</param>
     /// <param name="options">options</param>
-    public extern SharedWorker(string scriptURL, SharedWorkerOptions options);
+    public extern SharedWorker(string scriptURL, SharedWorkerOptions? options = default);
 
     /// <summary>
     /// port
@@ -46589,7 +46589,7 @@ public class SnapEvent(string type, EventInit eventInitDict) : Event(type, event
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern SnapEvent(string type, SnapEventInit eventInitDict);
+    public extern SnapEvent(string type, SnapEventInit? eventInitDict = default);
 
     /// <summary>
     /// snapTargetBlock
@@ -47204,7 +47204,7 @@ public class SpeechSynthesisUtterance : EventTarget
     /// Constructor 
     /// </summary>
     /// <param name="text">text</param>
-    public extern SpeechSynthesisUtterance(string text);
+    public extern SpeechSynthesisUtterance(string? text = default);
 
     /// <summary>
     /// text
@@ -47349,7 +47349,7 @@ public class StereoPannerNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern StereoPannerNode(BaseAudioContext context, StereoPannerOptions options);
+    public extern StereoPannerNode(BaseAudioContext context, StereoPannerOptions? options = default);
 
     /// <summary>
     /// pan
@@ -47511,7 +47511,7 @@ public class StorageEvent(string type, EventInit eventInitDict) : Event(type, ev
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern StorageEvent(string type, StorageEventInit eventInitDict);
+    public extern StorageEvent(string type, StorageEventInit? eventInitDict = default);
 
     /// <summary>
     /// key
@@ -47602,7 +47602,7 @@ public class SubmitEvent(string type, EventInit eventInitDict) : Event(type, eve
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern SubmitEvent(string type, SubmitEventInit eventInitDict);
+    public extern SubmitEvent(string type, SubmitEventInit? eventInitDict = default);
 
     /// <summary>
     /// submitter
@@ -47701,7 +47701,7 @@ public class SubtleCrypto
     /// <param name="extractable">extractable</param>
     /// <param name="keyUsages">keyUsages</param>
     [Description("@#importKey")]
-    public extern PromiseResult<CryptoKey> ImportKey(KeyFormat format, Either<IBufferSource, JsonWebKey> keyData, AlgorithmIdentifier algorithm, bool extractable, KeyUsage[] keyUsages);
+    public extern PromiseResult<CryptoKey> ImportKey(KeyFormat format, SubtleCryptoImportKeyKeyData keyData, AlgorithmIdentifier algorithm, bool extractable, KeyUsage[] keyUsages);
 
     /// <summary>
     /// exportKey
@@ -47826,7 +47826,7 @@ public class TaskController : AbortController
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern TaskController(TaskControllerInit init);
+    public extern TaskController(TaskControllerInit? init = default);
 
     /// <summary>
     /// setPriority
@@ -47896,7 +47896,7 @@ public class Text : CharacterData
     /// Constructor 
     /// </summary>
     /// <param name="data">data</param>
-    public extern Text(string data);
+    public extern Text(string data = "");
 
     /// <summary>
     /// splitText
@@ -47968,7 +47968,7 @@ public class TextDecoder
     /// </summary>
     /// <param name="label">label</param>
     /// <param name="options">options</param>
-    public extern TextDecoder(string label, TextDecoderOptions options);
+    public extern TextDecoder(string label = "utf-8", TextDecoderOptions? options = default);
 
     /// <summary>
     /// decode
@@ -48011,7 +48011,7 @@ public class TextDecoderStream
     /// </summary>
     /// <param name="label">label</param>
     /// <param name="options">options</param>
-    public extern TextDecoderStream(string label, TextDecoderOptions options);
+    public extern TextDecoderStream(string label = "utf-8", TextDecoderOptions? options = default);
 
     #region mixin TextDecoderCommon
     /// <summary>
@@ -48175,7 +48175,7 @@ public class TextFormat
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern TextFormat(TextFormatInit options);
+    public extern TextFormat(TextFormatInit? options = default);
 
     /// <summary>
     /// rangeStart
@@ -48214,7 +48214,7 @@ public class TextFormatUpdateEvent(string type, EventInit eventInitDict) : Event
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="options">options</param>
-    public extern TextFormatUpdateEvent(string type, TextFormatUpdateEventInit options);
+    public extern TextFormatUpdateEvent(string type, TextFormatUpdateEventInit? options = default);
 
     /// <summary>
     /// getTextFormats
@@ -48513,7 +48513,7 @@ public class TextUpdateEvent(string type, EventInit eventInitDict) : Event(type,
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="options">options</param>
-    public extern TextUpdateEvent(string type, TextUpdateEventInit options);
+    public extern TextUpdateEvent(string type, TextUpdateEventInit? options = default);
 
     /// <summary>
     /// updateRangeStart
@@ -48615,7 +48615,7 @@ public class ToggleEvent(string type, EventInit eventInitDict) : Event(type, eve
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern ToggleEvent(string type, ToggleEventInit eventInitDict);
+    public extern ToggleEvent(string type, ToggleEventInit? eventInitDict = default);
 
     /// <summary>
     /// oldState
@@ -48746,7 +48746,7 @@ public class TouchEvent(string type, UIEventInit eventInitDict) : UIEvent(type, 
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern TouchEvent(string type, TouchEventInit eventInitDict);
+    public extern TouchEvent(string type, TouchEventInit? eventInitDict = default);
 
     /// <summary>
     /// touches
@@ -48831,7 +48831,7 @@ public class TrackEvent(string type, EventInit eventInitDict) : Event(type, even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern TrackEvent(string type, TrackEventInit eventInitDict);
+    public extern TrackEvent(string type, TrackEventInit? eventInitDict = default);
 
     /// <summary>
     /// track
@@ -48853,7 +48853,7 @@ public class TransformStream
     /// <param name="transformer">transformer</param>
     /// <param name="writableStrategy">writableStrategy</param>
     /// <param name="readableStrategy">readableStrategy</param>
-    public extern TransformStream(object transformer, QueuingStrategy writableStrategy, QueuingStrategy readableStrategy);
+    public extern TransformStream(object? transformer = default, QueuingStrategy? writableStrategy = default, QueuingStrategy? readableStrategy = default);
 
     /// <summary>
     /// readable
@@ -48914,7 +48914,7 @@ public class TransitionEvent(string type, EventInit eventInitDict) : Event(type,
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="transitionEventInitDict">transitionEventInitDict</param>
-    public extern TransitionEvent(string type, TransitionEventInit transitionEventInitDict);
+    public extern TransitionEvent(string type, TransitionEventInit? transitionEventInitDict = default);
 
     /// <summary>
     /// propertyName
@@ -49181,7 +49181,7 @@ public partial class UIEvent(string type, EventInit eventInitDict) : Event(type,
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern UIEvent(string type, UIEventInit eventInitDict);
+    public extern UIEvent(string type, UIEventInit? eventInitDict = default);
 
     /// <summary>
     /// view
@@ -49252,8 +49252,8 @@ public partial class URL
     /// Constructor 
     /// </summary>
     /// <param name="url">url</param>
-    /// <param name="@base">base</param>
-    public extern URL(string url, string @base);
+    /// <param name="base">base</param>
+    public extern URL(string url, string? @base = default);
 
     /// <summary>
     /// parse
@@ -49363,14 +49363,14 @@ public class URLPattern
     /// <param name="input">input</param>
     /// <param name="baseURL">baseURL</param>
     /// <param name="options">options</param>
-    public extern URLPattern(URLPatternInput input, string baseURL, URLPatternOptions options);
+    public extern URLPattern(URLPatternInput input, string baseURL, URLPatternOptions? options = default);
 
     /// <summary>
     /// Constructor 
     /// </summary>
     /// <param name="input">input</param>
     /// <param name="options">options</param>
-    public extern URLPattern(URLPatternInput input, URLPatternOptions options);
+    public extern URLPattern(URLPatternInput? input = default, URLPatternOptions? options = default);
 
     /// <summary>
     /// test
@@ -49454,7 +49454,7 @@ public class URLSearchParams : IEnumerable<(string, string)>
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern URLSearchParams(URLSearchParamsInit init);
+    public extern URLSearchParams(URLSearchParamsInit? init = default);
 
     /// <summary>
     /// size
@@ -49928,7 +49928,7 @@ public class USBInTransferResult
     /// </summary>
     /// <param name="status">status</param>
     /// <param name="data">data</param>
-    public extern USBInTransferResult(USBTransferStatus status, DataView? data);
+    public extern USBInTransferResult(USBTransferStatus status, DataView? data = default);
 
     /// <summary>
     /// data
@@ -49994,7 +49994,7 @@ public class USBIsochronousInTransferPacket
     /// </summary>
     /// <param name="status">status</param>
     /// <param name="data">data</param>
-    public extern USBIsochronousInTransferPacket(USBTransferStatus status, DataView? data);
+    public extern USBIsochronousInTransferPacket(USBTransferStatus status, DataView? data = default);
 
     /// <summary>
     /// data
@@ -50021,7 +50021,7 @@ public class USBIsochronousInTransferResult
     /// </summary>
     /// <param name="packets">packets</param>
     /// <param name="data">data</param>
-    public extern USBIsochronousInTransferResult(USBIsochronousInTransferPacket[] packets, DataView? data);
+    public extern USBIsochronousInTransferResult(USBIsochronousInTransferPacket[] packets, DataView? data = default);
 
     /// <summary>
     /// data
@@ -50048,7 +50048,7 @@ public class USBIsochronousOutTransferPacket
     /// </summary>
     /// <param name="status">status</param>
     /// <param name="bytesWritten">bytesWritten</param>
-    public extern USBIsochronousOutTransferPacket(USBTransferStatus status, uint bytesWritten);
+    public extern USBIsochronousOutTransferPacket(USBTransferStatus status, uint bytesWritten = 0);
 
     /// <summary>
     /// bytesWritten
@@ -50095,7 +50095,7 @@ public class USBOutTransferResult
     /// </summary>
     /// <param name="status">status</param>
     /// <param name="bytesWritten">bytesWritten</param>
-    public extern USBOutTransferResult(USBTransferStatus status, uint bytesWritten);
+    public extern USBOutTransferResult(USBTransferStatus status, uint bytesWritten = 0);
 
     /// <summary>
     /// bytesWritten
@@ -50135,7 +50135,7 @@ public class UncalibratedMagnetometer : Sensor
     /// Constructor 
     /// </summary>
     /// <param name="sensorOptions">sensorOptions</param>
-    public extern UncalibratedMagnetometer(MagnetometerSensorOptions sensorOptions);
+    public extern UncalibratedMagnetometer(MagnetometerSensorOptions? sensorOptions = default);
 
     /// <summary>
     /// x
@@ -50423,7 +50423,7 @@ public class ValueEvent(string type, EventInit eventInitDict) : Event(type, even
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="initDict">initDict</param>
-    public extern ValueEvent(string type, ValueEventInit initDict);
+    public extern ValueEvent(string type, ValueEventInit? initDict = default);
 
     /// <summary>
     /// value
@@ -50443,7 +50443,7 @@ public class VideoColorSpace
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern VideoColorSpace(VideoColorSpaceInit init);
+    public extern VideoColorSpace(VideoColorSpaceInit? init = default);
 
     /// <summary>
     /// primaries
@@ -50631,7 +50631,7 @@ public class VideoFrame
     /// </summary>
     /// <param name="image">image</param>
     /// <param name="init">init</param>
-    public extern VideoFrame(CanvasImageSource image, VideoFrameInit init);
+    public extern VideoFrame(CanvasImageSource image, VideoFrameInit? init = default);
 
     /// <summary>
     /// Constructor 
@@ -50900,7 +50900,7 @@ public class ViewTimeline(ScrollTimelineOptions options) : ScrollTimeline(option
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern ViewTimeline(ViewTimelineOptions options);
+    public extern ViewTimeline(ViewTimelineOptions? options = default);
 
     /// <summary>
     /// subject
@@ -52185,7 +52185,7 @@ public class WaveShaperNode : AudioNode
     /// </summary>
     /// <param name="context">context</param>
     /// <param name="options">options</param>
-    public extern WaveShaperNode(BaseAudioContext context, WaveShaperOptions options);
+    public extern WaveShaperNode(BaseAudioContext context, WaveShaperOptions? options = default);
 
     /// <summary>
     /// curve
@@ -57957,7 +57957,7 @@ public class WebGLContextEvent(string type, EventInit eventInitDict) : Event(typ
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInit">eventInit</param>
-    public extern WebGLContextEvent(string type, WebGLContextEventInit eventInit);
+    public extern WebGLContextEvent(string type, WebGLContextEventInit? eventInit = default);
 
     /// <summary>
     /// statusMessage
@@ -61135,7 +61135,7 @@ public class WebSocket : EventTarget
     /// </summary>
     /// <param name="url">url</param>
     /// <param name="protocols">protocols</param>
-    public extern WebSocket(string url, WebSocketProtocols protocols);
+    public extern WebSocket(string url, WebSocketProtocols? protocols = default);
 
     /// <summary>
     /// url
@@ -61234,7 +61234,7 @@ public class WebSocket : EventTarget
     /// </summary>
     /// <param name="data">data</param>
     [Description("@#send")]
-    public extern void Send(Either<IBufferSource, Blob, string> data);
+    public extern void Send(WebSocketSendData data);
     
     /// <summary>
     /// send
@@ -61270,7 +61270,7 @@ public class WebTransport
     /// </summary>
     /// <param name="url">url</param>
     /// <param name="options">options</param>
-    public extern WebTransport(string url, WebTransportOptions options);
+    public extern WebTransport(string url, WebTransportOptions? options = default);
 
     /// <summary>
     /// getStats
@@ -61454,7 +61454,7 @@ public class WebTransportError(string message, string name) : DOMException(messa
     /// </summary>
     /// <param name="message">message</param>
     /// <param name="options">options</param>
-    public extern WebTransportError(string message, WebTransportErrorOptions options);
+    public extern WebTransportError(string message = "", WebTransportErrorOptions? options = default);
 
     /// <summary>
     /// source
@@ -61556,7 +61556,7 @@ public class WheelEvent(string type, MouseEventInit eventInitDict) : MouseEvent(
     /// </summary>
     /// <param name="type">type</param>
     /// <param name="eventInitDict">eventInitDict</param>
-    public extern WheelEvent(string type, WheelEventInit eventInitDict);
+    public extern WheelEvent(string type, WheelEventInit? eventInitDict = default);
 
     /// <summary>
     /// DOM_DELTA_PIXEL
@@ -63258,7 +63258,7 @@ public class Worker : EventTarget
     /// </summary>
     /// <param name="scriptURL">scriptURL</param>
     /// <param name="options">options</param>
-    public extern Worker(string scriptURL, WorkerOptions options);
+    public extern Worker(string scriptURL, WorkerOptions? options = default);
 
     /// <summary>
     /// terminate
@@ -63874,7 +63874,7 @@ public class WritableStream
     /// </summary>
     /// <param name="underlyingSink">underlyingSink</param>
     /// <param name="strategy">strategy</param>
-    public extern WritableStream(object underlyingSink, QueuingStrategy strategy);
+    public extern WritableStream(object? underlyingSink = default, QueuingStrategy? strategy = default);
 
     /// <summary>
     /// locked
@@ -65497,7 +65497,7 @@ public class XRRay
     /// </summary>
     /// <param name="origin">origin</param>
     /// <param name="direction">direction</param>
-    public extern XRRay(DOMPointInit origin, XRRayDirectionInit direction);
+    public extern XRRay(DOMPointInit? origin = default, XRRayDirectionInit? direction = default);
 
     /// <summary>
     /// Constructor 
@@ -65622,7 +65622,7 @@ public class XRRigidTransform
     /// </summary>
     /// <param name="position">position</param>
     /// <param name="orientation">orientation</param>
-    public extern XRRigidTransform(DOMPointInit position, DOMPointInit orientation);
+    public extern XRRigidTransform(DOMPointInit? position = default, DOMPointInit? orientation = default);
 
     /// <summary>
     /// position
@@ -66214,7 +66214,7 @@ public class XRWebGLLayer : XRLayer
     /// <param name="session">session</param>
     /// <param name="context">context</param>
     /// <param name="layerInit">layerInit</param>
-    public extern XRWebGLLayer(XRSession session, XRWebGLRenderingContext context, XRWebGLLayerInit layerInit);
+    public extern XRWebGLLayer(XRSession session, XRWebGLRenderingContext context, XRWebGLLayerInit? layerInit = default);
 
     /// <summary>
     /// antialias

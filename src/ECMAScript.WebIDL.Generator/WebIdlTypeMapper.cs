@@ -127,6 +127,7 @@ internal sealed class WebIdlTypeMapper
     private readonly HashSet<string> _enumTypeNames = new(StringComparer.Ordinal);
     private readonly HashSet<string> _dictionaryTypeNames = new(StringComparer.Ordinal);
     public Func<NamedUnionRequest, string>? NamedUnionResolver { get; set; }
+    public Func<JsonElement, string?, string, string>? NamedUnionTypeFormatter { get; set; }
 
     public string ToInlineType(
         JsonElement idlType,
@@ -192,10 +193,20 @@ internal sealed class WebIdlTypeMapper
             "null" => "null",
             "Infinity" => value.GetBooleanOrNull("negative") == true ? "double.NegativeInfinity" : "double.PositiveInfinity",
             "NaN" => "null",
-            "sequence" when parentIdlType is JsonElement idlType => $"new {ToInlineType(idlType, namespaceName)}()",
+            "sequence" when parentIdlType is JsonElement idlType => $"new {FormatSequenceParentType(idlType, namespaceName)}()",
             "dictionary" => "new()",
             _ => string.Empty,
         };
+    }
+
+    private string FormatSequenceParentType(JsonElement idlType, string? namespaceName)
+    {
+        if (idlType.GetBooleanOrNull("union") == true && NamedUnionTypeFormatter is not null)
+        {
+            return NamedUnionTypeFormatter(idlType, namespaceName, "DefaultValue");
+        }
+
+        return ToInlineType(idlType, namespaceName);
     }
 
     private string ToSharpType(
@@ -242,7 +253,7 @@ internal sealed class WebIdlTypeMapper
                                 namespaceName,
                                 qualifyForAlias,
                                 preferRequestedName)),
-                        _ => $"{GetEitherTypePrefix(qualifyForAlias)}<{string.Join(", ", concreteParts)}>",
+                        _ => throw new InvalidOperationException("Union type emission requires a named union resolver."),
                     };
                 }
                 else
@@ -344,11 +355,6 @@ internal sealed class WebIdlTypeMapper
         }
 
         return sharpType == "undefined" ? defaultValue : sharpType;
-    }
-
-    private static string GetEitherTypePrefix(bool qualifyForAlias)
-    {
-        return qualifyForAlias ? "ECMAScript.Either" : "Either";
     }
 
     internal static bool IsVoidLikeType(JsonElement idlType, string mappedType)

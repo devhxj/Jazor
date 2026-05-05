@@ -4,8 +4,9 @@ namespace ECMAScript.GPUBufferUsage;
 /// GPUBindingResource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GPUBindingResource : IEither
+public readonly struct GPUBindingResource
 {
     private readonly byte _kind;
     private readonly GPUSampler? _value1;
@@ -74,8 +75,9 @@ public readonly struct GPUBindingResource : IEither
 /// GPUCanvasContextCanvas
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GPUCanvasContextCanvas : IEither
+public readonly struct GPUCanvasContextCanvas
 {
     private readonly byte _kind;
     private readonly HTMLCanvasElement? _value1;
@@ -110,9 +112,10 @@ public readonly struct GPUCanvasContextCanvas : IEither
 /// GPUColor
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUColorCollectionBuilder), nameof(GPUColorCollectionBuilder.Create))]
-public readonly struct GPUColor : IEither, IEnumerable<double>
+public readonly struct GPUColor : IEnumerable<double>
 {
     private readonly byte _kind;
     private readonly double[]? _value1;
@@ -160,9 +163,10 @@ public static class GPUColorCollectionBuilder
 /// GPUExtent3D
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUExtent3DCollectionBuilder), nameof(GPUExtent3DCollectionBuilder.Create))]
-public readonly struct GPUExtent3D : IEither, IEnumerable<GPUIntegerCoordinate>
+public readonly struct GPUExtent3D : IEnumerable<GPUIntegerCoordinate>
 {
     private readonly byte _kind;
     private readonly GPUIntegerCoordinate[]? _value1;
@@ -210,8 +214,9 @@ public static class GPUExtent3DCollectionBuilder
 /// GPUExternalTextureDescriptorSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GPUExternalTextureDescriptorSource : IEither
+public readonly struct GPUExternalTextureDescriptorSource
 {
     private readonly byte _kind;
     private readonly HTMLVideoElement? _value1;
@@ -246,8 +251,9 @@ public readonly struct GPUExternalTextureDescriptorSource : IEither
 /// GPUImageCopyExternalImageSource
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GPUImageCopyExternalImageSource : IEither
+public readonly struct GPUImageCopyExternalImageSource
 {
     private readonly byte _kind;
     private readonly ImageBitmap? _value1;
@@ -382,9 +388,10 @@ public readonly struct GPUImageCopyExternalImageSource : IEither
 /// GPUOrigin2D
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin2DCollectionBuilder), nameof(GPUOrigin2DCollectionBuilder.Create))]
-public readonly struct GPUOrigin2D : IEither, IEnumerable<GPUIntegerCoordinate>
+public readonly struct GPUOrigin2D : IEnumerable<GPUIntegerCoordinate>
 {
     private readonly byte _kind;
     private readonly GPUIntegerCoordinate[]? _value1;
@@ -432,9 +439,10 @@ public static class GPUOrigin2DCollectionBuilder
 /// GPUOrigin3D
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin3DCollectionBuilder), nameof(GPUOrigin3DCollectionBuilder.Create))]
-public readonly struct GPUOrigin3D : IEither, IEnumerable<GPUIntegerCoordinate>
+public readonly struct GPUOrigin3D : IEnumerable<GPUIntegerCoordinate>
 {
     private readonly byte _kind;
     private readonly GPUIntegerCoordinate[]? _value1;
@@ -482,8 +490,9 @@ public static class GPUOrigin3DCollectionBuilder
 /// GPUPipelineDescriptorBaseLayout
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GPUPipelineDescriptorBaseLayout : IEither
+public readonly struct GPUPipelineDescriptorBaseLayout
 {
     private readonly byte _kind;
     private readonly GPUPipelineLayout? _value1;
@@ -518,8 +527,9 @@ public readonly struct GPUPipelineDescriptorBaseLayout : IEither
 /// GPUShaderModuleCompilationHintLayout
 /// </summary>
 [ECMAScript]
+[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct GPUShaderModuleCompilationHintLayout : IEither
+public readonly struct GPUShaderModuleCompilationHintLayout
 {
     private readonly byte _kind;
     private readonly GPUPipelineLayout? _value1;
@@ -547,5 +557,42 @@ public readonly struct GPUShaderModuleCompilationHintLayout : IEither
         => new(value);
 
     public static implicit operator GPUShaderModuleCompilationHintLayout(GPUAutoLayoutMode value)
+        => new(value);
+}
+
+/// <summary>
+/// StructuralCache
+/// </summary>
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct StructuralCache
+{
+    private readonly byte _kind;
+    private readonly HTMLCanvasElement? _value1;
+    private readonly OffscreenCanvas? _value2;
+
+    private StructuralCache(HTMLCanvasElement value)
+    {
+        _kind = 1;
+        _value1 = value;
+        _value2 = default;
+    }
+
+    private StructuralCache(OffscreenCanvas value)
+    {
+        _kind = 2;
+        _value1 = default;
+        _value2 = value;
+    }
+
+    public HTMLCanvasElement? AsHTMLCanvasElement => _kind == 1 ? _value1 : default;
+
+    public OffscreenCanvas? AsOffscreenCanvas => _kind == 2 ? _value2 : default;
+
+    public static implicit operator StructuralCache(HTMLCanvasElement value)
+        => new(value);
+
+    public static implicit operator StructuralCache(OffscreenCanvas value)
         => new(value);
 }

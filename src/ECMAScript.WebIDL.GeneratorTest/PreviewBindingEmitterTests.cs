@@ -22,7 +22,8 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : IEither, IEnumerable<string>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : IEnumerable<string>");
+        StringAssert.Contains(files["Unions.cs"], "[ECMAScriptUnion]");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator ConstrainDOMString(string[] value)");
         StringAssert.Contains(files["Unions.cs"], "public static class ConstrainDOMStringCollectionBuilder");
     }
@@ -47,7 +48,8 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["GlobalUsings.cs"], "global using ClipboardItemData = ECMAScript.PromiseResult<ECMAScript.ClipboardItemDataValue>;");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ClipboardItemDataValue : IEither");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ClipboardItemDataValue");
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct ClipboardItemDataValue : IEither", StringComparison.Ordinal));
         Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
     }
 
@@ -84,7 +86,7 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#threshold\")]IntersectionObserverInitThreshold? Threshold = default");
         Assert.IsFalse(files["Dictionaries.cs"].Contains("Either<", StringComparison.Ordinal));
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : IEither, IEnumerable<double>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : IEnumerable<double>");
     }
 
     [TestMethod]
@@ -128,7 +130,7 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern URLSearchParams(URLSearchParamsInit init);");
         Assert.IsFalse(files["Interfaces.cs"].Contains("Either<", StringComparison.Ordinal));
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : IEither, IEnumerable<string[]>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : IEnumerable<string[]>");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator URLSearchParamsInit(string[][] value)");
     }
 
@@ -169,12 +171,13 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern void AddEventListener(string type, EventTargetAddEventListenerOptionsValue? options = default);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct EventTargetAddEventListenerOptionsValue : IEither");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct EventTargetAddEventListenerOptionsValue");
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct EventTargetAddEventListenerOptionsValue : IEither", StringComparison.Ordinal));
         Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct EventTargetAddEventListenerOptions : IEither", StringComparison.Ordinal));
     }
 
     [TestMethod]
-    public async Task EmitAsync_WrapperIncompatibleTypedefUnions_FallBackToEitherAliases()
+    public async Task EmitAsync_InterfaceAndObjectTypedefUnions_EmitNamedWrappers()
     {
         var files = await EmitGeneratedFilesAsync(
             Typedef("BufferSource", """
@@ -196,9 +199,111 @@ public sealed class PreviewBindingEmitterTests
                 }
                 """));
 
-        StringAssert.Contains(files["GlobalUsings.cs"], "global using BufferSource = ECMAScript.Either<ECMAScript.IArrayBufferView, ECMAScript.ArrayBuffer>;");
-        StringAssert.Contains(files["GlobalUsings.cs"], "global using AlgorithmIdentifier = ECMAScript.Either<object, string>;");
-        Assert.IsFalse(files.ContainsKey("Unions.cs"));
+        Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct BufferSource");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct AlgorithmIdentifier");
+        StringAssert.Contains(files["Unions.cs"], "public static BufferSource FromIArrayBufferView(IArrayBufferView value)");
+        Assert.IsFalse(files["Unions.cs"].Contains("public static implicit operator BufferSource(IArrayBufferView value)", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public static implicit operator BufferSource(Uint8Array value)");
+        StringAssert.Contains(files["Unions.cs"], "public static AlgorithmIdentifier FromObject(object value)");
+        Assert.IsFalse(files["Unions.cs"].Contains("public static implicit operator AlgorithmIdentifier(object value)", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_InterfaceUnionBranch_EmitsForwardingImplicitOperatorsForConcreteBufferTypes()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Dictionary("PushSubscriptionOptionsInit", """
+                [
+                  {
+                    "type": "field",
+                    "name": "applicationServerKey",
+                    "idlType": {
+                      "union": true,
+                      "idlType": [
+                        { "idlType": "IBufferSource" },
+                        { "idlType": "DOMString" }
+                      ]
+                    }
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#applicationServerKey\")]PushSubscriptionOptionsInitApplicationServerKey? ApplicationServerKey = default");
+        StringAssert.Contains(files["Unions.cs"], "public static PushSubscriptionOptionsInitApplicationServerKey FromIBufferSource(IBufferSource value)");
+        Assert.IsFalse(files["Unions.cs"].Contains("public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(IBufferSource value)", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(Uint8Array value)");
+        StringAssert.Contains(files["Unions.cs"], "public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(ArrayBuffer value)");
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_CallbackInterfaceUnion_UsesLiteralBranchInsteadOfSelfAlias()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            CallbackInterface("EventListener", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "handleEvent",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      { "name": "event", "idlType": { "idlType": "Event" } }
+                    ]
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using EventListener = ECMAScript.EventListenerValue;");
+        StringAssert.Contains(files["Callbacks.cs"], "public sealed class EventListenerLiteral");
+        StringAssert.Contains(files["Unions.cs"], "private readonly EventListenerLiteral? _value1;");
+        Assert.IsFalse(files["Unions.cs"].Contains("private readonly EventListener? _value1;", StringComparison.Ordinal));
+        Assert.IsFalse(files["Unions.cs"].Contains("public static implicit operator EventListenerValue(EventListener value)", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_UnionTailParameter_EmitsNamedWrapperAndBranchOverloads()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("BufferSource", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "ArrayBufferView" },
+                    { "idlType": "ArrayBuffer" }
+                  ]
+                }
+                """),
+            Interface("WebSocket", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "send",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      {
+                        "name": "data",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "IBufferSource" },
+                            { "idlType": "Blob" },
+                            { "idlType": "DOMString" }
+                          ]
+                        },
+                        "optional": false,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void Send(WebSocketSendData data);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void Send(IBufferSource data);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void Send(Blob data);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void Send(string data);");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct WebSocketSendData");
     }
 
     [TestMethod]
@@ -321,8 +426,10 @@ public sealed class PreviewBindingEmitterTests
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, File state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, string state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FormData state);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValue : IEither");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValueState : IEither");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValue");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValueState");
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct ElementInternalsSetFormValue : IEither", StringComparison.Ordinal));
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct ElementInternalsSetFormValueState : IEither", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("ElementInternalsSetFormValue? state", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("public extern void SetFormValue(SetFormValue", StringComparison.Ordinal));
     }
@@ -859,6 +966,16 @@ public sealed class PreviewBindingEmitterTests
             }
         """);
         return new WebIdlDeclarationInventory("interface", name, partial ? true : null, inheritance, null, null, payload.GetArray("members").Count, payload);
+    }
+
+    private static WebIdlDeclarationInventory CallbackInterface(string name, string membersJson, bool partial = false)
+    {
+        var payload = ParseObject($$"""
+            {
+              "members": {{membersJson}}
+            }
+        """);
+        return new WebIdlDeclarationInventory("callback interface", name, partial ? true : null, null, null, null, payload.GetArray("members").Count, payload);
     }
 
     private static WebIdlDeclarationInventory Dictionary(string name, string membersJson, string? inheritance = null)

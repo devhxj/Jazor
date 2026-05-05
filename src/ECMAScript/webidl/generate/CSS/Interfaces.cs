@@ -49,7 +49,7 @@ public class CSSColor : CSSColorValue
     /// <param name="colorSpace">colorSpace</param>
     /// <param name="channels">channels</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSColor(CSSKeywordish colorSpace, CSSColorPercent[] channels, CSSNumberish alpha);
+    public extern CSSColor(CSSKeywordish colorSpace, CSSColorPercent[] channels, CSSNumberish? alpha = default);
 
     /// <summary>
     /// colorSpace
@@ -142,7 +142,7 @@ public class CSSHSL : CSSColorValue
     /// <param name="s">s</param>
     /// <param name="l">l</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSHSL(CSSColorAngle h, CSSColorPercent s, CSSColorPercent l, CSSColorPercent alpha);
+    public extern CSSHSL(CSSColorAngle h, CSSColorPercent s, CSSColorPercent l, CSSColorPercent? alpha = default);
 
     /// <summary>
     /// h
@@ -183,7 +183,7 @@ public class CSSHWB : CSSColorValue
     /// <param name="w">w</param>
     /// <param name="b">b</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSHWB(CSSNumericValue h, CSSNumberish w, CSSNumberish b, CSSNumberish alpha);
+    public extern CSSHWB(CSSNumericValue h, CSSNumberish w, CSSNumberish b, CSSNumberish? alpha = default);
 
     /// <summary>
     /// h
@@ -291,7 +291,7 @@ public class CSSLCH : CSSColorValue
     /// <param name="c">c</param>
     /// <param name="h">h</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSLCH(CSSColorPercent l, CSSColorPercent c, CSSColorAngle h, CSSColorPercent alpha);
+    public extern CSSLCH(CSSColorPercent l, CSSColorPercent c, CSSColorAngle h, CSSColorPercent? alpha = default);
 
     /// <summary>
     /// l
@@ -332,7 +332,7 @@ public class CSSLab : CSSColorValue
     /// <param name="a">a</param>
     /// <param name="b">b</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSLab(CSSColorPercent l, CSSColorNumber a, CSSColorNumber b, CSSColorPercent alpha);
+    public extern CSSLab(CSSColorPercent l, CSSColorNumber a, CSSColorNumber b, CSSColorPercent? alpha = default);
 
     /// <summary>
     /// l
@@ -444,7 +444,7 @@ public class CSSMathMax : CSSMathValue
     /// Constructor 
     /// </summary>
     /// <param name="args">args</param>
-    public extern CSSMathMax(CSSNumberish args);
+    public extern CSSMathMax(params CSSNumberish[] args);
 
     /// <summary>
     /// values
@@ -464,7 +464,7 @@ public class CSSMathMin : CSSMathValue
     /// Constructor 
     /// </summary>
     /// <param name="args">args</param>
-    public extern CSSMathMin(CSSNumberish args);
+    public extern CSSMathMin(params CSSNumberish[] args);
 
     /// <summary>
     /// values
@@ -504,7 +504,7 @@ public class CSSMathProduct : CSSMathValue
     /// Constructor 
     /// </summary>
     /// <param name="args">args</param>
-    public extern CSSMathProduct(CSSNumberish args);
+    public extern CSSMathProduct(params CSSNumberish[] args);
 
     /// <summary>
     /// values
@@ -524,7 +524,7 @@ public class CSSMathSum : CSSMathValue
     /// Constructor 
     /// </summary>
     /// <param name="args">args</param>
-    public extern CSSMathSum(CSSNumberish args);
+    public extern CSSMathSum(params CSSNumberish[] args);
 
     /// <summary>
     /// values
@@ -559,7 +559,7 @@ public class CSSMatrixComponent : CSSTransformComponent
     /// </summary>
     /// <param name="matrix">matrix</param>
     /// <param name="options">options</param>
-    public extern CSSMatrixComponent(DOMMatrixReadOnly matrix, CSSMatrixComponentOptions options);
+    public extern CSSMatrixComponent(DOMMatrixReadOnly matrix, CSSMatrixComponentOptions? options = default);
 
     /// <summary>
     /// matrix
@@ -720,7 +720,7 @@ public class CSSOKLCH : CSSColorValue
     /// <param name="c">c</param>
     /// <param name="h">h</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSOKLCH(CSSColorPercent l, CSSColorPercent c, CSSColorAngle h, CSSColorPercent alpha);
+    public extern CSSOKLCH(CSSColorPercent l, CSSColorPercent c, CSSColorAngle h, CSSColorPercent? alpha = default);
 
     /// <summary>
     /// l
@@ -761,7 +761,7 @@ public class CSSOKLab : CSSColorValue
     /// <param name="a">a</param>
     /// <param name="b">b</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSOKLab(CSSColorPercent l, CSSColorNumber a, CSSColorNumber b, CSSColorPercent alpha);
+    public extern CSSOKLab(CSSColorPercent l, CSSColorNumber a, CSSColorNumber b, CSSColorPercent? alpha = default);
 
     /// <summary>
     /// l
@@ -901,7 +901,7 @@ public class CSSParserAtRule : CSSParserRule
     /// <param name="name">name</param>
     /// <param name="prelude">prelude</param>
     /// <param name="body">body</param>
-    public extern CSSParserAtRule(string name, CSSToken[] prelude, CSSParserRule[]? body);
+    public extern CSSParserAtRule(string name, CSSToken[] prelude, CSSParserRule[]? body = default);
 
     /// <summary>
     /// name
@@ -961,7 +961,7 @@ public class CSSParserDeclaration : CSSParserRule
     /// </summary>
     /// <param name="name">name</param>
     /// <param name="body">body</param>
-    public extern CSSParserDeclaration(string name, CSSParserRule[] body);
+    public extern CSSParserDeclaration(string name, CSSParserRule[]? body = default);
 
     /// <summary>
     /// name
@@ -1015,7 +1015,7 @@ public class CSSParserQualifiedRule : CSSParserRule
     /// </summary>
     /// <param name="prelude">prelude</param>
     /// <param name="body">body</param>
-    public extern CSSParserQualifiedRule(CSSToken[] prelude, CSSParserRule[]? body);
+    public extern CSSParserQualifiedRule(CSSToken[] prelude, CSSParserRule[]? body = default);
 
     /// <summary>
     /// prelude
@@ -1114,7 +1114,7 @@ public class CSSRGB : CSSColorValue
     /// <param name="g">g</param>
     /// <param name="b">b</param>
     /// <param name="alpha">alpha</param>
-    public extern CSSRGB(CSSColorRGBComp r, CSSColorRGBComp g, CSSColorRGBComp b, CSSColorPercent alpha);
+    public extern CSSRGB(CSSColorRGBComp r, CSSColorRGBComp g, CSSColorRGBComp b, CSSColorPercent? alpha = default);
 
     /// <summary>
     /// r
@@ -1308,7 +1308,7 @@ public class CSSScale : CSSTransformComponent
     /// <param name="x">x</param>
     /// <param name="y">y</param>
     /// <param name="z">z</param>
-    public extern CSSScale(CSSNumberish x, CSSNumberish y, CSSNumberish z);
+    public extern CSSScale(CSSNumberish x, CSSNumberish y, CSSNumberish? z = default);
 
     /// <summary>
     /// x
@@ -1522,7 +1522,7 @@ public partial class CSSStyleSheet : StyleSheet
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern CSSStyleSheet(CSSStyleSheetInit options);
+    public extern CSSStyleSheet(CSSStyleSheetInit? options = default);
 
     /// <summary>
     /// ownerRule
@@ -1692,7 +1692,7 @@ public class CSSTranslate : CSSTransformComponent
     /// <param name="x">x</param>
     /// <param name="y">y</param>
     /// <param name="z">z</param>
-    public extern CSSTranslate(CSSNumericValue x, CSSNumericValue y, CSSNumericValue z);
+    public extern CSSTranslate(CSSNumericValue x, CSSNumericValue y, CSSNumericValue? z = default);
 
     /// <summary>
     /// x
@@ -1778,7 +1778,7 @@ public class CSSVariableReferenceValue
     /// </summary>
     /// <param name="variable">variable</param>
     /// <param name="fallback">fallback</param>
-    public extern CSSVariableReferenceValue(string variable, CSSUnparsedValue? fallback);
+    public extern CSSVariableReferenceValue(string variable, CSSUnparsedValue? fallback = default);
 
     /// <summary>
     /// variable
@@ -1838,7 +1838,7 @@ public class FragmentResult
     /// Constructor 
     /// </summary>
     /// <param name="options">options</param>
-    public extern FragmentResult(FragmentResultOptions options);
+    public extern FragmentResult(FragmentResultOptions? options = default);
 
     /// <summary>
     /// inlineSize
@@ -1864,7 +1864,7 @@ public class Highlight : ISet<AbstractRange>
     /// Constructor 
     /// </summary>
     /// <param name="initialRanges">initialRanges</param>
-    public extern Highlight(AbstractRange initialRanges);
+    public extern Highlight(params AbstractRange[] initialRanges);
 
     #region Set
     extern int ICollection<AbstractRange>.Count { get; }
@@ -2443,7 +2443,7 @@ public class WorkletAnimation(AnimationEffect? effect, AnimationTimeline? timeli
     /// <param name="effects">effects</param>
     /// <param name="timeline">timeline</param>
     /// <param name="options">options</param>
-    public extern WorkletAnimation(string animatorName, WorkletAnimationEffects? effects, AnimationTimeline? timeline, object options);
+    public extern WorkletAnimation(string animatorName, WorkletAnimationEffects? effects = default, AnimationTimeline? timeline = default, object? options = default);
 
     /// <summary>
     /// animatorName

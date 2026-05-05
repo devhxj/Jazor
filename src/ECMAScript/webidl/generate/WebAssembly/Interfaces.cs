@@ -12,7 +12,7 @@ public class Global
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     /// <param name="v">v</param>
-    public extern Global(GlobalDescriptor descriptor, object v);
+    public extern Global(GlobalDescriptor descriptor, object? v = default);
 
     /// <summary>
     /// valueOf
@@ -39,7 +39,7 @@ public class Instance
     /// </summary>
     /// <param name="module">module</param>
     /// <param name="importObject">importObject</param>
-    public extern Instance(Module module, object importObject);
+    public extern Instance(Module module, object? importObject = default);
 
     /// <summary>
     /// exports
@@ -135,7 +135,7 @@ public class Table
     /// </summary>
     /// <param name="descriptor">descriptor</param>
     /// <param name="value">value</param>
-    public extern Table(TableDescriptor descriptor, object value);
+    public extern Table(TableDescriptor descriptor, object? value = default);
 
     /// <summary>
     /// grow

@@ -5373,7 +5373,7 @@ public record PushSubscriptionJSON(
 [Description("@#PushSubscriptionOptionsInit")]
 public record PushSubscriptionOptionsInit(
     [property: Description("@#userVisibleOnly")]bool UserVisibleOnly = false,
-    [property: Description("@#applicationServerKey")]Either<IBufferSource, string>? ApplicationServerKey = default);
+    [property: Description("@#applicationServerKey")]PushSubscriptionOptionsInitApplicationServerKey? ApplicationServerKey = default);
 
 /// <summary>
 /// QueryOptions
@@ -7914,7 +7914,7 @@ public record WriteParams(
     [property: Description("@#type")]WriteCommandType? Type = default,
     [property: Description("@#size")]ulong Size = default,
     [property: Description("@#position")]ulong Position = default,
-    [property: Description("@#data")]Either<IBufferSource, Blob, string>? Data = default);
+    [property: Description("@#data")]WriteParamsData? Data = default);
 
 /// <summary>
 /// XRCubeLayerInit
