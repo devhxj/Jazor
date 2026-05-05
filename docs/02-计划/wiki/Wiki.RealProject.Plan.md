@@ -15,17 +15,17 @@
 
 ### Phase 1: Product Foundation
 
-- [ ] Task 1: 写入真实项目规格与计划
+- [x] Task 1: 写入真实项目规格与计划
   - Acceptance: 产品目标、内容源、路由、边界、成功标准全部落盘
   - Verify: `docs/02-计划/wiki/` 出现可读 spec / plan 文件
   - Files: `docs/02-计划/wiki/*`
 
-- [ ] Task 2: 切换静态宿主到真实 docs 路由
+- [x] Task 2: 切换静态宿主到真实 docs 路由
   - Acceptance: 宿主支持 `/` 之外的文档路径直接进入
   - Verify: `.\src\Wiki\verify-smoke.ps1 -BuildLocal`
   - Files: `src/Wiki/Program.cs`, `src/Wiki/verify-smoke.ps1`
 
-- [ ] Task 3: 实现多页面 H-function docs shell
+- [x] Task 3: 实现多页面 H-function docs shell
   - Acceptance:
     - 首页不再是 sample playground
     - 至少 4 个真实页面可访问
@@ -35,27 +35,27 @@
 
 ### Checkpoint: Product Foundation
 
-- [ ] Build 成功
-- [ ] `/health`、`/`、`/guides/getting-started` 可访问
-- [ ] 页面已形成真实站点结构
+- [x] Build 成功
+- [x] `/health`、`/`、`/guides/getting-started` 可访问
+- [x] 页面已形成真实站点结构
 
 ### Phase 2: Project Positioning
 
-- [ ] Task 4: 更新 README 到真实项目视角
+- [x] Task 4: 更新 README 到真实项目视角
   - Acceptance: README 不再把 Wiki 描述成单页 sample，命令与路由说明正确
   - Verify: 人工审阅 README 与实现一致
   - Files: `src/Wiki/README.md`
 
-- [ ] Task 5: 扩充 smoke verification 到真实 route
+- [x] Task 5: 扩充 smoke verification 到真实 route
   - Acceptance: smoke 覆盖至少一个真实文档路由，并验证 emitted 文档内容标识
   - Verify: `.\src\Wiki\verify-smoke.ps1 -BuildLocal`
   - Files: `src/Wiki/verify-smoke.ps1`
 
 ### Checkpoint: MVP Ready
 
-- [ ] Build / smoke 全部通过
-- [ ] 真实路由闭环已完成
-- [ ] README / spec / implementation 一致
+- [x] Build / smoke 全部通过
+- [x] 真实路由闭环已完成
+- [x] README / spec / implementation 一致
 
 ## Risks and Mitigations
 
