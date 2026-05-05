@@ -2,8 +2,16 @@
 
 > Status: 活跃计划
 > Updated: 2026-05-05
-> Positioning: 基于 `ECMAScript.Vue3` Phase 2（Razor -> `H(...)`）canonical contract，重定义 RazorVue 库模式的主工件、design-time 触发链路与 build materialisation 边界。
+> Positioning: 基于 `ECMAScript.Vue3` Phase 2（Razor -> `H(...)`）canonical contract，定义 RazorVue 库模式如何把既有 canonical 语义 materialize 成 design-time `.vue` SFC artifact。
 > Scope: 只覆盖 RazorVue 库模式；不覆盖 Jolt Phase 3；不引入 render fallback；不把 `.vue` authoring 或 Volar/LSP 虚拟文档作为前提。
+
+## 摘要
+
+这份方案不是新的模板语义设计，也不是独立于 Phase 2 的第二套 Vue lowering。
+
+- Phase 2 继续负责定义 Razor authoring 到 canonical `H(...)` / setup / lifecycle 语义。
+- 本方案只负责把这套既有 canonical 语义 materialize 为 design-time `.vue` SFC artifact。
+- 任何绕过 Phase 2 contract 直接从 `BuildRenderTree`“拼 SFC”的路径都视为错误方向。
 
 ## 0. 一句话决策
 

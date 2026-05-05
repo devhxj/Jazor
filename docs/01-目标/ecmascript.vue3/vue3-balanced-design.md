@@ -16,7 +16,7 @@
 真正不平衡的地方在于：
 
 - default-slot sugar 已移出 `SemanticWalker` 的 Vue 命名分块，当前由通用 `ChildrenToSlotIntrinsic` 基于 imported `h` 和同宿主 slot contract 处理；
-- `VueObject.Class` 仍暴露 `Either<...>`，这可以作为 bridge shape，但不应把它扩成更差的自定义包装；
+- `VueObject.Class` 已收敛为命名 union `VueClassValue`；这类对象成员值上的 union 应继续走显式 `[ECMAScriptUnion]` contract，而不是回退到泛型 union wrapper 或再包一层无语义 wrapper；
 - `VueSetupContext.Attrs` / `Slots` 已有真实 read-side bag，且补齐了 `VueAttributeListeners*` / `VueScopedSlots<TScope>` helper；后续应继续按使用反馈收敛 helper 族；
 - `H(...)` overload 已完成第一轮 canonical 收敛（`IVNode` + `VueChild`），但仍需要持续约束后续新增 API 不回到示例镜像扩张；
 - `Dataset`、`Style`、slot、directive value 这些高频面还缺少统一的 helper 形状。
@@ -69,7 +69,7 @@ compiler 只保留四类 Vue 相关能力：
 - `Props` / `Attrs` / `Raw` / `Dataset` 保持对象形状语义，不引入 Vue-only compiler 分支；
 - 字符串索引键继续走同一条 object-literal lowering 路线；
 - `Dataset` 只接受显式最终键，不在 compiler 里做 `data-*` 推断；
-- `Class` 可以继续保留 `Either` 作为 bridge shape，并在未来 native union 落地后自然迁移；关键是不要再围绕它发明更差的替代包装。
+- `Class` 这类对象成员值可以保留命名 union bridge，例如 `VueClassValue`；关键是保持 runtime 语义直接可读，不回退到泛型 union wrapper，也不要围绕它再发明更差的替代包装。
 
 这里的方向不是“更多 magic”，而是“更少 leakage”。
 
@@ -110,7 +110,7 @@ structural-lowered record 的静态 `null` 省略应该继续作为通用优化�
 
 - compiler 只认稳定特性，不认 Vue 名字本身；
 - public surface 尽量用 C# 自己的类型系统说话；
-- 真正需要桥接的 union 可以继续用 `Either` 这样的桥接形状表达；native union 落地后再迁移到语言原生形态；
+- 真正需要桥接的 union 继续用命名 `[ECMAScriptUnion]` 类型表达；native union 落地后再迁移到语言原生形态；
 - 不用 `OptionalAttribute` 这种新语法去补当前已经能由 lowering 解决的问题；
 - Vue 只作为被投影的 host contract，而不是 compiler 的特例命名空间。
 

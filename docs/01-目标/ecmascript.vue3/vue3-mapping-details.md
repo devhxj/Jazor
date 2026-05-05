@@ -16,13 +16,13 @@ Vue3 映射不是把 Vue 文档示例逐字镜像成 C# API，而是在 C# autho
 | C# authoring | 优先使用 record、overload、generic、delegate、attribute、nullable、IntelliSense |
 | compiler 参与 | 只识别通用 lowering、基础绑定特性和少量稳定 host contract |
 | Vue 专用逻辑 | 只能作为无法用通用能力表达时的最后手段，并且要有迁移退出路径 |
-| union 表达 | 方法边界优先 overload；对象成员值无法 overload 时可使用 `Either`，未来可迁移到 C# union |
+| union 表达 | 方法边界优先 overload；对象成员值或 normalization boundary 无法 overload 时使用命名 `[ECMAScriptUnion]` contract，未来可迁移到 C# native union |
 
 这意味着：
 
 - `VueObject`、`VueSlots`、`VueDirective`、`VuePlugin` 都应是 plain object authoring surface，不是运行时 CLR-like object。
 - compiler 不应该知道 `Dataset` 需要加 `data-` 前缀，也不应该知道某个第三方库的属性格式。
-- `Either` 可以继续作为 bridge shape，但不应再套一层更差的自定义 wrapper。
+- active public surface 不再以泛型 union wrapper 作为主路径；需要 bridge 时使用具名 contract。
 - 外部扩展库不应依赖新的 Jazor compiler 特性来完成语义 lowering；语义应通过 `ECMAScript.Vue3` 暴露的公共 C# 合同表达。
 
 ## 2. Compiler 参与边界
@@ -189,7 +189,7 @@ public sealed record CounterProps : Vue3.VueProps
 |---------|--------|------|
 | `Is` | `is` | string customized built-in special attribute；动态组件直接用 component-valued `H(...)` |
 | `Key` | `key` | `VueKey`，支持 string / number-like / `Symbol` |
-| `Class` | `class` | 支持 string、string array、object form、mixed array；用 `Either` 表达 bridge union |
+| `Class` | `class` | 支持 string、string array、object form、mixed array；用 `VueClassValue` 表达 bridge union |
 | `Style` | `style` | 接受 typed record 或 dictionary object；不展开 |
 | `Ref` | `ref` | named template ref key，配合 `UseTemplateRef<TElement>(key)` |
 | `Events` | flatten | `[Spread]`，事件 key 必须写最终 `onXxx` listener prop |
@@ -287,13 +287,13 @@ H("button", new Vue3.VueObject
 - object：`VueProps`
 - array：`VueValue[]`
 
-`VueKey` 是 Vue VNode `key` 的专用 bridge contract。它只覆盖 Vue 官方接受的 `string | number | symbol` 语义，不退化为 `object`，也不使用 `Either<string, Number, Symbol>`，因为 `Key = 42` 需要依赖 `int -> Number -> Either` 的双重隐式转换，C# 不会自然完成这条链。`VueKey` 直接提供 string、number-like 和 `Symbol` 的隐式转换，最终仍擦除为原始 JS 值。
+`VueKey` 是 Vue VNode `key` 的专用 bridge contract。它只覆盖 Vue 官方接受的 `string | number | symbol` 语义，不退化为 `object`，也不回退到旧的泛型 union wrapper，因为 `Key = 42` 这类 authoring 需要自然接受 number-like 输入，而不是依赖多段隐式转换链。`VueKey` 直接提供 string、number-like 和 `Symbol` 的隐式转换，最终仍擦除为原始 JS 值。
 
 设计约束：
 
 - 方法参数边界如果 overload 能表达，优先 overload。
-- object 成员值无法 overload 时，用 `VueValue` / `Either` 作为 union bridge。
-- 不引入 `VueClassValue`、`VueStyleValue` 这类只有包装没有额外语义的类型。
+- object 成员值无法 overload 时，使用命名的 `[ECMAScriptUnion]` bridge type，例如 `VueValue`、`VueClassValue`、`VueComputedValue<TValue>`。
+- 不引入只有“给旧的泛型 union wrapper 换个名字”但没有稳定公共语义的包装；命名 union 必须对应一个真实、可复用的 host contract。
 
 ### 5.4 `VueEventHandlers`
 
@@ -637,8 +637,8 @@ public sealed record PanelComputed : VueProps
 设计约束：
 
 - `VueComponentDefinition.Computed` 使用 `VueProps?`，避免为 Options API computed 引入 Vue-specific compiler 分支；普通 record object lowering 负责生成最终对象字面量。
-- `VueComputedRegistry<TValue>` 只解决动态字符串 key 且同值类型的常见场景；它继承 `VueProps` 并通过 `Add(string, Func<TValue>)` / `Add(string, VueWritableComputedOptions<TValue>)` 支持 collection initializer，避免 method group 直接转换到 `Either<...>` 的 C# 限制。
-- indexer 类型仍保留为 `Either<Func<TValue>, VueWritableComputedOptions<TValue>>`，服务显式赋值和反射契约；推荐 authoring path 是 collection initializer。
+- `VueComputedRegistry<TValue>` 只解决动态字符串 key 且同值类型的常见场景；它继承 `VueProps` 并通过 `Add(string, Func<TValue>)` / `Add(string, VueWritableComputedOptions<TValue>)` 支持 collection initializer，避免 method group 在 union 赋值上的 C# 绑定限制。
+- indexer 类型现在收敛为命名 union `VueComputedValue<TValue>`，服务显式赋值和反射契约；推荐 authoring path 仍然是 collection initializer。
 - 依赖 Vue instance `this` 的 computed getter/setter 使用 `BindThis<TThis,...>(VueThisFunc<...>/VueThisAction<...>)`；`BindThis` 通过 `ECMAScriptInline` 降级为 `function(){ return cb(this, ...arguments); }` 包装。
 
 ### 6.10 Options API Methods
@@ -729,7 +729,7 @@ new VueComponentOptions
 
 - `VueComponentDefinition.Watch` 使用 `VueProps?`，保持普通 object lowering；watch key 可以是普通属性名，也可以是 Vue 支持的简单点路径。
 - `VueWatchRegistry<TValue>` 只解决动态字符串 key 且同 watched value 类型的场景；异构 watch sources 使用自定义 `VueProps` record。
-- `VueWatchEntry<T>` / `VueWatchEntries<T>` 作为语法糖类型承接 array 场景复杂度；公开 indexer 仍保持 `Either` 主路径以兼容 method-group 等 C# 自然写法。
+- `VueWatchEntry<T>` / `VueWatchEntries<T>` 作为语法糖类型承接 array 场景复杂度；公开 indexer 使用 `VueWatchDeclaration<TValue>` 命名 union，兼容 method-group、options object 与 mixed array 的自然写法。
 - 依赖 component instance `this` 的 handler 使用 `BindThis<TThis,...>`；watch cleanup handler 使用 `BindThis<TThis, TValue>(VueThisWatchCleanupCallback<TThis, TValue>)`。
 
 ## 7. Render / `H(...)` 映射

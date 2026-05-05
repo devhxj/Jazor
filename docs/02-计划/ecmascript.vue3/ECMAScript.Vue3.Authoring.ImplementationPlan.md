@@ -1,8 +1,8 @@
-# ECMAScript.Vue3 Authoring 落地计划
+# ECMAScript.Vue3 Authoring 过渡计划
 
 > Status: 活跃计划
-> Updated: 2026-05-03
-> Positioning: 以 [ECMAScript.Vue3 平衡式目标设计](../../01-目标/ecmascript.vue3/vue3-balanced-design.md)、[ECMAScript.Vue3 API 覆盖矩阵](../../01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md) 和 [ECMAScript.Vue3 映射细节设计](../../01-目标/ecmascript.vue3/vue3-mapping-details.md) 为边界，推进 `src/ECMAScript.Vue3/Vue3.cs` 与相关 compiler lowering 的收口实施。
+> Updated: 2026-05-05
+> Positioning: 记录从 Vue3 Phase 1 到 Phase 2/3 的过渡状态。Phase 1 完成项保留为历史完成记录；当前活跃关注点是 Razor -> `H(...)` 规范层与后续 Jolt 工程化协同。
 
 ## 0. 三阶段总路线（H -> Razor->H -> Jolt）
 
@@ -45,6 +45,8 @@
 
 ## 3. 当前基线
 
+这里的“当前基线”表示进入 Phase 2 前已经稳定存在、可以直接复用的 contract，不再视为待设计项。
+
 当前已经具备的能力：
 
 - `VueObject` / `VueObject<TProps>` 已建立在通用 record structural lowering 上。
@@ -58,7 +60,7 @@
 
 后续工作的重点不再是“功能数量”，而是“边界质量”。
 
-## 4. Phase 1 实施分解（已闭环完成，作为完成记录保留）
+## 4. Phase 1 完成记录（已闭环，保留作过渡参考）
 
 ### Phase A: Compiler Boundary Reduction
 
@@ -113,18 +115,24 @@
 
 目标：让 public surface 更像 C#，而不是更像 Vue 示例集。
 
-#### B1. 保留并收敛 `VueObject.Class` 的 `Either`
+#### B1. 收敛 `VueObject.Class` 到命名 union contract
+
+**Status**
+
+- 已落地 `VueClassValue` 命名 `[ECMAScriptUnion]`。
+- active public surface 不再把泛型 `Either` 作为主路径。
+- 兼容层仅保留最小 `IEither` marker，用于历史识别与平滑过渡。
 
 **目标**
 
-- 把 `Either` 作为合理的 bridge shape 保留下来，并收敛它的暴露面。
+- 把对象成员值上的 union 收敛到具名 host contract，而不是继续暴露泛型 union wrapper。
 - 在未来 native union 更成熟时，保持迁移路径是机械的，而不是让现在的 surface 再长出一层更差的包装。
 
 **接受标准**
 
 - 常见 class authoring 仍能自然表达。
-- `Either` 保持为清晰、稳定、可迁移的 bridge shape，而不是一层只能靠文档解释的临时 hack。
-- 不再围绕 `Either` 再发明更差的替代包装。
+- `VueClassValue` 保持为清晰、稳定、可迁移的 bridge shape，而不是一层只能靠文档解释的临时 hack。
+- 不再围绕旧的泛型 union wrapper 再发明更差的替代包装。
 
 #### B2. 补齐 `VueSetupContext` 读侧 bag
 
@@ -182,10 +190,10 @@
 
 已落地：
 
-- `VueKey` 作为 VNode `key` 的语义 bridge，覆盖 string / number-like / `Symbol`，避免 `Either<string, Number, Symbol>` 在 C# 中无法自然接收 `Key = 42` 的双重隐式转换问题。
+- `VueKey` 作为 VNode `key` 的语义 bridge，覆盖 string / number-like / `Symbol`，避免旧的泛型 union 形态在 C# 中无法自然接收 `Key = 42` 的双重隐式转换问题。
 - `VueObject.Key` / `VueObject.Ref` 补齐 render props 高频 convenience；`Ref` 先覆盖 named template ref key，并与 `UseTemplateRef<TElement>(key)` 配套。
 - `VueEventHandlers` / `VueEventHandlers<TEvent>` 作为 `VueObject.Events` 的 `[Spread]` listener bag，解决 method group 不能直接赋给 `VueValue` indexer 的问题，同时保持事件 key 为最终 `onXxx`。
-- `VueObject.Is` 覆盖 string customized built-in `is` special attribute；不使用 `Either<string, IVueComponent>`，因为 C# 不允许以 interface 为源/目标的自然用户定义转换，动态组件应直接使用 component-valued `H(...)`。
+- `VueObject.Is` 覆盖 string customized built-in `is` special attribute；不使用泛型 union wrapper 承接 `string | component`，因为 C# 不允许以 interface 为源/目标的自然用户定义转换，动态组件应直接使用 component-valued `H(...)`。
 
 #### C2. `Dataset` / `Style` / class helper 收口
 
@@ -240,7 +248,7 @@
 - Options API full surface、custom elements 的完整 authoring 策略先设计再实现。
 - SFC、template、SSR renderer、custom renderer 保持 separate workstream。
 
-## 5. 推荐执行顺序（Phase 2 / Phase 3 主线）
+## 5. 当前主线执行顺序（Phase 2 / Phase 3）
 
 1. Razor -> `H(...)` canonical lowering
 2. 基于 canonical `H(...)` 的 RazorVue 库模式 design-time SFC artifact 方案落地
@@ -252,7 +260,7 @@
 
 理由：
 
-- Phase 1 已完成，后续不应再把 canonical `H(...)` / object-literal / read-side bag 当作未收口项反复回填。
+- Phase 1 已完成，后续不应再把 canonical `H(...)` / object-literal / read-side bag 当作待设计项反复回填。
 - 下一阶段的核心是承接已完成 contract，而不是继续扩张 compiler Vue 特路。
 - 先把 Razor/Jolt 等上层工作流压到 Phase 1 contract 上，再讨论更高层 ergonomics。
 - 其中 RazorVue `h(...)` 发射已完成最小 arity 对齐：`h(component)` / `h(component, props)` / `h(component, slots)` / `h(element, child)` 等 canonical 形态不再携带多余 `null` 占位。
@@ -293,12 +301,12 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQual
 | overload 继续膨胀 | 中 | 先收 canonical shape，再补 helper |
 | 文档领先实现 | 中 | 每个切片完成后同步 README |
 
-## 8. Phase 1 完成定义（已满足）
+## 8. Phase 1 完成定义（历史完成记录，已满足）
 
 以下条件已经满足，因此 Phase 1 现已转入完成状态：
 
 - `SemanticWalker` 不再以 Vue 示例名作为主要设计中心；
-- `VueObject.Class` 保持为清晰的 bridge shape，并能在 native union 到来时平滑迁移；
+- `VueObject.Class` 已收敛为清晰的命名 union bridge shape，并能在 native union 到来时平滑迁移；
 - `VueSetupContext` 的读侧 bag 可实际使用；
 - `H(...)` overload 家族已收敛到 canonical 分类，并由回归测试守护；
 - `record` / `[Spread]` / static `null` 省略继续保持通用。

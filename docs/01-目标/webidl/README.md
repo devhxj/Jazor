@@ -31,6 +31,11 @@ C# 绑定类型（ECMAScript 特性与宿主投影元数据）
 
 这里的目标是生成“可进入 Jazor 编译域的宿主类型表面”，而不是直接生成完整运行时实现。
 
+当前活跃输出边界是 `src/ECMAScript/webidl/`。
+
+- `src/ECMAScript/webidl/generate/`：当前 .NET 生成器产物
+- `src/ECMAScript/generate/`：历史遗留目录，已被 `ECMAScript.csproj` 排除，不参与当前编译主线
+
 ## 关键设计点
 
 - 继承方法返回类型差异时，子类用 `new` 隐藏。

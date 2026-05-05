@@ -14,7 +14,7 @@
 - 仅当 C# 名称解析否则会与现有类型或导入的符号冲突时，才使用尾随下划线 `_`。
 - 对于 JavaScript 可迭代输入，优先使用 `IEnumerable<T>``，包括 locale 列表，如 `IEnumerable<string>`，除非 runtime 语义需要更特定的 host 形状。
 - 对于基于条目的输入，如 `Object.fromEntries(...)` 或 `new Map(...)`，可以接受同时暴露 `IEnumerable<Array<object?>>` 和更广泛的 `IEnumerable<IEnumerable<object?>>` 重载，以便常见 C# 序列族仍然与 JavaScript 的 iterable-of-entry 模型对齐。
-- 当 ECMA-402 API 接受 JavaScript 数学值而不仅仅是 IEEE double 输入时，优先使用显式联合，如 `Either<Number, BigInt, string>`，而不是过早地将公共表面缩小到 `Number`。
+- 当 ECMA-402 API 接受 JavaScript 数学值而不仅仅是 IEEE double 输入时，优先使用命名的 `[ECMAScriptUnion]` 公共类型，例如当前 Intl surface 上的 `IntlNumberInput`，而不是过早地将公共表面缩小到 `Number`。
 - 当 JavaScript API 允许省略前导参数但 C# 无法自然表达该省略时，优先使用直接重载，而不是强制调用者传递 CLR sentinel。一个常见情况是 Intl 构造函数允许省略 `locales` 同时仍然提供 `options`。
 - 对实例方法（如 `toLocaleString(...)` 或 `localeCompare(...)`）应用相同的规则，当 JavaScript 允许省略前导 `locales` 参数但仍然提供后续选项时。
 - 当 JavaScript APIs await 或采用 promise-like 输入时，在公共签名中保留类似 promise 的同化语义。

@@ -160,13 +160,13 @@ Source: <https://vuejs.org/api/reactivity-utilities.html>
 | `isRef()` | Covered | `bool IsRef<T>(T value)`，用泛型承接 unknown-like 输入，避免 public `object` |
 | `unref()` | Covered | `Unref<T>(T)` + `Unref<T>(IVueRef<T>)` overload |
 | `toRef()` | Covered | value/ref/getter normalization overload、object property overload、default value overload、dictionary key overload |
-| `toValue()` | Covered | getter/ref/value normalization 通过 overload 表达，不需要 `Either` |
+| `toValue()` | Covered | getter/ref/value normalization 通过 overload 表达，不需要额外 union wrapper |
 | `toRefs()` | Covered | `VueRefs<TSource>` indexer bag + user-declared `VueRefs<TSource>` typed projection；缺失属性使用 `toRef(source,key)` |
 | `isProxy()` | Covered | `bool IsProxy<T>(T value)` |
 | `isReactive()` | Covered | `bool IsReactive<T>(T value)` |
 | `isReadonly()` | Covered | `bool IsReadonly<T>(T value)` |
 
-这里最适合利用未来 C# union。当前版本可以用 overload 优先，`Either` 只用于无法 overload 的 object member / normalization boundary。
+这里最适合利用未来 C# union。当前版本保持 overload 优先；只有无法用 overload 表达的 object member / normalization boundary 才使用命名 `[ECMAScriptUnion]` contract。
 
 ## 10. Composition API: Reactivity Advanced
 

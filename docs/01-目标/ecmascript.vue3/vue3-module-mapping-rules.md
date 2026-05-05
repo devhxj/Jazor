@@ -90,7 +90,7 @@ public static class PanelModule
 
 ```csharp
 [Description("@#class")]
-public Either<string, string[], VueProps, VueValue[]>? Class { get; init; }
+public VueClassValue? Class { get; init; }
 ```
 
 应生成对象键：

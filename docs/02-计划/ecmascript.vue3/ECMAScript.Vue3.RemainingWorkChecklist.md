@@ -1,8 +1,8 @@
 # ECMAScript.Vue3 剩余完善清单
 
 > Status: Post-Phase1 活跃清单  
-> Updated: 2026-05-03  
-> Positioning: 基于 [ECMAScript.Vue3 Authoring 落地计划](./ECMAScript.Vue3.Authoring.ImplementationPlan.md)、[ECMAScript.Vue3 API 覆盖矩阵](../../01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md) 与当前 `src/ECMAScript.Vue3/` 真实代码状态整理的剩余工作清单。  
+> Updated: 2026-05-05  
+> Positioning: 基于 [ECMAScript.Vue3 Authoring 过渡计划](./ECMAScript.Vue3.Authoring.ImplementationPlan.md)、[ECMAScript.Vue3 API 覆盖矩阵](../../01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md) 与当前 `src/ECMAScript.Vue3/` 真实代码状态整理的 Phase 2/3 剩余工作清单。  
 > Scope: Phase 1 已完成闭环；本清单只列 Phase 2/3 与后续设计项，不再把已收口的 `H(...)` / `VueObject` / read-side bag / object-literal contract 当作剩余事项重复展开。
 
 ## 1. 当前判断
