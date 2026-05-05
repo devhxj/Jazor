@@ -3440,13 +3440,8 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_DoesNotLowerNonCallableScopedSlotAttributeAsInvokedSlot()
+    public void RazorVue_Pipeline_WithNonCallableScopedSlotAttribute_ReportsSlotContextMisuse()
     {
-        // Negative test: when a scoped-slot parameter (RenderFragment<T>) on the child
-        // receives a non-callable constant value (a string literal instead of a
-        // RenderFragment<T>-typed expression), the lowering must NOT produce an
-        // `(context) => expr(context)` invocation — it should either emit a passthrough
-        // prop binding or skip slot emission rather than generating broken JavaScript.
         var context = CreateContext(
             """
             using System;
@@ -3487,14 +3482,11 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Host");
-        // The lowering must NOT emit a scoped slot invocation pattern for a non-callable value.
-        Assert.IsFalse(
-            artifact.ModuleCode.Contains("(context) => \"not-callable\"(context)"),
-            $"Non-callable value was incorrectly lowered as an invoked scoped slot.\n{artifact.ModuleCode}");
-        Assert.IsFalse(
-            artifact.ModuleCode.Contains("(context) => props.itemTemplate(context)"),
-            $"Non-callable constant was incorrectly treated as a prop reference.\n{artifact.ModuleCode}");
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "ItemTemplate");
+        StringAssert.Contains(exception.Issue.Message, "Child");
     }
 
     [TestMethod]

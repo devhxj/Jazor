@@ -302,16 +302,15 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (operation is null)
             return RazorVueCanonicalSlotValueKind.None;
 
-        if (slotDescriptor.Parameters.IsDefaultOrEmpty)
-            return RazorVueCanonicalSlotValueKind.ValueExpression;
-
         var current = Unwrap(operation);
         if (current is IPropertyReferenceOperation property &&
             TryGetCurrentComponentSlotDescriptor(snapshot, property, out var currentSlot))
         {
-            if (!currentSlot.Parameters.IsDefaultOrEmpty)
-                return RazorVueCanonicalSlotValueKind.ForwardedSlot;
+            return RazorVueCanonicalSlotValueKind.ForwardedSlot;
         }
+
+        if (slotDescriptor.Parameters.IsDefaultOrEmpty)
+            return RazorVueCanonicalSlotValueKind.ValueExpression;
 
         return RazorVueCanonicalSlotValueKind.ValueExpression;
     }

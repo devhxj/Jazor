@@ -200,6 +200,15 @@ internal sealed partial class RazorVueExpressionEmitter
 
                 var slotName = slotDescriptor.Name;
                 var slotExpression = EmitExpression(attribute.Value!);
+                if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
+                    !IsCallableSlotValue(attribute.Value!))
+                {
+                    throw CreateAuthoringIssue(
+                        RazorVueIssueCode.SlotContextMisuse,
+                        $"Child content parameter '{attribute.Name}' on component '{GetComponentDisplayName(component)}' expects a callable template that accepts '{DescribeSlotContext(slotDescriptor)}'.",
+                        attribute);
+                }
+
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty || !IsCallableSlotExpression(attribute.Value!))
                 {
                     slotEntries.Add(slotName + ": () => " + slotExpression);
@@ -357,6 +366,28 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private static string DescribeSlotContext(VueSlotDescriptor slotDescriptor)
         => string.Join(", ", slotDescriptor.Parameters.Select(static parameter => parameter.TypeName));
+
+    private bool IsCallableSlotValue(IOperation operation)
+    {
+        if (IsCallableSlotExpression(operation))
+            return true;
+
+        return TryGetCurrentComponentSlotDescriptor(operation, out var currentSlot) &&
+               !currentSlot.Parameters.IsDefaultOrEmpty;
+    }
+
+    private bool TryGetCurrentComponentSlotDescriptor(IOperation operation, out VueSlotDescriptor slotDescriptor)
+    {
+        slotDescriptor = default!;
+        var current = Unwrap(operation);
+        if (current is not IPropertyReferenceOperation propertyReference ||
+            !IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance))
+        {
+            return false;
+        }
+
+        return _slotsByPublicName.TryGetValue(propertyReference.Property.Name, out slotDescriptor);
+    }
 
     private static bool IsRenderFragmentLike(IOperation operation)
     {

@@ -3,7 +3,7 @@
     <JazorCompile Condition="'$(JazorCompile)' == ''">true</JazorCompile>
     <JazorEmit Condition="'$(JazorEmit)' == '' and '$(OutputType)' == 'Exe'">true</JazorEmit>
     <JazorEmit Condition="'$(JazorEmit)' == '' and '$(OutputType)' != 'Exe'">false</JazorEmit>
-    <JazorRazorVueOutputMode Condition="'$(JazorRazorVueOutputMode)' == ''">legacy</JazorRazorVueOutputMode>
+    <JazorRazorVueOutputMode Condition="'$(JazorRazorVueOutputMode)' == ''">sfc</JazorRazorVueOutputMode>
     <JazorOutDir Condition="'$(JazorOutDir)' == ''">$(IntermediateOutputPath)jazor\$(TargetFramework)\modules\</JazorOutDir>
     <JazorBundle Condition="'$(JazorBundle)' == ''">false</JazorBundle>
     <JazorBundleOut Condition="'$(JazorBundleOut)' == ''">$(OutDir)jazor\app.js</JazorBundleOut>

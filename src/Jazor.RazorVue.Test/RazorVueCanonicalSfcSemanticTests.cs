@@ -314,6 +314,56 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
     }
 
+    [TestMethod]
+    public void RazorVue_CanonicalModelFactory_WithNonCallableScopedSlotAttribute_ThrowsSlotContextMisuse()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child")]
+                public class Child : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Child>(0);
+                        builder.AddAttribute(1, "ItemTemplate", "not-callable");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueCanonicalHModelFactory().Create(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "ItemTemplate");
+    }
+
     private static T AssertNode<T>(object value)
         where T : class
     {

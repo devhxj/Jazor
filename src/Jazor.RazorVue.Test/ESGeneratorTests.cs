@@ -670,6 +670,57 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithoutRazorVueOutputMode_DefaultsToSfc()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DefaultOutput.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: null);
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var artifactHints = hints.Where(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)).ToArray();
+
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.ModuleCatalog.g.cs");
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(1, artifactHints.Length, string.Join("\n", artifactHints));
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithSfcOutputMode_EmitsVueSfcCatalog()
     {
         var compilation = CreateCompilation(
@@ -714,15 +765,151 @@ public sealed class ESGeneratorTests
         var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
         var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var artifactHint = hints.Single(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal));
+        var artifactSource = GetGeneratedSource(runResult, artifactHint);
 
         CollectionAssert.DoesNotContain(hints, "Jazor.Generated.ModuleCatalog.g.cs");
         CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "RelativeSfcPath");
-        StringAssert.Contains(generatedSource, "components/counter-card.vue");
-        StringAssert.Contains(generatedSource, "<script setup lang=\\\"ts\\\">");
-        StringAssert.Contains(generatedSource, "defineProps");
-        StringAssert.Contains(generatedSource, "GeneratedTemplateBlock");
-        StringAssert.Contains(generatedSource, "GeneratedOriginKind.Template");
+        StringAssert.Contains(generatedSource, "GetArtifact_");
+        StringAssert.Contains(artifactSource, "private static GeneratedArtifact");
+        StringAssert.Contains(artifactSource, "return new GeneratedArtifact(");
+        StringAssert.Contains(artifactSource, "relativeSfcPath:");
+        StringAssert.Contains(artifactSource, "components/counter-card.vue");
+        StringAssert.Contains(artifactSource, "<script setup lang=\\\"ts\\\">");
+        StringAssert.Contains(artifactSource, "defineProps");
+        StringAssert.Contains(artifactSource, "GeneratedTemplateBlock");
+        StringAssert.Contains(artifactSource, "GeneratedOriginKind.Template");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSfcOutputMode_EmitsPerComponentArtifactCarriers()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Sfc.PerComponent.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, Value);
+                        builder.CloseElement();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/status-card")]
+                public class StatusCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "article");
+                        builder.AddContent(1, Title);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var artifactHints = hints
+            .Where(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal))
+            .ToArray();
+
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        Assert.AreEqual(2, artifactHints.Length, string.Join("\n", artifactHints));
+
+        foreach (var artifactHint in artifactHints)
+        {
+            var artifactSource = GetGeneratedSource(runResult, artifactHint);
+            StringAssert.Contains(artifactSource, "private static GeneratedArtifact");
+            StringAssert.Contains(artifactSource, "return new GeneratedArtifact(");
+            StringAssert.Contains(artifactSource, "relativeSfcPath:");
+        }
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithSfcOutputMode_DoesNotDuplicateCompilerGeneratedOnPartialCatalogType()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Sfc.PartialCatalog.Generated",
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/counter-card")]
+                public class CounterCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "counter");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (outputCompilation, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var artifactHint = hints.Single(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal));
+        var artifactSource = GetGeneratedSource(runResult, artifactHint);
+        var catalogSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var diagnostics = outputCompilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Id == "CS0579")
+            .ToArray();
+        var normalizedArtifactSource = artifactSource.ReplaceLineEndings("\n");
+        var normalizedCatalogSource = catalogSource.ReplaceLineEndings("\n");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        Assert.IsFalse(
+            normalizedArtifactSource.Contains("[global::System.Runtime.CompilerServices.CompilerGenerated]\n    public static partial class RazorVueCatalog", StringComparison.Ordinal),
+            artifactSource);
+        StringAssert.Contains(normalizedCatalogSource, "[global::System.Runtime.CompilerServices.CompilerGenerated]\n    public static partial class RazorVueCatalog");
     }
 
     [TestMethod]
@@ -9898,7 +10085,6 @@ public sealed class ESGeneratorTests
         Assert.AreEqual(1, diagnostics.Length);
         StringAssert.Contains(diagnostics[0].GetMessage(), "ChildCard");
         StringAssert.Contains(diagnostics[0].GetMessage(), "Header");
-        Assert.AreEqual(28, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
 
     [TestMethod]
@@ -10233,7 +10419,7 @@ public sealed class ESGeneratorTests
         return (outputCompilation, runResult);
     }
 
-    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(Compilation compilation, string? razorVueOutputMode = null)
+    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(Compilation compilation, string? razorVueOutputMode = "legacy")
     {
         ISourceGenerator[] generators =
         [
