@@ -7,7 +7,7 @@
 
 - 全局宿主表面（`Global.cs`）
 - Vue 运行时 authoring surface（`Vue3.cs`）
-- `Either<...>`、DOM、Web API 等核心契约
+- 命名 `[ECMAScriptUnion]` 类型、DOM、Web API 等核心契约
 
 ## Responsibilities
 
@@ -17,7 +17,7 @@
 
 ## Vue Authoring Surface
 
-`Vue3.cs` 当前提供两条组件 authoring 通道：
+`Vue3.cs` 当前提供四条组件 authoring 通道：
 
 1. `VueComponentOptions`
    - 面向无 props 的简单组件。
@@ -26,8 +26,8 @@
 2. `VueComponentOptions<TProps>`
    - 面向 typed props 的组件。
    - `TProps` 主要用于 C# 的 `Setup` / `H(...)` 强类型 authoring，不自动发明 Vue runtime `props` 选项。
-   - 运行时 `props` 合同需要显式写 `PropNames`（array-form）或 `PropOptions`（object-form validators/defaults）。
-   - 运行时 `emits` 合同需要显式写 `EmitNames`（array-form）或 `EmitOptions`（object-form validators）。
+   - 运行时 `props` 合同需要显式写 `Props`（array-form names 或 object-form validators/defaults）。
+   - 运行时 `emits` 合同需要显式写 `Emits`（array-form names 或 object-form validators）。
    - `Setup` 形状为 `VueTypedSetupCallback<TProps>`，对应 Vue 的 `setup(props, context)`.
 
 3. `VueComponentOptions<TProps, TSlots>`
@@ -42,13 +42,13 @@
    - `DefineComponent(...)` 返回 `IVueSlotComponent<TSlots>`。
    - `H(component, slots)` 可直接走 typed slot-only authoring 路径，不需要占位 props 类型。
 
-`PropOptions` / `EmitOptions` 是 object-form Vue runtime declaration surface：
+`Props` / `Emits` 是统一的 Vue runtime declaration surface：
 
 - `VuePropOptions<TValue>` 覆盖 `type`、`required`、`default`、`validator`，支持 `VuePropType.String` / `Number` / `Boolean` 等构造器值；
 - `VuePropRegistry<TValue>` 适合同一 value contract 的 string-key prop registry，异构 props 推荐声明自定义 `VueProps` record；
 - `VueEmitRegistry` 与 `VueEmitRegistry<T0...T3>` 覆盖 0 到 4 个 payload 的 validator object-form；
-- `PropNames` / `EmitNames` 仍用于简单 array-form 声明；
-- 同一个 options object 上按约定只使用 `PropOptions` 或 `PropNames` 之一、`EmitOptions` 或 `EmitNames` 之一。
+- `Props` / `Emits` 同时覆盖简单 array-form 声明与 object-form 声明；
+- array-form 直接使用 `string[]` 或 collection expression；object-form 使用 `VuePropRegistry<TValue>`、自定义 `VueProps` record、`VueEmitRegistry` 等 contract。
 
 `ECMAScript.Contract.PropsAttribute` / `ECMAScript.Contract.EmitsAttribute` 仍是 compiler 的基础绑定推导原语，但不作为外部库 authoring surface，也不再标注在 `VueComponentOptions*` 上。Vue3 public API 优先通过显式 record 成员、overload、generic、delegate 和 `Description("@#...")` 表达最终 JS，避免把历史推导行为伪装成新设计。
 
@@ -100,7 +100,7 @@
 `H(...)` 的 component authoring 现在还支持显式 slot object：
 
 - `H(tagOrComponent, singleVNodeChild)` 可直接表达单个 vnode child，不必再手动包 `IVNode[]`；
-- `H(...)` 的常用 children authoring 已切到 overload-first：`string`、`Number`、`bool`、`IVNode`、`IVNode[]` 直接用 C# 重载表达，不再依赖 `Either<...>`；
+- `H(...)` 的常用 children authoring 已切到 overload-first：`string`、`Number`、`bool`、`IVNode`、`IVNode[]` 直接用 C# 重载表达，不再依赖旧的泛型 union 包装；
 - 当目标是 `component` 时，这些 child overload 都会按 default slot authoring 收敛；编译输出会保持 `component / props / child` 左到右、单次求值，再映射成标准 Vue slot 形状；
 - 这层 default-slot sugar 不通过外部库侧 `[Jazor]` / `Op.Compile` 声明驱动，而是由编译器基于 imported `h` 与同宿主 component / props / slot 合同做内部识别；
 - 因此识别边界不是 `ECMAScript.Vue3` 精确命名空间，而是稳定 host contract；外部基础绑定只要复用同样的 host 形状，也可以获得同一 default-slot lowering；
@@ -181,7 +181,14 @@
 
 - `Global.cs`: JavaScript 全局对象与基础函数投影。
 - `Vue3.cs`: Vue 运行时 authoring 合同。
-- `internal/Either.cs`: JS union-like host contract。
+- `internal/UnionTypes.cs`: 手写 JS union-like host contract。
+- `internal/LegacyUnionMarker.cs`: 历史兼容 union marker（`IEither`），不作为新 public surface 设计入口。
+- `webidl/generate/Unions.cs`: WebIDL 生成的命名 union 产物。
+
+## Generated Boundary
+
+- `webidl/generate/`: 当前 .NET WebIDL 生成器产物，参与当前 `ECMAScript` 编译主线。
+- `generate/`: 历史遗留目录，已被 [`ECMAScript.csproj`](./ECMAScript.csproj) 排除，不参与当前编译主线。
 
 ## Read Next
 

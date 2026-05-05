@@ -846,6 +846,23 @@ public partial class SemanticWalker
 			displayName == "System.DateOnly";
 	}
 
+	private static bool IsErasedUnionProjectionProperty(IPropertySymbol property)
+	{
+		if (property.IsStatic ||
+			property.Parameters.Length != 0 ||
+			property.GetMethod is null ||
+			!property.Name.StartsWith("As", System.StringComparison.Ordinal))
+			return false;
+
+		return property.ContainingType is INamedTypeSymbol namedType &&
+			ImplementsErasedUnionContract(namedType);
+	}
+
+	private static bool ImplementsErasedUnionContract(INamedTypeSymbol type)
+	{
+		return Util.IsECMAScriptUnionType(type.OriginalDefinition);
+	}
+
 	private static bool ShouldInvokeAliasedPropertyGetter(IPropertyReferenceOperation operation, string alias)
 	{
 		if (operation.Instance is null || operation.Arguments.Length != 0 || string.IsNullOrEmpty(alias))
@@ -2184,6 +2201,9 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		// 处理属性调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		if (instance is not null && IsErasedUnionProjectionProperty(operation.Property))
+			return WithOriginIfMissing(instance, operation);
+
 		var arguments = new List<Expression>(operation.Arguments.Length);
 		foreach (var propertyArgument in operation.Arguments)
 		{

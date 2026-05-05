@@ -19,7 +19,7 @@ public interface IBufferSource
 }
 
 [ECMAScript]
-public interface IAllowSharedBufferSource
+public interface IAllowSharedBufferSource : IBufferSource
 {
 
 }
@@ -49,7 +49,7 @@ public interface IWaitableAtomicArray<T> : IAtomicArray<T>
 /// </summary>
 [ECMAScript]
 [EditorBrowsable(EditorBrowsableState.Never)]
-public interface IArrayBufferView
+public interface IArrayBufferView : IAllowSharedBufferSource
 {
 	[Description("@#buffer")]
 	ArrayBuffer Buffer { get; }
@@ -68,7 +68,7 @@ public interface IArrayBufferView
 /// </summary>
 [ECMAScript]
 [Description("@#ArrayBuffer")]
-public class ArrayBuffer : IBufferSource
+public class ArrayBuffer : IAllowSharedBufferSource
 {
 	/// <summary>
 	/// JavaScript <c>ArrayBuffer.prototype</c> object.

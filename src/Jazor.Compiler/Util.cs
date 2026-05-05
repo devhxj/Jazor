@@ -18,6 +18,7 @@ public static class Util
 {
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
+    public const string ECMAScriptUnionAttributeMetadataName = "ECMAScript.ECMAScriptUnionAttribute";
 
     private enum JsNameConfigKind
     {
@@ -275,6 +276,21 @@ public static class Util
 
     public static bool IsECMAScriptSupportMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() is ECMAScriptAttributeMetadataName or ECMAScriptModuleAttributeMetadataName;
+
+    public static bool IsECMAScriptUnionMarkerAttribute(INamedTypeSymbol? symbol)
+        => symbol?.ToDisplayString() == ECMAScriptUnionAttributeMetadataName;
+
+    public static bool IsECMAScriptUnionType(INamedTypeSymbol? symbol)
+    {
+        if (symbol is null)
+            return false;
+
+        if (symbol.GetAttributes().Any(attr => IsECMAScriptUnionMarkerAttribute(attr.AttributeClass)))
+            return true;
+
+        return symbol.AllInterfaces.Any(@interface =>
+            @interface.GetAttributes().Any(attr => IsECMAScriptUnionMarkerAttribute(attr.AttributeClass)));
+    }
 
     private static bool IsRuntimeMarkerType(ISymbol? symbol)
         => symbol?.GetAttributes().Any(attr => IsECMAScriptSupportMarkerAttribute(attr.AttributeClass)) == true;

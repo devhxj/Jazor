@@ -1,4 +1,4 @@
-﻿using PropertyKey = ECMAScript.Either<string, ECMAScript.Number, ECMAScript.Symbol>;
+using PropertyKey = ECMAScript.PropertyKey;
 
 namespace ECMAScript;
 

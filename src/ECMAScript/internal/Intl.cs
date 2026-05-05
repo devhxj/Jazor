@@ -53,12 +53,6 @@ public static class Intl
 	/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 	/// </summary>
 	[Description("@#getCanonicalLocales")]
-	public static extern string[] GetCanonicalLocales(Either<string, IEnumerable<string>> locales);
-
-	/// <summary>
-	/// Canonicalizes a single locale identifier using the JavaScript <c>Intl</c> host.
-	/// </summary>
-	[Description("@#getCanonicalLocales")]
 	public static extern string[] GetCanonicalLocales(string locales);
 
 	/// <summary>
@@ -225,8 +219,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern Collator(Either<string, IEnumerable<string>> locales);
-
 		public extern Collator(string locales);
 
 		public extern Collator(IEnumerable<string> locales);
@@ -237,23 +229,15 @@ public static class Intl
 		/// </summary>
 		public extern Collator(CollatorOptions options);
 
-		public extern Collator(Either<string, IEnumerable<string>> locales, CollatorOptions options);
-
 		public extern Collator(string locales, CollatorOptions options);
 
 		public extern Collator(IEnumerable<string> locales, CollatorOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, CollatorOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, CollatorOptions options);
@@ -410,7 +394,7 @@ public static class Intl
 		/// JavaScript accepts booleans and string modes here.
 		/// The union keeps the public host close to the runtime surface without forcing callers through CLR-only helper wrappers.
 		/// </summary>
-		[property: Description("@#useGrouping")] Either<bool, NumberFormatUseGrouping>? UseGrouping = null,
+		[property: Description("@#useGrouping")] IntlUseGrouping? UseGrouping = null,
 		[property: Description("@#signDisplay")] NumberFormatSignDisplay? SignDisplay = null,
 		[property: Description("@#minimumIntegerDigits")] Number? MinimumIntegerDigits = null,
 		[property: Description("@#minimumFractionDigits")] Number? MinimumFractionDigits = null,
@@ -437,7 +421,7 @@ public static class Intl
 		[property: Description("@#maximumFractionDigits")] Number MaximumFractionDigits,
 		[property: Description("@#minimumSignificantDigits")] Number? MinimumSignificantDigits,
 		[property: Description("@#maximumSignificantDigits")] Number? MaximumSignificantDigits,
-		[property: Description("@#useGrouping")] Either<bool, NumberFormatUseGrouping> UseGrouping,
+		[property: Description("@#useGrouping")] IntlUseGrouping UseGrouping,
 		[property: Description("@#notation")] NumberFormatNotation Notation,
 		[property: Description("@#compactDisplay")] CompactDisplay? CompactDisplay,
 		[property: Description("@#signDisplay")] NumberFormatSignDisplay SignDisplay,
@@ -461,8 +445,6 @@ public static class Intl
         /// <summary>
         /// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
         /// </summary>
-        public extern NumberFormat(Either<string, IEnumerable<string>> locales);
-
         public extern NumberFormat(string locales);
 
         public extern NumberFormat(IEnumerable<string> locales);
@@ -473,23 +455,15 @@ public static class Intl
 		/// </summary>
 		public extern NumberFormat(NumberFormatOptions options);
 
-        public extern NumberFormat(Either<string, IEnumerable<string>> locales, NumberFormatOptions options);
-
         public extern NumberFormat(string locales, NumberFormatOptions options);
 
         public extern NumberFormat(IEnumerable<string> locales, NumberFormatOptions options);
-
-        [Description("@#supportedLocalesOf")]
-        public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
         [Description("@#supportedLocalesOf")]
         public static extern string[] SupportedLocalesOf(string locales);
 
         [Description("@#supportedLocalesOf")]
         public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-        [Description("@#supportedLocalesOf")]
-        public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, NumberFormatOptions options);
 
         [Description("@#supportedLocalesOf")]
         public static extern string[] SupportedLocalesOf(string locales, NumberFormatOptions options);
@@ -511,7 +485,7 @@ public static class Intl
 		/// The union keeps the public host aligned with JavaScript's runtime coercion surface for numbers, bigints, and decimal strings.
 		/// </summary>
 		[Description("@#format")]
-		public extern string Format(Either<Number, BigInt, string> value);
+		public extern string Format(IntlNumberInput value);
 
 		/// <summary>
 		/// Returns the localized number as JavaScript part records instead of a single concatenated string.
@@ -529,7 +503,7 @@ public static class Intl
 		/// Returns the localized mathematical value as JavaScript part records instead of a single concatenated string.
 		/// </summary>
 		[Description("@#formatToParts")]
-		public extern Array<FormatPart> FormatToParts(Either<Number, BigInt, string> value);
+		public extern Array<FormatPart> FormatToParts(IntlNumberInput value);
 
 		/// <summary>
 		/// Returns a localized string representing a numeric range.
@@ -549,7 +523,7 @@ public static class Intl
 		/// The union keeps the public host aligned with JavaScript's runtime coercion surface for numbers, bigints, and decimal strings.
 		/// </summary>
 		[Description("@#formatRange")]
-		public extern string FormatRange(Either<Number, BigInt, string> start, Either<Number, BigInt, string> end);
+		public extern string FormatRange(IntlNumberInput start, IntlNumberInput end);
 
 		/// <summary>
 		/// Returns a localized numeric range as JavaScript part records instead of a single concatenated string.
@@ -567,7 +541,7 @@ public static class Intl
 		/// Returns a localized mathematical-value range as JavaScript part records instead of a single concatenated string.
 		/// </summary>
 		[Description("@#formatRangeToParts")]
-		public extern Array<RangeFormatPart> FormatRangeToParts(Either<Number, BigInt, string> start, Either<Number, BigInt, string> end);
+		public extern Array<RangeFormatPart> FormatRangeToParts(IntlNumberInput start, IntlNumberInput end);
 
         [Description("@#resolvedOptions")]
         public extern ResolvedNumberFormatOptions ResolvedOptions();
@@ -823,7 +797,7 @@ public static class Intl
 		[property: Description("@#weekday")] LongShortNarrow? Weekday = null,
 		[property: Description("@#era")] LongShortNarrow? Era = null,
 		[property: Description("@#year")] NumericTwoDigit? Year = null,
-		[property: Description("@#month")] Either<NumericTwoDigit, LongShortNarrow>? Month = null,
+		[property: Description("@#month")] IntlMonthStyle? Month = null,
 		[property: Description("@#day")] NumericTwoDigit? Day = null,
 		[property: Description("@#dayPeriod")] LongShortNarrow? DayPeriod = null,
 		[property: Description("@#hour")] NumericTwoDigit? Hour = null,
@@ -875,8 +849,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern DateTimeFormat(Either<string, IEnumerable<string>> locales);
-
 		public extern DateTimeFormat(string locales);
 
 		public extern DateTimeFormat(IEnumerable<string> locales);
@@ -887,23 +859,15 @@ public static class Intl
 		/// </summary>
 		public extern DateTimeFormat(DateTimeFormatOptions options);
 
-		public extern DateTimeFormat(Either<string, IEnumerable<string>> locales, DateTimeFormatOptions options);
-
 		public extern DateTimeFormat(string locales, DateTimeFormatOptions options);
 
 		public extern DateTimeFormat(IEnumerable<string> locales, DateTimeFormatOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, DateTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DateTimeFormatOptions options);
@@ -915,7 +879,7 @@ public static class Intl
 		public virtual extern string Format();
 
 		[Description("@#format")]
-		public virtual extern string Format(Either<Date, Number> date);
+		public virtual extern string Format(IntlDateTimeInput date);
 
 		[Description("@#format")]
 		public virtual extern string Format(Date date);
@@ -933,7 +897,7 @@ public static class Intl
 		/// Returns the formatted date as JavaScript part records instead of a single concatenated string.
 		/// </summary>
 		[Description("@#formatToParts")]
-		public virtual extern Array<FormatPart> FormatToParts(Either<Date, Number> date);
+		public virtual extern Array<FormatPart> FormatToParts(IntlDateTimeInput date);
 
 		/// <summary>
 		/// Returns the formatted date as JavaScript part records instead of a single concatenated string.
@@ -951,7 +915,7 @@ public static class Intl
 		/// Returns a localized string representing a date/time range.
 		/// </summary>
 		[Description("@#formatRange")]
-		public virtual extern string FormatRange(Either<Date, Number> startDate, Either<Date, Number> endDate);
+		public virtual extern string FormatRange(IntlDateTimeInput startDate, IntlDateTimeInput endDate);
 
 		/// <summary>
 		/// Returns a localized string representing a date/time range.
@@ -969,7 +933,7 @@ public static class Intl
 		/// Returns a localized date/time range as JavaScript part records instead of a single concatenated string.
 		/// </summary>
 		[Description("@#formatRangeToParts")]
-		public virtual extern Array<RangeFormatPart> FormatRangeToParts(Either<Date, Number> startDate, Either<Date, Number> endDate);
+		public virtual extern Array<RangeFormatPart> FormatRangeToParts(IntlDateTimeInput startDate, IntlDateTimeInput endDate);
 
 		/// <summary>
 		/// Returns a localized date/time range as JavaScript part records instead of a single concatenated string.
@@ -1083,8 +1047,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern RelativeTimeFormat(Either<string, IEnumerable<string>> locales);
-
 		public extern RelativeTimeFormat(string locales);
 
 		public extern RelativeTimeFormat(IEnumerable<string> locales);
@@ -1095,23 +1057,15 @@ public static class Intl
 		/// </summary>
 		public extern RelativeTimeFormat(RelativeTimeFormatOptions options);
 
-		public extern RelativeTimeFormat(Either<string, IEnumerable<string>> locales, RelativeTimeFormatOptions options);
-
 		public extern RelativeTimeFormat(string locales, RelativeTimeFormatOptions options);
 
 		public extern RelativeTimeFormat(IEnumerable<string> locales, RelativeTimeFormatOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, RelativeTimeFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, RelativeTimeFormatOptions options);
@@ -1179,17 +1133,17 @@ public static class Intl
 		[property: Description("@#weeksDisplay")] DurationDisplay? WeeksDisplay = null,
 		[property: Description("@#days")] LongShortNarrow? Days = null,
 		[property: Description("@#daysDisplay")] DurationDisplay? DaysDisplay = null,
-		[property: Description("@#hours")] Either<LongShortNarrow, NumericTwoDigit>? Hours = null,
+		[property: Description("@#hours")] IntlDurationTextStyle? Hours = null,
 		[property: Description("@#hoursDisplay")] DurationDisplay? HoursDisplay = null,
-		[property: Description("@#minutes")] Either<LongShortNarrow, NumericTwoDigit>? Minutes = null,
+		[property: Description("@#minutes")] IntlDurationTextStyle? Minutes = null,
 		[property: Description("@#minutesDisplay")] DurationDisplay? MinutesDisplay = null,
-		[property: Description("@#seconds")] Either<LongShortNarrow, NumericTwoDigit>? Seconds = null,
+		[property: Description("@#seconds")] IntlDurationTextStyle? Seconds = null,
 		[property: Description("@#secondsDisplay")] DurationDisplay? SecondsDisplay = null,
-		[property: Description("@#milliseconds")] Either<LongShortNarrow, DurationNumericStyle>? Milliseconds = null,
+		[property: Description("@#milliseconds")] IntlDurationFractionStyle? Milliseconds = null,
 		[property: Description("@#millisecondsDisplay")] DurationDisplay? MillisecondsDisplay = null,
-		[property: Description("@#microseconds")] Either<LongShortNarrow, DurationNumericStyle>? Microseconds = null,
+		[property: Description("@#microseconds")] IntlDurationFractionStyle? Microseconds = null,
 		[property: Description("@#microsecondsDisplay")] DurationDisplay? MicrosecondsDisplay = null,
-		[property: Description("@#nanoseconds")] Either<LongShortNarrow, DurationNumericStyle>? Nanoseconds = null,
+		[property: Description("@#nanoseconds")] IntlDurationFractionStyle? Nanoseconds = null,
 		[property: Description("@#nanosecondsDisplay")] DurationDisplay? NanosecondsDisplay = null,
 		[property: Description("@#fractionalDigits")] Number? FractionalDigits = null);
 
@@ -1209,17 +1163,17 @@ public static class Intl
 		[property: Description("@#weeksDisplay")] DurationDisplay? WeeksDisplay = null,
 		[property: Description("@#days")] LongShortNarrow? Days = null,
 		[property: Description("@#daysDisplay")] DurationDisplay? DaysDisplay = null,
-		[property: Description("@#hours")] Either<LongShortNarrow, NumericTwoDigit>? Hours = null,
+		[property: Description("@#hours")] IntlDurationTextStyle? Hours = null,
 		[property: Description("@#hoursDisplay")] DurationDisplay? HoursDisplay = null,
-		[property: Description("@#minutes")] Either<LongShortNarrow, NumericTwoDigit>? Minutes = null,
+		[property: Description("@#minutes")] IntlDurationTextStyle? Minutes = null,
 		[property: Description("@#minutesDisplay")] DurationDisplay? MinutesDisplay = null,
-		[property: Description("@#seconds")] Either<LongShortNarrow, NumericTwoDigit>? Seconds = null,
+		[property: Description("@#seconds")] IntlDurationTextStyle? Seconds = null,
 		[property: Description("@#secondsDisplay")] DurationDisplay? SecondsDisplay = null,
-		[property: Description("@#milliseconds")] Either<LongShortNarrow, DurationNumericStyle>? Milliseconds = null,
+		[property: Description("@#milliseconds")] IntlDurationFractionStyle? Milliseconds = null,
 		[property: Description("@#millisecondsDisplay")] DurationDisplay? MillisecondsDisplay = null,
-		[property: Description("@#microseconds")] Either<LongShortNarrow, DurationNumericStyle>? Microseconds = null,
+		[property: Description("@#microseconds")] IntlDurationFractionStyle? Microseconds = null,
 		[property: Description("@#microsecondsDisplay")] DurationDisplay? MicrosecondsDisplay = null,
-		[property: Description("@#nanoseconds")] Either<LongShortNarrow, DurationNumericStyle>? Nanoseconds = null,
+		[property: Description("@#nanoseconds")] IntlDurationFractionStyle? Nanoseconds = null,
 		[property: Description("@#nanosecondsDisplay")] DurationDisplay? NanosecondsDisplay = null,
 		[property: Description("@#fractionalDigits")] Number? FractionalDigits = null);
 
@@ -1274,8 +1228,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern DurationFormat(Either<string, IEnumerable<string>> locales);
-
 		public extern DurationFormat(string locales);
 
 		public extern DurationFormat(IEnumerable<string> locales);
@@ -1286,23 +1238,15 @@ public static class Intl
 		/// </summary>
 		public extern DurationFormat(DurationFormatOptions options);
 
-		public extern DurationFormat(Either<string, IEnumerable<string>> locales, DurationFormatOptions options);
-
 		public extern DurationFormat(string locales, DurationFormatOptions options);
 
 		public extern DurationFormat(IEnumerable<string> locales, DurationFormatOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, DurationFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DurationFormatOptions options);
@@ -1373,8 +1317,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern ListFormat(Either<string, IEnumerable<string>> locales);
-
 		public extern ListFormat(string locales);
 
 		public extern ListFormat(IEnumerable<string> locales);
@@ -1385,23 +1327,15 @@ public static class Intl
 		/// </summary>
 		public extern ListFormat(ListFormatOptions options);
 
-		public extern ListFormat(Either<string, IEnumerable<string>> locales, ListFormatOptions options);
-
 		public extern ListFormat(string locales, ListFormatOptions options);
 
 		public extern ListFormat(IEnumerable<string> locales, ListFormatOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, ListFormatOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, ListFormatOptions options);
@@ -1506,8 +1440,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern PluralRules(Either<string, IEnumerable<string>> locales);
-
 		public extern PluralRules(string locales);
 
 		public extern PluralRules(IEnumerable<string> locales);
@@ -1518,23 +1450,15 @@ public static class Intl
 		/// </summary>
 		public extern PluralRules(PluralRulesOptions options);
 
-		public extern PluralRules(Either<string, IEnumerable<string>> locales, PluralRulesOptions options);
-
 		public extern PluralRules(string locales, PluralRulesOptions options);
 
 		public extern PluralRules(IEnumerable<string> locales, PluralRulesOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, PluralRulesOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, PluralRulesOptions options);
@@ -1550,7 +1474,7 @@ public static class Intl
 		/// The union keeps the public host aligned with JavaScript's runtime coercion surface for numbers, bigints, and decimal strings.
 		/// </summary>
 		[Description("@#select")]
-		public extern string Select(Either<Number, BigInt, string> value);
+		public extern string Select(IntlNumberInput value);
 
 		/// <summary>
 		/// Returns the plural category for a numeric range.
@@ -1563,7 +1487,7 @@ public static class Intl
 		/// Returns the plural category for any JavaScript mathematical-value range accepted by <c>Intl.PluralRules</c>.
 		/// </summary>
 		[Description("@#selectRange")]
-		public extern string SelectRange(Either<Number, BigInt, string> start, Either<Number, BigInt, string> end);
+		public extern string SelectRange(IntlNumberInput start, IntlNumberInput end);
 
 		[Description("@#resolvedOptions")]
 		public extern ResolvedPluralRulesOptions ResolvedOptions();
@@ -1648,23 +1572,15 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern DisplayNames(Either<string, IEnumerable<string>> locales, DisplayNamesOptions options);
-
 		public extern DisplayNames(string locales, DisplayNamesOptions options);
 
 		public extern DisplayNames(IEnumerable<string> locales, DisplayNamesOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, DisplayNamesOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, DisplayNamesOptions options);
@@ -1769,8 +1685,6 @@ public static class Intl
 		/// <summary>
 		/// Locale lists use <see cref="IEnumerable{T}"/> so C# sequence families can map to the single JavaScript locale-list input.
 		/// </summary>
-		public extern Segmenter(Either<string, IEnumerable<string>> locales);
-
 		public extern Segmenter(string locales);
 
 		public extern Segmenter(IEnumerable<string> locales);
@@ -1781,23 +1695,15 @@ public static class Intl
 		/// </summary>
 		public extern Segmenter(SegmenterOptions options);
 
-		public extern Segmenter(Either<string, IEnumerable<string>> locales, SegmenterOptions options);
-
 		public extern Segmenter(string locales, SegmenterOptions options);
 
 		public extern Segmenter(IEnumerable<string> locales, SegmenterOptions options);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(IEnumerable<string> locales);
-
-		[Description("@#supportedLocalesOf")]
-		public static extern string[] SupportedLocalesOf(Either<string, IEnumerable<string>> locales, SegmenterOptions options);
 
 		[Description("@#supportedLocalesOf")]
 		public static extern string[] SupportedLocalesOf(string locales, SegmenterOptions options);
@@ -1815,4 +1721,3 @@ public static class Intl
 		public extern ResolvedSegmenterOptions ResolvedOptions();
 	}
 }
-

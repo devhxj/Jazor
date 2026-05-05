@@ -378,7 +378,7 @@ public sealed class Date
 	/// </summary>
 	[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
 	[Description("@#@@toPrimitive")]
-	public extern Either<string, Number> ToPrimitive_(string? hint = null);
+	public extern DatePrimitive ToPrimitive_(string? hint = null);
 
 	/// <summary>
 	/// Used by <c>JSON.stringify</c> to transform the date for JSON serialization.
@@ -524,4 +524,3 @@ public sealed class Date
 	[Description("@#toLocaleTimeString")]
 	public extern string ToLocaleTimeString(IEnumerable<string> locales, Intl.DateTimeFormatOptions? options = null);
 }
-

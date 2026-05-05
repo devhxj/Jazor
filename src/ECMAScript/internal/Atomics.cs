@@ -19,7 +19,7 @@ public sealed class AtomicsWaitAsyncResult
 	/// JavaScript uses strings such as <c>"ok"</c>, <c>"not-equal"</c>, or <c>"timed-out"</c>.
 	/// </summary>
 	[Description("@#value")]
-	public extern Either<string, IPromise<string>> Value { get; }
+	public extern AtomicsWaitAsyncValue Value { get; }
 }
 
 /// <summary>
