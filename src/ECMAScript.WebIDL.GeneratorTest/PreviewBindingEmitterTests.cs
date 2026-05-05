@@ -7,6 +7,357 @@ namespace ECMAScript.WebIDL.GeneratorTest;
 public sealed class PreviewBindingEmitterTests
 {
     [TestMethod]
+    public async Task EmitAsync_TypedefUnionWithSequenceBranch_EmitsNamedWrapper()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("ConstrainDOMString", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "DOMString" },
+                    { "generic": "sequence", "idlType": [ { "idlType": "DOMString" } ] },
+                    { "idlType": "ConstrainDOMStringParameters" }
+                  ]
+                }
+                """));
+
+        Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : IEither, IEnumerable<string>");
+        StringAssert.Contains(files["Unions.cs"], "public static implicit operator ConstrainDOMString(string[] value)");
+        StringAssert.Contains(files["Unions.cs"], "public static class ConstrainDOMStringCollectionBuilder");
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_TypedefPromiseOfUnion_EmitsNamedNestedWrapper()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("ClipboardItemData", """
+                {
+                  "generic": "Promise",
+                  "idlType": [
+                    {
+                      "union": true,
+                      "idlType": [
+                        { "idlType": "DOMString" },
+                        { "idlType": "Blob" }
+                      ]
+                    }
+                  ]
+                }
+                """));
+
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using ClipboardItemData = ECMAScript.PromiseResult<ECMAScript.ClipboardItemDataValue>;");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ClipboardItemDataValue : IEither");
+        Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_DictionaryUnionProperty_UsesNamedWrapperType()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Dictionary("IntersectionObserverInit", """
+                [
+                  {
+                    "type": "field",
+                    "name": "root",
+                    "idlType": {
+                      "union": true,
+                      "idlType": [
+                        { "idlType": "Element" },
+                        { "idlType": "Document" }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "field",
+                    "name": "threshold",
+                    "idlType": {
+                      "union": true,
+                      "idlType": [
+                        { "idlType": "double" },
+                        { "generic": "sequence", "idlType": [ { "idlType": "double" } ] }
+                      ]
+                    }
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#threshold\")]IntersectionObserverInitThreshold? Threshold = default");
+        Assert.IsFalse(files["Dictionaries.cs"].Contains("Either<", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : IEither, IEnumerable<double>");
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_ConstructorUnionParameter_UsesNamedWrapperType()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Interface("URLSearchParams", """
+                [
+                  {
+                    "type": "constructor",
+                    "arguments": [
+                      {
+                        "name": "init",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            {
+                              "generic": "sequence",
+                              "idlType": [
+                                {
+                                  "generic": "sequence",
+                                  "idlType": [ { "idlType": "DOMString" } ]
+                                }
+                              ]
+                            },
+                            {
+                              "generic": "record",
+                              "idlType": [
+                                { "idlType": "DOMString" },
+                                { "idlType": "DOMString" }
+                              ]
+                            },
+                            { "idlType": "DOMString" }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern URLSearchParams(URLSearchParamsInit init);");
+        Assert.IsFalse(files["Interfaces.cs"].Contains("Either<", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : IEither, IEnumerable<string[]>");
+        StringAssert.Contains(files["Unions.cs"], "public static implicit operator URLSearchParamsInit(string[][] value)");
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_OperationUnionParameterNameConflict_UsesValueSuffix()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Dictionary("EventTargetAddEventListenerOptions", "[]"),
+            Interface("EventTarget", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "addEventListener",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      {
+                        "name": "type",
+                        "idlType": { "idlType": "DOMString" },
+                        "optional": false,
+                        "variadic": false
+                      },
+                      {
+                        "name": "options",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "EventTargetAddEventListenerOptions" },
+                            { "idlType": "boolean" }
+                          ]
+                        },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void AddEventListener(string type, EventTargetAddEventListenerOptionsValue? options = default);");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct EventTargetAddEventListenerOptionsValue : IEither");
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct EventTargetAddEventListenerOptions : IEither", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_WrapperIncompatibleTypedefUnions_FallBackToEitherAliases()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("BufferSource", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "ArrayBufferView" },
+                    { "idlType": "ArrayBuffer" }
+                  ]
+                }
+                """),
+            Typedef("AlgorithmIdentifier", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "object" },
+                    { "idlType": "DOMString" }
+                  ]
+                }
+                """));
+
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using BufferSource = ECMAScript.Either<ECMAScript.IArrayBufferView, ECMAScript.ArrayBuffer>;");
+        StringAssert.Contains(files["GlobalUsings.cs"], "global using AlgorithmIdentifier = ECMAScript.Either<object, string>;");
+        Assert.IsFalse(files.ContainsKey("Unions.cs"));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_RepeatedNestedUnionShape_ReusesCanonicalInnerUnionNameInsteadOfGeneratingValueValue2()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("RoundRectRadiiValue", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "double" },
+                    { "idlType": "DOMPointInit" },
+                    {
+                      "generic": "sequence",
+                      "idlType": [
+                        {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "double" },
+                            { "idlType": "DOMPointInit" }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """),
+            Interface("CanvasRenderingContext2D", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "roundRect",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      { "name": "x", "idlType": { "idlType": "double" }, "optional": false, "variadic": false },
+                      { "name": "y", "idlType": { "idlType": "double" }, "optional": false, "variadic": false },
+                      { "name": "w", "idlType": { "idlType": "double" }, "optional": false, "variadic": false },
+                      { "name": "h", "idlType": { "idlType": "double" }, "optional": false, "variadic": false },
+                      {
+                        "name": "radii",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "double" },
+                            { "idlType": "DOMPointInit" },
+                            {
+                              "generic": "sequence",
+                              "idlType": [
+                                {
+                                  "union": true,
+                                  "idlType": [
+                                    { "idlType": "double" },
+                                    { "idlType": "DOMPointInit" }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void RoundRect(double x, double y, double w, double h, RoundRectRadii[] radii);");
+        Assert.IsFalse(files["Interfaces.cs"].Contains("RoundRectRadiiValueValue2", StringComparison.Ordinal));
+        Assert.IsFalse(files["Interfaces.cs"].Contains("RoundRectRadiiValueValue3", StringComparison.Ordinal));
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct RoundRectRadiiValueValue2 : IEither", StringComparison.Ordinal));
+        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct RoundRectRadiiValueValue3 : IEither", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_SameShapeDifferentRequestedNames_DoesNotReuseNonValueAlias()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Interface("ElementInternals", """
+                [
+                  {
+                    "type": "operation",
+                    "name": "setFormValue",
+                    "idlType": { "idlType": "undefined" },
+                    "arguments": [
+                      {
+                        "name": "value",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "File" },
+                            { "idlType": "USVString" },
+                            { "idlType": "FormData" }
+                          ]
+                        },
+                        "optional": false,
+                        "variadic": false
+                      },
+                      {
+                        "name": "state",
+                        "idlType": {
+                          "union": true,
+                          "idlType": [
+                            { "idlType": "File" },
+                            { "idlType": "USVString" },
+                            { "idlType": "FormData" }
+                          ]
+                        },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ],
+                    "special": ""
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, ElementInternalsSetFormValueState? state = default);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, File state);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, string state);");
+        StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FormData state);");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValue : IEither");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValueState : IEither");
+        Assert.IsFalse(files["Interfaces.cs"].Contains("ElementInternalsSetFormValue? state", StringComparison.Ordinal));
+        Assert.IsFalse(files["Interfaces.cs"].Contains("public extern void SetFormValue(SetFormValue", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_FormDataOptionalConstructor_EmitsDefaultableSignature()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Interface("FormData", """
+                [
+                  {
+                    "type": "constructor",
+                    "arguments": [
+                      {
+                        "name": "form",
+                        "idlType": { "idlType": "HTMLFormElement" },
+                        "optional": true,
+                        "variadic": false
+                      },
+                      {
+                        "name": "submitter",
+                        "idlType": { "idlType": "HTMLElement", "nullable": true },
+                        "default": { "type": "null" },
+                        "optional": true,
+                        "variadic": false
+                      }
+                    ]
+                  }
+                ]
+                """));
+
+        StringAssert.Contains(files["Interfaces.cs"], "public extern FormData(HTMLFormElement? form = default, HTMLElement? submitter = default);");
+    }
+
+    [TestMethod]
     public async Task EmitAsync_InheritedMethodWithDifferentReturnType_UsesNewModifier()
     {
         var output = await EmitInterfacesAsync(
@@ -428,6 +779,36 @@ public sealed class PreviewBindingEmitterTests
         }
     }
 
+    private static async Task<IReadOnlyDictionary<string, string>> EmitGeneratedFilesAsync(params WebIdlDeclarationInventory[] declarations)
+    {
+        var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
+        try
+        {
+            var options = new GeneratorOptions(
+                RepositoryRoot: tempDirectory.FullName,
+                WorkerPath: Path.Combine(tempDirectory.FullName, "worker.ts"),
+                DenoConfigPath: Path.Combine(tempDirectory.FullName, "deno.json"),
+                OutputDirectory: tempDirectory.FullName,
+                InventoryFileName: "inventory.json");
+            var emitter = new PreviewBindingEmitter(options);
+            await emitter.EmitAsync(CreateInventory(declarations), CancellationToken.None);
+
+            var previewRoot = Path.Combine(tempDirectory.FullName, "generate");
+            var files = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var file in Directory.GetFiles(previewRoot, "*.cs", SearchOption.AllDirectories))
+            {
+                var relativePath = Path.GetRelativePath(previewRoot, file).Replace('\\', '/');
+                files[relativePath] = await File.ReadAllTextAsync(file);
+            }
+
+            return files;
+        }
+        finally
+        {
+            tempDirectory.Delete(recursive: true);
+        }
+    }
+
     private static async Task<string> EmitNamespacesAsync(params WebIdlDeclarationInventory[] declarations)
     {
         var tempDirectory = Directory.CreateTempSubdirectory("webidl-preview-test-");
@@ -476,8 +857,28 @@ public sealed class PreviewBindingEmitterTests
             {
               "members": {{membersJson}}
             }
-            """);
+        """);
         return new WebIdlDeclarationInventory("interface", name, partial ? true : null, inheritance, null, null, payload.GetArray("members").Count, payload);
+    }
+
+    private static WebIdlDeclarationInventory Dictionary(string name, string membersJson, string? inheritance = null)
+    {
+        var payload = ParseObject($$"""
+            {
+              "members": {{membersJson}}
+            }
+            """);
+        return new WebIdlDeclarationInventory("dictionary", name, null, inheritance, null, null, payload.GetArray("members").Count, payload);
+    }
+
+    private static WebIdlDeclarationInventory Typedef(string name, string idlTypeJson)
+    {
+        var payload = ParseObject($$"""
+            {
+              "idlType": {{idlTypeJson}}
+            }
+            """);
+        return new WebIdlDeclarationInventory("typedef", name, null, null, null, null, null, payload);
     }
 
     private static WebIdlDeclarationInventory InterfaceMixin(string name, string membersJson)

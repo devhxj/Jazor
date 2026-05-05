@@ -204,7 +204,7 @@ public class GPUCanvasContext
     /// canvas
     /// </summary>
     [Description("@#canvas")]
-    public extern Either<HTMLCanvasElement, OffscreenCanvas> Canvas { get; }
+    public extern GPUCanvasContextCanvas Canvas { get; }
 
     /// <summary>
     /// configure

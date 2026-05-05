@@ -47,7 +47,7 @@ public record CSSParserOptions(
 [Description("@#CSSStyleSheetInit")]
 public record CSSStyleSheetInit(
     [property: Description("@#baseURL")]string? BaseURL = default,
-    [property: Description("@#media")]Either<MediaList, string>? Media = default,
+    [property: Description("@#media")]CSSStyleSheetInitMedia? Media = default,
     [property: Description("@#disabled")]bool Disabled = false);
 
 /// <summary>

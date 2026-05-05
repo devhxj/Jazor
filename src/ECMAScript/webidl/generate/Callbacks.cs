@@ -86,7 +86,7 @@ public delegate void DecodeSuccessCallback(AudioBuffer decodedData);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate void EffectCallback(double? progress, Either<Element, CSSPseudoElement> currentTarget, Animation animation);
+public delegate void EffectCallback(double? progress, ParameterCurrentTarget currentTarget, Animation animation);
 
 /// <summary>
 /// EncodedAudioChunkOutputCallback
@@ -398,7 +398,7 @@ public delegate string? OnBeforeUnloadEventHandlerNonNull(Event @event);
 [ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public delegate object OnErrorEventHandlerNonNull(Either<Event, string> @event, string source, uint lineno, uint colno, object error);
+public delegate object OnErrorEventHandlerNonNull(ParameterEvent @event, string source, uint lineno, uint colno, object error);
 
 /// <summary>
 /// PerformanceObserverCallback

@@ -229,7 +229,7 @@ public record Algorithm(
 public record AllowedBluetoothDevice(
     [property: Description("@#deviceId")]string? DeviceId = default,
     [property: Description("@#mayUseGATT")]bool MayUseGATT = default,
-    [property: Description("@#allowedServices")]Either<string, UUID[]>? AllowedServices = default,
+    [property: Description("@#allowedServices")]AllowedBluetoothDeviceAllowedServices? AllowedServices = default,
     [property: Description("@#allowedManufacturerData")]ushort[]? AllowedManufacturerData = default);
 
 /// <summary>
@@ -396,10 +396,10 @@ public record AudioConfiguration(
 [ECMAScript]
 [Description("@#AudioContextOptions")]
 public record AudioContextOptions(
-    [property: Description("@#latencyHint")]Either<AudioContextLatencyCategory, double>? LatencyHint = default,
+    [property: Description("@#latencyHint")]AudioContextOptionsLatencyHint? LatencyHint = default,
     [property: Description("@#sampleRate")]float SampleRate = default,
-    [property: Description("@#sinkId")]Either<string, AudioSinkOptions>? SinkId = default,
-    [property: Description("@#renderSizeHint")]Either<AudioContextRenderSizeCategory, uint>? RenderSizeHint = default);
+    [property: Description("@#sinkId")]AudioContextOptionsSinkId? SinkId = default,
+    [property: Description("@#renderSizeHint")]AudioContextOptionsRenderSizeHint? RenderSizeHint = default);
 
 /// <summary>
 /// AudioDataCopyToOptions
@@ -939,9 +939,9 @@ public record BaseKeyframe(
 [ECMAScript]
 [Description("@#BasePropertyIndexedKeyframe")]
 public record BasePropertyIndexedKeyframe(
-    [property: Description("@#offset")]Either<double?, double?[]>? Offset = default,
-    [property: Description("@#easing")]Either<string, string[]>? Easing = default,
-    [property: Description("@#composite")]Either<CompositeOperationOrAuto, CompositeOperationOrAuto[]>? Composite = default);
+    [property: Description("@#offset")]BasePropertyIndexedKeyframeOffset? Offset = default,
+    [property: Description("@#easing")]BasePropertyIndexedKeyframeEasing? Easing = default,
+    [property: Description("@#composite")]BasePropertyIndexedKeyframeComposite? Composite = default);
 
 /// <summary>
 /// BiddingBrowserSignals
@@ -998,7 +998,7 @@ public record BlobPropertyBag(
 [Description("@#BluetoothAdvertisingEventInit")]
 public record BluetoothAdvertisingEventInit(
     [property: Description("@#device")]BluetoothDevice? Device = default,
-    [property: Description("@#uuids")]Either<string, uint>[]? UUIDs = default,
+    [property: Description("@#uuids")]BluetoothAdvertisingEventInitUUIDs[]? UUIDs = default,
     [property: Description("@#name")]string? Name = default,
     [property: Description("@#appearance")]ushort Appearance = default,
     [property: Description("@#txPower")]sbyte TxPower = default,
@@ -1378,8 +1378,8 @@ public record ConstrainBooleanParameters(
 [ECMAScript]
 [Description("@#ConstrainDOMStringParameters")]
 public record ConstrainDOMStringParameters(
-    [property: Description("@#exact")]Either<string, string[]>? Exact = default,
-    [property: Description("@#ideal")]Either<string, string[]>? Ideal = default);
+    [property: Description("@#exact")]ConstrainDOMStringParametersExact? Exact = default,
+    [property: Description("@#ideal")]ConstrainDOMStringParametersIdeal? Ideal = default);
 
 /// <summary>
 /// ConstrainDoubleRange
@@ -1841,8 +1841,8 @@ public record DisconnectedAccount(
 [ECMAScript]
 [Description("@#DisplayMediaStreamOptions")]
 public record DisplayMediaStreamOptions(
-    [property: Description("@#video")]Either<bool, MediaTrackConstraints>? Video = default,
-    [property: Description("@#audio")]Either<bool, MediaTrackConstraints>? Audio = default,
+    [property: Description("@#video")]DisplayMediaStreamOptionsVideo? Video = default,
+    [property: Description("@#audio")]DisplayMediaStreamOptionsAudio? Audio = default,
     [property: Description("@#controller")]CaptureController? Controller = default,
     [property: Description("@#selfBrowserSurface")]SelfCapturePreferenceEnum? SelfBrowserSurface = default,
     [property: Description("@#systemAudio")]SystemAudioPreferenceEnum? SystemAudio = default,
@@ -1976,7 +1976,7 @@ public record EffectTiming(
     [property: Description("@#delay")]double Delay = default,
     [property: Description("@#endDelay")]double EndDelay = default,
     [property: Description("@#playbackRate")]double PlaybackRate = 1.0d,
-    [property: Description("@#duration")]Either<double, CSSNumericValue, string>? Duration = default)
+    [property: Description("@#duration")]EffectTimingDuration? Duration = default)
 {
     [Category("optional")]
     public extern static EffectTiming OptionalFillIterationStartIterations5(
@@ -1991,7 +1991,7 @@ public record EffectTiming(
         [Description("@#delay")]double Delay = default,
         [Description("@#endDelay")]double EndDelay = default,
         [Description("@#playbackRate")]double playbackRate = 1.0d,
-        [Description("@#duration")]Either<double, CSSNumericValue, string>? duration = default);
+        [Description("@#duration")]EffectTimingDuration? duration = default);
 }
 
 /// <summary>
@@ -2129,7 +2129,7 @@ public record ExtendableMessageEventInit(
     [property: Description("@#data")]object? Data = default,
     [property: Description("@#origin")]string? Origin = default,
     [property: Description("@#lastEventId")]string? LastEventId = default,
-    [property: Description("@#source")]Either<Client, ServiceWorker, MessagePort>? Source = default,
+    [property: Description("@#source")]ExtendableMessageEventInitSource? Source = default,
     [property: Description("@#ports")]MessagePort[]? Ports = default) : ExtendableEventInit;
 
 /// <summary>
@@ -2195,7 +2195,7 @@ public record FetchEventInit(
 [Description("@#FilePickerAcceptType")]
 public record FilePickerAcceptType(
     [property: Description("@#description")]string? Description = default,
-    [property: Description("@#accept")]Dictionary<string, Either<string, string[]>>? Accept = default);
+    [property: Description("@#accept")]Dictionary<string, FilePickerAcceptTypeAcceptValue>? Accept = default);
 
 /// <summary>
 /// FilePickerOptions
@@ -2428,9 +2428,9 @@ public record GenerateBidInterestGroup(
 public record GenerateBidOutput(
     [property: Description("@#bid")]double Bid = -1d,
     [property: Description("@#bidCurrency")]string? BidCurrency = default,
-    [property: Description("@#render")]Either<string, AdRender>? Render = default,
+    [property: Description("@#render")]GenerateBidOutputRender? Render = default,
     [property: Description("@#ad")]object? Ad = default,
-    [property: Description("@#adComponents")]Either<string, AdRender>[]? AdComponents = default,
+    [property: Description("@#adComponents")]GenerateBidOutputAdComponents[]? AdComponents = default,
     [property: Description("@#adCost")]double AdCost = default,
     [property: Description("@#modelingSignals")]double ModelingSignals = default,
     [property: Description("@#allowComponentAuction")]bool AllowComponentAuction = false);
@@ -2692,7 +2692,7 @@ public record IDBIndexParameters(
 [ECMAScript]
 [Description("@#IDBObjectStoreParameters")]
 public record IDBObjectStoreParameters(
-    [property: Description("@#keyPath")]Either<string, string[]>? KeyPath = default,
+    [property: Description("@#keyPath")]IDBObjectStoreParametersKeyPath? KeyPath = default,
     [property: Description("@#autoIncrement")]bool AutoIncrement = false);
 
 /// <summary>
@@ -3026,10 +3026,10 @@ public record IntersectionObserverEntryInit(
 [ECMAScript]
 [Description("@#IntersectionObserverInit")]
 public record IntersectionObserverInit(
-    [property: Description("@#root")]Either<Element, Document>? Root = default,
+    [property: Description("@#root")]IntersectionObserverInitRoot? Root = default,
     [property: Description("@#rootMargin")]string? RootMargin = default,
     [property: Description("@#scrollMargin")]string? ScrollMargin = default,
-    [property: Description("@#threshold")]Either<double, double[]>? Threshold = default);
+    [property: Description("@#threshold")]IntersectionObserverInitThreshold? Threshold = default);
 
 /// <summary>
 /// IsInputPendingOptions
@@ -3135,8 +3135,8 @@ public record KeyboardEventInit(
 public record KeyframeAnimationOptions(
     [property: Description("@#id")]string? Id = default,
     [property: Description("@#timeline")]AnimationTimeline? Timeline = default,
-    [property: Description("@#rangeStart")]Either<TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string>? RangeStart = default,
-    [property: Description("@#rangeEnd")]Either<TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string>? RangeEnd = default) : KeyframeEffectOptions
+    [property: Description("@#rangeStart")]KeyframeAnimationOptionsRangeStart? RangeStart = default,
+    [property: Description("@#rangeEnd")]KeyframeAnimationOptionsRangeEnd? RangeEnd = default) : KeyframeEffectOptions
 {
     [Category("optional")]
     public extern static KeyframeAnimationOptions OptionalIdTimeline(
@@ -3145,8 +3145,8 @@ public record KeyframeAnimationOptions(
 
     [Category("optional")]
     public extern static KeyframeAnimationOptions OptionalRangeStartRangeEnd(
-        [Description("@#rangeStart")]Either<TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string>? rangeStart = default,
-        [Description("@#rangeEnd")]Either<TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string>? rangeEnd = default);
+        [Description("@#rangeStart")]KeyframeAnimationOptionsRangeStart? rangeStart = default,
+        [Description("@#rangeEnd")]KeyframeAnimationOptionsRangeEnd? rangeEnd = default);
 }
 
 /// <summary>
@@ -3775,15 +3775,15 @@ public record MediaStreamAudioSourceOptions(
 [ECMAScript]
 [Description("@#MediaStreamConstraints")]
 public record MediaStreamConstraints(
-    [property: Description("@#video")]Either<bool, MediaTrackConstraints>? Video = default,
-    [property: Description("@#audio")]Either<bool, MediaTrackConstraints>? Audio = default,
+    [property: Description("@#video")]MediaStreamConstraintsVideo? Video = default,
+    [property: Description("@#audio")]MediaStreamConstraintsAudio? Audio = default,
     [property: Description("@#preferCurrentTab")]bool PreferCurrentTab = false,
     [property: Description("@#peerIdentity")]string? PeerIdentity = default)
 {
     [Category("optional")]
     public extern static MediaStreamConstraints OptionalVideoAudio(
-        [Description("@#video")]Either<bool, MediaTrackConstraints>? video = default,
-        [Description("@#audio")]Either<bool, MediaTrackConstraints>? audio = default);
+        [Description("@#video")]MediaStreamConstraintsVideo? video = default,
+        [Description("@#audio")]MediaStreamConstraintsAudio? audio = default);
 
     [Category("optional")]
     public extern static MediaStreamConstraints OptionalPreferCurrentTab(
@@ -3923,9 +3923,9 @@ public record MediaTrackConstraintSet(
     [property: Description("@#saturation")]ConstrainDouble? Saturation = default,
     [property: Description("@#sharpness")]ConstrainDouble? Sharpness = default,
     [property: Description("@#focusDistance")]ConstrainDouble? FocusDistance = default,
-    [property: Description("@#pan")]Either<bool, ConstrainDouble>? Pan = default,
-    [property: Description("@#tilt")]Either<bool, ConstrainDouble>? Tilt = default,
-    [property: Description("@#zoom")]Either<bool, ConstrainDouble>? Zoom = default,
+    [property: Description("@#pan")]MediaTrackConstraintSetPan? Pan = default,
+    [property: Description("@#tilt")]MediaTrackConstraintSetTilt? Tilt = default,
+    [property: Description("@#zoom")]MediaTrackConstraintSetZoom? Zoom = default,
     [property: Description("@#torch")]ConstrainBoolean? Torch = default,
     [property: Description("@#width")]ConstrainULong? Width = default,
     [property: Description("@#height")]ConstrainULong? Height = default,
@@ -3963,9 +3963,9 @@ public record MediaTrackConstraintSet(
         [Description("@#saturation")]ConstrainDouble? Saturation = default,
         [Description("@#sharpness")]ConstrainDouble? Sharpness = default,
         [Description("@#focusDistance")]ConstrainDouble? FocusDistance = default,
-        [Description("@#pan")]Either<bool, ConstrainDouble>? Pan = default,
-        [Description("@#tilt")]Either<bool, ConstrainDouble>? Tilt = default,
-        [Description("@#zoom")]Either<bool, ConstrainDouble>? Zoom = default,
+        [Description("@#pan")]MediaTrackConstraintSetPan? Pan = default,
+        [Description("@#tilt")]MediaTrackConstraintSetTilt? Tilt = default,
+        [Description("@#zoom")]MediaTrackConstraintSetZoom? Zoom = default,
         [Description("@#torch")]ConstrainBoolean? Torch = default);
 
     [Category("optional")]
@@ -4558,7 +4558,7 @@ public record OfflineAudioContextOptions(
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = 1,
     [property: Description("@#length")]uint Length = default,
     [property: Description("@#sampleRate")]float SampleRate = default,
-    [property: Description("@#renderSizeHint")]Either<AudioContextRenderSizeCategory, uint>? RenderSizeHint = default);
+    [property: Description("@#renderSizeHint")]OfflineAudioContextOptionsRenderSizeHint? RenderSizeHint = default);
 
 /// <summary>
 /// OpenFilePickerOptions
@@ -4579,7 +4579,7 @@ public record OptionalEffectTiming(
     [property: Description("@#fill")]FillMode? Fill = default,
     [property: Description("@#iterationStart")]double IterationStart = default,
     [property: Description("@#iterations")]double Iterations = default,
-    [property: Description("@#duration")]Either<double, string>? Duration = default,
+    [property: Description("@#duration")]OptionalEffectTimingDuration? Duration = default,
     [property: Description("@#direction")]PlaybackDirection? Direction = default,
     [property: Description("@#easing")]string? Easing = default,
     [property: Description("@#playbackRate")]double PlaybackRate = default)
@@ -4591,7 +4591,7 @@ public record OptionalEffectTiming(
         [Description("@#fill")]FillMode? Fill = default,
         [Description("@#iterationStart")]double IterationStart = default,
         [Description("@#iterations")]double Iterations = default,
-        [Description("@#duration")]Either<double, string>? Duration = default,
+        [Description("@#duration")]OptionalEffectTimingDuration? Duration = default,
         [Description("@#direction")]PlaybackDirection? Direction = default,
         [Description("@#easing")]string? Easing = default);
 
@@ -4885,9 +4885,9 @@ public record PerformanceMarkOptions(
 [Description("@#PerformanceMeasureOptions")]
 public record PerformanceMeasureOptions(
     [property: Description("@#detail")]object? Detail = default,
-    [property: Description("@#start")]Either<string, double>? Start = default,
+    [property: Description("@#start")]PerformanceMeasureOptionsStart? Start = default,
     [property: Description("@#duration")]double Duration = default,
-    [property: Description("@#end")]Either<string, double>? End = default);
+    [property: Description("@#end")]PerformanceMeasureOptionsEnd? End = default);
 
 /// <summary>
 /// PerformanceObserverCallbackOptions
@@ -5723,7 +5723,7 @@ public record RTCIceParameters(
 [ECMAScript]
 [Description("@#RTCIceServer")]
 public record RTCIceServer(
-    [property: Description("@#urls")]Either<string, string[]>? Urls = default,
+    [property: Description("@#urls")]RTCIceServerUrls? Urls = default,
     [property: Description("@#username")]string? Username = default,
     [property: Description("@#credential")]string? Credential = default);
 
@@ -7028,7 +7028,7 @@ public record TaskPriorityChangeEventInit(
 [ECMAScript]
 [Description("@#TaskSignalAnyInit")]
 public record TaskSignalAnyInit(
-    [property: Description("@#priority")]Either<TaskPriority, TaskSignal>? Priority = default);
+    [property: Description("@#priority")]TaskSignalAnyInitPriority? Priority = default);
 
 /// <summary>
 /// TextDecodeOptions
@@ -7162,7 +7162,7 @@ public record TouchInit(
 [ECMAScript]
 [Description("@#TrackEventInit")]
 public record TrackEventInit(
-    [property: Description("@#track")]Either<VideoTrack, AudioTrack, TextTrack>? Track = default) : EventInit;
+    [property: Description("@#track")]TrackEventInitTrack? Track = default) : EventInit;
 
 /// <summary>
 /// Transformer
@@ -7691,7 +7691,7 @@ public record VideoFrameInit(
 public record ViewTimelineOptions(
     [property: Description("@#subject")]Element? Subject = default,
     [property: Description("@#axis")]ScrollAxis Axis = ScrollAxis.Block,
-    [property: Description("@#inset")]Either<string, Either<CSSNumericValue, CSSKeywordValue>[]>? Inset = default);
+    [property: Description("@#inset")]ViewTimelineOptionsInsetValue? Inset = default);
 
 /// <summary>
 /// ViewportMediaStreamConstraints
@@ -7699,8 +7699,8 @@ public record ViewTimelineOptions(
 [ECMAScript]
 [Description("@#ViewportMediaStreamConstraints")]
 public record ViewportMediaStreamConstraints(
-    [property: Description("@#video")]Either<bool, MediaTrackConstraints>? Video = default,
-    [property: Description("@#audio")]Either<bool, MediaTrackConstraints>? Audio = default);
+    [property: Description("@#video")]ViewportMediaStreamConstraintsVideo? Video = default,
+    [property: Description("@#audio")]ViewportMediaStreamConstraintsAudio? Audio = default);
 
 /// <summary>
 /// WatchAdvertisementsOptions

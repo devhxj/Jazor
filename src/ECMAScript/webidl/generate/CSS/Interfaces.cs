@@ -82,7 +82,7 @@ public class CSSColorValue : CSSStyleValue
     /// </summary>
     /// <param name="cssText">cssText</param>
     [Description("@#parse")]
-    public static extern Either<CSSColorValue, CSSStyleValue> Parse(string cssText);
+    public static extern CSSColorValueParseResult Parse(string cssText);
 }
 
 /// <summary>
@@ -2248,7 +2248,7 @@ public class StylePropertyMap : StylePropertyMapReadOnly
     /// <param name="property">property</param>
     /// <param name="values">values</param>
     [Description("@#set")]
-    public extern void Set(string property, params Either<CSSStyleValue, string>[] values);
+    public extern void Set(string property, params StylePropertyMapSetValues[] values);
     
     /// <summary>
     /// set
@@ -2272,7 +2272,7 @@ public class StylePropertyMap : StylePropertyMapReadOnly
     /// <param name="property">property</param>
     /// <param name="values">values</param>
     [Description("@#append")]
-    public extern void Append(string property, params Either<CSSStyleValue, string>[] values);
+    public extern void Append(string property, params StylePropertyMapAppendValues[] values);
     
     /// <summary>
     /// append
@@ -2365,7 +2365,7 @@ public class StyleSheet
     /// ownerNode
     /// </summary>
     [Description("@#ownerNode")]
-    public extern Either<Element, ProcessingInstruction>? OwnerNode { get; }
+    public extern StyleSheetOwnerNode? OwnerNode { get; }
 
     /// <summary>
     /// parentStyleSheet
@@ -2443,7 +2443,7 @@ public class WorkletAnimation(AnimationEffect? effect, AnimationTimeline? timeli
     /// <param name="effects">effects</param>
     /// <param name="timeline">timeline</param>
     /// <param name="options">options</param>
-    public extern WorkletAnimation(string animatorName, Either<AnimationEffect, AnimationEffect[]>? effects, AnimationTimeline? timeline, object options);
+    public extern WorkletAnimation(string animatorName, WorkletAnimationEffects? effects, AnimationTimeline? timeline, object options);
 
     /// <summary>
     /// animatorName

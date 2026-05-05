@@ -2,6 +2,65 @@ using System.Text.Json;
 
 namespace ECMAScript.WebIDL.Generator;
 
+internal sealed class UnionNameContext
+{
+    private readonly string _baseName;
+    private readonly bool _useBaseNameForFirstUnion;
+    private readonly bool _preferRequestedNameForFirstUnion;
+    private int _unionCount;
+
+    public UnionNameContext(string baseName, bool useBaseNameForFirstUnion, bool preferRequestedNameForFirstUnion)
+    {
+        _baseName = baseName;
+        _useBaseNameForFirstUnion = useBaseNameForFirstUnion;
+        _preferRequestedNameForFirstUnion = preferRequestedNameForFirstUnion;
+    }
+
+    public string NextName(out bool preferRequestedName)
+    {
+        _unionCount++;
+        preferRequestedName = _unionCount == 1 && _preferRequestedNameForFirstUnion;
+        if (_baseName.EndsWith("Value", StringComparison.Ordinal))
+        {
+            return _unionCount == 1
+                ? _baseName
+                : $"{_baseName}{_unionCount}";
+        }
+
+        if (_useBaseNameForFirstUnion)
+        {
+            return _unionCount switch
+            {
+                1 => _baseName,
+                2 => $"{_baseName}Value",
+                _ => $"{_baseName}Value{_unionCount - 1}",
+            };
+        }
+
+        return _unionCount switch
+        {
+            1 => $"{_baseName}Value",
+            _ => $"{_baseName}Value{_unionCount}",
+        };
+    }
+
+    public UnionNameContext CreateSequenceElementContext()
+    {
+        const string suffix = "Value";
+        var nestedBaseName = _baseName.EndsWith(suffix, StringComparison.Ordinal)
+            ? _baseName[..^suffix.Length]
+            : _baseName;
+        return new UnionNameContext(nestedBaseName, useBaseNameForFirstUnion: true, preferRequestedNameForFirstUnion: false);
+    }
+}
+
+internal readonly record struct NamedUnionRequest(
+    string Name,
+    JsonElement IdlType,
+    string? NamespaceName,
+    bool QualifyForAlias,
+    bool PreferRequestedName);
+
 internal sealed class WebIdlTypeMapper
 {
     private static readonly HashSet<string> OptionalPrimitiveTypes =
@@ -67,15 +126,24 @@ internal sealed class WebIdlTypeMapper
     private readonly Dictionary<string, string> _typedefValueByName = new(StringComparer.Ordinal);
     private readonly HashSet<string> _enumTypeNames = new(StringComparer.Ordinal);
     private readonly HashSet<string> _dictionaryTypeNames = new(StringComparer.Ordinal);
+    public Func<NamedUnionRequest, string>? NamedUnionResolver { get; set; }
 
-    public string ToInlineType(JsonElement idlType, string? namespaceName, string defaultValue = "object")
+    public string ToInlineType(
+        JsonElement idlType,
+        string? namespaceName,
+        string defaultValue = "object",
+        UnionNameContext? unionNameContext = null)
     {
-        return ToSharpType(idlType, namespaceName, qualifyForAlias: false, defaultValue);
+        return ToSharpType(idlType, namespaceName, qualifyForAlias: false, defaultValue, unionNameContext);
     }
 
-    public string ToAliasTargetType(JsonElement idlType, string? namespaceName, string defaultValue = "object")
+    public string ToAliasTargetType(
+        JsonElement idlType,
+        string? namespaceName,
+        string defaultValue = "object",
+        UnionNameContext? unionNameContext = null)
     {
-        return ToSharpType(idlType, namespaceName, qualifyForAlias: true, defaultValue);
+        return ToSharpType(idlType, namespaceName, qualifyForAlias: true, defaultValue, unionNameContext);
     }
 
     public void RegisterAlias(string aliasName, string value)
@@ -130,7 +198,12 @@ internal sealed class WebIdlTypeMapper
         };
     }
 
-    private string ToSharpType(JsonElement idlType, string? namespaceName, bool qualifyForAlias, string defaultValue)
+    private string ToSharpType(
+        JsonElement idlType,
+        string? namespaceName,
+        bool qualifyForAlias,
+        string defaultValue,
+        UnionNameContext? unionNameContext)
     {
         var generic = idlType.GetStringOrNull("generic") ?? string.Empty;
         var nullable = idlType.GetBooleanOrNull("nullable") == true;
@@ -146,13 +219,14 @@ internal sealed class WebIdlTypeMapper
                         .Select(part => new
                         {
                             Type = part,
-                            MappedType = ToSharpType(part, namespaceName, qualifyForAlias, defaultValue),
+                            MappedType = ToSharpType(part, namespaceName, qualifyForAlias, defaultValue, unionNameContext),
                         })
                         .ToArray();
 
                     var concreteParts = parts
                         .Where(part => !IsVoidLikeType(part.Type, part.MappedType))
                         .Select(static part => part.MappedType)
+                        .Distinct(StringComparer.Ordinal)
                         .ToArray();
                     var hasVoidLikePart = parts.Length != concreteParts.Length;
                     sharpType = concreteParts.Length switch
@@ -161,6 +235,13 @@ internal sealed class WebIdlTypeMapper
                         1 when hasVoidLikePart => concreteParts[0].EndsWith("?", StringComparison.Ordinal)
                             ? concreteParts[0]
                             : $"{concreteParts[0]}?",
+                        _ when unionNameContext is not null && NamedUnionResolver is not null
+                            => NamedUnionResolver(new NamedUnionRequest(
+                                unionNameContext.NextName(out var preferRequestedName),
+                                idlType,
+                                namespaceName,
+                                qualifyForAlias,
+                                preferRequestedName)),
                         _ => $"{GetEitherTypePrefix(qualifyForAlias)}<{string.Join(", ", concreteParts)}>",
                     };
                 }
@@ -204,22 +285,27 @@ internal sealed class WebIdlTypeMapper
             }
             case "sequence":
             {
-                var subType = ToSharpType(idlType.GetArray("idlType")[0], namespaceName, qualifyForAlias, defaultValue);
+                var subType = ToSharpType(
+                    idlType.GetArray("idlType")[0],
+                    namespaceName,
+                    qualifyForAlias,
+                    defaultValue,
+                    unionNameContext?.CreateSequenceElementContext());
                 sharpType = $"{subType}[]";
                 break;
             }
             case "Promise":
             {
                 var promiseResultType = idlType.GetArray("idlType")[0];
-                var subType = ToSharpType(promiseResultType, namespaceName, qualifyForAlias, defaultValue);
+                var subType = ToSharpType(promiseResultType, namespaceName, qualifyForAlias, defaultValue, unionNameContext);
                 var prefix = qualifyForAlias ? "ECMAScript.PromiseResult" : "PromiseResult";
                 sharpType = IsVoidLikeType(promiseResultType, subType) ? prefix : $"{prefix}<{subType}>";
                 break;
             }
             case "record":
             {
-                var keyType = ToSharpType(idlType.GetArray("idlType")[0], namespaceName, qualifyForAlias, defaultValue);
-                var valueType = ToSharpType(idlType.GetArray("idlType")[1], namespaceName, qualifyForAlias, defaultValue);
+                var keyType = ToSharpType(idlType.GetArray("idlType")[0], namespaceName, qualifyForAlias, defaultValue, unionNameContext);
+                var valueType = ToSharpType(idlType.GetArray("idlType")[1], namespaceName, qualifyForAlias, defaultValue, unionNameContext);
                 sharpType = qualifyForAlias
                     ? $"System.Collections.Generic.Dictionary<{keyType}, {valueType}>"
                     : $"Dictionary<{keyType}, {valueType}>";
@@ -227,13 +313,23 @@ internal sealed class WebIdlTypeMapper
             }
             case "FrozenArray":
             {
-                var subType = ToSharpType(idlType.GetArray("idlType")[0], namespaceName, qualifyForAlias, defaultValue);
+                var subType = ToSharpType(
+                    idlType.GetArray("idlType")[0],
+                    namespaceName,
+                    qualifyForAlias,
+                    defaultValue,
+                    unionNameContext?.CreateSequenceElementContext());
                 sharpType = $"FrozenSet<{subType}>";
                 break;
             }
             case "ObservableArray":
             {
-                var subType = ToSharpType(idlType.GetArray("idlType")[0], namespaceName, qualifyForAlias, defaultValue);
+                var subType = ToSharpType(
+                    idlType.GetArray("idlType")[0],
+                    namespaceName,
+                    qualifyForAlias,
+                    defaultValue,
+                    unionNameContext?.CreateSequenceElementContext());
                 sharpType = $"ObservableCollection<{subType}>";
                 break;
             }
@@ -255,7 +351,7 @@ internal sealed class WebIdlTypeMapper
         return qualifyForAlias ? "ECMAScript.Either" : "Either";
     }
 
-    private static bool IsVoidLikeType(JsonElement idlType, string mappedType)
+    internal static bool IsVoidLikeType(JsonElement idlType, string mappedType)
     {
         if (mappedType is "void" or "undefined")
         {

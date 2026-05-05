@@ -227,7 +227,7 @@ public record GPUExtent3DDict(
 [ECMAScript]
 [Description("@#GPUExternalTextureDescriptor")]
 public record GPUExternalTextureDescriptor(
-    [property: Description("@#source")]Either<HTMLVideoElement, VideoFrame>? Source = default,
+    [property: Description("@#source")]GPUExternalTextureDescriptorSource? Source = default,
     [property: Description("@#colorSpace")]PredefinedColorSpace ColorSpace = PredefinedColorSpace.Srgb) : GPUObjectDescriptorBase;
 
 /// <summary>
@@ -329,7 +329,7 @@ public record GPUOrigin3DDict(
 [ECMAScript]
 [Description("@#GPUPipelineDescriptorBase")]
 public record GPUPipelineDescriptorBase(
-    [property: Description("@#layout")]Either<GPUPipelineLayout, GPUAutoLayoutMode>? Layout = default) : GPUObjectDescriptorBase;
+    [property: Description("@#layout")]GPUPipelineDescriptorBaseLayout? Layout = default) : GPUObjectDescriptorBase;
 
 /// <summary>
 /// GPUPipelineErrorInit
@@ -501,7 +501,7 @@ public record GPUSamplerDescriptor(
 [Description("@#GPUShaderModuleCompilationHint")]
 public record GPUShaderModuleCompilationHint(
     [property: Description("@#entryPoint")]string? EntryPoint = default,
-    [property: Description("@#layout")]Either<GPUPipelineLayout, GPUAutoLayoutMode>? Layout = default);
+    [property: Description("@#layout")]GPUShaderModuleCompilationHintLayout? Layout = default);
 
 /// <summary>
 /// GPUShaderModuleDescriptor

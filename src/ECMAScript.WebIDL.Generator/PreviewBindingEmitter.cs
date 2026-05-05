@@ -33,10 +33,15 @@ internal sealed class PreviewBindingEmitter
     private readonly Dictionary<string, IReadOnlyList<JsonElement>> _mixinMembersByKey = new(StringComparer.Ordinal);
     private readonly Dictionary<string, InterfaceCache> _interfaceCachesByKey = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string[]> _interfaceKeysByName = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, GeneratedUnionDefinition> _generatedUnionDefinitionsByQualifiedName = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, HashSet<string>> _occupiedTypeNamesByNamespace = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _resolvedUnionTypeNameByIdentity = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, List<string>> _resolvedUnionTypeNamesByShape = new(StringComparer.Ordinal);
 
     public PreviewBindingEmitter(GeneratorOptions options)
     {
         _options = options;
+        _typeMapper.NamedUnionResolver = ResolveNamedUnionType;
     }
 
     public async Task EmitAsync(WebIdlInventory inventory, CancellationToken cancellationToken)
@@ -55,9 +60,21 @@ internal sealed class PreviewBindingEmitter
         var dictionariesByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
         var interfacesByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
         var namespacesByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+        var unionsByNamespace = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
+        _generatedUnionDefinitionsByQualifiedName.Clear();
+        _occupiedTypeNamesByNamespace.Clear();
+        _resolvedUnionTypeNameByIdentity.Clear();
+        _resolvedUnionTypeNamesByShape.Clear();
 
-        foreach (var declaration in inventory.Files.SelectMany(file => file.Declarations))
+        foreach (var item in inventory.Files.SelectMany(file => file.Declarations.Select(declaration => new
+                 {
+                     file.Namespace,
+                     Declaration = declaration,
+                 })))
         {
+            var declaration = item.Declaration;
+            RegisterOccupiedDeclarationName(item.Namespace, declaration);
+
             if (declaration.Kind == "enum" && declaration.Name is not null)
             {
                 _typeMapper.RegisterEnum(WebIdlNaming.ToPascalCase(declaration.Name));
@@ -80,8 +97,15 @@ internal sealed class PreviewBindingEmitter
                 switch (declaration.Kind)
                 {
                     case "typedef":
-                        globalUsings.Add(EmitTypedef(declaration, file.Namespace));
+                    {
+                        var typedefCode = EmitTypedef(declaration, file.Namespace);
+                        if (!string.IsNullOrWhiteSpace(typedefCode))
+                        {
+                            globalUsings.Add(typedefCode);
+                        }
+
                         break;
+                    }
                     case "enum":
                         AddByNamespace(enumsByNamespace, file.Namespace, EmitEnum(declaration));
                         break;
@@ -195,6 +219,11 @@ internal sealed class PreviewBindingEmitter
             globalUsings.Add(EmitNamespaceAlias(namespaceGroup.Key.Name, namespaceName));
         }
 
+        foreach (var unionDefinition in _generatedUnionDefinitionsByQualifiedName.Values.OrderBy(static item => item.QualifiedTypeName, StringComparer.Ordinal))
+        {
+            AddByNamespace(unionsByNamespace, unionDefinition.NamespaceName, EmitUnion(unionDefinition));
+        }
+
         await File.WriteAllTextAsync(
             Path.Combine(previewRoot, "GlobalUsings.cs"),
             NormalizeLineEndings(string.Join(Environment.NewLine, globalUsings.Distinct(StringComparer.Ordinal)) + Environment.NewLine),
@@ -205,12 +234,20 @@ internal sealed class PreviewBindingEmitter
         await WriteGroupedFilesAsync(previewRoot, "Dictionaries.cs", dictionariesByNamespace, cancellationToken);
         await WriteGroupedFilesAsync(previewRoot, "Interfaces.cs", interfacesByNamespace, cancellationToken);
         await WriteGroupedFilesAsync(previewRoot, "Namespaces.cs", namespacesByNamespace, cancellationToken);
+        await WriteGroupedFilesAsync(previewRoot, "Unions.cs", unionsByNamespace, cancellationToken);
     }
 
     private string EmitTypedef(WebIdlDeclarationInventory declaration, string? namespaceName)
     {
         var name = WebIdlNaming.ToPascalCase(declaration.Name ?? throw new InvalidOperationException("Typedef name is required."));
-        var aliasTarget = _typeMapper.ToAliasTargetType(declaration.Payload.GetProperty("idlType"), namespaceName);
+        var idlType = declaration.Payload.GetProperty("idlType");
+        var aliasTarget = ResolveAliasTargetType(idlType, namespaceName, name, preferRequestedNameForFirstUnion: true);
+        if (idlType.GetBooleanOrNull("union") == true
+            && string.Equals(aliasTarget, GetQualifiedTypeName(namespaceName, name), StringComparison.Ordinal))
+        {
+            return string.Empty;
+        }
+
         var exists = _typeMapper.TryResolveAliasValue(aliasTarget, out var existingValue);
         var value = exists ? existingValue : aliasTarget;
         if (value.EndsWith("?", StringComparison.Ordinal))
@@ -443,7 +480,11 @@ internal sealed class PreviewBindingEmitter
     {
         return string.Join(", ", arguments.Select(argument =>
         {
-            var type = _typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName);
+            var argumentName = argument.GetStringOrNull("name") ?? string.Empty;
+            var type = ResolveInlineType(
+                argument.GetProperty("idlType"),
+                namespaceName,
+                CombineUnionBaseName("Parameter", WebIdlNaming.ToPascalCase(argumentName)));
             var name = WebIdlNaming.ToCamelCase(argument.GetStringOrNull("name") ?? string.Empty);
             return $"{type} {name}";
         }));
@@ -463,7 +504,7 @@ internal sealed class PreviewBindingEmitter
 
         var parameterGroups = declarations
             .Select(declaration => declaration.Payload.GetArray("members")
-                .Select(member => EmitDictionaryParameter(member, namespaceName))
+                .Select(member => EmitDictionaryParameter(member, recordName, namespaceName))
                 .ToArray())
             .ToArray();
 
@@ -525,11 +566,11 @@ internal sealed class PreviewBindingEmitter
         return builder.ToString();
     }
 
-    private DictionaryParameterEmission EmitDictionaryParameter(JsonElement member, string? namespaceName)
+    private DictionaryParameterEmission EmitDictionaryParameter(JsonElement member, string ownerName, string? namespaceName)
     {
         var memberName = member.GetStringOrNull("name") ?? throw new InvalidOperationException("Dictionary member name is required.");
         var pascalName = WebIdlNaming.ToPascalCase(memberName);
-        var type = _typeMapper.ToInlineType(member.GetProperty("idlType"), namespaceName);
+        var type = ResolveInlineType(member.GetProperty("idlType"), namespaceName, CombineUnionBaseName(ownerName, pascalName));
         var typeKey = type.EndsWith("?", StringComparison.Ordinal) ? type[..^1] : type;
         var hasDefault = member.TryGetProperty("default", out var defaultValue) && defaultValue.ValueKind != JsonValueKind.Null;
         var isEnumType = _typeMapper.IsEnumType(typeKey);
@@ -650,7 +691,7 @@ internal sealed class PreviewBindingEmitter
                 var noParameterConstructors = parentCache.Constructors.Where(static ctor => ctor.ParameterCount == 0).ToArray();
                 var childConstructors = distinctMembers
                     .Where(static member => member.GetStringOrNull("type") == "constructor")
-                    .Select(member => BuildConstructorCache(member, namespaceName))
+                    .Select(member => BuildConstructorCache(member, originalName, namespaceName))
                     .ToArray();
                 if (parentCache.Constructors.Count > 0 && noParameterConstructors.Length == 0)
                 {
@@ -838,9 +879,12 @@ internal sealed class PreviewBindingEmitter
 
     private string? EmitAttribute(JsonElement attribute, InterfaceEmissionContext context)
     {
-        var propertyType = _typeMapper.ToInlineType(attribute.GetProperty("idlType"), context.NamespaceName);
         var originalName = attribute.GetStringOrNull("name") ?? string.Empty;
         var propertyName = GetAttributePropertyName(originalName, context.OwnerName);
+        var propertyType = ResolveInlineType(
+            attribute.GetProperty("idlType"),
+            context.NamespaceName,
+            CombineUnionBaseName(context.OwnerName, propertyName));
         var inheritanceDisposition = context.EnableInheritance
             ? GetPropertyInheritanceDisposition(context, propertyName, propertyType)
             : InheritanceDisposition.None;
@@ -863,21 +907,15 @@ internal sealed class PreviewBindingEmitter
     private string EmitConstructor(JsonElement constructor, string ownerName, string? namespaceName)
     {
         var arguments = constructor.GetArray("arguments");
-        var parameters = new List<string>();
-        var comments = new List<string>();
-
-        foreach (var argument in arguments)
-        {
-            var name = argument.GetStringOrNull("name") ?? string.Empty;
-            parameters.Add($"{_typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName)} {WebIdlNaming.ToCamelCase(name)}");
-            comments.Add($"/// <param name=\"{WebIdlNaming.ToCamelCase(name)}\">{name}</param>");
-        }
+        var parameters = BuildMethodParameters(arguments, namespaceName, ownerName);
 
         return "/// <summary>\n"
             + "/// Constructor \n"
             + "/// </summary>\n"
-            + (comments.Count > 0 ? string.Join(Environment.NewLine, comments) + Environment.NewLine : string.Empty)
-            + $"public extern {ownerName}({string.Join(", ", parameters)});";
+            + (parameters.Count > 0
+                ? string.Join(Environment.NewLine, parameters.Select(static parameter => $"/// <param name=\"{parameter.CommentName}\">{parameter.OriginalName}</param>")) + Environment.NewLine
+                : string.Empty)
+            + $"public extern {ownerName}({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});";
     }
 
     private string? EmitOperation(JsonElement operation, InterfaceEmissionContext context, AccessorInfo accessorInfo)
@@ -885,7 +923,13 @@ internal sealed class PreviewBindingEmitter
         var special = operation.GetStringOrNull("special") ?? string.Empty;
         var operationName = operation.GetStringOrNull("name");
         var returnType = operation.TryGetProperty("idlType", out var operationType)
-            ? _typeMapper.ToInlineType(operationType, context.NamespaceName, "void")
+            ? ResolveInlineType(
+                operationType,
+                context.NamespaceName,
+                CombineUnionBaseName(
+                    CombineUnionBaseName(context.OwnerName, WebIdlNaming.ToPascalCase(operationName ?? special)),
+                    "Result"),
+                "void")
             : "void";
         var arguments = operation.GetArray("arguments");
 
@@ -898,7 +942,10 @@ internal sealed class PreviewBindingEmitter
             }
 
             var unnamedInheritanceModifier = unnamedDisposition == InheritanceDisposition.New ? "new " : string.Empty;
-            var unnamedParameters = BuildMethodParameters(arguments, context.NamespaceName);
+            var unnamedParameters = BuildMethodParameters(
+                arguments,
+                context.NamespaceName,
+                CombineUnionBaseName(context.OwnerName, WebIdlNaming.ToPascalCase(special)));
             return special switch
             {
                 "stringifier" => null,
@@ -918,7 +965,10 @@ internal sealed class PreviewBindingEmitter
             return null;
         }
 
-        var parameters = BuildMethodParameters(arguments, context.NamespaceName);
+        var parameters = BuildMethodParameters(
+            arguments,
+            context.NamespaceName,
+            CombineUnionBaseName(context.OwnerName, methodName));
         var isStatic = context.ForceStatic || special == "static";
         var inheritanceModifier = inheritanceDisposition == InheritanceDisposition.New ? "new " : string.Empty;
         var builder = new StringBuilder();
@@ -938,7 +988,15 @@ internal sealed class PreviewBindingEmitter
             && lastArgument.TryGetProperty("idlType", out var lastIdlType)
             && lastIdlType.GetBooleanOrNull("union") == true)
         {
-            var overloads = EmitUnionTailOverloads(operationName, methodName, returnType, isStatic, inheritanceModifier, arguments, context.NamespaceName);
+            var overloads = EmitUnionTailOverloads(
+                operationName,
+                methodName,
+                returnType,
+                isStatic,
+                inheritanceModifier,
+                arguments,
+                context.NamespaceName,
+                CombineUnionBaseName(context.OwnerName, methodName));
             if (overloads.Count > 0)
             {
                 builder.AppendLine();
@@ -957,7 +1015,7 @@ internal sealed class PreviewBindingEmitter
         string? namespaceName,
         string inheritanceModifier)
     {
-        var parameters = BuildMethodParameters(arguments, namespaceName);
+        var parameters = BuildMethodParameters(arguments, namespaceName, "Indexer");
         return accessorInfo.HasSetter
             ? $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; set; }}"
             : $"[Description(\"@#\")] {Environment.NewLine}public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; }}";
@@ -990,16 +1048,16 @@ internal sealed class PreviewBindingEmitter
     {
         var types = member.GetArray("idlType");
         var returnType = types.Count == 1
-            ? _typeMapper.ToInlineType(types[0], namespaceName)
-            : $"({_typeMapper.ToInlineType(types[0], namespaceName)}, {_typeMapper.ToInlineType(types[1], namespaceName)})";
+            ? ResolveInlineType(types[0], namespaceName, "IterableItem")
+            : $"({ResolveInlineType(types[0], namespaceName, "IterableKey")}, {ResolveInlineType(types[1], namespaceName, "IterableValue")})";
 
         return $"extern IEnumerator<{returnType}> IEnumerable<{returnType}>.GetEnumerator();{Environment.NewLine}extern IEnumerator IEnumerable.GetEnumerator();";
     }
 
     private string EmitMaplikeMember(JsonElement member, string? namespaceName)
     {
-        var keyType = _typeMapper.ToInlineType(member.GetArray("idlType")[0], namespaceName);
-        var valueType = _typeMapper.ToInlineType(member.GetArray("idlType")[1], namespaceName);
+        var keyType = ResolveInlineType(member.GetArray("idlType")[0], namespaceName, "MaplikeKey");
+        var valueType = ResolveInlineType(member.GetArray("idlType")[1], namespaceName, "MaplikeValue");
         return "#region Dictionary\n"
             + $"extern {valueType} IDictionary<{keyType}, {valueType}>.this[{keyType} key] {{ get; set; }}\n"
             + $"extern ICollection<{keyType}> IDictionary<{keyType}, {valueType}>.Keys {{ get; }}\n"
@@ -1022,7 +1080,7 @@ internal sealed class PreviewBindingEmitter
 
     private string EmitSetlikeMember(JsonElement member, string? namespaceName)
     {
-        var type = _typeMapper.ToInlineType(member.GetArray("idlType")[0], namespaceName);
+        var type = ResolveInlineType(member.GetArray("idlType")[0], namespaceName, "SetlikeItem");
         return "#region Set\n"
             + $"extern int ICollection<{type}>.Count {{ get; }}\n"
             + $"extern bool ICollection<{type}>.IsReadOnly {{ get; }}\n"
@@ -1060,25 +1118,25 @@ internal sealed class PreviewBindingEmitter
     {
         var types = member.GetArray("idlType");
         var returnType = types.Count == 1
-            ? _typeMapper.ToInlineType(types[0], namespaceName)
-            : $"({_typeMapper.ToInlineType(types[0], namespaceName)}, {_typeMapper.ToInlineType(types[1], namespaceName)})";
+            ? ResolveInlineType(types[0], namespaceName, "IterableItem")
+            : $"({ResolveInlineType(types[0], namespaceName, "IterableKey")}, {ResolveInlineType(types[1], namespaceName, "IterableValue")})";
         return $"IEnumerable<{returnType}>";
     }
 
     private string GetMaplikeInterface(JsonElement member, string? namespaceName)
     {
-        var keyType = _typeMapper.ToInlineType(member.GetArray("idlType")[0], namespaceName);
-        var valueType = _typeMapper.ToInlineType(member.GetArray("idlType")[1], namespaceName);
+        var keyType = ResolveInlineType(member.GetArray("idlType")[0], namespaceName, "MaplikeKey");
+        var valueType = ResolveInlineType(member.GetArray("idlType")[1], namespaceName, "MaplikeValue");
         return $"IDictionary<{keyType}, {valueType}>";
     }
 
     private string GetSetlikeInterface(JsonElement member, string? namespaceName)
     {
-        var type = _typeMapper.ToInlineType(member.GetArray("idlType")[0], namespaceName);
+        var type = ResolveInlineType(member.GetArray("idlType")[0], namespaceName, "SetlikeItem");
         return $"ISet<{type}>";
     }
 
-    private IReadOnlyList<MethodParameterEmission> BuildMethodParameters(IReadOnlyList<JsonElement> arguments, string? namespaceName)
+    private IReadOnlyList<MethodParameterEmission> BuildMethodParameters(IReadOnlyList<JsonElement> arguments, string? namespaceName, string ownerBaseName)
     {
         var parameters = new List<MethodParameterEmission>();
         var hasOptionalParameter = false;
@@ -1088,7 +1146,10 @@ internal sealed class PreviewBindingEmitter
             var originalName = argument.GetStringOrNull("name") ?? string.Empty;
             var name = WebIdlNaming.ToCamelCase(originalName);
             var idlType = argument.GetProperty("idlType");
-            var type = _typeMapper.ToInlineType(idlType, namespaceName);
+            var type = ResolveInlineType(
+                idlType,
+                namespaceName,
+                CombineUnionBaseName(ownerBaseName, WebIdlNaming.ToPascalCase(originalName)));
             var typeKey = type.EndsWith("?", StringComparison.Ordinal) ? type[..^1] : type;
             var isOptional = argument.GetBooleanOrNull("optional") == true;
             var isVariadic = argument.GetBooleanOrNull("variadic") == true;
@@ -1158,17 +1219,21 @@ internal sealed class PreviewBindingEmitter
         bool isStatic,
         string inheritanceModifier,
         IReadOnlyList<JsonElement> arguments,
-        string? namespaceName)
+        string? namespaceName,
+        string ownerBaseName)
     {
         var lastArgument = arguments[^1];
         var lastArgumentName = WebIdlNaming.ToCamelCase(lastArgument.GetStringOrNull("name") ?? string.Empty);
         var priorArguments = arguments.Take(arguments.Count - 1).ToArray();
-        var priorParameters = BuildMethodParameters(priorArguments, namespaceName);
+        var priorParameters = BuildMethodParameters(priorArguments, namespaceName, ownerBaseName);
         var overloads = new List<string>();
 
         foreach (var unionType in lastArgument.GetProperty("idlType").GetArray("idlType"))
         {
-            var type = _typeMapper.ToInlineType(unionType, namespaceName);
+            var type = ResolveInlineType(
+                unionType,
+                namespaceName,
+                CombineUnionBaseName(methodName, WebIdlNaming.ToPascalCase(lastArgumentName)));
             var typeKey = type.EndsWith("?", StringComparison.Ordinal) ? type[..^1] : type;
             var parameterType = _typeMapper.IsDictionaryType(typeKey) ? $"{typeKey}?" : type;
             var signatureParts = priorParameters.Select(static parameter => parameter.Signature).ToList();
@@ -1234,7 +1299,7 @@ internal sealed class PreviewBindingEmitter
             var parentKey = ResolveInterfaceKey(namespaceName, parentName);
             var constructors = effectiveMembers
                 .Where(static member => member.GetStringOrNull("type") == "constructor")
-                .Select(member => BuildConstructorCache(member, namespaceName))
+                .Select(member => BuildConstructorCache(member, group.Key.Name, namespaceName))
                 .ToArray();
             var className = WebIdlNaming.ToPascalCase(group.Key.Name);
             var properties = effectiveMembers
@@ -1379,17 +1444,25 @@ internal sealed class PreviewBindingEmitter
         }
     }
 
-    private ConstructorCache BuildConstructorCache(JsonElement constructor, string? namespaceName)
+    private ConstructorCache BuildConstructorCache(JsonElement constructor, string ownerName, string? namespaceName)
     {
         var arguments = constructor.GetArray("arguments");
         var parameterList = string.Join(", ", arguments.Select(argument =>
         {
-            var argType = _typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName);
-            var argName = WebIdlNaming.ToCamelCase(argument.GetStringOrNull("name") ?? string.Empty);
+            var originalArgName = argument.GetStringOrNull("name") ?? string.Empty;
+            var argType = ResolveInlineType(
+                argument.GetProperty("idlType"),
+                namespaceName,
+                CombineUnionBaseName(ownerName, WebIdlNaming.ToPascalCase(originalArgName)));
+            var argName = WebIdlNaming.ToCamelCase(originalArgName);
             return $"{argType} {argName}";
         }));
         var argumentList = string.Join(", ", arguments.Select(argument => WebIdlNaming.ToCamelCase(argument.GetStringOrNull("name") ?? string.Empty)));
-        var typeSignature = string.Join("@", arguments.Select(argument => _typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName)));
+        var typeSignature = string.Join("@", arguments.Select(argument =>
+        {
+            var argName = argument.GetStringOrNull("name") ?? string.Empty;
+            return GetStructuralCacheType(argument.GetProperty("idlType"), namespaceName);
+        }));
         return new ConstructorCache(arguments.Count, parameterList, argumentList, typeSignature);
     }
 
@@ -1398,7 +1471,7 @@ internal sealed class PreviewBindingEmitter
         var originalName = attribute.GetStringOrNull("name") ?? string.Empty;
         return new PropertyCache(
             GetAttributePropertyName(originalName, ownerName, className),
-            _typeMapper.ToInlineType(attribute.GetProperty("idlType"), namespaceName));
+            GetStructuralCacheType(attribute.GetProperty("idlType"), namespaceName));
     }
 
     private OperationCache BuildOperationCache(JsonElement operation, string? namespaceName)
@@ -1409,11 +1482,29 @@ internal sealed class PreviewBindingEmitter
             ? string.Empty
             : GetOperationMethodName(operationName);
         var argumentSignature = string.Join("@", operation.GetArray("arguments").Select(argument =>
-            $"{argument.GetStringOrNull("name")}:{_typeMapper.ToInlineType(argument.GetProperty("idlType"), namespaceName)}"));
+            $"{argument.GetStringOrNull("name")}:{GetStructuralCacheType(argument.GetProperty("idlType"), namespaceName)}"));
         var returnType = operation.TryGetProperty("idlType", out var operationType)
-            ? _typeMapper.ToInlineType(operationType, namespaceName, "void")
+            ? GetStructuralCacheType(operationType, namespaceName, "void")
             : "void";
         return new OperationCache(special, methodName, argumentSignature, returnType);
+    }
+
+    private string GetStructuralCacheType(JsonElement idlType, string? namespaceName, string defaultValue = "object")
+        => _typeMapper.ToInlineType(idlType, namespaceName, defaultValue);
+
+    private static string CombineUnionBaseName(string baseName, string segment)
+    {
+        if (string.IsNullOrWhiteSpace(baseName))
+        {
+            return segment;
+        }
+
+        if (string.IsNullOrWhiteSpace(segment) || baseName.EndsWith(segment, StringComparison.Ordinal))
+        {
+            return baseName;
+        }
+
+        return baseName + segment;
     }
 
     private static string GetAttributePropertyName(string originalName, string ownerName, string? className = null)
@@ -1499,6 +1590,374 @@ internal sealed class PreviewBindingEmitter
         };
     }
 
+    private string ResolveAliasTargetType(
+        JsonElement idlType,
+        string? namespaceName,
+        string unionBaseName,
+        string defaultValue = "object",
+        bool preferRequestedNameForFirstUnion = false)
+        => _typeMapper.ToAliasTargetType(idlType, namespaceName, defaultValue, CreateUnionNameContext(unionBaseName, idlType, preferRequestedNameForFirstUnion));
+
+    private string ResolveInlineType(
+        JsonElement idlType,
+        string? namespaceName,
+        string unionBaseName,
+        string defaultValue = "object",
+        bool preferRequestedNameForFirstUnion = false)
+        => _typeMapper.ToInlineType(idlType, namespaceName, defaultValue, CreateUnionNameContext(unionBaseName, idlType, preferRequestedNameForFirstUnion));
+
+    private string ResolveNamedUnionType(NamedUnionRequest request)
+    {
+        var analysis = AnalyzeUnion(request);
+        if (!analysis.CanGenerateWrapper)
+        {
+            var eitherPrefix = request.QualifyForAlias ? "ECMAScript.Either" : "Either";
+            var branchTypes = request.IdlType.GetArray("idlType")
+                .Select(part => new
+                {
+                    Part = part,
+                    Type = request.QualifyForAlias
+                        ? _typeMapper.ToAliasTargetType(part, request.NamespaceName)
+                        : _typeMapper.ToInlineType(part, request.NamespaceName)
+                })
+                .Where(item => !WebIdlTypeMapper.IsVoidLikeType(item.Part, item.Type))
+                .Select(static item => item.Type)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+            return $"{eitherPrefix}<{string.Join(", ", branchTypes)}>";
+        }
+
+        var identity = BuildUnionIdentity(request.NamespaceName, request.Name, request.IdlType);
+        if (!_resolvedUnionTypeNameByIdentity.TryGetValue(identity, out var resolvedName))
+        {
+            var shapeKey = BuildUnionShapeKey(request.NamespaceName, request.IdlType);
+            resolvedName = TryGetRelatedResolvedUnionTypeName(shapeKey, request.Name, out var existingName)
+                ? existingName
+                : GetAvailableUnionTypeName(request.NamespaceName, request.Name, analysis.Branches, request.PreferRequestedName);
+            _resolvedUnionTypeNameByIdentity[identity] = resolvedName;
+
+            if (!_resolvedUnionTypeNamesByShape.TryGetValue(shapeKey, out var names))
+            {
+                names = [];
+                _resolvedUnionTypeNamesByShape[shapeKey] = names;
+            }
+
+            if (!names.Contains(resolvedName, StringComparer.Ordinal))
+            {
+                names.Add(resolvedName);
+            }
+        }
+
+        var qualifiedTypeName = GetQualifiedTypeName(request.NamespaceName, resolvedName);
+        if (!_generatedUnionDefinitionsByQualifiedName.ContainsKey(qualifiedTypeName))
+        {
+            _generatedUnionDefinitionsByQualifiedName[qualifiedTypeName] = new GeneratedUnionDefinition(
+                resolvedName,
+                request.NamespaceName,
+                qualifiedTypeName,
+                analysis.Branches,
+                analysis.CollectionBranch,
+                analysis.CollectionElementType);
+            RegisterOccupiedTypeName(request.NamespaceName, resolvedName);
+        }
+
+        return request.QualifyForAlias ? qualifiedTypeName : resolvedName;
+    }
+
+    private UnionAnalysis AnalyzeUnion(NamedUnionRequest request)
+    {
+        var rawBranchParts = request.IdlType.GetArray("idlType");
+        var rawBranchTypes = rawBranchParts
+            .Select(part => new
+            {
+                Part = part,
+                Type = _typeMapper.ToInlineType(part, request.NamespaceName)
+            })
+            .Where(item => !WebIdlTypeMapper.IsVoidLikeType(item.Part, item.Type))
+            .GroupBy(item => item.Type, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToArray();
+        var canGenerateWrapper = rawBranchTypes.All(branch => IsWrapperCompatibleBranchType(branch.Type));
+        if (!canGenerateWrapper)
+        {
+            var fallbackBranches = rawBranchTypes
+                .Select((item, index) => new GeneratedUnionBranch(
+                    item.Type,
+                    $"As{BuildTypeMemberSuffix(item.Type)}",
+                    index + 1))
+                .ToArray();
+            var fallbackCollectionBranch = fallbackBranches.FirstOrDefault(static branch => branch.Type.EndsWith("[]", StringComparison.Ordinal));
+            return new UnionAnalysis(
+                fallbackBranches,
+                fallbackCollectionBranch,
+                fallbackCollectionBranch?.Type[..^2],
+                false);
+        }
+
+        var nestedContext = new UnionNameContext(request.Name, useBaseNameForFirstUnion: false, preferRequestedNameForFirstUnion: false);
+        var branches = rawBranchParts
+            .Select(part =>
+            {
+                var mappedType = _typeMapper.ToInlineType(part, request.NamespaceName, "object", nestedContext);
+                return new { Part = part, MappedType = mappedType };
+            })
+            .Where(item => !WebIdlTypeMapper.IsVoidLikeType(item.Part, item.MappedType))
+            .GroupBy(item => item.MappedType, StringComparer.Ordinal)
+            .Select(group => group.First())
+            .ToArray();
+
+        var branchDefinitions = branches
+            .Select((item, index) => new GeneratedUnionBranch(
+                item.MappedType,
+                $"As{BuildTypeMemberSuffix(item.MappedType)}",
+                index + 1))
+            .ToArray();
+
+        var collectionBranch = branchDefinitions.FirstOrDefault(static branch => branch.Type.EndsWith("[]", StringComparison.Ordinal));
+        var collectionElementType = collectionBranch is null
+            ? null
+            : collectionBranch.Type[..^2];
+        return new UnionAnalysis(branchDefinitions, collectionBranch, collectionElementType, canGenerateWrapper);
+    }
+
+    private string EmitUnion(GeneratedUnionDefinition union)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("/// <summary>");
+        builder.AppendLine($"/// {union.Name}");
+        builder.AppendLine("/// </summary>");
+        builder.AppendLine("[ECMAScript]");
+        builder.AppendLine("[Description(\"@#\")]");
+        if (union.CollectionElementType is not null)
+        {
+            builder.AppendLine($"[System.Runtime.CompilerServices.CollectionBuilder(typeof({union.Name}CollectionBuilder), nameof({union.Name}CollectionBuilder.Create))]");
+        }
+
+        var interfaces = new List<string> { "IEither" };
+        if (union.CollectionElementType is not null)
+        {
+            interfaces.Add($"IEnumerable<{union.CollectionElementType}>");
+        }
+
+        builder.AppendLine($"public readonly struct {union.Name} : {string.Join(", ", interfaces)}");
+        builder.AppendLine("{");
+        builder.AppendLine("    private readonly byte _kind;");
+        foreach (var branch in union.Branches)
+        {
+            builder.AppendLine($"    private readonly {ToOptionalType(branch.Type)} _value{branch.Kind};");
+        }
+
+        foreach (var branch in union.Branches)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"    private {union.Name}({branch.Type} value)");
+            builder.AppendLine("    {");
+            builder.AppendLine($"        _kind = {branch.Kind};");
+            foreach (var fieldBranch in union.Branches)
+            {
+                builder.AppendLine($"        _value{fieldBranch.Kind} = {(fieldBranch.Kind == branch.Kind ? "value" : "default")};");
+            }
+
+            builder.AppendLine("    }");
+        }
+
+        foreach (var branch in union.Branches)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"    public {ToOptionalType(branch.Type)} {branch.AccessorName} => _kind == {branch.Kind} ? _value{branch.Kind} : default;");
+        }
+
+        foreach (var branch in union.Branches)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"    public static implicit operator {union.Name}({branch.Type} value)");
+            builder.AppendLine("        => new(value);");
+        }
+
+        if (union.CollectionElementType is not null && union.CollectionBranch is not null)
+        {
+            builder.AppendLine();
+            builder.AppendLine($"    IEnumerator<{union.CollectionElementType}> IEnumerable<{union.CollectionElementType}>.GetEnumerator()");
+            builder.AppendLine($"        => ((IEnumerable<{union.CollectionElementType}>)({union.CollectionBranch.AccessorName} ?? Array.Empty<{union.CollectionElementType}>())).GetEnumerator();");
+            builder.AppendLine();
+            builder.AppendLine("    IEnumerator IEnumerable.GetEnumerator()");
+            builder.AppendLine($"        => ((IEnumerable<{union.CollectionElementType}>)this).GetEnumerator();");
+        }
+
+        builder.Append('}');
+
+        if (union.CollectionElementType is not null)
+        {
+            builder.AppendLine();
+            builder.AppendLine();
+            builder.AppendLine("[EditorBrowsable(EditorBrowsableState.Never)]");
+            builder.AppendLine($"public static class {union.Name}CollectionBuilder");
+            builder.AppendLine("{");
+            builder.AppendLine($"    public static {union.Name} Create(ReadOnlySpan<{union.CollectionElementType}> items)");
+            builder.AppendLine("        => items.ToArray();");
+            builder.Append('}');
+        }
+
+        return builder.ToString();
+    }
+
+    private static UnionNameContext CreateUnionNameContext(string baseName, JsonElement idlType, bool preferRequestedNameForFirstUnion)
+        => new(
+            WebIdlNaming.ToPascalCase(string.IsNullOrWhiteSpace(baseName) ? "Union" : baseName),
+            idlType.GetBooleanOrNull("union") == true,
+            preferRequestedNameForFirstUnion);
+
+    private static string BuildTypeMemberSuffix(string typeName)
+    {
+        var builder = new StringBuilder();
+        for (var index = 0; index < typeName.Length; index++)
+        {
+            if (index + 1 < typeName.Length && typeName[index] == '[' && typeName[index + 1] == ']')
+            {
+                builder.Append("Array");
+                index++;
+                continue;
+            }
+
+            if (!char.IsLetterOrDigit(typeName[index]))
+            {
+                continue;
+            }
+
+            var start = index;
+            while (index < typeName.Length && char.IsLetterOrDigit(typeName[index]))
+            {
+                index++;
+            }
+
+            builder.Append(WebIdlNaming.ToPascalCase(typeName[start..index]));
+            index--;
+        }
+
+        return builder.Length == 0 ? "Value" : builder.ToString();
+    }
+
+    private static string ToOptionalType(string type)
+        => type.EndsWith("?", StringComparison.Ordinal) ? type : $"{type}?";
+
+    private static string BuildUnionIdentity(string? namespaceName, string requestedName, JsonElement idlType)
+        => $"{namespaceName ?? string.Empty}|{requestedName}|{GetNormalizedJsonKey(idlType)}";
+
+    private static string BuildUnionShapeKey(string? namespaceName, JsonElement idlType)
+        => $"{namespaceName ?? string.Empty}|{GetNormalizedJsonKey(idlType)}";
+
+    private static string GetNormalizedJsonKey(JsonElement idlType)
+        => JsonSerializer.Serialize(idlType);
+
+    private bool TryGetRelatedResolvedUnionTypeName(string shapeKey, string requestedName, out string resolvedName)
+    {
+        if (_resolvedUnionTypeNamesByShape.TryGetValue(shapeKey, out var names))
+        {
+            foreach (var name in names.OrderBy(static item => item.Length))
+            {
+                if (AreRelatedUnionNames(name, requestedName))
+                {
+                    resolvedName = name;
+                    return true;
+                }
+            }
+        }
+
+        resolvedName = string.Empty;
+        return false;
+    }
+
+    private static bool AreRelatedUnionNames(string existingName, string requestedName)
+    {
+        if (string.Equals(existingName, requestedName, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        const string suffix = "Value";
+        if (requestedName.EndsWith(suffix, StringComparison.Ordinal))
+        {
+            return string.Equals(existingName, requestedName[..^suffix.Length], StringComparison.Ordinal);
+        }
+
+        return false;
+    }
+
+    private void RegisterOccupiedDeclarationName(string? namespaceName, WebIdlDeclarationInventory declaration)
+    {
+        if (!string.IsNullOrWhiteSpace(declaration.Name))
+        {
+            RegisterOccupiedTypeName(namespaceName, WebIdlNaming.ToPascalCase(declaration.Name));
+        }
+    }
+
+    private void RegisterOccupiedTypeName(string? namespaceName, string typeName)
+    {
+        var key = namespaceName ?? string.Empty;
+        if (!_occupiedTypeNamesByNamespace.TryGetValue(key, out var set))
+        {
+            set = new HashSet<string>(StringComparer.Ordinal);
+            _occupiedTypeNamesByNamespace[key] = set;
+        }
+
+        set.Add(typeName);
+    }
+
+    private string GetAvailableUnionTypeName(string? namespaceName, string requestedName, IReadOnlyList<GeneratedUnionBranch> branches, bool preferRequestedName)
+    {
+        var key = namespaceName ?? string.Empty;
+        _occupiedTypeNamesByNamespace.TryGetValue(key, out var occupiedNames);
+        occupiedNames ??= [];
+
+        var candidate = requestedName;
+        var suffix = 0;
+        while (((!preferRequestedName) || suffix > 0) && occupiedNames.Contains(candidate)
+               || branches.Any(branch => string.Equals(GetSimpleTypeName(branch.Type), candidate, StringComparison.Ordinal)))
+        {
+            suffix++;
+            candidate = suffix == 1 ? $"{requestedName}Value" : $"{requestedName}Value{suffix}";
+        }
+
+        return candidate;
+    }
+
+    private static bool IsWrapperCompatibleBranchType(string typeName)
+    {
+        var simpleTypeName = GetSimpleTypeName(typeName);
+        if (string.Equals(simpleTypeName, "object", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        return !(simpleTypeName.Length > 1
+            && simpleTypeName[0] == 'I'
+            && char.IsUpper(simpleTypeName[1]));
+    }
+
+    private static string GetSimpleTypeName(string typeName)
+    {
+        var span = typeName.AsSpan().TrimEnd('?');
+        var genericIndex = span.IndexOf('<');
+        if (genericIndex >= 0)
+        {
+            span = span[..genericIndex];
+        }
+
+        var arrayIndex = span.IndexOf('[');
+        if (arrayIndex >= 0)
+        {
+            span = span[..arrayIndex];
+        }
+
+        var lastDotIndex = span.LastIndexOf('.');
+        if (lastDotIndex >= 0)
+        {
+            span = span[(lastDotIndex + 1)..];
+        }
+
+        return span.ToString();
+    }
+
     private static AccessorInfo BuildAccessorInfo(IReadOnlyList<JsonElement> members)
     {
         return new AccessorInfo(
@@ -1551,6 +2010,25 @@ internal sealed class PreviewBindingEmitter
         string Name,
         string ArgumentSignature,
         string ReturnType);
+
+    private sealed record GeneratedUnionDefinition(
+        string Name,
+        string? NamespaceName,
+        string QualifiedTypeName,
+        IReadOnlyList<GeneratedUnionBranch> Branches,
+        GeneratedUnionBranch? CollectionBranch,
+        string? CollectionElementType);
+
+    private sealed record GeneratedUnionBranch(
+        string Type,
+        string AccessorName,
+        int Kind);
+
+    private sealed record UnionAnalysis(
+        IReadOnlyList<GeneratedUnionBranch> Branches,
+        GeneratedUnionBranch? CollectionBranch,
+        string? CollectionElementType,
+        bool CanGenerateWrapper);
 
     private enum InheritanceDisposition
     {

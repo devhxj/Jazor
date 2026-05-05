@@ -835,7 +835,7 @@ public class AudioContext : BaseAudioContext
     /// sinkId
     /// </summary>
     [Description("@#sinkId")]
-    public extern Either<string, AudioSinkInfo> SinkId { get; }
+    public extern AudioContextSinkId SinkId { get; }
 
     /// <summary>
     /// renderCapacity
@@ -878,7 +878,7 @@ public class AudioContext : BaseAudioContext
     /// </summary>
     /// <param name="sinkId">sinkId</param>
     [Description("@#setSinkId")]
-    public extern PromiseResult SetSinkId(Either<string, AudioSinkOptions> sinkId);
+    public extern PromiseResult SetSinkId(AudioContextSetSinkId sinkId);
     
     /// <summary>
     /// setSinkId
@@ -1951,7 +1951,7 @@ public class BackgroundFetchManager
     /// <param name="requests">requests</param>
     /// <param name="options">options</param>
     [Description("@#fetch")]
-    public extern PromiseResult<BackgroundFetchRegistration> Fetch(string id, Either<RequestInfo, RequestInfo[]> requests, BackgroundFetchOptions? options = default);
+    public extern PromiseResult<BackgroundFetchRegistration> Fetch(string id, BackgroundFetchManagerFetchRequests requests, BackgroundFetchOptions? options = default);
 
     /// <summary>
     /// get
@@ -3395,7 +3395,7 @@ public class BluetoothUUID
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getService")]
-    public static extern UUID GetService(Either<string, uint> name);
+    public static extern UUID GetService(BluetoothUUIDGetServiceName name);
     
     /// <summary>
     /// getService
@@ -3416,7 +3416,7 @@ public class BluetoothUUID
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getCharacteristic")]
-    public static extern UUID GetCharacteristic(Either<string, uint> name);
+    public static extern UUID GetCharacteristic(BluetoothUUIDGetCharacteristicName name);
     
     /// <summary>
     /// getCharacteristic
@@ -3437,7 +3437,7 @@ public class BluetoothUUID
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#getDescriptor")]
-    public static extern UUID GetDescriptor(Either<string, uint> name);
+    public static extern UUID GetDescriptor(BluetoothUUIDGetDescriptorName name);
     
     /// <summary>
     /// getDescriptor
@@ -3990,7 +3990,7 @@ public class CSSFontFeatureValuesMap : IDictionary<string, uint[]>
     /// <param name="featureValueName">featureValueName</param>
     /// <param name="values">values</param>
     [Description("@#set")]
-    public extern void Set(string featureValueName, Either<uint, uint[]> values);
+    public extern void Set(string featureValueName, CSSFontFeatureValuesMapSetValues values);
     
     /// <summary>
     /// set
@@ -4432,7 +4432,7 @@ public class CSSPseudoElement : EventTarget
     /// parent
     /// </summary>
     [Description("@#parent")]
-    public extern Either<Element, CSSPseudoElement> Parent { get; }
+    public extern CSSPseudoElementParent Parent { get; }
 
     /// <summary>
     /// pseudo
@@ -9134,13 +9134,13 @@ public class CanvasRenderingContext2D
     /// strokeStyle
     /// </summary>
     [Description("@#strokeStyle")]
-    public extern Either<string, CanvasGradient, CanvasPattern> StrokeStyle { get; set; }
+    public extern CanvasRenderingContext2DStrokeStyle StrokeStyle { get; set; }
     
     /// <summary>
     /// fillStyle
     /// </summary>
     [Description("@#fillStyle")]
-    public extern Either<string, CanvasGradient, CanvasPattern> FillStyle { get; set; }
+    public extern CanvasRenderingContext2DFillStyle FillStyle { get; set; }
     
     /// <summary>
     /// createLinearGradient
@@ -9664,7 +9664,7 @@ public class CanvasRenderingContext2D
     /// <param name="h">h</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]>? radii = default);
+    public extern void RoundRect(double x, double y, double w, double h, CanvasRenderingContext2DRoundRectRadiiValue? radii = default);
     
     /// <summary>
     /// roundRect
@@ -9697,7 +9697,7 @@ public class CanvasRenderingContext2D
     /// <param name="h">h para</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit>[] radii);
+    public extern void RoundRect(double x, double y, double w, double h, RoundRectRadii[] radii);
     
     /// <summary>
     /// arc
@@ -9988,7 +9988,7 @@ public class CharacterData : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#before")]
-    public extern void Before(params Either<Node, string>[] nodes);
+    public extern void Before(params CharacterDataBeforeNodes[] nodes);
     
     /// <summary>
     /// before
@@ -10009,7 +10009,7 @@ public class CharacterData : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#after")]
-    public extern void After(params Either<Node, string>[] nodes);
+    public extern void After(params CharacterDataAfterNodes[] nodes);
     
     /// <summary>
     /// after
@@ -10030,7 +10030,7 @@ public class CharacterData : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceWith")]
-    public extern void ReplaceWith(params Either<Node, string>[] nodes);
+    public extern void ReplaceWith(params CharacterDataReplaceWithNodes[] nodes);
     
     /// <summary>
     /// replaceWith
@@ -11246,7 +11246,7 @@ public class DOMMatrix : DOMMatrixReadOnly
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern DOMMatrix(Either<string, double[]> init);
+    public extern DOMMatrix(DOMMatrixInitValue init);
 
     /// <summary>
     /// fromMatrix
@@ -11380,7 +11380,7 @@ public class DOMMatrixReadOnly
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern DOMMatrixReadOnly(Either<string, double[]> init);
+    public extern DOMMatrixReadOnly(DOMMatrixReadOnlyInit init);
 
     /// <summary>
     /// fromMatrix
@@ -12682,7 +12682,7 @@ public partial class Document : Node
     /// </summary>
     /// <param name="callbackOptions">callbackOptions</param>
     [Description("@#startViewTransition")]
-    public extern ViewTransition StartViewTransition(Either<UpdateCallback, StartViewTransitionOptions>? callbackOptions = default);
+    public extern ViewTransition StartViewTransition(DocumentStartViewTransitionCallbackOptions? callbackOptions = default);
     
     /// <summary>
     /// startViewTransition
@@ -12821,7 +12821,7 @@ public partial class Document : Node
     /// <param name="localName">localName</param>
     /// <param name="options">options</param>
     [Description("@#createElement")]
-    public extern Element CreateElement(string localName, Either<string, ElementCreationOptions>? options = default);
+    public extern Element CreateElement(string localName, DocumentCreateElementOptions? options = default);
     
     /// <summary>
     /// createElement
@@ -12846,7 +12846,7 @@ public partial class Document : Node
     /// <param name="qualifiedName">qualifiedName</param>
     /// <param name="options">options</param>
     [Description("@#createElementNS")]
-    public extern Element CreateElementNS(string? @namespace, string qualifiedName, Either<string, ElementCreationOptions>? options = default);
+    public extern Element CreateElementNS(string? @namespace, string qualifiedName, DocumentCreateElementNSOptions? options = default);
     
     /// <summary>
     /// createElementNS
@@ -13553,7 +13553,7 @@ public partial class Document : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#prepend")]
-    public extern void Prepend(params Either<Node, string>[] nodes);
+    public extern void Prepend(params DocumentPrependNodes[] nodes);
     
     /// <summary>
     /// prepend
@@ -13574,7 +13574,7 @@ public partial class Document : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#append")]
-    public extern void Append(params Either<Node, string>[] nodes);
+    public extern void Append(params DocumentAppendNodes[] nodes);
     
     /// <summary>
     /// append
@@ -13595,7 +13595,7 @@ public partial class Document : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceChildren")]
-    public extern void ReplaceChildren(params Either<Node, string>[] nodes);
+    public extern void ReplaceChildren(params DocumentReplaceChildrenNodes[] nodes);
     
     /// <summary>
     /// replaceChildren
@@ -14314,7 +14314,7 @@ public class DocumentFragment : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#prepend")]
-    public extern void Prepend(params Either<Node, string>[] nodes);
+    public extern void Prepend(params DocumentFragmentPrependNodes[] nodes);
     
     /// <summary>
     /// prepend
@@ -14335,7 +14335,7 @@ public class DocumentFragment : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#append")]
-    public extern void Append(params Either<Node, string>[] nodes);
+    public extern void Append(params DocumentFragmentAppendNodes[] nodes);
     
     /// <summary>
     /// append
@@ -14356,7 +14356,7 @@ public class DocumentFragment : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceChildren")]
-    public extern void ReplaceChildren(params Either<Node, string>[] nodes);
+    public extern void ReplaceChildren(params DocumentFragmentReplaceChildrenNodes[] nodes);
     
     /// <summary>
     /// replaceChildren
@@ -14481,7 +14481,7 @@ public class DocumentType : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#before")]
-    public extern void Before(params Either<Node, string>[] nodes);
+    public extern void Before(params DocumentTypeBeforeNodes[] nodes);
     
     /// <summary>
     /// before
@@ -14502,7 +14502,7 @@ public class DocumentType : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#after")]
-    public extern void After(params Either<Node, string>[] nodes);
+    public extern void After(params DocumentTypeAfterNodes[] nodes);
     
     /// <summary>
     /// after
@@ -14523,7 +14523,7 @@ public class DocumentType : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceWith")]
-    public extern void ReplaceWith(params Either<Node, string>[] nodes);
+    public extern void ReplaceWith(params DocumentTypeReplaceWithNodes[] nodes);
     
     /// <summary>
     /// replaceWith
@@ -15212,7 +15212,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="arg">arg</param>
     [Description("@#scrollIntoView")]
-    public extern void ScrollIntoView(Either<bool, ScrollIntoViewOptions>? arg = default);
+    public extern void ScrollIntoView(ElementScrollIntoViewArg? arg = default);
     
     /// <summary>
     /// scrollIntoView
@@ -15731,7 +15731,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#prepend")]
-    public extern void Prepend(params Either<Node, string>[] nodes);
+    public extern void Prepend(params ElementPrependNodes[] nodes);
     
     /// <summary>
     /// prepend
@@ -15752,7 +15752,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#append")]
-    public extern void Append(params Either<Node, string>[] nodes);
+    public extern void Append(params ElementAppendNodes[] nodes);
     
     /// <summary>
     /// append
@@ -15773,7 +15773,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceChildren")]
-    public extern void ReplaceChildren(params Either<Node, string>[] nodes);
+    public extern void ReplaceChildren(params ElementReplaceChildrenNodes[] nodes);
     
     /// <summary>
     /// replaceChildren
@@ -15824,7 +15824,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#before")]
-    public extern void Before(params Either<Node, string>[] nodes);
+    public extern void Before(params ElementBeforeNodes[] nodes);
     
     /// <summary>
     /// before
@@ -15845,7 +15845,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#after")]
-    public extern void After(params Either<Node, string>[] nodes);
+    public extern void After(params ElementAfterNodes[] nodes);
     
     /// <summary>
     /// after
@@ -15866,7 +15866,7 @@ public partial class Element : Node
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#replaceWith")]
-    public extern void ReplaceWith(params Either<Node, string>[] nodes);
+    public extern void ReplaceWith(params ElementReplaceWithNodes[] nodes);
     
     /// <summary>
     /// replaceWith
@@ -16220,7 +16220,7 @@ public partial class Element : Node
     /// <param name="keyframes">keyframes</param>
     /// <param name="options">options</param>
     [Description("@#animate")]
-    public extern Animation Animate(object? keyframes, Either<double, KeyframeAnimationOptions>? options = default);
+    public extern Animation Animate(object? keyframes, ElementAnimateOptions? options = default);
     
     /// <summary>
     /// animate
@@ -16266,7 +16266,7 @@ public class ElementInternals
     /// <param name="value">value</param>
     /// <param name="state">state</param>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(Either<File, string, FormData>? value, Either<File, string, FormData>? state = default);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, ElementInternalsSetFormValueState? state = default);
     
     /// <summary>
     /// setFormValue
@@ -16274,7 +16274,7 @@ public class ElementInternals
     /// <param name="value">value para</param>
     /// <param name="state">state</param>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(Either<File, string, FormData>? value, File state);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, File state);
     
     /// <summary>
     /// setFormValue
@@ -16282,7 +16282,7 @@ public class ElementInternals
     /// <param name="value">value para</param>
     /// <param name="state">state</param>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(Either<File, string, FormData>? value, string state);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, string state);
     
     /// <summary>
     /// setFormValue
@@ -16290,7 +16290,7 @@ public class ElementInternals
     /// <param name="value">value para</param>
     /// <param name="state">state</param>
     [Description("@#setFormValue")]
-    public extern void SetFormValue(Either<File, string, FormData>? value, FormData state);
+    public extern void SetFormValue(ElementInternalsSetFormValue? value, FormData state);
 
     /// <summary>
     /// form
@@ -17064,7 +17064,7 @@ public class EventTarget
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
     [Description("@#addEventListener")]
-    public extern void AddEventListener(string type, EventListener? callback, Either<AddEventListenerOptions, bool>? options = default);
+    public extern void AddEventListener(string type, EventListener? callback, EventTargetAddEventListenerOptions? options = default);
     
     /// <summary>
     /// addEventListener
@@ -17091,7 +17091,7 @@ public class EventTarget
     /// <param name="callback">callback</param>
     /// <param name="options">options</param>
     [Description("@#removeEventListener")]
-    public extern void RemoveEventListener(string type, EventListener? callback, Either<EventListenerOptions, bool>? options = default);
+    public extern void RemoveEventListener(string type, EventListener? callback, EventTargetRemoveEventListenerOptions? options = default);
     
     /// <summary>
     /// removeEventListener
@@ -17204,7 +17204,7 @@ public class ExtendableMessageEvent(string type, ExtendableEventInit eventInitDi
     /// source
     /// </summary>
     [Description("@#source")]
-    public extern Either<Client, ServiceWorker, MessagePort>? Source { get; }
+    public extern ExtendableMessageEventSource? Source { get; }
 
     /// <summary>
     /// ports
@@ -17569,7 +17569,7 @@ public class FileReader : EventTarget
     /// result
     /// </summary>
     [Description("@#result")]
-    public extern Either<string, ArrayBuffer>? Result { get; }
+    public extern FileReaderResult? Result { get; }
 
     /// <summary>
     /// error
@@ -18068,7 +18068,7 @@ public partial class FontFace
     /// <param name="family">family</param>
     /// <param name="source">source</param>
     /// <param name="descriptors">descriptors</param>
-    public extern FontFace(string family, Either<string, BinaryData> source, FontFaceDescriptors descriptors);
+    public extern FontFace(string family, FontFaceSourceValue source, FontFaceDescriptors descriptors);
 
     /// <summary>
     /// family
@@ -18553,7 +18553,7 @@ public class FormData : IEnumerable<(string, FormDataEntryValue)>
     /// </summary>
     /// <param name="form">form</param>
     /// <param name="submitter">submitter</param>
-    public extern FormData(HTMLFormElement form, HTMLElement? submitter);
+    public extern FormData(HTMLFormElement? form = default, HTMLElement? submitter = default);
 
     /// <summary>
     /// append
@@ -19153,7 +19153,7 @@ public class GroupEffect
     /// </summary>
     /// <param name="children">children</param>
     /// <param name="timing">timing</param>
-    public extern GroupEffect(AnimationEffect[]? children, Either<double, EffectTiming> timing);
+    public extern GroupEffect(AnimationEffect[]? children, GroupEffectTiming timing);
 
     /// <summary>
     /// children
@@ -19419,14 +19419,14 @@ public class HTMLAllCollection
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#namedItem")]
-    public extern Either<HTMLCollection, Element>? NamedItem(string name);
+    public extern HTMLAllCollectionNamedItemResult? NamedItem(string name);
 
     /// <summary>
     /// item
     /// </summary>
     /// <param name="nameOrIndex">nameOrIndex</param>
     [Description("@#item")]
-    public extern Either<HTMLCollection, Element>? GetItem(string? nameOrIndex = default);
+    public extern HTMLAllCollectionItemResult? GetItem(string? nameOrIndex = default);
 }
 
 /// <summary>
@@ -20450,7 +20450,7 @@ public partial class HTMLElement : Element
     /// hidden
     /// </summary>
     [Description("@#hidden")]
-    public extern Either<bool, double, string>? Hidden { get; set; }
+    public extern HTMLElementHidden? Hidden { get; set; }
 
     /// <summary>
     /// inert
@@ -21438,7 +21438,7 @@ public class HTMLFormControlsCollection : HTMLCollection
     /// </summary>
     /// <param name="name">name</param>
     [Description("@#namedItem")]
-    public new extern Either<RadioNodeList, Element>? NamedItem(string name);
+    public new extern HTMLFormControlsCollectionNamedItemResult? NamedItem(string name);
 }
 
 /// <summary>
@@ -21535,7 +21535,7 @@ public class HTMLFormElement : HTMLElement
     public extern Element this[uint index] { get; }
 
     [Description("@#")] 
-    public extern Either<RadioNodeList, Element> this[string name] { get; }
+    public extern HTMLFormElementResult this[string name] { get; }
 
     /// <summary>
     /// submit
@@ -23748,7 +23748,7 @@ public class HTMLOptionsCollection : HTMLCollection
     /// <param name="element">element</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, Either<HTMLElement, int>? before = default);
+    public extern void Add(HTMLOptionsCollectionAddElement element, HTMLOptionsCollectionAddBefore? before = default);
     
     /// <summary>
     /// add
@@ -23756,7 +23756,7 @@ public class HTMLOptionsCollection : HTMLCollection
     /// <param name="element">element para</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, HTMLElement before);
+    public extern void Add(HTMLOptionsCollectionAddElement element, HTMLElement before);
     
     /// <summary>
     /// add
@@ -23764,7 +23764,7 @@ public class HTMLOptionsCollection : HTMLCollection
     /// <param name="element">element para</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, int before);
+    public extern void Add(HTMLOptionsCollectionAddElement element, int before);
 
     /// <summary>
     /// remove
@@ -24272,7 +24272,7 @@ public class HTMLSelectElement : HTMLElement
     /// <param name="element">element</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, Either<HTMLElement, int>? before = default);
+    public extern void Add(HTMLSelectElementAddElement element, HTMLSelectElementAddBefore? before = default);
     
     /// <summary>
     /// add
@@ -24280,7 +24280,7 @@ public class HTMLSelectElement : HTMLElement
     /// <param name="element">element para</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, HTMLElement before);
+    public extern void Add(HTMLSelectElementAddElement element, HTMLElement before);
     
     /// <summary>
     /// add
@@ -24288,7 +24288,7 @@ public class HTMLSelectElement : HTMLElement
     /// <param name="element">element para</param>
     /// <param name="before">before</param>
     [Description("@#add")]
-    public extern void Add(Either<HTMLOptionElement, HTMLOptGroupElement> element, int before);
+    public extern void Add(HTMLSelectElementAddElement element, int before);
 
     /// <summary>
     /// remove
@@ -24402,7 +24402,7 @@ public class HTMLSlotElement : HTMLElement
     /// </summary>
     /// <param name="nodes">nodes</param>
     [Description("@#assign")]
-    public extern void Assign(params Either<Element, Text>[] nodes);
+    public extern void Assign(params HTMLSlotElementAssignNodes[] nodes);
     
     /// <summary>
     /// assign
@@ -25744,7 +25744,7 @@ public class IDBDatabase : EventTarget
     /// <param name="mode">mode</param>
     /// <param name="options">options</param>
     [Description("@#transaction")]
-    public extern IDBTransaction Transaction(Either<string, string[]> storeNames, IDBTransactionMode mode = IDBTransactionMode.Readonly, IDBTransactionOptions? options = default);
+    public extern IDBTransaction Transaction(IDBDatabaseTransactionStoreNames storeNames, IDBTransactionMode mode = IDBTransactionMode.Readonly, IDBTransactionOptions? options = default);
 
     /// <summary>
     /// close
@@ -26125,7 +26125,7 @@ public class IDBObjectStore
     /// <param name="keyPath">keyPath</param>
     /// <param name="options">options</param>
     [Description("@#createIndex")]
-    public extern IDBIndex CreateIndex(string name, Either<string, string[]> keyPath, IDBIndexParameters? options = default);
+    public extern IDBIndex CreateIndex(string name, IDBObjectStoreCreateIndexKeyPath keyPath, IDBIndexParameters? options = default);
 
     /// <summary>
     /// deleteIndex
@@ -26480,7 +26480,7 @@ public class ImageBitmapRenderingContext
     /// canvas
     /// </summary>
     [Description("@#canvas")]
-    public extern Either<HTMLCanvasElement, OffscreenCanvas> Canvas { get; }
+    public extern ImageBitmapRenderingContextCanvas Canvas { get; }
 
     /// <summary>
     /// transferFromImageBitmap
@@ -26855,7 +26855,7 @@ public class InstallEvent(string type, ExtendableEventInit eventInitDict) : Exte
     /// </summary>
     /// <param name="rules">rules</param>
     [Description("@#addRoutes")]
-    public extern PromiseResult AddRoutes(Either<RouterRule, RouterRule[]> rules);
+    public extern PromiseResult AddRoutes(InstallEventAddRoutesRules rules);
     
     /// <summary>
     /// addRoutes
@@ -26982,7 +26982,7 @@ public class IntersectionObserver
     /// root
     /// </summary>
     [Description("@#root")]
-    public extern Either<Element, Document>? Root { get; }
+    public extern IntersectionObserverRoot? Root { get; }
 
     /// <summary>
     /// rootMargin
@@ -27359,7 +27359,7 @@ public partial class KeyframeEffect : AnimationEffect
     /// <param name="target">target</param>
     /// <param name="keyframes">keyframes</param>
     /// <param name="options">options</param>
-    public extern KeyframeEffect(Element? target, object? keyframes, Either<double, KeyframeEffectOptions> options);
+    public extern KeyframeEffect(Element? target, object? keyframes, KeyframeEffectOptionsValue options);
 
     /// <summary>
     /// Constructor 
@@ -28703,7 +28703,7 @@ public partial class MLGraphBuilder
     /// <param name="splits">splits</param>
     /// <param name="options">options</param>
     [Description("@#split")]
-    public extern MLOperand[] Split(MLOperand input, Either<uint, uint[]> splits, MLSplitOptions? options = default);
+    public extern MLOperand[] Split(MLOperand input, MLGraphBuilderSplitSplits splits, MLSplitOptions? options = default);
 
     /// <summary>
     /// tanh
@@ -32132,7 +32132,7 @@ public partial class Navigator
     /// </summary>
     /// <param name="config">config</param>
     [Description("@#runAdAuction")]
-    public extern PromiseResult<Either<string, FencedFrameConfig>?> RunAdAuction(AuctionAdConfig config);
+    public extern PromiseResult<NavigatorRunAdAuctionResultValue?> RunAdAuction(AuctionAdConfig config);
 
     /// <summary>
     /// createAuctionNonce
@@ -33763,13 +33763,13 @@ public class OffscreenCanvasRenderingContext2D
     /// strokeStyle
     /// </summary>
     [Description("@#strokeStyle")]
-    public extern Either<string, CanvasGradient, CanvasPattern> StrokeStyle { get; set; }
+    public extern OffscreenCanvasRenderingContext2DStrokeStyle StrokeStyle { get; set; }
     
     /// <summary>
     /// fillStyle
     /// </summary>
     [Description("@#fillStyle")]
-    public extern Either<string, CanvasGradient, CanvasPattern> FillStyle { get; set; }
+    public extern OffscreenCanvasRenderingContext2DFillStyle FillStyle { get; set; }
     
     /// <summary>
     /// createLinearGradient
@@ -34263,7 +34263,7 @@ public class OffscreenCanvasRenderingContext2D
     /// <param name="h">h</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]>? radii = default);
+    public extern void RoundRect(double x, double y, double w, double h, OffscreenCanvasRenderingContext2DRoundRectRadiiValue? radii = default);
     
     /// <summary>
     /// roundRect
@@ -34296,7 +34296,7 @@ public class OffscreenCanvasRenderingContext2D
     /// <param name="h">h para</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit>[] radii);
+    public extern void RoundRect(double x, double y, double w, double h, RoundRectRadii[] radii);
     
     /// <summary>
     /// arc
@@ -34645,7 +34645,7 @@ public class Path2D
     /// Constructor 
     /// </summary>
     /// <param name="path">path</param>
-    public extern Path2D(Either<Path2D, string> path);
+    public extern Path2D(Path2DPath path);
 
     /// <summary>
     /// addPath
@@ -34730,7 +34730,7 @@ public class Path2D
     /// <param name="h">h</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit, Either<double, DOMPointInit>[]>? radii = default);
+    public extern void RoundRect(double x, double y, double w, double h, Path2DRoundRectRadiiValue? radii = default);
     
     /// <summary>
     /// roundRect
@@ -34763,7 +34763,7 @@ public class Path2D
     /// <param name="h">h para</param>
     /// <param name="radii">radii</param>
     [Description("@#roundRect")]
-    public extern void RoundRect(double x, double y, double w, double h, Either<double, DOMPointInit>[] radii);
+    public extern void RoundRect(double x, double y, double w, double h, RoundRectRadii[] radii);
     
     /// <summary>
     /// arc
@@ -35178,7 +35178,7 @@ public partial class Performance : EventTarget
     /// <param name="startOrMeasureOptions">startOrMeasureOptions</param>
     /// <param name="endMark">endMark</param>
     [Description("@#measure")]
-    public extern PerformanceMeasure Measure(string measureName, Either<string, PerformanceMeasureOptions>? startOrMeasureOptions = default, string? endMark = default);
+    public extern PerformanceMeasure Measure(string measureName, PerformanceMeasureStartOrMeasureOptions? startOrMeasureOptions = default, string? endMark = default);
 
     /// <summary>
     /// clearMeasures
@@ -38234,7 +38234,7 @@ public partial class RTCPeerConnection : EventTarget
     /// <param name="trackOrKind">trackOrKind</param>
     /// <param name="init">init</param>
     [Description("@#addTransceiver")]
-    public extern RTCRtpTransceiver AddTransceiver(Either<MediaStreamTrack, string> trackOrKind, RTCRtpTransceiverInit? init = default);
+    public extern RTCRtpTransceiver AddTransceiver(RTCPeerConnectionAddTransceiverTrackOrKind trackOrKind, RTCRtpTransceiverInit? init = default);
 
     /// <summary>
     /// ontrack
@@ -45784,7 +45784,7 @@ public class SequenceEffect : GroupEffect
     /// </summary>
     /// <param name="children">children</param>
     /// <param name="timing">timing</param>
-    public extern SequenceEffect(AnimationEffect[]? children, Either<double, EffectTiming> timing);
+    public extern SequenceEffect(AnimationEffect[]? children, SequenceEffectTiming timing);
 
     /// <summary>
     /// clone
@@ -46300,7 +46300,7 @@ public class ShadowAnimation(AnimationEffect? effect, AnimationTimeline? timelin
     /// </summary>
     /// <param name="source">source</param>
     /// <param name="newTarget">newTarget</param>
-    public extern ShadowAnimation(Animation source, Either<Element, CSSPseudoElement> newTarget);
+    public extern ShadowAnimation(Animation source, ShadowAnimationNewTarget newTarget);
 
     /// <summary>
     /// sourceAnimation
@@ -46534,7 +46534,7 @@ public class SharedWorker : EventTarget
     /// </summary>
     /// <param name="scriptURL">scriptURL</param>
     /// <param name="options">options</param>
-    public extern SharedWorker(string scriptURL, Either<string, WorkerOptions> options);
+    public extern SharedWorker(string scriptURL, SharedWorkerOptions options);
 
     /// <summary>
     /// port
@@ -48837,7 +48837,7 @@ public class TrackEvent(string type, EventInit eventInitDict) : Event(type, even
     /// track
     /// </summary>
     [Description("@#track")]
-    public extern Either<VideoTrack, AudioTrack, TextTrack>? Track { get; }
+    public extern TrackEventTrack? Track { get; }
 }
 
 /// <summary>
@@ -49225,7 +49225,7 @@ public partial class URL
     /// </summary>
     /// <param name="obj">obj</param>
     [Description("@#createObjectURL")]
-    public static extern string CreateObjectURL(Either<Blob, MediaSource> obj);
+    public static extern string CreateObjectURL(URLCreateObjectURLObj obj);
     
     /// <summary>
     /// createObjectURL
@@ -49454,7 +49454,7 @@ public class URLSearchParams : IEnumerable<(string, string)>
     /// Constructor 
     /// </summary>
     /// <param name="init">init</param>
-    public extern URLSearchParams(Either<string[][], Dictionary<string, string>, string> init);
+    public extern URLSearchParams(URLSearchParamsInit init);
 
     /// <summary>
     /// size
@@ -52005,7 +52005,7 @@ public class WEBGLMultiDraw
     /// <param name="countsOffset">countsOffset</param>
     /// <param name="drawcount">drawcount</param>
     [Description("@#multiDrawArraysWEBGL")]
-    public extern void MultiDrawArraysWEBGL(GLenum mode, Either<Int32Array, GLint[]> firstsList, ulong firstsOffset, Either<Int32Array, GLsizei[]> countsList, ulong countsOffset, GLsizei drawcount);
+    public extern void MultiDrawArraysWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList firstsList, ulong firstsOffset, WEBGLMultiDrawMultiDrawArraysWEBGLCountsList countsList, ulong countsOffset, GLsizei drawcount);
 
     /// <summary>
     /// multiDrawElementsWEBGL
@@ -52018,7 +52018,7 @@ public class WEBGLMultiDraw
     /// <param name="offsetsOffset">offsetsOffset</param>
     /// <param name="drawcount">drawcount</param>
     [Description("@#multiDrawElementsWEBGL")]
-    public extern void MultiDrawElementsWEBGL(GLenum mode, Either<Int32Array, GLsizei[]> countsList, ulong countsOffset, GLenum type, Either<Int32Array, GLsizei[]> offsetsList, ulong offsetsOffset, GLsizei drawcount);
+    public extern void MultiDrawElementsWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawElementsWEBGLCountsList countsList, ulong countsOffset, GLenum type, WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList offsetsList, ulong offsetsOffset, GLsizei drawcount);
 
     /// <summary>
     /// multiDrawArraysInstancedWEBGL
@@ -52032,7 +52032,7 @@ public class WEBGLMultiDraw
     /// <param name="instanceCountsOffset">instanceCountsOffset</param>
     /// <param name="drawcount">drawcount</param>
     [Description("@#multiDrawArraysInstancedWEBGL")]
-    public extern void MultiDrawArraysInstancedWEBGL(GLenum mode, Either<Int32Array, GLint[]> firstsList, ulong firstsOffset, Either<Int32Array, GLsizei[]> countsList, ulong countsOffset, Either<Int32Array, GLsizei[]> instanceCountsList, ulong instanceCountsOffset, GLsizei drawcount);
+    public extern void MultiDrawArraysInstancedWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList firstsList, ulong firstsOffset, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList countsList, ulong countsOffset, WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, GLsizei drawcount);
 
     /// <summary>
     /// multiDrawElementsInstancedWEBGL
@@ -52047,7 +52047,7 @@ public class WEBGLMultiDraw
     /// <param name="instanceCountsOffset">instanceCountsOffset</param>
     /// <param name="drawcount">drawcount</param>
     [Description("@#multiDrawElementsInstancedWEBGL")]
-    public extern void MultiDrawElementsInstancedWEBGL(GLenum mode, Either<Int32Array, GLsizei[]> countsList, ulong countsOffset, GLenum type, Either<Int32Array, GLsizei[]> offsetsList, ulong offsetsOffset, Either<Int32Array, GLsizei[]> instanceCountsList, ulong instanceCountsOffset, GLsizei drawcount);
+    public extern void MultiDrawElementsInstancedWEBGL(GLenum mode, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList countsList, ulong countsOffset, GLenum type, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList offsetsList, ulong offsetsOffset, WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, GLsizei drawcount);
 }
 
 /// <summary>
@@ -52071,7 +52071,7 @@ public class WEBGLMultiDrawInstancedBaseVertexBaseInstance
     /// <param name="baseInstancesOffset">baseInstancesOffset</param>
     /// <param name="drawcount">drawcount</param>
     [Description("@#multiDrawArraysInstancedBaseInstanceWEBGL")]
-    public extern void MultiDrawArraysInstancedBaseInstanceWEBGL(GLenum mode, Either<Int32Array, GLint[]> firstsList, ulong firstsOffset, Either<Int32Array, GLsizei[]> countsList, ulong countsOffset, Either<Int32Array, GLsizei[]> instanceCountsList, ulong instanceCountsOffset, Either<Uint32Array, GLuint[]> baseInstancesList, ulong baseInstancesOffset, GLsizei drawcount);
+    public extern void MultiDrawArraysInstancedBaseInstanceWEBGL(GLenum mode, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList firstsList, ulong firstsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList countsList, ulong countsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList baseInstancesList, ulong baseInstancesOffset, GLsizei drawcount);
 
     /// <summary>
     /// multiDrawElementsInstancedBaseVertexBaseInstanceWEBGL
@@ -52090,7 +52090,7 @@ public class WEBGLMultiDrawInstancedBaseVertexBaseInstance
     /// <param name="baseInstancesOffset">baseInstancesOffset</param>
     /// <param name="drawcount">drawcount</param>
     [Description("@#multiDrawElementsInstancedBaseVertexBaseInstanceWEBGL")]
-    public extern void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(GLenum mode, Either<Int32Array, GLsizei[]> countsList, ulong countsOffset, GLenum type, Either<Int32Array, GLsizei[]> offsetsList, ulong offsetsOffset, Either<Int32Array, GLsizei[]> instanceCountsList, ulong instanceCountsOffset, Either<Int32Array, GLint[]> baseVerticesList, ulong baseVerticesOffset, Either<Uint32Array, GLuint[]> baseInstancesList, ulong baseInstancesOffset, GLsizei drawcount);
+    public extern void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(GLenum mode, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList countsList, ulong countsOffset, GLenum type, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList offsetsList, ulong offsetsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList instanceCountsList, ulong instanceCountsOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList baseVerticesList, ulong baseVerticesOffset, WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList baseInstancesList, ulong baseInstancesOffset, GLsizei drawcount);
 }
 
 /// <summary>
@@ -53994,7 +53994,7 @@ public class WebGL2RenderingContext
     /// canvas
     /// </summary>
     [Description("@#canvas")]
-    public extern Either<HTMLCanvasElement, OffscreenCanvas> Canvas { get; }
+    public extern WebGL2RenderingContextCanvas Canvas { get; }
     
     /// <summary>
     /// drawingBufferWidth
@@ -59805,7 +59805,7 @@ public class WebGLRenderingContext
     /// canvas
     /// </summary>
     [Description("@#canvas")]
-    public extern Either<HTMLCanvasElement, OffscreenCanvas> Canvas { get; }
+    public extern WebGLRenderingContextCanvas Canvas { get; }
     
     /// <summary>
     /// drawingBufferWidth
@@ -61135,7 +61135,7 @@ public class WebSocket : EventTarget
     /// </summary>
     /// <param name="url">url</param>
     /// <param name="protocols">protocols</param>
-    public extern WebSocket(string url, Either<string, string[]> protocols);
+    public extern WebSocket(string url, WebSocketProtocols protocols);
 
     /// <summary>
     /// url
@@ -64108,7 +64108,7 @@ public partial class XMLHttpRequest : XMLHttpRequestEventTarget
     /// </summary>
     /// <param name="body">body</param>
     [Description("@#send")]
-    public extern void Send(Either<Document, XMLHttpRequestBodyInit>? body = default);
+    public extern void Send(XMLHttpRequestSendBody? body = default);
     
     /// <summary>
     /// send
