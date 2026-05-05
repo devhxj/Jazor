@@ -84,9 +84,10 @@ public static partial class Vue3
 	/// on canonical members like <c>Props</c>, <c>Emits</c>, and <c>Inject</c>.
 	/// </summary>
 	[ECMAScript]
+	[ECMAScriptUnion]
 	[Description("@#")]
 	[CollectionBuilder(typeof(VueNamesOrOptionsCollectionBuilder), nameof(VueNamesOrOptionsCollectionBuilder.Create))]
-	public readonly struct VueNamesOrOptions : IEither, IEnumerable<string>
+	public readonly struct VueNamesOrOptions : IEnumerable<string>
 	{
 		private readonly string[]? _names;
 		private readonly VueProps? _options;
@@ -214,7 +215,7 @@ public static partial class Vue3
 		/// </summary>
 		/// <param name="key">The final Vue prop key.</param>
 		/// <returns>The declaration for the given prop key.</returns>
-		public extern Either<VuePropType, VuePropType?[], VuePropOptions<TValue>>? this[string key] { get; set; }
+		public extern VuePropDeclaration<TValue>? this[string key] { get; set; }
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public extern void Add(string key, VuePropType type);
@@ -348,7 +349,7 @@ public static partial class Vue3
 		/// mixed class arrays via <see cref="VueValue"/>.
 		/// </summary>
 		[Description("@#class")]
-		public Either<string, string[], VueProps, VueValue[]>? Class { get; init; }
+		public VueClassValue? Class { get; init; }
 
 		/// <summary>
 		/// Standard Vue <c>style</c> binding. Use a typed record or the convenience
@@ -399,21 +400,21 @@ public static partial class Vue3
 		/// date-like forms used by native inputs.
 		/// </summary>
 		[Description("@#min")]
-		public Either<double, string>? Min { get; init; }
+		public VueStringNumberValue? Min { get; init; }
 
 		/// <summary>
 		/// Standard <c>max</c> attribute. Accepts numeric values or string literals such as
 		/// date-like forms used by native inputs.
 		/// </summary>
 		[Description("@#max")]
-		public Either<double, string>? Max { get; init; }
+		public VueStringNumberValue? Max { get; init; }
 
 		/// <summary>
 		/// Standard <c>step</c> attribute. Accepts numeric values or string literals such as
 		/// <c>any</c>.
 		/// </summary>
 		[Description("@#step")]
-		public Either<double, string>? Step { get; init; }
+		public VueStringNumberValue? Step { get; init; }
 
 		/// <summary>
 		/// Standard <c>minlength</c> attribute.

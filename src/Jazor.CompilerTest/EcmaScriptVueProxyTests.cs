@@ -104,6 +104,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueNamesOrOptions), canonicalEmits.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalProps.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalEmits.PropertyType.UnwrapNullable());
+        Assert.IsNotNull(typeof(VueNamesOrOptions).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsTrue(typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(typeof(VueNamesOrOptions)));
         var collectionBuilder = typeof(VueNamesOrOptions).GetCustomAttribute<System.Runtime.CompilerServices.CollectionBuilderAttribute>();
         Assert.IsNotNull(collectionBuilder);
@@ -117,6 +118,27 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNull(slotComponentOptions.GetProperty("PropNames", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(slotComponentOptions.GetProperty("EmitOptions", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(slotComponentOptions.GetProperty("EmitNames", BindingFlags.Public | BindingFlags.Instance));
+    }
+
+    [TestMethod]
+    public void ECMAScript_BufferSourceInterfaces_ExposeAllowSharedAsBufferSource()
+    {
+        Assert.IsTrue(typeof(IBufferSource).IsAssignableFrom(typeof(IAllowSharedBufferSource)));
+        Assert.IsTrue(typeof(IAllowSharedBufferSource).IsAssignableFrom(typeof(ArrayBuffer)));
+        Assert.IsTrue(typeof(IAllowSharedBufferSource).IsAssignableFrom(typeof(SharedArrayBuffer)));
+        Assert.IsTrue(typeof(IAllowSharedBufferSource).IsAssignableFrom(typeof(Uint8Array)));
+    }
+
+    [TestMethod]
+    public void ECMAScript_IEither_IsHiddenCompatibilityUnionMarker()
+    {
+        var marker = typeof(IEither);
+        var editorBrowsable = marker.GetCustomAttribute<System.ComponentModel.EditorBrowsableAttribute>();
+
+        Assert.IsNotNull(marker.GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNull(marker.GetCustomAttribute<ECMAScriptAttribute>());
+        Assert.IsNotNull(editorBrowsable);
+        Assert.AreEqual(System.ComponentModel.EditorBrowsableState.Never, editorBrowsable!.State);
     }
 
     [TestMethod]
@@ -303,9 +325,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(int), rows.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(int), cols.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), value.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<double, string>), min.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<double, string>), max.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<double, string>), step.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueStringNumberValue), min.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueStringNumberValue), max.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueStringNumberValue), step.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(int), minlength.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(int), maxLength.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), pattern.PropertyType.UnwrapNullable());
@@ -366,8 +388,8 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNull(typeof(VueObject).GetProperty("AutoFocus", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(typeof(VueObject).GetProperty("ReadOnly", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(typeof(VueObject).GetProperty("TabIndex", BindingFlags.Public | BindingFlags.Instance));
-        Assert.IsTrue(@class.PropertyType.UnwrapNullable().IsGenericType);
-        Assert.AreEqual(typeof(Either<,,,>), @class.PropertyType.UnwrapNullable().GetGenericTypeDefinition());
+        Assert.AreEqual(typeof(VueClassValue), @class.PropertyType.UnwrapNullable());
+        Assert.IsNotNull(typeof(VueClassValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
 
         var vueKeyImplicitSources = vueKey
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -485,7 +507,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(emitRegistryIndexer);
         CollectionAssert.AreEqual(new[] { typeof(string) }, propRegistryIndexer!.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.AreEqual(new[] { typeof(string) }, emitRegistryIndexer!.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
-        Assert.AreEqual(typeof(Either<VuePropType, VuePropType?[], VuePropOptions<string>>), propRegistryIndexer.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuePropDeclaration<string>), propRegistryIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueEmitValidator<string>), emitRegistryIndexer.PropertyType.UnwrapNullable());
         Assert.IsTrue(propOptionProperties.All(static property => property is not null));
 
@@ -1287,7 +1309,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueEventHandler<MouseEvent>), typedListenerIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueSlotCallback<string>), scopedSlotsIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), modifierIndexer.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<string, string[], VueProps, VueValue[]>), attrsClass.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueClassValue), attrsClass.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueProps), attrsStyle.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), attrsId.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), attrsTitle.PropertyType.UnwrapNullable());
@@ -1555,7 +1577,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(debuggerCallbackInvoke);
         CollectionAssert.AreEqual(new[] { typeof(VueDebuggerEvent) }, debuggerCallbackInvoke.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
         Assert.AreEqual(typeof(bool), watchOptionsType.GetProperty(nameof(VueWatchOptions.Immediate))!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<bool, int>), watchOptionsType.GetProperty(nameof(VueWatchOptions.Deep))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueWatchDeep), watchOptionsType.GetProperty(nameof(VueWatchOptions.Deep))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), watchOptionsType.GetProperty(nameof(VueWatchOptions.Once))!.PropertyType.UnwrapNullable());
         Assert.IsNotNull(watchSourcesCallbackInvoke);
         Assert.IsNotNull(watchSourcesCleanupCallbackInvoke);
@@ -1872,7 +1894,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(defaultFactory);
         Assert.IsNotNull(indexer);
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(nonGenericRegistryType));
-        Assert.AreEqual(typeof(Either<string, VueInjectionKey<string>, Symbol>), from!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueInjectFrom<string>), from!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), @default!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Func<string>), defaultFactory!.PropertyType.UnwrapNullable());
         Assert.AreEqual(entryType, indexer!.PropertyType.UnwrapNullable());
@@ -2144,11 +2166,11 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(teleportProps));
         Assert.IsTrue(typeof(VueProps).IsAssignableFrom(suspenseProps));
         Assert.IsTrue(typeof(VueSlots).IsAssignableFrom(suspenseSlots));
-        Assert.AreEqual(typeof(Either<Number, VueTransitionDuration>), transitionProps.GetProperty(nameof(VueTransitionProps.Duration))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueTransitionDurationValue), transitionProps.GetProperty(nameof(VueTransitionProps.Duration))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueTransitionMode), transitionProps.GetProperty(nameof(VueTransitionProps.Mode))!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<string, RegExp, string[], RegExp[]>), keepAliveProps.GetProperty(nameof(VueKeepAliveProps.Include))!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<int, string>), keepAliveProps.GetProperty(nameof(VueKeepAliveProps.Max))!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<string, Element>), teleportProps.GetProperty(nameof(VueTeleportProps.To))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueKeepAliveMatch), keepAliveProps.GetProperty(nameof(VueKeepAliveProps.Include))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueIntStringValue), keepAliveProps.GetProperty(nameof(VueKeepAliveProps.Max))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueTeleportTarget), teleportProps.GetProperty(nameof(VueTeleportProps.To))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueSlotCallback), suspenseSlots.GetProperty(nameof(VueSuspenseSlots.Fallback))!.PropertyType.UnwrapNullable());
 
         AssertNotObject(transitionProps, nameof(VueTransitionProps));
@@ -2271,7 +2293,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(computed);
         Assert.IsNotNull(indexer);
         Assert.AreEqual(typeof(VueProps), computed!.PropertyType.UnwrapNullable());
-        Assert.AreEqual(typeof(Either<Func<int>, VueWritableComputedOptions<int>>), indexer!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueComputedValue<int>), indexer!.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         Assert.AreEqual(2, addMethods.Length);
         Assert.IsTrue(addMethods.Any(static method =>
@@ -2348,8 +2370,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(indexer);
         Assert.AreEqual(typeof(VueProps), watch!.PropertyType.UnwrapNullable());
         Assert.AreEqual(
-            typeof(Either<string, Action<int, int>, VueWatchCleanupCallback<int>, VueWatchHandlerOptions<int>, VueWatchCleanupHandlerOptions<int>, VueWatchNamedHandlerOptions, VueWatchEntries<int>>),
+            typeof(VueWatchDeclaration<int>),
             indexer!.PropertyType.UnwrapNullable());
+        Assert.IsNotNull(typeof(VueWatchDeclaration<int>).GetCustomAttribute<ECMAScriptUnionAttribute>());
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         Assert.AreEqual(7, addMethods.Length);
         Assert.IsTrue(addMethods.Any(method =>
@@ -2510,7 +2533,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsFalse(overloads.Any(static parameters =>
             parameters.Any(static parameter =>
                 parameter.IsGenericType &&
-                parameter.GetGenericTypeDefinition() == typeof(Either<,,,,>))));
+                parameter.GetGenericTypeDefinition().Name.StartsWith("Either`", StringComparison.Ordinal))));
     }
 
     [TestMethod]
@@ -2720,7 +2743,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsFalse(overloads.Any(static method =>
             method.GetParameters().Any(static parameter =>
                 parameter.ParameterType.IsGenericType &&
-                parameter.ParameterType.GetGenericTypeDefinition() == typeof(Either<,,,,>))));
+                parameter.ParameterType.GetGenericTypeDefinition().Name.StartsWith("Either`", StringComparison.Ordinal))));
     }
 
     [TestMethod]

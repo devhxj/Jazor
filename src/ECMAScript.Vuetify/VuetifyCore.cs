@@ -81,7 +81,7 @@ public sealed record VuetifyThemeVariationOptions
 public sealed record VuetifyDisplayOptions
 {
     [Description("@#mobileBreakpoint")]
-    public Either<string, Number>? MobileBreakpoint { get; init; }
+    public VuetifyDisplayBreakpoint? MobileBreakpoint { get; init; }
 
     [Description("@#thresholds")]
     public VuetifyDisplayThresholds? Thresholds { get; init; }

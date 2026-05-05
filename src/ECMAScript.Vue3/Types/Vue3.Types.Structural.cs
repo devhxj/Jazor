@@ -71,7 +71,7 @@ public static partial class Vue3
 		public VueTransitionType? Type { get; init; }
 
 		[Description("@#duration")]
-		public Either<Number, VueTransitionDuration>? Duration { get; init; }
+		public VueTransitionDurationValue? Duration { get; init; }
 
 		[Description("@#mode")]
 		public VueTransitionMode? Mode { get; init; }
@@ -164,7 +164,7 @@ public static partial class Vue3
 		public VueTransitionType? Type { get; init; }
 
 		[Description("@#duration")]
-		public Either<Number, VueTransitionDuration>? Duration { get; init; }
+		public VueTransitionDurationValue? Duration { get; init; }
 
 		[Description("@#appear")]
 		public bool? Appear { get; init; }
@@ -176,13 +176,13 @@ public static partial class Vue3
 	public record VueKeepAliveProps : VueProps
 	{
 		[Description("@#include")]
-		public Either<string, RegExp, string[], RegExp[]>? Include { get; init; }
+		public VueKeepAliveMatch? Include { get; init; }
 
 		[Description("@#exclude")]
-		public Either<string, RegExp, string[], RegExp[]>? Exclude { get; init; }
+		public VueKeepAliveMatch? Exclude { get; init; }
 
 		[Description("@#max")]
-		public Either<int, string>? Max { get; init; }
+		public VueIntStringValue? Max { get; init; }
 	}
 
 	/// <summary>
@@ -191,7 +191,7 @@ public static partial class Vue3
 	public record VueTeleportProps : VueProps
 	{
 		[Description("@#to")]
-		public Either<string, Element>? To { get; init; }
+		public VueTeleportTarget? To { get; init; }
 
 		[Description("@#disabled")]
 		public bool? Disabled { get; init; }

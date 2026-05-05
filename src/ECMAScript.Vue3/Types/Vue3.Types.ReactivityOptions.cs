@@ -48,7 +48,7 @@ public static partial class Vue3
 		/// depth limit when only a bounded traversal is needed.
 		/// </summary>
 		[Description("@#deep")]
-		public Either<bool, int>? Deep { get; init; }
+		public VueWatchDeep? Deep { get; init; }
 
 		/// <summary>
 		/// Stop the watcher automatically after the first callback run.
@@ -437,7 +437,7 @@ public static partial class Vue3
 		/// Reads the fallthrough <c>class</c> binding.
 		/// </summary>
 		[Description("@#class")]
-		public extern Either<string, string[], VueProps, VueValue[]>? Class { get; }
+		public extern VueClassValue? Class { get; }
 
 		/// <summary>
 		/// Reads the fallthrough <c>style</c> binding.

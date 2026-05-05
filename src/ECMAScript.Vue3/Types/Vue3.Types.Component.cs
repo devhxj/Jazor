@@ -275,7 +275,7 @@ public static partial class Vue3
 		/// </summary>
 		/// <param name="key">The final computed property key.</param>
 		/// <returns>The computed declaration for the given key.</returns>
-		public extern Either<Func<TValue>, VueWritableComputedOptions<TValue>> this[string key] { get; set; }
+		public extern VueComputedValue<TValue> this[string key] { get; set; }
 
 		/// <summary>
 		/// CLR bridge kept for collection-initializer authoring of getter-form computed entries.
@@ -392,7 +392,7 @@ public static partial class Vue3
 		/// </summary>
 		/// <param name="key">The final watch source key.</param>
 		/// <returns>The watch declaration for the given key.</returns>
-		public extern Either<string, Action<TValue, TValue>, VueWatchCleanupCallback<TValue>, VueWatchHandlerOptions<TValue>, VueWatchCleanupHandlerOptions<TValue>, VueWatchNamedHandlerOptions, VueWatchEntries<TValue>> this[string key] { get; set; }
+		public extern VueWatchDeclaration<TValue> this[string key] { get; set; }
 
 		/// <summary>
 		/// CLR bridge kept for collection-initializer authoring of method-name watch entries.
@@ -454,7 +454,7 @@ public static partial class Vue3
 		/// strongly typed <see cref="VueInjectionKey{TValue}"/>.
 		/// </summary>
 		[Description("@#from")]
-		public Either<string, VueInjectionKey<TValue>, Symbol>? From { get; init; }
+		public VueInjectFrom<TValue>? From { get; init; }
 
 		/// <summary>
 		/// Default value used when no provider matches.

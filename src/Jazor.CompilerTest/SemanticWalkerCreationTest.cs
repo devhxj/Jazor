@@ -2545,6 +2545,33 @@ public sealed class SemanticWalkerCreationTest
 }", script);
     }
 
+    [TestMethod]
+    public void Visit_ObjectCreation_OmitsTrailingDefaultArguments()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var obj = new MyClass(42);
+                }
+
+                class MyClass
+                {
+                    public MyClass(int number, string text = ""test"") { }
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  let obj = new MyClass(42);
+}", script);
+    }
+
     /// <summary>
     /// 测试对象初始化器
     /// </summary>
