@@ -51,6 +51,15 @@ public delegate void PiniaStoreActionListener<TStore>(Pinia.StoreActionListenerC
 	where TStore : class;
 
 /// <summary>
+/// Custom selector callback used by object-form <c>mapState()</c> / <c>mapGetters()</c>.
+/// </summary>
+/// <typeparam name="TStore">The typed store projection supplied by the store definition.</typeparam>
+/// <param name="store">The typed store instance.</param>
+/// <returns>The mapped value that should back the computed entry.</returns>
+public delegate Pinia.PiniaValue? PiniaMapStateSelector<TStore>(TStore store)
+	where TStore : class;
+
+/// <summary>
 /// Pinia plugin callback registered through <c>pinia.use(...)</c>.
 /// </summary>
 /// <param name="context">The plugin context containing the app, pinia instance, store, and defining options.</param>

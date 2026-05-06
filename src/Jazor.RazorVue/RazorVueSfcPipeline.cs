@@ -3,6 +3,7 @@ using System.Linq;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue;
@@ -14,7 +15,7 @@ internal sealed class RazorVueSfcPipeline
     private readonly RazorVueSfcCatalogBuilder _catalogBuilder = new();
 
     public RazorVueSfcPipeline(IRazorVueTemplateFrontend templateFrontend)
-        : this(DefaultRazorSemanticFrontend.Instance, templateFrontend)
+        : this(RazorVueRazorDocumentSemanticFrontend.Instance, templateFrontend)
     {
     }
 

@@ -27,6 +27,10 @@ public sealed class SdkIntegrationTests
             {
                 "lib/net10.0/ECMAScript.dll",
                 "lib/net10.0/ECMAScript.pdb",
+                "lib/net10.0/ECMAScript.Pinia.dll",
+                "lib/net10.0/ECMAScript.Pinia.pdb",
+                "lib/net10.0/ECMAScript.VueRoute.dll",
+                "lib/net10.0/ECMAScript.VueRoute.pdb",
                 "lib/net10.0/ECMAScript.Contract.dll",
                 "lib/net10.0/ECMAScript.Contract.pdb",
                 "lib/net10.0/ECMAScript.VueContract.dll",
@@ -304,6 +308,127 @@ public sealed class SdkIntegrationTests
             .ToArray()!;
         CollectionAssert.Contains(emittedRelativePaths, "System/DecimalModule.js");
         CollectionAssert.Contains(emittedRelativePaths, "System/Globalization/CultureInfoModule.js");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_WithVueRouteAuthoring_EmitsVueRouterImportsAndRouteObjects()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "VueRouteSdkSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+
+        WriteFile(
+            Path.Combine(projectRoot, "VueRouteSdkSample.csproj"),
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>false</JazorBundle>
+                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            Console.WriteLine("VueRoute SDK sample");
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            namespace VueRouteSdkSample;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static Router CreateAppRouter()
+                {
+                    return VueRoute.CreateRouter(new RouterOptions
+                    {
+                        History = VueRoute.CreateWebHistory(),
+                        Routes =
+                        [
+                            new RouteRecordRedirect
+                            {
+                                Path = "/",
+                                Redirect = "/home"
+                            },
+                            new RouteRecordSingleView
+                            {
+                                Path = "/users",
+                                Props = true
+                            }
+                        ]
+                    });
+                }
+
+                public static string CurrentPath()
+                {
+                    return VueRoute.UseRouter().CurrentRoute.Value.Path;
+                }
+            }
+            """);
+
+        var projectPath = Path.Combine(projectRoot, "VueRouteSdkSample.csproj");
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
+
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
+        Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
+
+        var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
+
+        Assert.AreEqual(
+            "import { createRouter, createWebHistory, useRouter } from \"npm:vue-router@4\";",
+            GetImportLine(module, "npm:vue-router@4"));
+        StringAssert.Contains(module, "export function createAppRouter()");
+        StringAssert.Contains(module, "history: createWebHistory()");
+        StringAssert.Contains(module, "redirect: \"/home\"");
+        StringAssert.Contains(module, "path: \"/users\"");
+        StringAssert.Contains(module, "props: true");
+        StringAssert.Contains(module, "return createRouter(");
+        StringAssert.Contains(module, "export function currentPath()");
+        StringAssert.Contains(module, "return useRouter().currentRoute.value.path;");
+
+        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+        var emittedRelativePaths = manifest.RootElement
+            .GetProperty("Modules")
+            .EnumerateArray()
+            .Select(static moduleEntry => moduleEntry.GetProperty("RelativePath").GetString())
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray()!;
+
+        CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
     }
 
     [TestMethod]

@@ -4,6 +4,8 @@ using ECMAScript.Contract;
 
 namespace ECMAScript;
 
+[ECMAScript]
+[Description("@#")]
 public record RouterOptions : Vue3.VueProps
 {
 	[Description("@#history")]
@@ -71,6 +73,8 @@ public record RouteParamsRaw : Vue3.VueProps, System.Collections.IEnumerable
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouteLocationAsPath : Vue3.VueProps
 {
 	[Description("@#path")]
@@ -92,6 +96,8 @@ public record RouteLocationAsPath : Vue3.VueProps
 	public Vue3.VueValue? State { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouteLocationAsRelative : Vue3.VueProps
 {
 	[Description("@#name")]
@@ -116,6 +122,8 @@ public record RouteLocationAsRelative : Vue3.VueProps
 	public Vue3.VueValue? State { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract class RouteLocationMatched
 {
 	protected RouteLocationMatched()
@@ -138,6 +146,8 @@ public abstract class RouteLocationMatched
 	public extern RouteComponents? Components { get; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract class RouteLocationNormalizedLoaded
 {
 	protected RouteLocationNormalizedLoaded()
@@ -172,6 +182,8 @@ public abstract class RouteLocationNormalizedLoaded
 	public extern RouteLocationNormalizedLoaded? RedirectedFrom { get; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract class RouteLocationResolved : RouteLocationNormalizedLoaded
 {
 	protected RouteLocationResolved()
@@ -182,6 +194,8 @@ public abstract class RouteLocationResolved : RouteLocationNormalizedLoaded
 	public extern string Href { get; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract class RouterHistory
 {
 	protected RouterHistory()
@@ -207,6 +221,8 @@ public abstract class RouterHistory
 	public extern void Destroy();
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract record Router : Vue3.VuePlugin
 {
 	[Description("@#currentRoute")]
@@ -258,6 +274,8 @@ public abstract record Router : Vue3.VuePlugin
 	public extern IPromise IsReady();
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract class NavigationFailure : Error
 {
 	protected NavigationFailure()
@@ -298,6 +316,8 @@ public record RouteNamedProps : Vue3.VueProps, System.Collections.IEnumerable
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract record RouteRecordBase : Vue3.VueProps
 {
 	[Description("@#name")]
@@ -331,6 +351,8 @@ public abstract record RouteRecordBase : Vue3.VueProps
 	public bool? End { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouteRecordSingleView : RouteRecordBase
 {
 	[Description("@#component")]
@@ -340,8 +362,12 @@ public record RouteRecordSingleView : RouteRecordBase
 	public RouteRecordProps? Props { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouteRecordSingleViewWithChildren : RouteRecordSingleView;
 
+[ECMAScript]
+[Description("@#")]
 public record RouteRecordMultipleViews : RouteRecordBase
 {
 	[Description("@#components")]
@@ -351,10 +377,16 @@ public record RouteRecordMultipleViews : RouteRecordBase
 	public RouteNamedProps? Props { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouteRecordMultipleViewsWithChildren : RouteRecordMultipleViews;
 
+[ECMAScript]
+[Description("@#")]
 public record RouteRecordRedirect : RouteRecordBase;
 
+[ECMAScript]
+[Description("@#")]
 public record RouterLinkProps : Vue3.VueProps
 {
 	[Description("@#to")]
@@ -379,6 +411,8 @@ public record RouterLinkProps : Vue3.VueProps
 	public bool? ViewTransition { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record UseLinkOptions : Vue3.VueProps
 {
 	[Description("@#to")]
@@ -391,6 +425,8 @@ public record UseLinkOptions : Vue3.VueProps
 	public bool? ViewTransition { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public abstract class UseLinkResult
 {
 	protected UseLinkResult()
@@ -416,12 +452,16 @@ public abstract class UseLinkResult
 	public extern IPromise<NavigationFailure?> Navigate(MouseEvent @event);
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouterLinkSlots : Vue3.VueSlots
 {
 	[Description("@#default")]
 	public RouterLinkSlotCallback? Default { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouterViewProps : Vue3.VueProps
 {
 	[Description("@#name")]
@@ -431,6 +471,8 @@ public record RouterViewProps : Vue3.VueProps
 	public RouteLocationNormalizedLoaded? Route { get; init; }
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouterViewSlotScope : Vue3.VueProps
 {
 	[Description("@#Component")]
@@ -440,6 +482,8 @@ public record RouterViewSlotScope : Vue3.VueProps
 	public RouteLocationNormalizedLoaded Route { get; init; } = default!;
 }
 
+[ECMAScript]
+[Description("@#")]
 public record RouterViewSlots : Vue3.VueSlots
 {
 	[Description("@#default")]

@@ -154,7 +154,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         builder.AddRange(ConvertLooseNodes(classDeclaration.Children, insideTemplate).Children);
                         break;
                     case MethodDeclarationIntermediateNode methodDeclaration:
-                        builder.AddRange(ConvertLooseNodes(methodDeclaration.Children, insideTemplate).Children);
+                        builder.AddRange(ConvertMethodDeclaration(methodDeclaration).Children);
                         break;
                     case MarkupBlockIntermediateNode markupBlock:
                         AppendMarkupBlock(builder, markupBlock);
@@ -179,6 +179,91 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             break;
                         }
 
+                        break;
+                }
+            }
+
+            return new RazorVueRenderFragment(builder.ToImmutable());
+        }
+
+        private RazorVueRenderFragment ConvertMethodDeclaration(MethodDeclarationIntermediateNode node)
+        {
+            if (node is null)
+                throw new ArgumentNullException(nameof(node));
+
+            if (!string.Equals(GetMethodDeclarationName(node), "BuildRenderTree", StringComparison.Ordinal))
+                return ConvertLooseNodes(node.Children, insideTemplate: false);
+
+            return ConvertTemplateMethodBody(node.Children);
+        }
+
+        private RazorVueRenderFragment ConvertTemplateMethodBody(IEnumerable<IntermediateNode> nodes)
+        {
+            var bufferedNodes = nodes.ToList();
+            if (bufferedNodes.Count == 0)
+                return RazorVueRenderFragment.Empty;
+
+            var builder = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
+            var index = 0;
+            while (index < bufferedNodes.Count)
+            {
+                var node = bufferedNodes[index];
+                if (TryConvertConditional(bufferedNodes, ref index, out var conditionalNode))
+                {
+                    builder.Add(conditionalNode);
+                    continue;
+                }
+
+                if (TryConvertForEach(bufferedNodes, ref index, out var loopNode))
+                {
+                    builder.Add(loopNode);
+                    continue;
+                }
+
+                switch (node)
+                {
+                    case MarkupElementIntermediateNode element:
+                        builder.Add(ConvertElement(element));
+                        index++;
+                        break;
+                    case ComponentIntermediateNode component:
+                        builder.Add(ConvertComponent(component));
+                        index++;
+                        break;
+                    case HtmlContentIntermediateNode html:
+                        AppendHtmlContent(builder, html);
+                        index++;
+                        break;
+                    case CSharpExpressionIntermediateNode expression:
+                        builder.Add(ConvertExpressionOrSlotOutlet(expression));
+                        index++;
+                        break;
+                    case MarkupBlockIntermediateNode markupBlock:
+                        AppendMarkupBlock(builder, markupBlock);
+                        index++;
+                        break;
+                    case TagHelperBodyIntermediateNode tagHelperBody:
+                        builder.AddRange(ConvertLooseNodes(tagHelperBody.Children, insideTemplate: true).Children);
+                        index++;
+                        break;
+                    case CSharpCodeIntermediateNode:
+                    case FieldDeclarationIntermediateNode:
+                    case PropertyDeclarationIntermediateNode:
+                    case UsingDirectiveIntermediateNode:
+                    case DirectiveIntermediateNode:
+                    case MalformedDirectiveIntermediateNode:
+                    case ExtensionIntermediateNode:
+                        index++;
+                        break;
+                    case TagHelperIntermediateNode tagHelper:
+                        throw CreateUnsupportedNodeException(tagHelper, "TagHelperIntermediateNode");
+                    default:
+                        if (node.Children.Count > 0)
+                        {
+                            builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate: true).Children);
+                        }
+
+                        index++;
                         break;
                 }
             }
@@ -424,6 +509,140 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return expression;
         }
 
+        private bool TryConvertConditional(
+            IReadOnlyList<IntermediateNode> nodes,
+            ref int index,
+            out RazorVueConditionalNode conditionalNode)
+        {
+            conditionalNode = default!;
+            if (nodes[index] is not CSharpCodeIntermediateNode codeNode)
+                return false;
+
+            var controlText = GetNodeText(codeNode);
+            if (!TryExtractControlHeader(controlText, "if", out var conditionText))
+                return false;
+
+            var sourceSpan = GetRequiredSourceSpan(codeNode, "CSharpCodeIntermediateNode if header");
+            var condition = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR conditional expression");
+            var bodyStart = index + 1;
+            var bodyEnd = FindClosingCodeNodeIndex(nodes, bodyStart, conditionText, sourceSpan, isForEach: false);
+            if (bodyEnd < bodyStart)
+                throw CreateUnsupportedNodeException(codeNode, "unterminated if CSharpCodeIntermediateNode");
+
+            var whenTrue = ConvertTemplateMethodBody(nodes.Skip(bodyStart).Take(bodyEnd - bodyStart));
+            var whenFalse = RazorVueRenderFragment.Empty;
+
+            index = bodyEnd + 1;
+            conditionalNode = new RazorVueConditionalNode(
+                condition,
+                whenTrue,
+                whenFalse,
+                CreateOrigins(sourceSpan));
+            return true;
+        }
+
+        private bool TryConvertForEach(
+            IReadOnlyList<IntermediateNode> nodes,
+            ref int index,
+            out RazorVueForEachNode loopNode)
+        {
+            loopNode = default!;
+            if (nodes[index] is not CSharpCodeIntermediateNode codeNode)
+                return false;
+
+            var controlText = GetNodeText(codeNode);
+            if (!TryExtractControlHeader(controlText, "foreach", out _))
+                return false;
+
+            var sourceSpan = GetRequiredSourceSpan(codeNode, "CSharpCodeIntermediateNode foreach header");
+            var (itemName, sourceOperation) = ResolveForEachHeader(codeNode, sourceSpan);
+            var bodyStart = index + 1;
+            var bodyEnd = FindClosingCodeNodeIndex(nodes, bodyStart, itemName, sourceSpan, isForEach: true);
+            if (bodyEnd < bodyStart)
+                throw CreateUnsupportedNodeException(codeNode, "unterminated foreach CSharpCodeIntermediateNode");
+
+            var body = ConvertTemplateMethodBody(nodes.Skip(bodyStart).Take(bodyEnd - bodyStart));
+            index = bodyEnd + 1;
+            loopNode = new RazorVueForEachNode(
+                itemName,
+                sourceOperation,
+                body,
+                CreateOrigins(sourceSpan));
+            return true;
+        }
+
+        private (string ItemName, IOperation SourceOperation) ResolveForEachHeader(
+            CSharpCodeIntermediateNode codeNode,
+            SourceSpan sourceSpan)
+        {
+            var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR foreach expression");
+            var current = Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(operation);
+            if (current is not IForEachLoopOperation foreachLoop)
+            {
+                throw CreateUnsupportedAttributeException(
+                    sourceSpan,
+                    $"RazorVue Razor IR frontend expected a foreach loop operation in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            return (
+                foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0].Name : "item",
+                foreachLoop.Collection);
+        }
+
+        private int FindClosingCodeNodeIndex(
+            IReadOnlyList<IntermediateNode> nodes,
+            int startIndex,
+            string detail,
+            SourceSpan sourceSpan,
+            bool isForEach)
+        {
+            for (var candidateIndex = startIndex; candidateIndex < nodes.Count; candidateIndex++)
+            {
+                if (nodes[candidateIndex] is not CSharpCodeIntermediateNode closingNode)
+                    continue;
+
+                var text = GetNodeText(closingNode).Trim();
+                if (!IsClosingControlBlock(text))
+                    continue;
+
+                if (candidateIndex != nodes.Count - 1)
+                {
+                    var trailingSignificantNode = nodes.Skip(candidateIndex + 1).FirstOrDefault(static node =>
+                        node is not HtmlContentIntermediateNode html || !string.IsNullOrWhiteSpace(GetNodeText(html)));
+                    if (trailingSignificantNode is not null)
+                    {
+                        throw CreateUnsupportedAttributeException(
+                            sourceSpan,
+                            $"RazorVue Razor IR frontend does not yet support additional control-flow siblings after {(isForEach ? "foreach" : "if")} '{detail}' in component '{_snapshot.Descriptor.FullName}'.");
+                    }
+                }
+
+                return candidateIndex;
+            }
+
+            return -1;
+        }
+
+        private static bool TryExtractControlHeader(string text, string keyword, out string payload)
+        {
+            payload = string.Empty;
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
+
+            var trimmed = text.TrimStart();
+            if (!trimmed.StartsWith(keyword + " ", StringComparison.Ordinal) &&
+                !trimmed.StartsWith(keyword + "(", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            payload = trimmed;
+            return true;
+        }
+
+        private static bool IsClosingControlBlock(string text)
+            => string.Equals(text, "}", StringComparison.Ordinal);
+
         private static string GetComponentName(ComponentIntermediateNode node)
         {
             var normalizedTypeName = NormalizeTypeName(node.TypeName);
@@ -469,6 +688,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             var property = node.GetType().GetProperty("Content");
             return property?.GetValue(node) as string ?? string.Empty;
+        }
+
+        private static string? GetMethodDeclarationName(MethodDeclarationIntermediateNode node)
+        {
+            var nodeType = node.GetType();
+            var property = nodeType.GetProperty("MethodName") ?? nodeType.GetProperty("Name");
+            return property?.GetValue(node) as string;
         }
 
         private static IEnumerable<IntermediateToken> EnumerateTokens(IntermediateNode node)

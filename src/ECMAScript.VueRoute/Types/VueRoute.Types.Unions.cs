@@ -149,8 +149,8 @@ public readonly struct RouteComponent
 
 	public RouteComponentLoader? AsLoader => _kind == 2 ? _loader : default;
 
-	public static RouteComponent From(IVueComponent value)
-		=> new(value);
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteComponent From(IVueComponent value);
 
 	public static implicit operator RouteComponent(RouteComponentLoader value)
 		=> new(value);

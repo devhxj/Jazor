@@ -141,4 +141,108 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
                 origin.MappingQuality == RazorVueMappingQuality.ExactSource &&
                 string.Equals(origin.SourceFilePath, documentPath, StringComparison.OrdinalIgnoreCase)));
     }
+
+    [TestMethod]
+    public void CreateRenderTree_ForIfAndForeach_LowersMinimalStructuredControlFlow()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Items.Count > 0)
+            {
+                <ul>
+                @foreach (var item in Items)
+                {
+                    <li>@item</li>
+                }
+                </ul>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ControlFlow.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public List<string> Items { get; set; } = new();
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var renderTree = frontend.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+
+        var conditional = renderTree.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(conditional);
+        Assert.IsInstanceOfType<IConditionalOperation>(conditional.Condition);
+
+        var ul = conditional.WhenTrue.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(ul);
+        Assert.AreEqual("ul", ul.TagName);
+
+        var loop = ul.Children.Children[0] as RazorVueForEachNode;
+        Assert.IsNotNull(loop);
+        Assert.AreEqual("item", loop.ItemName);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(loop.Source);
+
+        var li = loop.Body.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(li);
+        Assert.AreEqual("li", li.TagName);
+        var itemExpression = li.Children.Children[0] as RazorVueExpressionNode;
+        Assert.IsNotNull(itemExpression);
+        Assert.IsInstanceOfType<ILocalReferenceOperation>(itemExpression.Expression);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerMinimalIfAndForeach()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Items.Count > 0)
+            {
+                <ul>
+                @foreach (var item in Items)
+                {
+                    <li>@item</li>
+                }
+                </ul>
+            }
+            """;
+
+        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ControlFlow.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public List<string> Items { get; set; } = new();
+                }
+            }
+            """);
+
+        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+            .Execute(context)
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "props.items.length > 0");
+        StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", item))");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"ul\"");
+    }
 }

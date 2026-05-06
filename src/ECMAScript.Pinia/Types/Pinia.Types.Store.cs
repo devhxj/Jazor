@@ -266,6 +266,19 @@ public static partial class Pinia
 	}
 
 	/// <summary>
+	/// Non-generic store-definition base used by helper APIs such as <c>mapStores()</c>
+	/// that accept heterogeneous store-definition lists.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class StoreDefinition
+	{
+		protected StoreDefinition()
+		{
+		}
+	}
+
+	/// <summary>
 	/// Callable store-definition wrapper returned by <c>defineStore()</c>.
 	/// Pinia exposes this as a function object; C# wraps the call surface in explicit
 	/// <c>Use(...)</c> methods so the API stays discoverable and does not rely on
@@ -274,7 +287,7 @@ public static partial class Pinia
 	/// <typeparam name="TStore">The typed store projection returned by the wrapper.</typeparam>
 	[ECMAScript]
 	[Description("@#")]
-	public abstract class StoreDefinition<TStore>
+	public abstract class StoreDefinition<TStore> : StoreDefinition
 		where TStore : class
 	{
 		protected StoreDefinition()

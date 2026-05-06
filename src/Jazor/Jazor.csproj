@@ -35,6 +35,10 @@
   <ItemGroup>
     <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.dll" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="..\ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.Pinia\bin\$(Configuration)\net10.0\ECMAScript.Pinia.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.Pinia\bin\$(Configuration)\net10.0\ECMAScript.Pinia.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.VueRoute\bin\$(Configuration)\net10.0\ECMAScript.VueRoute.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="..\ECMAScript.VueRoute\bin\$(Configuration)\net10.0\ECMAScript.VueRoute.pdb" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="..\ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="..\ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="..\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="lib\net10.0\" />
@@ -71,6 +75,8 @@
 
   <ItemGroup>
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Contract\ECMAScript.Contract.csproj" />

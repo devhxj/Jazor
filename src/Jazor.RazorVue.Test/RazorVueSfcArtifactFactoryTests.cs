@@ -4,6 +4,7 @@ using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -149,6 +150,85 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         StringAssert.Contains(artifact.TemplateText, "Injected pipeline SFC");
         Assert.AreEqual("InjectedPipelineCard", artifact.ComponentName);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcPipeline_DefaultConstructor_UsesDocumentAwareSemanticFrontend()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """
+            @page "/todo"
+            <section>Hello from default SFC pipeline</section>
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.SfcPipeline.DefaultConstructor.RazorDocument.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class TodoApp
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.AddContent(0, "Hello from generated render tree");
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = CreateContext(
+            compilation,
+            RazorVueRazorDocumentSet.Create(
+            [
+                new RazorVueRazorDocument(documentPath.Replace('\\', '/'), SourceText.From(razorDocumentText))
+            ]));
+
+        var artifact = new RazorVueSfcPipeline(new RazorDocumentEchoTemplateFrontend()).Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.SfcText, "@page \"/todo\"");
+        StringAssert.Contains(artifact.SfcText, "Hello from default SFC pipeline");
+        Assert.IsFalse(artifact.SfcText.Contains("Hello from generated render tree", StringComparison.Ordinal), artifact.SfcText);
     }
 
     [TestMethod]
@@ -929,6 +1009,20 @@ public sealed class RazorVueSfcArtifactFactoryTests
         return context;
     }
 
+    private static RazorVueCompilationContext CreateContext(
+        Compilation compilation,
+        RazorVueRazorDocumentSet? razorDocuments)
+    {
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation, razorDocuments);
+        Assert.IsNotNull(context);
+        return context;
+    }
+
     private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend
     {
         public string Name => "Jazor.RazorVue.Test.FixedSfcTemplateFrontend";
@@ -938,6 +1032,19 @@ public sealed class RazorVueSfcArtifactFactoryTests
             _ = context;
             _ = snapshot;
             return renderTree;
+        }
+    }
+
+    private sealed class RazorDocumentEchoTemplateFrontend : IRazorVueTemplateFrontend
+    {
+        public string Name => "Jazor.RazorVue.Test.RazorDocumentEchoSfcTemplateFrontend";
+
+        public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
+        {
+            Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var document));
+            return new RazorVueRenderFragment(
+                ImmutableArray.Create<RazorVueRenderNode>(
+                    new RazorVueTextNode(document.Text.ToString().Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
         }
     }
 

@@ -124,6 +124,189 @@ public static partial class Pinia
 		where TStore : class;
 
 	/// <summary>
+	/// Maps store state and getters into a Vue Options API <c>computed</c> object using
+	/// array-form member names.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection returned by the store definition.</typeparam>
+	/// <param name="useStore">The store definition wrapper returned by <c>defineStore()</c>.</param>
+	/// <param name="keys">The store member names that should be projected into computed entries.</param>
+	/// <returns>A Vue options bag suitable for <c>computed:</c>.</returns>
+	[Description("@#mapState")]
+	public extern static Vue3.VueProps MapState<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store state and getters into a user-declared typed Vue Options API
+	/// <c>computed</c> projection using array-form member names.
+	/// </summary>
+	/// <typeparam name="TComputed">The user-declared computed options projection type.</typeparam>
+	/// <typeparam name="TStore">The typed store projection returned by the store definition.</typeparam>
+	/// <param name="useStore">The store definition wrapper returned by <c>defineStore()</c>.</param>
+	/// <param name="keys">The store member names that should be projected into computed entries.</param>
+	/// <returns>The typed Vue options bag suitable for <c>computed:</c>.</returns>
+	[Description("@#mapState")]
+	public extern static TComputed MapState<TComputed, TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TComputed : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store state and getters into a Vue Options API <c>computed</c> object using
+	/// object-form key mapping.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection returned by the store definition.</typeparam>
+	/// <param name="useStore">The store definition wrapper returned by <c>defineStore()</c>.</param>
+	/// <param name="keyMapper">The key-mapper object whose values are store member names or custom selectors.</param>
+	/// <returns>A Vue options bag suitable for <c>computed:</c>.</returns>
+	[Description("@#mapState")]
+	public extern static Vue3.VueProps MapState<TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store state and getters into a user-declared typed Vue Options API
+	/// <c>computed</c> projection using object-form key mapping.
+	/// </summary>
+	/// <typeparam name="TComputed">The user-declared computed options projection type.</typeparam>
+	/// <typeparam name="TStore">The typed store projection returned by the store definition.</typeparam>
+	/// <param name="useStore">The store definition wrapper returned by <c>defineStore()</c>.</param>
+	/// <param name="keyMapper">The key-mapper object whose values are store member names or custom selectors.</param>
+	/// <returns>The typed Vue options bag suitable for <c>computed:</c>.</returns>
+	[Description("@#mapState")]
+	public extern static TComputed MapState<TComputed, TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
+		where TComputed : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Deprecated alias of <see cref="MapState{TStore}(StoreDefinition{TStore},string[])"/>.
+	/// </summary>
+	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
+	[Description("@#mapGetters")]
+	public extern static Vue3.VueProps MapGetters<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TStore : class;
+
+	/// <summary>
+	/// Deprecated typed alias of <see cref="MapState{TComputed,TStore}(StoreDefinition{TStore},string[])"/>.
+	/// </summary>
+	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
+	[Description("@#mapGetters")]
+	public extern static TComputed MapGetters<TComputed, TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TComputed : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Deprecated alias of <see cref="MapState{TStore}(StoreDefinition{TStore},PiniaStateMapper{TStore})"/>.
+	/// </summary>
+	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
+	[Description("@#mapGetters")]
+	public extern static Vue3.VueProps MapGetters<TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
+		where TStore : class;
+
+	/// <summary>
+	/// Deprecated typed alias of <see cref="MapState{TComputed,TStore}(StoreDefinition{TStore},PiniaStateMapper{TStore})"/>.
+	/// </summary>
+	[Obsolete("Pinia's mapGetters is an alias for mapState; prefer MapState.")]
+	[Description("@#mapGetters")]
+	public extern static TComputed MapGetters<TComputed, TStore>(StoreDefinition<TStore> useStore, PiniaStateMapper<TStore> keyMapper)
+		where TComputed : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Maps writable store state into a Vue Options API <c>computed</c> object using
+	/// array-form member names.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection returned by the store definition.</typeparam>
+	/// <param name="useStore">The store definition wrapper returned by <c>defineStore()</c>.</param>
+	/// <param name="keys">The writable state member names that should be projected into computed entries.</param>
+	/// <returns>A Vue options bag suitable for <c>computed:</c>.</returns>
+	[Description("@#mapWritableState")]
+	public extern static Vue3.VueProps MapWritableState<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TStore : class;
+
+	/// <summary>
+	/// Maps writable store state into a user-declared typed Vue Options API
+	/// <c>computed</c> projection using array-form member names.
+	/// </summary>
+	[Description("@#mapWritableState")]
+	public extern static TComputed MapWritableState<TComputed, TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TComputed : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Maps writable store state into a Vue Options API <c>computed</c> object using
+	/// object-form key mapping.
+	/// </summary>
+	[Description("@#mapWritableState")]
+	public extern static Vue3.VueProps MapWritableState<TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
+		where TStore : class;
+
+	/// <summary>
+	/// Maps writable store state into a user-declared typed Vue Options API
+	/// <c>computed</c> projection using object-form key mapping.
+	/// </summary>
+	[Description("@#mapWritableState")]
+	public extern static TComputed MapWritableState<TComputed, TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
+		where TComputed : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store actions into a Vue Options API <c>methods</c> object using array-form
+	/// action names.
+	/// </summary>
+	[Description("@#mapActions")]
+	public extern static Vue3.VueProps MapActions<TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store actions into a user-declared typed Vue Options API <c>methods</c>
+	/// projection using array-form action names.
+	/// </summary>
+	[Description("@#mapActions")]
+	public extern static TMethods MapActions<TMethods, TStore>(StoreDefinition<TStore> useStore, string[] keys)
+		where TMethods : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store actions into a Vue Options API <c>methods</c> object using object-form
+	/// key mapping.
+	/// </summary>
+	[Description("@#mapActions")]
+	public extern static Vue3.VueProps MapActions<TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
+		where TStore : class;
+
+	/// <summary>
+	/// Maps store actions into a user-declared typed Vue Options API <c>methods</c>
+	/// projection using object-form key mapping.
+	/// </summary>
+	[Description("@#mapActions")]
+	public extern static TMethods MapActions<TMethods, TStore>(StoreDefinition<TStore> useStore, PiniaKeyMapper keyMapper)
+		where TMethods : Vue3.VueProps
+		where TStore : class;
+
+	/// <summary>
+	/// Maps multiple stores into a Vue Options API <c>computed</c> object using Pinia's
+	/// store-suffix naming convention.
+	/// </summary>
+	/// <param name="stores">The store definitions that should be projected onto the component instance.</param>
+	/// <returns>A Vue options bag suitable for <c>computed:</c>.</returns>
+	[Description("@#mapStores")]
+	public extern static Vue3.VueProps MapStores(params StoreDefinition[] stores);
+
+	/// <summary>
+	/// Maps multiple stores into a user-declared typed Vue Options API <c>computed</c>
+	/// projection using Pinia's store-suffix naming convention.
+	/// </summary>
+	[Description("@#mapStores")]
+	public extern static TComputed MapStores<TComputed>(params StoreDefinition[] stores)
+		where TComputed : Vue3.VueProps;
+
+	/// <summary>
+	/// Changes the suffix used by <c>mapStores()</c> when projecting store definitions
+	/// onto component instance properties.
+	/// </summary>
+	/// <param name="suffix">The suffix appended to each mapped store id.</param>
+	[Description("@#setMapStoreSuffix")]
+	public extern static void SetMapStoreSuffix(string suffix);
+
+	/// <summary>
 	/// Creates an HMR accept handler for a previously declared store definition.
 	/// </summary>
 	/// <typeparam name="TStore">The typed store projection returned by the store definition.</typeparam>

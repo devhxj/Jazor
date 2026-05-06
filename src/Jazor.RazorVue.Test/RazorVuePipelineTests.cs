@@ -207,6 +207,85 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_DefaultConstructor_UsesDocumentAwareSemanticFrontend()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """
+            @page "/todo"
+            <section>Hello from default pipeline</section>
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Pipeline.DefaultConstructor.RazorDocument.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class TodoApp
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.AddContent(0, "Hello from generated render tree");
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.g.cs")
+            ],
+            references: CreateReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = CreateContext(
+            compilation,
+            RazorVueRazorDocumentSet.Create(
+            [
+                new RazorVueRazorDocument(documentPath.Replace('\\', '/'), SourceText.From(razorDocumentText))
+            ]));
+
+        var artifact = new RazorVuePipeline(new RazorDocumentEchoTemplateFrontend()).Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "@page \\\"/todo\\\"");
+        StringAssert.Contains(artifact.ModuleCode, "Hello from default pipeline");
+        Assert.IsFalse(artifact.ModuleCode.Contains("Hello from generated render tree", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
     public void RazorVue_CompilationContext_DoesNotRediscoverReferencedUserComponents_AsCurrentAssemblySnapshots()
     {
         var libraryCompilation = CSharpCompilation.Create(
