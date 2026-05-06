@@ -11,6 +11,7 @@
 |--------|---------|-----------|---------|
 | Compiler 主线 | 接近稳定 | 巩固 output closure、import closure、host seam | [详情](../03-完成/compiler/status.md) |
 | ECMAScript.Vue3 外部库线 | 三阶段：Phase 1 完成，Phase 2 收口中 | 收敛 `H(...)` 规范层、在已固定的 slot contract 上扩 parity 覆盖、把 RazorVue 库模式切到 design-time SFC artifact | [详情](../03-完成/ecmascript.vue3/status.md) |
+| ECMAScript.Pinia 外部库线 | 初始落地完成，进入增量补齐 | 补 setup-store helpers 设计、继续沉淀外部库模板与独立测试治理 | [详情](../03-完成/ecmascript.pinia/status.md) |
 | Emit / Materialisation | 持续承接 | 显式化 materialisation / sourcemap 承接职责 | [详情](../03-完成/emit/status.md) |
 | Jolt | Phase 1-6 收口中 | 调试闭环（CDP）、构建收口、Phase 7 扩展系统启动门槛 | [详情](../03-完成/jolt/status.md) |
 | SourceMap | 局部活跃（narrow lane） | 继续补齐调试消费链路与精度提升 | [详情](../03-完成/sourcemap/status.md) |
@@ -30,6 +31,7 @@
 **允许的并行**：
 - Documentation governance 可以持续运行
 - ECMAScript.Vue3 外部库线可与 compiler 主线并行推进（前提是不新增 Vue 命名特路）
+- ECMAScript.Pinia 外部库线可与 compiler 主线并行推进（前提是不新增 Pinia 命名特路）
 - Narrow SourceMap 工作可以和 Jolt / emit 集成并行推进
 - Emit 可以作为活跃依赖层持续演进（compiler 作为上游基础）
 

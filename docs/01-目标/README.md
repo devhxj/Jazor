@@ -22,6 +22,8 @@
 | `razor/` | `src/Jazor.Razor/` + `src/Jazor.Compiler.Razor/` | Razor 基础标记与编译器侧语义前端 |
 | `ecmascript/` | `src/ECMAScript/` | ECMAScript host、host/nullish 边界与 WebIDL 相关目标 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库映射目标、覆盖矩阵与模块规则 |
+| `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | ECMAScript.Pinia 外部库映射目标、Pinia API 覆盖矩阵与 authoring 边界 |
+| `ecmascript.vueroute/` | `src/ECMAScript.VueRoute/` | ECMAScript.VueRoute 外部库映射目标、Vue Router API 覆盖矩阵与 authoring 边界 |
 | `razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 库模式 Razor-to-JS、组件描述、Razor SDK 桥接与 Vuetify authoring |
 | `jolt/` | `src/Jolt/` | `.jazor` LSP、DevServer、Build、Debug、Deno/Volar 集成 |
 | `common/` | `src/ECMAScript.Contract/` + `src/Jazor.Common/` | 最小契约层与共享实现层 |

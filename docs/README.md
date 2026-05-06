@@ -38,9 +38,11 @@
 | `01-目标/webidl/` | `src/ECMAScript.WebIDL.Generator/` |
 | `01-目标/tools/` | `src/Jazor/` + `src/Jolt.VSCodeExtension/` + 相关测试/工具项目 |
 | `01-目标/ecmascript.vue3/` | `src/ECMAScript.Vue3/` |
+| `01-目标/ecmascript.pinia/` | `src/ECMAScript.Pinia/` |
 | **02-计划** | |
 | `02-计划/ecmascript/` | `src/ECMAScript/` |
 | `02-计划/ecmascript.vue3/` | `src/ECMAScript.Vue3/` |
+| `02-计划/ecmascript.pinia/` | `src/ECMAScript.Pinia/` |
 | `02-计划/wiki/` | `src/Wiki/` |
 | `02-计划/jolt/` | `src/Jolt/` |
 | `02-计划/compiler/` | `src/Jazor.Compiler/` |
@@ -51,6 +53,7 @@
 | `03-完成/compiler/` | `src/Jazor.Compiler/` |
 | `03-完成/emit/` | `src/Jazor.Emit/` |
 | `03-完成/ecmascript.vue3/` | `src/ECMAScript.Vue3/` |
+| `03-完成/ecmascript.pinia/` | `src/ECMAScript.Pinia/` |
 
 ## 快速入口
 
@@ -59,6 +62,10 @@
 - ECMAScript Vue3 模块映射规则 → [01-目标/ecmascript.vue3/vue3-module-mapping-rules.md](./01-目标/ecmascript.vue3/vue3-module-mapping-rules.md)
 - ECMAScript Vue3 API 覆盖矩阵 → [01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md](./01-目标/ecmascript.vue3/vue3-api-coverage-matrix.md)
 - ECMAScript Vue3 映射细节 → [01-目标/ecmascript.vue3/vue3-mapping-details.md](./01-目标/ecmascript.vue3/vue3-mapping-details.md)
+- ECMAScript Pinia 目标设计 → [01-目标/ecmascript.pinia/pinia-balanced-design.md](./01-目标/ecmascript.pinia/pinia-balanced-design.md)
+- ECMAScript Pinia API 覆盖矩阵 → [01-目标/ecmascript.pinia/pinia-api-coverage-matrix.md](./01-目标/ecmascript.pinia/pinia-api-coverage-matrix.md)
+- ECMAScript Pinia 剩余清单 → [02-计划/ecmascript.pinia/ECMAScript.Pinia.RemainingWorkChecklist.md](./02-计划/ecmascript.pinia/ECMAScript.Pinia.RemainingWorkChecklist.md)
+- ECMAScript Pinia 当前状态 → [03-完成/ecmascript.pinia/status.md](./03-完成/ecmascript.pinia/status.md)
 - ECMAScript Vue3 落地计划 → [02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md](./02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md)
 - ECMAScript Vue3 当前状态 → [03-完成/ecmascript.vue3/status.md](./03-完成/ecmascript.vue3/status.md)
 - Wiki 阶段计划 → [02-计划/wiki/Wiki.Phases.md](./02-计划/wiki/Wiki.Phases.md)

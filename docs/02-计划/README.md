@@ -14,6 +14,7 @@ WBS、里程碑、阶段拆分，以及各工作流的当前执行进度。
 |------|---------|------|
 | `ecmascript/` | `src/ECMAScript/` | ECMAScript 平台内核相关执行级计划 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库 authoring surface 的执行级落地计划 |
+| `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | ECMAScript.Pinia 外部库 authoring surface 的执行级收口清单 |
 | `wiki/` | `src/Wiki/` | `jazor.wiki` sample 的阶段划分、收口计划与产品化分流边界 |
 | `jolt/` | `src/Jolt/` | Phase 计划、切片实施文档、运行模式收口 |
 | `jolt/razorvue-implementation/` | RazorVue 迁移材料（当前按 RazorVue 独立线路理解） | RazorVue 模板前端迁移、HMR/桥接边界与历史交叉材料；当前不应自动解读为 `Jolt` 生产代码所有权 |

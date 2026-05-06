@@ -12,4 +12,8 @@
 
 ## 拆分说明
 
-`ECMAScript.Vue3` 文档已拆分到独立目录：[docs/01-目标/ecmascript.vue3/](../ecmascript.vue3/README.md)。
+`ECMAScript.Vue3`、`ECMAScript.Pinia` 与 `ECMAScript.VueRoute` 文档都已拆分到独立目录：
+
+- [docs/01-目标/ecmascript.vue3/](../ecmascript.vue3/README.md)
+- [docs/01-目标/ecmascript.pinia/](../ecmascript.pinia/README.md)
+- [docs/01-目标/ecmascript.vueroute/](../ecmascript.vueroute/README.md)

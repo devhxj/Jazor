@@ -14,7 +14,7 @@
 > ⚠️ **实验性项目** ⚠️
 > 公共 API、生成的输出形态以及工具链仍在演进中。编译器核心和 ECMAScript 模块发射是项目中最稳定的部分。
 
-Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是将 `IOperation` 语义降低为 ECMAScript AST。用 `[ECMAScriptModule]` 标注 C# 类，构建时自动生成 `.mjs` 文件。内含 `ECMAScript.Vue3` 提供类型化的 Vue 3 `h()` 渲染函数绑定。
+Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是将 `IOperation` 语义降低为 ECMAScript AST。用 `[ECMAScriptModule]` 标注 C# 类，构建时自动生成 `.mjs` 文件。内含 `ECMAScript.Vue3` 提供类型化的 Vue 3 `h()` 渲染函数绑定，也提供 `ECMAScript.Pinia` 的 Pinia store 绑定，以及 `ECMAScript.VueRoute` 的 Vue Router 绑定。
 
 ## 特性
 
@@ -24,6 +24,8 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 - **CLR 运行时模块** — 常见 BCL 类型（`string`、`int`、`double`、`List<T>`、`Dictionary<TKey, TValue>`、`Task<T>` 等）通过 `Jazor.CLR` 映射到 JavaScript 运行时实现
 - **ECMAScript 模块发射** — `[ECMAScriptModule]` 标注的类编译为 `.mjs` 文件，自动处理跨模块 import 解析和 source map
 - **Vue 3 集成** — `ECMAScript.Vue3` 提供 Vue 3 Composition API 和 `h()` 渲染函数的类型化 C# 绑定，支持纯 C# 编写组件
+- **Pinia 集成** — `ECMAScript.Pinia` 提供 Pinia 根实例和 store authoring 的类型化 C# 绑定，包括 `createPinia()`、`defineStore()`、`storeToRefs()`，以及 `mapState()` / `mapActions()` 等常用 Options API helper
+- **Vue Router 集成** — `ECMAScript.VueRoute` 提供 Vue Router 4 authoring 的类型化 C# 绑定，包括 `createRouter()`、history 创建函数、`useRouter()`、`useRoute()`、`RouterLink` 与 `RouterView`
 - **MSBuild 集成** — 通过标准 MSBuild 属性配置发射、打包和输出路径
 
 ## 项目状态
@@ -54,7 +56,7 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 dotnet add package Jazor
 ```
 
-该包包含运行时（`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.Vuetify`）、编译器（`Jazor.Compiler`）、静态分析器（`Jazor.Analyzer`）、发射工具（`Jazor.Emit`）以及 MSBuild props/targets。
+该包包含运行时（`ECMAScript`、`ECMAScript.Vue3`、`ECMAScript.Pinia`、`ECMAScript.VueRoute`、`ECMAScript.Vuetify`）、编译器（`Jazor.Compiler`）、静态分析器（`Jazor.Analyzer`）、发射工具（`Jazor.Emit`）以及 MSBuild props/targets。
 
 ### 多项目配置
 
@@ -194,7 +196,11 @@ Jazor/
 ├── src/
 │   ├── ECMAScript/                  # ECMAScript AST 核心类型与特性
 │   ├── ECMAScript.Contract/         # 最小契约层（JazorAttribute、Op）
+│   ├── ECMAScript.Pinia/            # Pinia 运行时绑定面
+│   ├── ECMAScript.Pinia.Test/       # Pinia 绑定测试
 │   ├── ECMAScript.Vue3/             # Vue 3 运行时绑定面
+│   ├── ECMAScript.VueRoute/         # Vue Router 运行时绑定面
+│   ├── ECMAScript.VueRoute.Test/    # Vue Router 绑定测试
 │   ├── ECMAScript.Vuetify/          # Vuetify 绑定与组件桩
 │   ├── Jazor.Compiler/              # C# → JS 编译器核心
 │   ├── Jazor.Analyzer/              # 静态分析器（白名单验证）
@@ -215,7 +221,7 @@ Jazor/
 |------|------|
 | **新访客** | [文档中心](docs/README.md) — 项目全貌与导航 |
 | **维护者** | [工作流总览](docs/02-计划/workstream-dashboard.md) — 恢复工作唯一入口 |
-| **架构设计** | [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [ECMAScript.Vue3 设计](docs/01-目标/ecmascript.vue3/README.md) |
+| **架构设计** | [编译器架构](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [ECMAScript.Vue3 设计](docs/01-目标/ecmascript.vue3/README.md) · [ECMAScript.Pinia 设计](docs/01-目标/ecmascript.pinia/README.md) · [ECMAScript.VueRoute 设计](docs/01-目标/ecmascript.vueroute/README.md) |
 
 文档按五类组织：[目标](docs/01-目标/README.md) · [计划](docs/02-计划/README.md) · [完成](docs/03-完成/README.md) · [补充](docs/04-补充/README.md) · [遗弃](docs/05-遗弃/README.md)
 
@@ -241,6 +247,12 @@ pwsh ./scripts/test-dotnet.ps1
 
 # 仅运行编译器测试
 pwsh ./scripts/test-dotnet.ps1 -Project compiler
+
+# 仅运行 Pinia 绑定测试
+pwsh ./scripts/test-dotnet.ps1 -Project pinia
+
+# 仅运行 Vue Router 绑定测试
+pwsh ./scripts/test-dotnet.ps1 -Project vueroute
 
 # 运行单个测试类
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"

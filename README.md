@@ -13,7 +13,7 @@
 
 > Experimental. Public APIs, generated output shape, and tooling are still evolving. The compiler core and ECMAScript module emission are the most stable parts of the project.
 
-Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to ECMAScript AST lowering. Annotate C# classes with `[ECMAScriptModule]`, get `.mjs` files at build time. Includes typed Vue 3 `h()` render function bindings via `ECMAScript.Vue3`.
+Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to ECMAScript AST lowering. Annotate C# classes with `[ECMAScriptModule]`, get `.mjs` files at build time. Includes typed Vue 3 `h()` render function bindings via `ECMAScript.Vue3`, Pinia store bindings via `ECMAScript.Pinia`, and Vue Router bindings via `ECMAScript.VueRoute`.
 
 ## Features
 
@@ -23,6 +23,8 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 - **CLR runtime modules** — common BCL types (`string`, `int`, `double`, `List<T>`, `Dictionary<TKey, TValue>`, `Task<T>`, etc.) are mapped to JavaScript runtime implementations through `Jazor.CLR`
 - **ECMAScript module emission** — `[ECMAScriptModule]` annotated classes compile to `.mjs` files with automatic cross-module import resolution and source maps
 - **Vue 3 integration** — `ECMAScript.Vue3` provides typed C# bindings for Vue 3's Composition API and `h()` render function, enabling component authoring in pure C#
+- **Pinia integration** — `ECMAScript.Pinia` provides typed C# bindings for Pinia root/store authoring, including `createPinia()`, `defineStore()`, `storeToRefs()`, and common Options API helpers such as `mapState()` / `mapActions()`
+- **Vue Router integration** — `ECMAScript.VueRoute` provides typed C# bindings for Vue Router 4 authoring, including `createRouter()`, history creators, `useRouter()`, `useRoute()`, `RouterLink`, and `RouterView`
 - **MSBuild integration** — emit, bundle, and output path configuration through standard MSBuild properties
 
 ## Status
@@ -53,7 +55,7 @@ Users today should target the **Working** tier. The Long-term items have extensi
 dotnet add package Jazor
 ```
 
-The package includes runtime (`ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.Vuetify`), compiler (`Jazor.Compiler`), static analyzer (`Jazor.Analyzer`), emit tool (`Jazor.Emit`), and MSBuild props/targets.
+The package includes runtime (`ECMAScript`, `ECMAScript.Vue3`, `ECMAScript.Pinia`, `ECMAScript.VueRoute`, `ECMAScript.Vuetify`), compiler (`Jazor.Compiler`), static analyzer (`Jazor.Analyzer`), emit tool (`Jazor.Emit`), and MSBuild props/targets.
 
 ### Multi-project Setup
 
@@ -193,7 +195,11 @@ Jazor/
 ├── src/
 │   ├── ECMAScript/                  # ECMAScript AST core types and attributes
 │   ├── ECMAScript.Contract/         # Minimal contract layer (JazorAttribute, Op)
+│   ├── ECMAScript.Pinia/            # Pinia runtime binding surface
+│   ├── ECMAScript.Pinia.Test/       # Pinia binding tests
 │   ├── ECMAScript.Vue3/             # Vue 3 runtime binding surface
+│   ├── ECMAScript.VueRoute/         # Vue Router runtime binding surface
+│   ├── ECMAScript.VueRoute.Test/    # Vue Router binding tests
 │   ├── ECMAScript.Vuetify/          # Vuetify bindings and component stubs
 │   ├── Jazor.Compiler/              # C# → JS compiler core
 │   ├── Jazor.Analyzer/              # Static analyzer (whitelist validation)
@@ -214,7 +220,7 @@ Jazor/
 |----------|-------|
 | **New visitors** | [Docs Hub](docs/README.md) — project overview and navigation |
 | **Maintainers** | [Workstream Dashboard](docs/02-计划/workstream-dashboard.md) — resume work entry point |
-| **Architecture** | [Compiler Architecture](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [ECMAScript.Vue3 Design](docs/01-目标/ecmascript.vue3/README.md) |
+| **Architecture** | [Compiler Architecture](docs/01-目标/compiler/ArchitectureOverview.Simplified.md) · [ECMAScript.Vue3 Design](docs/01-目标/ecmascript.vue3/README.md) · [ECMAScript.Pinia Design](docs/01-目标/ecmascript.pinia/README.md) · [ECMAScript.VueRoute Design](docs/01-目标/ecmascript.vueroute/README.md) |
 
 Docs are organized into five categories: [Goals](docs/01-目标/README.md) · [Plans](docs/02-计划/README.md) · [Completed](docs/03-完成/README.md) · [Supplements](docs/04-补充/README.md) · [Retired](docs/05-遗弃/README.md)
 
@@ -240,6 +246,12 @@ pwsh ./scripts/test-dotnet.ps1
 
 # Run compiler tests only
 pwsh ./scripts/test-dotnet.ps1 -Project compiler
+
+# Run Pinia binding tests only
+pwsh ./scripts/test-dotnet.ps1 -Project pinia
+
+# Run Vue Router binding tests only
+pwsh ./scripts/test-dotnet.ps1 -Project vueroute
 
 # Run a single test class
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"

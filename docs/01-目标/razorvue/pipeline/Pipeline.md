@@ -23,16 +23,16 @@ public sealed class RazorVuePipeline
 
 | 依赖 | 职责 | 默认实现 |
 |------|------|---------|
-| `IRazorSemanticFrontend` | 从 Roslyn Compilation / 宿主绑定结果提取 RazorVue 语义快照 | `DefaultRazorSemanticFrontend.Instance`（Roslyn-only），Razor SDK 宿主默认使用 `RazorVueRazorDocumentSemanticFrontend.Instance` |
+| `IRazorSemanticFrontend` | 从 Roslyn Compilation / 宿主绑定结果提取 RazorVue 语义快照 | `RazorVueRazorDocumentSemanticFrontend.Instance`（默认），`DefaultRazorSemanticFrontend.Instance` 仅保留给 Roslyn-only 场景 |
 | `IRazorVueArtifactLowerer` | 将语义快照降级为 VueCompiledArtifact | `RazorVueArtifactFactory` |
 | `RazorVueCatalogBuilder` | 构建最终组件目录 | 内部实现 |
 
 ### 2.2 构造函数重载
 
 ```csharp
-// 单参构造：显式模板前端，使用默认语义前端和默认降级器
+// 单参构造：显式模板前端，默认使用文档感知语义前端和默认降级器
 public RazorVuePipeline(IRazorVueTemplateFrontend templateFrontend)
-    : this(DefaultRazorSemanticFrontend.Instance, templateFrontend)
+    : this(RazorVueRazorDocumentSemanticFrontend.Instance, templateFrontend)
 
 // 双参构造：显式语义前端 + 显式模板前端
 public RazorVuePipeline(IRazorSemanticFrontend semanticFrontend, IRazorVueTemplateFrontend templateFrontend)
@@ -167,7 +167,7 @@ public RazorVueCatalog Execute(
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │           IRazorSemanticFrontend.CanHandle()                    │
-│           (DefaultRazorSemanticFrontend.Instance)               │
+│      (RazorVueRazorDocumentSemanticFrontend.Instance)           │
 └────────────────────────┬────────────────────────────────────────┘
                          │ true
                          ▼
@@ -203,16 +203,16 @@ public RazorVueCatalog Execute(
 
 ## 5. 语义前端集成
 
-### 5.1 DefaultRazorSemanticFrontend 实现
+### 5.1 默认语义前端
 
-**文件位置**: `src/Jazor.RazorVue/Extensibility/DefaultRazorSemanticFrontend.cs`
+**默认文件位置**: `src/Jazor.RazorVue/RazorSdk/RazorVueRazorDocumentSemanticFrontend.cs`
 
 ```csharp
-internal sealed class DefaultRazorSemanticFrontend : IRazorSemanticFrontend
+internal sealed class RazorVueRazorDocumentSemanticFrontend : IRazorSemanticFrontend
 {
-    public static DefaultRazorSemanticFrontend Instance { get; } = new();
+    public static RazorVueRazorDocumentSemanticFrontend Instance { get; } = new();
 
-    public string Name => "Jazor.Compiler.DefaultRazorFrontend";
+    public string Name => "Jazor.RazorVue.RazorSdk.RazorVueRazorDocumentSemanticFrontend";
 
     public bool CanHandle(RazorVueCompilationContext context)
         => context is not null;
@@ -221,25 +221,30 @@ internal sealed class DefaultRazorSemanticFrontend : IRazorSemanticFrontend
         => GetRequiredContext(context).ClassifyEntry(symbol);
 
     public ImmutableArray<RazorVueSemanticSnapshot> CreateSemanticSnapshots(RazorVueCompilationContext context)
-        => GetRequiredContext(context).CreateSemanticSnapshots();
+    {
+        var requiredContext = GetRequiredContext(context);
+        // 这里会补齐 RazorDocumentPath 与 RazorImportDocumentPaths
+        // 然后再创建语义快照。
+        ...
+    }
 }
 ```
 
 ### 5.2 委托模式
 
-`DefaultRazorSemanticFrontend` 现在只是 `RazorVueCompilationContext` 的 Roslyn-only 薄包装：
+默认入口现在不再是 Roslyn-only 前端，而是文档感知前端：
 
 | 方法 | 委托目标 |
 |------|---------|
 | `CanHandle()` | `context != null` |
 | `ClassifyEntry()` | `context.ClassifyEntry()` |
-| `CreateSemanticSnapshots()` | `context.CreateSemanticSnapshots()` |
+| `CreateSemanticSnapshots()` | `DiscoverComponentCandidates()` + Razor 文档定位 + `CreateSemanticSnapshot(...)` |
 
 **设计意图**:
-- `Jazor.Common` 默认语义前端不再承担 `.razor` / `_Imports.razor` 文档定位
-- 保持 `IRazorSemanticFrontend` 接口稳定，让 Razor SDK 宿主可以在外层替换成文档感知前端
+- 默认 pipeline 应该优先拥有 `.razor` / `_Imports.razor` 绑定能力
+- Razor 生成组件优先走 Razor 文档 / IR
+- `DefaultRazorSemanticFrontend` 仍可保留给不需要 Razor 文档绑定的 Roslyn-only 特殊场景
 - 单例模式避免重复初始化开销
-- 需要 Razor 文档绑定时，由 `Jazor.RazorVue.RazorSdk.RazorVueRazorDocumentSemanticFrontend` 在宿主层补齐
 
 ## 6. 错误处理策略
 
@@ -322,7 +327,7 @@ public interface IRazorVueArtifactLowerer
 ### 8.1 基本使用（显式模板前端）
 
 ```csharp
-var pipeline = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance);
+var pipeline = new RazorVuePipeline(RazorVuePreferredTemplateFrontend.Instance);
 var catalog = pipeline.Execute(compilation);
 
 foreach (var artifact in catalog.Artifacts)
@@ -346,7 +351,7 @@ var catalog = pipeline.Execute(compilation);
 var context = RazorVueCompilationContext.TryCreate(compilation);
 if (context is not null)
 {
-    var pipeline = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance);
+    var pipeline = new RazorVuePipeline(RazorVuePreferredTemplateFrontend.Instance);
     var catalog = pipeline.Execute(context);
 }
 ```
@@ -359,7 +364,7 @@ var snapshots = ImmutableArray.Create(
     new RazorVueSemanticSnapshot(/* ... */)
 );
 
-var pipeline = new RazorVuePipeline(BuildRenderTreeTemplateFrontend.Instance);
+var pipeline = new RazorVuePipeline(RazorVuePreferredTemplateFrontend.Instance);
 var catalog = pipeline.Execute("MyAssembly", snapshots);
 ```
 
@@ -423,7 +428,8 @@ IEnumerable<VueCompiledArtifact> artifacts =
 | `src/Jazor.RazorVue/RazorVuePipeline.cs` | Pipeline 主类 |
 | `src/Jazor.RazorVue/Extensibility/IRazorSemanticFrontend.cs` | 语义前端接口 |
 | `src/Jazor.RazorVue/Extensibility/IRazorVueArtifactLowerer.cs` | Artifact 降级接口 |
-| `src/Jazor.RazorVue/Extensibility/DefaultRazorSemanticFrontend.cs` | 默认语义前端实现 |
+| `src/Jazor.RazorVue/RazorSdk/RazorVueRazorDocumentSemanticFrontend.cs` | 默认语义前端实现 |
+| `src/Jazor.RazorVue/Extensibility/DefaultRazorSemanticFrontend.cs` | Roslyn-only 备用语义前端 |
 | `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs` | Roslyn generator 宿主（调用 pipeline） |
 | `src/Jazor.RazorVue/Artifacts/RazorVueCatalog.cs` | 目录数据结构 |
 | `src/Jazor.RazorVue/Artifacts/RazorVueCompilationContext.cs` | 编译上下文 |

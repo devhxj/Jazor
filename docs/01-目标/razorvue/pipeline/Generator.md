@@ -200,7 +200,9 @@ _ = razorVueContext.DiscoverLibraryComponents();
 #### 步骤 3: 执行 Pipeline
 
 ```csharp
-var catalog = new RazorVuePipeline(RazorVuePreferredTemplateFrontend.Instance).Execute(compilation);
+var catalog = new RazorVuePipeline(
+    RazorVueRazorDocumentSemanticFrontend.Instance,
+    RazorVuePreferredTemplateFrontend.Instance).Execute(compilation);
 if (catalog.Artifacts.IsDefaultOrEmpty)
     return;
 ```

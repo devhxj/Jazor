@@ -1,158 +1,173 @@
-# RazorVue SFC 生成：从 IOperation 迁移到 Razor IR 直接提取
+# RazorVue 模板前端方向校准
 
-## Context
+## 结论
 
-当前 RazorVue 的 SFC 生成管线：`.razor` → Razor SDK → `BuildRenderTree`(C#) → IOperation 分析 → `RazorVueRenderFragment` → Canonical H-Model → SFC Semantic Model → `VueSfcArtifact` → 生成的 C# catalog class → Jazor.Emit 写 `.vue` 文件。
+这条线的大方向已经明确，而且仓库当前实现已经走在正确方向上：
 
-这条管线有根本性缺陷：Razor 的声明式模板（`@if`、`@foreach`、组件嵌套）在编译到 `BuildRenderTree` C# 代码后，已经退化为命令式的 `RenderTreeBuilder` 调用序列。要从这些调用中恢复原始模板结构，需要复杂的栈式解析器（`RazorVueRenderTreeExtractor`），且仍然无法完整还原控制流（`@if`/`@foreach` 在 IR 中是结构化的，在 `BuildRenderTree` 中是散开的 C# 代码块）。
+- `.razor` 组件主路应当优先使用 `RazorCodeDocument` / Razor IR。
+- 只有源码中显式手写的 `BuildRenderTree` 组件，才允许走 `BuildRenderTree` 前端。
+- 如果组件明显来自 Razor 生成，但当前宿主又拿不到绑定的 Razor 文档，那么应该显式失败，而不是静默回退。
+- RazorVue 相关核心实现应继续收敛到 `Jazor.RazorVue`，不要再把复杂 RazorVue/Razor SDK 逻辑塞回 `Jazor.Common`。
 
-**目标**：在 Razor SDK 编译管线中插入自定义 `IRazorEnginePhase`，直接从 Razor IR 节点提取模板结构并生成 SFC 文本，写入与现有格式相同的 catalog class，由 Jazor.Emit 写出 `.vue` 文件。这样完全绕过 `BuildRenderTree` → IOperation 路径，消除中间层损耗。
+当前仓库中，这个原则已经不只是“计划”，而是已有实现基础：
 
-## 架构
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorDocumentSemanticFrontend.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVuePreferredTemplateFrontend.cs`
+- `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrTemplateFrontend.cs`
 
-```
-当前管线:
-  .razor → Razor SDK → BuildRenderTree(C#) → IOperation → RazorVueRenderTree → CanonicalHModel → SfcSemanticModel → VueSfcArtifact → catalog class → .vue
+因此，后续工作不是重新发明一套并行管线，而是在现有 `Jazor.RazorVue/RazorSdk` 上继续收敛和增强。
 
-新管线:
-  .razor → Razor SDK → IR → [RazorVueSfcPhase (自定义 IRazorEnginePhase)] → SFC 文本 → catalog class → .vue
-```
+## 当前真实结构
 
-新管线复用 Razor SDK 的编译管线，在 IR 阶段截取，不依赖 IOperation。
+当前 RazorVue 的 SFC / artifact 管线，已经不是单纯的：
 
-## 实施步骤
+`.razor -> BuildRenderTree -> IOperation -> SFC`
 
-### Step 1: 项目基础设施
+而是：
 
-**添加 `ILAccess.Fody` 到 `Jazor.Common`**
+1. `RazorVueRazorDocumentSemanticFrontend` 负责给语义快照补齐 Razor 文档路径与 `_Imports.razor` 路径。
+2. `RazorVuePreferredTemplateFrontend` 决定模板前端分流。
+3. 如果快照带有 `RazorDocumentPath`，优先走 `RazorVueRazorIrTemplateFrontend`。
+4. 如果没有 Razor 文档，但 `BuildRenderTree` 被判定为源码手写，则走 `BuildRenderTreeTemplateFrontend`。
+5. 其余情况直接报错。
 
-因为 `Jazor.Common` 目标是 `netstandard2.0`，不能使用 `UnsafeAccessor`（需要 .NET 7+）。使用 `ILAccess.Fody` 在编译时重写 IL，实现对 Razor SDK internal API 的访问。
+也就是说，主原则已经在代码中落地，当前真正需要做的是把这个方向进一步“坐实”，而不是重新回到以 `BuildRenderTree` 为中心的设计。
 
-- 文件: `src/Jazor.Common/Jazor.Common.csproj`
-  - 添加 `ILAccess.Fody` NuGet 包引用
-  - 添加 `Fody.xUnit` 或直接配置 `FodyWeavers.xml`
-- 文件: `src/Jazor.Common/FodyWeavers.xml`（新建）
-  ```xml
-  <Weavers xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <ILAccess />
-  </Weavers>
-  ```
-- 参考 Jolt 中的 `UnsafeAccessor` 用法模式（`src/Jolt/Razor/InProc/RazorDesignTimeCodeProjectionService.cs`），用 `ILAccess.Fody` 的 `[ILAccess]` attribute 替代
+## 为什么不能把目标定义成“继续从 BuildRenderTree 恢复模板”
 
-### Step 2: Razor IR 节点到 SFC 的映射层
+`BuildRenderTree` 路径仍然有价值，但只适合一个明确边界：手写 `BuildRenderTree` authoring。
 
-**新建 `RazorVueIrWalker`** — 核心类型，遍历 Razor IR 节点树，生成 SFC `<template>` 内容。
+原因很直接：
 
-- 文件: `src/Jazor.RazorVue/IrExtraction/RazorVueIrWalker.cs`（新建）
+- Razor 声明式结构在生成后的 `BuildRenderTree` C# 中已经退化。
+- `@if`、`@foreach`、child content、slot forwarding、组件参数包装等信息在生成后会混入 builder 调用序列和辅助包装。
+- 即便后续还能通过 `IOperation` 恢复相当一部分结构，这也不是 Razor 组件的最佳语义入口。
 
-  IR 节点 → SFC 映射规则：
+因此正确分层应该是：
 
-  | Razor IR 节点 | SFC 输出 |
-  |---------------|----------|
-  | `MarkupElementIntermediateNode` | `<tag>` |
-  | `HtmlContentIntermediateNode` | 纯文本 |
-  | `CSharpExpressionIntermediateNode` | `{{ expression }}` |
-  | `CSharpCodeIntermediateNode` | `@if` / `@foreach` 等（需要解析代码文本来识别控制流） |
-  | `ComponentIntermediateNode` | `<ComponentName>` |
-  | `ComponentAttributeIntermediateNode` | `:prop="value"` |
-  | `TagHelperIntermediateNode` | 根据具体 tag helper 类型分派 |
-  | `RazorDirectiveIntermediateNode` | 提取 `@code` 块内容 |
+- Razor 生成组件：先吃 `RazorCodeDocument` / IR。
+- 手写 `BuildRenderTree` 组件：吃 `BuildRenderTree` / `IOperation`。
 
-- 文件: `src/Jazor.RazorVue/IrExtraction/RazorVueIrSfcBuilder.cs`（新建）
-  - 组装完整 `.vue` 文件：`<template>` + `<script setup>` + `<style scoped>`
-  - 从 IR 中提取 `@code` 块内容生成 `<script setup>`
-  - 收集组件 import 依赖
+不能反过来把 `BuildRenderTree` 当成统一入口，再把 Razor IR 只是当成“可选优化”。
 
-**关键限制**：`@if`/`@foreach` 在 Razor IR 中不是独立节点，它们以 `CSharpCodeIntermediateNode` 形式嵌入，需要解析 C# 代码文本来识别控制流模式。这意味着需要轻量的模式匹配来将 `if (...) {` 映射到 `v-if="..."`，`foreach (... in ...)` 映射到 `v-for="..."`。
+## 当前实现还不够彻底的地方
 
-### Step 3: 自定义 `IRazorEnginePhase`
+虽然大方向已经对了，但还有两个需要继续收敛的点。
 
-**新建 `RazorVueSfcPhase`** — 注册到 Razor 编译管线，在 IR 生成后执行。
+### 1. IR 前端还依赖生成 C# / Roslyn operation 映射
 
-- 文件: `src/Jazor.RazorVue/IrExtraction/RazorVueSfcPhase.cs`（新建）
+`RazorVueRazorIrTemplateFrontend` 当前已经从 `DocumentIntermediateNode` 读取结构节点，但表达式和值解析仍通过 `RazorVueRazorIrOperationResolver` 回映射到 Razor 生成 C# 的 `IOperation`。
 
-  ```csharp
-  // 伪代码
-  internal class RazorVueSfcPhase : IRazorEnginePhase
-  {
-      public RazorEngineEngine Engine { get; set; }
+这比直接从 `BuildRenderTree` 逆向恢复模板已经好很多，但仍有一个中间依赖：
 
-      public void Execute(RazorCodeDocument document)
-      {
-          var ir = document.GetDocumentIntermediateNode();
-          var walker = new RazorVueIrWalker();
-          var sfcContent = walker.Walk(ir);
+- IR 负责结构
+- 生成 C# / `SourceMapping` 负责表达式 operation 绑定
 
-          // 将 SFC 文本存入 document 特征，供 Source Generator 读取
-          document.SetFeature(new RazorVueSfcFeature(sfcContent));
-      }
-  }
-  ```
+这条路当前是可以接受的过渡形态，因为它保证了表达式 lowering 仍复用成熟的 Roslyn 语义。但长期目标应继续收敛到：
 
-- 需要通过 `ILAccess.Fody` 访问的 internal API：
-  - `RazorCodeDocument.GetDocumentIntermediateNode()` — 获取 IR 根节点
-  - `DocumentIntermediateNode` 的子节点遍历
-  - `IntermediateNodeWalker` 基类（如可访问）
+- 结构尽量直接从 IR 获取
+- 表达式绑定尽量减少对生成 `BuildRenderTree` C# 的依赖
 
-### Step 4: Phase 注册与管线集成
+注意，这里的目标是“减少依赖”，不是为了抽象漂亮而强行抛弃 Roslyn 语义能力。
 
-**在 `RazorVueSfcPipeline` 中注册自定义 Phase**
+### 2. 文档和默认入口必须完全对齐这个原则
 
-- 文件: `src/Jazor.Analyzer/RazorVue/RazorVueSfcPipeline.cs`（修改）
-  - 在 `RazorProjectEngineBuilder` 配置中注册 `RazorVueSfcPhase`
-  - Phase 执行顺序：在 Razor SDK 完成代码生成之前（IR 已构建完成后）
+如果便捷入口、README、设计文档仍暗示“默认是 Roslyn-only / BuildRenderTree-first”，后续很容易又回到旧方向。
 
-- 文件: `src/Jazor.Analyzer/RazorVue/RazorVueGenerator.cs`（修改）
-  - 从 `RazorCodeDocument` 的自定义特征中读取 SFC 文本
-  - 写入与现有格式相同的 catalog class（复用 `BuildRazorVueSfcArtifactSource` 或等价逻辑）
+因此需要继续保证：
 
-### Step 5: Catalog Class 输出
+- `RazorVuePipeline` / `RazorVueSfcPipeline` 默认就是文档感知语义前端。
+- 文档明确写清：
+  - Razor 生成组件优先 IR
+  - 只有手写 `BuildRenderTree` 才允许 fallback
+  - 否则显式失败
 
-**保持与现有 catalog class 格式一致**
+## 边界约束
 
-- 输出格式不变：
-  - 每个 `.vue` 生成一个 `.g.cs` 文件，包含 `Get<Name>Sfc()` 方法返回 SFC 文本
-  - 一个 `RazorVueCatalog.g.cs` 包含 `GetArtifacts()` 聚合方法
-- 这样 Jazor.Emit 的下游管线无需改动
+### 不要把复杂 Razor 接入放回 `Jazor.Common`
 
-### Step 6: 清理旧管线
+`Jazor.Common` 应保持真正的通用能力。
 
-**标记/移除 IOperation 路径**
+不应再放入这些内容：
 
-- 文件: `src/Jazor.RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs` — 标记 obsolete 或移除
-- 文件: `src/Jazor.RazorVue/RenderTree/RazorVueRenderTree.cs` — 标记 obsolete 或移除
-- 文件: `src/Jazor.RazorVue/Canonical/RazorVueCanonicalHModelFactory.cs` — 标记 obsolete 或移除
-- 文件: `src/Jazor.RazorVue/Lowering/RazorVueSfcArtifactFactory.cs` — 标记 obsolete 或移除
-- 注意：先确保新管线端到端可用后再移除旧代码
+- Razor SDK 内部反射接入
+- RazorCodeDocument / IR 访问
+- RazorVue 模板前端选择
+- RazorVue catalog / SFC 生成策略
 
-## 关键文件清单
+这些都属于 RazorVue 核心语义与 Razor SDK 桥接，应该留在 `Jazor.RazorVue`。
 
-| 文件 | 操作 | 说明 |
-|------|------|------|
-| `src/Jazor.Common/Jazor.Common.csproj` | 修改 | 添加 ILAccess.Fody 引用 |
-| `src/Jazor.Common/FodyWeavers.xml` | 新建 | Fody 配置 |
-| `src/Jazor.RazorVue/IrExtraction/RazorVueIrWalker.cs` | 新建 | IR 节点遍历 → SFC 生成 |
-| `src/Jazor.RazorVue/IrExtraction/RazorVueIrSfcBuilder.cs` | 新建 | SFC 文件组装 |
-| `src/Jazor.RazorVue/IrExtraction/RazorVueSfcPhase.cs` | 新建 | 自定义 IRazorEnginePhase |
-| `src/Jazor.Analyzer/RazorVue/RazorVueSfcPipeline.cs` | 修改 | 注册自定义 Phase |
-| `src/Jazor.Analyzer/RazorVue/RazorVueGenerator.cs` | 修改 | 读取 SFC 特征，写入 catalog class |
+### 不要为了“直接接 Razor 官方内部实现”而引入额外复杂度
 
-## 验证
+之前一种设想是：
 
-1. **单元测试**：在 `src/Jazor.RazorVue.Test` 中添加 IR 遍历测试
-   - 简单元素 → `<template>` 输出
-   - 组件嵌套 → 正确的父子结构
-   - 属性绑定 → `:prop="expr"`
-   - `@if` / `@foreach` → `v-if` / `v-for` 映射
-2. **集成测试**：现有 RazorVue 测试应通过（输出格式不变）
-3. **端到端验证**：
-   ```bash
-   dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj
-   dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj
-   ```
+- 给 `Jazor.Common` 加 Fody / ILAccess
+- 自定义 `IRazorEnginePhase`
+- 深入插入 Razor SDK 内部 phase 链
 
-## 风险与缓解
+这条路不是完全不能走，但当前并不是最优先方向。原因：
 
-- **Internal API 访问风险**：Razor SDK internal API 可能随版本变化。`ILAccess.Fody` 在编译时绑定，升级 SDK 时需验证。缓解：最小化 internal 访问点，优先使用 public API。
-- **控制流识别局限**：`@if`/`@foreach` 在 IR 中以 C# 代码块存在，模式匹配可能不完整。缓解：首期支持常见模式（`if`/`else if`/`else`、`foreach`），复杂控制流可降级为原始 C# 代码块。
-- **并行管线过渡期**：新旧管线可能共存一段时间。缓解：通过 feature flag 或配置切换，确保渐进式迁移。
+- `Jazor.RazorVue` 已经能创建 `RazorProjectEngine`、拿到 `RazorCodeDocument`、读取 `DocumentIntermediateNode`。
+- 现阶段的主要问题不是“完全拿不到 IR”，而是“如何让现有 IR 路线继续替代旧的 BuildRenderTree 主路”。
+- 如果为了插 phase 而引入额外内部耦合、Fody、更多 SDK 版本风险，收益并不一定高于成本。
+
+所以当前阶段的合理策略是：
+
+- 优先把现有 `RazorSdk/*` 路线做稳。
+- 只有当现有 `RazorCodeDocument -> IR -> lowering` 路线明确遇到无法绕开的 SDK 限制时，再评估更深的 phase 集成。
+
+## 下一阶段建议
+
+### 1. 把默认主路彻底固定成文档感知 + IR 优先
+
+目标：
+
+- 所有默认 pipeline 入口都优先使用 `RazorVueRazorDocumentSemanticFrontend`。
+- 测试覆盖“默认入口不会悄悄退回 Roslyn-only 快照”。
+
+这一步是护栏，不是新功能。
+
+### 2. 继续增强 `RazorVueRazorIrTemplateFrontend`
+
+重点不是新增一套新 pipeline，而是增强当前这条：
+
+- 扩大支持的 IR 节点范围。
+- 对当前明确 unsupported 的节点，给出更稳定、更可诊断的失败。
+- 逐步减少对“生成 C# 结构必须完全对齐”的脆弱依赖。
+
+### 3. 保持下游 catalog / emit 形状稳定
+
+这是非常重要的约束：
+
+- `Jazor.Analyzer` 继续只做宿主和 generator。
+- `Jazor.RazorVue` 继续输出 `RazorVueCatalog` / `RazorVueSfcCatalog`。
+- `Jazor.Emit` 继续负责 `.mjs` / `.vue` / manifest 物化。
+
+也就是说，模板前端可以继续演进，但 catalog 和 emit 边界不要轻易打散。
+
+### 4. 如果未来真要接更深的 Razor SDK phase，新增点也应落在 `Jazor.RazorVue`
+
+即使后面证明需要：
+
+- 自定义 `IRazorEnginePhase`
+- 或更深的 `RazorProjectEngineBuilder` 扩展
+
+这些实现也应该进入 `Jazor.RazorVue/RazorSdk` 或其相邻目录，而不是挪回 `Jazor.Common`。
+
+## 最终判断
+
+“用 `RazorCodeDocument` / IR 代替 `BuildRenderTree` 作为 Razor 组件主路”这个判断是对的，而且当前仓库已经部分实现。
+
+真正应该推进的不是：
+
+- 再设计一套独立的新 IR 管线
+- 或把复杂接入转移到 `Jazor.Common`
+
+而是：
+
+- 继续以 `Jazor.RazorVue/RazorSdk` 为核心收敛现有实现
+- 固化默认入口和测试护栏
+- 逐步减少对生成 `BuildRenderTree` C# 的中间依赖
+- 保持 catalog / emit 下游边界稳定
+
+这才是和当前项目状态、以及 RazorVue 长期方向一致的路线。
