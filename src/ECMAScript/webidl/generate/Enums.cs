@@ -5,6 +5,7 @@ namespace ECMAScript;
 /// </summary>
 [Description("@#AacBitstreamFormat")]
 [ECMAScript]
+[String]
 public enum AacBitstreamFormat
 {
     [Description("@#Aac")]
@@ -19,6 +20,7 @@ public enum AacBitstreamFormat
 /// </summary>
 [Description("@#AccelerometerLocalCoordinateSystem")]
 [ECMAScript]
+[String]
 public enum AccelerometerLocalCoordinateSystem
 {
     [Description("@#Device")]
@@ -33,6 +35,7 @@ public enum AccelerometerLocalCoordinateSystem
 /// </summary>
 [Description("@#AlignSetting")]
 [ECMAScript]
+[String]
 public enum AlignSetting
 {
     [Description("@#Start")]
@@ -56,6 +59,7 @@ public enum AlignSetting
 /// </summary>
 [Description("@#AlphaOption")]
 [ECMAScript]
+[String]
 public enum AlphaOption
 {
     [Description("@#Keep")]
@@ -70,6 +74,7 @@ public enum AlphaOption
 /// </summary>
 [Description("@#AnimationPlayState")]
 [ECMAScript]
+[String]
 public enum AnimationPlayState
 {
     [Description("@#Idle")]
@@ -90,6 +95,7 @@ public enum AnimationPlayState
 /// </summary>
 [Description("@#AnimationReplaceState")]
 [ECMAScript]
+[String]
 public enum AnimationReplaceState
 {
     [Description("@#Active")]
@@ -107,6 +113,7 @@ public enum AnimationReplaceState
 /// </summary>
 [Description("@#AppBannerPromptOutcome")]
 [ECMAScript]
+[String]
 public enum AppBannerPromptOutcome
 {
     [Description("@#Accepted")]
@@ -121,6 +128,7 @@ public enum AppBannerPromptOutcome
 /// </summary>
 [Description("@#AppendMode")]
 [ECMAScript]
+[String]
 public enum AppendMode
 {
     [Description("@#Segments")]
@@ -135,6 +143,7 @@ public enum AppendMode
 /// </summary>
 [Description("@#AttestationConveyancePreference")]
 [ECMAScript]
+[String]
 public enum AttestationConveyancePreference
 {
     [Description("@#None")]
@@ -155,6 +164,7 @@ public enum AttestationConveyancePreference
 /// </summary>
 [Description("@#AudioContextLatencyCategory")]
 [ECMAScript]
+[String]
 public enum AudioContextLatencyCategory
 {
     [Description("@#Balanced")]
@@ -172,6 +182,7 @@ public enum AudioContextLatencyCategory
 /// </summary>
 [Description("@#AudioContextRenderSizeCategory")]
 [ECMAScript]
+[String]
 public enum AudioContextRenderSizeCategory
 {
     [Description("@#Default")]
@@ -186,6 +197,7 @@ public enum AudioContextRenderSizeCategory
 /// </summary>
 [Description("@#AudioContextState")]
 [ECMAScript]
+[String]
 public enum AudioContextState
 {
     [Description("@#Suspended")]
@@ -203,6 +215,7 @@ public enum AudioContextState
 /// </summary>
 [Description("@#AudioSampleFormat")]
 [ECMAScript]
+[String]
 public enum AudioSampleFormat
 {
     [Description("@#U8")]
@@ -235,6 +248,7 @@ public enum AudioSampleFormat
 /// </summary>
 [Description("@#AudioSessionState")]
 [ECMAScript]
+[String]
 public enum AudioSessionState
 {
     [Description("@#Inactive")]
@@ -252,6 +266,7 @@ public enum AudioSessionState
 /// </summary>
 [Description("@#AudioSessionType")]
 [ECMAScript]
+[String]
 public enum AudioSessionType
 {
     [Description("@#Auto")]
@@ -278,6 +293,7 @@ public enum AudioSessionType
 /// </summary>
 [Description("@#AudioSinkType")]
 [ECMAScript]
+[String]
 public enum AudioSinkType
 {
     [Description("@#None")]
@@ -289,6 +305,7 @@ public enum AudioSinkType
 /// </summary>
 [Description("@#AuthenticatorAttachment")]
 [ECMAScript]
+[String]
 public enum AuthenticatorAttachment
 {
     [Description("@#Platform")]
@@ -303,6 +320,7 @@ public enum AuthenticatorAttachment
 /// </summary>
 [Description("@#AuthenticatorTransport")]
 [ECMAScript]
+[String]
 public enum AuthenticatorTransport
 {
     [Description("@#Usb")]
@@ -329,6 +347,7 @@ public enum AuthenticatorTransport
 /// </summary>
 [Description("@#AutoKeyword")]
 [ECMAScript]
+[String]
 public enum AutoKeyword
 {
     [Description("@#Auto")]
@@ -340,6 +359,7 @@ public enum AutoKeyword
 /// </summary>
 [Description("@#AutomationRate")]
 [ECMAScript]
+[String]
 public enum AutomationRate
 {
     [Description("@#ARate")]
@@ -354,6 +374,7 @@ public enum AutomationRate
 /// </summary>
 [Description("@#AutoplayPolicy")]
 [ECMAScript]
+[String]
 public enum AutoplayPolicy
 {
     [Description("@#Allowed")]
@@ -371,6 +392,7 @@ public enum AutoplayPolicy
 /// </summary>
 [Description("@#AutoplayPolicyMediaType")]
 [ECMAScript]
+[String]
 public enum AutoplayPolicyMediaType
 {
     [Description("@#Mediaelement")]
@@ -385,6 +407,7 @@ public enum AutoplayPolicyMediaType
 /// </summary>
 [Description("@#AvcBitstreamFormat")]
 [ECMAScript]
+[String]
 public enum AvcBitstreamFormat
 {
     [Description("@#Annexb")]
@@ -399,6 +422,7 @@ public enum AvcBitstreamFormat
 /// </summary>
 [Description("@#BackgroundFetchFailureReason")]
 [ECMAScript]
+[String]
 public enum BackgroundFetchFailureReason
 {
     [Description("@#Empty")]
@@ -425,6 +449,7 @@ public enum BackgroundFetchFailureReason
 /// </summary>
 [Description("@#BackgroundFetchResult")]
 [ECMAScript]
+[String]
 public enum BackgroundFetchResult
 {
     [Description("@#Empty")]
@@ -442,6 +467,7 @@ public enum BackgroundFetchResult
 /// </summary>
 [Description("@#BarcodeFormat")]
 [ECMAScript]
+[String]
 public enum BarcodeFormat
 {
     [Description("@#Aztec")]
@@ -492,6 +518,7 @@ public enum BarcodeFormat
 /// </summary>
 [Description("@#BinaryType")]
 [ECMAScript]
+[String]
 public enum BinaryType
 {
     [Description("@#Blob")]
@@ -506,6 +533,7 @@ public enum BinaryType
 /// </summary>
 [Description("@#BiquadFilterType")]
 [ECMAScript]
+[String]
 public enum BiquadFilterType
 {
     [Description("@#Lowpass")]
@@ -538,6 +566,7 @@ public enum BiquadFilterType
 /// </summary>
 [Description("@#BitrateMode")]
 [ECMAScript]
+[String]
 public enum BitrateMode
 {
     [Description("@#Constant")]
@@ -552,6 +581,7 @@ public enum BitrateMode
 /// </summary>
 [Description("@#CSSBoxType")]
 [ECMAScript]
+[String]
 public enum CSSBoxType
 {
     [Description("@#Margin")]
@@ -572,6 +602,7 @@ public enum CSSBoxType
 /// </summary>
 [Description("@#CanPlayTypeResult")]
 [ECMAScript]
+[String]
 public enum CanPlayTypeResult
 {
     [Description("@#Empty")]
@@ -589,6 +620,7 @@ public enum CanPlayTypeResult
 /// </summary>
 [Description("@#CanvasDirection")]
 [ECMAScript]
+[String]
 public enum CanvasDirection
 {
     [Description("@#Ltr")]
@@ -606,6 +638,7 @@ public enum CanvasDirection
 /// </summary>
 [Description("@#CanvasFillRule")]
 [ECMAScript]
+[String]
 public enum CanvasFillRule
 {
     [Description("@#Nonzero")]
@@ -620,6 +653,7 @@ public enum CanvasFillRule
 /// </summary>
 [Description("@#CanvasFontKerning")]
 [ECMAScript]
+[String]
 public enum CanvasFontKerning
 {
     [Description("@#Auto")]
@@ -637,6 +671,7 @@ public enum CanvasFontKerning
 /// </summary>
 [Description("@#CanvasFontStretch")]
 [ECMAScript]
+[String]
 public enum CanvasFontStretch
 {
     [Description("@#UltraCondensed")]
@@ -672,6 +707,7 @@ public enum CanvasFontStretch
 /// </summary>
 [Description("@#CanvasFontVariantCaps")]
 [ECMAScript]
+[String]
 public enum CanvasFontVariantCaps
 {
     [Description("@#Normal")]
@@ -701,6 +737,7 @@ public enum CanvasFontVariantCaps
 /// </summary>
 [Description("@#CanvasLineCap")]
 [ECMAScript]
+[String]
 public enum CanvasLineCap
 {
     [Description("@#Butt")]
@@ -718,6 +755,7 @@ public enum CanvasLineCap
 /// </summary>
 [Description("@#CanvasLineJoin")]
 [ECMAScript]
+[String]
 public enum CanvasLineJoin
 {
     [Description("@#Round")]
@@ -735,6 +773,7 @@ public enum CanvasLineJoin
 /// </summary>
 [Description("@#CanvasTextAlign")]
 [ECMAScript]
+[String]
 public enum CanvasTextAlign
 {
     [Description("@#Start")]
@@ -758,6 +797,7 @@ public enum CanvasTextAlign
 /// </summary>
 [Description("@#CanvasTextBaseline")]
 [ECMAScript]
+[String]
 public enum CanvasTextBaseline
 {
     [Description("@#Top")]
@@ -784,6 +824,7 @@ public enum CanvasTextBaseline
 /// </summary>
 [Description("@#CanvasTextRendering")]
 [ECMAScript]
+[String]
 public enum CanvasTextRendering
 {
     [Description("@#Auto")]
@@ -804,6 +845,7 @@ public enum CanvasTextRendering
 /// </summary>
 [Description("@#CaptureAction")]
 [ECMAScript]
+[String]
 public enum CaptureAction
 {
     [Description("@#Next")]
@@ -824,6 +866,7 @@ public enum CaptureAction
 /// </summary>
 [Description("@#CaptureStartFocusBehavior")]
 [ECMAScript]
+[String]
 public enum CaptureStartFocusBehavior
 {
     [Description("@#FocusCapturingApplication")]
@@ -841,6 +884,7 @@ public enum CaptureStartFocusBehavior
 /// </summary>
 [Description("@#ChannelCountMode")]
 [ECMAScript]
+[String]
 public enum ChannelCountMode
 {
     [Description("@#Max")]
@@ -858,6 +902,7 @@ public enum ChannelCountMode
 /// </summary>
 [Description("@#ChannelInterpretation")]
 [ECMAScript]
+[String]
 public enum ChannelInterpretation
 {
     [Description("@#Speakers")]
@@ -872,6 +917,7 @@ public enum ChannelInterpretation
 /// </summary>
 [Description("@#ClientCapability")]
 [ECMAScript]
+[String]
 public enum ClientCapability
 {
     [Description("@#ConditionalCreate")]
@@ -895,6 +941,7 @@ public enum ClientCapability
 /// </summary>
 [Description("@#ClientLifecycleState")]
 [ECMAScript]
+[String]
 public enum ClientLifecycleState
 {
     [Description("@#Active")]
@@ -909,6 +956,7 @@ public enum ClientLifecycleState
 /// </summary>
 [Description("@#ClientType")]
 [ECMAScript]
+[String]
 public enum ClientType
 {
     [Description("@#Window")]
@@ -929,6 +977,7 @@ public enum ClientType
 /// </summary>
 [Description("@#CodecState")]
 [ECMAScript]
+[String]
 public enum CodecState
 {
     [Description("@#Unconfigured")]
@@ -946,6 +995,7 @@ public enum CodecState
 /// </summary>
 [Description("@#ColorGamut")]
 [ECMAScript]
+[String]
 public enum ColorGamut
 {
     [Description("@#Srgb")]
@@ -963,6 +1013,7 @@ public enum ColorGamut
 /// </summary>
 [Description("@#ColorSpaceConversion")]
 [ECMAScript]
+[String]
 public enum ColorSpaceConversion
 {
     [Description("@#None")]
@@ -977,6 +1028,7 @@ public enum ColorSpaceConversion
 /// </summary>
 [Description("@#CompositeOperation")]
 [ECMAScript]
+[String]
 public enum CompositeOperation
 {
     [Description("@#Replace")]
@@ -994,6 +1046,7 @@ public enum CompositeOperation
 /// </summary>
 [Description("@#CompositeOperationOrAuto")]
 [ECMAScript]
+[String]
 public enum CompositeOperationOrAuto
 {
     [Description("@#Replace")]
@@ -1014,6 +1067,7 @@ public enum CompositeOperationOrAuto
 /// </summary>
 [Description("@#CompressionFormat")]
 [ECMAScript]
+[String]
 public enum CompressionFormat
 {
     [Description("@#Deflate")]
@@ -1031,6 +1085,7 @@ public enum CompressionFormat
 /// </summary>
 [Description("@#ConnectionType")]
 [ECMAScript]
+[String]
 public enum ConnectionType
 {
     [Description("@#Bluetooth")]
@@ -1066,6 +1121,7 @@ public enum ConnectionType
 /// </summary>
 [Description("@#ContactProperty")]
 [ECMAScript]
+[String]
 public enum ContactProperty
 {
     [Description("@#Address")]
@@ -1089,6 +1145,7 @@ public enum ContactProperty
 /// </summary>
 [Description("@#ContentCategory")]
 [ECMAScript]
+[String]
 public enum ContentCategory
 {
     [Description("@#Empty")]
@@ -1112,6 +1169,7 @@ public enum ContentCategory
 /// </summary>
 [Description("@#CookieSameSite")]
 [ECMAScript]
+[String]
 public enum CookieSameSite
 {
     [Description("@#Strict")]
@@ -1129,6 +1187,7 @@ public enum CookieSameSite
 /// </summary>
 [Description("@#CredentialMediationRequirement")]
 [ECMAScript]
+[String]
 public enum CredentialMediationRequirement
 {
     [Description("@#Silent")]
@@ -1149,6 +1208,7 @@ public enum CredentialMediationRequirement
 /// </summary>
 [Description("@#CursorCaptureConstraint")]
 [ECMAScript]
+[String]
 public enum CursorCaptureConstraint
 {
     [Description("@#Never")]
@@ -1166,6 +1226,7 @@ public enum CursorCaptureConstraint
 /// </summary>
 [Description("@#DOMParserSupportedType")]
 [ECMAScript]
+[String]
 public enum DOMParserSupportedType
 {
     [Description("@#TextHtml")]
@@ -1189,6 +1250,7 @@ public enum DOMParserSupportedType
 /// </summary>
 [Description("@#DevicePostureType")]
 [ECMAScript]
+[String]
 public enum DevicePostureType
 {
     [Description("@#Continuous")]
@@ -1203,6 +1265,7 @@ public enum DevicePostureType
 /// </summary>
 [Description("@#DirectionSetting")]
 [ECMAScript]
+[String]
 public enum DirectionSetting
 {
     [Description("@#Empty")]
@@ -1220,6 +1283,7 @@ public enum DirectionSetting
 /// </summary>
 [Description("@#DisplayCaptureSurfaceType")]
 [ECMAScript]
+[String]
 public enum DisplayCaptureSurfaceType
 {
     [Description("@#Monitor")]
@@ -1237,6 +1301,7 @@ public enum DisplayCaptureSurfaceType
 /// </summary>
 [Description("@#DistanceModelType")]
 [ECMAScript]
+[String]
 public enum DistanceModelType
 {
     [Description("@#Linear")]
@@ -1254,6 +1319,7 @@ public enum DistanceModelType
 /// </summary>
 [Description("@#DocumentReadyState")]
 [ECMAScript]
+[String]
 public enum DocumentReadyState
 {
     [Description("@#Loading")]
@@ -1271,6 +1337,7 @@ public enum DocumentReadyState
 /// </summary>
 [Description("@#DocumentVisibilityState")]
 [ECMAScript]
+[String]
 public enum DocumentVisibilityState
 {
     [Description("@#Visible")]
@@ -1285,6 +1352,7 @@ public enum DocumentVisibilityState
 /// </summary>
 [Description("@#EffectiveConnectionType")]
 [ECMAScript]
+[String]
 public enum EffectiveConnectionType
 {
     [Description("@#_2g")]
@@ -1305,6 +1373,7 @@ public enum EffectiveConnectionType
 /// </summary>
 [Description("@#EncodedAudioChunkType")]
 [ECMAScript]
+[String]
 public enum EncodedAudioChunkType
 {
     [Description("@#Key")]
@@ -1319,6 +1388,7 @@ public enum EncodedAudioChunkType
 /// </summary>
 [Description("@#EncodedVideoChunkType")]
 [ECMAScript]
+[String]
 public enum EncodedVideoChunkType
 {
     [Description("@#Key")]
@@ -1333,6 +1403,7 @@ public enum EncodedVideoChunkType
 /// </summary>
 [Description("@#EndOfStreamError")]
 [ECMAScript]
+[String]
 public enum EndOfStreamError
 {
     [Description("@#Network")]
@@ -1347,6 +1418,7 @@ public enum EndOfStreamError
 /// </summary>
 [Description("@#EndingType")]
 [ECMAScript]
+[String]
 public enum EndingType
 {
     [Description("@#Transparent")]
@@ -1361,6 +1433,7 @@ public enum EndingType
 /// </summary>
 [Description("@#FenceReportingDestination")]
 [ECMAScript]
+[String]
 public enum FenceReportingDestination
 {
     [Description("@#Buyer")]
@@ -1384,6 +1457,7 @@ public enum FenceReportingDestination
 /// </summary>
 [Description("@#FileSystemHandleKind")]
 [ECMAScript]
+[String]
 public enum FileSystemHandleKind
 {
     [Description("@#File")]
@@ -1398,6 +1472,7 @@ public enum FileSystemHandleKind
 /// </summary>
 [Description("@#FileSystemPermissionMode")]
 [ECMAScript]
+[String]
 public enum FileSystemPermissionMode
 {
     [Description("@#Read")]
@@ -1412,6 +1487,7 @@ public enum FileSystemPermissionMode
 /// </summary>
 [Description("@#FillLightMode")]
 [ECMAScript]
+[String]
 public enum FillLightMode
 {
     [Description("@#Auto")]
@@ -1429,6 +1505,7 @@ public enum FillLightMode
 /// </summary>
 [Description("@#FillMode")]
 [ECMAScript]
+[String]
 public enum FillMode
 {
     [Description("@#None")]
@@ -1452,6 +1529,7 @@ public enum FillMode
 /// </summary>
 [Description("@#FlowControlType")]
 [ECMAScript]
+[String]
 public enum FlowControlType
 {
     [Description("@#None")]
@@ -1466,6 +1544,7 @@ public enum FlowControlType
 /// </summary>
 [Description("@#FocusableAreaSearchMode")]
 [ECMAScript]
+[String]
 public enum FocusableAreaSearchMode
 {
     [Description("@#Visible")]
@@ -1480,6 +1559,7 @@ public enum FocusableAreaSearchMode
 /// </summary>
 [Description("@#FontFaceLoadStatus")]
 [ECMAScript]
+[String]
 public enum FontFaceLoadStatus
 {
     [Description("@#Unloaded")]
@@ -1500,6 +1580,7 @@ public enum FontFaceLoadStatus
 /// </summary>
 [Description("@#FontFaceSetLoadStatus")]
 [ECMAScript]
+[String]
 public enum FontFaceSetLoadStatus
 {
     [Description("@#Loading")]
@@ -1514,6 +1595,7 @@ public enum FontFaceSetLoadStatus
 /// </summary>
 [Description("@#FrameType")]
 [ECMAScript]
+[String]
 public enum FrameType
 {
     [Description("@#Auxiliary")]
@@ -1534,6 +1616,7 @@ public enum FrameType
 /// </summary>
 [Description("@#FullscreenNavigationUI")]
 [ECMAScript]
+[String]
 public enum FullscreenNavigationUI
 {
     [Description("@#Auto")]
@@ -1551,6 +1634,7 @@ public enum FullscreenNavigationUI
 /// </summary>
 [Description("@#GamepadHand")]
 [ECMAScript]
+[String]
 public enum GamepadHand
 {
     [Description("@#Empty")]
@@ -1568,6 +1652,7 @@ public enum GamepadHand
 /// </summary>
 [Description("@#GamepadHapticEffectType")]
 [ECMAScript]
+[String]
 public enum GamepadHapticEffectType
 {
     [Description("@#DualRumble")]
@@ -1582,6 +1667,7 @@ public enum GamepadHapticEffectType
 /// </summary>
 [Description("@#GamepadHapticsResult")]
 [ECMAScript]
+[String]
 public enum GamepadHapticsResult
 {
     [Description("@#Complete")]
@@ -1596,6 +1682,7 @@ public enum GamepadHapticsResult
 /// </summary>
 [Description("@#GamepadMappingType")]
 [ECMAScript]
+[String]
 public enum GamepadMappingType
 {
     [Description("@#Empty")]
@@ -1613,6 +1700,7 @@ public enum GamepadMappingType
 /// </summary>
 [Description("@#GyroscopeLocalCoordinateSystem")]
 [ECMAScript]
+[String]
 public enum GyroscopeLocalCoordinateSystem
 {
     [Description("@#Device")]
@@ -1627,6 +1715,7 @@ public enum GyroscopeLocalCoordinateSystem
 /// </summary>
 [Description("@#HDCPVersion")]
 [ECMAScript]
+[String]
 public enum HDCPVersion
 {
     [Description("@#_10")]
@@ -1662,6 +1751,7 @@ public enum HDCPVersion
 /// </summary>
 [Description("@#HIDUnitSystem")]
 [ECMAScript]
+[String]
 public enum HIDUnitSystem
 {
     [Description("@#None")]
@@ -1691,6 +1781,7 @@ public enum HIDUnitSystem
 /// </summary>
 [Description("@#HardwareAcceleration")]
 [ECMAScript]
+[String]
 public enum HardwareAcceleration
 {
     [Description("@#NoPreference")]
@@ -1708,6 +1799,7 @@ public enum HardwareAcceleration
 /// </summary>
 [Description("@#HdrMetadataType")]
 [ECMAScript]
+[String]
 public enum HdrMetadataType
 {
     [Description("@#SmpteSt2086")]
@@ -1725,6 +1817,7 @@ public enum HdrMetadataType
 /// </summary>
 [Description("@#HevcBitstreamFormat")]
 [ECMAScript]
+[String]
 public enum HevcBitstreamFormat
 {
     [Description("@#Annexb")]
@@ -1739,6 +1832,7 @@ public enum HevcBitstreamFormat
 /// </summary>
 [Description("@#IDBCursorDirection")]
 [ECMAScript]
+[String]
 public enum IDBCursorDirection
 {
     [Description("@#Next")]
@@ -1759,6 +1853,7 @@ public enum IDBCursorDirection
 /// </summary>
 [Description("@#IDBRequestReadyState")]
 [ECMAScript]
+[String]
 public enum IDBRequestReadyState
 {
     [Description("@#Pending")]
@@ -1773,6 +1868,7 @@ public enum IDBRequestReadyState
 /// </summary>
 [Description("@#IDBTransactionDurability")]
 [ECMAScript]
+[String]
 public enum IDBTransactionDurability
 {
     [Description("@#Default")]
@@ -1790,6 +1886,7 @@ public enum IDBTransactionDurability
 /// </summary>
 [Description("@#IDBTransactionMode")]
 [ECMAScript]
+[String]
 public enum IDBTransactionMode
 {
     [Description("@#Readonly")]
@@ -1807,6 +1904,7 @@ public enum IDBTransactionMode
 /// </summary>
 [Description("@#IPAddressSpace")]
 [ECMAScript]
+[String]
 public enum IPAddressSpace
 {
     [Description("@#Public")]
@@ -1824,6 +1922,7 @@ public enum IPAddressSpace
 /// </summary>
 [Description("@#IdentityCredentialRequestOptionsContext")]
 [ECMAScript]
+[String]
 public enum IdentityCredentialRequestOptionsContext
 {
     [Description("@#Signin")]
@@ -1844,6 +1943,7 @@ public enum IdentityCredentialRequestOptionsContext
 /// </summary>
 [Description("@#ImageOrientation")]
 [ECMAScript]
+[String]
 public enum ImageOrientation
 {
     [Description("@#FromImage")]
@@ -1858,6 +1958,7 @@ public enum ImageOrientation
 /// </summary>
 [Description("@#ImageSmoothingQuality")]
 [ECMAScript]
+[String]
 public enum ImageSmoothingQuality
 {
     [Description("@#Low")]
@@ -1875,6 +1976,7 @@ public enum ImageSmoothingQuality
 /// </summary>
 [Description("@#ItemType")]
 [ECMAScript]
+[String]
 public enum ItemType
 {
     [Description("@#Product")]
@@ -1889,6 +1991,7 @@ public enum ItemType
 /// </summary>
 [Description("@#IterationCompositeOperation")]
 [ECMAScript]
+[String]
 public enum IterationCompositeOperation
 {
     [Description("@#Replace")]
@@ -1903,6 +2006,7 @@ public enum IterationCompositeOperation
 /// </summary>
 [Description("@#KAnonStatus")]
 [ECMAScript]
+[String]
 public enum KAnonStatus
 {
     [Description("@#PassedAndEnforced")]
@@ -1923,6 +2027,7 @@ public enum KAnonStatus
 /// </summary>
 [Description("@#KeyFormat")]
 [ECMAScript]
+[String]
 public enum KeyFormat
 {
     [Description("@#Raw")]
@@ -1943,6 +2048,7 @@ public enum KeyFormat
 /// </summary>
 [Description("@#KeyType")]
 [ECMAScript]
+[String]
 public enum KeyType
 {
     [Description("@#Public")]
@@ -1960,6 +2066,7 @@ public enum KeyType
 /// </summary>
 [Description("@#KeyUsage")]
 [ECMAScript]
+[String]
 public enum KeyUsage
 {
     [Description("@#Encrypt")]
@@ -1992,6 +2099,7 @@ public enum KeyUsage
 /// </summary>
 [Description("@#LandmarkType")]
 [ECMAScript]
+[String]
 public enum LandmarkType
 {
     [Description("@#Mouth")]
@@ -2009,6 +2117,7 @@ public enum LandmarkType
 /// </summary>
 [Description("@#LargeBlobSupport")]
 [ECMAScript]
+[String]
 public enum LargeBlobSupport
 {
     [Description("@#Required")]
@@ -2023,6 +2132,7 @@ public enum LargeBlobSupport
 /// </summary>
 [Description("@#LatencyMode")]
 [ECMAScript]
+[String]
 public enum LatencyMode
 {
     [Description("@#Quality")]
@@ -2037,6 +2147,7 @@ public enum LatencyMode
 /// </summary>
 [Description("@#LineAlignSetting")]
 [ECMAScript]
+[String]
 public enum LineAlignSetting
 {
     [Description("@#Start")]
@@ -2054,6 +2165,7 @@ public enum LineAlignSetting
 /// </summary>
 [Description("@#LockMode")]
 [ECMAScript]
+[String]
 public enum LockMode
 {
     [Description("@#Shared")]
@@ -2068,6 +2180,7 @@ public enum LockMode
 /// </summary>
 [Description("@#LoginStatus")]
 [ECMAScript]
+[String]
 public enum LoginStatus
 {
     [Description("@#LoggedIn")]
@@ -2082,6 +2195,7 @@ public enum LoginStatus
 /// </summary>
 [Description("@#MIDIPortConnectionState")]
 [ECMAScript]
+[String]
 public enum MIDIPortConnectionState
 {
     [Description("@#Open")]
@@ -2099,6 +2213,7 @@ public enum MIDIPortConnectionState
 /// </summary>
 [Description("@#MIDIPortDeviceState")]
 [ECMAScript]
+[String]
 public enum MIDIPortDeviceState
 {
     [Description("@#Disconnected")]
@@ -2113,6 +2228,7 @@ public enum MIDIPortDeviceState
 /// </summary>
 [Description("@#MIDIPortType")]
 [ECMAScript]
+[String]
 public enum MIDIPortType
 {
     [Description("@#Input")]
@@ -2127,6 +2243,7 @@ public enum MIDIPortType
 /// </summary>
 [Description("@#MLConv2dFilterOperandLayout")]
 [ECMAScript]
+[String]
 public enum MLConv2dFilterOperandLayout
 {
     [Description("@#Oihw")]
@@ -2147,6 +2264,7 @@ public enum MLConv2dFilterOperandLayout
 /// </summary>
 [Description("@#MLConvTranspose2dFilterOperandLayout")]
 [ECMAScript]
+[String]
 public enum MLConvTranspose2dFilterOperandLayout
 {
     [Description("@#Iohw")]
@@ -2164,6 +2282,7 @@ public enum MLConvTranspose2dFilterOperandLayout
 /// </summary>
 [Description("@#MLDeviceType")]
 [ECMAScript]
+[String]
 public enum MLDeviceType
 {
     [Description("@#Cpu")]
@@ -2178,6 +2297,7 @@ public enum MLDeviceType
 /// </summary>
 [Description("@#MLGruWeightLayout")]
 [ECMAScript]
+[String]
 public enum MLGruWeightLayout
 {
     [Description("@#Zrn")]
@@ -2192,6 +2312,7 @@ public enum MLGruWeightLayout
 /// </summary>
 [Description("@#MLInputOperandLayout")]
 [ECMAScript]
+[String]
 public enum MLInputOperandLayout
 {
     [Description("@#Nchw")]
@@ -2206,6 +2327,7 @@ public enum MLInputOperandLayout
 /// </summary>
 [Description("@#MLInterpolationMode")]
 [ECMAScript]
+[String]
 public enum MLInterpolationMode
 {
     [Description("@#NearestNeighbor")]
@@ -2220,6 +2342,7 @@ public enum MLInterpolationMode
 /// </summary>
 [Description("@#MLLstmWeightLayout")]
 [ECMAScript]
+[String]
 public enum MLLstmWeightLayout
 {
     [Description("@#Iofg")]
@@ -2234,6 +2357,7 @@ public enum MLLstmWeightLayout
 /// </summary>
 [Description("@#MLOperandDataType")]
 [ECMAScript]
+[String]
 public enum MLOperandDataType
 {
     [Description("@#Float32")]
@@ -2266,6 +2390,7 @@ public enum MLOperandDataType
 /// </summary>
 [Description("@#MLPaddingMode")]
 [ECMAScript]
+[String]
 public enum MLPaddingMode
 {
     [Description("@#Constant")]
@@ -2286,6 +2411,7 @@ public enum MLPaddingMode
 /// </summary>
 [Description("@#MLPowerPreference")]
 [ECMAScript]
+[String]
 public enum MLPowerPreference
 {
     [Description("@#Default")]
@@ -2303,6 +2429,7 @@ public enum MLPowerPreference
 /// </summary>
 [Description("@#MLRecurrentNetworkDirection")]
 [ECMAScript]
+[String]
 public enum MLRecurrentNetworkDirection
 {
     [Description("@#Forward")]
@@ -2320,6 +2447,7 @@ public enum MLRecurrentNetworkDirection
 /// </summary>
 [Description("@#MLRoundingType")]
 [ECMAScript]
+[String]
 public enum MLRoundingType
 {
     [Description("@#Floor")]
@@ -2334,6 +2462,7 @@ public enum MLRoundingType
 /// </summary>
 [Description("@#MagnetometerLocalCoordinateSystem")]
 [ECMAScript]
+[String]
 public enum MagnetometerLocalCoordinateSystem
 {
     [Description("@#Device")]
@@ -2348,6 +2477,7 @@ public enum MagnetometerLocalCoordinateSystem
 /// </summary>
 [Description("@#MediaDecodingType")]
 [ECMAScript]
+[String]
 public enum MediaDecodingType
 {
     [Description("@#File")]
@@ -2365,6 +2495,7 @@ public enum MediaDecodingType
 /// </summary>
 [Description("@#MediaDeviceKind")]
 [ECMAScript]
+[String]
 public enum MediaDeviceKind
 {
     [Description("@#Audioinput")]
@@ -2382,6 +2513,7 @@ public enum MediaDeviceKind
 /// </summary>
 [Description("@#MediaEncodingType")]
 [ECMAScript]
+[String]
 public enum MediaEncodingType
 {
     [Description("@#Record")]
@@ -2396,6 +2528,7 @@ public enum MediaEncodingType
 /// </summary>
 [Description("@#MediaKeyMessageType")]
 [ECMAScript]
+[String]
 public enum MediaKeyMessageType
 {
     [Description("@#LicenseRequest")]
@@ -2416,6 +2549,7 @@ public enum MediaKeyMessageType
 /// </summary>
 [Description("@#MediaKeySessionClosedReason")]
 [ECMAScript]
+[String]
 public enum MediaKeySessionClosedReason
 {
     [Description("@#InternalError")]
@@ -2439,6 +2573,7 @@ public enum MediaKeySessionClosedReason
 /// </summary>
 [Description("@#MediaKeySessionType")]
 [ECMAScript]
+[String]
 public enum MediaKeySessionType
 {
     [Description("@#Temporary")]
@@ -2453,6 +2588,7 @@ public enum MediaKeySessionType
 /// </summary>
 [Description("@#MediaKeyStatus")]
 [ECMAScript]
+[String]
 public enum MediaKeyStatus
 {
     [Description("@#Usable")]
@@ -2485,6 +2621,7 @@ public enum MediaKeyStatus
 /// </summary>
 [Description("@#MediaKeysRequirement")]
 [ECMAScript]
+[String]
 public enum MediaKeysRequirement
 {
     [Description("@#Required")]
@@ -2502,6 +2639,7 @@ public enum MediaKeysRequirement
 /// </summary>
 [Description("@#MediaSessionAction")]
 [ECMAScript]
+[String]
 public enum MediaSessionAction
 {
     [Description("@#Play")]
@@ -2555,6 +2693,7 @@ public enum MediaSessionAction
 /// </summary>
 [Description("@#MediaSessionPlaybackState")]
 [ECMAScript]
+[String]
 public enum MediaSessionPlaybackState
 {
     [Description("@#None")]
@@ -2572,6 +2711,7 @@ public enum MediaSessionPlaybackState
 /// </summary>
 [Description("@#MediaStreamTrackState")]
 [ECMAScript]
+[String]
 public enum MediaStreamTrackState
 {
     [Description("@#Live")]
@@ -2586,6 +2726,7 @@ public enum MediaStreamTrackState
 /// </summary>
 [Description("@#MeteringMode")]
 [ECMAScript]
+[String]
 public enum MeteringMode
 {
     [Description("@#None")]
@@ -2606,6 +2747,7 @@ public enum MeteringMode
 /// </summary>
 [Description("@#MockCapturePromptResult")]
 [ECMAScript]
+[String]
 public enum MockCapturePromptResult
 {
     [Description("@#Granted")]
@@ -2620,6 +2762,7 @@ public enum MockCapturePromptResult
 /// </summary>
 [Description("@#MonitorTypeSurfacesEnum")]
 [ECMAScript]
+[String]
 public enum MonitorTypeSurfacesEnum
 {
     [Description("@#Include")]
@@ -2634,6 +2777,7 @@ public enum MonitorTypeSurfacesEnum
 /// </summary>
 [Description("@#NavigationFocusReset")]
 [ECMAScript]
+[String]
 public enum NavigationFocusReset
 {
     [Description("@#AfterTransition")]
@@ -2648,6 +2792,7 @@ public enum NavigationFocusReset
 /// </summary>
 [Description("@#NavigationHistoryBehavior")]
 [ECMAScript]
+[String]
 public enum NavigationHistoryBehavior
 {
     [Description("@#Auto")]
@@ -2665,6 +2810,7 @@ public enum NavigationHistoryBehavior
 /// </summary>
 [Description("@#NavigationScrollBehavior")]
 [ECMAScript]
+[String]
 public enum NavigationScrollBehavior
 {
     [Description("@#AfterTransition")]
@@ -2679,6 +2825,7 @@ public enum NavigationScrollBehavior
 /// </summary>
 [Description("@#NavigationTimingType")]
 [ECMAScript]
+[String]
 public enum NavigationTimingType
 {
     [Description("@#Navigate")]
@@ -2699,6 +2846,7 @@ public enum NavigationTimingType
 /// </summary>
 [Description("@#NavigationType")]
 [ECMAScript]
+[String]
 public enum NavigationType
 {
     [Description("@#Push")]
@@ -2719,6 +2867,7 @@ public enum NavigationType
 /// </summary>
 [Description("@#NotificationDirection")]
 [ECMAScript]
+[String]
 public enum NotificationDirection
 {
     [Description("@#Auto")]
@@ -2736,6 +2885,7 @@ public enum NotificationDirection
 /// </summary>
 [Description("@#NotificationPermission")]
 [ECMAScript]
+[String]
 public enum NotificationPermission
 {
     [Description("@#Default")]
@@ -2753,6 +2903,7 @@ public enum NotificationPermission
 /// </summary>
 [Description("@#OTPCredentialTransportType")]
 [ECMAScript]
+[String]
 public enum OTPCredentialTransportType
 {
     [Description("@#Sms")]
@@ -2764,6 +2915,7 @@ public enum OTPCredentialTransportType
 /// </summary>
 [Description("@#OffscreenRenderingContextId")]
 [ECMAScript]
+[String]
 public enum OffscreenRenderingContextId
 {
     [Description("@#_2d")]
@@ -2787,6 +2939,7 @@ public enum OffscreenRenderingContextId
 /// </summary>
 [Description("@#OpaqueProperty")]
 [ECMAScript]
+[String]
 public enum OpaqueProperty
 {
     [Description("@#Opaque")]
@@ -2798,6 +2951,7 @@ public enum OpaqueProperty
 /// </summary>
 [Description("@#OperationType")]
 [ECMAScript]
+[String]
 public enum OperationType
 {
     [Description("@#TokenRequest")]
@@ -2815,6 +2969,7 @@ public enum OperationType
 /// </summary>
 [Description("@#OpusApplication")]
 [ECMAScript]
+[String]
 public enum OpusApplication
 {
     [Description("@#Voip")]
@@ -2832,6 +2987,7 @@ public enum OpusApplication
 /// </summary>
 [Description("@#OpusBitstreamFormat")]
 [ECMAScript]
+[String]
 public enum OpusBitstreamFormat
 {
     [Description("@#Opus")]
@@ -2846,6 +3002,7 @@ public enum OpusBitstreamFormat
 /// </summary>
 [Description("@#OpusSignal")]
 [ECMAScript]
+[String]
 public enum OpusSignal
 {
     [Description("@#Auto")]
@@ -2863,6 +3020,7 @@ public enum OpusSignal
 /// </summary>
 [Description("@#OrientationLockType")]
 [ECMAScript]
+[String]
 public enum OrientationLockType
 {
     [Description("@#Any")]
@@ -2895,6 +3053,7 @@ public enum OrientationLockType
 /// </summary>
 [Description("@#OrientationSensorLocalCoordinateSystem")]
 [ECMAScript]
+[String]
 public enum OrientationSensorLocalCoordinateSystem
 {
     [Description("@#Device")]
@@ -2909,6 +3068,7 @@ public enum OrientationSensorLocalCoordinateSystem
 /// </summary>
 [Description("@#OrientationType")]
 [ECMAScript]
+[String]
 public enum OrientationType
 {
     [Description("@#PortraitPrimary")]
@@ -2929,6 +3089,7 @@ public enum OrientationType
 /// </summary>
 [Description("@#OscillatorType")]
 [ECMAScript]
+[String]
 public enum OscillatorType
 {
     [Description("@#Sine")]
@@ -2952,6 +3113,7 @@ public enum OscillatorType
 /// </summary>
 [Description("@#OverSampleType")]
 [ECMAScript]
+[String]
 public enum OverSampleType
 {
     [Description("@#None")]
@@ -2969,6 +3131,7 @@ public enum OverSampleType
 /// </summary>
 [Description("@#PanningModelType")]
 [ECMAScript]
+[String]
 public enum PanningModelType
 {
     [Description("@#Equalpower")]
@@ -2983,6 +3146,7 @@ public enum PanningModelType
 /// </summary>
 [Description("@#ParityType")]
 [ECMAScript]
+[String]
 public enum ParityType
 {
     [Description("@#None")]
@@ -3000,6 +3164,7 @@ public enum ParityType
 /// </summary>
 [Description("@#PaymentComplete")]
 [ECMAScript]
+[String]
 public enum PaymentComplete
 {
     [Description("@#Fail")]
@@ -3017,6 +3182,7 @@ public enum PaymentComplete
 /// </summary>
 [Description("@#PaymentDelegation")]
 [ECMAScript]
+[String]
 public enum PaymentDelegation
 {
     [Description("@#ShippingAddress")]
@@ -3037,6 +3203,7 @@ public enum PaymentDelegation
 /// </summary>
 [Description("@#PaymentShippingType")]
 [ECMAScript]
+[String]
 public enum PaymentShippingType
 {
     [Description("@#Shipping")]
@@ -3054,6 +3221,7 @@ public enum PaymentShippingType
 /// </summary>
 [Description("@#PermissionState")]
 [ECMAScript]
+[String]
 public enum PermissionState
 {
     [Description("@#Granted")]
@@ -3071,6 +3239,7 @@ public enum PermissionState
 /// </summary>
 [Description("@#PlaybackDirection")]
 [ECMAScript]
+[String]
 public enum PlaybackDirection
 {
     [Description("@#Normal")]
@@ -3091,6 +3260,7 @@ public enum PlaybackDirection
 /// </summary>
 [Description("@#PositionAlignSetting")]
 [ECMAScript]
+[String]
 public enum PositionAlignSetting
 {
     [Description("@#LineLeft")]
@@ -3111,6 +3281,7 @@ public enum PositionAlignSetting
 /// </summary>
 [Description("@#PredefinedColorSpace")]
 [ECMAScript]
+[String]
 public enum PredefinedColorSpace
 {
     [Description("@#Srgb")]
@@ -3125,6 +3296,7 @@ public enum PredefinedColorSpace
 /// </summary>
 [Description("@#PremultiplyAlpha")]
 [ECMAScript]
+[String]
 public enum PremultiplyAlpha
 {
     [Description("@#None")]
@@ -3142,6 +3314,7 @@ public enum PremultiplyAlpha
 /// </summary>
 [Description("@#PresentationConnectionCloseReason")]
 [ECMAScript]
+[String]
 public enum PresentationConnectionCloseReason
 {
     [Description("@#Error")]
@@ -3159,6 +3332,7 @@ public enum PresentationConnectionCloseReason
 /// </summary>
 [Description("@#PresentationConnectionState")]
 [ECMAScript]
+[String]
 public enum PresentationConnectionState
 {
     [Description("@#Connecting")]
@@ -3179,6 +3353,7 @@ public enum PresentationConnectionState
 /// </summary>
 [Description("@#PresentationStyle")]
 [ECMAScript]
+[String]
 public enum PresentationStyle
 {
     [Description("@#Unspecified")]
@@ -3196,6 +3371,7 @@ public enum PresentationStyle
 /// </summary>
 [Description("@#PressureSource")]
 [ECMAScript]
+[String]
 public enum PressureSource
 {
     [Description("@#Thermals")]
@@ -3210,6 +3386,7 @@ public enum PressureSource
 /// </summary>
 [Description("@#PressureState")]
 [ECMAScript]
+[String]
 public enum PressureState
 {
     [Description("@#Nominal")]
@@ -3230,6 +3407,7 @@ public enum PressureState
 /// </summary>
 [Description("@#PublicKeyCredentialHints")]
 [ECMAScript]
+[String]
 public enum PublicKeyCredentialHints
 {
     [Description("@#SecurityKey")]
@@ -3247,6 +3425,7 @@ public enum PublicKeyCredentialHints
 /// </summary>
 [Description("@#PublicKeyCredentialType")]
 [ECMAScript]
+[String]
 public enum PublicKeyCredentialType
 {
     [Description("@#PublicKey")]
@@ -3258,6 +3437,7 @@ public enum PublicKeyCredentialType
 /// </summary>
 [Description("@#PushEncryptionKeyName")]
 [ECMAScript]
+[String]
 public enum PushEncryptionKeyName
 {
     [Description("@#P256dh")]
@@ -3272,6 +3452,7 @@ public enum PushEncryptionKeyName
 /// </summary>
 [Description("@#RTCBundlePolicy")]
 [ECMAScript]
+[String]
 public enum RTCBundlePolicy
 {
     [Description("@#Balanced")]
@@ -3289,6 +3470,7 @@ public enum RTCBundlePolicy
 /// </summary>
 [Description("@#RTCDataChannelState")]
 [ECMAScript]
+[String]
 public enum RTCDataChannelState
 {
     [Description("@#Connecting")]
@@ -3309,6 +3491,7 @@ public enum RTCDataChannelState
 /// </summary>
 [Description("@#RTCDegradationPreference")]
 [ECMAScript]
+[String]
 public enum RTCDegradationPreference
 {
     [Description("@#MaintainFramerate")]
@@ -3326,6 +3509,7 @@ public enum RTCDegradationPreference
 /// </summary>
 [Description("@#RTCDtlsRole")]
 [ECMAScript]
+[String]
 public enum RTCDtlsRole
 {
     [Description("@#Client")]
@@ -3343,6 +3527,7 @@ public enum RTCDtlsRole
 /// </summary>
 [Description("@#RTCDtlsTransportState")]
 [ECMAScript]
+[String]
 public enum RTCDtlsTransportState
 {
     [Description("@#New")]
@@ -3366,6 +3551,7 @@ public enum RTCDtlsTransportState
 /// </summary>
 [Description("@#RTCEncodedVideoFrameType")]
 [ECMAScript]
+[String]
 public enum RTCEncodedVideoFrameType
 {
     [Description("@#Empty")]
@@ -3383,6 +3569,7 @@ public enum RTCEncodedVideoFrameType
 /// </summary>
 [Description("@#RTCErrorDetailType")]
 [ECMAScript]
+[String]
 public enum RTCErrorDetailType
 {
     [Description("@#DataChannelFailure")]
@@ -3412,6 +3599,7 @@ public enum RTCErrorDetailType
 /// </summary>
 [Description("@#RTCErrorDetailTypeIdp")]
 [ECMAScript]
+[String]
 public enum RTCErrorDetailTypeIdp
 {
     [Description("@#IdpBadScriptFailure")]
@@ -3444,6 +3632,7 @@ public enum RTCErrorDetailTypeIdp
 /// </summary>
 [Description("@#RTCIceCandidateType")]
 [ECMAScript]
+[String]
 public enum RTCIceCandidateType
 {
     [Description("@#Host")]
@@ -3464,6 +3653,7 @@ public enum RTCIceCandidateType
 /// </summary>
 [Description("@#RTCIceComponent")]
 [ECMAScript]
+[String]
 public enum RTCIceComponent
 {
     [Description("@#Rtp")]
@@ -3478,6 +3668,7 @@ public enum RTCIceComponent
 /// </summary>
 [Description("@#RTCIceConnectionState")]
 [ECMAScript]
+[String]
 public enum RTCIceConnectionState
 {
     [Description("@#Closed")]
@@ -3507,6 +3698,7 @@ public enum RTCIceConnectionState
 /// </summary>
 [Description("@#RTCIceGathererState")]
 [ECMAScript]
+[String]
 public enum RTCIceGathererState
 {
     [Description("@#New")]
@@ -3524,6 +3716,7 @@ public enum RTCIceGathererState
 /// </summary>
 [Description("@#RTCIceGatheringState")]
 [ECMAScript]
+[String]
 public enum RTCIceGatheringState
 {
     [Description("@#New")]
@@ -3541,6 +3734,7 @@ public enum RTCIceGatheringState
 /// </summary>
 [Description("@#RTCIceProtocol")]
 [ECMAScript]
+[String]
 public enum RTCIceProtocol
 {
     [Description("@#Udp")]
@@ -3555,6 +3749,7 @@ public enum RTCIceProtocol
 /// </summary>
 [Description("@#RTCIceRole")]
 [ECMAScript]
+[String]
 public enum RTCIceRole
 {
     [Description("@#Unknown")]
@@ -3572,6 +3767,7 @@ public enum RTCIceRole
 /// </summary>
 [Description("@#RTCIceServerTransportProtocol")]
 [ECMAScript]
+[String]
 public enum RTCIceServerTransportProtocol
 {
     [Description("@#Udp")]
@@ -3589,6 +3785,7 @@ public enum RTCIceServerTransportProtocol
 /// </summary>
 [Description("@#RTCIceTcpCandidateType")]
 [ECMAScript]
+[String]
 public enum RTCIceTcpCandidateType
 {
     [Description("@#Active")]
@@ -3606,6 +3803,7 @@ public enum RTCIceTcpCandidateType
 /// </summary>
 [Description("@#RTCIceTransportPolicy")]
 [ECMAScript]
+[String]
 public enum RTCIceTransportPolicy
 {
     [Description("@#Relay")]
@@ -3620,6 +3818,7 @@ public enum RTCIceTransportPolicy
 /// </summary>
 [Description("@#RTCIceTransportState")]
 [ECMAScript]
+[String]
 public enum RTCIceTransportState
 {
     [Description("@#Closed")]
@@ -3649,6 +3848,7 @@ public enum RTCIceTransportState
 /// </summary>
 [Description("@#RTCPeerConnectionState")]
 [ECMAScript]
+[String]
 public enum RTCPeerConnectionState
 {
     [Description("@#Closed")]
@@ -3675,6 +3875,7 @@ public enum RTCPeerConnectionState
 /// </summary>
 [Description("@#RTCPriorityType")]
 [ECMAScript]
+[String]
 public enum RTCPriorityType
 {
     [Description("@#VeryLow")]
@@ -3695,6 +3896,7 @@ public enum RTCPriorityType
 /// </summary>
 [Description("@#RTCQualityLimitationReason")]
 [ECMAScript]
+[String]
 public enum RTCQualityLimitationReason
 {
     [Description("@#None")]
@@ -3715,6 +3917,7 @@ public enum RTCQualityLimitationReason
 /// </summary>
 [Description("@#RTCRtcpMuxPolicy")]
 [ECMAScript]
+[String]
 public enum RTCRtcpMuxPolicy
 {
     [Description("@#Require")]
@@ -3726,6 +3929,7 @@ public enum RTCRtcpMuxPolicy
 /// </summary>
 [Description("@#RTCRtpTransceiverDirection")]
 [ECMAScript]
+[String]
 public enum RTCRtpTransceiverDirection
 {
     [Description("@#Sendrecv")]
@@ -3749,6 +3953,7 @@ public enum RTCRtpTransceiverDirection
 /// </summary>
 [Description("@#RTCSctpTransportState")]
 [ECMAScript]
+[String]
 public enum RTCSctpTransportState
 {
     [Description("@#Connecting")]
@@ -3766,6 +3971,7 @@ public enum RTCSctpTransportState
 /// </summary>
 [Description("@#RTCSdpType")]
 [ECMAScript]
+[String]
 public enum RTCSdpType
 {
     [Description("@#Offer")]
@@ -3786,6 +3992,7 @@ public enum RTCSdpType
 /// </summary>
 [Description("@#RTCSignalingState")]
 [ECMAScript]
+[String]
 public enum RTCSignalingState
 {
     [Description("@#Stable")]
@@ -3812,6 +4019,7 @@ public enum RTCSignalingState
 /// </summary>
 [Description("@#RTCStatsIceCandidatePairState")]
 [ECMAScript]
+[String]
 public enum RTCStatsIceCandidatePairState
 {
     [Description("@#Frozen")]
@@ -3835,6 +4043,7 @@ public enum RTCStatsIceCandidatePairState
 /// </summary>
 [Description("@#RTCStatsType")]
 [ECMAScript]
+[String]
 public enum RTCStatsType
 {
     [Description("@#Codec")]
@@ -3885,6 +4094,7 @@ public enum RTCStatsType
 /// </summary>
 [Description("@#ReadableStreamReaderMode")]
 [ECMAScript]
+[String]
 public enum ReadableStreamReaderMode
 {
     [Description("@#Byob")]
@@ -3896,6 +4106,7 @@ public enum ReadableStreamReaderMode
 /// </summary>
 [Description("@#ReadableStreamType")]
 [ECMAScript]
+[String]
 public enum ReadableStreamType
 {
     [Description("@#Bytes")]
@@ -3907,6 +4118,7 @@ public enum ReadableStreamType
 /// </summary>
 [Description("@#ReadyState")]
 [ECMAScript]
+[String]
 public enum ReadyState
 {
     [Description("@#Closed")]
@@ -3924,6 +4136,7 @@ public enum ReadyState
 /// </summary>
 [Description("@#RecordingState")]
 [ECMAScript]
+[String]
 public enum RecordingState
 {
     [Description("@#Inactive")]
@@ -3941,6 +4154,7 @@ public enum RecordingState
 /// </summary>
 [Description("@#RedEyeReduction")]
 [ECMAScript]
+[String]
 public enum RedEyeReduction
 {
     [Description("@#Never")]
@@ -3958,6 +4172,7 @@ public enum RedEyeReduction
 /// </summary>
 [Description("@#ReferrerPolicy")]
 [ECMAScript]
+[String]
 public enum ReferrerPolicy
 {
     [Description("@#Empty")]
@@ -3993,6 +4208,7 @@ public enum ReferrerPolicy
 /// </summary>
 [Description("@#RefreshPolicy")]
 [ECMAScript]
+[String]
 public enum RefreshPolicy
 {
     [Description("@#None")]
@@ -4007,6 +4223,7 @@ public enum RefreshPolicy
 /// </summary>
 [Description("@#RemotePlaybackState")]
 [ECMAScript]
+[String]
 public enum RemotePlaybackState
 {
     [Description("@#Connecting")]
@@ -4024,6 +4241,7 @@ public enum RemotePlaybackState
 /// </summary>
 [Description("@#RenderBlockingStatusType")]
 [ECMAScript]
+[String]
 public enum RenderBlockingStatusType
 {
     [Description("@#Blocking")]
@@ -4038,6 +4256,7 @@ public enum RenderBlockingStatusType
 /// </summary>
 [Description("@#RequestCache")]
 [ECMAScript]
+[String]
 public enum RequestCache
 {
     [Description("@#Default")]
@@ -4064,6 +4283,7 @@ public enum RequestCache
 /// </summary>
 [Description("@#RequestCredentials")]
 [ECMAScript]
+[String]
 public enum RequestCredentials
 {
     [Description("@#Omit")]
@@ -4081,6 +4301,7 @@ public enum RequestCredentials
 /// </summary>
 [Description("@#RequestDestination")]
 [ECMAScript]
+[String]
 public enum RequestDestination
 {
     [Description("@#Empty")]
@@ -4152,6 +4373,7 @@ public enum RequestDestination
 /// </summary>
 [Description("@#RequestDuplex")]
 [ECMAScript]
+[String]
 public enum RequestDuplex
 {
     [Description("@#Half")]
@@ -4163,6 +4385,7 @@ public enum RequestDuplex
 /// </summary>
 [Description("@#RequestMode")]
 [ECMAScript]
+[String]
 public enum RequestMode
 {
     [Description("@#Navigate")]
@@ -4183,6 +4406,7 @@ public enum RequestMode
 /// </summary>
 [Description("@#RequestPriority")]
 [ECMAScript]
+[String]
 public enum RequestPriority
 {
     [Description("@#High")]
@@ -4200,6 +4424,7 @@ public enum RequestPriority
 /// </summary>
 [Description("@#RequestRedirect")]
 [ECMAScript]
+[String]
 public enum RequestRedirect
 {
     [Description("@#Follow")]
@@ -4217,6 +4442,7 @@ public enum RequestRedirect
 /// </summary>
 [Description("@#ResidentKeyRequirement")]
 [ECMAScript]
+[String]
 public enum ResidentKeyRequirement
 {
     [Description("@#Discouraged")]
@@ -4234,6 +4460,7 @@ public enum ResidentKeyRequirement
 /// </summary>
 [Description("@#ResizeObserverBoxOptions")]
 [ECMAScript]
+[String]
 public enum ResizeObserverBoxOptions
 {
     [Description("@#BorderBox")]
@@ -4251,6 +4478,7 @@ public enum ResizeObserverBoxOptions
 /// </summary>
 [Description("@#ResizeQuality")]
 [ECMAScript]
+[String]
 public enum ResizeQuality
 {
     [Description("@#Pixelated")]
@@ -4271,6 +4499,7 @@ public enum ResizeQuality
 /// </summary>
 [Description("@#ResponseType")]
 [ECMAScript]
+[String]
 public enum ResponseType
 {
     [Description("@#Basic")]
@@ -4297,6 +4526,7 @@ public enum ResponseType
 /// </summary>
 [Description("@#RouterSourceEnum")]
 [ECMAScript]
+[String]
 public enum RouterSourceEnum
 {
     [Description("@#Cache")]
@@ -4317,6 +4547,7 @@ public enum RouterSourceEnum
 /// </summary>
 [Description("@#RunningStatus")]
 [ECMAScript]
+[String]
 public enum RunningStatus
 {
     [Description("@#Running")]
@@ -4331,6 +4562,7 @@ public enum RunningStatus
 /// </summary>
 [Description("@#SFrameTransformErrorEventType")]
 [ECMAScript]
+[String]
 public enum SFrameTransformErrorEventType
 {
     [Description("@#Authentication")]
@@ -4348,6 +4580,7 @@ public enum SFrameTransformErrorEventType
 /// </summary>
 [Description("@#SFrameTransformRole")]
 [ECMAScript]
+[String]
 public enum SFrameTransformRole
 {
     [Description("@#Encrypt")]
@@ -4362,6 +4595,7 @@ public enum SFrameTransformRole
 /// </summary>
 [Description("@#ScreenIdleState")]
 [ECMAScript]
+[String]
 public enum ScreenIdleState
 {
     [Description("@#Locked")]
@@ -4376,6 +4610,7 @@ public enum ScreenIdleState
 /// </summary>
 [Description("@#ScriptInvokerType")]
 [ECMAScript]
+[String]
 public enum ScriptInvokerType
 {
     [Description("@#ClassicScript")]
@@ -4402,6 +4637,7 @@ public enum ScriptInvokerType
 /// </summary>
 [Description("@#ScriptWindowAttribution")]
 [ECMAScript]
+[String]
 public enum ScriptWindowAttribution
 {
     [Description("@#Self")]
@@ -4425,6 +4661,7 @@ public enum ScriptWindowAttribution
 /// </summary>
 [Description("@#ScriptingPolicyViolationType")]
 [ECMAScript]
+[String]
 public enum ScriptingPolicyViolationType
 {
     [Description("@#ExternalScript")]
@@ -4445,6 +4682,7 @@ public enum ScriptingPolicyViolationType
 /// </summary>
 [Description("@#ScrollAxis")]
 [ECMAScript]
+[String]
 public enum ScrollAxis
 {
     [Description("@#Block")]
@@ -4465,6 +4703,7 @@ public enum ScrollAxis
 /// </summary>
 [Description("@#ScrollBehavior")]
 [ECMAScript]
+[String]
 public enum ScrollBehavior
 {
     [Description("@#Auto")]
@@ -4482,6 +4721,7 @@ public enum ScrollBehavior
 /// </summary>
 [Description("@#ScrollLogicalPosition")]
 [ECMAScript]
+[String]
 public enum ScrollLogicalPosition
 {
     [Description("@#Start")]
@@ -4502,6 +4742,7 @@ public enum ScrollLogicalPosition
 /// </summary>
 [Description("@#ScrollRestoration")]
 [ECMAScript]
+[String]
 public enum ScrollRestoration
 {
     [Description("@#Auto")]
@@ -4516,6 +4757,7 @@ public enum ScrollRestoration
 /// </summary>
 [Description("@#ScrollSetting")]
 [ECMAScript]
+[String]
 public enum ScrollSetting
 {
     [Description("@#Empty")]
@@ -4530,6 +4772,7 @@ public enum ScrollSetting
 /// </summary>
 [Description("@#SecurityPolicyViolationEventDisposition")]
 [ECMAScript]
+[String]
 public enum SecurityPolicyViolationEventDisposition
 {
     [Description("@#Enforce")]
@@ -4544,6 +4787,7 @@ public enum SecurityPolicyViolationEventDisposition
 /// </summary>
 [Description("@#SelectionMode")]
 [ECMAScript]
+[String]
 public enum SelectionMode
 {
     [Description("@#Select")]
@@ -4564,6 +4808,7 @@ public enum SelectionMode
 /// </summary>
 [Description("@#SelfCapturePreferenceEnum")]
 [ECMAScript]
+[String]
 public enum SelfCapturePreferenceEnum
 {
     [Description("@#Include")]
@@ -4578,6 +4823,7 @@ public enum SelfCapturePreferenceEnum
 /// </summary>
 [Description("@#ServiceWorkerState")]
 [ECMAScript]
+[String]
 public enum ServiceWorkerState
 {
     [Description("@#Parsed")]
@@ -4604,6 +4850,7 @@ public enum ServiceWorkerState
 /// </summary>
 [Description("@#ServiceWorkerUpdateViaCache")]
 [ECMAScript]
+[String]
 public enum ServiceWorkerUpdateViaCache
 {
     [Description("@#Imports")]
@@ -4621,6 +4868,7 @@ public enum ServiceWorkerUpdateViaCache
 /// </summary>
 [Description("@#ShadowRootMode")]
 [ECMAScript]
+[String]
 public enum ShadowRootMode
 {
     [Description("@#Open")]
@@ -4635,6 +4883,7 @@ public enum ShadowRootMode
 /// </summary>
 [Description("@#SlotAssignmentMode")]
 [ECMAScript]
+[String]
 public enum SlotAssignmentMode
 {
     [Description("@#Manual")]
@@ -4649,6 +4898,7 @@ public enum SlotAssignmentMode
 /// </summary>
 [Description("@#SpatialNavigationDirection")]
 [ECMAScript]
+[String]
 public enum SpatialNavigationDirection
 {
     [Description("@#Up")]
@@ -4669,6 +4919,7 @@ public enum SpatialNavigationDirection
 /// </summary>
 [Description("@#SpeechRecognitionErrorCode")]
 [ECMAScript]
+[String]
 public enum SpeechRecognitionErrorCode
 {
     [Description("@#NoSpeech")]
@@ -4701,6 +4952,7 @@ public enum SpeechRecognitionErrorCode
 /// </summary>
 [Description("@#SpeechSynthesisErrorCode")]
 [ECMAScript]
+[String]
 public enum SpeechSynthesisErrorCode
 {
     [Description("@#Canceled")]
@@ -4745,6 +4997,7 @@ public enum SpeechSynthesisErrorCode
 /// </summary>
 [Description("@#SurfaceSwitchingPreferenceEnum")]
 [ECMAScript]
+[String]
 public enum SurfaceSwitchingPreferenceEnum
 {
     [Description("@#Include")]
@@ -4759,6 +5012,7 @@ public enum SurfaceSwitchingPreferenceEnum
 /// </summary>
 [Description("@#SystemAudioPreferenceEnum")]
 [ECMAScript]
+[String]
 public enum SystemAudioPreferenceEnum
 {
     [Description("@#Include")]
@@ -4773,6 +5027,7 @@ public enum SystemAudioPreferenceEnum
 /// </summary>
 [Description("@#TaskPriority")]
 [ECMAScript]
+[String]
 public enum TaskPriority
 {
     [Description("@#UserBlocking")]
@@ -4790,6 +5045,7 @@ public enum TaskPriority
 /// </summary>
 [Description("@#TextTrackKind")]
 [ECMAScript]
+[String]
 public enum TextTrackKind
 {
     [Description("@#Subtitles")]
@@ -4813,6 +5069,7 @@ public enum TextTrackKind
 /// </summary>
 [Description("@#TextTrackMode")]
 [ECMAScript]
+[String]
 public enum TextTrackMode
 {
     [Description("@#Disabled")]
@@ -4830,6 +5087,7 @@ public enum TextTrackMode
 /// </summary>
 [Description("@#TokenBindingStatus")]
 [ECMAScript]
+[String]
 public enum TokenBindingStatus
 {
     [Description("@#Present")]
@@ -4844,6 +5102,7 @@ public enum TokenBindingStatus
 /// </summary>
 [Description("@#TokenVersion")]
 [ECMAScript]
+[String]
 public enum TokenVersion
 {
     [Description("@#_1")]
@@ -4855,6 +5114,7 @@ public enum TokenVersion
 /// </summary>
 [Description("@#TouchType")]
 [ECMAScript]
+[String]
 public enum TouchType
 {
     [Description("@#Direct")]
@@ -4869,6 +5129,7 @@ public enum TouchType
 /// </summary>
 [Description("@#TransferFunction")]
 [ECMAScript]
+[String]
 public enum TransferFunction
 {
     [Description("@#Srgb")]
@@ -4886,6 +5147,7 @@ public enum TransferFunction
 /// </summary>
 [Description("@#USBDirection")]
 [ECMAScript]
+[String]
 public enum USBDirection
 {
     [Description("@#In")]
@@ -4900,6 +5162,7 @@ public enum USBDirection
 /// </summary>
 [Description("@#USBEndpointType")]
 [ECMAScript]
+[String]
 public enum USBEndpointType
 {
     [Description("@#Bulk")]
@@ -4917,6 +5180,7 @@ public enum USBEndpointType
 /// </summary>
 [Description("@#USBRecipient")]
 [ECMAScript]
+[String]
 public enum USBRecipient
 {
     [Description("@#Device")]
@@ -4937,6 +5201,7 @@ public enum USBRecipient
 /// </summary>
 [Description("@#USBRequestType")]
 [ECMAScript]
+[String]
 public enum USBRequestType
 {
     [Description("@#Standard")]
@@ -4954,6 +5219,7 @@ public enum USBRequestType
 /// </summary>
 [Description("@#USBTransferStatus")]
 [ECMAScript]
+[String]
 public enum USBTransferStatus
 {
     [Description("@#Ok")]
@@ -4971,6 +5237,7 @@ public enum USBTransferStatus
 /// </summary>
 [Description("@#UnderlineStyle")]
 [ECMAScript]
+[String]
 public enum UnderlineStyle
 {
     [Description("@#None")]
@@ -4994,6 +5261,7 @@ public enum UnderlineStyle
 /// </summary>
 [Description("@#UnderlineThickness")]
 [ECMAScript]
+[String]
 public enum UnderlineThickness
 {
     [Description("@#None")]
@@ -5011,6 +5279,7 @@ public enum UnderlineThickness
 /// </summary>
 [Description("@#UserIdleState")]
 [ECMAScript]
+[String]
 public enum UserIdleState
 {
     [Description("@#Active")]
@@ -5025,6 +5294,7 @@ public enum UserIdleState
 /// </summary>
 [Description("@#UserVerificationRequirement")]
 [ECMAScript]
+[String]
 public enum UserVerificationRequirement
 {
     [Description("@#Required")]
@@ -5042,6 +5312,7 @@ public enum UserVerificationRequirement
 /// </summary>
 [Description("@#VideoColorPrimaries")]
 [ECMAScript]
+[String]
 public enum VideoColorPrimaries
 {
     [Description("@#Bt709")]
@@ -5065,6 +5336,7 @@ public enum VideoColorPrimaries
 /// </summary>
 [Description("@#VideoEncoderBitrateMode")]
 [ECMAScript]
+[String]
 public enum VideoEncoderBitrateMode
 {
     [Description("@#Constant")]
@@ -5082,6 +5354,7 @@ public enum VideoEncoderBitrateMode
 /// </summary>
 [Description("@#VideoFacingModeEnum")]
 [ECMAScript]
+[String]
 public enum VideoFacingModeEnum
 {
     [Description("@#User")]
@@ -5102,6 +5375,7 @@ public enum VideoFacingModeEnum
 /// </summary>
 [Description("@#VideoMatrixCoefficients")]
 [ECMAScript]
+[String]
 public enum VideoMatrixCoefficients
 {
     [Description("@#Rgb")]
@@ -5125,6 +5399,7 @@ public enum VideoMatrixCoefficients
 /// </summary>
 [Description("@#VideoPixelFormat")]
 [ECMAScript]
+[String]
 public enum VideoPixelFormat
 {
     [Description("@#I420")]
@@ -5202,6 +5477,7 @@ public enum VideoPixelFormat
 /// </summary>
 [Description("@#VideoResizeModeEnum")]
 [ECMAScript]
+[String]
 public enum VideoResizeModeEnum
 {
     [Description("@#None")]
@@ -5216,6 +5492,7 @@ public enum VideoResizeModeEnum
 /// </summary>
 [Description("@#VideoTransferCharacteristics")]
 [ECMAScript]
+[String]
 public enum VideoTransferCharacteristics
 {
     [Description("@#Bt709")]
@@ -5242,6 +5519,7 @@ public enum VideoTransferCharacteristics
 /// </summary>
 [Description("@#ViewTransitionNavigation")]
 [ECMAScript]
+[String]
 public enum ViewTransitionNavigation
 {
     [Description("@#Auto")]
@@ -5256,6 +5534,7 @@ public enum ViewTransitionNavigation
 /// </summary>
 [Description("@#WakeLockType")]
 [ECMAScript]
+[String]
 public enum WakeLockType
 {
     [Description("@#Screen")]
@@ -5267,6 +5546,7 @@ public enum WakeLockType
 /// </summary>
 [Description("@#WebGLPowerPreference")]
 [ECMAScript]
+[String]
 public enum WebGLPowerPreference
 {
     [Description("@#Default")]
@@ -5284,6 +5564,7 @@ public enum WebGLPowerPreference
 /// </summary>
 [Description("@#WebTransportCongestionControl")]
 [ECMAScript]
+[String]
 public enum WebTransportCongestionControl
 {
     [Description("@#Default")]
@@ -5301,6 +5582,7 @@ public enum WebTransportCongestionControl
 /// </summary>
 [Description("@#WebTransportErrorSource")]
 [ECMAScript]
+[String]
 public enum WebTransportErrorSource
 {
     [Description("@#Stream")]
@@ -5315,6 +5597,7 @@ public enum WebTransportErrorSource
 /// </summary>
 [Description("@#WebTransportReliabilityMode")]
 [ECMAScript]
+[String]
 public enum WebTransportReliabilityMode
 {
     [Description("@#Pending")]
@@ -5332,6 +5615,7 @@ public enum WebTransportReliabilityMode
 /// </summary>
 [Description("@#WellKnownDirectory")]
 [ECMAScript]
+[String]
 public enum WellKnownDirectory
 {
     [Description("@#Desktop")]
@@ -5358,6 +5642,7 @@ public enum WellKnownDirectory
 /// </summary>
 [Description("@#WorkerType")]
 [ECMAScript]
+[String]
 public enum WorkerType
 {
     [Description("@#Classic")]
@@ -5372,6 +5657,7 @@ public enum WorkerType
 /// </summary>
 [Description("@#WriteCommandType")]
 [ECMAScript]
+[String]
 public enum WriteCommandType
 {
     [Description("@#Write")]
@@ -5389,6 +5675,7 @@ public enum WriteCommandType
 /// </summary>
 [Description("@#XMLHttpRequestResponseType")]
 [ECMAScript]
+[String]
 public enum XMLHttpRequestResponseType
 {
     [Description("@#Empty")]
@@ -5415,6 +5702,7 @@ public enum XMLHttpRequestResponseType
 /// </summary>
 [Description("@#XRDOMOverlayType")]
 [ECMAScript]
+[String]
 public enum XRDOMOverlayType
 {
     [Description("@#Screen")]
@@ -5432,6 +5720,7 @@ public enum XRDOMOverlayType
 /// </summary>
 [Description("@#XRDepthDataFormat")]
 [ECMAScript]
+[String]
 public enum XRDepthDataFormat
 {
     [Description("@#LuminanceAlpha")]
@@ -5446,6 +5735,7 @@ public enum XRDepthDataFormat
 /// </summary>
 [Description("@#XRDepthUsage")]
 [ECMAScript]
+[String]
 public enum XRDepthUsage
 {
     [Description("@#CpuOptimized")]
@@ -5460,6 +5750,7 @@ public enum XRDepthUsage
 /// </summary>
 [Description("@#XREnvironmentBlendMode")]
 [ECMAScript]
+[String]
 public enum XREnvironmentBlendMode
 {
     [Description("@#Opaque")]
@@ -5477,6 +5768,7 @@ public enum XREnvironmentBlendMode
 /// </summary>
 [Description("@#XREye")]
 [ECMAScript]
+[String]
 public enum XREye
 {
     [Description("@#None")]
@@ -5494,6 +5786,7 @@ public enum XREye
 /// </summary>
 [Description("@#XRHandJoint")]
 [ECMAScript]
+[String]
 public enum XRHandJoint
 {
     [Description("@#Wrist")]
@@ -5577,6 +5870,7 @@ public enum XRHandJoint
 /// </summary>
 [Description("@#XRHandedness")]
 [ECMAScript]
+[String]
 public enum XRHandedness
 {
     [Description("@#None")]
@@ -5594,6 +5888,7 @@ public enum XRHandedness
 /// </summary>
 [Description("@#XRHitTestTrackableType")]
 [ECMAScript]
+[String]
 public enum XRHitTestTrackableType
 {
     [Description("@#Point")]
@@ -5611,6 +5906,7 @@ public enum XRHitTestTrackableType
 /// </summary>
 [Description("@#XRInteractionMode")]
 [ECMAScript]
+[String]
 public enum XRInteractionMode
 {
     [Description("@#ScreenSpace")]
@@ -5625,6 +5921,7 @@ public enum XRInteractionMode
 /// </summary>
 [Description("@#XRLayerLayout")]
 [ECMAScript]
+[String]
 public enum XRLayerLayout
 {
     [Description("@#Default")]
@@ -5648,6 +5945,7 @@ public enum XRLayerLayout
 /// </summary>
 [Description("@#XRLayerQuality")]
 [ECMAScript]
+[String]
 public enum XRLayerQuality
 {
     [Description("@#Default")]
@@ -5665,6 +5963,7 @@ public enum XRLayerQuality
 /// </summary>
 [Description("@#XRPlaneOrientation")]
 [ECMAScript]
+[String]
 public enum XRPlaneOrientation
 {
     [Description("@#Horizontal")]
@@ -5679,6 +5978,7 @@ public enum XRPlaneOrientation
 /// </summary>
 [Description("@#XRReferenceSpaceType")]
 [ECMAScript]
+[String]
 public enum XRReferenceSpaceType
 {
     [Description("@#Viewer")]
@@ -5702,6 +6002,7 @@ public enum XRReferenceSpaceType
 /// </summary>
 [Description("@#XRReflectionFormat")]
 [ECMAScript]
+[String]
 public enum XRReflectionFormat
 {
     [Description("@#Srgba8")]
@@ -5716,6 +6017,7 @@ public enum XRReflectionFormat
 /// </summary>
 [Description("@#XRSessionMode")]
 [ECMAScript]
+[String]
 public enum XRSessionMode
 {
     [Description("@#Inline")]
@@ -5733,6 +6035,7 @@ public enum XRSessionMode
 /// </summary>
 [Description("@#XRTargetRayMode")]
 [ECMAScript]
+[String]
 public enum XRTargetRayMode
 {
     [Description("@#Gaze")]
@@ -5753,6 +6056,7 @@ public enum XRTargetRayMode
 /// </summary>
 [Description("@#XRTextureType")]
 [ECMAScript]
+[String]
 public enum XRTextureType
 {
     [Description("@#Texture")]
@@ -5767,6 +6071,7 @@ public enum XRTextureType
 /// </summary>
 [Description("@#XRVisibilityState")]
 [ECMAScript]
+[String]
 public enum XRVisibilityState
 {
     [Description("@#Visible")]

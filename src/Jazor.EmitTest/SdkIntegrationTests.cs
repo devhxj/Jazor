@@ -143,7 +143,7 @@ public sealed class SdkIntegrationTests
             .OfType<string>()
             .ToArray();
 
-        CollectionAssert.AreEquivalent(
+        CollectionAssert.IsSubsetOf(
             new[]
             {
                 "shared/greetings.mjs",

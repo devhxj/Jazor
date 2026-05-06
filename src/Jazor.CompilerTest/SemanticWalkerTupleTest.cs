@@ -2299,13 +2299,14 @@ public sealed class SemanticWalkerTupleTest
             ");
 
         var walker = new SemanticWalker(true);
-        var node = walker.Visit(block, new());
-        var script = node?.ToKnRECMAScript();
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.Visit(block, new());
+        });
 
-        AssertTupleScriptEqual(@"{
-  let dict = new Map;
-  dict.set({ item1: 1, Item2: 2 }, ""value"");
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+        StringAssert.Contains(exception.Message, "JS-stable default equality");
+        StringAssert.Contains(exception.Message, "System.Collections.Generic.Dictionary<(int, int), string>");
+        StringAssert.Contains(exception.Message, "(int, int)");
     }
 
     /// <summary>

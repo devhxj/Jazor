@@ -37,6 +37,7 @@ internal static class RazorVueMetadataReferences
         AddAssemblyReference(references, seenPaths, typeof(SpreadAttribute));
         AddAssemblyReference(references, seenPaths, typeof(IVueComponent));
         AddAssemblyReference(references, seenPaths, typeof(VBtn));
+        AddAssemblyReference(references, seenPaths, typeof(Jazor.RazorVue.JazorVueCompiler));
 
         foreach (var extraReference in extraReferences)
         {

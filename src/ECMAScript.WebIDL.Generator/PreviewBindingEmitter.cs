@@ -273,6 +273,7 @@ internal sealed class PreviewBindingEmitter
         builder.AppendLine("/// </summary>");
         builder.AppendLine($"[Description(\"@#{enumName}\")]");
         builder.AppendLine("[ECMAScript]");
+        builder.AppendLine("[String]");
         builder.AppendLine($"public enum {WebIdlNaming.ToPascalCase(enumName)}");
         builder.AppendLine("{");
 

@@ -113,19 +113,43 @@ internal static class ChildrenToSlotIntrinsic
 		if (node is null)
 			return false;
 
+		var propsComponent = GetHostTypeMember(hostType, "IVueComponent", 1);
+		var slotComponent = GetHostTypeMember(hostType, "IVueSlotComponent", 1);
+		var typedComponent = GetHostTypeMember(hostType, "IVueComponent", 2);
+
 		contracts = new HostContracts(
 			node,
 			GetHostTypeMember(hostType, "VueProps", 0),
 			GetHostTypeMember(hostType, "VueChild", 0),
-			GetHostTypeMember(hostType, "IVueComponent", 0),
-			GetHostTypeMember(hostType, "IVueComponent", 1),
-			GetHostTypeMember(hostType, "IVueSlotComponent", 1),
-			GetHostTypeMember(hostType, "IVueComponent", 2));
+			GetHostTypeMember(hostType, "IVueComponent", 0) ?? ResolveUntypedComponentContract(propsComponent, slotComponent, typedComponent),
+			propsComponent,
+			slotComponent,
+			typedComponent);
 		return true;
 	}
 
 	private static INamedTypeSymbol? GetHostTypeMember(INamedTypeSymbol hostType, string name, int arity)
 		=> hostType.GetTypeMembers(name, arity).SingleOrDefault();
+
+	private static INamedTypeSymbol? ResolveUntypedComponentContract(params INamedTypeSymbol?[] candidates)
+	{
+		foreach (var candidate in candidates)
+		{
+			if (candidate is null)
+				continue;
+
+			foreach (var @interface in candidate.AllInterfaces)
+			{
+				if (string.Equals(@interface.Name, "IVueComponent", StringComparison.Ordinal) &&
+					@interface.Arity == 0)
+				{
+					return @interface.OriginalDefinition;
+				}
+			}
+		}
+
+		return null;
+	}
 
 	private static bool TryClassifyReceiver(
 		ITypeSymbol receiverType,

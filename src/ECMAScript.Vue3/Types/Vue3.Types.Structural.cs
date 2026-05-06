@@ -10,6 +10,7 @@ public static partial class Vue3
 	/// Transition implementation type used by Vue's <c>Transition</c> and
 	/// <c>TransitionGroup</c> built-in components.
 	/// </summary>
+	[String]
 	public enum VueTransitionType
 	{
 		[Description("@#transition")]
@@ -22,6 +23,7 @@ public static partial class Vue3
 	/// <summary>
 	/// Transition sequencing mode for the <c>Transition</c> built-in component.
 	/// </summary>
+	[String]
 	public enum VueTransitionMode
 	{
 		[Description("@#in-out")]
@@ -255,6 +257,7 @@ public static partial class Vue3
 	/// <summary>
 	/// Runtime compiler whitespace handling mode.
 	/// </summary>
+	[String]
 	public enum VueCompilerWhitespace
 	{
 		[Description("@#condense")]
@@ -404,6 +407,7 @@ public static partial class Vue3
 	/// <summary>
 	/// Flush timing for Vue watcher callbacks.
 	/// </summary>
+	[String]
 	public enum VueWatchFlush
 	{
 		/// <summary>
@@ -428,6 +432,7 @@ public static partial class Vue3
 	/// <summary>
 	/// Reactivity debugger event operation kind supplied to watcher debug hooks.
 	/// </summary>
+	[String]
 	public enum VueDebuggerEventType
 	{
 		[Description("@#get")]

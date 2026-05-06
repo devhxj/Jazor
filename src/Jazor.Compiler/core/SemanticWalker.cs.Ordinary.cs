@@ -245,6 +245,7 @@ public partial class SemanticWalker
 		return node switch
 		{
 			Statement statement => statement,
+			SequenceExpression { Expressions.Count: 0 } sequenceExpression => sequenceExpression,
 			Expression expression => WithOrigin(new NonSpecialExpressionStatement(expression), operation),
 			_ => HandleTransformationFailure<Node>(operation, "Expression statement could not be translated to JavaScript.")
 		};

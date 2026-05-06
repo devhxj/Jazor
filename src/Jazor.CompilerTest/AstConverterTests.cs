@@ -32,12 +32,50 @@ public sealed class AstConverterTests
         return $"$ctor_{Format.HashName(constructor.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
     }
 
+    private static bool ContainsVue3Reference(IEnumerable<MetadataReference> references)
+        => references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue3).Assembly.Location, StringComparison.OrdinalIgnoreCase));
+
+    private static MetadataReference[] BuildCompilationReferences(IEnumerable<MetadataReference>? additionalReferences = null)
+    {
+        var references = Net100.References.All.Cast<MetadataReference>().ToList();
+        if (additionalReferences is not null)
+            references.AddRange(additionalReferences);
+
+        if (ContainsVue3Reference(references) &&
+            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+        {
+            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location));
+        }
+
+        return references.ToArray();
+    }
+
+    private static SyntaxTree[] BuildSyntaxTrees(string code, IEnumerable<MetadataReference>? additionalReferences = null)
+    {
+        var syntaxTrees = new List<SyntaxTree>();
+        if (additionalReferences is not null && ContainsVue3Reference(additionalReferences))
+            syntaxTrees.Add(CSharpSyntaxTree.ParseText("global using ECMAScript.VueContract;", path: "__TestGlobalUsings.cs"));
+
+        syntaxTrees.Add(CSharpSyntaxTree.ParseText(code));
+        return syntaxTrees.ToArray();
+    }
+
+    private static SyntaxTree[] BuildSyntaxTrees((string Path, string Text)[] sources, IEnumerable<MetadataReference>? additionalReferences = null)
+    {
+        var syntaxTrees = new List<SyntaxTree>();
+        if (additionalReferences is not null && ContainsVue3Reference(additionalReferences))
+            syntaxTrees.Add(CSharpSyntaxTree.ParseText("global using ECMAScript.VueContract;", path: "__TestGlobalUsings.cs"));
+
+        syntaxTrees.AddRange(sources.Select(static source => CSharpSyntaxTree.ParseText(source.Text, path: source.Path)));
+        return syntaxTrees.ToArray();
+    }
+
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(string code)
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            [CSharpSyntaxTree.ParseText(code)],
-            Net100.References.All,
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
@@ -53,8 +91,8 @@ public sealed class AstConverterTests
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            [CSharpSyntaxTree.ParseText(code)],
-            Net100.References.All,
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var syntaxTree = compilation.SyntaxTrees.First();
@@ -76,24 +114,31 @@ public sealed class AstConverterTests
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            [CSharpSyntaxTree.ParseText(code)],
-            Net100.References.All.Concat(additionalReferences),
+            BuildSyntaxTrees(code, additionalReferences),
+            BuildCompilationReferences(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var diagnostics = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
         Assert.IsFalse(diagnostics.Length > 0, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
 
-        var syntaxTree = compilation.SyntaxTrees.First();
-        var semanticModel = compilation.GetSemanticModel(syntaxTree);
-        var classDeclaration = syntaxTree.GetRoot()
-            .DescendantNodes()
-            .OfType<ClassDeclarationSyntax>()
-            .Single(node => node.Identifier.Text == className);
-        var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+        foreach (var syntaxTree in compilation.SyntaxTrees)
+        {
+            var semanticModel = compilation.GetSemanticModel(syntaxTree);
+            var classDeclaration = syntaxTree.GetRoot()
+                .DescendantNodes()
+                .OfType<ClassDeclarationSyntax>()
+                .FirstOrDefault(node => node.Identifier.Text == className);
 
-        Assert.IsNotNull(classSymbol);
-        return (classSymbol, semanticModel);
+            if (classDeclaration is null)
+                continue;
+
+            var classSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
+            Assert.IsNotNull(classSymbol);
+            return (classSymbol, semanticModel);
+        }
+
+        throw new InvalidOperationException($"Class '{className}' was not found.");
     }
 
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(
@@ -101,13 +146,11 @@ public sealed class AstConverterTests
         string className,
         params MetadataReference[] additionalReferences)
     {
-        var syntaxTrees = sources
-            .Select(static source => CSharpSyntaxTree.ParseText(source.Text, path: source.Path))
-            .ToArray();
+        var syntaxTrees = BuildSyntaxTrees(sources, additionalReferences);
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees,
-            Net100.References.All.Concat(additionalReferences),
+            BuildCompilationReferences(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var diagnostics = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
@@ -2328,11 +2371,11 @@ export function get_P2() {
   return _f616cc6f43cd37b6;
 }
 export function get_P3() {
-  return p1;
+  return get_P1();
 }
 export function set_P3(value) { }
 export function get_P4() {
-  return p1;
+  return get_P1();
 }
 export function get_P5() {
   return B;

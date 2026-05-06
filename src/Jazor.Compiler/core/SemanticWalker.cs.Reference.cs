@@ -5,11 +5,35 @@ using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System;
+using System.Collections.Generic;
 
 namespace Jazor.Compiler;
 
 public partial class SemanticWalker
 {
+	private static readonly HashSet<string> GlobalRuntimeTypeNames = new(StringComparer.Ordinal)
+	{
+		"Array",
+		"ArrayBuffer",
+		"BigInt",
+		"Boolean",
+		"DataView",
+		"Date",
+		"Error",
+		"Function",
+		"Map",
+		"Number",
+		"Object",
+		"Promise",
+		"RegExp",
+		"Set",
+		"String",
+		"Symbol",
+		"WeakMap",
+		"WeakSet",
+	};
+
 	/// <summary>
 	/// 获取初始化器成员的名称，优先检查白名单别名
 	/// 对于属性：检查 setter 的白名单别名（初始化器是设置值）
@@ -158,6 +182,9 @@ public partial class SemanticWalker
 			var flatName = GetTypeConfigOrWhiteListName(symbol);
 			if (string.IsNullOrEmpty(flatName))
 				return null;
+
+			if (GlobalRuntimeTypeNames.Contains(flatName!))
+				return new Identifier(flatName!);
 
 			var modulePath = GetEffectiveModuleImportPath(symbol);
 			if (!string.IsNullOrEmpty(modulePath))

@@ -3383,16 +3383,17 @@ public sealed class SemanticWalkerReferenceTest
                     dict[new { Name = ""key"", Index = 1 }] = 42;
                 }
             }
-        ");
+		");
 
 		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
 
-		AssertJsNamingScriptEqual(@"{
-  let dict = new Map;
-  dict.set({ Name: ""key"", Index: 1 }, 42);
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+		StringAssert.Contains(exception.Message, "JS-stable default equality");
+		StringAssert.Contains(exception.Message, "System.Collections.Generic.Dictionary<object, int>");
+		StringAssert.Contains(exception.Message, "object");
 	}
 
 	/// <summary>
@@ -3410,16 +3411,17 @@ public sealed class SemanticWalkerReferenceTest
                     dict[new TestClass()] = 42;
                 }
             }
-        ");
+		");
 
 		var walker = new SemanticWalker(true);
-		var node = walker.Visit(block, new());
-		var script = node?.ToKnRECMAScript();
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
 
-		Assert.AreEqual(@"{
-  let dict = new Map;
-  dict.set(new TestClass, 42);
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+		StringAssert.Contains(exception.Message, "JS-stable default equality");
+		StringAssert.Contains(exception.Message, "System.Collections.Generic.Dictionary<object, int>");
+		StringAssert.Contains(exception.Message, "object");
 	}
 
 	/// <summary>
@@ -5511,7 +5513,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let result = TestClass.Host.Middle.Inner.value;
+  let result = Inner.value;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 

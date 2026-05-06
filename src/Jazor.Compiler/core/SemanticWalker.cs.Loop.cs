@@ -150,6 +150,10 @@ public partial class SemanticWalker
 					expressions.Add(expression);
 					break;
 
+				case NonSpecialExpressionStatement statement:
+					expressions.Add(statement.Expression);
+					break;
+
 				default:
 					return HandleTransformationFailure<StatementOrExpression>(
 						before,
