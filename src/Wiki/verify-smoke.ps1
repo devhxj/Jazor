@@ -49,6 +49,7 @@ $docsRoutes = @(
     @{ Url = "$rootUrl/engineering/runtime-catalog"; Path = "/engineering/runtime-catalog" },
     @{ Url = "$rootUrl/engineering/jolt-host"; Path = "/engineering/jolt-host" },
     @{ Url = "$rootUrl/engineering/razorvue-library-mode"; Path = "/engineering/razorvue-library-mode" },
+    @{ Url = "$rootUrl/engineering/vueroute-bindings"; Path = "/engineering/vueroute-bindings" },
     @{ Url = "$rootUrl/operations/content-governance"; Path = "/operations/content-governance" },
     @{ Url = "$rootUrl/operations/deployment"; Path = "/operations/deployment" },
     @{ Url = "$rootUrl/operations/testing-verification"; Path = "/operations/testing-verification" }
@@ -75,6 +76,7 @@ $emittedRouteMarkers = @(
     "/engineering/runtime-catalog",
     "/engineering/jolt-host",
     "/engineering/razorvue-library-mode",
+    "/engineering/vueroute-bindings",
     "/operations/content-governance",
     "/operations/deployment",
     "/operations/testing-verification"
@@ -100,6 +102,7 @@ $emittedPageTitleMarkers = @(
     "CLR Runtime Catalog",
     "Jolt Host",
     "RazorVue Library Mode",
+    "VueRoute Bindings",
     "Content Governance",
     "Deployment",
     "Testing and Verification"
@@ -125,6 +128,7 @@ $emittedSectionContractMarkers = @(
     "why-catalog-exists",
     "why-jolt",
     "why-razorvue",
+    "why-vueroute-exists",
     "ownership-model",
     "build-output",
     "verification-layers"
@@ -542,6 +546,7 @@ $expectedPageSourceFiles = @(
     "WikiHomeModule.RuntimeCatalog.cs",
     "WikiHomeModule.JoltHost.cs",
     "WikiHomeModule.RazorVueLibraryMode.cs",
+    "WikiHomeModule.VueRouteBindings.cs",
     "WikiHomeModule.ContentGovernance.cs",
     "WikiHomeModule.Deployment.cs",
     "WikiHomeModule.TestingVerification.cs"

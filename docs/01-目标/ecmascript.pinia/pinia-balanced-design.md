@@ -51,11 +51,26 @@
 
 ### 5. Setup store 边界
 
-- 当前 setup-store authoring 先支持参数为空的 `Func<TStore>` 形式。
-- Pinia 官方 `storeSetup(helpers)` 里的 helper 参数目前没有单独投影类型；在真实需求出现前，不提前发明一套 C# only helpers surface。
-- 这意味着当前实现优先覆盖常见 setup-store authoring，而不是追求 TS 类型系统级等价。
+- setup-store 同时支持参数为空的 `Func<TStore>` 和 helper-aware `PiniaSetupStoreFactory<TStore>`。
+- `storeSetup(helpers)` 的当前稳定 helper surface 按官方 contract 暴露 `SetupStoreHelpers.Action(fn, name?)`。
+- `DefineSetupStoreOptions` 不再保持空壳，而是至少承接稳定的 `actions` contract；typed `DefineSetupStoreOptions<TActions>` 用于更强类型的 advanced/plugin-facing authoring。
+- 当前仍然不追求把 Pinia 内部或 TS-only 的 setup typing 细节整包镜像到 C#。
 
-### 6. 验证边界
+### 6. Plugin authoring 边界
+
+- `pinia.use(...)` 既保留基础 `PiniaPluginContext`，也提供 `PiniaPluginContext<TStore>` / `PiniaPluginContext<TStore, TOptions>` 这类更强类型代理面。
+- 对链式 plugin authoring，再继续提供 `PiniaPluginContext<TStore, TOptions, TCustomProperties>` / `PiniaPluginContext<TStore, TOptions, TCustomProperties, TCustomState>`，让后续 plugin 可以显式读取前置插件加进来的 store/store.$state 扩展。
+- plugin 可见 options 使用 `DefineStoreOptionsInPlugin` 家族承接，而不是继续退化成只有壳类型的 `DefineStoreOptionsBase`。
+- plugin 返回值可以收口到用户自定义 `VueProps` / `PiniaStateTree` record。
+- 对 store 侧消费，提供显式投影 helper：
+  - `ProjectStore<TStore, TCustomProperties>(store)`
+  - `ProjectStore<TStore, TCustomProperties, TCustomState>(store)`
+  - `ProjectStoreDefinition<TStore, TCustomProperties>(useStore)`
+  - `ProjectStoreDefinition<TStore, TCustomProperties, TCustomState>(useStore)`
+- `ProjectedStore<...>` / `ProjectedStoreDefinition<...>` 只做类型级 identity 投影，不引入 TS module augmentation 等价物，也不生成新的 runtime helper。
+- projected plugin context 同样不引入新的 runtime helper；它只是把 `context.store` 强类型投影成同一个 runtime store。
+
+### 7. 验证边界
 
 - 结构和反射合同验证放在 `ECMAScript.Pinia.Test`。
 - 编译降级验证仍可引用 `Jazor.Compiler`，但测试所有权不再属于 `Jazor.CompilerTest`。
@@ -84,8 +99,6 @@ Pinia 绑定当然会依赖 compiler 做 import/lowering 验证，但这不等�
 
 ## 后续补齐方向
 
-- setup-store helpers 参数的正式投影
-- plugin 扩展属性的更强类型化建模
+- plugin 投影模式的更多 sample 和推荐 authoring 约定
 - 更完整的使用示例与文档索引
 - 视需求决定是否覆盖 `@pinia/testing`
-

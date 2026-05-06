@@ -34,7 +34,7 @@ Current product boundary:
 ## Project Layout
 
 - `Wiki.csproj`: single web host project for the docs site.
-- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.Search.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ProjectLines.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.TopicIndex.cs`, `WikiHomeModule.Glossary.cs`, `WikiHomeModule.Faq.cs`, `WikiHomeModule.Troubleshooting.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerOverview.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.JoltHost.cs`, `WikiHomeModule.RazorVueLibraryMode.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
+- `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.Search.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ProjectLines.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.TopicIndex.cs`, `WikiHomeModule.Glossary.cs`, `WikiHomeModule.Faq.cs`, `WikiHomeModule.Troubleshooting.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerOverview.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.JoltHost.cs`, `WikiHomeModule.RazorVueLibraryMode.cs`, `WikiHomeModule.VueRouteBindings.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `Program.cs`: ASP.NET Core host with `/health`, route fallback, and an explicit `/jazor` mount for the local emit directory when present.
 - `build-local.ps1`: local build entry that verifies emitted Wiki artifacts exist after build.
@@ -103,6 +103,7 @@ Then open:
 - `http://localhost:4173/engineering/runtime-catalog`
 - `http://localhost:4173/engineering/jolt-host`
 - `http://localhost:4173/engineering/razorvue-library-mode`
+- `http://localhost:4173/engineering/vueroute-bindings`
 - `http://localhost:4173/operations/content-governance`
 - `http://localhost:4173/operations/deployment`
 - `http://localhost:4173/operations/testing-verification`
@@ -239,7 +240,7 @@ Summary of invariants enforced by `verify-smoke.ps1 -Publish`:
 - Published output serves `/jazor/*` only from `wwwroot/jazor/`, with no shadow root directory
 - `main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json` exist under `wwwroot/jazor/`
 - `/vendor/vue@3.5.16.mjs` is servable (Vue 3 vendored locally, no CDN dependency)
-- All 23 registered docs routes return HTTP 200 with the SPA shell
+- All 24 registered docs routes return HTTP 200 with the SPA shell
 - `index.html` contains no external CDN URLs
 
 ## Positioning

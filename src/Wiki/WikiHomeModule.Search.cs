@@ -11,6 +11,7 @@ public static partial class WikiHomeModule
         "compiler",
         "jolt",
         "razorvue",
+        "vueroute",
         "runtime",
         "catalog",
         "smoke"
@@ -34,7 +35,7 @@ public static partial class WikiHomeModule
             [
                 H("p", "Use tags when you know the concern but not the exact page title."),
                 SearchTagRow(FeaturedSearchTags),
-                RouteCardGrid([TopicIndexPath, GlossaryPath, TroubleshootingPath, CompilerOverviewPath, JoltHostPath, RazorVueLibraryModePath])
+                RouteCardGrid([TopicIndexPath, GlossaryPath, TroubleshootingPath, CompilerOverviewPath, JoltHostPath, RazorVueLibraryModePath, VueRouteBindingsPath])
             ]),
             PageSection("query-sharing", "Shareable queries",
             [
@@ -89,7 +90,7 @@ public static partial class WikiHomeModule
             return H("div", new VueObject { Class = "search-empty-state" },
             [
                 H("p", new VueObject { Class = "search-empty-title" }, "Start with a route or subsystem name."),
-                H("p", new VueObject { Class = "search-empty-summary" }, "Useful starting points are `compiler`, `jolt`, `razorvue`, `runtime`, `catalog`, and `smoke`."),
+                H("p", new VueObject { Class = "search-empty-summary" }, "Useful starting points are `compiler`, `jolt`, `razorvue`, `vueroute`, `runtime`, `catalog`, and `smoke`."),
                 RouteCardGrid([GettingStartedPath, ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath])
             ]);
         }

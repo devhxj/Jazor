@@ -2,13 +2,13 @@
 
 > Status: Phase 1–4 已完成
 > Updated: 2026-05-05
-> Positioning: `src/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 23 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化和部署契约。
+> Positioning: `src/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 24 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化和部署契约。
 
 ## 1. 当前定位
 
 `src/Wiki/` 是已完成的真实文档站 MVP：
 
-- 用 C# + `ECMAScript.Vue3` 的 `H(...)` authoring 构建全部 23 个页面；
+- 用 C# + `ECMAScript.Vue3` 的 `H(...)` authoring 构建全部 24 个页面；
 - 通过 `JazorEmit` 在构建时把模块发射到 `wwwroot/jazor`；
 - 由静态 `index.html` + import map 在浏览器里启动 Vue runtime；
 - 完整 SPA 路由、导航壳层、全文搜索、响应式布局、暗色/亮色主题。
@@ -25,7 +25,7 @@
 
 - ASP.NET Core 静态宿主、`/health`、`MapFallbackToFile` 前端路由；
 - `AppModule.cs` 负责 Vue bootstrap；
-- `WikiHomeModule.cs` 及 25 个 partial 文件负责站点壳层和 23 个页面内容；
+- `WikiHomeModule.cs` 及 26 个 partial 文件负责站点壳层和 24 个页面内容；
 - `WikiCatalogGuard.cs` 启动校验全部路由目录完整性；
 - `Wiki.csproj` 已开启 `JazorEmit`，输出到 `wwwroot/jazor`；
 - `main.mjs`、`components/wiki-home.mjs` 与 manifest（48 模块）已稳定产出；
@@ -69,7 +69,7 @@
 
 当前状态：
 
-- 已完成。23 个页面覆盖 element、props、events、component、reactivity 等全部 authoring 面；H 函数成为生产级标准。
+- 已完成。24 个页面覆盖 element、props、events、component、reactivity，以及独立外部绑定文档面；H 函数成为生产级标准。
 
 ### Phase 3: Real Wiki MVP（已完成）
 
@@ -79,7 +79,7 @@
 
 当前状态：
 
-- 已完成。23 个注册页面（Foundation 11 + Engineering 9 + Operations 3），三栏导航壳层，SPA 路由，全文搜索，Glossary，FAQ，Troubleshooting，Topic Index，阅读进度条，session scroll memory，暗色/亮色主题，移动端响应式，无障碍，SEO 元数据，WikiCatalogGuard 启动校验，HTTP smoke + headless Edge CDP 浏览器验证。
+- 已完成。24 个注册页面（Foundation 11 + Engineering 10 + Operations 3），三栏导航壳层，SPA 路由，全文搜索，Glossary，FAQ，Troubleshooting，Topic Index，阅读进度条，session scroll memory，暗色/亮色主题，移动端响应式，无障碍，SEO 元数据，WikiCatalogGuard 启动校验，HTTP smoke + headless Edge CDP 浏览器验证。
 
 ### Phase 4: Productization（已完成）
 
@@ -157,7 +157,7 @@ Phase 1–3 已全部完成。最合理的下一步是 **Phase 4: Productization
 进入 Phase 4 前至少满足：
 
 - Phase 1–3 已闭环（当前已满足）；
-- 已有可用的多页面 MVP（当前已满足：23 个页面）；
+- 已有可用的多页面 MVP（当前已满足：24 个页面）；
 - 已有最小自动化验证（当前已满足：HTTP smoke + headless browser）；
 - 依赖与部署策略已定（待确认）。
 

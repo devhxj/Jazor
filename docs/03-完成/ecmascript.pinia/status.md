@@ -13,6 +13,11 @@
 - `Pinia.cs` 保持模块入口壳文件职责；
 - Pinia 相关测试已从 `Jazor.CompilerTest` 拆出，独立为 `src/ECMAScript.Pinia.Test/`；
 - 统一测试入口已支持 `pwsh ./scripts/test-dotnet.ps1 -Project pinia`；
+- 已补 `samples/ECMAScript.Pinia.Counter/` 真实消费示例，覆盖 Vue 3 + Pinia + emitted modules 的联动路径；
+- plugin / action listener 的 typed proxy 合同已补齐，覆盖 `PiniaPluginContext<TStore, TOptions>`、`PiniaPluginContext<TStore, TOptions, ...>`、`DefineStoreOptionsInPlugin`、`OnAction<TStore>(...)`；
+- `$subscribe()` mutation 代理已补齐为 base + `Direct` / `PatchFunction` / `PatchObject` 分层，并补回 dev-only `events` 形状；
+- setup-store helper / options 合同已补齐，覆盖 `PiniaSetupStoreFactory<TStore>`、`SetupStoreHelpers.Action(...)`、`DefineSetupStoreOptions<TActions>`；
+- plugin merge 投影合同已补齐，覆盖 `ProjectStore(...)`、`ProjectStoreDefinition(...)`、`ProjectedStore<...>`、`ProjectedStoreDefinition<...>`；
 - 文档域已建立 `docs/01-目标/ecmascript.pinia/`，并补齐 `02-计划` / `03-完成` 目录。
 
 当前更准确的状态是：**基础结构与核心运行时绑定已成形，独立测试治理已完成，后续进入增量扩展阶段**。
@@ -56,15 +61,22 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
   - `disposePinia`
 - store definition / runtime
   - option store `defineStore`
-  - setup store `defineStore`（当前是无参 callback 路线）
+  - setup store `defineStore`（parameterless + helper-aware 双路径）
   - `StoreDefinition<TStore>.Use(...)`
   - `$state` / `$patch` / `$reset` / `$subscribe`
-  - `$onAction` / `$dispose`
+  - `$onAction` / `OnAction<TStore>(...)` / `$dispose`
 - refs / hydration / HMR
   - `storeToRefs`
   - `skipHydrate`
   - `shouldHydrate`
   - `acceptHMRUpdate`
+- plugin authoring
+  - `PiniaInstance.Use(...)`
+  - `PiniaPluginContext<TStore, TOptions>`
+  - `PiniaPluginContext<TStore, TOptions, ...>`
+  - `DefineStoreOptionsInPlugin`
+  - `ProjectStore(...)`
+  - `ProjectStoreDefinition(...)`
 - Options API helpers
   - `mapState`
   - `mapGetters`
@@ -80,6 +92,7 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - `src/ECMAScript.Pinia/ECMAScript.Pinia.csproj` 可独立构建
 - `src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj` 可独立测试
 - `pwsh ./scripts/test-dotnet.ps1 -Project pinia` 可作为统一入口运行
+- `samples/ECMAScript.Pinia.Counter/build-local.ps1` 可重建本地 sample host
 - layout guard 已约束：
   - `Api/` + `Types/` 分层
   - `Pinia.cs` 壳文件边界
@@ -87,22 +100,25 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - proxy/import guard 已覆盖：
   - 裸 `pinia` 导入
   - `StoreDefinition<TStore>.Use(...)` lowering
+  - typed `OnAction<TStore>(...)` lowering
+  - typed `pinia.use(...)` plugin context lowering
+  - projected plugin context lowering
+  - projected store / projected store-definition identity lowering
+  - subscription mutation subtype + `.events` / `.payload` lowering
+  - setup-store helpers + third-argument options lowering
   - `storeToRefs` / `acceptHMRUpdate`
   - `mapState` / `mapGetters` / `mapWritableState` / `mapActions` / `mapStores`
 
 ## 下一步行动
 
-1. setup-store helpers 参数设计  
-   当前 setup store 仍是最小 authoring surface；下一步要决定是否以及如何引入 helpers 参数投影。
+1. plugin 投影模式继续沉淀  
+   当前已提供显式 `ProjectStore(...)` / `ProjectStoreDefinition(...)` contract 以及 projected plugin context；后续重点转为 sample、推荐写法和消费约定沉淀。
 
-2. plugin surface 更强类型化  
-   `PiniaPluginContext` 已存在，但 plugin merge 回来的扩展属性仍有继续收口空间。
-
-3. 外部库模板经验沉淀  
+2. 外部库模板经验沉淀  
    把 Pinia 这一轮项目拆分、测试拆分、文档拆分的经验继续沉淀成可复用模式。
 
-4. 真实消费示例  
-   当前主要是 proxy/import/lowering 测试；后续可补最小 sample 验证 Vue3 + Pinia 联动路径。
+3. sample 继续扩展  
+   当前已经有 `samples/ECMAScript.Pinia.Counter/` 作为真实消费入口；后续可视需求再补 helper/HMR 更专门的 sample。
 
 ## 参考
 
@@ -111,4 +127,3 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - [ECMAScript.Pinia API 覆盖矩阵](../../01-目标/ecmascript.pinia/pinia-api-coverage-matrix.md)
 - [ECMAScript.Pinia 剩余完善清单](../../02-计划/ecmascript.pinia/ECMAScript.Pinia.RemainingWorkChecklist.md)
 - [src/ECMAScript.Pinia/README.md](../../../src/ECMAScript.Pinia/README.md)
-

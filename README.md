@@ -92,7 +92,7 @@ Jazor works best with a multi-project layout where library projects declare modu
 </Project>
 ```
 
-The host project scans its own assembly and all referenced assemblies for `[ECMAScriptModule]`-annotated types and emits `.mjs` files to `JazorOutDir`. See the [multi-project sample](samples/Jazor.MultiProject/) for a working example.
+The host project scans its own assembly and all referenced assemblies for `[ECMAScriptModule]`-annotated types and emits `.mjs` files to `JazorOutDir`. See the [multi-project sample](samples/Jazor.MultiProject/) for the baseline emit layout, and [ECMAScript.Pinia.Counter](samples/ECMAScript.Pinia.Counter/) for a Vue 3 + Pinia consumption sample.
 
 ### MSBuild Properties
 
@@ -209,7 +209,7 @@ Jazor/
 │   ├── Jazor/                       # NuGet package (bundles everything above)
 │   ├── Jolt/                        # [Long-term] Dev toolchain
 │   ├── Wiki/                        # Docs site built with Jazor
-│   └── samples/                     # Multi-project usage sample
+│   └── samples/                     # Working host/consumer samples
 ├── docs/                            # Documentation hub
 └── scripts/                         # Build and tooling scripts
 ```

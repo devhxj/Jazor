@@ -19,38 +19,31 @@
 
 ## 2. 当前主线项
 
-### 2.1 setup-store authoring 补齐
-
-当前 setup store 只覆盖：
-
-- `DefineStore<TStore>(string, Func<TStore>)`
-- `DefineStore<TStore>(string, Func<TStore>, DefineSetupStoreOptions)`
-
-仍待决定/补齐：
-
-- 是否引入 setup callback helpers 参数的正式 C# 投影；
-- 如果引入，helpers surface 应该保持多薄；
-- 如何避免为了类型化 helpers 把 TypeScript 工具类型复杂度整包带进来。
-
-### 2.2 plugin surface 更强类型化
+### 2.1 plugin surface 更强类型化
 
 当前已覆盖：
 
 - `PiniaInstance.Use(...)`
 - `PiniaPluginContext`
+- `PiniaPluginContext<TStore, TOptions>`
+- `PiniaPluginContext<TStore, TOptions, ...>`
+- `DefineStoreOptionsInPlugin`
+- `OnAction<TStore>(...)`
 - `_customProperties` 扩展面
+- `ProjectStore(...)`
+- `ProjectStoreDefinition(...)`
+- `ProjectedStore<...>` / `ProjectedStoreDefinition<...>`
 
 剩余问题：
 
-- plugin merge 回来的额外属性是否需要一个更明确的 typed contract；
-- 是否需要为常见 plugin authoring 给出推荐 record 模式；
-- 在不引入“module augmentation 等价物”的前提下，如何保持可读性。
+- 如何为常见 plugin authoring 给出推荐 projection / record 模式；
+- 如何把 plugin-added custom state 的消费写法沉淀成统一示例；
+- 在不引入“module augmentation 等价物”的前提下，继续提升 authoring 可读性。
 
-### 2.3 API 覆盖矩阵驱动补齐
+### 2.2 API 覆盖矩阵驱动补齐
 
 当前已覆盖最常见 authoring path，但还有几类缺口：
 
-- setup-store helpers 参数
 - 更长尾 helper
 - `@pinia/testing`
 
@@ -109,20 +102,23 @@
 
 ### 4.2 示例与消费验证
 
-当前测试已覆盖 import/lowering，但还缺“更像真实业务”的示例入口。  
-后续可以补：
+当前已补：
 
-- 一个小型 store authoring sample
+- `samples/ECMAScript.Pinia.Counter/` 小型 store authoring sample
 - Vue3 + Pinia 联动示例
-- `mapStores` / `storeToRefs` / HMR 的最小消费场景
+- `storeToRefs()` + `$patch()` + `$reset()` 的最小消费场景
+
+后续仍可按需求追加：
+
+- `mapStores()` / `mapState()` / `mapActions()` 的更偏 Options API sample
+- `$subscribe()` mutation subtype 的更完整 sample
+- HMR 专门场景 sample
 
 ## 5. 推荐推进顺序
 
 建议按以下顺序继续推进：
 
-1. setup-store helpers 参数设计
-2. plugin surface 更强类型化
-3. 真实消费示例或 sample
-4. 视需求决定是否引入更长尾 helper
-5. 最后评估 `@pinia/testing` 是否值得单独成线
-
+1. plugin merge 属性收口模式
+2. plugin projection 的真实消费示例或 sample
+3. 视需求决定是否引入更长尾 helper
+4. 最后评估 `@pinia/testing` 是否值得单独成线

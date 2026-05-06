@@ -93,7 +93,7 @@ Jazor 推荐使用多项目布局：库项目声明模块，宿主项目负责�
 </Project>
 ```
 
-宿主项目会扫描自身程序集及所有引用程序集中带有 `[ECMAScriptModule]` 标注的类型，将 `.mjs` 文件输出到 `JazorOutDir`。完整示例见 [multi-project sample](samples/Jazor.MultiProject/)。
+宿主项目会扫描自身程序集及所有引用程序集中带有 `[ECMAScriptModule]` 标注的类型，将 `.mjs` 文件输出到 `JazorOutDir`。基线发射示例见 [multi-project sample](samples/Jazor.MultiProject/)，Vue 3 + Pinia 消费示例见 [ECMAScript.Pinia.Counter](samples/ECMAScript.Pinia.Counter/)。
 
 ### MSBuild 属性
 
@@ -210,7 +210,7 @@ Jazor/
 │   ├── Jazor/                       # NuGet 包（打包以上所有内容）
 │   ├── Jolt/                        # 【远期】开发工具链
 │   ├── Wiki/                        # 基于 Jazor 构建的文档站点
-│   └── samples/                     # 多项目使用示例
+│   └── samples/                     # 可运行的 host / consumer 示例
 ├── docs/                            # 文档中心
 └── scripts/                         # 构建与工具脚本
 ```

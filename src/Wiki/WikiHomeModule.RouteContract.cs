@@ -28,6 +28,7 @@ public static partial class WikiHomeModule
         RuntimeCatalogPath,
         JoltHostPath,
         RazorVueLibraryModePath,
+        VueRouteBindingsPath,
         ContentGovernancePath,
         DeploymentPath,
         TestingVerificationPath
@@ -46,6 +47,7 @@ public static partial class WikiHomeModule
         "Foundation",
         "Foundation",
         "Foundation",
+        "Engineering",
         "Engineering",
         "Engineering",
         "Engineering",
@@ -82,6 +84,7 @@ public static partial class WikiHomeModule
         "CLR Runtime Catalog",
         "Jolt Host",
         "RazorVue Library Mode",
+        "VueRoute Bindings",
         "Content Governance",
         "Deployment",
         "Testing and Verification"
@@ -109,6 +112,7 @@ public static partial class WikiHomeModule
         "How CLR import helpers become browser-ready `System/*` runtime modules, and what guarantees keep that catalog safe to ship.",
         "The full-featured `.jazor` development host for editing, preview, build, and debug workflows.",
         "The build-time library mode for compiling Razor components into JavaScript artifacts without a full development host.",
+        "The standalone Vue Router binding library, its host-surface scope, and the split verification path that keeps tests out of the compiler suite.",
         "How code-first docs content is owned, edited, reviewed, and released without drifting away from the emitted product shell.",
         "Build outputs, fallback routing, smoke verification, and the static delivery contract for Wiki.",
         "How compiler, emit, and operational smoke checks fit together to protect the production docs surface."
@@ -136,6 +140,7 @@ public static partial class WikiHomeModule
         "Runtime",
         "Host",
         "Library",
+        "Bindings",
         "Governance",
         "Operations",
         "Verification"
@@ -163,6 +168,7 @@ public static partial class WikiHomeModule
         "CLR",
         "Jolt",
         "RazorVue",
+        "Runtime",
         "Docs",
         "Ops",
         "Ops"
@@ -189,6 +195,7 @@ public static partial class WikiHomeModule
         "Compiler contributors",
         "Runtime contributors",
         "App authors",
+        "Library authors",
         "Library authors",
         "Maintainers",
         "Maintainers",
@@ -217,6 +224,7 @@ public static partial class WikiHomeModule
         "src/Wiki/WikiHomeModule.RuntimeCatalog.cs",
         "src/Wiki/WikiHomeModule.JoltHost.cs",
         "src/Wiki/WikiHomeModule.RazorVueLibraryMode.cs",
+        "src/Wiki/WikiHomeModule.VueRouteBindings.cs",
         "src/Wiki/WikiHomeModule.ContentGovernance.cs",
         "src/Wiki/WikiHomeModule.Deployment.cs",
         "src/Wiki/WikiHomeModule.TestingVerification.cs"
@@ -244,6 +252,7 @@ public static partial class WikiHomeModule
         "2026-05-04",
         "2026-05-04",
         "2026-05-04",
+        "2026-05-06",
         "2026-05-04",
         "2026-05-04",
         "2026-05-04"
@@ -269,6 +278,7 @@ public static partial class WikiHomeModule
         5,
         5,
         4,
+        5,
         5,
         5,
         4,
@@ -298,6 +308,7 @@ public static partial class WikiHomeModule
         "Explains why the CLR runtime catalog exists, how helpers become System modules, and which guardrails keep browser runtime imports shippable.",
         "Describes Jolt as the full-featured `.jazor` development host with Jazor, Roslyn, and Volar lanes, preview, HMR, build, and debug support.",
         "Describes RazorVue as the build-time library mode with split ownership across shared semantics, analyzer host logic, and library component bindings.",
+        "Explains `ECMAScript.VueRoute` as a standalone Vue Router binding project, its current API slice, and the test and packaging boundaries that keep it independent from compiler-suite growth.",
         "Defines ownership, source boundaries, generated asset review, and the safe change flow for code-first docs pages.",
         "Describes local build output, route fallback, operational checks, and the static hosting contract for the Wiki shell.",
         "Explains verification layers, focused commands, coverage expectations, and why smoke verification is the minimum release gate."
@@ -325,6 +336,7 @@ public static partial class WikiHomeModule
         ["clr", "runtime", "system-modules"],
         ["jolt", "dev-host", "lsp"],
         ["razorvue", "library-mode", "build"],
+        ["vueroute", "vue-router", "bindings"],
         ["ownership", "docs", "review"],
         ["hosting", "static-files", "fallback"],
         ["smoke", "tests", "verification"]
@@ -352,6 +364,7 @@ public static partial class WikiHomeModule
         RuntimeCatalogBody,
         JoltHostBody,
         RazorVueLibraryModeBody,
+        VueRouteBindingsBody,
         ContentGovernanceBody,
         DeploymentBody,
         TestingVerificationBody
@@ -731,6 +744,24 @@ public static partial class WikiHomeModule
         "When to choose library mode"
     ];
 
+    private static readonly string[] VueRouteBindingsSectionIds =
+    [
+        "why-vueroute-exists",
+        "current-surface",
+        "authoring-boundary",
+        "verification-path",
+        "where-to-extend-next"
+    ];
+
+    private static readonly string[] VueRouteBindingsSectionTitles =
+    [
+        "Why VueRoute bindings exist",
+        "Current surface",
+        "Authoring boundary",
+        "Verification path",
+        "Where to extend next"
+    ];
+
     internal static readonly string[][] PageSectionIdSets =
     [
         OverviewSectionIds,
@@ -753,6 +784,7 @@ public static partial class WikiHomeModule
         RuntimeCatalogSectionIds,
         JoltHostSectionIds,
         RazorVueLibraryModeSectionIds,
+        VueRouteBindingsSectionIds,
         ContentGovernanceSectionIds,
         DeploymentSectionIds,
         TestingVerificationSectionIds
@@ -780,6 +812,7 @@ public static partial class WikiHomeModule
         RuntimeCatalogSectionTitles,
         JoltHostSectionTitles,
         RazorVueLibraryModeSectionTitles,
+        VueRouteBindingsSectionTitles,
         ContentGovernanceSectionTitles,
         DeploymentSectionTitles,
         TestingVerificationSectionTitles
@@ -807,6 +840,7 @@ public static partial class WikiHomeModule
         [HostSemanticSeamsPath, ImportEmitContractPath, DeploymentPath],
         [ProjectLinesPath, RazorVueLibraryModePath, GettingStartedPath],
         [ProjectLinesPath, JoltHostPath, HFunctionAuthoringPath],
+        [ProjectLinesPath, RazorVueLibraryModePath, ImportEmitContractPath],
         [ContentModelPath, DeploymentPath, TestingVerificationPath],
         [TestingVerificationPath, TroubleshootingPath, RuntimeCatalogPath],
         [DeploymentPath, ContentGovernancePath, TroubleshootingPath]

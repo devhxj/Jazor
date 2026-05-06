@@ -39,6 +39,7 @@ public static partial class WikiHomeModule
     private const string RuntimeCatalogPath = "/engineering/runtime-catalog";
     private const string JoltHostPath = "/engineering/jolt-host";
     private const string RazorVueLibraryModePath = "/engineering/razorvue-library-mode";
+    private const string VueRouteBindingsPath = "/engineering/vueroute-bindings";
     private const string ContentGovernancePath = "/operations/content-governance";
     private const string DeploymentPath = "/operations/deployment";
     private const string TestingVerificationPath = "/operations/testing-verification";

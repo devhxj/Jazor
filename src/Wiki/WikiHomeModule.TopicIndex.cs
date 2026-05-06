@@ -21,7 +21,7 @@ public static partial class WikiHomeModule
             PageSection("core-runtime", "Core runtime and architecture",
             [
                 H("p", "Start here if you need to understand how the major Jazor subsystems fit together."),
-                RouteCardGrid([ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath, JoltHostPath, RazorVueLibraryModePath])
+                RouteCardGrid([ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath, JoltHostPath, RazorVueLibraryModePath, VueRouteBindingsPath])
             ]),
             PageSection("operating-and-writing", "Operating and writing",
             [

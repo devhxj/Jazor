@@ -69,6 +69,7 @@ src/Wiki/
   WikiHomeModule.RuntimeCatalog.cs
   WikiHomeModule.JoltHost.cs
   WikiHomeModule.RazorVueLibraryMode.cs
+  WikiHomeModule.VueRouteBindings.cs
   WikiHomeModule.ContentGovernance.cs
   WikiHomeModule.Deployment.cs
   WikiHomeModule.TestingVerification.cs

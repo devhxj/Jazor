@@ -51,7 +51,7 @@ Run before every deployment:
 .\src\Wiki\verify-smoke.ps1 -Publish
 ```
 
-This checks all structural invariants, all 23 registered docs routes, browser asset resolution, and emitted module markers.
+This checks all structural invariants, all 24 registered docs routes, browser asset resolution, and emitted module markers.
 
 ## Rollback Procedure
 
