@@ -4,6 +4,7 @@ using ECMAScript.Contract;
 namespace ECMAScript.PiniaTests;
 
 #pragma warning disable CA1416
+#pragma warning disable CS0626
 
 [TestClass]
 public sealed class EcmaScriptPiniaProxyTests
@@ -57,17 +58,34 @@ public sealed class EcmaScriptPiniaProxyTests
 		{
 			typeof(Pinia.PiniaInstance),
 			typeof(Pinia.PiniaPluginContext),
+			typeof(Pinia.PiniaPluginContext<>).MakeGenericType(typeof(TestPiniaStore)),
+			typeof(Pinia.PiniaPluginContext<,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginOptions)),
+			typeof(Pinia.PiniaPluginContext<,,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginOptions), typeof(TestPiniaPluginExtensions)),
+			typeof(Pinia.PiniaPluginContext<,,,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginOptions), typeof(TestPiniaPluginExtensions), typeof(TestPiniaPluginStateExtensions)),
 			typeof(Pinia.StoreProperties),
 			typeof(Pinia.StoreGeneric),
 			typeof(Pinia.StoreDefinition),
 			typeof(Pinia.Store<>).MakeGenericType(typeof(TestPiniaState)),
 			typeof(Pinia.SubscriptionMutation<>).MakeGenericType(typeof(TestPiniaState)),
+			typeof(Pinia.SubscriptionMutationDirect<>).MakeGenericType(typeof(TestPiniaState)),
+			typeof(Pinia.SubscriptionMutationPatchFunction<>).MakeGenericType(typeof(TestPiniaState)),
+			typeof(Pinia.SubscriptionMutationPatchObject<>).MakeGenericType(typeof(TestPiniaState)),
+			typeof(Pinia.SubscriptionMutationEvents),
 			typeof(Pinia.StoreActionListenerContext),
 			typeof(Pinia.StoreActionListenerContext<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
 			typeof(Pinia.StoreDefinition<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
+			typeof(Pinia.ProjectedStore<,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions)),
+			typeof(Pinia.ProjectedStore<,,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions), typeof(TestPiniaPluginStateExtensions)),
+			typeof(Pinia.ProjectedStoreDefinition<,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions)),
+			typeof(Pinia.ProjectedStoreDefinition<,,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions), typeof(TestPiniaPluginStateExtensions)),
 			typeof(Pinia.StoreRefs<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
 			typeof(Pinia.DefineStoreOptions<>).MakeGenericType(typeof(TestPiniaState)),
+			typeof(Pinia.DefineStoreOptionsInPlugin),
+			typeof(Pinia.DefineStoreOptionsInPlugin<>).MakeGenericType(typeof(TestPiniaState)),
+			typeof(Pinia.DefineStoreOptionsInPlugin<,,>).MakeGenericType(typeof(TestPiniaState), typeof(TestPiniaGetters), typeof(TestPiniaActions)),
 			typeof(Pinia.DefineSetupStoreOptions),
+			typeof(Pinia.DefineSetupStoreOptions<>).MakeGenericType(typeof(TestPiniaActions)),
+			typeof(Pinia.SetupStoreHelpers),
 			typeof(Pinia.PiniaKeyMapper),
 			typeof(Pinia.PiniaStateMapper<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
 			typeof(Pinia.PiniaStateMapValue<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
@@ -114,6 +132,232 @@ public sealed class EcmaScriptPiniaProxyTests
 	}
 
 	[TestMethod]
+	public void Pinia_SubscriptionMutationSurface_ModelsOfficialMutationVariants()
+	{
+		var baseMutation = typeof(Pinia.SubscriptionMutation<>).MakeGenericType(typeof(TestPiniaState));
+		var directMutation = typeof(Pinia.SubscriptionMutationDirect<>).MakeGenericType(typeof(TestPiniaState));
+		var patchFunctionMutation = typeof(Pinia.SubscriptionMutationPatchFunction<>).MakeGenericType(typeof(TestPiniaState));
+		var patchObjectMutation = typeof(Pinia.SubscriptionMutationPatchObject<>).MakeGenericType(typeof(TestPiniaState));
+
+		Assert.IsTrue(baseMutation.IsAssignableFrom(directMutation));
+		Assert.IsTrue(baseMutation.IsAssignableFrom(patchFunctionMutation));
+		Assert.IsTrue(baseMutation.IsAssignableFrom(patchObjectMutation));
+
+		var baseEvents = baseMutation.GetProperty(nameof(Pinia.SubscriptionMutation<TestPiniaState>.Events), BindingFlags.Public | BindingFlags.Instance);
+		var directEvents = directMutation.GetProperty(nameof(Pinia.SubscriptionMutationDirect<TestPiniaState>.Events), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var patchFunctionEvents = patchFunctionMutation.GetProperty(nameof(Pinia.SubscriptionMutationPatchFunction<TestPiniaState>.Events), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var patchObjectEvents = patchObjectMutation.GetProperty(nameof(Pinia.SubscriptionMutationPatchObject<TestPiniaState>.Events), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var patchObjectPayload = patchObjectMutation.GetProperty(nameof(Pinia.SubscriptionMutationPatchObject<TestPiniaState>.Payload), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+		Assert.IsNotNull(baseEvents);
+		Assert.IsNotNull(directEvents);
+		Assert.IsNotNull(patchFunctionEvents);
+		Assert.IsNotNull(patchObjectEvents);
+		Assert.IsNotNull(patchObjectPayload);
+		Assert.AreEqual(typeof(Pinia.SubscriptionMutationEvents?), baseEvents!.PropertyType);
+		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent), directEvents!.PropertyType);
+		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent[]), patchFunctionEvents!.PropertyType);
+		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent[]), patchObjectEvents!.PropertyType);
+		Assert.AreEqual(typeof(TestPiniaState), patchObjectPayload!.PropertyType);
+	}
+
+	[TestMethod]
+	public void Pinia_SetupStoreSurface_ExposesHelperAwareOverloads()
+	{
+		var setupDefineStoreMethods = typeof(Pinia)
+			.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.DefineStore))
+			.Where(static method => method.GetGenericArguments().Length == 1)
+			.Where(static method => method.GetParameters().Length >= 2)
+			.Where(static method => method.GetParameters()[0].ParameterType == typeof(string))
+			.ToArray();
+
+		Assert.IsTrue(setupDefineStoreMethods.Any(static method =>
+			method.GetParameters().Length == 2 &&
+			method.GetParameters()[1].ParameterType.IsGenericType &&
+			method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Func<>)));
+		Assert.IsTrue(setupDefineStoreMethods.Any(static method =>
+			method.GetParameters().Length == 2 &&
+			method.GetParameters()[1].ParameterType.IsGenericType &&
+			method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(PiniaSetupStoreFactory<>)));
+		Assert.IsTrue(setupDefineStoreMethods.Any(static method =>
+			method.GetParameters().Length == 3 &&
+			method.GetParameters()[1].ParameterType.IsGenericType &&
+			method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(Func<>) &&
+			method.GetParameters()[2].ParameterType == typeof(Pinia.DefineSetupStoreOptions)));
+		Assert.IsTrue(setupDefineStoreMethods.Any(static method =>
+			method.GetParameters().Length == 3 &&
+			method.GetParameters()[1].ParameterType.IsGenericType &&
+			method.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof(PiniaSetupStoreFactory<>) &&
+			method.GetParameters()[2].ParameterType == typeof(Pinia.DefineSetupStoreOptions)));
+
+		var helperType = typeof(Pinia.SetupStoreHelpers);
+		var helperActionMethods = helperType
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.SetupStoreHelpers.Action))
+			.ToArray();
+
+		Assert.IsTrue(helperActionMethods.Length >= 4);
+		Assert.IsTrue(helperActionMethods.All(static method => method.GetParameters().Length == 2));
+		Assert.IsTrue(helperActionMethods.All(static method => method.GetParameters()[1].ParameterType == typeof(string)));
+		Assert.IsTrue(helperActionMethods.Any(static method => method.ReturnType == typeof(Action)));
+		Assert.IsTrue(helperActionMethods.Any(static method =>
+			method.ReturnType.IsGenericType &&
+			method.ReturnType.GetGenericTypeDefinition() == typeof(Func<>)));
+
+		var setupActions = typeof(Pinia.DefineSetupStoreOptions)
+			.GetProperty(nameof(Pinia.DefineSetupStoreOptions.Actions), BindingFlags.Public | BindingFlags.Instance);
+		var typedSetupActions = typeof(Pinia.DefineSetupStoreOptions<TestPiniaActions>)
+			.GetProperty(nameof(Pinia.DefineSetupStoreOptions<TestPiniaActions>.Actions), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+		Assert.IsNotNull(setupActions);
+		Assert.IsNotNull(typedSetupActions);
+		Assert.AreEqual(typeof(Vue3.VueProps), setupActions!.PropertyType);
+		Assert.AreEqual(typeof(TestPiniaActions), typedSetupActions!.PropertyType);
+	}
+
+	[TestMethod]
+	public void Pinia_ActionAndPluginProxySurface_ExposeTypedContracts()
+	{
+		var storeGeneric = typeof(Pinia.StoreGeneric);
+		var onActionMethods = storeGeneric
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.StoreGeneric.OnAction))
+			.OrderBy(static method => method.GetParameters().Length)
+			.ThenBy(static method => method.IsGenericMethodDefinition)
+			.ToArray();
+
+		Assert.AreEqual(4, onActionMethods.Length);
+		Assert.IsFalse(onActionMethods[0].IsGenericMethodDefinition);
+		Assert.IsTrue(onActionMethods[1].IsGenericMethodDefinition);
+		Assert.IsFalse(onActionMethods[2].IsGenericMethodDefinition);
+		Assert.IsTrue(onActionMethods[3].IsGenericMethodDefinition);
+		Assert.AreEqual(typeof(PiniaStoreActionListener), onActionMethods[0].GetParameters()[0].ParameterType);
+		Assert.AreEqual(typeof(PiniaStoreActionListener<>), onActionMethods[1].GetParameters()[0].ParameterType.GetGenericTypeDefinition());
+		Assert.AreEqual(typeof(PiniaStoreActionListener), onActionMethods[2].GetParameters()[0].ParameterType);
+		Assert.AreEqual(typeof(PiniaStoreActionListener<>), onActionMethods[3].GetParameters()[0].ParameterType.GetGenericTypeDefinition());
+		Assert.AreEqual(typeof(bool), onActionMethods[2].GetParameters()[1].ParameterType);
+		Assert.AreEqual(typeof(bool), onActionMethods[3].GetParameters()[1].ParameterType);
+
+		var pluginContextOptions = typeof(Pinia.PiniaPluginContext)
+			.GetProperty(nameof(Pinia.PiniaPluginContext.Options), BindingFlags.Public | BindingFlags.Instance);
+		var typedPluginContextStore = typeof(Pinia.PiniaPluginContext<TestPiniaStore>)
+			.GetProperty(nameof(Pinia.PiniaPluginContext<TestPiniaStore>.Store), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var typedPluginContextOptions = typeof(Pinia.PiniaPluginContext<TestPiniaStore, TestPiniaPluginOptions>)
+			.GetProperty(nameof(Pinia.PiniaPluginContext<TestPiniaStore, TestPiniaPluginOptions>.Options), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var projectedPluginContextStore = typeof(Pinia.PiniaPluginContext<TestPiniaStore, TestPiniaPluginOptions, TestPiniaPluginExtensions>)
+			.GetProperty(nameof(Pinia.PiniaPluginContext<TestPiniaStore, TestPiniaPluginOptions, TestPiniaPluginExtensions>.Store), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var projectedPluginContextStoreWithState = typeof(Pinia.PiniaPluginContext<TestPiniaStore, TestPiniaPluginOptions, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>)
+			.GetProperty(nameof(Pinia.PiniaPluginContext<TestPiniaStore, TestPiniaPluginOptions, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>.Store), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+		Assert.IsNotNull(pluginContextOptions);
+		Assert.IsNotNull(typedPluginContextStore);
+		Assert.IsNotNull(typedPluginContextOptions);
+		Assert.IsNotNull(projectedPluginContextStore);
+		Assert.IsNotNull(projectedPluginContextStoreWithState);
+		Assert.AreEqual(typeof(Pinia.DefineStoreOptionsInPlugin), pluginContextOptions!.PropertyType);
+		Assert.AreEqual(typeof(TestPiniaStore), typedPluginContextStore!.PropertyType);
+		Assert.AreEqual(typeof(TestPiniaPluginOptions), typedPluginContextOptions!.PropertyType);
+		Assert.AreEqual(typeof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions>), projectedPluginContextStore!.PropertyType);
+		Assert.AreEqual(typeof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>), projectedPluginContextStoreWithState!.PropertyType);
+
+		var useMethods = typeof(Pinia.PiniaInstance)
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.PiniaInstance.Use))
+			.ToArray();
+
+		Assert.IsTrue(useMethods.Any(static method =>
+			!method.IsGenericMethodDefinition &&
+			method.GetParameters().Length == 1 &&
+			method.GetParameters()[0].ParameterType == typeof(PiniaPlugin)));
+		Assert.IsTrue(useMethods.Any(static method =>
+			method.IsGenericMethodDefinition &&
+			method.GetGenericArguments().Length == 1 &&
+			method.GetParameters().Length == 1 &&
+			method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(PiniaPlugin<>)));
+		Assert.IsTrue(useMethods.Any(static method =>
+			method.IsGenericMethodDefinition &&
+			method.GetGenericArguments().Length == 2 &&
+			method.GetParameters().Length == 1 &&
+			method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(PiniaPlugin<,>)));
+		Assert.IsTrue(useMethods.Any(static method =>
+			method.IsGenericMethodDefinition &&
+			method.GetGenericArguments().Length == 3 &&
+			method.GetParameters().Length == 1 &&
+			method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(PiniaPlugin<,,>)));
+		Assert.IsTrue(useMethods.Any(static method =>
+			method.IsGenericMethodDefinition &&
+			method.GetGenericArguments().Length == 4 &&
+			method.GetParameters().Length == 1 &&
+			method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(PiniaPlugin<,,,>)));
+		Assert.IsTrue(useMethods.Any(static method =>
+			method.IsGenericMethodDefinition &&
+			method.GetGenericArguments().Length == 5 &&
+			method.GetParameters().Length == 1 &&
+			method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(PiniaPlugin<,,,,>)));
+	}
+
+	[TestMethod]
+	public void Pinia_ProjectedPluginSurface_ExposesExplicitStoreAndDefinitionViews()
+	{
+		var projectedStore = typeof(Pinia.ProjectedStore<,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions));
+		var projectedStoreWithState = typeof(Pinia.ProjectedStore<,,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions), typeof(TestPiniaPluginStateExtensions));
+		var projectedDefinition = typeof(Pinia.ProjectedStoreDefinition<,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions));
+		var projectedDefinitionWithState = typeof(Pinia.ProjectedStoreDefinition<,,>).MakeGenericType(typeof(TestPiniaStore), typeof(TestPiniaPluginExtensions), typeof(TestPiniaPluginStateExtensions));
+
+		var asStore = projectedStore.GetMethod(nameof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions>.AsStore), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var asCustomProperties = projectedStore.GetMethod(nameof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions>.AsCustomProperties), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var asCustomState = projectedStoreWithState.GetMethod(nameof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>.AsCustomState), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var asDefinition = projectedDefinition.GetMethod(nameof(Pinia.ProjectedStoreDefinition<TestPiniaStore, TestPiniaPluginExtensions>.AsDefinition), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+		var useProjected = projectedDefinitionWithState
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.ProjectedStoreDefinition<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>.Use))
+			.OrderBy(static method => method.GetParameters().Length)
+			.ToArray();
+
+		Assert.IsNotNull(asStore);
+		Assert.IsNotNull(asCustomProperties);
+		Assert.IsNotNull(asCustomState);
+		Assert.IsNotNull(asDefinition);
+		Assert.AreEqual(typeof(TestPiniaStore), asStore!.ReturnType);
+		Assert.AreEqual(typeof(TestPiniaPluginExtensions), asCustomProperties!.ReturnType);
+		Assert.AreEqual(typeof(TestPiniaPluginStateExtensions), asCustomState!.ReturnType);
+		Assert.AreEqual(typeof(Pinia.StoreDefinition<TestPiniaStore>), asDefinition!.ReturnType);
+		Assert.AreEqual("__arg1", asStore.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", asCustomProperties.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1.$state", asCustomState.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", asDefinition.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+
+		CollectionAssert.AreEqual(
+			new[] { 0, 1, 2 },
+			useProjected.Select(static method => method.GetParameters().Length).ToArray());
+		Assert.AreEqual(typeof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>), useProjected[0].ReturnType);
+		Assert.AreEqual("__arg1()", useProjected[0].GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1(__arg2)", useProjected[1].GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1(__arg2, __arg3)", useProjected[2].GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+
+		var projectStoreMethods = typeof(Pinia)
+			.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.ProjectStore))
+			.OrderBy(static method => method.GetGenericArguments().Length)
+			.ToArray();
+		var projectDefinitionMethods = typeof(Pinia)
+			.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.ProjectStoreDefinition))
+			.OrderBy(static method => method.GetGenericArguments().Length)
+			.ToArray();
+
+		Assert.AreEqual(2, projectStoreMethods.Length);
+		Assert.AreEqual(2, projectDefinitionMethods.Length);
+		Assert.IsTrue(projectStoreMethods.All(static method => method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1"));
+		Assert.IsTrue(projectDefinitionMethods.All(static method => method.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode == "__arg1"));
+		Assert.AreEqual(typeof(Pinia.ProjectedStore<,>), projectStoreMethods[0].ReturnType.GetGenericTypeDefinition());
+		Assert.AreEqual(typeof(Pinia.ProjectedStore<,,>), projectStoreMethods[1].ReturnType.GetGenericTypeDefinition());
+		Assert.AreEqual(typeof(Pinia.ProjectedStoreDefinition<,>), projectDefinitionMethods[0].ReturnType.GetGenericTypeDefinition());
+		Assert.AreEqual(typeof(Pinia.ProjectedStoreDefinition<,,>), projectDefinitionMethods[1].ReturnType.GetGenericTypeDefinition());
+	}
+
+	[TestMethod]
 	public void Pinia_HelperApiSurface_UsesTypedMappers_And_NonGenericStoreDefinitionBase()
 	{
 		var helperNames = typeof(Pinia)
@@ -151,14 +395,26 @@ public sealed class EcmaScriptPiniaProxyTests
 	{
 		AssertEcmaScriptSupport(typeof(Pinia.StoreDefinition));
 		AssertEcmaScriptSupport(typeof(Pinia.StoreDefinition<>));
+		AssertEcmaScriptSupport(typeof(Pinia.ProjectedStore<,>));
+		AssertEcmaScriptSupport(typeof(Pinia.ProjectedStore<,,>));
+		AssertEcmaScriptSupport(typeof(Pinia.ProjectedStoreDefinition<,>));
+		AssertEcmaScriptSupport(typeof(Pinia.ProjectedStoreDefinition<,,>));
 		AssertEcmaScriptSupport(typeof(Pinia.StoreRefs<>));
 		AssertEcmaScriptSupport(typeof(Pinia.PiniaStateMapValue<>));
+		AssertEcmaScriptSupport(typeof(Pinia.SubscriptionMutationEvents));
+		AssertEcmaScriptSupport(typeof(Pinia.SetupStoreHelpers));
 		AssertEcmaScriptSupport(typeof(Pinia.PiniaValue));
 	}
 
 	private static void AssertNotObject(Type type, string message)
 	{
 		Assert.AreNotEqual(typeof(object), Nullable.GetUnderlyingType(type) ?? type, message);
+
+		if (type.IsArray)
+		{
+			AssertNotObject(type.GetElementType()!, message);
+			return;
+		}
 
 		if (!type.IsGenericType)
 			return;
@@ -193,4 +449,37 @@ public sealed record TestPiniaState : Pinia.PiniaStateTree
 	public int Count { get; init; }
 }
 
+public abstract class TestPiniaStore : Pinia.Store<TestPiniaState>
+{
+	public extern int DoubleCount { get; }
+
+	public extern void Increment();
+}
+
+public sealed record TestPiniaGetters : Vue3.VueProps
+{
+	public Func<int> DoubleCount { get; init; } = default!;
+}
+
+public sealed record TestPiniaActions : Vue3.VueProps
+{
+	public Action Increment { get; init; } = default!;
+}
+
+public sealed record TestPiniaPluginExtensions : Vue3.VueProps
+{
+	public string AuditTag { get; init; } = "";
+}
+
+public sealed record TestPiniaPluginStateExtensions : Pinia.PiniaStateTree
+{
+	public string PersistedAt { get; init; } = "";
+}
+
+public sealed record TestPiniaPluginOptions : Pinia.DefineStoreOptionsInPlugin<TestPiniaState, TestPiniaGetters, TestPiniaActions>
+{
+	public bool? Persist { get; init; }
+}
+
 #pragma warning restore CA1416
+#pragma warning restore CS0626

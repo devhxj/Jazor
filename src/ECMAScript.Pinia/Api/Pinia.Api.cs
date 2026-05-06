@@ -5,6 +5,8 @@ namespace ECMAScript;
 
 public static partial class Pinia
 {
+	private const string IdentityInlineTemplate = "__arg1";
+
 	/// <summary>
 	/// Creates a Pinia root instance that can be installed on a Vue app via
 	/// <c>app.use(createPinia())</c>.
@@ -42,10 +44,21 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TStore">The typed store projection returned by the setup callback.</typeparam>
 	/// <param name="id">The unique store identifier.</param>
-	/// <param name="storeSetup">The setup callback that declares the store surface.</param>
+	/// <param name="storeSetup">The parameterless setup callback that declares the store surface.</param>
 	/// <returns>A callable store-definition wrapper that creates or retrieves the store instance.</returns>
 	[Description("@#defineStore")]
 	public extern static StoreDefinition<TStore> DefineStore<TStore>(string id, Func<TStore> storeSetup)
+		where TStore : class;
+
+	/// <summary>
+	/// Defines a setup-style store from a helper-aware setup callback.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection returned by the setup callback.</typeparam>
+	/// <param name="id">The unique store identifier.</param>
+	/// <param name="storeSetup">The setup callback that receives Pinia's setup-store helpers.</param>
+	/// <returns>A callable store-definition wrapper that creates or retrieves the store instance.</returns>
+	[Description("@#defineStore")]
+	public extern static StoreDefinition<TStore> DefineStore<TStore>(string id, PiniaSetupStoreFactory<TStore> storeSetup)
 		where TStore : class;
 
 	/// <summary>
@@ -53,11 +66,23 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TStore">The typed store projection returned by the setup callback.</typeparam>
 	/// <param name="id">The unique store identifier.</param>
-	/// <param name="storeSetup">The setup callback that declares the store surface.</param>
+	/// <param name="storeSetup">The parameterless setup callback that declares the store surface.</param>
 	/// <param name="options">Additional setup-store options.</param>
 	/// <returns>A callable store-definition wrapper that creates or retrieves the store instance.</returns>
 	[Description("@#defineStore")]
 	public extern static StoreDefinition<TStore> DefineStore<TStore>(string id, Func<TStore> storeSetup, DefineSetupStoreOptions options)
+		where TStore : class;
+
+	/// <summary>
+	/// Defines a setup-style store from a helper-aware setup callback plus setup-store options.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection returned by the setup callback.</typeparam>
+	/// <param name="id">The unique store identifier.</param>
+	/// <param name="storeSetup">The setup callback that receives Pinia's setup-store helpers.</param>
+	/// <param name="options">Additional setup-store options.</param>
+	/// <returns>A callable store-definition wrapper that creates or retrieves the store instance.</returns>
+	[Description("@#defineStore")]
+	public extern static StoreDefinition<TStore> DefineStore<TStore>(string id, PiniaSetupStoreFactory<TStore> storeSetup, DefineSetupStoreOptions options)
 		where TStore : class;
 
 	/// <summary>
@@ -305,6 +330,66 @@ public static partial class Pinia
 	/// <param name="suffix">The suffix appended to each mapped store id.</param>
 	[Description("@#setMapStoreSuffix")]
 	public extern static void SetMapStoreSuffix(string suffix);
+
+	/// <summary>
+	/// Projects a live store instance to an explicit wrapper exposing both the base
+	/// store contract and a typed plugin-added custom-properties view.
+	/// This is a compile-time projection only and does not create a new runtime object.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	/// <param name="store">The live store instance to project.</param>
+	/// <returns>An explicit projected wrapper over the same runtime store object.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static ProjectedStore<TStore, TCustomProperties> ProjectStore<TStore, TCustomProperties>(TStore store)
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps;
+
+	/// <summary>
+	/// Projects a live store instance to an explicit wrapper exposing the base store
+	/// contract, plugin-added custom store properties, and plugin-added custom state.
+	/// This is a compile-time projection only and does not create a new runtime object.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	/// <typeparam name="TCustomState">The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
+	/// <param name="store">The live store instance to project.</param>
+	/// <returns>An explicit projected wrapper over the same runtime store object.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static ProjectedStore<TStore, TCustomProperties, TCustomState> ProjectStore<TStore, TCustomProperties, TCustomState>(TStore store)
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps
+		where TCustomState : PiniaStateTree;
+
+	/// <summary>
+	/// Projects a store definition so plugin-added custom properties propagate through
+	/// its <c>Use(...)</c> call surface.
+	/// This is a compile-time projection only and does not create a new runtime object.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	/// <param name="storeDefinition">The store definition to project.</param>
+	/// <returns>An explicit projected wrapper over the same runtime store-definition function object.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static ProjectedStoreDefinition<TStore, TCustomProperties> ProjectStoreDefinition<TStore, TCustomProperties>(StoreDefinition<TStore> storeDefinition)
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps;
+
+	/// <summary>
+	/// Projects a store definition so plugin-added custom properties and custom state
+	/// propagate through its <c>Use(...)</c> call surface.
+	/// This is a compile-time projection only and does not create a new runtime object.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	/// <typeparam name="TCustomState">The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
+	/// <param name="storeDefinition">The store definition to project.</param>
+	/// <returns>An explicit projected wrapper over the same runtime store-definition function object.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> ProjectStoreDefinition<TStore, TCustomProperties, TCustomState>(StoreDefinition<TStore> storeDefinition)
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps
+		where TCustomState : PiniaStateTree;
 
 	/// <summary>
 	/// Creates an HMR accept handler for a previously declared store definition.

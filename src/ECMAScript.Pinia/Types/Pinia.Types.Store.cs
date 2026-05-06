@@ -24,6 +24,82 @@ public static partial class Pinia
 		/// <returns>The same Pinia instance.</returns>
 		[Description("@#use")]
 		public extern PiniaInstance Use(PiniaPlugin plugin);
+
+		/// <summary>
+		/// Registers a typed Pinia plugin on this root instance.
+		/// </summary>
+		/// <typeparam name="TStore">The typed store projection supplied to the plugin context.</typeparam>
+		/// <param name="plugin">The typed plugin callback to register.</param>
+		/// <returns>The same Pinia instance.</returns>
+		[Description("@#use")]
+		public extern PiniaInstance Use<TStore>(PiniaPlugin<TStore> plugin)
+			where TStore : class;
+
+		/// <summary>
+		/// Registers a typed Pinia plugin on this root instance with a strongly typed
+		/// plugin-visible options projection.
+		/// </summary>
+		/// <typeparam name="TStore">The typed store projection supplied to the plugin context.</typeparam>
+		/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+		/// <param name="plugin">The typed plugin callback to register.</param>
+		/// <returns>The same Pinia instance.</returns>
+		[Description("@#use")]
+		public extern PiniaInstance Use<TStore, TOptions>(PiniaPlugin<TStore, TOptions> plugin)
+			where TStore : class
+			where TOptions : DefineStoreOptionsInPlugin;
+
+		/// <summary>
+		/// Registers a fully typed Pinia plugin on this root instance, including the
+		/// merged extension-object return shape.
+		/// </summary>
+		/// <typeparam name="TStore">The typed store projection supplied to the plugin context.</typeparam>
+		/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+		/// <typeparam name="TExtension">The typed extension object returned by the plugin.</typeparam>
+		/// <param name="plugin">The typed plugin callback to register.</param>
+		/// <returns>The same Pinia instance.</returns>
+		[Description("@#use")]
+		public extern PiniaInstance Use<TStore, TOptions, TExtension>(PiniaPlugin<TStore, TOptions, TExtension> plugin)
+			where TStore : class
+			where TOptions : DefineStoreOptionsInPlugin
+			where TExtension : Vue3.VueProps;
+
+		/// <summary>
+		/// Registers a fully typed Pinia plugin on this root instance whose context also
+		/// projects the current store to explicit custom-properties visible from earlier
+		/// plugins.
+		/// </summary>
+		/// <typeparam name="TStore">The base typed store projection supplied by the plugin context.</typeparam>
+		/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+		/// <typeparam name="TCustomProperties">The plugin-added custom store properties already visible on the current store.</typeparam>
+		/// <typeparam name="TExtension">The typed extension object returned by the plugin.</typeparam>
+		/// <param name="plugin">The typed plugin callback to register.</param>
+		/// <returns>The same Pinia instance.</returns>
+		[Description("@#use")]
+		public extern PiniaInstance Use<TStore, TOptions, TCustomProperties, TExtension>(PiniaPlugin<TStore, TOptions, TCustomProperties, TExtension> plugin)
+			where TStore : class
+			where TOptions : DefineStoreOptionsInPlugin
+			where TCustomProperties : Vue3.VueProps
+			where TExtension : Vue3.VueProps;
+
+		/// <summary>
+		/// Registers a fully typed Pinia plugin on this root instance whose context also
+		/// projects the current store to explicit custom-properties and custom-state
+		/// views visible from earlier plugins.
+		/// </summary>
+		/// <typeparam name="TStore">The base typed store projection supplied by the plugin context.</typeparam>
+		/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+		/// <typeparam name="TCustomProperties">The plugin-added custom store properties already visible on the current store.</typeparam>
+		/// <typeparam name="TCustomState">The plugin-added custom state already visible on <c>store.$state</c>.</typeparam>
+		/// <typeparam name="TExtension">The typed extension object returned by the plugin.</typeparam>
+		/// <param name="plugin">The typed plugin callback to register.</param>
+		/// <returns>The same Pinia instance.</returns>
+		[Description("@#use")]
+		public extern PiniaInstance Use<TStore, TOptions, TCustomProperties, TCustomState, TExtension>(PiniaPlugin<TStore, TOptions, TCustomProperties, TCustomState, TExtension> plugin)
+			where TStore : class
+			where TOptions : DefineStoreOptionsInPlugin
+			where TCustomProperties : Vue3.VueProps
+			where TCustomState : PiniaStateTree
+			where TExtension : Vue3.VueProps;
 	}
 
 	/// <summary>
@@ -57,7 +133,101 @@ public static partial class Pinia
 		/// The defining options object for the current store.
 		/// </summary>
 		[Description("@#options")]
-		public extern DefineStoreOptionsBase Options { get; }
+		public extern DefineStoreOptionsInPlugin Options { get; }
+	}
+
+	/// <summary>
+	/// Typed plugin context passed to <c>pinia.use(...)</c> when the current store is
+	/// projected to a stronger user-declared type.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection supplied by the plugin context.</typeparam>
+	public abstract class PiniaPluginContext<TStore> : PiniaPluginContext
+		where TStore : class
+	{
+		protected PiniaPluginContext()
+		{
+		}
+
+		/// <summary>
+		/// The concrete store currently being extended, projected to a stronger
+		/// user-declared type.
+		/// </summary>
+		[Description("@#store")]
+		public new extern TStore Store { get; }
+	}
+
+	/// <summary>
+	/// Typed plugin context passed to <c>pinia.use(...)</c> when both the current store
+	/// and the plugin-visible options bag are projected to stronger user-declared types.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection supplied by the plugin context.</typeparam>
+	/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+	public abstract class PiniaPluginContext<TStore, TOptions> : PiniaPluginContext<TStore>
+		where TStore : class
+		where TOptions : DefineStoreOptionsInPlugin
+	{
+		protected PiniaPluginContext()
+		{
+		}
+
+		/// <summary>
+		/// The defining options object for the current store, projected to a stronger
+		/// user-declared plugin-visible type.
+		/// </summary>
+		[Description("@#options")]
+		public new extern TOptions Options { get; }
+	}
+
+	/// <summary>
+	/// Typed plugin context passed to <c>pinia.use(...)</c> when the current store
+	/// should also be viewed through explicit plugin-added custom properties that were
+	/// installed by earlier plugins.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection supplied by the plugin context.</typeparam>
+	/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties already visible on the current store.</typeparam>
+	public abstract class PiniaPluginContext<TStore, TOptions, TCustomProperties> : PiniaPluginContext<TStore, TOptions>
+		where TStore : class
+		where TOptions : DefineStoreOptionsInPlugin
+		where TCustomProperties : Vue3.VueProps
+	{
+		protected PiniaPluginContext()
+		{
+		}
+
+		/// <summary>
+		/// The concrete store currently being extended, projected to both its base store
+		/// contract and the plugin-added custom-properties view.
+		/// </summary>
+		[Description("@#store")]
+		public new extern ProjectedStore<TStore, TCustomProperties> Store { get; }
+	}
+
+	/// <summary>
+	/// Typed plugin context passed to <c>pinia.use(...)</c> when the current store
+	/// should also be viewed through explicit plugin-added custom properties and
+	/// custom state installed by earlier plugins.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection supplied by the plugin context.</typeparam>
+	/// <typeparam name="TOptions">The typed plugin-visible options projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties already visible on the current store.</typeparam>
+	/// <typeparam name="TCustomState">The plugin-added custom state already visible on <c>store.$state</c>.</typeparam>
+	public abstract class PiniaPluginContext<TStore, TOptions, TCustomProperties, TCustomState> : PiniaPluginContext<TStore, TOptions, TCustomProperties>
+		where TStore : class
+		where TOptions : DefineStoreOptionsInPlugin
+		where TCustomProperties : Vue3.VueProps
+		where TCustomState : PiniaStateTree
+	{
+		protected PiniaPluginContext()
+		{
+		}
+
+		/// <summary>
+		/// The concrete store currently being extended, projected to both its base store
+		/// contract and the plugin-added custom-properties/custom-state views.
+		/// </summary>
+		[Description("@#store")]
+		public new extern ProjectedStore<TStore, TCustomProperties, TCustomState> Store { get; }
 	}
 
 	/// <summary>
@@ -100,6 +270,16 @@ public static partial class Pinia
 		public extern PiniaDetachCallback OnAction(PiniaStoreActionListener callback);
 
 		/// <summary>
+		/// Registers a typed action listener for this store.
+		/// </summary>
+		/// <typeparam name="TStore">The typed store projection supplied to the listener context.</typeparam>
+		/// <param name="callback">The typed listener callback.</param>
+		/// <returns>A callback that detaches the listener.</returns>
+		[Description("@#$onAction")]
+		public extern PiniaDetachCallback OnAction<TStore>(PiniaStoreActionListener<TStore> callback)
+			where TStore : class;
+
+		/// <summary>
 		/// Registers an action listener detached from the current component scope.
 		/// </summary>
 		/// <param name="callback">The listener callback.</param>
@@ -107,6 +287,17 @@ public static partial class Pinia
 		/// <returns>A callback that detaches the listener.</returns>
 		[Description("@#$onAction")]
 		public extern PiniaDetachCallback OnAction(PiniaStoreActionListener callback, bool detached);
+
+		/// <summary>
+		/// Registers a typed action listener detached from the current component scope.
+		/// </summary>
+		/// <typeparam name="TStore">The typed store projection supplied to the listener context.</typeparam>
+		/// <param name="callback">The typed listener callback.</param>
+		/// <param name="detached">Whether the listener should outlive the current component scope.</param>
+		/// <returns>A callback that detaches the listener.</returns>
+		[Description("@#$onAction")]
+		public extern PiniaDetachCallback OnAction<TStore>(PiniaStoreActionListener<TStore> callback, bool detached)
+			where TStore : class;
 
 		/// <summary>
 		/// Disposes the store instance and tears down its reactive scope.
@@ -172,9 +363,50 @@ public static partial class Pinia
 	}
 
 	/// <summary>
-	/// Mutation metadata supplied to <c>$subscribe()</c>.
-	/// For <see cref="MutationType.PatchObject"/> the <see cref="Payload"/> member
-	/// carries the patch object; for other mutation kinds it remains null-like.
+	/// Dev-only mutation debug events supplied to <c>$subscribe()</c>.
+	/// Pinia reports either one debugger event or an event batch depending on the
+	/// mutation kind.
+	/// </summary>
+	[ECMAScript]
+	[ECMAScriptUnion]
+	[Description("@#")]
+	public readonly struct SubscriptionMutationEvents
+	{
+		private readonly byte _kind;
+		private readonly Vue3.VueDebuggerEvent? _event;
+		private readonly Vue3.VueDebuggerEvent[]? _batch;
+
+		private SubscriptionMutationEvents(Vue3.VueDebuggerEvent value)
+		{
+			_kind = 1;
+			_event = value;
+			_batch = default;
+		}
+
+		private SubscriptionMutationEvents(Vue3.VueDebuggerEvent[] value)
+		{
+			_kind = 2;
+			_event = default;
+			_batch = value;
+		}
+
+		public Vue3.VueDebuggerEvent? AsEvent => _kind == 1 ? _event : default;
+
+		public Vue3.VueDebuggerEvent[]? AsBatch => _kind == 2 ? _batch : default;
+
+		public static implicit operator SubscriptionMutationEvents(Vue3.VueDebuggerEvent value)
+			=> new(value);
+
+		public static implicit operator SubscriptionMutationEvents(Vue3.VueDebuggerEvent[] value)
+			=> new(value);
+	}
+
+	/// <summary>
+	/// Base mutation metadata supplied to <c>$subscribe()</c>.
+	/// Concrete runtime shapes are modeled by
+	/// <see cref="SubscriptionMutationDirect{TState}"/>,
+	/// <see cref="SubscriptionMutationPatchFunction{TState}"/>, and
+	/// <see cref="SubscriptionMutationPatchObject{TState}"/>.
 	/// </summary>
 	/// <typeparam name="TState">The typed store-state projection.</typeparam>
 	public abstract class SubscriptionMutation<TState>
@@ -197,11 +429,71 @@ public static partial class Pinia
 		public extern string StoreId { get; }
 
 		/// <summary>
-		/// The object patch payload when <see cref="Type"/> is
-		/// <see cref="MutationType.PatchObject"/>.
+		/// Dev-only debugger events emitted for the current mutation.
+		/// Depending on mutation kind this can be a single event or an event batch.
+		/// </summary>
+		[Description("@#events")]
+		public extern SubscriptionMutationEvents? Events { get; }
+	}
+
+	/// <summary>
+	/// Direct assignment mutation metadata supplied to <c>$subscribe()</c>.
+	/// </summary>
+	/// <typeparam name="TState">The typed store-state projection.</typeparam>
+	public abstract class SubscriptionMutationDirect<TState> : SubscriptionMutation<TState>
+		where TState : PiniaStateTree
+	{
+		protected SubscriptionMutationDirect()
+		{
+		}
+
+		/// <summary>
+		/// The debugger event emitted for the direct assignment.
+		/// </summary>
+		[Description("@#events")]
+		public new extern Vue3.VueDebuggerEvent Events { get; }
+	}
+
+	/// <summary>
+	/// Function-patch mutation metadata supplied to <c>$subscribe()</c>.
+	/// </summary>
+	/// <typeparam name="TState">The typed store-state projection.</typeparam>
+	public abstract class SubscriptionMutationPatchFunction<TState> : SubscriptionMutation<TState>
+		where TState : PiniaStateTree
+	{
+		protected SubscriptionMutationPatchFunction()
+		{
+		}
+
+		/// <summary>
+		/// The debugger events emitted for the function patch.
+		/// </summary>
+		[Description("@#events")]
+		public new extern Vue3.VueDebuggerEvent[] Events { get; }
+	}
+
+	/// <summary>
+	/// Object-patch mutation metadata supplied to <c>$subscribe()</c>.
+	/// </summary>
+	/// <typeparam name="TState">The typed store-state projection.</typeparam>
+	public abstract class SubscriptionMutationPatchObject<TState> : SubscriptionMutation<TState>
+		where TState : PiniaStateTree
+	{
+		protected SubscriptionMutationPatchObject()
+		{
+		}
+
+		/// <summary>
+		/// The object patch payload applied to the store.
 		/// </summary>
 		[Description("@#payload")]
-		public extern TState? Payload { get; }
+		public extern TState Payload { get; }
+
+		/// <summary>
+		/// The debugger events emitted for the object patch.
+		/// </summary>
+		[Description("@#events")]
+		public new extern Vue3.VueDebuggerEvent[] Events { get; }
 	}
 
 	/// <summary>
@@ -323,5 +615,165 @@ public static partial class Pinia
 		/// <returns>The concrete store instance.</returns>
 		[ECMAScriptInline("__arg1(__arg2, __arg3)")]
 		public extern TStore Use(PiniaInstance pinia, StoreGeneric hot);
+	}
+
+	/// <summary>
+	/// Explicit projected view over a live Pinia store when plugins add custom
+	/// properties.
+	/// This wrapper does not create a new runtime object; it only exposes
+	/// additional typed views over the same store instance.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ProjectedStore<TStore, TCustomProperties>
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps
+	{
+		protected ProjectedStore()
+		{
+		}
+
+		/// <summary>
+		/// Returns the same runtime store projected to its base store contract.
+		/// </summary>
+		[ECMAScriptInline("__arg1")]
+		public extern TStore AsStore();
+
+		/// <summary>
+		/// Returns the same runtime store projected to the plugin-added custom
+		/// properties contract.
+		/// </summary>
+		[ECMAScriptInline("__arg1")]
+		public extern TCustomProperties AsCustomProperties();
+	}
+
+	/// <summary>
+	/// Explicit projected view over a live Pinia store when plugins add both
+	/// custom store properties and custom state properties.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	/// <typeparam name="TCustomState">The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ProjectedStore<TStore, TCustomProperties, TCustomState> : ProjectedStore<TStore, TCustomProperties>
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps
+		where TCustomState : PiniaStateTree
+	{
+		protected ProjectedStore()
+		{
+		}
+
+		/// <summary>
+		/// Returns the current <c>store.$state</c> object projected to the
+		/// plugin-added custom state contract.
+		/// </summary>
+		[ECMAScriptInline("__arg1.$state")]
+		public extern TCustomState AsCustomState();
+	}
+
+	/// <summary>
+	/// Explicit projected view over a store definition when plugin-added custom
+	/// properties should propagate through <c>Use(...)</c>.
+	/// This wrapper keeps the same runtime store definition function object and only
+	/// changes the typed result of the call surface.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties> : StoreDefinition
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps
+	{
+		protected ProjectedStoreDefinition()
+		{
+		}
+
+		/// <summary>
+		/// Store identifier declared at definition time.
+		/// </summary>
+		[Description("@#$id")]
+		public extern string Id { get; }
+
+		/// <summary>
+		/// Returns the same runtime store definition projected back to the base
+		/// typed store-definition contract.
+		/// </summary>
+		[ECMAScriptInline("__arg1")]
+		public extern StoreDefinition<TStore> AsDefinition();
+
+		/// <summary>
+		/// Creates or retrieves the projected store instance from the currently
+		/// active Pinia root.
+		/// </summary>
+		[ECMAScriptInline("__arg1()")]
+		public extern ProjectedStore<TStore, TCustomProperties> Use();
+
+		/// <summary>
+		/// Creates or retrieves the projected store instance from the supplied Pinia root.
+		/// </summary>
+		[ECMAScriptInline("__arg1(__arg2)")]
+		public extern ProjectedStore<TStore, TCustomProperties> Use(PiniaInstance pinia);
+
+		/// <summary>
+		/// Internal/advanced call shape used by Pinia HMR flows.
+		/// </summary>
+		[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+		public extern ProjectedStore<TStore, TCustomProperties> Use(PiniaInstance pinia, StoreGeneric hot);
+	}
+
+	/// <summary>
+	/// Explicit projected view over a store definition when plugin-added custom
+	/// properties and custom state should propagate through <c>Use(...)</c>.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection.</typeparam>
+	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
+	/// <typeparam name="TCustomState">The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> : StoreDefinition
+		where TStore : class
+		where TCustomProperties : Vue3.VueProps
+		where TCustomState : PiniaStateTree
+	{
+		protected ProjectedStoreDefinition()
+		{
+		}
+
+		/// <summary>
+		/// Store identifier declared at definition time.
+		/// </summary>
+		[Description("@#$id")]
+		public extern string Id { get; }
+
+		/// <summary>
+		/// Returns the same runtime store definition projected back to the base
+		/// typed store-definition contract.
+		/// </summary>
+		[ECMAScriptInline("__arg1")]
+		public extern StoreDefinition<TStore> AsDefinition();
+
+		/// <summary>
+		/// Creates or retrieves the projected store instance from the currently
+		/// active Pinia root.
+		/// </summary>
+		[ECMAScriptInline("__arg1()")]
+		public extern ProjectedStore<TStore, TCustomProperties, TCustomState> Use();
+
+		/// <summary>
+		/// Creates or retrieves the projected store instance from the supplied Pinia root.
+		/// </summary>
+		[ECMAScriptInline("__arg1(__arg2)")]
+		public extern ProjectedStore<TStore, TCustomProperties, TCustomState> Use(PiniaInstance pinia);
+
+		/// <summary>
+		/// Internal/advanced call shape used by Pinia HMR flows.
+		/// </summary>
+		[ECMAScriptInline("__arg1(__arg2, __arg3)")]
+		public extern ProjectedStore<TStore, TCustomProperties, TCustomState> Use(PiniaInstance pinia, StoreGeneric hot);
 	}
 }

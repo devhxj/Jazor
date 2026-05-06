@@ -451,6 +451,443 @@ public sealed class EcmaScriptPiniaImportTests
 	}
 
 	[TestMethod]
+	public async Task Convert_ClassUsingSetupStoreHelpers_LowersToHelperAwareDefineStoreCallback()
+	{
+		var code = """
+			using System;
+			using System.ComponentModel;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				[ECMAScript]
+				[Description("@#")]
+				public sealed record CounterSetupStore : Vue3.VueProps
+				{
+					public int Count { get; init; }
+
+					public Action Increment { get; init; } = default!;
+				}
+
+				[ECMAScriptModule("stores/setup-counter.mjs")]
+				public static class CounterSetupModule
+				{
+					public static StoreDefinition<CounterSetupStore> CreateStore()
+						=> DefineStore<CounterSetupStore>("counter", Setup);
+
+					private static CounterSetupStore Setup(SetupStoreHelpers helpers)
+						=> new CounterSetupStore
+						{
+							Count = 1,
+							Increment = helpers.Action(Increment, "increment")
+						};
+
+					private static void Increment()
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterSetupModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return defineStore(\"counter\", setup);");
+		StringAssert.Contains(script, "function setup(helpers)");
+		StringAssert.Contains(script, "increment: helpers.action(increment, \"increment\")");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingSetupStoreOptionsActions_LowersToThirdDefineStoreArgument()
+	{
+		var code = """
+			using System;
+			using System.ComponentModel;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				[ECMAScript]
+				[Description("@#")]
+				public sealed record CounterSetupStore : Vue3.VueProps
+				{
+					public Action Increment { get; init; } = default!;
+				}
+
+				[ECMAScript]
+				[Description("@#")]
+				public sealed record CounterSetupActions : Vue3.VueProps
+				{
+					public Action Increment { get; init; } = default!;
+				}
+
+				[ECMAScriptModule("stores/setup-counter-options.mjs")]
+				public static class CounterSetupModule
+				{
+					public static StoreDefinition<CounterSetupStore> CreateStore()
+						=> DefineStore<CounterSetupStore>(
+							"counter",
+							Setup,
+							new DefineSetupStoreOptions<CounterSetupActions>
+							{
+								Actions = new CounterSetupActions
+								{
+									Increment = Increment
+								}
+							});
+
+					private static CounterSetupStore Setup(SetupStoreHelpers helpers)
+						=> new CounterSetupStore
+						{
+							Increment = helpers.Action(Increment)
+						};
+
+					private static void Increment()
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterSetupModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return defineStore(\"counter\", setup, {");
+		StringAssert.Contains(script, "actions: { increment: increment }");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingTypedOnActionProxy_LowersToStoreOnActionCall()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern void Increment();
+				}
+
+				[ECMAScriptModule("stores/action-proxy.mjs")]
+				public static class CounterStoreModule
+				{
+					public static PiniaDetachCallback Observe(CounterStore store)
+						=> store.OnAction<CounterStore>(HandleAction, true);
+
+					private static void HandleAction(StoreActionListenerContext<CounterStore> context)
+					{
+						context.After(AfterAction);
+						context.OnError(HandleError);
+					}
+
+					private static void AfterAction()
+					{
+					}
+
+					private static void HandleError(Error error)
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterStoreModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return store.$onAction(handleAction, true);");
+		StringAssert.Contains(script, "context.after(afterAction);");
+		StringAssert.Contains(script, "context.onError(handleError);");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingTypedPiniaPluginContext_LowersToPiniaUseCall()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				public sealed record CounterPluginOptions : DefineStoreOptionsInPlugin<CounterState>
+				{
+					public bool? Persist { get; init; }
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				[ECMAScriptModule("stores/plugin-proxy.mjs")]
+				public static class CounterPluginModule
+				{
+					public static PiniaInstance CreateConfiguredRoot()
+						=> CreatePinia().Use<CounterStore, CounterPluginOptions, CounterPluginExtensions>(Install);
+
+					private static CounterPluginExtensions Install(PiniaPluginContext<CounterStore, CounterPluginOptions> context)
+						=> new CounterPluginExtensions
+						{
+							AuditTag = context.Options.Persist == true ? context.Store.Id : "volatile"
+						};
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterPluginModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createPinia } from \"pinia\";");
+		StringAssert.Contains(script, "return createPinia().use(install);");
+		StringAssert.Contains(script, "auditTag: context.options.persist === true ? context.store.$id : \"volatile\"");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingProjectedPiniaPluginContext_LowersToProjectedStoreViews()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				public sealed record CounterPluginOptions : DefineStoreOptionsInPlugin<CounterState>
+				{
+					public bool? Persist { get; init; }
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				public sealed record CounterPluginState : PiniaStateTree
+				{
+					public string PersistedAt { get; init; } = "";
+				}
+
+				public sealed record CounterPluginOutput : Vue3.VueProps
+				{
+					public string MirrorTag { get; init; } = "";
+				}
+
+				[ECMAScriptModule("stores/plugin-projected-context.mjs")]
+				public static class CounterPluginModule
+				{
+					public static PiniaInstance CreateConfiguredRoot()
+						=> CreatePinia().Use<CounterStore, CounterPluginOptions, CounterPluginExtensions, CounterPluginState, CounterPluginOutput>(Install);
+
+					private static CounterPluginOutput Install(PiniaPluginContext<CounterStore, CounterPluginOptions, CounterPluginExtensions, CounterPluginState> context)
+						=> new CounterPluginOutput
+						{
+							MirrorTag = context.Store.AsStore().Id
+								+ ":"
+								+ context.Store.AsCustomProperties().AuditTag
+								+ ":"
+								+ context.Store.AsCustomState().PersistedAt
+						};
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterPluginModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createPinia } from \"pinia\";");
+		StringAssert.Contains(script, "return createPinia().use(install);");
+		StringAssert.Contains(script, "mirrorTag: context.store.$id + \":\" + context.store.auditTag + \":\" + context.store.$state.persistedAt");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingProjectedStoreDefinition_LowersToIdentityProjectionViews()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				public sealed record CounterPluginState : PiniaStateTree
+				{
+					public string PersistedAt { get; init; } = "";
+				}
+
+				[ECMAScriptModule("stores/projected-definition.mjs")]
+				public static class CounterProjectionModule
+				{
+					public static string ReadProjectedStore(PiniaInstance pinia)
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+						var projectedUseCounterStore = ProjectStoreDefinition<CounterStore, CounterPluginExtensions, CounterPluginState>(useCounterStore);
+						var baseStore = projectedUseCounterStore.AsDefinition().Use(pinia);
+						var projectedStore = projectedUseCounterStore.Use(pinia);
+						return baseStore.Id + projectedStore.AsCustomProperties().AuditTag + projectedStore.AsCustomState().PersistedAt;
+					}
+
+					private static CounterState CreateState()
+						=> new CounterState
+						{
+							Count = 0
+						};
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterProjectionModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { defineStore } from \"pinia\";");
+		StringAssert.Contains(script, "let projectedUseCounterStore = useCounterStore;");
+		StringAssert.Contains(script, "let baseStore = projectedUseCounterStore(pinia);");
+		StringAssert.Contains(script, "let projectedStore = projectedUseCounterStore(pinia);");
+		StringAssert.Contains(script, "return baseStore.$id + projectedStore.auditTag + projectedStore.$state.persistedAt;");
+		Assert.IsFalse(script.Contains("projectStoreDefinition", StringComparison.Ordinal));
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingProjectedStore_LowersToIdentityProjectionViews()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				public sealed record CounterPluginState : PiniaStateTree
+				{
+					public string PersistedAt { get; init; } = "";
+				}
+
+				[ECMAScriptModule("stores/projected-store.mjs")]
+				public static class CounterProjectionModule
+				{
+					public static string ReadProjectedStore(PiniaInstance pinia)
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+						var store = useCounterStore.Use(pinia);
+						var projectedStore = ProjectStore<CounterStore, CounterPluginExtensions, CounterPluginState>(store);
+						return store.Id + projectedStore.AsCustomProperties().AuditTag + projectedStore.AsCustomState().PersistedAt;
+					}
+
+					private static CounterState CreateState()
+						=> new CounterState
+						{
+							Count = 0
+						};
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterProjectionModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { defineStore } from \"pinia\";");
+		StringAssert.Contains(script, "let store = useCounterStore(pinia);");
+		StringAssert.Contains(script, "let projectedStore = store;");
+		StringAssert.Contains(script, "return store.$id + projectedStore.auditTag + projectedStore.$state.persistedAt;");
+		Assert.IsFalse(script.Contains("projectStore", StringComparison.Ordinal));
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingSubscriptionMutationVariants_LowersToMutationMetadataProperties()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				[ECMAScriptModule("stores/subscription-metadata.mjs")]
+				public static class CounterSubscriptionModule
+				{
+					public static SubscriptionMutationEvents? ReadBaseEvents(SubscriptionMutation<CounterState> mutation)
+						=> mutation.Events;
+
+					public static Vue3.VueDebuggerEvent ReadDirectEvent(SubscriptionMutationDirect<CounterState> mutation)
+						=> mutation.Events;
+
+					public static Vue3.VueDebuggerEvent[] ReadPatchFunctionEvents(SubscriptionMutationPatchFunction<CounterState> mutation)
+						=> mutation.Events;
+
+					public static CounterState ReadPatchPayload(SubscriptionMutationPatchObject<CounterState> mutation)
+						=> mutation.Payload;
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterSubscriptionModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return mutation.events;");
+		StringAssert.Contains(script, "return mutation.payload;");
+	}
+
+	[TestMethod]
 	public async Task Convert_ClassUsingAcceptHMRUpdate_GeneratesHmrHandlerImport()
 	{
 		var code = """

@@ -97,9 +97,182 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "currentRoute.value.path");
     }
 
+    [TestMethod]
+    public async Task VueRoute_QueryHelpers_AndResolveOverload_Compile_WithTypedContracts()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static string BuildHref(Router router)
+                {
+                    var query = ParseQuery("?page=1&tags=a&tags=b");
+                    var rawQuery = new LocationQueryRaw
+                    {
+                        ["page"] = (Number)1,
+                        ["tags"] = new[] { "a", "b" }
+                    };
+                    var current = UseRoute();
+                    var resolved = router.Resolve(new RouteLocationAsRelative
+                    {
+                        Name = "users",
+                        Query = rawQuery
+                    }, current);
+
+                    return StringifyQuery(rawQuery) + resolved.Href + query["page"];
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "parseQuery");
+        StringAssert.Contains(script, "stringifyQuery");
+        StringAssert.Contains(script, "resolve({ name: \"users\"");
+        StringAssert.Contains(script, "let rawQuery = { page: 1, tags: [\"a\", \"b\"] };");
+        StringAssert.Contains(script, "query: rawQuery");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_UseLinkMaybeRefContracts_Compile_WithReactiveTargets_AndStringEnumProps()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static IPromise<NavigationFailure?> BuildLink()
+                {
+                    var toRef = Ref(new RouteLocationAsRelative
+                    {
+                        Name = "users"
+                    });
+                    var replaceRef = Computed(() => true);
+                    var link = UseLink(new UseLinkOptions
+                    {
+                        To = RouteLocationRawMaybeRef.From(toRef),
+                        Replace = RouteBooleanMaybeRef.From(replaceRef),
+                        ViewTransition = true
+                    });
+                    var props = new RouterLinkProps
+                    {
+                        To = "/users",
+                        AriaCurrentValue = RouterLinkAriaCurrentValue.Location
+                    };
+
+                    return link.Navigate();
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let toRef = ref({ name: \"users\" });");
+        StringAssert.Contains(script, "let replaceRef = computed(() => {");
+        StringAssert.Contains(script, "return true;");
+        StringAssert.Contains(script, "let link = useLink({");
+        StringAssert.Contains(script, "to: toRef,");
+        StringAssert.Contains(script, "replace: replaceRef,");
+        StringAssert.Contains(script, "viewTransition: true");
+        StringAssert.Contains(script, "let props = { to: \"/users\", ariaCurrentValue: \"location\" };");
+        StringAssert.Contains(script, "return link.navigate();");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_HistoryState_AndRouterHistoryControls_Compile_WithTypedContracts()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static string ConfigureHistory(RouterHistory history)
+                {
+                    var state = new HistoryState
+                    {
+                        ["page"] = "users",
+                        ["id"] = (Number)7,
+                        ["flags"] = new HistoryStateValue?[] { true, false, null },
+                        ["nested"] = new HistoryState
+                        {
+                            ["source"] = "test"
+                        }
+                    };
+
+                    history.Push("/users", state);
+                    history.Replace("/users/7", state);
+                    var stop = history.Listen((to, from, info) =>
+                    {
+                        var direction = info.Direction;
+                        var delta = info.Delta;
+                    });
+                    history.Go((Number)(-1), false);
+
+                    var location = new RouteLocationAsPath
+                    {
+                        Path = "/users/7",
+                        State = state
+                    };
+
+                    return location.Path + history.Location + history.State + stop;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let state = {");
+        StringAssert.Contains(script, "page: \"users\",");
+        StringAssert.Contains(script, "id: 7,");
+        StringAssert.Contains(script, "flags: [true, false, null],");
+        StringAssert.Contains(script, "nested: { source: \"test\" }");
+        StringAssert.Contains(script, "history.push(\"/users\", state);");
+        StringAssert.Contains(script, "history.replace(\"/users/7\", state);");
+        StringAssert.Contains(script, "let stop = history.listen((to, from, info) => {");
+        StringAssert.Contains(script, "history.go(-1, false);");
+        StringAssert.Contains(script, "state: state");
+    }
+
     private static MetadataReference[] BuildCompilationReferences(IEnumerable<MetadataReference>? additionalReferences = null)
     {
         var references = Net100.References.All.Cast<MetadataReference>().ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(Number).Assembly.Location));
         if (additionalReferences is not null)
             references.AddRange(additionalReferences);
 

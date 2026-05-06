@@ -19,11 +19,32 @@ public record RouterOptions : Vue3.VueProps
 
 	[Description("@#linkExactActiveClass")]
 	public string? LinkExactActiveClass { get; init; }
+
+	[Description("@#scrollBehavior")]
+	public RouterScrollHandler? ScrollBehavior { get; init; }
+
+	[Description("@#parseQuery")]
+	public RouteQueryParser? ParseQuery { get; init; }
+
+	[Description("@#stringifyQuery")]
+	public RouteQueryStringifier? StringifyQuery { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
 public record RouteMeta : Vue3.VueDictionary<Vue3.VueValue>;
+
+[ECMAScript]
+[Description("@#")]
+public record HistoryState : Vue3.VueProps, System.Collections.IEnumerable
+{
+	public extern HistoryStateValue? this[string key] { get; set; }
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, HistoryStateValue value);
+
+	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
 
 [ECMAScript]
 [Description("@#")]
@@ -93,7 +114,7 @@ public record RouteLocationAsPath : Vue3.VueProps
 	public bool? Force { get; init; }
 
 	[Description("@#state")]
-	public Vue3.VueValue? State { get; init; }
+	public HistoryState? State { get; init; }
 }
 
 [ECMAScript]
@@ -119,14 +140,14 @@ public record RouteLocationAsRelative : Vue3.VueProps
 	public bool? Force { get; init; }
 
 	[Description("@#state")]
-	public Vue3.VueValue? State { get; init; }
+	public HistoryState? State { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public abstract class RouteLocationMatched
+public abstract class RouteRecordNormalized
 {
-	protected RouteLocationMatched()
+	protected RouteRecordNormalized()
 	{
 	}
 
@@ -143,14 +164,53 @@ public abstract class RouteLocationMatched
 	public extern RouteRedirectOption? Redirect { get; }
 
 	[Description("@#components")]
-	public extern RouteComponents? Components { get; }
+	public extern RawRouteComponents? Components { get; }
+
+	[Description("@#children")]
+	public extern RouteRecordRaw[] Children { get; }
+
+	[Description("@#props")]
+	public extern RouteNamedProps? Props { get; }
+
+	[Description("@#beforeEnter")]
+	public extern RouteRecordBeforeEnter? BeforeEnter { get; }
+
+	[Description("@#leaveGuards")]
+	public extern Set<NavigationGuardHandler> LeaveGuards { get; }
+
+	[Description("@#updateGuards")]
+	public extern Set<NavigationGuardHandler> UpdateGuards { get; }
+
+	[Description("@#enterCallbacks")]
+	public extern NavigationGuardNextCallbackMap EnterCallbacks { get; }
+
+	[Description("@#instances")]
+	public extern RouteComponentInstanceMap Instances { get; }
+
+	[Description("@#aliasOf")]
+	public extern RouteRecordNormalized? AliasOf { get; }
+
+	[Description("@#mods")]
+	public extern Vue3.VueDictionary Mods { get; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public abstract class RouteLocationNormalizedLoaded
+public abstract class RouteLocationMatched : RouteRecordNormalized
 {
-	protected RouteLocationNormalizedLoaded()
+	protected RouteLocationMatched()
+	{
+	}
+
+	[Description("@#components")]
+	public extern new RouteComponents? Components { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class RouteLocationNormalized
+{
+	protected RouteLocationNormalized()
 	{
 	}
 
@@ -173,18 +233,33 @@ public abstract class RouteLocationNormalizedLoaded
 	public extern RouteParams Params { get; }
 
 	[Description("@#matched")]
-	public extern RouteLocationMatched[] Matched { get; }
+	public extern RouteRecordNormalized[] Matched { get; }
 
 	[Description("@#meta")]
 	public extern RouteMeta Meta { get; }
 
 	[Description("@#redirectedFrom")]
-	public extern RouteLocationNormalizedLoaded? RedirectedFrom { get; }
+	public extern RouteLocationNormalized? RedirectedFrom { get; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public abstract class RouteLocationResolved : RouteLocationNormalizedLoaded
+public abstract class RouteLocationNormalizedLoaded : RouteLocationNormalized
+{
+	protected RouteLocationNormalizedLoaded()
+	{
+	}
+
+	[Description("@#matched")]
+	public extern new RouteLocationMatched[] Matched { get; }
+
+	[Description("@#redirectedFrom")]
+	public extern new RouteLocationNormalizedLoaded? RedirectedFrom { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class RouteLocationResolved : RouteLocationNormalized
 {
 	protected RouteLocationResolved()
 	{
@@ -192,6 +267,24 @@ public abstract class RouteLocationResolved : RouteLocationNormalizedLoaded
 
 	[Description("@#href")]
 	public extern string Href { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class RouterHistoryNavigationInformation
+{
+	protected RouterHistoryNavigationInformation()
+	{
+	}
+
+	[Description("@#type")]
+	public extern RouterHistoryNavigationType Type { get; }
+
+	[Description("@#direction")]
+	public extern RouterHistoryNavigationDirection Direction { get; }
+
+	[Description("@#delta")]
+	public extern Number Delta { get; }
 }
 
 [ECMAScript]
@@ -209,13 +302,25 @@ public abstract class RouterHistory
 	public extern string Location { get; }
 
 	[Description("@#state")]
-	public extern Vue3.VueValue? State { get; }
+	public extern HistoryStateValue? State { get; }
+
+	[Description("@#push")]
+	public extern void Push(string to, HistoryState? data);
+
+	[Description("@#replace")]
+	public extern void Replace(string to, HistoryState? data);
+
+	[Description("@#listen")]
+	public extern Action Listen(RouterHistoryNavigationCallback callback);
 
 	[Description("@#createHref")]
 	public extern string CreateHref(string location);
 
 	[Description("@#go")]
 	public extern void Go(Number delta);
+
+	[Description("@#go")]
+	public extern void Go(Number delta, bool triggerListeners);
 
 	[Description("@#destroy")]
 	public extern void Destroy();
@@ -227,6 +332,9 @@ public abstract record Router : Vue3.VuePlugin
 {
 	[Description("@#currentRoute")]
 	public extern Vue3.VueReadonlyRef<RouteLocationNormalizedLoaded> CurrentRoute { get; }
+
+	[Description("@#listening")]
+	public extern bool Listening { get; set; }
 
 	[Description("@#options")]
 	public extern RouterOptions Options { get; }
@@ -243,8 +351,17 @@ public abstract record Router : Vue3.VuePlugin
 	[Description("@#hasRoute")]
 	public extern bool HasRoute(RouteRecordName routeName);
 
+	[Description("@#getRoutes")]
+	public extern RouteRecordNormalized[] GetRoutes();
+
+	[Description("@#clearRoutes")]
+	public extern void ClearRoutes();
+
 	[Description("@#resolve")]
 	public extern RouteLocationResolved Resolve(RouteLocationRaw to);
+
+	[Description("@#resolve")]
+	public extern RouteLocationResolved Resolve(RouteLocationRaw to, RouteLocationNormalizedLoaded currentLocation);
 
 	[Description("@#push")]
 	public extern IPromise<NavigationFailure?> Push(RouteLocationRaw to);
@@ -270,6 +387,9 @@ public abstract record Router : Vue3.VuePlugin
 	[Description("@#afterEach")]
 	public extern Action AfterEach(AfterNavigationHook hook);
 
+	[Description("@#onError")]
+	public extern Action OnError(RouterErrorHandler handler);
+
 	[Description("@#isReady")]
 	public extern IPromise IsReady();
 }
@@ -286,10 +406,22 @@ public abstract class NavigationFailure : Error
 	public extern NavigationFailureType Type { get; }
 
 	[Description("@#to")]
-	public extern RouteLocationNormalizedLoaded To { get; }
+	public extern RouteLocationNormalized To { get; }
 
 	[Description("@#from")]
 	public extern RouteLocationNormalizedLoaded From { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RawRouteComponents : Vue3.VueProps, System.Collections.IEnumerable
+{
+	public extern RawRouteComponent? this[string key] { get; set; }
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, RawRouteComponent value);
+
+	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
 [ECMAScript]
@@ -300,6 +432,42 @@ public record RouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(string key, RouteComponent value);
+
+	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#")]
+public record NavigationGuardNextCallbackList : Vue3.VueProps, System.Collections.IEnumerable
+{
+	public extern NavigationGuardNextCallback? this[Number index] { get; set; }
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(NavigationGuardNextCallback value);
+
+	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#")]
+public record NavigationGuardNextCallbackMap : Vue3.VueProps, System.Collections.IEnumerable
+{
+	public extern NavigationGuardNextCallbackList? this[string key] { get; set; }
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, NavigationGuardNextCallbackList value);
+
+	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteComponentInstanceMap : Vue3.VueProps, System.Collections.IEnumerable
+{
+	public extern Vue3.VueComponentPublicInstance? this[string key] { get; set; }
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, Vue3.VueComponentPublicInstance value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -356,7 +524,7 @@ public abstract record RouteRecordBase : Vue3.VueProps
 public record RouteRecordSingleView : RouteRecordBase
 {
 	[Description("@#component")]
-	public RouteComponent? Component { get; init; }
+	public RawRouteComponent Component { get; init; } = default!;
 
 	[Description("@#props")]
 	public RouteRecordProps? Props { get; init; }
@@ -371,7 +539,7 @@ public record RouteRecordSingleViewWithChildren : RouteRecordSingleView;
 public record RouteRecordMultipleViews : RouteRecordBase
 {
 	[Description("@#components")]
-	public RouteComponents? Components { get; init; }
+	public RawRouteComponents Components { get; init; } = default!;
 
 	[Description("@#props")]
 	public RouteNamedProps? Props { get; init; }
@@ -384,6 +552,31 @@ public record RouteRecordMultipleViewsWithChildren : RouteRecordMultipleViews;
 [ECMAScript]
 [Description("@#")]
 public record RouteRecordRedirect : RouteRecordBase;
+
+[String]
+public enum RouterLinkAriaCurrentValue
+{
+	[Description("@#page")]
+	Page,
+
+	[Description("@#step")]
+	Step,
+
+	[Description("@#location")]
+	Location,
+
+	[Description("@#date")]
+	Date,
+
+	[Description("@#time")]
+	Time,
+
+	[Description("@#true")]
+	True,
+
+	[Description("@#false")]
+	False
+}
 
 [ECMAScript]
 [Description("@#")]
@@ -405,7 +598,7 @@ public record RouterLinkProps : Vue3.VueProps
 	public string? ExactActiveClass { get; init; }
 
 	[Description("@#ariaCurrentValue")]
-	public string? AriaCurrentValue { get; init; }
+	public RouterLinkAriaCurrentValue? AriaCurrentValue { get; init; }
 
 	[Description("@#viewTransition")]
 	public bool? ViewTransition { get; init; }
@@ -415,11 +608,19 @@ public record RouterLinkProps : Vue3.VueProps
 [Description("@#")]
 public record UseLinkOptions : Vue3.VueProps
 {
+	/// <summary>
+	/// Link target accepted by <c>useLink()</c>. Vue Router officially accepts both
+	/// plain route-location values and reactive refs wrapping those values.
+	/// </summary>
 	[Description("@#to")]
-	public RouteLocationRaw To { get; init; } = default!;
+	public RouteLocationRawMaybeRef To { get; init; } = default!;
 
+	/// <summary>
+	/// Whether <c>useLink()</c> should navigate via <c>router.replace()</c>. This
+	/// option also supports reactive refs in the official Vue Router API.
+	/// </summary>
 	[Description("@#replace")]
-	public bool? Replace { get; init; }
+	public RouteBooleanMaybeRef? Replace { get; init; }
 
 	[Description("@#viewTransition")]
 	public bool? ViewTransition { get; init; }
@@ -454,6 +655,126 @@ public abstract class UseLinkResult
 
 [ECMAScript]
 [Description("@#")]
+public record ScrollPositionCoordinates : Vue3.VueProps
+{
+	[Description("@#left")]
+	public double? Left { get; init; }
+
+	[Description("@#top")]
+	public double? Top { get; init; }
+
+	[Description("@#behavior")]
+	public ScrollBehavior? Behavior { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record ScrollPositionElement : ScrollPositionCoordinates
+{
+	[Description("@#el")]
+	public Vue3.VueValue El { get; init; } = default!;
+}
+
+[ECMAScript]
+[Description("@#")]
+public record ScrollPositionNormalized : Vue3.VueProps
+{
+	[Description("@#left")]
+	public double Left { get; init; }
+
+	[Description("@#top")]
+	public double Top { get; init; }
+
+	[Description("@#behavior")]
+	public ScrollBehavior? Behavior { get; init; }
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouterScrollResult
+{
+	private readonly byte _kind;
+	private readonly bool? _bool;
+	private readonly ScrollPositionCoordinates? _coordinates;
+	private readonly ScrollPositionElement? _element;
+
+	private RouterScrollResult(bool value)
+	{
+		_kind = 1;
+		_bool = value;
+		_coordinates = default;
+		_element = default;
+	}
+
+	private RouterScrollResult(ScrollPositionCoordinates value)
+	{
+		_kind = 2;
+		_bool = default;
+		_coordinates = value;
+		_element = default;
+	}
+
+	private RouterScrollResult(ScrollPositionElement value)
+	{
+		_kind = 3;
+		_bool = default;
+		_coordinates = default;
+		_element = value;
+	}
+
+	public bool? AsBool => _kind == 1 ? _bool : default;
+
+	public ScrollPositionCoordinates? AsCoordinates => _kind == 2 ? _coordinates : default;
+
+	public ScrollPositionElement? AsElement => _kind == 3 ? _element : default;
+
+	public static implicit operator RouterScrollResult(bool value)
+		=> new(value);
+
+	public static implicit operator RouterScrollResult(ScrollPositionCoordinates value)
+		=> new(value);
+
+	public static implicit operator RouterScrollResult(ScrollPositionElement value)
+		=> new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouterScrollHandler
+{
+	private readonly byte _kind;
+	private readonly RouterScrollBehavior? _sync;
+	private readonly AsyncRouterScrollBehavior? _async;
+
+	private RouterScrollHandler(RouterScrollBehavior value)
+	{
+		_kind = 1;
+		_sync = value;
+		_async = default;
+	}
+
+	private RouterScrollHandler(AsyncRouterScrollBehavior value)
+	{
+		_kind = 2;
+		_sync = default;
+		_async = value;
+	}
+
+	public RouterScrollBehavior? AsSync => _kind == 1 ? _sync : default;
+
+	public AsyncRouterScrollBehavior? AsAsync => _kind == 2 ? _async : default;
+
+	public static implicit operator RouterScrollHandler(RouterScrollBehavior value)
+		=> new(value);
+
+	public static implicit operator RouterScrollHandler(AsyncRouterScrollBehavior value)
+		=> new(value);
+}
+
+[ECMAScript]
+[Description("@#")]
 public record RouterLinkSlots : Vue3.VueSlots
 {
 	[Description("@#default")]
@@ -468,7 +789,7 @@ public record RouterViewProps : Vue3.VueProps
 	public string? Name { get; init; }
 
 	[Description("@#route")]
-	public RouteLocationNormalizedLoaded? Route { get; init; }
+	public RouteLocationNormalized? Route { get; init; }
 }
 
 [ECMAScript]
@@ -476,7 +797,7 @@ public record RouterViewProps : Vue3.VueProps
 public record RouterViewSlotScope : Vue3.VueProps
 {
 	[Description("@#Component")]
-	public IVueComponent? Component { get; init; }
+	public Vue3.IVNode? Component { get; init; }
 
 	[Description("@#route")]
 	public RouteLocationNormalizedLoaded Route { get; init; } = default!;

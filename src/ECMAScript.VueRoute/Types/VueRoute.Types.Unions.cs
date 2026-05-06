@@ -125,20 +125,358 @@ public readonly struct RouteLocationRaw
 [ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteComponent
+public readonly struct RouteLocationRawMaybeRef
+{
+	private readonly byte _kind;
+	private readonly RouteLocationRaw? _value;
+	private readonly Vue3.IVueRef<RouteLocationRaw>? _ref;
+	private readonly Vue3.VueReadonlyRef<RouteLocationRaw>? _readonlyRef;
+	private readonly Vue3.IVueRef<string>? _stringRef;
+	private readonly Vue3.IVueRef<RouteLocationAsPath>? _pathRef;
+	private readonly Vue3.IVueRef<RouteLocationAsRelative>? _relativeRef;
+	private readonly Vue3.VueReadonlyRef<string>? _readonlyStringRef;
+	private readonly Vue3.VueReadonlyRef<RouteLocationAsPath>? _readonlyPathRef;
+	private readonly Vue3.VueReadonlyRef<RouteLocationAsRelative>? _readonlyRelativeRef;
+
+	private RouteLocationRawMaybeRef(RouteLocationRaw value)
+	{
+		_kind = 1;
+		_value = value;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.IVueRef<RouteLocationRaw> value)
+	{
+		_kind = 2;
+		_value = default;
+		_ref = value;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationRaw> value)
+	{
+		_kind = 3;
+		_value = default;
+		_ref = default;
+		_readonlyRef = value;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.IVueRef<string> value)
+	{
+		_kind = 4;
+		_value = default;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = value;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.IVueRef<RouteLocationAsPath> value)
+	{
+		_kind = 5;
+		_value = default;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = value;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.IVueRef<RouteLocationAsRelative> value)
+	{
+		_kind = 6;
+		_value = default;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = value;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<string> value)
+	{
+		_kind = 7;
+		_value = default;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = value;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsPath> value)
+	{
+		_kind = 8;
+		_value = default;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = value;
+		_readonlyRelativeRef = default;
+	}
+
+	private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsRelative> value)
+	{
+		_kind = 9;
+		_value = default;
+		_ref = default;
+		_readonlyRef = default;
+		_stringRef = default;
+		_pathRef = default;
+		_relativeRef = default;
+		_readonlyStringRef = default;
+		_readonlyPathRef = default;
+		_readonlyRelativeRef = value;
+	}
+
+	public RouteLocationRaw? AsValue => _kind == 1 ? _value : default;
+
+	public Vue3.IVueRef<RouteLocationRaw>? AsRef => _kind == 2 ? _ref : default;
+
+	public Vue3.VueReadonlyRef<RouteLocationRaw>? AsReadonlyRef => _kind == 3 ? _readonlyRef : default;
+
+	public Vue3.IVueRef<string>? AsStringRef => _kind == 4 ? _stringRef : default;
+
+	public Vue3.IVueRef<RouteLocationAsPath>? AsPathRef => _kind == 5 ? _pathRef : default;
+
+	public Vue3.IVueRef<RouteLocationAsRelative>? AsRelativeRef => _kind == 6 ? _relativeRef : default;
+
+	public Vue3.VueReadonlyRef<string>? AsReadonlyStringRef => _kind == 7 ? _readonlyStringRef : default;
+
+	public Vue3.VueReadonlyRef<RouteLocationAsPath>? AsReadonlyPathRef => _kind == 8 ? _readonlyPathRef : default;
+
+	public Vue3.VueReadonlyRef<RouteLocationAsRelative>? AsReadonlyRelativeRef => _kind == 9 ? _readonlyRelativeRef : default;
+
+	public static implicit operator RouteLocationRawMaybeRef(RouteLocationRaw value)
+		=> new(value);
+
+	public static implicit operator RouteLocationRawMaybeRef(string value)
+		=> new(value);
+
+	public static implicit operator RouteLocationRawMaybeRef(RouteLocationAsPath value)
+		=> new(value);
+
+	public static implicit operator RouteLocationRawMaybeRef(RouteLocationAsRelative value)
+		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationRaw> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<RouteLocationRaw> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<string> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationAsPath> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationAsRelative> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<string> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<RouteLocationAsPath> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteLocationRawMaybeRef From(Vue3.VueReadonlyRef<RouteLocationAsRelative> value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouteBooleanMaybeRef
+{
+	private readonly byte _kind;
+	private readonly bool? _value;
+	private readonly Vue3.IVueRef<bool>? _ref;
+	private readonly Vue3.VueReadonlyRef<bool>? _readonlyRef;
+
+	private RouteBooleanMaybeRef(bool value)
+	{
+		_kind = 1;
+		_value = value;
+		_ref = default;
+		_readonlyRef = default;
+	}
+
+	private RouteBooleanMaybeRef(Vue3.IVueRef<bool> value)
+	{
+		_kind = 2;
+		_value = default;
+		_ref = value;
+		_readonlyRef = default;
+	}
+
+	private RouteBooleanMaybeRef(Vue3.VueReadonlyRef<bool> value)
+	{
+		_kind = 3;
+		_value = default;
+		_ref = default;
+		_readonlyRef = value;
+	}
+
+	public bool? AsValue => _kind == 1 ? _value : default;
+
+	public Vue3.IVueRef<bool>? AsRef => _kind == 2 ? _ref : default;
+
+	public Vue3.VueReadonlyRef<bool>? AsReadonlyRef => _kind == 3 ? _readonlyRef : default;
+
+	public static implicit operator RouteBooleanMaybeRef(bool value)
+		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteBooleanMaybeRef From(Vue3.IVueRef<bool> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteBooleanMaybeRef From(Vue3.VueReadonlyRef<bool> value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct HistoryStateValue
+{
+	private readonly byte _kind;
+	private readonly string? _string;
+	private readonly Number? _number;
+	private readonly bool? _bool;
+	private readonly HistoryState? _object;
+	private readonly Array<HistoryStateValue?>? _array;
+
+	private HistoryStateValue(string value)
+	{
+		_kind = 1;
+		_string = value;
+		_number = default;
+		_bool = default;
+		_object = default;
+		_array = default;
+	}
+
+	private HistoryStateValue(Number value)
+	{
+		_kind = 2;
+		_string = default;
+		_number = value;
+		_bool = default;
+		_object = default;
+		_array = default;
+	}
+
+	private HistoryStateValue(bool value)
+	{
+		_kind = 3;
+		_string = default;
+		_number = default;
+		_bool = value;
+		_object = default;
+		_array = default;
+	}
+
+	private HistoryStateValue(HistoryState value)
+	{
+		_kind = 4;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_object = value;
+		_array = default;
+	}
+
+	private HistoryStateValue(Array<HistoryStateValue?> value)
+	{
+		_kind = 5;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_object = default;
+		_array = value;
+	}
+
+	public string? AsString => _kind == 1 ? _string : default;
+
+	public Number? AsNumber => _kind == 2 ? _number : default;
+
+	public bool? AsBool => _kind == 3 ? _bool : default;
+
+	public HistoryState? AsObject => _kind == 4 ? _object : default;
+
+	public Array<HistoryStateValue?>? AsArray => _kind == 5 ? _array : default;
+
+	public static implicit operator HistoryStateValue(string value)
+		=> new(value);
+
+	public static implicit operator HistoryStateValue(Number value)
+		=> new(value);
+
+	public static implicit operator HistoryStateValue(bool value)
+		=> new(value);
+
+	public static implicit operator HistoryStateValue(HistoryState value)
+		=> new(value);
+
+	public static implicit operator HistoryStateValue(Array<HistoryStateValue?> value)
+		=> new(value);
+
+	public static implicit operator HistoryStateValue(HistoryStateValue?[] value)
+		=> new((Array<HistoryStateValue?>)value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RawRouteComponent
 {
 	private readonly byte _kind;
 	private readonly IVueComponent? _component;
 	private readonly RouteComponentLoader? _loader;
 
-	private RouteComponent(IVueComponent value)
+	private RawRouteComponent(IVueComponent value)
 	{
 		_kind = 1;
 		_component = value;
 		_loader = default;
 	}
 
-	private RouteComponent(RouteComponentLoader value)
+	private RawRouteComponent(RouteComponentLoader value)
 	{
 		_kind = 2;
 		_component = default;
@@ -150,10 +488,33 @@ public readonly struct RouteComponent
 	public RouteComponentLoader? AsLoader => _kind == 2 ? _loader : default;
 
 	[ECMAScriptInline("__arg1")]
-	public extern static RouteComponent From(IVueComponent value);
+	public extern static RawRouteComponent From(IVueComponent value);
 
-	public static implicit operator RouteComponent(RouteComponentLoader value)
+	public static implicit operator RawRouteComponent(RouteComponentLoader value)
 		=> new(value);
+
+	public static implicit operator RawRouteComponent(RouteComponent value)
+		=> new(value.AsComponent!);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouteComponent
+{
+	private readonly byte _kind;
+	private readonly IVueComponent? _component;
+
+	private RouteComponent(IVueComponent value)
+	{
+		_kind = 1;
+		_component = value;
+	}
+
+	public IVueComponent? AsComponent => _kind == 1 ? _component : default;
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteComponent From(IVueComponent value);
 }
 
 [ECMAScript]
@@ -164,12 +525,14 @@ public readonly struct RouteRecordProps
 	private readonly byte _kind;
 	private readonly bool? _bool;
 	private readonly Vue3.VueProps? _props;
+	private readonly RouteRecordPropsResolver? _resolver;
 
 	private RouteRecordProps(bool value)
 	{
 		_kind = 1;
 		_bool = value;
 		_props = default;
+		_resolver = default;
 	}
 
 	private RouteRecordProps(Vue3.VueProps value)
@@ -177,16 +540,107 @@ public readonly struct RouteRecordProps
 		_kind = 2;
 		_bool = default;
 		_props = value;
+		_resolver = default;
+	}
+
+	private RouteRecordProps(RouteRecordPropsResolver value)
+	{
+		_kind = 3;
+		_bool = default;
+		_props = default;
+		_resolver = value;
 	}
 
 	public bool? AsBool => _kind == 1 ? _bool : default;
 
 	public Vue3.VueProps? AsProps => _kind == 2 ? _props : default;
 
+	public RouteRecordPropsResolver? AsResolver => _kind == 3 ? _resolver : default;
+
 	public static implicit operator RouteRecordProps(bool value)
 		=> new(value);
 
 	public static implicit operator RouteRecordProps(Vue3.VueProps value)
+		=> new(value);
+
+	public static implicit operator RouteRecordProps(RouteRecordPropsResolver value)
+		=> new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct NavigationGuardNextArgument
+{
+	private readonly byte _kind;
+	private readonly bool? _bool;
+	private readonly RouteLocationRaw? _location;
+	private readonly NavigationGuardNextCallback? _callback;
+	private readonly Error? _error;
+
+	private NavigationGuardNextArgument(bool value)
+	{
+		_kind = 1;
+		_bool = value;
+		_location = default;
+		_callback = default;
+		_error = default;
+	}
+
+	private NavigationGuardNextArgument(RouteLocationRaw value)
+	{
+		_kind = 2;
+		_bool = default;
+		_location = value;
+		_callback = default;
+		_error = default;
+	}
+
+	private NavigationGuardNextArgument(NavigationGuardNextCallback value)
+	{
+		_kind = 3;
+		_bool = default;
+		_location = default;
+		_callback = value;
+		_error = default;
+	}
+
+	private NavigationGuardNextArgument(Error value)
+	{
+		_kind = 4;
+		_bool = default;
+		_location = default;
+		_callback = default;
+		_error = value;
+	}
+
+	public bool? AsBool => _kind == 1 ? _bool : default;
+
+	public RouteLocationRaw? AsLocation => _kind == 2 ? _location : default;
+
+	public NavigationGuardNextCallback? AsCallback => _kind == 3 ? _callback : default;
+
+	public Error? AsError => _kind == 4 ? _error : default;
+
+	public static implicit operator NavigationGuardNextArgument(bool value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardNextArgument(RouteLocationRaw value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardNextArgument(string value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardNextArgument(RouteLocationAsPath value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardNextArgument(RouteLocationAsRelative value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardNextArgument(NavigationGuardNextCallback value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardNextArgument(Error value)
 		=> new(value);
 }
 
@@ -198,12 +652,14 @@ public readonly struct NavigationGuardReturn
 	private readonly byte _kind;
 	private readonly bool? _bool;
 	private readonly RouteLocationRaw? _location;
+	private readonly NavigationGuardNextCallback? _callback;
 
 	private NavigationGuardReturn(bool value)
 	{
 		_kind = 1;
 		_bool = value;
 		_location = default;
+		_callback = default;
 	}
 
 	private NavigationGuardReturn(RouteLocationRaw value)
@@ -211,11 +667,22 @@ public readonly struct NavigationGuardReturn
 		_kind = 2;
 		_bool = default;
 		_location = value;
+		_callback = default;
+	}
+
+	private NavigationGuardReturn(NavigationGuardNextCallback value)
+	{
+		_kind = 3;
+		_bool = default;
+		_location = default;
+		_callback = value;
 	}
 
 	public bool? AsBool => _kind == 1 ? _bool : default;
 
 	public RouteLocationRaw? AsLocation => _kind == 2 ? _location : default;
+
+	public NavigationGuardNextCallback? AsCallback => _kind == 3 ? _callback : default;
 
 	public static implicit operator NavigationGuardReturn(bool value)
 		=> new(value);
@@ -231,6 +698,9 @@ public readonly struct NavigationGuardReturn
 
 	public static implicit operator NavigationGuardReturn(RouteLocationAsRelative value)
 		=> new(value);
+
+	public static implicit operator NavigationGuardReturn(NavigationGuardNextCallback value)
+		=> new(value);
 }
 
 [ECMAScript]
@@ -241,12 +711,16 @@ public readonly struct NavigationGuardHandler
 	private readonly byte _kind;
 	private readonly RouteNavigationGuard? _sync;
 	private readonly AsyncRouteNavigationGuard? _async;
+	private readonly LegacyRouteNavigationGuard? _legacySync;
+	private readonly LegacyAsyncRouteNavigationGuard? _legacyAsync;
 
 	private NavigationGuardHandler(RouteNavigationGuard value)
 	{
 		_kind = 1;
 		_sync = value;
 		_async = default;
+		_legacySync = default;
+		_legacyAsync = default;
 	}
 
 	private NavigationGuardHandler(AsyncRouteNavigationGuard value)
@@ -254,16 +728,46 @@ public readonly struct NavigationGuardHandler
 		_kind = 2;
 		_sync = default;
 		_async = value;
+		_legacySync = default;
+		_legacyAsync = default;
+	}
+
+	private NavigationGuardHandler(LegacyRouteNavigationGuard value)
+	{
+		_kind = 3;
+		_sync = default;
+		_async = default;
+		_legacySync = value;
+		_legacyAsync = default;
+	}
+
+	private NavigationGuardHandler(LegacyAsyncRouteNavigationGuard value)
+	{
+		_kind = 4;
+		_sync = default;
+		_async = default;
+		_legacySync = default;
+		_legacyAsync = value;
 	}
 
 	public RouteNavigationGuard? AsSync => _kind == 1 ? _sync : default;
 
 	public AsyncRouteNavigationGuard? AsAsync => _kind == 2 ? _async : default;
 
+	public LegacyRouteNavigationGuard? AsLegacySync => _kind == 3 ? _legacySync : default;
+
+	public LegacyAsyncRouteNavigationGuard? AsLegacyAsync => _kind == 4 ? _legacyAsync : default;
+
 	public static implicit operator NavigationGuardHandler(RouteNavigationGuard value)
 		=> new(value);
 
 	public static implicit operator NavigationGuardHandler(AsyncRouteNavigationGuard value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardHandler(LegacyRouteNavigationGuard value)
+		=> new(value);
+
+	public static implicit operator NavigationGuardHandler(LegacyAsyncRouteNavigationGuard value)
 		=> new(value);
 }
 

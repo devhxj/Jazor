@@ -11,6 +11,74 @@ public static partial class Pinia
 	public abstract record DefineStoreOptionsBase : Vue3.VueProps;
 
 	/// <summary>
+	/// Plugin-visible store-definition options bag supplied through
+	/// <c>PiniaPluginContext.Options</c>.
+	/// Pinia guarantees the normalized <c>actions</c> bag here even when the store was
+	/// authored through the setup-store form.
+	/// </summary>
+	public record DefineStoreOptionsInPlugin : DefineStoreOptionsBase
+	{
+		/// <summary>
+		/// Normalized action declarations visible to plugins.
+		/// </summary>
+		[Description("@#actions")]
+		public Vue3.VueProps Actions { get; init; } = default!;
+	}
+
+	/// <summary>
+	/// Plugin-visible store-definition options bag with a strongly typed option-store
+	/// state projection.
+	/// </summary>
+	/// <typeparam name="TState">The typed state record returned by the store's <c>state()</c> factory.</typeparam>
+	public record DefineStoreOptionsInPlugin<TState> : DefineStoreOptionsInPlugin
+		where TState : PiniaStateTree
+	{
+		/// <summary>
+		/// Option-store state factory when the current store was authored in option form.
+		/// Setup stores may leave this null-like at runtime.
+		/// </summary>
+		[Description("@#state")]
+		public Func<TState>? State { get; init; }
+
+		/// <summary>
+		/// Getter declarations bag visible to plugins.
+		/// </summary>
+		[Description("@#getters")]
+		public Vue3.VueProps? Getters { get; init; }
+
+		/// <summary>
+		/// Optional hydration hook visible to plugins.
+		/// </summary>
+		[Description("@#hydrate")]
+		public PiniaHydrateCallback<TState>? Hydrate { get; init; }
+	}
+
+	/// <summary>
+	/// Plugin-visible store-definition options bag with strongly typed state, getter,
+	/// and action projections.
+	/// </summary>
+	/// <typeparam name="TState">The typed state record returned by the store's <c>state()</c> factory.</typeparam>
+	/// <typeparam name="TGetters">The typed getters bag visible to plugins.</typeparam>
+	/// <typeparam name="TActions">The typed actions bag visible to plugins.</typeparam>
+	public record DefineStoreOptionsInPlugin<TState, TGetters, TActions> : DefineStoreOptionsInPlugin<TState>
+		where TState : PiniaStateTree
+		where TGetters : Vue3.VueProps
+		where TActions : Vue3.VueProps
+	{
+		/// <summary>
+		/// Strongly typed getter declarations bag visible to plugins.
+		/// </summary>
+		[Description("@#getters")]
+		public new TGetters? Getters { get; init; }
+
+		/// <summary>
+		/// Strongly typed action declarations bag visible to plugins.
+		/// </summary>
+		[Description("@#actions")]
+		public new TActions Actions { get; init; } = default!;
+	}
+
+	/// <summary>
 	/// Option-style store definition bag.
 	/// </summary>
 	/// <typeparam name="TState">The typed state record returned by the store's <c>state()</c> factory.</typeparam>
@@ -45,11 +113,72 @@ public static partial class Pinia
 	}
 
 	/// <summary>
-	/// Setup-style store options bag. Pinia currently keeps this surface small; this
-	/// wrapper preserves the third <c>defineStore(..., setup, options)</c> parameter
-	/// shape without inventing extra C#-only semantics.
+	/// Setup-store helpers supplied to <c>defineStore(id, setup, ...)</c>.
+	/// Pinia currently exposes the <c>action(fn, name?)</c> helper so setup stores can
+	/// mark functions as tracked store actions.
 	/// </summary>
-	public record DefineSetupStoreOptions : DefineStoreOptionsBase;
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class SetupStoreHelpers
+	{
+		protected SetupStoreHelpers()
+		{
+		}
+
+		[Description("@#action")]
+		public extern global::System.Action Action(global::System.Action callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1> Action<T1>(global::System.Action<T1> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2> Action<T1, T2>(global::System.Action<T1, T2> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3> Action<T1, T2, T3>(global::System.Action<T1, T2, T3> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<TResult> Action<TResult>(global::System.Func<TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, TResult> Action<T1, TResult>(global::System.Func<T1, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, TResult> Action<T1, T2, TResult>(global::System.Func<T1, T2, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, TResult> Action<T1, T2, T3, TResult>(global::System.Func<T1, T2, T3, TResult> callback, string? name = null);
+	}
+
+	/// <summary>
+	/// Setup-style store options bag.
+	/// Pinia currently keeps this surface small; the primary stable field is the
+	/// normalized <c>actions</c> bag used by plugins and advanced store authoring.
+	/// </summary>
+	public record DefineSetupStoreOptions : DefineStoreOptionsBase
+	{
+		/// <summary>
+		/// Normalized action declarations associated with the setup store.
+		/// This is primarily an advanced/plugin-facing contract rather than the default
+		/// day-to-day authoring path.
+		/// </summary>
+		[Description("@#actions")]
+		public Vue3.VueProps Actions { get; init; } = default!;
+	}
+
+	/// <summary>
+	/// Strongly typed setup-style store options bag.
+	/// </summary>
+	/// <typeparam name="TActions">The typed action declarations associated with the setup store.</typeparam>
+	public record DefineSetupStoreOptions<TActions> : DefineSetupStoreOptions
+		where TActions : Vue3.VueProps
+	{
+		/// <summary>
+		/// Strongly typed action declarations associated with the setup store.
+		/// </summary>
+		[Description("@#actions")]
+		public new TActions Actions { get; init; } = default!;
+	}
 
 	/// <summary>
 	/// Base record for strongly typed store-state projections.

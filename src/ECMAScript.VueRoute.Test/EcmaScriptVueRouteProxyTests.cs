@@ -23,9 +23,11 @@ public sealed class EcmaScriptVueRouteProxyTests
             typeof(Router),
             typeof(RouterHistory),
             typeof(RouterOptions),
+            typeof(RouteLocationNormalized),
             typeof(RouteLocationNormalizedLoaded),
             typeof(RouteLocationResolved),
             typeof(RouteLocationMatched),
+            typeof(RouteRecordNormalized),
             typeof(RouteLocationAsPath),
             typeof(RouteLocationAsRelative),
             typeof(RouteRecordBase),
@@ -38,13 +40,20 @@ public sealed class EcmaScriptVueRouteProxyTests
             typeof(RouterViewProps),
             typeof(RouterViewSlotScope),
             typeof(RouteMeta),
+            typeof(HistoryState),
             typeof(LocationQuery),
             typeof(LocationQueryRaw),
             typeof(RouteParams),
             typeof(RouteParamsRaw),
+            typeof(RouteLocationRawMaybeRef),
+            typeof(RouteBooleanMaybeRef),
+            typeof(HistoryStateValue),
+            typeof(RawRouteComponents),
             typeof(RouteComponents),
             typeof(RouteNamedProps),
-            typeof(NavigationFailure)
+            typeof(NavigationFailure),
+            typeof(RawRouteComponent),
+            typeof(RouterHistoryNavigationInformation)
         };
 
         foreach (var type in runtimeTypes)
@@ -101,30 +110,82 @@ public sealed class EcmaScriptVueRouteProxyTests
         RequiredStatic(methods, nameof(VueRoute.OnBeforeRouteUpdate), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(NavigationGuardHandler) }));
+        RequiredStatic(methods, nameof(VueRoute.IsNavigationFailure), static method =>
+            method.ReturnType == typeof(bool) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Error) }));
+        RequiredStatic(methods, nameof(VueRoute.IsNavigationFailure), static method =>
+            method.ReturnType == typeof(bool) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Error), typeof(NavigationFailureType) }));
+        RequiredStatic(methods, nameof(VueRoute.ParseQuery), static method =>
+            method.ReturnType == typeof(LocationQuery) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
+        RequiredStatic(methods, nameof(VueRoute.StringifyQuery), static method =>
+            method.ReturnType == typeof(string) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(LocationQueryRaw) }));
+        RequiredStatic(methods, nameof(VueRoute.LoadRouteLocation), static method =>
+            method.ReturnType == typeof(IPromise<RouteLocationNormalizedLoaded>) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(RouteLocationNormalized) }));
+        RequiredStatic(methods, nameof(VueRoute.LoadRouteLocation), static method =>
+            method.ReturnType == typeof(IPromise<RouteLocationNormalizedLoaded>) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(RouteLocationResolved) }));
 
         var routerLink = typeof(VueRoute).GetProperty(nameof(VueRoute.RouterLink), BindingFlags.Public | BindingFlags.Static);
         var routerView = typeof(VueRoute).GetProperty(nameof(VueRoute.RouterView), BindingFlags.Public | BindingFlags.Static);
+        var startLocation = typeof(VueRoute).GetProperty(nameof(VueRoute.START_LOCATION), BindingFlags.Public | BindingFlags.Static);
 
         Assert.IsNotNull(routerLink);
         Assert.IsNotNull(routerView);
+        Assert.IsNotNull(startLocation);
         Assert.AreEqual(typeof(Vue3.IVueComponent<RouterLinkProps, RouterLinkSlots>), routerLink!.PropertyType);
         Assert.AreEqual(typeof(Vue3.IVueComponent<RouterViewProps, RouterViewSlots>), routerView!.PropertyType);
+        Assert.AreEqual(typeof(RouteLocationNormalizedLoaded), startLocation!.PropertyType);
     }
 
     [TestMethod]
-    public void VueRoute_RouteComponent_UsesInlineFactory_ForConcreteComponents_AndImplicitLoaderUnion()
+    public void VueRoute_NavigationFailureType_UsesOfficialBitFlags()
+    {
+        Assert.AreEqual(1, typeof(NavigationFailureType).GetCustomAttributes(typeof(FlagsAttribute), inherit: false).Length);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                nameof(NavigationFailureType.Aborted),
+                nameof(NavigationFailureType.Cancelled),
+                nameof(NavigationFailureType.Duplicated)
+            },
+            Enum.GetNames<NavigationFailureType>());
+        CollectionAssert.AreEquivalent(
+            new[] { 4, 8, 16 },
+            Enum.GetValues<NavigationFailureType>().Select(static value => (int)value).ToArray());
+    }
+
+    [TestMethod]
+    public void VueRoute_RouteComponent_UsesInlineFactory_AndRawRouteComponent_HandlesLazyLoaderUnion()
     {
         var from = typeof(RouteComponent).GetMethod(nameof(RouteComponent.From), BindingFlags.Public | BindingFlags.Static);
-        var implicitLoader = typeof(RouteComponent)
+        var rawFrom = typeof(RawRouteComponent).GetMethod(nameof(RawRouteComponent.From), BindingFlags.Public | BindingFlags.Static);
+        var implicitOperators = typeof(RawRouteComponent)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .Single(static method => method.Name == "op_Implicit");
+            .Where(static method => method.Name == "op_Implicit")
+            .ToArray();
+        var implicitComponent = implicitOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(RouteComponent));
+        var implicitLoader = implicitOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(RouteComponentLoader));
 
         Assert.IsNotNull(from);
+        Assert.IsNotNull(rawFrom);
+        Assert.IsNotNull(implicitComponent);
+        Assert.IsNotNull(implicitLoader);
         Assert.AreEqual(typeof(RouteComponent), from!.ReturnType);
         Assert.AreEqual("__arg1", from.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         CollectionAssert.AreEqual(new[] { typeof(ECMAScript.VueContract.IVueComponent) }, from.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
 
-        Assert.AreEqual(typeof(RouteComponent), implicitLoader.ReturnType);
+        Assert.AreEqual(typeof(RawRouteComponent), rawFrom!.ReturnType);
+        Assert.AreEqual("__arg1", rawFrom.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        CollectionAssert.AreEqual(new[] { typeof(ECMAScript.VueContract.IVueComponent) }, rawFrom.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
+
+        Assert.AreEqual(typeof(RawRouteComponent), implicitComponent!.ReturnType);
+        CollectionAssert.AreEqual(new[] { typeof(RouteComponent) }, implicitComponent.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
+
+        Assert.AreEqual(typeof(RawRouteComponent), implicitLoader!.ReturnType);
         CollectionAssert.AreEqual(new[] { typeof(RouteComponentLoader) }, implicitLoader.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
     }
 
@@ -132,17 +193,24 @@ public sealed class EcmaScriptVueRouteProxyTests
     public void VueRoute_RuntimeSupportTypes_UseEcmaScriptMarkers()
     {
         AssertEcmaScriptSupport(typeof(RouteMeta));
+        AssertEcmaScriptSupport(typeof(HistoryState));
         AssertEcmaScriptSupport(typeof(LocationQuery));
         AssertEcmaScriptSupport(typeof(LocationQueryRaw));
         AssertEcmaScriptSupport(typeof(RouteParams));
         AssertEcmaScriptSupport(typeof(RouteParamsRaw));
+        AssertEcmaScriptSupport(typeof(RouteLocationRawMaybeRef));
+        AssertEcmaScriptSupport(typeof(RouteBooleanMaybeRef));
+        AssertEcmaScriptSupport(typeof(HistoryStateValue));
+        AssertEcmaScriptSupport(typeof(RawRouteComponents));
         AssertEcmaScriptSupport(typeof(RouteComponents));
         AssertEcmaScriptSupport(typeof(RouteNamedProps));
         AssertEcmaScriptSupport(typeof(RouteRecordName));
         AssertEcmaScriptSupport(typeof(RouteRecordAlias));
         AssertEcmaScriptSupport(typeof(RouteLocationRaw));
         AssertEcmaScriptSupport(typeof(RouteComponent));
+        AssertEcmaScriptSupport(typeof(RawRouteComponent));
         AssertEcmaScriptSupport(typeof(RouteRecordProps));
+        AssertEcmaScriptSupport(typeof(NavigationGuardNextArgument));
         AssertEcmaScriptSupport(typeof(NavigationGuardReturn));
         AssertEcmaScriptSupport(typeof(NavigationGuardHandler));
         AssertEcmaScriptSupport(typeof(RouteRecordBeforeEnter));
@@ -154,10 +222,151 @@ public sealed class EcmaScriptVueRouteProxyTests
         AssertEcmaScriptSupport(typeof(LocationQueryValueRaw));
     }
 
+    [TestMethod]
+    public void VueRoute_RouterRuntimeSurface_ExposesProductionNavigationControls()
+    {
+        var routerType = typeof(Router);
+        var listening = routerType.GetProperty(nameof(Router.Listening), BindingFlags.Public | BindingFlags.Instance);
+        var methods = routerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(static method => !method.IsSpecialName)
+            .ToArray();
+
+        Assert.IsNotNull(listening);
+        Assert.AreEqual(typeof(bool), listening!.PropertyType);
+        Assert.IsTrue(listening.CanRead);
+        Assert.IsTrue(listening.CanWrite);
+
+        RequiredInstance(methods, nameof(Router.GetRoutes), static method =>
+            method.ReturnType == typeof(RouteRecordNormalized[]) &&
+            method.GetParameters().Length == 0);
+        RequiredInstance(methods, nameof(Router.ClearRoutes), static method =>
+            method.ReturnType == typeof(void) &&
+            method.GetParameters().Length == 0);
+        RequiredInstance(methods, nameof(Router.OnError), static method =>
+            method.ReturnType == typeof(Action) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(RouterErrorHandler) }));
+        RequiredInstance(methods, nameof(Router.Resolve), static method =>
+            method.ReturnType == typeof(RouteLocationResolved) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(RouteLocationRaw), typeof(RouteLocationNormalizedLoaded) }));
+    }
+
+    [TestMethod]
+    public void VueRoute_RouterHistorySurface_ExposesTypedStateAndNavigationCallbacks()
+    {
+        var historyType = typeof(RouterHistory);
+        var methods = historyType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(static method => !method.IsSpecialName)
+            .ToArray();
+        var state = historyType.GetProperty(nameof(RouterHistory.State), BindingFlags.Public | BindingFlags.Instance);
+        var pathState = typeof(RouteLocationAsPath).GetProperty(nameof(RouteLocationAsPath.State), BindingFlags.Public | BindingFlags.Instance);
+        var relativeState = typeof(RouteLocationAsRelative).GetProperty(nameof(RouteLocationAsRelative.State), BindingFlags.Public | BindingFlags.Instance);
+        var historyInfoType = typeof(RouterHistoryNavigationInformation);
+
+        Assert.IsNotNull(state);
+        Assert.IsNotNull(pathState);
+        Assert.IsNotNull(relativeState);
+        Assert.AreEqual(typeof(HistoryStateValue), Nullable.GetUnderlyingType(state!.PropertyType) ?? state.PropertyType);
+        Assert.AreEqual(typeof(HistoryState), pathState!.PropertyType);
+        Assert.AreEqual(typeof(HistoryState), relativeState!.PropertyType);
+
+        RequiredInstance(methods, nameof(RouterHistory.Push), static method =>
+            method.ReturnType == typeof(void) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(HistoryState) }));
+        RequiredInstance(methods, nameof(RouterHistory.Replace), static method =>
+            method.ReturnType == typeof(void) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(HistoryState) }));
+        RequiredInstance(methods, nameof(RouterHistory.Listen), static method =>
+            method.ReturnType == typeof(Action) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(RouterHistoryNavigationCallback) }));
+        RequiredInstance(methods, nameof(RouterHistory.Go), static method =>
+            method.ReturnType == typeof(void) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(Number), typeof(bool) }));
+
+        Assert.AreEqual(typeof(RouterHistoryNavigationType), historyInfoType.GetProperty(nameof(RouterHistoryNavigationInformation.Type))!.PropertyType);
+        Assert.AreEqual(typeof(RouterHistoryNavigationDirection), historyInfoType.GetProperty(nameof(RouterHistoryNavigationInformation.Direction))!.PropertyType);
+        Assert.AreEqual(typeof(Number), historyInfoType.GetProperty(nameof(RouterHistoryNavigationInformation.Delta))!.PropertyType);
+        Assert.IsTrue(typeof(RouterHistoryNavigationType).IsDefined(typeof(StringAttribute), inherit: false));
+        Assert.IsTrue(typeof(RouterHistoryNavigationDirection).IsDefined(typeof(StringAttribute), inherit: false));
+    }
+
+    [TestMethod]
+    public void VueRoute_RouteRecordAndMatchedContracts_DifferentiateRawAndLoadedComponents()
+    {
+        var routeRecordSingleViewComponent = typeof(RouteRecordSingleView).GetProperty(nameof(RouteRecordSingleView.Component), BindingFlags.Public | BindingFlags.Instance);
+        var routeRecordMultipleViewsComponents = typeof(RouteRecordMultipleViews).GetProperty(nameof(RouteRecordMultipleViews.Components), BindingFlags.Public | BindingFlags.Instance);
+        var routeLocationMatchedComponents = typeof(RouteLocationMatched)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Single(static property => property.Name == nameof(RouteLocationMatched.Components) && property.PropertyType == typeof(RouteComponents));
+
+        Assert.IsNotNull(routeRecordSingleViewComponent);
+        Assert.IsNotNull(routeRecordMultipleViewsComponents);
+        Assert.IsNotNull(routeLocationMatchedComponents);
+        Assert.AreEqual(typeof(RawRouteComponent), routeRecordSingleViewComponent!.PropertyType);
+        Assert.AreEqual(typeof(RawRouteComponents), routeRecordMultipleViewsComponents!.PropertyType);
+        Assert.AreEqual(typeof(RouteComponents), routeLocationMatchedComponents!.PropertyType);
+        Assert.AreEqual(typeof(RouteRecordNormalized), typeof(RouteLocationMatched).BaseType);
+    }
+
+    [TestMethod]
+    public void VueRoute_UseLinkAndRouterViewContracts_FollowOfficialReactiveAndSlotShapes()
+    {
+        var useLinkTo = typeof(UseLinkOptions).GetProperty(nameof(UseLinkOptions.To), BindingFlags.Public | BindingFlags.Instance);
+        var useLinkReplace = typeof(UseLinkOptions).GetProperty(nameof(UseLinkOptions.Replace), BindingFlags.Public | BindingFlags.Instance);
+        var routeProp = typeof(RouterViewProps).GetProperty(nameof(RouterViewProps.Route), BindingFlags.Public | BindingFlags.Instance);
+        var slotComponent = typeof(RouterViewSlotScope).GetProperty(nameof(RouterViewSlotScope.Component), BindingFlags.Public | BindingFlags.Instance);
+        var routeMaybeRefFromRef = typeof(RouteLocationRawMaybeRef).GetMethod(nameof(RouteLocationRawMaybeRef.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Vue3.IVueRef<RouteLocationAsRelative>) });
+        var routeMaybeRefFromReadonly = typeof(RouteLocationRawMaybeRef).GetMethod(nameof(RouteLocationRawMaybeRef.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Vue3.VueReadonlyRef<RouteLocationAsRelative>) });
+        var boolMaybeRefFromReadonly = typeof(RouteBooleanMaybeRef).GetMethod(nameof(RouteBooleanMaybeRef.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Vue3.VueReadonlyRef<bool>) });
+
+        Assert.IsNotNull(useLinkTo);
+        Assert.IsNotNull(useLinkReplace);
+        Assert.IsNotNull(routeProp);
+        Assert.IsNotNull(slotComponent);
+        Assert.IsNotNull(routeMaybeRefFromRef);
+        Assert.IsNotNull(routeMaybeRefFromReadonly);
+        Assert.IsNotNull(boolMaybeRefFromReadonly);
+        Assert.AreEqual(typeof(RouteLocationRawMaybeRef), useLinkTo!.PropertyType);
+        Assert.AreEqual(typeof(RouteBooleanMaybeRef), Nullable.GetUnderlyingType(useLinkReplace!.PropertyType) ?? useLinkReplace.PropertyType);
+        Assert.AreEqual(typeof(RouteLocationNormalized), routeProp!.PropertyType);
+        Assert.AreEqual(typeof(Vue3.IVNode), slotComponent!.PropertyType);
+        Assert.AreEqual("__arg1", routeMaybeRefFromRef!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", routeMaybeRefFromReadonly!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", boolMaybeRefFromReadonly!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+    }
+
+    [TestMethod]
+    public void VueRoute_RouterLinkAriaCurrentValue_UsesOfficialLiteralUnion()
+    {
+        var property = typeof(RouterLinkProps).GetProperty(nameof(RouterLinkProps.AriaCurrentValue), BindingFlags.Public | BindingFlags.Instance);
+
+        Assert.IsNotNull(property);
+        Assert.AreEqual(typeof(RouterLinkAriaCurrentValue), Nullable.GetUnderlyingType(property!.PropertyType) ?? property.PropertyType);
+        Assert.IsTrue(typeof(RouterLinkAriaCurrentValue).IsDefined(typeof(StringAttribute), inherit: false));
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                nameof(RouterLinkAriaCurrentValue.Page),
+                nameof(RouterLinkAriaCurrentValue.Step),
+                nameof(RouterLinkAriaCurrentValue.Location),
+                nameof(RouterLinkAriaCurrentValue.Date),
+                nameof(RouterLinkAriaCurrentValue.Time),
+                nameof(RouterLinkAriaCurrentValue.True),
+                nameof(RouterLinkAriaCurrentValue.False)
+            },
+            Enum.GetNames<RouterLinkAriaCurrentValue>());
+    }
+
     private static MethodInfo RequiredStatic(MethodInfo[] methods, string name, Func<MethodInfo, bool> predicate)
     {
         var match = methods.SingleOrDefault(method => method.Name == name && predicate(method));
         Assert.IsNotNull(match, $"Missing expected static method: {name}");
+        return match!;
+    }
+
+    private static MethodInfo RequiredInstance(MethodInfo[] methods, string name, Func<MethodInfo, bool> predicate)
+    {
+        var match = methods.SingleOrDefault(method => method.Name == name && predicate(method));
+        Assert.IsNotNull(match, $"Missing expected instance method: {name}");
         return match!;
     }
 
