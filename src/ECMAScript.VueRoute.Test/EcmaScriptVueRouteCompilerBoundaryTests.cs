@@ -203,6 +203,46 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_RouterLinkSlotScope_AndResolvedRouteContracts_Compile_WithCanonicalSurface()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static string ReadLinkScope(RouterLinkSlotScope scope, RouteLocationResolved resolved)
+                {
+                    var navigate = scope.Navigate();
+                    return scope.Href + scope.Route.Path + scope.IsActive + scope.IsExactActive + resolved.Href + resolved.Replace + resolved.Force + resolved.State + navigate;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let navigate = scope.navigate(null);");
+        StringAssert.Contains(script, "scope.href");
+        StringAssert.Contains(script, "scope.route.path");
+        StringAssert.Contains(script, "scope.isActive");
+        StringAssert.Contains(script, "scope.isExactActive");
+        StringAssert.Contains(script, "resolved.href");
+        StringAssert.Contains(script, "resolved.replace");
+        StringAssert.Contains(script, "resolved.force");
+        StringAssert.Contains(script, "resolved.state");
+    }
+
+    [TestMethod]
     public async Task VueRoute_HistoryState_AndRouterHistoryControls_Compile_WithTypedContracts()
     {
         var code = """

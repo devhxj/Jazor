@@ -911,8 +911,30 @@ public partial class SemanticWalker
 			return false;
 		}
 
+		foreach (var attribute in symbol.GetAttributes())
+		{
+			if (attribute.ConstructorArguments.Length == 0)
+				continue;
+
+			if (attribute.AttributeClass?.Name == "ECMAScriptNameAttribute")
+			{
+				literalText = attribute.ConstructorArguments[0].Value?.ToString() ?? string.Empty;
+				return true;
+			}
+
+			if (attribute.AttributeClass?.Name != "DescriptionAttribute")
+				continue;
+
+			var description = attribute.ConstructorArguments[0].Value?.ToString()?.Trim();
+			if (description?.StartsWith("@#", System.StringComparison.Ordinal) != true)
+				continue;
+
+			literalText = description.Substring(2);
+			return true;
+		}
+
 		literalText = Util.GetSymbolConfigName(symbol) ?? symbol.Name;
-		return !string.IsNullOrEmpty(literalText);
+		return literalText is not null;
 	}
 
 	private static bool IsDateLikeType(ITypeSymbol? type)

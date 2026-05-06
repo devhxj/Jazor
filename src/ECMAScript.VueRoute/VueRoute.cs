@@ -34,7 +34,9 @@ public delegate IPromise<NavigationGuardReturn?> LegacyAsyncRouteNavigationGuard
 
 public delegate void RouterErrorHandler(Vue3.VueValue? error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
-public delegate Vue3.IVNode RouterLinkSlotCallback(UseLinkResult link);
+public delegate IPromise<NavigationFailure?> RouterLinkNavigateCallback(MouseEvent? @event = null);
+
+public delegate Vue3.IVNode RouterLinkSlotCallback(RouterLinkSlotScope link);
 
 public delegate Vue3.IVNode RouterViewSlotCallback(RouterViewSlotScope scope);
 
@@ -59,7 +61,7 @@ public enum RouterHistoryNavigationDirection
 	[Description("@#forward")]
 	Forward,
 
-	[Description("@#unknown")]
+	[ECMAScriptName("")]
 	Unknown
 }
 

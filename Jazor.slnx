@@ -11,6 +11,7 @@
   </Folder>
   <Folder Name="/test/">
     <Project Path="src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj" />
+    <Project Path="src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj" />
     <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
     <Project Path="src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj" />
     <Project Path="src/Jazor.CLR.Test/Jazor.CLR.Test.csproj" />
@@ -22,6 +23,7 @@
   </Folder>
   <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
+  <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
   <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
   <Project Path="src/ECMAScript.Vue3/ECMAScript.Vue3.csproj" />
   <Project Path="src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />

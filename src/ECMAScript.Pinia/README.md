@@ -19,6 +19,7 @@
 - 不在 compiler 中新增 `Pinia` 名称特判。
 - 当前覆盖核心 store/runtime 面和常用 Options API helper；更长尾的 helper 仍按需求增量补充。
 - 运行时导入使用裸模块名 `pinia`，交给宿主 import-map / bundler 决定最终版本解析。
+- `@pinia/testing` 已拆分到独立项目 `src/ECMAScript.Pinia.Testing/`，不再继续塞进主包边界。
 
 ## Layout
 
@@ -28,3 +29,12 @@
   - `createPinia`、`defineStore`、`storeToRefs`、Options API helper、hydration/HMR 入口。
 - `Types/Pinia.Types.*.cs`
   - store/runtime 形状、options bag、callback context、helper mapper、辅助值类型。
+
+## Related Projects
+
+- `src/ECMAScript.Pinia.Test/`
+  - `pinia` 主包回归测试。
+- `src/ECMAScript.Pinia.Testing/`
+  - `@pinia/testing` 独立绑定线。
+- `src/ECMAScript.Pinia.Testing.Test/`
+  - `@pinia/testing` 独立回归测试工程。

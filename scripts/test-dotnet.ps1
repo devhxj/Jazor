@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("all", "compiler", "clr", "pinia", "vueroute", "razorvue", "jolt", "jolt-build", "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish")]
+    [ValidateSet("all", "compiler", "clr", "pinia", "pinia-testing", "vueroute", "razorvue", "jolt", "jolt-build", "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish")]
     [string]$Project = "all",
     [string]$Configuration = "Debug",
     [string]$Filter = ""
@@ -15,6 +15,7 @@ $configurationWasExplicit = $PSBoundParameters.ContainsKey("Configuration")
 $compilerTestProject = Join-Path $repoRoot "src\Jazor.CompilerTest\Jazor.CompilerTest.csproj"
 $clrTestProject = Join-Path $repoRoot "src\Jazor.CLR.Test\Jazor.CLR.Test.csproj"
 $piniaTestProject = Join-Path $repoRoot "src\ECMAScript.Pinia.Test\ECMAScript.Pinia.Test.csproj"
+$piniaTestingTestProject = Join-Path $repoRoot "src\ECMAScript.Pinia.Testing.Test\ECMAScript.Pinia.Testing.Test.csproj"
 $vueRouteTestProject = Join-Path $repoRoot "src\ECMAScript.VueRoute.Test\ECMAScript.VueRoute.Test.csproj"
 $razorVueTestProject = Join-Path $repoRoot "src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj"
 $joltTestProject = Join-Path $repoRoot "src\Jolt.Test\Jolt.Test.csproj"
@@ -88,12 +89,13 @@ $testTargets = @(
         "compiler" { $compilerTestProject }
         "clr" { $clrTestProject }
         "pinia" { $piniaTestProject }
+        "pinia-testing" { $piniaTestingTestProject }
         "vueroute" { $vueRouteTestProject }
         "razorvue" { $razorVueTestProject }
         "jolt" { $joltTestProject }
         "jolt-build" { $joltTestProject }
         "emit" { $emitTestProject }
-        default { $compilerTestProject, $clrTestProject, $piniaTestProject, $vueRouteTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }
+        default { $compilerTestProject, $clrTestProject, $piniaTestProject, $piniaTestingTestProject, $vueRouteTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }
     }
 )
 

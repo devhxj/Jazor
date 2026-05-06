@@ -5588,6 +5588,38 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_ECMAScriptEnumField_EmitsEmptyStringLiteral_WhenConfigured()
+	{
+		var block = GetBlockOperation(@"
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [String]
+            enum EmptyStringEnum
+            {
+                [ECMAScriptName("""")]
+                Empty
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var value = EmptyStringEnum.Empty;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let value = """";
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ECMAScriptNumericEnumField_EmitsNumericLiteral()
 	{
 		var block = GetBlockOperation(@"

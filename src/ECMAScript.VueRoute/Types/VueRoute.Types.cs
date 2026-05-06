@@ -96,17 +96,8 @@ public record RouteParamsRaw : Vue3.VueProps, System.Collections.IEnumerable
 
 [ECMAScript]
 [Description("@#")]
-public record RouteLocationAsPath : Vue3.VueProps
+public abstract record RouteLocationOptions : Vue3.VueProps
 {
-	[Description("@#path")]
-	public string Path { get; init; } = default!;
-
-	[Description("@#query")]
-	public LocationQueryRaw? Query { get; init; }
-
-	[Description("@#hash")]
-	public string? Hash { get; init; }
-
 	[Description("@#replace")]
 	public bool? Replace { get; init; }
 
@@ -119,7 +110,66 @@ public record RouteLocationAsPath : Vue3.VueProps
 
 [ECMAScript]
 [Description("@#")]
-public record RouteLocationAsRelative : Vue3.VueProps
+public abstract class RouteLocation
+{
+	protected RouteLocation()
+	{
+	}
+
+	[Description("@#fullPath")]
+	public extern string FullPath { get; }
+
+	[Description("@#path")]
+	public extern string Path { get; }
+
+	[Description("@#query")]
+	public extern LocationQuery Query { get; }
+
+	[Description("@#hash")]
+	public extern string Hash { get; }
+
+	[Description("@#name")]
+	public extern RouteRecordName? Name { get; }
+
+	[Description("@#params")]
+	public extern RouteParams Params { get; }
+
+	[Description("@#meta")]
+	public extern RouteMeta Meta { get; }
+
+	[Description("@#matched")]
+	public extern RouteRecordNormalized[] Matched { get; }
+
+	[Description("@#redirectedFrom")]
+	public extern RouteLocation? RedirectedFrom { get; }
+
+	[Description("@#replace")]
+	public extern bool? Replace { get; }
+
+	[Description("@#force")]
+	public extern bool? Force { get; }
+
+	[Description("@#state")]
+	public extern HistoryState? State { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteLocationAsPath : RouteLocationOptions
+{
+	[Description("@#path")]
+	public string Path { get; init; } = default!;
+
+	[Description("@#query")]
+	public LocationQueryRaw? Query { get; init; }
+
+	[Description("@#hash")]
+	public string? Hash { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteLocationAsRelative : RouteLocationOptions
 {
 	[Description("@#name")]
 	public RouteRecordName? Name { get; init; }
@@ -132,15 +182,6 @@ public record RouteLocationAsRelative : Vue3.VueProps
 
 	[Description("@#hash")]
 	public string? Hash { get; init; }
-
-	[Description("@#replace")]
-	public bool? Replace { get; init; }
-
-	[Description("@#force")]
-	public bool? Force { get; init; }
-
-	[Description("@#state")]
-	public HistoryState? State { get; init; }
 }
 
 [ECMAScript]
@@ -232,14 +273,14 @@ public abstract class RouteLocationNormalized
 	[Description("@#params")]
 	public extern RouteParams Params { get; }
 
-	[Description("@#matched")]
-	public extern RouteRecordNormalized[] Matched { get; }
-
 	[Description("@#meta")]
 	public extern RouteMeta Meta { get; }
 
+	[Description("@#matched")]
+	public extern RouteRecordNormalized[] Matched { get; }
+
 	[Description("@#redirectedFrom")]
-	public extern RouteLocationNormalized? RedirectedFrom { get; }
+	public extern RouteLocation? RedirectedFrom { get; }
 }
 
 [ECMAScript]
@@ -252,14 +293,11 @@ public abstract class RouteLocationNormalizedLoaded : RouteLocationNormalized
 
 	[Description("@#matched")]
 	public extern new RouteLocationMatched[] Matched { get; }
-
-	[Description("@#redirectedFrom")]
-	public extern new RouteLocationNormalizedLoaded? RedirectedFrom { get; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public abstract class RouteLocationResolved : RouteLocationNormalized
+public abstract class RouteLocationResolved : RouteLocation
 {
 	protected RouteLocationResolved()
 	{
@@ -302,7 +340,7 @@ public abstract class RouterHistory
 	public extern string Location { get; }
 
 	[Description("@#state")]
-	public extern HistoryStateValue? State { get; }
+	public extern HistoryState State { get; }
 
 	[Description("@#push")]
 	public extern void Push(string to, HistoryState? data);
@@ -409,7 +447,7 @@ public abstract class NavigationFailure : Error
 	public extern RouteLocationNormalized To { get; }
 
 	[Description("@#from")]
-	public extern RouteLocationNormalizedLoaded From { get; }
+	public extern RouteLocationNormalized From { get; }
 }
 
 [ECMAScript]
@@ -580,13 +618,19 @@ public enum RouterLinkAriaCurrentValue
 
 [ECMAScript]
 [Description("@#")]
-public record RouterLinkProps : Vue3.VueProps
+public record RouterLinkOptions : Vue3.VueProps
 {
 	[Description("@#to")]
 	public RouteLocationRaw To { get; init; } = default!;
 
 	[Description("@#replace")]
 	public bool? Replace { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouterLinkProps : RouterLinkOptions
+{
 
 	[Description("@#custom")]
 	public bool? Custom { get; init; }
@@ -628,9 +672,9 @@ public record UseLinkOptions : Vue3.VueProps
 
 [ECMAScript]
 [Description("@#")]
-public abstract class UseLinkResult
+public abstract class UseLinkReturn
 {
-	protected UseLinkResult()
+	protected UseLinkReturn()
 	{
 	}
 
@@ -651,6 +695,15 @@ public abstract class UseLinkResult
 
 	[Description("@#navigate")]
 	public extern IPromise<NavigationFailure?> Navigate(MouseEvent @event);
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class UseLinkResult : UseLinkReturn
+{
+	protected UseLinkResult()
+	{
+	}
 }
 
 [ECMAScript]
@@ -779,6 +832,26 @@ public record RouterLinkSlots : Vue3.VueSlots
 {
 	[Description("@#default")]
 	public RouterLinkSlotCallback? Default { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouterLinkSlotScope : Vue3.VueProps
+{
+	[Description("@#route")]
+	public RouteLocationResolved Route { get; init; } = default!;
+
+	[Description("@#href")]
+	public string Href { get; init; } = default!;
+
+	[Description("@#isActive")]
+	public bool IsActive { get; init; }
+
+	[Description("@#isExactActive")]
+	public bool IsExactActive { get; init; }
+
+	[Description("@#navigate")]
+	public RouterLinkNavigateCallback Navigate { get; init; } = default!;
 }
 
 [ECMAScript]

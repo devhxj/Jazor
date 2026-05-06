@@ -62,7 +62,7 @@ public static partial class VueRoute
 	/// Returns the low-level typed reactive contract behind <c>&lt;RouterLink&gt;</c>.
 	/// </summary>
 	[Description("@#useLink")]
-	public extern static UseLinkResult UseLink(UseLinkOptions options);
+	public extern static UseLinkReturn UseLink(UseLinkOptions options);
 
 	/// <summary>
 	/// Registers a composition API leave guard on the active matched route record.

@@ -186,6 +186,19 @@ public static partial class Pinia
 	public abstract record PiniaStateTree : Vue3.VueProps;
 
 	/// <summary>
+	/// Base record for object-form <c>$patch({ ... })</c> payloads.
+	/// Pinia models this as a deep-partial state tree; the C# binding keeps that
+	/// contract explicit instead of pretending the payload is a full <typeparamref name="TState"/>.
+	/// Concrete stores should declare dedicated patch records with nullable/optional
+	/// members matching the subset they intend to patch.
+	/// </summary>
+	/// <typeparam name="TState">The state record being patched.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract record PiniaStatePatch<TState> : Vue3.VueProps
+		where TState : PiniaStateTree;
+
+	/// <summary>
 	/// Unknown-like value bridge used by action-listener arguments and action results.
 	/// This keeps the public surface free of raw <see cref="object"/> while still
 	/// allowing typical JavaScript payload shapes.

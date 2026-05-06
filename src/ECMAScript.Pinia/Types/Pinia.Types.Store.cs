@@ -329,7 +329,7 @@ public static partial class Pinia
 		/// </summary>
 		/// <param name="partialState">The partial state object to merge into the store.</param>
 		[Description("@#$patch")]
-		public extern void Patch(TState partialState);
+		public extern void Patch(PiniaStatePatch<TState> partialState);
 
 		/// <summary>
 		/// Applies a function patch to the current store state.
@@ -487,7 +487,7 @@ public static partial class Pinia
 		/// The object patch payload applied to the store.
 		/// </summary>
 		[Description("@#payload")]
-		public extern TState Payload { get; }
+		public extern PiniaStatePatch<TState> Payload { get; }
 
 		/// <summary>
 		/// The debugger events emitted for the object patch.
@@ -685,7 +685,7 @@ public static partial class Pinia
 	/// <typeparam name="TCustomProperties">The plugin-added custom store properties projection.</typeparam>
 	[ECMAScript]
 	[Description("@#")]
-	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties> : StoreDefinition
+	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties> : StoreDefinition<ProjectedStore<TStore, TCustomProperties>>
 		where TStore : class
 		where TCustomProperties : Vue3.VueProps
 	{
@@ -694,36 +694,11 @@ public static partial class Pinia
 		}
 
 		/// <summary>
-		/// Store identifier declared at definition time.
-		/// </summary>
-		[Description("@#$id")]
-		public extern string Id { get; }
-
-		/// <summary>
 		/// Returns the same runtime store definition projected back to the base
 		/// typed store-definition contract.
 		/// </summary>
 		[ECMAScriptInline("__arg1")]
 		public extern StoreDefinition<TStore> AsDefinition();
-
-		/// <summary>
-		/// Creates or retrieves the projected store instance from the currently
-		/// active Pinia root.
-		/// </summary>
-		[ECMAScriptInline("__arg1()")]
-		public extern ProjectedStore<TStore, TCustomProperties> Use();
-
-		/// <summary>
-		/// Creates or retrieves the projected store instance from the supplied Pinia root.
-		/// </summary>
-		[ECMAScriptInline("__arg1(__arg2)")]
-		public extern ProjectedStore<TStore, TCustomProperties> Use(PiniaInstance pinia);
-
-		/// <summary>
-		/// Internal/advanced call shape used by Pinia HMR flows.
-		/// </summary>
-		[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-		public extern ProjectedStore<TStore, TCustomProperties> Use(PiniaInstance pinia, StoreGeneric hot);
 	}
 
 	/// <summary>
@@ -735,7 +710,7 @@ public static partial class Pinia
 	/// <typeparam name="TCustomState">The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
 	[ECMAScript]
 	[Description("@#")]
-	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> : StoreDefinition
+	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> : StoreDefinition<ProjectedStore<TStore, TCustomProperties, TCustomState>>
 		where TStore : class
 		where TCustomProperties : Vue3.VueProps
 		where TCustomState : PiniaStateTree
@@ -745,35 +720,10 @@ public static partial class Pinia
 		}
 
 		/// <summary>
-		/// Store identifier declared at definition time.
-		/// </summary>
-		[Description("@#$id")]
-		public extern string Id { get; }
-
-		/// <summary>
 		/// Returns the same runtime store definition projected back to the base
 		/// typed store-definition contract.
 		/// </summary>
 		[ECMAScriptInline("__arg1")]
 		public extern StoreDefinition<TStore> AsDefinition();
-
-		/// <summary>
-		/// Creates or retrieves the projected store instance from the currently
-		/// active Pinia root.
-		/// </summary>
-		[ECMAScriptInline("__arg1()")]
-		public extern ProjectedStore<TStore, TCustomProperties, TCustomState> Use();
-
-		/// <summary>
-		/// Creates or retrieves the projected store instance from the supplied Pinia root.
-		/// </summary>
-		[ECMAScriptInline("__arg1(__arg2)")]
-		public extern ProjectedStore<TStore, TCustomProperties, TCustomState> Use(PiniaInstance pinia);
-
-		/// <summary>
-		/// Internal/advanced call shape used by Pinia HMR flows.
-		/// </summary>
-		[ECMAScriptInline("__arg1(__arg2, __arg3)")]
-		public extern ProjectedStore<TStore, TCustomProperties, TCustomState> Use(PiniaInstance pinia, StoreGeneric hot);
 	}
 }

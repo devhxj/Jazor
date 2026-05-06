@@ -451,6 +451,51 @@ public sealed class EcmaScriptPiniaImportTests
 	}
 
 	[TestMethod]
+	public async Task Convert_ClassUsingStoreToRefsWithProjectedStore_LowersToStoreToRefsIdentityCall()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				public sealed record CounterPluginState : PiniaStateTree
+				{
+					public string PersistedAt { get; init; } = "";
+				}
+
+				[ECMAScriptModule("stores/projected-refs-counter.mjs")]
+				public static class CounterStoreModule
+				{
+					public static StoreRefs<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>> CreateRefs(
+						ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState> store)
+						=> StoreToRefs(store);
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterStoreModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { storeToRefs } from \"pinia\";");
+		StringAssert.Contains(script, "return storeToRefs(store);");
+	}
+
+	[TestMethod]
 	public async Task Convert_ClassUsingSetupStoreHelpers_LowersToHelperAwareDefineStoreCallback()
 	{
 		var code = """
@@ -849,6 +894,141 @@ public sealed class EcmaScriptPiniaImportTests
 	}
 
 	[TestMethod]
+	public async Task Convert_ClassUsingProjectedStoreDefinitionWithAcceptHMRUpdate_LowersToStoreDefinitionIdentity()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				[ECMAScriptModule("stores/projected-hmr-counter.mjs")]
+				public static class CounterProjectionModule
+				{
+					public static PiniaHotUpdateHandler CreateHotHandler(IObject hot)
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+						var projectedUseCounterStore = ProjectStoreDefinition<CounterStore, CounterPluginExtensions>(useCounterStore);
+						return AcceptHMRUpdate(projectedUseCounterStore, hot);
+					}
+
+					private static CounterState CreateState()
+						=> new CounterState
+						{
+							Count = 0
+						};
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterProjectionModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { acceptHMRUpdate, defineStore } from \"pinia\";");
+		StringAssert.Contains(script, "let projectedUseCounterStore = useCounterStore;");
+		StringAssert.Contains(script, "return acceptHMRUpdate(projectedUseCounterStore, hot);");
+		Assert.IsFalse(script.Contains("projectStoreDefinition", StringComparison.Ordinal));
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingOptionsApiHelpersWithProjectedStoreDefinition_LowersToPlainPiniaHelpers()
+	{
+		var code = """
+			using ECMAScript;
+			using ECMAScript.VueContract;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.Vue3;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern int DoubleCount { get; }
+
+					public extern void Increment();
+				}
+
+				public sealed record CounterPluginExtensions : Vue3.VueProps
+				{
+					public string AuditTag { get; init; } = "";
+				}
+
+				[ECMAScriptModule("components/projected-options-api.mjs")]
+				public static class CounterPanelModule
+				{
+					public static IVueComponent Component = DefineComponent(new VueComponentOptions
+					{
+						Name = "CounterPanel",
+						Computed = CreateComputed(),
+						Methods = CreateMethods(),
+						Render = Render
+					});
+
+					private static VueProps CreateComputed()
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+						var projectedUseCounterStore = ProjectStoreDefinition<CounterStore, CounterPluginExtensions>(useCounterStore);
+						return MapState(projectedUseCounterStore, ["count", "auditTag"]);
+					}
+
+					private static VueProps CreateMethods()
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+						var projectedUseCounterStore = ProjectStoreDefinition<CounterStore, CounterPluginExtensions>(useCounterStore);
+						return MapActions(projectedUseCounterStore, ["increment"]);
+					}
+
+					public static IVNode Render()
+						=> H("section", "ready");
+
+					private static CounterState CreateState()
+						=> new CounterState
+						{
+							Count = 0
+						};
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterPanelModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { defineStore, mapActions, mapState } from \"pinia\";");
+		StringAssert.Contains(script, "let projectedUseCounterStore = useCounterStore;");
+		StringAssert.Contains(script, "return mapState(projectedUseCounterStore, [\"count\", \"auditTag\"]);");
+		StringAssert.Contains(script, "return mapActions(projectedUseCounterStore, [\"increment\"]);");
+		Assert.IsFalse(script.Contains("projectStoreDefinition", StringComparison.Ordinal));
+	}
+
+	[TestMethod]
 	public async Task Convert_ClassUsingSubscriptionMutationVariants_LowersToMutationMetadataProperties()
 	{
 		var code = """
@@ -874,7 +1054,7 @@ public sealed class EcmaScriptPiniaImportTests
 					public static Vue3.VueDebuggerEvent[] ReadPatchFunctionEvents(SubscriptionMutationPatchFunction<CounterState> mutation)
 						=> mutation.Events;
 
-					public static CounterState ReadPatchPayload(SubscriptionMutationPatchObject<CounterState> mutation)
+					public static PiniaStatePatch<CounterState> ReadPatchPayload(SubscriptionMutationPatchObject<CounterState> mutation)
 						=> mutation.Payload;
 				}
 			}
@@ -885,6 +1065,48 @@ public sealed class EcmaScriptPiniaImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "return mutation.events;");
 		StringAssert.Contains(script, "return mutation.payload;");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingTypedStatePatch_LowersToPatchObjectCall()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+
+					public string Status { get; init; } = "";
+				}
+
+				public sealed record CounterStatePatch : PiniaStatePatch<CounterState>
+				{
+					public int? Count { get; init; }
+
+					public string? Status { get; init; }
+				}
+
+				[ECMAScriptModule("stores/patch-counter.mjs")]
+				public static class CounterPatchModule
+				{
+					public static void ApplyPatch(Store<CounterState> store)
+						=> store.Patch(new CounterStatePatch
+						{
+							Count = 7,
+							Status = "patched"
+						});
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterPatchModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "store.$patch({ count: 7, status: \"patched\" });");
 	}
 
 	[TestMethod]

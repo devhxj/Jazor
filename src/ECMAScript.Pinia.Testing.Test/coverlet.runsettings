@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <Format>opencover</Format>
+          <Format>cobertura</Format>
+          <Format>json</Format>
+          <Format>lcov</Format>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+
+  <CodeCoverage>
+    <ModulePaths>
+      <Exclude>
+        *Tests*
+        *Test*
+        *Acornima*
+        *Microsoft.CodeAnalysis*
+        *System.*
+      </Exclude>
+    </ModulePaths>
+
+    <Functions>
+      <Exclude>
+        *.get_*
+        *.set_*
+        *.ToString
+        *.Equals
+        *.GetHashCode
+        *Exception.*
+      </Exclude>
+    </Functions>
+
+    <CoverageThreshold>
+      <LineMinimum>85</LineMinimum>
+      <BranchMinimum>80</BranchMinimum>
+      <IncludeTestAssembly>false</IncludeTestAssembly>
+    </CoverageThreshold>
+  </CodeCoverage>
+</RunSettings>

@@ -4,6 +4,15 @@ using static ECMAScript.Vue3;
 
 namespace Pinia.Counter.Host;
 
+[ECMAScript]
+[Description("@#")]
+public sealed record CounterStatePatch : PiniaStatePatch<CounterState>
+{
+    public int? Count { get; init; }
+
+    public string? Status { get; init; }
+}
+
 [ECMAScriptModule("components/counter-app.mjs")]
 public static class CounterAppModule
 {
@@ -18,7 +27,7 @@ public static class CounterAppModule
         var store = CounterStoreModule.UseCounterStore.Use();
         var refs = CounterStoreModule.UseCounterStoreRefs(store);
 
-        Action patchPlusFive = () => store.Patch(new CounterState
+        Action patchPlusFive = () => store.Patch(new CounterStatePatch
         {
             Count = store.Count + 5,
             Status = "Applied $patch({ ... }) from the component."

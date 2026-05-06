@@ -85,6 +85,7 @@ public sealed class EcmaScriptPiniaProxyTests
 			typeof(Pinia.DefineStoreOptionsInPlugin<,,>).MakeGenericType(typeof(TestPiniaState), typeof(TestPiniaGetters), typeof(TestPiniaActions)),
 			typeof(Pinia.DefineSetupStoreOptions),
 			typeof(Pinia.DefineSetupStoreOptions<>).MakeGenericType(typeof(TestPiniaActions)),
+			typeof(Pinia.PiniaStatePatch<>).MakeGenericType(typeof(TestPiniaState)),
 			typeof(Pinia.SetupStoreHelpers),
 			typeof(Pinia.PiniaKeyMapper),
 			typeof(Pinia.PiniaStateMapper<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
@@ -158,7 +159,25 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent), directEvents!.PropertyType);
 		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent[]), patchFunctionEvents!.PropertyType);
 		Assert.AreEqual(typeof(Vue3.VueDebuggerEvent[]), patchObjectEvents!.PropertyType);
-		Assert.AreEqual(typeof(TestPiniaState), patchObjectPayload!.PropertyType);
+		Assert.AreEqual(typeof(Pinia.PiniaStatePatch<TestPiniaState>), patchObjectPayload!.PropertyType);
+	}
+
+	[TestMethod]
+	public void Pinia_StatePatchSurface_UsesExplicitTypedPatchContracts()
+	{
+		var storeType = typeof(Pinia.Store<>).MakeGenericType(typeof(TestPiniaState));
+		var patchMethods = storeType
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(Pinia.Store<TestPiniaState>.Patch))
+			.OrderBy(static method => method.GetParameters()[0].ParameterType.Name)
+			.ToArray();
+
+		Assert.AreEqual(2, patchMethods.Length);
+		Assert.AreEqual(typeof(Pinia.PiniaStatePatch<TestPiniaState>), patchMethods[0].GetParameters()[0].ParameterType);
+		Assert.AreEqual(typeof(PiniaStatePatchCallback<TestPiniaState>), patchMethods[1].GetParameters()[0].ParameterType);
+
+		var patchContract = typeof(Pinia.PiniaStatePatch<>).MakeGenericType(typeof(TestPiniaState));
+		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(patchContract));
 	}
 
 	[TestMethod]
@@ -310,7 +329,7 @@ public sealed class EcmaScriptPiniaProxyTests
 		var asCustomState = projectedStoreWithState.GetMethod(nameof(Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>.AsCustomState), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 		var asDefinition = projectedDefinition.GetMethod(nameof(Pinia.ProjectedStoreDefinition<TestPiniaStore, TestPiniaPluginExtensions>.AsDefinition), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 		var useProjected = projectedDefinitionWithState
-			.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+			.GetMethods(BindingFlags.Public | BindingFlags.Instance)
 			.Where(static method => method.Name == nameof(Pinia.ProjectedStoreDefinition<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>.Use))
 			.OrderBy(static method => method.GetParameters().Length)
 			.ToArray();
@@ -355,6 +374,8 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.AreEqual(typeof(Pinia.ProjectedStore<,,>), projectStoreMethods[1].ReturnType.GetGenericTypeDefinition());
 		Assert.AreEqual(typeof(Pinia.ProjectedStoreDefinition<,>), projectDefinitionMethods[0].ReturnType.GetGenericTypeDefinition());
 		Assert.AreEqual(typeof(Pinia.ProjectedStoreDefinition<,,>), projectDefinitionMethods[1].ReturnType.GetGenericTypeDefinition());
+		Assert.IsTrue(typeof(Pinia.StoreDefinition<Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions>>).IsAssignableFrom(projectedDefinition));
+		Assert.IsTrue(typeof(Pinia.StoreDefinition<Pinia.ProjectedStore<TestPiniaStore, TestPiniaPluginExtensions, TestPiniaPluginStateExtensions>>).IsAssignableFrom(projectedDefinitionWithState));
 	}
 
 	[TestMethod]
@@ -400,6 +421,7 @@ public sealed class EcmaScriptPiniaProxyTests
 		AssertEcmaScriptSupport(typeof(Pinia.ProjectedStoreDefinition<,>));
 		AssertEcmaScriptSupport(typeof(Pinia.ProjectedStoreDefinition<,,>));
 		AssertEcmaScriptSupport(typeof(Pinia.StoreRefs<>));
+		AssertEcmaScriptSupport(typeof(Pinia.PiniaStatePatch<>));
 		AssertEcmaScriptSupport(typeof(Pinia.PiniaStateMapValue<>));
 		AssertEcmaScriptSupport(typeof(Pinia.SubscriptionMutationEvents));
 		AssertEcmaScriptSupport(typeof(Pinia.SetupStoreHelpers));
