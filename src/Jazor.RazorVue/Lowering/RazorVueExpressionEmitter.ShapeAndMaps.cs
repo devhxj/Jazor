@@ -72,6 +72,22 @@ internal sealed partial class RazorVueExpressionEmitter
                 builder.Append("foreach(").Append(loop.ItemName).Append(':').Append(loop.Source.Syntax.ToString()).Append(')');
                 AppendFragmentShape(builder, loop.Body);
                 break;
+            case RazorVueForNode loop:
+                builder.Append("for(")
+                    .Append(loop.VariableName)
+                    .Append('=')
+                    .Append(loop.InitialValue.Syntax.ToString())
+                    .Append(';')
+                    .Append(loop.ConditionKind)
+                    .Append(':')
+                    .Append(loop.LimitValue.Syntax.ToString())
+                    .Append(';')
+                    .Append(loop.StepKind);
+                if (loop.StepValue is not null)
+                    builder.Append(':').Append(loop.StepValue.Syntax.ToString());
+                builder.Append(')');
+                AppendFragmentShape(builder, loop.Body);
+                break;
         }
     }
 

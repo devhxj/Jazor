@@ -173,6 +173,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitPropertyReference(IPropertyReferenceOperation property)
     {
+        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: false, out var alias))
+            return alias;
+
         if (IsCurrentComponentMember(property.Property, property.Instance))
         {
             if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
@@ -198,6 +201,9 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitSetupPropertyReference(IPropertyReferenceOperation property)
     {
+        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: true, out var alias))
+            return alias;
+
         if (IsCurrentComponentMember(property.Property, property.Instance))
         {
             if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
@@ -212,6 +218,39 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return EmitMemberTarget(property.Instance) + "." + property.Property.Name;
+    }
+
+    private bool TryEmitKnownAliasedProperty(
+        IPropertyReferenceOperation property,
+        bool useSetupEmitter,
+        out string expression)
+    {
+        expression = string.Empty;
+        if (property.Instance is null)
+            return false;
+
+        if (!string.Equals(property.Property.Name, "Count", StringComparison.Ordinal))
+            return false;
+
+        if (!IsArrayLikeCountCarrier(property.Property.ContainingType))
+            return false;
+
+        expression = (useSetupEmitter
+            ? EmitSetupExpression(property.Instance)
+            : EmitExpression(property.Instance)) + ".length";
+        return true;
+    }
+
+    private static bool IsArrayLikeCountCarrier(ITypeSymbol? type)
+    {
+        if (type is null)
+            return false;
+
+        var displayName = type.OriginalDefinition.ToDisplayString();
+        return string.Equals(displayName, "System.Collections.Generic.List<T>", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Collections.Generic.ICollection<T>", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Collections.ICollection", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Collections.ObjectModel.ReadOnlyCollection<T>", StringComparison.Ordinal);
     }
 
     private string EmitFieldReference(IFieldReferenceOperation field)

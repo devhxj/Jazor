@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.RenderTree;
 
 namespace Jazor.RazorVue.Canonical;
 
@@ -94,6 +95,22 @@ internal sealed record RazorVueCanonicalForEachNode(
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
     : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.ForEach, TemplateEncodability, SideEffectClassification, SourceOrigins);
 
+internal sealed record RazorVueCanonicalForNode(
+    string VariableName,
+    string InitialValueExpressionText,
+    RazorVueExpressionBindingKind InitialValueBindingKind,
+    RazorVueForConditionKind ConditionKind,
+    string LimitValueExpressionText,
+    RazorVueExpressionBindingKind LimitValueBindingKind,
+    RazorVueForStepKind StepKind,
+    string? StepValueExpressionText,
+    RazorVueExpressionBindingKind StepValueBindingKind,
+    RazorVueCanonicalTemplateFragment Body,
+    RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueSideEffectClassification SideEffectClassification,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.For, TemplateEncodability, SideEffectClassification, SourceOrigins);
+
 internal sealed record RazorVueCanonicalSlotOutletNode(
     string SlotName,
     string? ArgumentExpressionText,
@@ -137,6 +154,7 @@ internal enum RazorVueCanonicalNodeKind
     Interpolation,
     Conditional,
     ForEach,
+    For,
     SlotOutlet
 }
 

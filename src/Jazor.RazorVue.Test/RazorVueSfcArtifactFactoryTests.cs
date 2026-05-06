@@ -292,6 +292,57 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCountStyleForLoop_IntoTemplateRangeHelperAndSetupBindings()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var i = 0; i < Count; i++)
+                        {
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(__jazorVueSfcBinding0, __jazorVueSfcBinding1, &quot;&lt;&quot;, &quot;++&quot;, null)\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ i }}");
+        StringAssert.Contains(artifact.ScriptSetupText, "import { computed } from \"vue\";");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => 0);");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.count);");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersRazorGeneratedChildContentLambdaShape()
     {
         var context = CreateContext(

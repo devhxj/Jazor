@@ -182,6 +182,22 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 CollectLiftedBindings(ownerComponentFullName, loop.Body, bindings, templateScopeDepth + 1, path + "/body");
                 return;
 
+            case RazorVueCanonicalForNode loop:
+                if (ShouldLiftExpression(loop.TemplateEncodability, templateScopeDepth))
+                {
+                    EnsureLiftableBindingKind(ownerComponentFullName, loop.InitialValueBindingKind, loop.SourceOrigins, loop.InitialValueExpressionText);
+                    bindings.Add(path + "/for/init", loop.InitialValueExpressionText, loop.SourceOrigins);
+                    EnsureLiftableBindingKind(ownerComponentFullName, loop.LimitValueBindingKind, loop.SourceOrigins, loop.LimitValueExpressionText);
+                    bindings.Add(path + "/for/limit", loop.LimitValueExpressionText, loop.SourceOrigins);
+                    if (!string.IsNullOrWhiteSpace(loop.StepValueExpressionText))
+                    {
+                        EnsureLiftableBindingKind(ownerComponentFullName, loop.StepValueBindingKind, loop.SourceOrigins, loop.StepValueExpressionText!);
+                        bindings.Add(path + "/for/step", loop.StepValueExpressionText!, loop.SourceOrigins);
+                    }
+                }
+                CollectLiftedBindings(ownerComponentFullName, loop.Body, bindings, templateScopeDepth + 1, path + "/body");
+                return;
+
             case RazorVueCanonicalSlotOutletNode slotOutlet when
                 slotOutlet.ArgumentExpressionText is not null &&
                 ShouldLiftExpression(slotOutlet.TemplateEncodability, templateScopeDepth):
@@ -284,6 +300,10 @@ internal sealed class RazorVueSfcSemanticModelFactory
                         yield return nested;
                     break;
                 case RazorVueCanonicalForEachNode loop:
+                    foreach (var nested in EnumerateNodes(loop.Body))
+                        yield return nested;
+                    break;
+                case RazorVueCanonicalForNode loop:
                     foreach (var nested in EnumerateNodes(loop.Body))
                         yield return nested;
                     break;

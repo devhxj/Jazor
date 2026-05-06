@@ -275,6 +275,10 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     if (HasTemplateShape(loop.Body))
                         return true;
                     break;
+                case RazorVueForNode loop:
+                    if (HasTemplateShape(loop.Body))
+                        return true;
+                    break;
             }
         }
 
@@ -292,6 +296,10 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                         return true;
                     break;
                 case RazorVueForEachNode loop:
+                    if (HasUnsupportedTemplateNode(loop.Body))
+                        return true;
+                    break;
+                case RazorVueForNode loop:
                     if (HasUnsupportedTemplateNode(loop.Body))
                         return true;
                     break;
@@ -346,6 +354,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                                                              ContainsComponentName(conditional.WhenFalse, snapshot, componentName):
                     return true;
                 case RazorVueForEachNode loop when ContainsComponentName(loop.Body, snapshot, componentName):
+                    return true;
+                case RazorVueForNode loop when ContainsComponentName(loop.Body, snapshot, componentName):
                     return true;
             }
         }

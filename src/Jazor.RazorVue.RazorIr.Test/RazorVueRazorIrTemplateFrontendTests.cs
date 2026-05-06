@@ -1,5 +1,6 @@
 using System.IO;
 using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RazorSdk;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.AspNetCore.Razor.Language;
@@ -183,7 +184,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         var conditional = renderTree.Children[0] as RazorVueConditionalNode;
         Assert.IsNotNull(conditional);
-        Assert.IsInstanceOfType<IConditionalOperation>(conditional.Condition);
+        Assert.IsInstanceOfType<IBinaryOperation>(conditional.Condition);
 
         var ul = conditional.WhenTrue.Children[0] as RazorVueElementNode;
         Assert.IsNotNull(ul);
@@ -245,4 +246,499 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", item))");
         StringAssert.Contains(artifact.ModuleCode, "h(\"ul\"");
     }
+
+    [TestMethod]
+    public void CreateRenderTree_ForIfElse_LowersStructuredElseBranch()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Visible)
+            {
+                <p>Visible</p>
+            }
+            else
+            {
+                <p>Hidden</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.IfElse.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var renderTree = frontend.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+
+        var conditional = renderTree.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(conditional);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(conditional.Condition);
+
+        var visibleParagraph = conditional.WhenTrue.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(visibleParagraph);
+        Assert.AreEqual("p", visibleParagraph.TagName);
+        Assert.AreEqual("Visible", ((RazorVueTextNode)visibleParagraph.Children.Children[0]).Text);
+
+        var hiddenParagraph = conditional.WhenFalse.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(hiddenParagraph);
+        Assert.AreEqual("p", hiddenParagraph.TagName);
+        Assert.AreEqual("Hidden", ((RazorVueTextNode)hiddenParagraph.Children.Children[0]).Text);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerIfElse()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Visible)
+            {
+                <p>Visible</p>
+            }
+            else
+            {
+                <p>Hidden</p>
+            }
+            """;
+
+        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.IfElse.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+            .Execute(context)
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "props.visible ? h(\"p\", \"Visible\") : h(\"p\", \"Hidden\")");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForIfElseWithForeachInElse_LowersNestedStructuredControlFlow()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Visible)
+            {
+                <p>Visible</p>
+            }
+            else
+            {
+                <ul>
+                @foreach (var item in Items)
+                {
+                    <li>@item</li>
+                }
+                </ul>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.IfElseForeach.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    [Parameter]
+                    public List<string> Items { get; set; } = new();
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var renderTree = frontend.CreateRenderTree(context, snapshot);
+
+        var conditional = renderTree.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(conditional);
+
+        var elseList = conditional.WhenFalse.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(elseList);
+        Assert.AreEqual("ul", elseList.TagName);
+
+        var loop = elseList.Children.Children[0] as RazorVueForEachNode;
+        Assert.IsNotNull(loop);
+        Assert.AreEqual("item", loop.ItemName);
+
+        var itemElement = loop.Body.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(itemElement);
+        Assert.AreEqual("li", itemElement.TagName);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerIfElseWithForeachInElse()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Visible)
+            {
+                <p>Visible</p>
+            }
+            else
+            {
+                <ul>
+                @foreach (var item in Items)
+                {
+                    <li>@item</li>
+                }
+                </ul>
+            }
+            """;
+
+        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.IfElseForeach.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    [Parameter]
+                    public List<string> Items { get; set; } = new();
+                }
+            }
+            """);
+
+        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+            .Execute(context)
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "props.visible ? h(\"p\", \"Visible\") : h(\"ul\"");
+        StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", item))");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForElseIf_LowersConditionalChain()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Primary)
+            {
+                <p>Primary</p>
+            }
+            else if (Secondary)
+            {
+                <p>Secondary</p>
+            }
+            else
+            {
+                <p>Fallback</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElseIf.Unsupported.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Primary { get; set; }
+
+                    [Parameter]
+                    public bool Secondary { get; set; }
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var renderTree = frontend.CreateRenderTree(context, snapshot);
+
+        Assert.AreEqual(1, renderTree.Children.Length, RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot));
+
+        var primaryConditional = renderTree.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(primaryConditional);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(primaryConditional.Condition);
+
+        var primaryParagraph = primaryConditional.WhenTrue.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(primaryParagraph);
+        Assert.AreEqual("Primary", ((RazorVueTextNode)primaryParagraph.Children.Children[0]).Text);
+
+        var secondaryConditional = primaryConditional.WhenFalse.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(secondaryConditional);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(secondaryConditional.Condition);
+
+        var secondaryParagraph = secondaryConditional.WhenTrue.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(secondaryParagraph);
+        Assert.AreEqual("Secondary", ((RazorVueTextNode)secondaryParagraph.Children.Children[0]).Text);
+
+        var fallbackParagraph = secondaryConditional.WhenFalse.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(fallbackParagraph);
+        Assert.AreEqual("Fallback", ((RazorVueTextNode)fallbackParagraph.Children.Children[0]).Text);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerElseIf()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Primary)
+            {
+                <p>Primary</p>
+            }
+            else if (Secondary)
+            {
+                <p>Secondary</p>
+            }
+            else
+            {
+                <p>Fallback</p>
+            }
+            """;
+
+        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElseIf.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Primary { get; set; }
+
+                    [Parameter]
+                    public bool Secondary { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+            .Execute(context)
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "props.primary ? h(\"p\", \"Primary\") : (props.secondary ? h(\"p\", \"Secondary\") : h(\"p\", \"Fallback\"))");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForElseIfChainWithoutFinalElse_LowersNestedConditionalAndEmptyTail()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Primary)
+            {
+                <p>Primary</p>
+            }
+            else if (Secondary)
+            {
+                <p>Secondary</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElseIf.NoFinalElse.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Primary { get; set; }
+
+                    [Parameter]
+                    public bool Secondary { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var primaryConditional = renderTree.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(primaryConditional);
+
+        var secondaryConditional = primaryConditional.WhenFalse.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(secondaryConditional);
+        Assert.AreEqual(0, secondaryConditional.WhenFalse.Children.Length);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForMultiStageElseIfChain_LowersAllConditionalLevels()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Primary)
+            {
+                <p>Primary</p>
+            }
+            else if (Secondary)
+            {
+                <p>Secondary</p>
+            }
+            else if (Tertiary)
+            {
+                <p>Tertiary</p>
+            }
+            else
+            {
+                <p>Fallback</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElseIf.MultiStage.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Primary { get; set; }
+
+                    [Parameter]
+                    public bool Secondary { get; set; }
+
+                    [Parameter]
+                    public bool Tertiary { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var primaryConditional = renderTree.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(primaryConditional);
+
+        var secondaryConditional = primaryConditional.WhenFalse.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(secondaryConditional);
+
+        var tertiaryConditional = secondaryConditional.WhenFalse.Children[0] as RazorVueConditionalNode;
+        Assert.IsNotNull(tertiaryConditional);
+
+        var tertiaryParagraph = tertiaryConditional.WhenTrue.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(tertiaryParagraph);
+        Assert.AreEqual("Tertiary", ((RazorVueTextNode)tertiaryParagraph.Children.Children[0]).Text);
+
+        var fallbackParagraph = tertiaryConditional.WhenFalse.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(fallbackParagraph);
+        Assert.AreEqual("Fallback", ((RazorVueTextNode)fallbackParagraph.Children.Children[0]).Text);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForLoop_CreatesCountStyleForNode()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @for (var i = 0; i < Count; i++)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ForLoop.Unsupported.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var loop = renderTree.Children[0] as RazorVueForNode;
+        Assert.IsNotNull(loop);
+        Assert.AreEqual("i", loop.VariableName);
+        Assert.AreEqual(RazorVueForConditionKind.LessThan, loop.ConditionKind);
+        Assert.AreEqual(RazorVueForStepKind.Increment, loop.StepKind);
+        Assert.AreEqual("0", loop.InitialValue.Syntax.ToString());
+        Assert.AreEqual("Count", loop.LimitValue.Syntax.ToString());
+        var paragraph = loop.Body.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(paragraph);
+        var expression = paragraph.Children.Children[0] as RazorVueExpressionNode;
+        Assert.IsNotNull(expression);
+        Assert.AreEqual("i", expression.Expression.Syntax.ToString());
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForLoop_WithMultipleIteratorExpressions_ThrowsExplicitFailure()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @for (var i = 0; i < Count; i++, Total++)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ForLoop.UnsupportedShape.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Total { get; set; }
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => frontend.CreateRenderTree(context, snapshot));
+        StringAssert.Contains(exception.Message, "single for-loop iterator expression");
+    }
+
 }

@@ -167,6 +167,10 @@ internal sealed partial class RazorVueExpressionEmitter
                 foreach (var childOrigin in CollectOrigins(loop.Body))
                     yield return childOrigin;
                 break;
+            case RazorVueForNode loop:
+                foreach (var childOrigin in CollectOrigins(loop.Body))
+                    yield return childOrigin;
+                break;
         }
     }
 }

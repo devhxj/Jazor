@@ -23,6 +23,7 @@ internal sealed partial class RazorVueExpressionEmitter
                                                   EmitFragment(conditional.WhenTrue) + " : " +
                                                   EmitFragment(conditional.WhenFalse) + ")",
             RazorVueForEachNode loop => EmitLoop(loop),
+            RazorVueForNode loop => EmitForLoop(loop),
             _ => throw new NotSupportedException($"Unsupported RazorVue render node: {node.GetType().Name}.")
         };
 
@@ -139,6 +140,37 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitLoop(RazorVueForEachNode loop)
         => EmitExpression(loop.Source) + ".map((" + loop.ItemName + ") => " + EmitFragment(loop.Body) + ")";
+
+    private string EmitForLoop(RazorVueForNode loop)
+        => EmitForRangeInvocation(loop) + ".map((" + loop.VariableName + ") => " + EmitFragment(loop.Body) + ")";
+
+    private string EmitForRangeInvocation(RazorVueForNode loop)
+        => "__jazorVueForRange(" +
+           EmitExpression(loop.InitialValue) + ", " +
+           EmitExpression(loop.LimitValue) + ", " +
+           ToJavaScriptString(GetForConditionOperator(loop.ConditionKind)) + ", " +
+           ToJavaScriptString(GetForStepOperator(loop.StepKind)) + ", " +
+           (loop.StepValue is null ? "null" : EmitExpression(loop.StepValue)) + ")";
+
+    private static string GetForConditionOperator(RazorVueForConditionKind conditionKind)
+        => conditionKind switch
+        {
+            RazorVueForConditionKind.LessThan => "<",
+            RazorVueForConditionKind.LessThanOrEqual => "<=",
+            RazorVueForConditionKind.GreaterThan => ">",
+            RazorVueForConditionKind.GreaterThanOrEqual => ">=",
+            _ => throw new NotSupportedException($"Unsupported RazorVue for condition kind '{conditionKind}'.")
+        };
+
+    private static string GetForStepOperator(RazorVueForStepKind stepKind)
+        => stepKind switch
+        {
+            RazorVueForStepKind.Increment => "++",
+            RazorVueForStepKind.Decrement => "--",
+            RazorVueForStepKind.AddAssign => "+=",
+            RazorVueForStepKind.SubtractAssign => "-=",
+            _ => throw new NotSupportedException($"Unsupported RazorVue for step kind '{stepKind}'.")
+        };
 
     private static string EmitVNodeCall(
         string target,

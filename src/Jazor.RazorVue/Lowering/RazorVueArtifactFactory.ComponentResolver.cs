@@ -185,6 +185,10 @@ internal sealed partial class RazorVueArtifactFactory
                 foreach (var child in loop.Body.Children)
                     CollectComponents(child, components);
                 break;
+            case RazorVueForNode loop:
+                foreach (var child in loop.Body.Children)
+                    CollectComponents(child, components);
+                break;
         }
     }
 

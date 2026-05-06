@@ -59,6 +59,77 @@ public sealed class RazorVueTemplateFrontendParityTests
     }
 
     [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForElseIfChain()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @if (Primary)
+            {
+                <p>Primary</p>
+            }
+            else if (Secondary)
+            {
+                <p>Secondary</p>
+            }
+            else
+            {
+                <p>Fallback</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.ElseIf.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Primary { get; set; }
+
+                    [Parameter]
+                    public bool Secondary { get; set; }
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForCountStyleForLoop()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @for (var i = 0; i < Count; i++)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.ForLoop.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Count { get; set; }
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
     public void PreferredTemplateFrontend_FallsBackToBuildRenderTree_OnlyForHandwrittenBuildRenderTreeComponents()
     {
         var context = CreateBuildRenderTreeOnlyContext();
@@ -330,6 +401,19 @@ public sealed class RazorVueTemplateFrontendParityTests
                 builder.AppendLine();
                 AppendFragment(builder, loop.Body, depth + 1);
                 break;
+            case RazorVueForNode loop:
+                builder.Append("For(")
+                    .Append(loop.VariableName)
+                    .Append('=').Append(loop.InitialValue.Syntax.ToString())
+                    .Append(';').Append(loop.ConditionKind)
+                    .Append(':').Append(loop.LimitValue.Syntax.ToString())
+                    .Append(';').Append(loop.StepKind);
+                if (loop.StepValue is not null)
+                    builder.Append(':').Append(loop.StepValue.Syntax.ToString());
+                builder.Append(')');
+                builder.AppendLine();
+                AppendFragment(builder, loop.Body, depth + 1);
+                break;
             default:
                 builder.Append(node.GetType().Name).AppendLine();
                 break;
@@ -408,6 +492,10 @@ public sealed class RazorVueTemplateFrontendParityTests
                     yield return origin;
                 break;
             case RazorVueForEachNode loop:
+                foreach (var origin in EnumerateOrigins(loop.Body))
+                    yield return origin;
+                break;
+            case RazorVueForNode loop:
                 foreach (var origin in EnumerateOrigins(loop.Body))
                     yield return origin;
                 break;

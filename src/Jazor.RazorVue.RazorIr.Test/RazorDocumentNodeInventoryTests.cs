@@ -67,6 +67,71 @@ public sealed class RazorDocumentNodeInventoryTests
     }
 
     [TestMethod]
+    public void ProcessDesignTime_ForElseIf_ProducesChainedCodeAndMarkupNodes()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryElseIf.jazor",
+            """
+            @if (primary)
+            {
+                <p>Primary</p>
+            }
+            else if (secondary)
+            {
+                <p>Secondary</p>
+            }
+            else
+            {
+                <p>Fallback</p>
+            }
+
+            @code {
+                private bool primary;
+                private bool secondary;
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "DocumentIntermediateNode");
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "Content=\"if (primary)");
+        StringAssert.Contains(tree, "Content=\"\\n}\\nelse if (secondary)");
+        StringAssert.Contains(tree, "Content=\"\\n}\\nelse\\n{");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForCountStyleFor_ProducesCodeAndMarkupNodes()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryFor.jazor",
+            """
+            @for (var i = 0; i < count; i++)
+            {
+                <p>@i</p>
+            }
+
+            @code {
+                private int count;
+            }
+            """);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "DocumentIntermediateNode");
+        StringAssert.Contains(tree, "CSharpCodeIntermediateNode");
+        StringAssert.Contains(tree, "MarkupElementIntermediateNode TagName=\"p\"");
+        StringAssert.Contains(tree, "Content=\"for (var i = 0; i < count; i++)");
+    }
+
+    [TestMethod]
     public void ProcessDesignTime_ForUppercaseTagInMinimalHost_StillProducesMarkupElementInventory()
     {
         var codeDocument = RazorIrTestHost.CreateCodeDocument(

@@ -129,6 +129,23 @@ internal sealed class RazorVueCanonicalHModelFactory
                 TemplateEncodability: RazorVueTemplateEncodability.TemplateViaSetupBinding,
                 SideEffectClassification: ClassifySideEffects(loop.Source),
                 SourceOrigins: loop.Origins),
+            RazorVueForNode loop => new RazorVueCanonicalForNode(
+                VariableName: loop.VariableName,
+                InitialValueExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, loop.InitialValue),
+                InitialValueBindingKind: ClassifyBindingKind(snapshot, loop.InitialValue),
+                ConditionKind: loop.ConditionKind,
+                LimitValueExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, loop.LimitValue),
+                LimitValueBindingKind: ClassifyBindingKind(snapshot, loop.LimitValue),
+                StepKind: loop.StepKind,
+                StepValueExpressionText: loop.StepValue is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, loop.StepValue),
+                StepValueBindingKind: ClassifyBindingKind(snapshot, loop.StepValue),
+                Body: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, loop.Body),
+                TemplateEncodability: RazorVueTemplateEncodability.TemplateViaSetupBinding,
+                SideEffectClassification: CombineSideEffectClassifications(
+                    ClassifySideEffects(loop.InitialValue),
+                    ClassifySideEffects(loop.LimitValue),
+                    ClassifySideEffects(loop.StepValue)),
+                SourceOrigins: loop.Origins),
             _ => throw CreateUnsupportedCanonicalizationException(snapshot, node.GetType().Name, node.Origins)
         };
 
@@ -541,6 +558,18 @@ internal sealed class RazorVueCanonicalHModelFactory
             IInvocationOperation => RazorVueSideEffectClassification.RepeatedEvaluationRisk,
             _ => RazorVueSideEffectClassification.RepeatedEvaluationRisk
         };
+    }
+
+    private static RazorVueSideEffectClassification CombineSideEffectClassifications(
+        params RazorVueSideEffectClassification[] classifications)
+    {
+        if (classifications.Any(static item => item == RazorVueSideEffectClassification.RepeatedEvaluationRisk))
+            return RazorVueSideEffectClassification.RepeatedEvaluationRisk;
+
+        if (classifications.Any(static item => item == RazorVueSideEffectClassification.SingleEvaluationRequired))
+            return RazorVueSideEffectClassification.SingleEvaluationRequired;
+
+        return RazorVueSideEffectClassification.None;
     }
 
     private static bool IsCurrentParameterProperty(RazorVueSemanticSnapshot snapshot, IPropertyReferenceOperation property)

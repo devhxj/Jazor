@@ -311,6 +311,18 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                 builder.Append(indent).AppendLine("</template>");
                 return;
 
+            case RazorVueCanonicalForNode loop:
+                builder.Append(indent)
+                    .Append("<template v-for=\"")
+                    .Append(loop.VariableName)
+                    .Append(" in ")
+                    .Append(EscapeAttributeValue(BuildForIterableExpression(loop, bindingSiteMap, path, templateScopeDepth)))
+                    .AppendLine("\">");
+                for (var index = 0; index < loop.Body.Children.Length; index++)
+                    AppendTemplateNode(builder, loop.Body.Children[index], depth + 1, bindingSiteMap, path + "/body/child[" + index + "]", templateScopeDepth + 1);
+                builder.Append(indent).AppendLine("</template>");
+                return;
+
             default:
                 throw new NotSupportedException($"Unsupported canonical template node '{node.NodeKind}'.");
         }
@@ -501,6 +513,61 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
 
         return expressionText;
     }
+
+    private static string BuildForIterableExpression(
+        RazorVueCanonicalForNode loop,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string path,
+        int templateScopeDepth)
+    {
+        var initial = ResolveTemplateExpression(
+            loop.InitialValueExpressionText,
+            loop.TemplateEncodability,
+            bindingSiteMap,
+            path + "/for/init",
+            templateScopeDepth);
+        var limit = ResolveTemplateExpression(
+            loop.LimitValueExpressionText,
+            loop.TemplateEncodability,
+            bindingSiteMap,
+            path + "/for/limit",
+            templateScopeDepth);
+        var step = loop.StepValueExpressionText is null
+            ? null
+            : ResolveTemplateExpression(
+                loop.StepValueExpressionText,
+                loop.TemplateEncodability,
+                bindingSiteMap,
+                path + "/for/step",
+                templateScopeDepth);
+
+        return "__jazorVueForRange(" +
+               initial + ", " +
+               limit + ", " +
+               ToJavaScriptString(GetForConditionOperator(loop.ConditionKind)) + ", " +
+               ToJavaScriptString(GetForStepOperator(loop.StepKind)) + ", " +
+               (step ?? "null") + ")";
+    }
+
+    private static string GetForConditionOperator(RazorVueForConditionKind conditionKind)
+        => conditionKind switch
+        {
+            RazorVueForConditionKind.LessThan => "<",
+            RazorVueForConditionKind.LessThanOrEqual => "<=",
+            RazorVueForConditionKind.GreaterThan => ">",
+            RazorVueForConditionKind.GreaterThanOrEqual => ">=",
+            _ => throw new NotSupportedException($"Unsupported RazorVue for condition kind '{conditionKind}'.")
+        };
+
+    private static string GetForStepOperator(RazorVueForStepKind stepKind)
+        => stepKind switch
+        {
+            RazorVueForStepKind.Increment => "++",
+            RazorVueForStepKind.Decrement => "--",
+            RazorVueForStepKind.AddAssign => "+=",
+            RazorVueForStepKind.SubtractAssign => "-=",
+            _ => throw new NotSupportedException($"Unsupported RazorVue for step kind '{stepKind}'.")
+        };
 
     private static string GetPropsTypeLiteral(VueComponentDescriptor descriptor)
     {

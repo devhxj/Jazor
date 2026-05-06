@@ -14,6 +14,30 @@ namespace Jazor.RazorVue.RazorSdk;
 
 internal sealed class RazorVueRazorIrOperationResolver
 {
+    internal readonly record struct SourceRange(
+        string FilePath,
+        int Start,
+        int End)
+    {
+        public int Length => End - Start;
+    }
+
+    internal readonly record struct ResolvedConditional(
+        IConditionalOperation Operation,
+        SourceRange StatementRange,
+        SourceRange WhenTrueRange,
+        SourceRange? WhenFalseRange);
+
+    internal readonly record struct ResolvedForEach(
+        IForEachLoopOperation Operation,
+        SourceRange StatementRange,
+        SourceRange BodyRange);
+
+    internal readonly record struct ResolvedFor(
+        IForLoopOperation Operation,
+        SourceRange StatementRange,
+        SourceRange BodyRange);
+
     private readonly RazorVueSemanticSnapshot _snapshot;
     private readonly SyntaxNode _generatedRoot;
     private readonly SemanticModel _semanticModel;
@@ -72,6 +96,72 @@ internal sealed class RazorVueRazorIrOperationResolver
         return operation is not null;
     }
 
+    public bool TryResolveConditional(SourceSpan? sourceSpan, out ResolvedConditional conditional)
+    {
+        conditional = default;
+        if (!TryResolveBestIfStatement(sourceSpan, out var syntax))
+            return false;
+
+        if (syntax is null || GetBestOperation(syntax) is not IConditionalOperation operation)
+            return false;
+
+        if (!TryMapGeneratedSpanToSourceRange(syntax.Span, out var statementRange) ||
+            !TryMapGeneratedSpanToSourceRange(syntax.Statement.Span, out var whenTrueRange))
+        {
+            return false;
+        }
+
+        SourceRange? whenFalseRange = null;
+        if (syntax.Else is not null)
+        {
+            if (!TryMapGeneratedSpanToSourceRange(syntax.Else.Statement.Span, out var resolvedWhenFalseRange))
+                return false;
+
+            whenFalseRange = resolvedWhenFalseRange;
+        }
+
+        conditional = new ResolvedConditional(operation, statementRange, whenTrueRange, whenFalseRange);
+        return true;
+    }
+
+    public bool TryResolveForEach(SourceSpan? sourceSpan, out ResolvedForEach loop)
+    {
+        loop = default;
+        if (!TryResolveStatement(sourceSpan, out ForEachStatementSyntax? syntax))
+            return false;
+
+        if (syntax is null || GetBestOperation(syntax) is not IForEachLoopOperation operation)
+            return false;
+
+        if (!TryMapGeneratedSpanToSourceRange(syntax.Span, out var statementRange) ||
+            !TryMapGeneratedSpanToSourceRange(syntax.Statement.Span, out var bodyRange))
+        {
+            return false;
+        }
+
+        loop = new ResolvedForEach(operation, statementRange, bodyRange);
+        return true;
+    }
+
+    public bool TryResolveFor(SourceSpan? sourceSpan, out ResolvedFor loop)
+    {
+        loop = default;
+        if (!TryResolveStatement(sourceSpan, out ForStatementSyntax? syntax))
+            return false;
+
+        if (syntax is null || GetBestOperation(syntax) is not IForLoopOperation operation)
+            return false;
+
+        if (!TryMapGeneratedSpanToSourceRange(syntax.Span, out var statementRange) ||
+            !TryMapGeneratedSpanToSourceRange(syntax.Statement.Span, out var bodyRange))
+        {
+            return false;
+        }
+
+        loop = new ResolvedFor(operation, statementRange, bodyRange);
+        return true;
+    }
+
     private static MethodDeclarationSyntax GetBuildRenderTreeSyntax(RazorVueSemanticSnapshot snapshot)
     {
         if (snapshot.BuildRenderTreeMethod is null)
@@ -124,6 +214,41 @@ internal sealed class RazorVueRazorIrOperationResolver
         return true;
     }
 
+    private bool TryMapGeneratedSpanToSourceRange(TextSpan generatedSpan, out SourceRange sourceRange)
+    {
+        sourceRange = default;
+        if (_sourceMappings.IsDefaultOrEmpty)
+            return false;
+
+        var mappings = _sourceMappings
+            .Where(mapping => Overlaps(mapping.GeneratedSpan.AbsoluteIndex, mapping.GeneratedSpan.Length, generatedSpan.Start, generatedSpan.Length) ||
+                              Contains(mapping.GeneratedSpan.AbsoluteIndex, mapping.GeneratedSpan.Length, generatedSpan.Start, generatedSpan.Length) ||
+                              Contains(generatedSpan.Start, generatedSpan.Length, mapping.GeneratedSpan.AbsoluteIndex, mapping.GeneratedSpan.Length))
+            .ToArray();
+        if (mappings.Length == 0)
+            return false;
+
+        var originalFilePath = mappings
+            .Select(static mapping => mapping.OriginalSpan.FilePath)
+            .FirstOrDefault(static path => !string.IsNullOrWhiteSpace(path));
+        if (string.IsNullOrWhiteSpace(originalFilePath))
+            return false;
+
+        if (mappings.Any(mapping => !PathsEqual(mapping.OriginalSpan.FilePath, originalFilePath)))
+            return false;
+
+        var originalStart = mappings.Min(static mapping => mapping.OriginalSpan.AbsoluteIndex);
+        var originalEnd = mappings.Max(static mapping => mapping.OriginalSpan.AbsoluteIndex + mapping.OriginalSpan.Length);
+        if (originalStart < 0 || originalEnd <= originalStart)
+            return false;
+
+        sourceRange = new SourceRange(
+            NormalizeComparablePath(originalFilePath),
+            originalStart,
+            originalEnd);
+        return true;
+    }
+
     private SyntaxNode? FindBestSyntaxNode(TextSpan generatedSpan)
     {
         if (_generatedText.Length == 0)
@@ -169,6 +294,50 @@ internal sealed class RazorVueRazorIrOperationResolver
         return null;
     }
 
+    private bool TryResolveStatement<TStatementSyntax>(SourceSpan? sourceSpan, out TStatementSyntax? syntax)
+        where TStatementSyntax : SyntaxNode
+    {
+        syntax = null;
+        if (sourceSpan is null)
+            return false;
+
+        if (!TryMapToGeneratedSpan(sourceSpan.Value, out var generatedSpan))
+            return false;
+
+        var node = FindBestSyntaxNode(generatedSpan);
+        if (node is null)
+            return false;
+
+        syntax = node.AncestorsAndSelf().OfType<TStatementSyntax>().FirstOrDefault();
+        return syntax is not null;
+    }
+
+    private bool TryResolveBestIfStatement(SourceSpan? sourceSpan, out IfStatementSyntax? syntax)
+    {
+        syntax = null;
+        if (sourceSpan is null)
+            return false;
+
+        if (!TryMapToGeneratedSpan(sourceSpan.Value, out var generatedSpan))
+            return false;
+
+        var candidates = _generatedRoot
+            .DescendantNodes()
+            .OfType<IfStatementSyntax>()
+            .Where(candidate => Contains(candidate.FullSpan, generatedSpan) ||
+                                Contains(candidate.Span, generatedSpan) ||
+                                Overlaps(candidate.FullSpan, generatedSpan) ||
+                                Overlaps(candidate.Span, generatedSpan))
+            .OrderBy(static candidate => candidate.Span.Length)
+            .ThenBy(candidate => Math.Abs(candidate.IfKeyword.SpanStart - generatedSpan.Start))
+            .ToArray();
+        if (candidates.Length == 0)
+            return false;
+
+        syntax = candidates[0];
+        return true;
+    }
+
     private RazorVueCompilationIssueException CreateUnsupportedMappingException(SourceSpan? sourceSpan, string detail)
     {
         var issue = new RazorVueCompilationIssue(
@@ -198,6 +367,9 @@ internal sealed class RazorVueRazorIrOperationResolver
 
     private static bool Contains(TextSpan outer, TextSpan inner)
         => outer.Start <= inner.Start && outer.End >= inner.End;
+
+    private static bool Overlaps(TextSpan left, TextSpan right)
+        => left.Start < right.End && right.Start < left.End;
 
     private static bool PathsEqual(string? left, string? right)
         => PathComparer.Equals(NormalizeComparablePath(left), NormalizeComparablePath(right));

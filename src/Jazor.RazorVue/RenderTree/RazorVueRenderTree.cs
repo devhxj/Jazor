@@ -53,8 +53,33 @@ internal sealed record RazorVueForEachNode(
     RazorVueRenderFragment Body,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal sealed record RazorVueForNode(
+    string VariableName,
+    IOperation InitialValue,
+    RazorVueForConditionKind ConditionKind,
+    IOperation LimitValue,
+    RazorVueForStepKind StepKind,
+    IOperation? StepValue,
+    RazorVueRenderFragment Body,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
 internal sealed record RazorVueAttributeNode(
     string Name,
     IOperation? Value,
     ImmutableArray<RazorVueSourceOrigin> Origins);
 
+internal enum RazorVueForConditionKind
+{
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual
+}
+
+internal enum RazorVueForStepKind
+{
+    Increment,
+    Decrement,
+    AddAssign,
+    SubtractAssign
+}

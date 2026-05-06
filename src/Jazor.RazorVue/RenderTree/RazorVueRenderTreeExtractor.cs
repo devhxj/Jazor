@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Jazor.RazorVue.Artifacts;
+using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -107,6 +108,9 @@ internal sealed class RazorVueRenderTreeExtractor
                         foreachLoop.Collection,
                         ParseNestedBranch(foreachLoop.Body),
                         CreateOrigins(current, RazorVueOriginKind.Template)));
+                    break;
+                case IForLoopOperation forLoop:
+                    AddNode(CreateForNode(forLoop));
                     break;
                 case IBlockOperation block:
                     foreach (var child in block.Operations)
@@ -300,6 +304,24 @@ internal sealed class RazorVueRenderTreeExtractor
             };
         }
 
+        private RazorVueForNode CreateForNode(IForLoopOperation loop)
+        {
+            if (!TryAnalyzeForLoop(loop, out var analyzedLoop))
+            {
+                throw CreateUnsupportedForLoopException(loop);
+            }
+
+            return new RazorVueForNode(
+                analyzedLoop.VariableName,
+                analyzedLoop.InitialValue,
+                analyzedLoop.ConditionKind,
+                analyzedLoop.LimitValue,
+                analyzedLoop.StepKind,
+                analyzedLoop.StepValue,
+                ParseNestedBranch(loop.Body),
+                CreateOrigins(loop, RazorVueOriginKind.Template));
+        }
+
         private void AddNode(RazorVueRenderNode node)
         {
             if (_openNodes.Count > 0)
@@ -413,6 +435,159 @@ internal sealed class RazorVueRenderTreeExtractor
                 ? ImmutableArray<RazorVueSourceOrigin>.Empty
                 : ImmutableArray.Create(RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), originKind));
 
+        private bool TryAnalyzeForLoop(IForLoopOperation operation, out AnalyzedForLoop analyzedLoop)
+        {
+            analyzedLoop = default;
+            if (operation.Before.Length != 1 ||
+                operation.Before[0] is not IVariableDeclarationGroupOperation declarationGroup ||
+                declarationGroup.Declarations.Length != 1)
+            {
+                return false;
+            }
+
+            var declaration = declarationGroup.Declarations[0];
+            if (declaration.Declarators.Length != 1)
+                return false;
+
+            var declarator = declaration.Declarators[0];
+            if (declarator.Symbol is null ||
+                declarator.Initializer?.Value is null)
+            {
+                return false;
+            }
+
+            var condition = Unwrap(operation.Condition);
+            if (condition is not IBinaryOperation binaryCondition ||
+                !TryMapForConditionKind(binaryCondition.OperatorKind, out var conditionKind))
+            {
+                return false;
+            }
+
+            if (!TryMatchLoopVariable(binaryCondition.LeftOperand, declarator.Symbol) &&
+                !TryMatchLoopVariable(binaryCondition.RightOperand, declarator.Symbol))
+            {
+                return false;
+            }
+
+            var limitOperand = binaryCondition.RightOperand;
+            if (TryMatchLoopVariable(binaryCondition.RightOperand, declarator.Symbol))
+            {
+                conditionKind = InvertConditionKind(conditionKind);
+                limitOperand = binaryCondition.LeftOperand;
+            }
+
+            if (operation.AtLoopBottom.Length != 1 ||
+                !TryAnalyzeForStep(Unwrap(operation.AtLoopBottom[0]), declarator.Symbol, out var stepKind, out var stepValue))
+            {
+                return false;
+            }
+
+            analyzedLoop = new AnalyzedForLoop(
+                declarator.Symbol.Name,
+                Unwrap(declarator.Initializer.Value) ?? declarator.Initializer.Value,
+                conditionKind,
+                Unwrap(limitOperand) ?? limitOperand,
+                stepKind,
+                stepValue);
+            return true;
+        }
+
+        private static bool TryAnalyzeForStep(
+            IOperation? operation,
+            ILocalSymbol loopVariable,
+            out RazorVueForStepKind stepKind,
+            out IOperation? stepValue)
+        {
+            stepKind = default;
+            stepValue = null;
+            if (operation is null)
+                return false;
+
+            if (operation is IExpressionStatementOperation expressionStatement)
+                operation = Unwrap(expressionStatement.Operation);
+
+            switch (operation)
+            {
+                case IIncrementOrDecrementOperation incrementOrDecrement
+                    when TryMatchLoopVariable(incrementOrDecrement.Target, loopVariable):
+                    stepKind = incrementOrDecrement.Kind == OperationKind.Increment
+                        ? RazorVueForStepKind.Increment
+                        : incrementOrDecrement.Kind == OperationKind.Decrement
+                            ? RazorVueForStepKind.Decrement
+                            : default;
+                    return incrementOrDecrement.Kind is OperationKind.Increment or OperationKind.Decrement;
+
+                case ICompoundAssignmentOperation compoundAssignment
+                    when TryMatchLoopVariable(compoundAssignment.Target, loopVariable):
+                    if (compoundAssignment.OperatorKind == BinaryOperatorKind.Add)
+                    {
+                        stepKind = RazorVueForStepKind.AddAssign;
+                        stepValue = Unwrap(compoundAssignment.Value) ?? compoundAssignment.Value;
+                        return true;
+                    }
+
+                    if (compoundAssignment.OperatorKind == BinaryOperatorKind.Subtract)
+                    {
+                        stepKind = RazorVueForStepKind.SubtractAssign;
+                        stepValue = Unwrap(compoundAssignment.Value) ?? compoundAssignment.Value;
+                        return true;
+                    }
+
+                    return false;
+            }
+
+            return false;
+        }
+
+        private static bool TryMapForConditionKind(
+            BinaryOperatorKind operatorKind,
+            out RazorVueForConditionKind conditionKind)
+        {
+            conditionKind = operatorKind switch
+            {
+                BinaryOperatorKind.LessThan => RazorVueForConditionKind.LessThan,
+                BinaryOperatorKind.LessThanOrEqual => RazorVueForConditionKind.LessThanOrEqual,
+                BinaryOperatorKind.GreaterThan => RazorVueForConditionKind.GreaterThan,
+                BinaryOperatorKind.GreaterThanOrEqual => RazorVueForConditionKind.GreaterThanOrEqual,
+                _ => default
+            };
+
+            return operatorKind is BinaryOperatorKind.LessThan or
+                BinaryOperatorKind.LessThanOrEqual or
+                BinaryOperatorKind.GreaterThan or
+                BinaryOperatorKind.GreaterThanOrEqual;
+        }
+
+        private static RazorVueForConditionKind InvertConditionKind(RazorVueForConditionKind conditionKind)
+            => conditionKind switch
+            {
+                RazorVueForConditionKind.LessThan => RazorVueForConditionKind.GreaterThan,
+                RazorVueForConditionKind.LessThanOrEqual => RazorVueForConditionKind.GreaterThanOrEqual,
+                RazorVueForConditionKind.GreaterThan => RazorVueForConditionKind.LessThan,
+                RazorVueForConditionKind.GreaterThanOrEqual => RazorVueForConditionKind.LessThanOrEqual,
+                _ => throw new NotSupportedException($"Unsupported RazorVue for condition kind '{conditionKind}'.")
+            };
+
+        private static bool TryMatchLoopVariable(IOperation? operation, ILocalSymbol loopVariable)
+        {
+            var current = Unwrap(operation);
+            return current is ILocalReferenceOperation localReference &&
+                   SymbolEqualityComparer.Default.Equals(localReference.Local, loopVariable);
+        }
+
+        private RazorVueCompilationIssueException CreateUnsupportedForLoopException(IForLoopOperation loop)
+        {
+            var issue = new RazorVueCompilationIssue(
+                RazorVueIssueCode.CanonicalizationFailed,
+                RazorVueIssueSeverity.Error,
+                $"RazorVue render currently only supports count-style for-loops with a single declared loop variable, direct comparison condition, and ++/--/+=/-= iterator in component '{_snapshot.Descriptor.FullName}'.",
+                ImmutableArray<string>.Empty);
+            return new RazorVueCompilationIssueException(
+                issue,
+                _snapshot.Descriptor.FullName,
+                loop.Syntax is null ? null : RazorVueSourceOrigin.FromLocation(loop.Syntax.GetLocation(), RazorVueOriginKind.Template));
+        }
+
         private static string ToLowerCamelCase(string value)
         {
             if (string.IsNullOrEmpty(value))
@@ -426,6 +601,14 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return char.ToLowerInvariant(value[0]) + value.Substring(1);
         }
+
+        private readonly record struct AnalyzedForLoop(
+            string VariableName,
+            IOperation InitialValue,
+            RazorVueForConditionKind ConditionKind,
+            IOperation LimitValue,
+            RazorVueForStepKind StepKind,
+            IOperation? StepValue);
     }
 
     private abstract class OpenNodeBuilder
