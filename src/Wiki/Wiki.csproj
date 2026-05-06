@@ -25,6 +25,7 @@
       <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>

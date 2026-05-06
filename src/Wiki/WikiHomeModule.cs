@@ -68,7 +68,7 @@ public static partial class WikiHomeModule
     private static int CodeBlockFeedbackResetTimerId;
     private static bool ActiveSectionSyncQueued;
 
-    public static IVueComponent Component
+    public static ECMAScript.VueContract.IVueComponent Component
         => DefineComponent(new VueComponentOptions
         {
             Name = "WikiHome",
