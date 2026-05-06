@@ -394,6 +394,12 @@ internal static class WhiteListLookup
 			!string.Equals(normalizedStaticDisplay, displayString, StringComparison.Ordinal))
 			yield return normalizedStaticDisplay;
 
+		foreach (var normalizedExternDisplay in EnumerateExternDisplayVariants(displayString))
+		{
+			if (!string.Equals(normalizedExternDisplay, displayString, StringComparison.Ordinal))
+				yield return normalizedExternDisplay;
+		}
+
 		const string virtualPrefix = "virtual ";
 		const string overridePrefix = "override ";
 		const string abstractPrefix = "abstract ";
@@ -459,6 +465,33 @@ internal static class WhiteListLookup
 				return "static " + text.Substring(staticSealedPrefix.Length);
 
 			return null;
+		}
+
+		static IEnumerable<string> EnumerateExternDisplayVariants(string text)
+		{
+			const string staticExternPrefix = "static extern ";
+			const string staticPrefix = "static ";
+			const string externPrefix = "extern ";
+
+			if (text.StartsWith(staticExternPrefix, StringComparison.Ordinal))
+			{
+				var rest = text.Substring(staticExternPrefix.Length);
+				yield return staticPrefix + rest;
+				yield return externPrefix + rest;
+				yield return rest;
+				yield break;
+			}
+
+			if (text.StartsWith(externPrefix, StringComparison.Ordinal))
+			{
+				yield return text.Substring(externPrefix.Length);
+				yield break;
+			}
+
+			if (text.StartsWith(staticPrefix, StringComparison.Ordinal))
+			{
+				yield return staticExternPrefix + text.Substring(staticPrefix.Length);
+			}
 		}
 	}
 }

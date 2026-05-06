@@ -153,9 +153,9 @@ public static class SingleModule
 
 	/// <summary>
 	/// C#: float.IsFinite(f)
-	/// JS: isFinite(f)
+	/// JS: Number.isFinite(f)
 	/// </summary>
-	[Jazor(Op.Alias, "static float.IsFinite(float)", "isFinite")]
+	[Jazor(Op.Inline, "static float.IsFinite(float)", "Number.isFinite(__arg1)")]
 	public extern static bool _00118f159d09918d(Number f);
 
 	/// <summary>
@@ -167,9 +167,9 @@ public static class SingleModule
 
 	/// <summary>
 	/// C#: float.IsNaN(f)
-	/// JS: isNaN(f)
+	/// JS: Number.isNaN(f)
 	/// </summary>
-	[Jazor(Op.Alias, "static float.IsNaN(float)", "isNaN")]
+	[Jazor(Op.Inline, "static float.IsNaN(float)", "Number.isNaN(__arg1)")]
 	public extern static bool _8c3d7a2e3b690c9a(Number f);
 
 	/// <summary>

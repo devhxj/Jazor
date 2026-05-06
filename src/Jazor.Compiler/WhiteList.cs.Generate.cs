@@ -840,9 +840,9 @@ internal static partial class WhiteList
 		members["static double.E"] = new(Op.Inline, "Math.E");
 		members["static double.Pi"] = new(Op.Inline, "Math.PI");
 		members["static double.Tau"] = new(Op.Inline, "(Math.PI * 2)");
-		members["static double.IsFinite(double)"] = new(Op.Import, "_aed2927097617729", "System/DoubleModule.js");
+		members["static double.IsFinite(double)"] = new(Op.Inline, "Number.isFinite(__arg1)");
 		members["static double.IsInfinity(double)"] = new(Op.Inline, "(__arg1 === Infinity || __arg1 === -Infinity)");
-		members["static double.IsNaN(double)"] = new(Op.Import, "_24e14b276e0c7e30", "System/DoubleModule.js");
+		members["static double.IsNaN(double)"] = new(Op.Inline, "Number.isNaN(__arg1)");
 		members["static double.IsNegative(double)"] = new(Op.Inline, "(Object.is(__arg1, -0) || __arg1 < 0)");
 		members["static double.IsNegativeInfinity(double)"] = new(Op.Inline, "(__arg1 === -Infinity)");
 		members["static double.IsNormal(double)"] = new(Op.Inline, "(isFinite(__arg1) && __arg1 !== 0 && Math.abs(__arg1) >= 2.2250738585072014e-308)");
@@ -1383,9 +1383,9 @@ internal static partial class WhiteList
 		members["static float.E"] = new(Op.Inline, "Math.E");
 		members["static float.Pi"] = new(Op.Inline, "Math.PI");
 		members["static float.Tau"] = new(Op.Inline, "(Math.PI * 2)");
-		members["static float.IsFinite(float)"] = new(Op.Alias, "isFinite");
+		members["static float.IsFinite(float)"] = new(Op.Inline, "Number.isFinite(__arg1)");
 		members["static float.IsInfinity(float)"] = new(Op.Inline, "(__arg1 === Infinity || __arg1 === -Infinity)");
-		members["static float.IsNaN(float)"] = new(Op.Alias, "isNaN");
+		members["static float.IsNaN(float)"] = new(Op.Inline, "Number.isNaN(__arg1)");
 		members["static float.IsNegative(float)"] = new(Op.Inline, "(Object.is(__arg1, -0) || __arg1 < 0)");
 		members["static float.IsNegativeInfinity(float)"] = new(Op.Inline, "(__arg1 === -Infinity)");
 		members["static float.IsNormal(float)"] = new(Op.Inline, "(isFinite(__arg1) && __arg1 !== 0 && Math.abs(__arg1) >= 1.17549435e-38)");

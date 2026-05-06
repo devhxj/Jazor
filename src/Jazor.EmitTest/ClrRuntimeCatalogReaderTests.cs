@@ -182,8 +182,8 @@ public sealed class ClrRuntimeCatalogReaderTests
         Assert.IsFalse(comparerModule.Content.Contains("let rightText = y.toString();", StringComparison.Ordinal), comparerModule.Content);
 
         var doubleModule = modules.Single(module => string.Equals(module.RelativePath, "System/DoubleModule.js", StringComparison.OrdinalIgnoreCase));
-        StringAssert.Contains(doubleModule.Content, "export function _aed2927097617729");
-        StringAssert.Contains(doubleModule.Content, "export function _24e14b276e0c7e30");
+        Assert.IsFalse(doubleModule.Content.Contains("export function _aed2927097617729", StringComparison.Ordinal), doubleModule.Content);
+        Assert.IsFalse(doubleModule.Content.Contains("export function _24e14b276e0c7e30", StringComparison.Ordinal), doubleModule.Content);
         Assert.IsFalse(doubleModule.Content.Contains("export const DoubleModule = {", StringComparison.Ordinal), doubleModule.Content);
 
         var int64Module = modules.Single(module => string.Equals(module.RelativePath, "System/Int64Module.js", StringComparison.OrdinalIgnoreCase));
