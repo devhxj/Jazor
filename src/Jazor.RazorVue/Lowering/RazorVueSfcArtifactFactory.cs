@@ -441,6 +441,8 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.Append("const emit = defineEmits<");
         builder.Append(GetEmitTypeLiteral(semantic.Descriptor));
         builder.AppendLine(">();");
+        if (RazorVueForLoopLoweringSupport.ContainsForLoop(semantic.TemplateBlock.Template))
+            RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, string.Empty);
 
         var expressionEmitter = new RazorVueExpressionEmitter(snapshot);
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecycleLowering(builder, snapshot, string.Empty);
@@ -544,30 +546,10 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         return "__jazorVueForRange(" +
                initial + ", " +
                limit + ", " +
-               ToJavaScriptString(GetForConditionOperator(loop.ConditionKind)) + ", " +
-               ToJavaScriptString(GetForStepOperator(loop.StepKind)) + ", " +
+               ToJavaScriptString(RazorVueForLoopLoweringSupport.GetForConditionOperator(loop.ConditionKind)) + ", " +
+               ToJavaScriptString(RazorVueForLoopLoweringSupport.GetForStepOperator(loop.StepKind)) + ", " +
                (step ?? "null") + ")";
     }
-
-    private static string GetForConditionOperator(RazorVueForConditionKind conditionKind)
-        => conditionKind switch
-        {
-            RazorVueForConditionKind.LessThan => "<",
-            RazorVueForConditionKind.LessThanOrEqual => "<=",
-            RazorVueForConditionKind.GreaterThan => ">",
-            RazorVueForConditionKind.GreaterThanOrEqual => ">=",
-            _ => throw new NotSupportedException($"Unsupported RazorVue for condition kind '{conditionKind}'.")
-        };
-
-    private static string GetForStepOperator(RazorVueForStepKind stepKind)
-        => stepKind switch
-        {
-            RazorVueForStepKind.Increment => "++",
-            RazorVueForStepKind.Decrement => "--",
-            RazorVueForStepKind.AddAssign => "+=",
-            RazorVueForStepKind.SubtractAssign => "-=",
-            _ => throw new NotSupportedException($"Unsupported RazorVue for step kind '{stepKind}'.")
-        };
 
     private static string GetPropsTypeLiteral(VueComponentDescriptor descriptor)
     {

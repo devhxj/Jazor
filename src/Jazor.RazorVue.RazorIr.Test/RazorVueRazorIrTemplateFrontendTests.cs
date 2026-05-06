@@ -707,6 +707,82 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForLoop_WithAddAssignStep_CreatesCountStyleForNodeWithStepValue()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @for (var i = Start; i <= Count; i += Step)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ForLoop.AddAssign.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var loop = renderTree.Children[0] as RazorVueForNode;
+        Assert.IsNotNull(loop);
+        Assert.AreEqual("i", loop.VariableName);
+        Assert.AreEqual(RazorVueForConditionKind.LessThanOrEqual, loop.ConditionKind);
+        Assert.AreEqual(RazorVueForStepKind.AddAssign, loop.StepKind);
+        Assert.AreEqual("Start", loop.InitialValue.Syntax.ToString());
+        Assert.AreEqual("Count", loop.LimitValue.Syntax.ToString());
+        Assert.IsNotNull(loop.StepValue);
+        Assert.AreEqual("Step", loop.StepValue.Syntax.ToString());
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForLoop_WithStaticallyZeroStep_ThrowsExplicitFailure()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            @for (var i = 0; i < 3; i += 0)
+            {
+                <p>@i</p>
+            }
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ForLoop.ZeroStep.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => frontend.CreateRenderTree(context, snapshot));
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Message, "step becomes zero");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForLoop_WithMultipleIteratorExpressions_ThrowsExplicitFailure()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -738,7 +814,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
 
         var frontend = new RazorVueRazorIrTemplateFrontend();
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => frontend.CreateRenderTree(context, snapshot));
-        StringAssert.Contains(exception.Message, "single for-loop iterator expression");
+        StringAssert.Contains(exception.Message, "only supports count-style for-loops");
     }
 
 }

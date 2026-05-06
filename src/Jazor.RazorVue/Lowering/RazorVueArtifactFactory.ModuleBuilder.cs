@@ -28,8 +28,8 @@ internal sealed partial class RazorVueArtifactFactory
         builder.Append("  props: ").Append(FormatStringArray(descriptor.Props.Select(static prop => prop.Name))).AppendLine(",");
         builder.Append("  emits: ").Append(FormatStringArray(descriptor.Emits.Select(static emit => emit.Name))).AppendLine(",");
         builder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
-        if (ContainsForLoop(renderTree))
-            AppendForRangeHelper(builder, "    ");
+        if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
+            RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, "    ");
         AppendLifecycleLowering(builder, snapshot);
         AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
         builder.Append("    return () => ").Append(renderExpression).AppendLine(";");
@@ -105,54 +105,4 @@ internal sealed partial class RazorVueArtifactFactory
 
     private static string FormatStringArray(IEnumerable<string> values)
         => "[" + string.Join(", ", values.Select(ToJavaScriptString)) + "]";
-
-    private static bool ContainsForLoop(RazorVueRenderFragment fragment)
-    {
-        foreach (var child in fragment.Children)
-        {
-            switch (child)
-            {
-                case RazorVueForNode:
-                    return true;
-                case RazorVueElementNode element when ContainsForLoop(element.Children):
-                    return true;
-                case RazorVueComponentNode component when ContainsForLoop(component.Children):
-                    return true;
-                case RazorVueConditionalNode conditional when ContainsForLoop(conditional.WhenTrue) || ContainsForLoop(conditional.WhenFalse):
-                    return true;
-                case RazorVueForEachNode loop when ContainsForLoop(loop.Body):
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static void AppendForRangeHelper(StringBuilder builder, string indent)
-    {
-        builder.Append(indent).AppendLine("const __jazorVueForRange = (start, limit, conditionOperator, stepOperator, stepValue) => {");
-        builder.Append(indent).AppendLine("  const values = [];");
-        builder.Append(indent).AppendLine("  const resolvedStep = stepValue ?? 1;");
-        builder.Append(indent).AppendLine("  for (let current = start; ; ) {");
-        builder.Append(indent).AppendLine("    const shouldContinue = conditionOperator === \"<\" ? current < limit");
-        builder.Append(indent).AppendLine("      : conditionOperator === \"<=\" ? current <= limit");
-        builder.Append(indent).AppendLine("      : conditionOperator === \">\" ? current > limit");
-        builder.Append(indent).AppendLine("      : current >= limit;");
-        builder.Append(indent).AppendLine("    if (!shouldContinue) {");
-        builder.Append(indent).AppendLine("      break;");
-        builder.Append(indent).AppendLine("    }");
-        builder.Append(indent).AppendLine("    values.push(current);");
-        builder.Append(indent).AppendLine("    if (stepOperator === \"++\") {");
-        builder.Append(indent).AppendLine("      current++;");
-        builder.Append(indent).AppendLine("      continue;");
-        builder.Append(indent).AppendLine("    }");
-        builder.Append(indent).AppendLine("    if (stepOperator === \"--\") {");
-        builder.Append(indent).AppendLine("      current--;");
-        builder.Append(indent).AppendLine("      continue;");
-        builder.Append(indent).AppendLine("    }");
-        builder.Append(indent).AppendLine("    current = stepOperator === \"+=\" ? current + resolvedStep : current - resolvedStep;");
-        builder.Append(indent).AppendLine("  }");
-        builder.Append(indent).AppendLine("  return values;");
-        builder.Append(indent).AppendLine("};");
-    }
 }

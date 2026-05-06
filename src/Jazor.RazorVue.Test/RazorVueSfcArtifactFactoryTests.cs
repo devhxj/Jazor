@@ -338,8 +338,67 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(__jazorVueSfcBinding0, __jazorVueSfcBinding1, &quot;&lt;&quot;, &quot;++&quot;, null)\">");
         StringAssert.Contains(artifact.TemplateText, "{{ i }}");
         StringAssert.Contains(artifact.ScriptSetupText, "import { computed } from \"vue\";");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueForRange = (start, limit, conditionOperator, stepOperator, stepValue) => {");
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => 0);");
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.count);");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersCountStyleForLoopWithExplicitStep_IntoTemplateRangeHelperAndSetupBindings()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Start { get; set; }
+
+                    [Parameter]
+                    public int Count { get; set; }
+
+                    [Parameter]
+                    public int Step { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        for (var i = Start; i <= Count; i += Step)
+                        {
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, i);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(__jazorVueSfcBinding0, __jazorVueSfcBinding1, &quot;&lt;=&quot;, &quot;+=&quot;, __jazorVueSfcBinding2)\">");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => props.start);");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.count);");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding2 = computed(() => props.step);");
+        StringAssert.Contains(artifact.ScriptSetupText, "const stepDelta = stepOperator === \"++\" ? 1");
+        StringAssert.Contains(artifact.ScriptSetupText, "requires a finite non-zero effective step value");
     }
 
     [TestMethod]
