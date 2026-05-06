@@ -1,3 +1,5 @@
+[English](README.md) | **中文**
+
 <div align="center">
 
 ![今日诗词](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)

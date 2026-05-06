@@ -1,3 +1,5 @@
+**English** | [中文](README_CN.md)
+
 <div align="center">
 
 ![Today's Verse](https://v2.jinrishici.com/one.svg?font-size=20&spacing=2&color=Chocolate)
