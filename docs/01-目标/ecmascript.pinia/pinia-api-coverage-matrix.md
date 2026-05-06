@@ -16,7 +16,7 @@
 | Store definition | callable `useStore(...)` result | `StoreDefinition<TStore>.Use(...)` | 已覆盖 | 用显式方法替代 JS 函数对象调用面 |
 | Store runtime | `$id` / `_customProperties` | `StoreProperties` | 已覆盖 | `_customProperties` 保留为 devtools/plugin 扩展面 |
 | Store runtime | `$state` | `Store<TState>.State` | 已覆盖 | 强类型状态投影 |
-| Store runtime | `$patch(object)` / `$patch(fn)` | `Patch(TState)` / `Patch(PiniaStatePatchCallback<TState>)` | 已覆盖 | function patch 保持同步 callback 形态 |
+| Store runtime | `$patch(object)` / `$patch(fn)` | `Patch(PiniaStatePatch<TState>)` / `Patch(PiniaStatePatchCallback<TState>)` | 已覆盖 | object patch 改为显式 patch contract，不再误建模为完整状态对象 |
 | Store runtime | `$reset()` | `Reset()` | 已覆盖 | option store 主路径 |
 | Store runtime | `$subscribe(...)` | `Subscribe(...)` + `SubscribeOptions` + mutation subtype family | 已覆盖 | `flush` / `detached` 与 `Direct` / `PatchFunction` / `PatchObject` mutation 形状已建模 |
 | Store runtime | `$onAction(...)` | `OnAction(...)` / `OnAction<TStore>(...)` + action context | 已覆盖 | 支持 untyped 与 typed listener proxy，参数/结果使用 `PiniaValue` 桥接 |
@@ -33,7 +33,7 @@
 | Plugin surface | `pinia.use(...)` / `PiniaPluginContext` | `PiniaInstance.Use(...)` / `PiniaPluginContext` / `PiniaPluginContext<TStore, TOptions>` / `PiniaPluginContext<TStore, TOptions, ...>` / `DefineStoreOptionsInPlugin` | 已覆盖 | 支持 untyped、typed、以及 chained-plugin projected context/options 投影 |
 | Plugin surface | plugin-added custom properties / custom state typed propagation | `ProjectStore(...)` / `ProjectStoreDefinition(...)` + `ProjectedStore<...>` / `ProjectedStoreDefinition<...>` | 已覆盖 | 使用显式 identity 投影承接 store / store.$state 的 plugin 扩展，不做 TS module augmentation 等价物 |
 | TS utility types | `_Spread` / `_MapStateReturn` / `MapStoresCustomization` 等 | 无 | 暂不覆盖 | C# 不追求镜像 Pinia 的全部类型级工具 |
-| Testing package | `@pinia/testing` / `createTestingPinia()` | 无 | 暂不覆盖 | 当前只做 `pinia` 主包，不引入测试包子线 |
+| Testing package | `@pinia/testing` / `createTestingPinia()` | `ECMAScript.Pinia.Testing` / `PiniaTesting.CreateTestingPinia(...)` / `TestingOptions` | 已覆盖 | 作为独立外部库与独立测试工程落地，不混入 `ECMAScript.Pinia` 主包 |
 
 ## 关键差异
 
@@ -92,8 +92,8 @@ Pinia 官方 subscription callback 不是一个单薄对象，而是：
 - `PatchFunction`
 - `PatchObject`
 
-其中 `payload` 只稳定存在于 object-patch 形状上，`events` 也会因 mutation kind 呈现单事件或事件数组。  
-`ECMAScript.Pinia` 现在按这个分层建模，而不是继续把所有字段塞回一个“总有 payload”的简化类型。
+其中 `payload` 只稳定存在于 object-patch 形状上，且其类型应为 deep-partial patch payload，`events` 也会因 mutation kind 呈现单事件或事件数组。  
+`ECMAScript.Pinia` 现在按这个分层建模，并把 object-patch payload 收口为 `PiniaStatePatch<TState>`，而不是继续把所有字段塞回一个“总有完整 state payload”的简化类型。
 
 ### JS 函数对象 vs C# 可发现性
 
@@ -119,8 +119,8 @@ Pinia 把 `defineStore()` 返回值设计为函数对象。
 
 剩余缺口主要是：
 
-- plugin 投影模式的示例化与推荐 authoring 模式
+- plugin 投影模式的进一步 sample / cookbook 化
 - TS-only utility 家族
-- `@pinia/testing`
+- `ECMAScript.Pinia.Testing` 的更长尾 options / sample / 回归扩展
 
-这些缺口目前都属于“明确未纳入设计边界”，不是偶然遗漏。
+这些缺口目前都属于“已建立主线后继续扩展的增量项”，不是偶然遗漏。

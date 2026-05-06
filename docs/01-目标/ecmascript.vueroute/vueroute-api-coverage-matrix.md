@@ -14,7 +14,7 @@
 | History | `createMemoryHistory()` | `CreateMemoryHistory()` | 已覆盖 | 支持无参和 `basePath` |
 | Composition | `useRouter()` | `UseRouter()` | 已覆盖 | 返回 `Router` |
 | Composition | `useRoute()` | `UseRoute()` | 已覆盖 | 返回 `RouteLocationNormalizedLoaded` |
-| Composition | `useLink()` | `UseLink(...)` | 已覆盖 | 返回 `UseLinkResult` |
+| Composition | `useLink()` | `UseLink(...)` | 已覆盖 | 返回 `UseLinkReturn` |
 | Built-in components | `RouterLink` / `RouterView` | `RouterLink` / `RouterView` | 已覆盖 | 作为 Vue3 component surface 暴露 |
 | Guards | `onBeforeRouteLeave()` / `onBeforeRouteUpdate()` | `OnBeforeRouteLeave(...)` / `OnBeforeRouteUpdate(...)` | 已覆盖 | 组件内守卫 |
 | Router runtime | `push()` / `replace()` / `resolve()` / `beforeEach()` / `beforeResolve()` / `afterEach()` | `Router` 成员 | 已覆盖 | 高频导航与守卫主路径 |
@@ -56,4 +56,3 @@
 1. C# API 可读且可发现
 2. 发射结果稳定
 3. 打包、测试、统一脚本和包消费链条完整
-

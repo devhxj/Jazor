@@ -82,8 +82,16 @@
 
 ### 3.2 `@pinia/testing`
 
-测试包目前不在 `ECMAScript.Pinia` 主包边界内。  
-如果未来需要，应优先评估是否单独建立 `ECMAScript.Pinia.Testing` 外部库，而不是把 testing API 塞进主包。
+测试包已按独立边界落地为：
+
+- `src/ECMAScript.Pinia.Testing/`
+- `src/ECMAScript.Pinia.Testing.Test/`
+
+后续剩余工作不再是“要不要拆”，而是：
+
+- 是否继续补更长尾 testing options
+- 是否需要补 sample / cookbook 场景
+- 是否需要为 testing root 和 plugin 联动追加更多组合回归
 
 ### 3.3 组件实例 `this` 的强类型 helper 回调
 
@@ -121,4 +129,4 @@
 1. plugin merge 属性收口模式
 2. plugin projection 的真实消费示例或 sample
 3. 视需求决定是否引入更长尾 helper
-4. 最后评估 `@pinia/testing` 是否值得单独成线
+4. 继续完善 `ECMAScript.Pinia.Testing` 的 sample / 组合回归 / 文档

@@ -14,10 +14,13 @@
 - Pinia 相关测试已从 `Jazor.CompilerTest` 拆出，独立为 `src/ECMAScript.Pinia.Test/`；
 - 统一测试入口已支持 `pwsh ./scripts/test-dotnet.ps1 -Project pinia`；
 - 已补 `samples/ECMAScript.Pinia.Counter/` 真实消费示例，覆盖 Vue 3 + Pinia + emitted modules 的联动路径；
+- `@pinia/testing` 已独立为 `src/ECMAScript.Pinia.Testing/` 与 `src/ECMAScript.Pinia.Testing.Test/`，并接入 solution / script / Jazor package build；
 - plugin / action listener 的 typed proxy 合同已补齐，覆盖 `PiniaPluginContext<TStore, TOptions>`、`PiniaPluginContext<TStore, TOptions, ...>`、`DefineStoreOptionsInPlugin`、`OnAction<TStore>(...)`；
 - `$subscribe()` mutation 代理已补齐为 base + `Direct` / `PatchFunction` / `PatchObject` 分层，并补回 dev-only `events` 形状；
+- `$patch(object)` 与 `SubscriptionMutationPatchObject.Payload` 已收口为显式 `PiniaStatePatch<TState>` 契约；
 - setup-store helper / options 合同已补齐，覆盖 `PiniaSetupStoreFactory<TStore>`、`SetupStoreHelpers.Action(...)`、`DefineSetupStoreOptions<TActions>`；
 - plugin merge 投影合同已补齐，覆盖 `ProjectStore(...)`、`ProjectStoreDefinition(...)`、`ProjectedStore<...>`、`ProjectedStoreDefinition<...>`；
+- projected store-definition 已统一继承 `StoreDefinition<TStore>` 调用面，`storeToRefs` / HMR / Options API helper 组合路径已补回归；
 - 文档域已建立 `docs/01-目标/ecmascript.pinia/`，并补齐 `02-计划` / `03-完成` 目录。
 
 当前更准确的状态是：**基础结构与核心运行时绑定已成形，独立测试治理已完成，后续进入增量扩展阶段**。
@@ -41,8 +44,11 @@
 Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 
 - 新测试项目：`src/ECMAScript.Pinia.Test/`
+- 新测试项目：`src/ECMAScript.Pinia.Testing.Test/`
 - 统一脚本入口：`pwsh ./scripts/test-dotnet.ps1 -Project pinia`
+- 统一脚本入口：`pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing`
 - 覆盖率配置：`src/ECMAScript.Pinia.Test/coverlet.runsettings`
+- 覆盖率配置：`src/ECMAScript.Pinia.Testing.Test/coverlet.runsettings`
 
 这意味着：
 
@@ -75,8 +81,10 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
   - `PiniaPluginContext<TStore, TOptions>`
   - `PiniaPluginContext<TStore, TOptions, ...>`
   - `DefineStoreOptionsInPlugin`
-  - `ProjectStore(...)`
-  - `ProjectStoreDefinition(...)`
+- `ProjectStore(...)`
+- `ProjectStoreDefinition(...)`
+- `PiniaTesting.CreateTestingPinia(...)`
+- `PiniaTesting.TestingOptions`
 - Options API helpers
   - `mapState`
   - `mapGetters`
@@ -91,7 +99,10 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 
 - `src/ECMAScript.Pinia/ECMAScript.Pinia.csproj` 可独立构建
 - `src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj` 可独立测试
+- `src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj` 可独立构建
+- `src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj` 可独立测试
 - `pwsh ./scripts/test-dotnet.ps1 -Project pinia` 可作为统一入口运行
+- `pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing` 可作为统一入口运行
 - `samples/ECMAScript.Pinia.Counter/build-local.ps1` 可重建本地 sample host
 - layout guard 已约束：
   - `Api/` + `Types/` 分层
@@ -101,13 +112,17 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
   - 裸 `pinia` 导入
   - `StoreDefinition<TStore>.Use(...)` lowering
   - typed `OnAction<TStore>(...)` lowering
-  - typed `pinia.use(...)` plugin context lowering
-  - projected plugin context lowering
-  - projected store / projected store-definition identity lowering
-  - subscription mutation subtype + `.events` / `.payload` lowering
-  - setup-store helpers + third-argument options lowering
-  - `storeToRefs` / `acceptHMRUpdate`
-  - `mapState` / `mapGetters` / `mapWritableState` / `mapActions` / `mapStores`
+- typed `pinia.use(...)` plugin context lowering
+- projected plugin context lowering
+- projected store / projected store-definition identity lowering
+- projected store + `storeToRefs(...)` 组合 lowering
+- projected store-definition + `acceptHMRUpdate(...)` / helper 组合 lowering
+- subscription mutation subtype + `.events` / `.payload` lowering
+- typed `PiniaStatePatch<TState>` object patch lowering
+- setup-store helpers + third-argument options lowering
+- `storeToRefs` / `acceptHMRUpdate`
+- `mapState` / `mapGetters` / `mapWritableState` / `mapActions` / `mapStores`
+- `@pinia/testing` `createTestingPinia(...)` / `TestingOptions` lowering
 
 ## 下一步行动
 
