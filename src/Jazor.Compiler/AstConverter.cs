@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -46,7 +47,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly Dictionary<string, string> _importBindings = [];
     private readonly Dictionary<string, string> _importLocalBindings = [];
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(classSymbol, options?.MemberFilter);
-    private readonly record struct ModuleNamespaceExportMember(string LocalName, string ExportName);
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
 
@@ -112,13 +112,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
 
-        if (_options.Profile == AstConverterProfile.ClrRuntime &&
-            CreateClrRuntimeModuleNamespaceExport() is { } moduleNamespaceExport)
-        {
-            members.Add(moduleNamespaceExport);
-        }
-
-        var statements = NodeList.From(BuildImportDeclarations().Concat(members));
+        var statements = NodeList.From(BuildImportDeclarations(members).Concat(members));
         return statements.Count > 0
             ? new Module(statements)
             : null;
@@ -142,13 +136,15 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         members.AddRange(ConvertModuleClass(symbol, baseType, cancellationToken));
     }
 
-    private IEnumerable<ImportDeclaration> BuildImportDeclarations()
+    private IEnumerable<ImportDeclaration> BuildImportDeclarations(IReadOnlyList<Statement> members)
     {
+        var memberScript = BuildImportReferenceSearchText(members);
         foreach (var pair in _imports.OrderBy(static pair => pair.Key, System.StringComparer.Ordinal))
         {
             var uniqueSpecifiers = pair.Value
                 .GroupBy(static specifier => specifier.ToECMAScript(), System.StringComparer.Ordinal)
                 .Select(static group => group.First())
+                .Where(specifier => ShouldRetainImportSpecifier(specifier, memberScript))
                 .ToArray();
 
             var defaultSpecifier = uniqueSpecifiers
@@ -195,6 +191,60 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             yield return importStatement;
         }
     }
+
+    private static string BuildImportReferenceSearchText(IReadOnlyList<Statement> members)
+    {
+        if (members.Count == 0)
+            return string.Empty;
+
+        var builder = new StringBuilder();
+        foreach (var member in members)
+        {
+            if (builder.Length > 0)
+                builder.Append('\n');
+
+            builder.Append(member.ToECMAScript());
+        }
+
+        return builder.ToString();
+    }
+
+    private static bool ShouldRetainImportSpecifier(ImportDeclarationSpecifier specifier, string memberScript)
+        => specifier switch
+        {
+            ImportSpecifier named => IsImportedBindingReferenced(memberScript, named.Local.Name),
+            ImportDefaultSpecifier @default => IsImportedBindingReferenced(memberScript, @default.Local.Name),
+            ImportNamespaceSpecifier @namespace => IsImportedBindingReferenced(memberScript, @namespace.Local.Name),
+            _ => true
+        };
+
+    /// <summary>
+    /// 某些 lowering 路径会先绑定宿主类型导入，随后再折叠成更窄的 named import /
+    /// 直接调用表达式。这里在最终发射 import declaration 前做一次保守裁剪，
+    /// 避免把已经没有运行时引用的根宿主（例如 RuntimeModule）继续留在模块头。
+    /// </summary>
+    private static bool IsImportedBindingReferenced(string memberScript, string localName)
+    {
+        if (string.IsNullOrEmpty(memberScript) || string.IsNullOrEmpty(localName))
+            return false;
+
+        var index = 0;
+        while ((index = memberScript.IndexOf(localName, index, System.StringComparison.Ordinal)) >= 0)
+        {
+            var before = index == 0 ? '\0' : memberScript[index - 1];
+            var afterIndex = index + localName.Length;
+            var after = afterIndex >= memberScript.Length ? '\0' : memberScript[afterIndex];
+            if (!IsJavaScriptIdentifierPart(before) && !IsJavaScriptIdentifierPart(after))
+                return true;
+
+            index++;
+        }
+
+        return false;
+    }
+
+    private static bool IsJavaScriptIdentifierPart(char value)
+        => value == '$' || value == '_' || char.IsLetterOrDigit(value);
 
     private void MergeImports(in SenseArgument argument)
     {
@@ -502,47 +552,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             NodeList.From([new ExportSpecifier(new Identifier(localName), new Identifier(exportName))]),
             null,
             NodeList.From<ImportAttribute>([]));
-
-    private Statement? CreateClrRuntimeModuleNamespaceExport()
-    {
-        var exportName = GetModuleNamedExportName(_classSymbol);
-        if (string.IsNullOrWhiteSpace(exportName))
-            return null;
-
-        var members = CollectClrRuntimeModuleNamespaceExports().ToArray();
-        if (members.Length == 0)
-            return null;
-
-        var objectMembers = string.Join(
-            ", ",
-            members.Select(static member => string.Equals(member.LocalName, member.ExportName, System.StringComparison.Ordinal)
-                ? member.ExportName
-                : $"{member.ExportName}: {member.LocalName}"));
-        var exportScript = $"export const {exportName} = {{ {objectMembers} }};";
-        return new Parser().ParseModule(exportScript).Body.Single();
-    }
-
-    private IEnumerable<ModuleNamespaceExportMember> CollectClrRuntimeModuleNamespaceExports()
-    {
-        foreach (var member in _classSymbol.GetMembers())
-        {
-            if (!ShouldIncludeModuleMember(member))
-                continue;
-
-            switch (member)
-            {
-                case IFieldSymbol field:
-                    yield return new ModuleNamespaceExportMember(GetModuleDeclaredName(field), GetModuleNamedExportName(field));
-                    break;
-                case IMethodSymbol method when ShouldReserveModuleMethodName(method):
-                    yield return new ModuleNamespaceExportMember(GetModuleDeclaredName(method), GetModuleNamedExportName(method));
-                    break;
-                case INamedTypeSymbol type when IsRuntimeMemberClass(type):
-                    yield return new ModuleNamespaceExportMember(GetModuleDeclaredName(type), GetModuleNamedExportName(type));
-                    break;
-            }
-        }
-    }
 
     private PropertyDefinition ConvertMemberField(IFieldSymbol symbol)
     {

@@ -776,7 +776,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.Visit(block, new());
         var script = node?.ToKnRECMAScript();
 
-        AssertScriptEqual(
+    AssertScriptEqual(
 @"{
   let simpleObj = new MyClass;
   let paramObj = new MyClass(42, ""test"");
@@ -785,6 +785,35 @@ public sealed class SemanticWalkerCreationTest
   let array2 = new Array(5);
   let name = ""John"";
   let message = `Hello, ${name}!`;
+}", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ECMAScriptArrayHost_PreservesConstructorSemantics()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod(Number size, Number value)
+                {
+                    var sized = new Array<Number>(size);
+                    var singleton = new Array<Number>(value);
+                    var empty = new Array<Number>();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"{
+  let sized = new Array(size);
+  let singleton = new Array(value);
+  let empty = new Array;
 }", script);
     }
 
@@ -2121,6 +2150,60 @@ public sealed class SemanticWalkerCreationTest
 
         // HashSet 映射为 Set
         AssertScriptEqual("new Set", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_DictionaryWithRecordKey_Throws()
+    {
+        var block = GetBlockOperation(@"
+            record Key(int Id);
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<Key, string>();
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+        {
+            _ = walker.VisitObjectCreation(operation, new());
+        });
+
+        StringAssert.Contains(exception.Message, "JS-stable default equality");
+        StringAssert.Contains(exception.Message, "System.Collections.Generic.Dictionary<Key, string>");
+        StringAssert.Contains(exception.Message, "Key");
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_DictionaryWithPlainReferenceIdentityKey_Allows()
+    {
+        var block = GetBlockOperation(@"
+            class Key
+            {
+                public int Id { get; set; }
+            }
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var dict = new System.Collections.Generic.Dictionary<Key, string>();
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToECMAScript();
+
+        AssertScriptEqual("new Map", script);
     }
 
     [TestMethod]

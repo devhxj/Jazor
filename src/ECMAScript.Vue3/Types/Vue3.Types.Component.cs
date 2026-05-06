@@ -972,13 +972,13 @@ public static partial class Vue3
 		/// Component rendered while the async component is loading.
 		/// </summary>
 		[Description("@#loadingComponent")]
-		public IVueComponent? LoadingComponent { get; init; }
+		public ECMAScript.VueContract.IVueComponent? LoadingComponent { get; init; }
 
 		/// <summary>
 		/// Component rendered when the async component fails to load.
 		/// </summary>
 		[Description("@#errorComponent")]
-		public IVueComponent? ErrorComponent { get; init; }
+		public ECMAScript.VueContract.IVueComponent? ErrorComponent { get; init; }
 
 		/// <summary>
 		/// Delay in milliseconds before showing the loading component.
@@ -1011,7 +1011,7 @@ public static partial class Vue3
 	/// </summary>
 	/// <typeparam name="TComponent">The component contract produced by the loader.</typeparam>
 	public record VueAsyncComponentOptions<TComponent> : IVueOptionsBag
-		where TComponent : IVueComponent
+		where TComponent : ECMAScript.VueContract.IVueComponent
 	{
 		/// <summary>
 		/// Function that loads and resolves the typed component definition.
@@ -1023,13 +1023,13 @@ public static partial class Vue3
 		/// Component rendered while the async component is loading.
 		/// </summary>
 		[Description("@#loadingComponent")]
-		public IVueComponent? LoadingComponent { get; init; }
+		public ECMAScript.VueContract.IVueComponent? LoadingComponent { get; init; }
 
 		/// <summary>
 		/// Component rendered when the async component fails to load.
 		/// </summary>
 		[Description("@#errorComponent")]
-		public IVueComponent? ErrorComponent { get; init; }
+		public ECMAScript.VueContract.IVueComponent? ErrorComponent { get; init; }
 
 		/// <summary>
 		/// Delay in milliseconds before showing the loading component.

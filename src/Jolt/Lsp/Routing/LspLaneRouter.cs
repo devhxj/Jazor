@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Lsp.Routing;
 
@@ -36,3 +36,4 @@ internal sealed class LspLaneRouter : ILspLaneRouter
             _ => JazorOnly
         };
 }
+

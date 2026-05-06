@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jazor.RazorVue.Test;
 
@@ -433,3 +433,4 @@ public sealed class JazorVueAnalysisRuntimeTests
             => throw new OperationCanceledException("cancelled for test");
     }
 }
+

@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -1158,3 +1158,4 @@ internal sealed class ExtensionWorkerServer
         public string Code { get; } = code;
     }
 }
+

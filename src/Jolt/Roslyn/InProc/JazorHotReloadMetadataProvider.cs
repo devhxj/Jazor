@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Diagnostics.CodeAnalysis;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 
@@ -747,3 +747,4 @@ internal sealed class JazorHotReloadMetadataProvider
         IReadOnlyList<SemanticLogicDescriptor> Methods,
         int MappedUserDeclarationCount);
 }
+

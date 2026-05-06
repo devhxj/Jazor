@@ -4,7 +4,7 @@
 
 **RazorVueGenerator** 是 RazorVue 线路的 Roslyn Source Generator，负责在编译时发现组件候选、执行 pipeline、生成 `RazorVueCatalog` 代码。它遵循"薄宿主"原则：仅处理 Roslyn 集成和诊断，RazorVue 语义逻辑位于 `Jazor.RazorVue` 项目中。
 
-**文件位置**: `src/Jazor.RazorVue.Analysis/RazorVueGenerator.cs`
+**文件位置**: `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs`
 
 **特性**: `[Generator]`, `IIncrementalGenerator`
 
@@ -135,7 +135,9 @@ private static void EmitRazorVueCatalog(
         _ = razorVueContext.DiscoverLibraryComponents();
 
         // 3. 执行 pipeline
-        var catalog = new RazorVuePipeline().Execute(compilation);
+        var catalog = new RazorVuePipeline(
+            RazorVueRazorDocumentSemanticFrontend.Instance,
+            RazorVuePreferredTemplateFrontend.Instance).Execute(compilation);
         if (catalog.Artifacts.IsDefaultOrEmpty)
             return;
 
@@ -198,12 +200,12 @@ _ = razorVueContext.DiscoverLibraryComponents();
 #### 步骤 3: 执行 Pipeline
 
 ```csharp
-var catalog = new RazorVuePipeline().Execute(compilation);
+var catalog = new RazorVuePipeline(RazorVuePreferredTemplateFrontend.Instance).Execute(compilation);
 if (catalog.Artifacts.IsDefaultOrEmpty)
     return;
 ```
 
-**职责委托**: Generator 不直接处理语义提取和 artifact 降级，而是委托给 `RazorVuePipeline`。
+**职责委托**: Generator 不直接处理语义提取和 artifact 降级，而是委托给 `RazorVuePipeline`，同时由宿主显式决定模板前端策略。
 
 **空结果处理**: 如果没有生成 artifacts，静默返回（不生成空文件）。
 
@@ -835,7 +837,7 @@ RazorVue setup lowering does not support method 'Setup' in component 'MyComponen
 
 | 文件 | 职责 |
 |------|------|
-| `src/Jazor.RazorVue.Analysis/RazorVueGenerator.cs` | Generator 主类 |
+| `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs` | Generator 主类 |
 | `src/Jazor.RazorVue/RazorVuePipeline.cs` | Pipeline 执行 |
 | `src/Jazor.RazorVue/Artifacts/RazorVueCompilationContext.cs` | 编译上下文 |
 | `src/Jazor.RazorVue/Artifacts/RazorVueCatalog.cs` | 目录数据结构 |

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.DevServer;
 
@@ -748,3 +748,4 @@ internal sealed class DevHttpServer : IAsyncDisposable, IWorkspaceDocumentChange
 internal readonly record struct DevServerObservedFileSnapshot(
     long Length,
     long LastWriteTimeUtcTicks);
+

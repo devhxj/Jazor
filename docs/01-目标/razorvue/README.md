@@ -2,9 +2,9 @@
 
 > Status: 活跃参考
 > Positioning: RazorVue 库模式设计入口，描述当前编译时 Razor-to-JS 路线及其物理拆分后的责任边界。
-> Note: RazorVue 的对外命名空间仍保留 `Jazor.RazorVue` / `Jazor.RazorVue.Analysis`，但物理项目已经拆分并迁入 `Jazor.Common`、`Jazor.Analyzer`、`ECMAScript.Vuetify`。
+> Note: RazorVue 的对外命名空间仍保留 `Jazor.RazorVue` / `Jazor.RazorVue.Analysis`，但物理项目已经收束为 `Jazor.RazorVue`（其中 `RazorSdk/` 目录承载 Razor SDK 桥接）、`Jazor.Analyzer`、`ECMAScript.Vuetify`。
 
-> 对应源码：`src/Jazor.Common/RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/ECMAScript.Vuetify/`
+> 对应源码：`src/Jazor.RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/ECMAScript.Vuetify/`
 
 ## 为什么需要
 
@@ -19,14 +19,22 @@
 
 ## 当前物理分工
 
-### `src/Jazor.Common/RazorVue/`
+### `src/Jazor.RazorVue/`
 
-共享 RazorVue 语义层：
+共享 RazorVue 核心语义层：
 
 - 入口分类与编译上下文
 - 描述符、注册表、render tree
 - lowering、artifact、catalog、source origin
 - `JazorVueCompiler` / `JazorVueParser`
+
+### `src/Jazor.RazorVue/RazorSdk/`
+
+Razor SDK 桥接层：
+
+- `RazorCodeDocument` / IR 获取
+- Razor 组件与 `_Imports.razor` 文档定位
+- Razor 生成组件优先走 `RazorCodeDocument` / IR，手写 `BuildRenderTree` 仅作为显式 authoring 路径
 
 ### `src/Jazor.Analyzer/RazorVue/`
 
@@ -35,6 +43,7 @@ Roslyn 宿主层：
 - authoring 诊断
 - 增量生成器
 - 兼容分析 RPC 与进程内分析运行时
+- 目录内再分为 `Diagnostics/` 与 `Generation/`；`Jazor.Vue` 兼容分析宿主单独放在 `src/Jazor.Analyzer/VueHost/`
 
 ### `src/ECMAScript.Vuetify/`
 
@@ -51,6 +60,16 @@ Roslyn 宿主层：
 - `IUIComponent`
 - `JazorAttribute`
 - `Op`
+
+### `src/Jazor.Common/`
+
+共享通用设施层：
+
+- `SourceMaps`
+- `VueContracts`
+- 通用 emit / 协议辅助
+
+这里不再承载 RazorVue core 语义本体。
 
 ## 当前编译链路
 

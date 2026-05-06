@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Razor.InProc;
 
 namespace Jolt.Test;
@@ -111,3 +111,4 @@ public sealed class JoltInProcRazorProjectionTests
         Assert.IsFalse(service.TryCreateProjection(emptyJazorDocument, out _));
     }
 }
+

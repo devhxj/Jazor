@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Lsp.Routing;
 
@@ -10,3 +10,4 @@ internal interface ILspLaneRouter
 
     IReadOnlyList<LaneKind> GetSemanticTokenLanes(DocumentSnapshot document);
 }
+

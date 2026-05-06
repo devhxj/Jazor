@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Jolt.Hosting;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Rpc;
 
 namespace Jolt.Analysis;
@@ -247,3 +247,4 @@ public sealed class ProcessAnalysisRpcTransport : IAnalysisRpcTransport
             ? message
             : message + Environment.NewLine + capturedOutput;
 }
+

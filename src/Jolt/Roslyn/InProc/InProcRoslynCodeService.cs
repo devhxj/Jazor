@@ -1,6 +1,6 @@
 using Jazor.Vue;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Microsoft.CodeAnalysis;
@@ -1005,3 +1005,4 @@ internal sealed partial class InProcRoslynCodeService
         TextSpan IdentifierSpan,
         bool IsDeclaration);
 }
+

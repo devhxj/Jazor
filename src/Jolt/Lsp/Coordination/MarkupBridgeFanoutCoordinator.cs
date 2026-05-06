@@ -1,5 +1,5 @@
 using Jolt.Lsp.Aggregation;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Lsp.Coordination;
 
@@ -139,3 +139,4 @@ internal sealed class MarkupBridgeFanoutCoordinator
         return _resultAggregator.AggregateWorkspaceEdits(edits);
     }
 }
+

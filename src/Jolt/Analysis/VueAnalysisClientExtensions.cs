@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Analysis;
 
@@ -47,3 +47,4 @@ internal static class VueAnalysisClientExtensions
             string.Equals(candidate.ArtifactKind, artifactKind, StringComparison.OrdinalIgnoreCase));
     }
 }
+

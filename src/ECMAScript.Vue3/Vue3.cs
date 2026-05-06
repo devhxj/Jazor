@@ -328,7 +328,7 @@ public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback<TValue>(Vue3.VueDire
 /// resolves to the component definition.
 /// </summary>
 /// <returns>A promise resolving to the async component definition.</returns>
-public delegate IPromise<Vue3.IVueComponent> VueAsyncComponentLoader();
+public delegate IPromise<ECMAScript.VueContract.IVueComponent> VueAsyncComponentLoader();
 
 /// <summary>
 /// Loader callback for a strongly typed Vue async component.
@@ -336,7 +336,7 @@ public delegate IPromise<Vue3.IVueComponent> VueAsyncComponentLoader();
 /// <typeparam name="TComponent">The component contract produced by the loader.</typeparam>
 /// <returns>A promise resolving to the typed async component definition.</returns>
 public delegate IPromise<TComponent> VueAsyncComponentLoader<TComponent>()
-	where TComponent : Vue3.IVueComponent;
+	where TComponent : ECMAScript.VueContract.IVueComponent;
 
 /// <summary>
 /// Callback used by Vue async component error handling to retry or fail the load.

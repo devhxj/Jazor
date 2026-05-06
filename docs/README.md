@@ -8,7 +8,7 @@
 
 | 线路 | 模式 | 当前物理落点 | 说明 |
 |------|------|-------------|------|
-| **RazorVue** | 库模式 | `src/Jazor.Common/RazorVue/` + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 编译时 Razor-to-JS，Source Generator 驱动 |
+| **RazorVue** | 库模式 | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 编译时 Razor-to-JS，Source Generator 驱动 |
 | **Jolt** | 全功能模式 | `src/Jolt/` | `.jazor` 开发时宿主，承载编辑器、预览、构建和调试链路 |
 
 ## 导航
@@ -32,7 +32,7 @@
 | `01-目标/clr/` | `src/Jazor.CLR/` + `src/Jazor.CLR.Generator/` + `src/Jazor.Compiler.Generator/` |
 | `01-目标/analyzer/` | `src/Jazor.Analyzer/` |
 | `01-目标/razor/` | `src/Jazor.Razor/` + `src/Jazor.Compiler.Razor/` |
-| `01-目标/razorvue/` | `src/Jazor.Common/RazorVue/` + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` |
+| `01-目标/razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` |
 | `01-目标/jolt/` | `src/Jolt/` |
 | `01-目标/common/` | `src/ECMAScript.Contract/` + `src/Jazor.Common/` |
 | `01-目标/webidl/` | `src/ECMAScript.WebIDL.Generator/` |
@@ -47,7 +47,7 @@
 | `02-计划/jolt/razorvue-implementation/` | RazorVue 线路 + `src/Jolt/` 的交叉实施材料 |
 | **03-完成** | |
 | `03-完成/jolt/` | `src/Jolt/` |
-| `03-完成/razorvue/` | RazorVue 线路的阶段性完成材料；物理源码已迁到 `Jazor.Common` / `Jazor.Analyzer` / `ECMAScript.Vuetify` |
+| `03-完成/razorvue/` | RazorVue 线路的阶段性完成材料；物理源码已迁到 `Jazor.RazorVue`（含 `RazorSdk/`）/ `Jazor.Analyzer` / `ECMAScript.Vuetify` |
 | `03-完成/compiler/` | `src/Jazor.Compiler/` |
 | `03-完成/emit/` | `src/Jazor.Emit/` |
 | `03-完成/ecmascript.vue3/` | `src/ECMAScript.Vue3/` |

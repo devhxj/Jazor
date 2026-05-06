@@ -7,17 +7,11 @@ namespace ECMAScript;
 public static partial class Vue3
 {
 	/// <summary>
-	/// Marker interface for a Vue component reference. Implemented by all component types
-	/// produced by <c>defineComponent()</c> and consumed by <c>h()</c>.
-	/// </summary>
-	public interface IVueComponent : IUIComponent { }
-
-	/// <summary>
 	/// A Vue component that declares typed props. The compiler uses this interface
 	/// to select the correct <c>h()</c> overload for props-only components.
 	/// </summary>
 	/// <typeparam name="TProps">The props record type describing the component's accepted props.</typeparam>
-	public interface IVueComponent<TProps> : IVueComponent
+	public interface IVueComponent<TProps> : ECMAScript.VueContract.IVueComponent
 		where TProps : VueProps
 	{
 	}
@@ -27,7 +21,7 @@ public static partial class Vue3
 	/// this interface to select the correct <c>h()</c> overload for slots-only components.
 	/// </summary>
 	/// <typeparam name="TSlots">The slots record type describing the component's accepted slots.</typeparam>
-	public interface IVueSlotComponent<TSlots> : IVueComponent
+	public interface IVueSlotComponent<TSlots> : ECMAScript.VueContract.IVueComponent
 		where TSlots : VueSlots
 	{
 	}

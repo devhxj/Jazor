@@ -1,5 +1,5 @@
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -17,3 +17,4 @@ internal interface ILspDiagnosticProvider
 internal sealed record LspDiagnosticProviderContext(
     DocumentSnapshot Document,
     IReadOnlyList<LspDiagnostic> ExistingDiagnostics);
+

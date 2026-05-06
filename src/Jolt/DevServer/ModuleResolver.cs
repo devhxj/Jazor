@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.DevServer;
 
@@ -398,3 +398,4 @@ internal sealed class ResolveResult
 
     public string? Error { get; init; }
 }
+

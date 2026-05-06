@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Workspace;
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -867,3 +867,4 @@ public sealed class JoltWorkspaceResolverTests
         }
     }
 }
+

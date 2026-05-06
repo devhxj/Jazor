@@ -1,6 +1,7 @@
 ﻿namespace ECMAScript;
 
 [ECMAScript]
+[Description("@#")]
 public class PropertyDescriptor
 {
 	/// <summary>

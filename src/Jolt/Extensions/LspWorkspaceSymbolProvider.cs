@@ -1,5 +1,5 @@
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -19,3 +19,4 @@ internal sealed record LspWorkspaceSymbolProviderContext(
     IReadOnlyList<DocumentSnapshot> OpenDocuments,
     IReadOnlyList<LspWorkspaceSymbol> ExistingSymbols,
     IReadOnlyList<LspWorkspaceFolder>? WorkspaceFolders = null);
+

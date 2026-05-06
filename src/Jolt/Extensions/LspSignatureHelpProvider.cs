@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -20,3 +20,4 @@ internal sealed record LspSignatureHelpProviderContext(
     LspPosition Position,
     ProjectionTarget ProjectionTarget,
     LspSignatureHelp? ExistingSignatureHelp);
+

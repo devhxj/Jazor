@@ -2,7 +2,7 @@ using System.IO.Pipelines;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Extensions;
 using Jolt.Jazor.Projection;
 using Jolt.Lsp;
@@ -1559,3 +1559,4 @@ public sealed class JoltStdioLspServerTests
         }
     }
 }
+

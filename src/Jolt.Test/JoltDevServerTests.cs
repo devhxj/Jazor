@@ -15,7 +15,7 @@ using Jolt.SourceMap;
 using Jolt.Workspace;
 using static Jolt.Test.SourceMapTestHelpers;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Test;
 
@@ -9282,3 +9282,4 @@ public sealed class JoltDevServerTests
             FileChangePollingInterval = TestFileChangePollingInterval
         };
 }
+

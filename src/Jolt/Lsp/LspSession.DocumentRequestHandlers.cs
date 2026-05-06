@@ -9,7 +9,7 @@ using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
 using Jolt.VirtualDocuments.Registry;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Lsp;
 
@@ -306,3 +306,4 @@ internal sealed partial class LspSession
         return CreateSuccessResponse(request.Id, Array.Empty<LspCodeLens>());
     }
 }
+

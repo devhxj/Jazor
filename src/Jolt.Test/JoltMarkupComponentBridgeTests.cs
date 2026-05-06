@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Coordination;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Test;
@@ -405,3 +405,4 @@ public sealed class JoltMarkupComponentBridgeTests
         return LspProtocolHelpers.GetPosition(text, offset);
     }
 }
+

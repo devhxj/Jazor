@@ -2,6 +2,7 @@ using ECMAScript.Contract;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.CSharp;
 
 internal static class ClrRuntimeSelection
 {
@@ -23,6 +24,12 @@ internal static class ClrRuntimeSelection
             var opText = arguments.Value[0].Expression.ToString();
             if (opText.EndsWith($".{nameof(Op.Import)}", StringComparison.Ordinal) ||
                 string.Equals(opText, nameof(Op.Import), StringComparison.Ordinal))
+                return true;
+        }
+
+        foreach (var member in rootDeclaration.Members)
+        {
+            if (HasInternalRuntimeHelperContent(member))
                 return true;
         }
 
@@ -140,4 +147,23 @@ internal static class ClrRuntimeSelection
             or Accessibility.Internal
             or Accessibility.ProtectedAndInternal
             or Accessibility.ProtectedOrInternal;
+
+    private static bool HasInternalRuntimeHelperContent(MemberDeclarationSyntax member)
+        => member switch
+        {
+            MethodDeclarationSyntax method => HasRuntimeHelperModifier(method.Modifiers) &&
+                !method.Modifiers.Any(static modifier => modifier.IsKind(SyntaxKind.ExternKeyword)),
+            PropertyDeclarationSyntax property => HasRuntimeHelperModifier(property.Modifiers) &&
+                !property.Modifiers.Any(static modifier => modifier.IsKind(SyntaxKind.ExternKeyword)),
+            FieldDeclarationSyntax field => HasRuntimeHelperModifier(field.Modifiers),
+            ConstructorDeclarationSyntax constructor => HasRuntimeHelperModifier(constructor.Modifiers) &&
+                !constructor.Modifiers.Any(static modifier => modifier.IsKind(SyntaxKind.ExternKeyword)),
+            _ => false
+        };
+
+    private static bool HasRuntimeHelperModifier(SyntaxTokenList modifiers)
+        => modifiers.Any(static modifier =>
+            modifier.IsKind(SyntaxKind.PrivateKeyword) ||
+            modifier.IsKind(SyntaxKind.InternalKeyword) ||
+            modifier.IsKind(SyntaxKind.ProtectedKeyword));
 }

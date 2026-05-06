@@ -22,12 +22,13 @@ public static partial class WikiHomeModule
             [
                 H("p", "The external RazorVue naming remains stable, but the physical source is intentionally split by concern."),
                 CodeBlock("Current physical ownership", """
-src/Jazor.Common/RazorVue/
+src/Jazor.RazorVue/
+src/Jazor.RazorVue/RazorSdk/
 src/Jazor.Analyzer/RazorVue/
 src/ECMAScript.Vuetify/
 src/ECMAScript.Contract/
 """),
-                H("p", "That split keeps shared semantics, Roslyn host behavior, and library-component bindings from drifting into one project.")
+                H("p", "That split keeps RazorVue core semantics, Razor SDK bridging, Roslyn host behavior, and library-component bindings from drifting into one project.")
             ]),
             PageSection("build-time-flow", "Build-time flow",
             [

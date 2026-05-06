@@ -1,6 +1,6 @@
 using Jolt.Hosting;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Analysis;
 
@@ -118,3 +118,4 @@ internal sealed class FallbackJazorAnalysisService
             _ => ImportBindingKind.Named
         };
 }
+

@@ -1,7 +1,7 @@
 using Jolt.Jazor.Projection;
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
@@ -280,3 +280,4 @@ public sealed class JoltProjectionMapTests
         throw new AssertFailedException($"Expected exception of type {typeof(TException).Name}.");
     }
 }
+

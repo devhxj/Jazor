@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Rpc;
-using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.RazorVue.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Test;
 
@@ -104,3 +104,4 @@ public sealed class JoltProcessTests
             "..",
             ".."));
 }
+

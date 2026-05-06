@@ -30,6 +30,7 @@ public partial class SemanticWalker
 			return BuildRecordStructuralLiteral(assignObj, operation, argument);
 
 		RejectUnsupportedTypeFallback(operation, operation.Type, "object creation");
+		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(operation, operation.Type, "object creation");
 
 		var arguments = new List<Expression>();
 		for (var index = 0; index < operation.Arguments.Length; index++)
@@ -46,10 +47,29 @@ public partial class SemanticWalker
 			arguments.Add(TranslateTupleForTarget(arg.Value, targetType, argument));
 		}
 
+		if (IsObjectLiteralHostType(operation.Type))
+		{
+			if (arguments.Count != 0)
+			{
+				return HandleTransformationFailure<Expression>(
+					operation,
+					$"Object-literal host type '{operation.Type.ToDisplayString(Format.NameFormat)}' does not support constructor arguments.");
+			}
+
+			Expression literal = operation.Initializer?.Initializers.Length > 0
+				? RecursiveObjectOrCollectionInitializer(operation.Initializer, argument)
+				: new ObjectExpression(NodeList.Empty<Node>());
+
+			if (assignObj is not null)
+				literal = new AssignmentExpression(Operator.Assignment, assignObj, literal);
+
+			return literal;
+		}
+
 		Expression? mappedConstructor = null;
 		if (operation.Constructor is not null)
 		{
-			mappedConstructor = GetWhiteListExpression(operation.Constructor, argument, arguments, null, out _);
+			mappedConstructor = GetWhiteListExpression(operation.Constructor, argument, arguments, null, out _, operation);
 			if (mappedConstructor is null &&
 				!IsIntrinsicObjectCreationFallbackAllowed(operation.Constructor, operation.Type))
 				RejectUnsupportedRuntimeFallback(operation, operation.Constructor, "object creation", operation.Type);
@@ -65,9 +85,6 @@ public partial class SemanticWalker
 		Expression expr = new NewExpression(callee, NodeList.From(arguments));
 		if (mapper == TypeMapper.BigInt)
 			expr = new CallExpression(callee, NodeList.From(arguments), false);
-
-		else if (mapper == TypeMapper.Array)
-			expr = new ArrayExpression(NodeList.From<Expression?>(arguments));
 
 		if (mappedConstructor is not null)
 			expr = mappedConstructor;

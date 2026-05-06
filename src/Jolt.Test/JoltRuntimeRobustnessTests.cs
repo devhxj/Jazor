@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Analysis;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;
@@ -373,3 +373,4 @@ public sealed class JoltRuntimeRobustnessTests
             => ValueTask.CompletedTask;
     }
 }
+

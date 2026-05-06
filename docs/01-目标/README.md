@@ -6,7 +6,7 @@
 
 | 线路 | 模式 | 文档目录 | 当前物理落点 |
 |------|------|---------|-------------|
-| **RazorVue** | 库模式（Source Generator，不以 `.vue` 为 authoring 格式） | `razorvue/` | `src/Jazor.Common/RazorVue/` + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` |
+| **RazorVue** | 库模式（Source Generator，不以 `.vue` 为 authoring 格式） | `razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` |
 | **Jolt** | 全功能模式（`.jazor` 开发时宿主） | `jolt/` | `src/Jolt/` |
 
 ## 按项目结构索引
@@ -22,7 +22,7 @@
 | `razor/` | `src/Jazor.Razor/` + `src/Jazor.Compiler.Razor/` | Razor 基础标记与编译器侧语义前端 |
 | `ecmascript/` | `src/ECMAScript/` | ECMAScript host、host/nullish 边界与 WebIDL 相关目标 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | ECMAScript.Vue3 外部库映射目标、覆盖矩阵与模块规则 |
-| `razorvue/` | `src/Jazor.Common/RazorVue/` + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 库模式 Razor-to-JS、组件描述与 Vuetify authoring |
+| `razorvue/` | `src/Jazor.RazorVue/`（含 `RazorSdk/`） + `src/Jazor.Analyzer/RazorVue/` + `src/ECMAScript.Vuetify/` | 库模式 Razor-to-JS、组件描述、Razor SDK 桥接与 Vuetify authoring |
 | `jolt/` | `src/Jolt/` | `.jazor` LSP、DevServer、Build、Debug、Deno/Volar 集成 |
 | `common/` | `src/ECMAScript.Contract/` + `src/Jazor.Common/` | 最小契约层与共享实现层 |
 | `webidl/` | `src/ECMAScript.WebIDL.Generator/` | WebIDL 到 C# 绑定生成 |

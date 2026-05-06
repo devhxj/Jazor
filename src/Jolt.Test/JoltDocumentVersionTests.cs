@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Documents;
+using Jazor.RazorVue.Documents;
 
 namespace Jolt.Test;
 
@@ -53,3 +53,4 @@ public sealed class JoltDocumentVersionTests
         throw new AssertFailedException($"Expected exception of type {typeof(TException).Name}.");
     }
 }
+

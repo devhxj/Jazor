@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.DevServer;
 
@@ -873,3 +873,4 @@ internal sealed class JavaScriptHotUpdate
     [JsonPropertyName("acceptedPath")]
     public required string AcceptedPath { get; init; }
 }
+

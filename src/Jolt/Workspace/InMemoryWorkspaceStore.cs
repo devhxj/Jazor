@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -86,3 +86,4 @@ public sealed class InMemoryWorkspaceStore : IJoltWorkspaceStore
             : documentPath.Replace('\\', '/');
     }
 }
+

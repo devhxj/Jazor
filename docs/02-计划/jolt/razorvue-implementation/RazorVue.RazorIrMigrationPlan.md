@@ -84,6 +84,9 @@
 
 当前仓库已验证的最小事实：
 
+- 已将 Razor SDK owning layer 收束到 `src/Jazor.RazorVue/RazorSdk/`
+  - 它负责 Razor SDK 对齐的 `RazorProjectEngine` / `RazorCodeDocument` / taghelper discovery 接线
+  - 它目前还不是默认 template frontend，只承担 host / document acquisition 层职责
 - 可以在独立测试项目中直接引用 Razor compiler 二进制并创建 `RazorCodeDocument`
 - 当前 SDK 暴露的是 `GetDocumentNode()` / `GetRequiredDocumentNode()`，而不是文档里早期假设的 `GetDocumentIntermediateNode()`
 - 这说明后续迁移实现必须以“当前真实 API 面”为准，而不是照搬旧资料或其他宿主中的猜测命名
@@ -242,10 +245,13 @@
 - 引入受控切换方式：
   - feature flag
   - 配置
-  - 或默认新前端 + 保守 fallback
+  - 或默认新前端 + 仅限手写 `BuildRenderTree` 的显式 fallback
 - 将主 pipeline 默认指向新前端
-- 保留短期 fallback，以便处理遗漏形状
-- 明确哪些失败仍应回退旧前端，哪些必须直接报错
+- 不保留“IR 失败就静默回退旧前端”的保守策略
+- 明确唯一允许回退的边界：
+  - 当前组件没有可绑定的 Razor 文档
+  - 且 `BuildRenderTree` 被判定为源码手写 authoring，而不是 Razor 生成产物
+- 其余 Razor 组件一律要求 `RazorCodeDocument` / IR 成功；失败直接报错
 
 验收：
 
@@ -255,7 +261,14 @@
 验证：
 
 - RazorVue 主测试面在默认新前端下通过
-- 有针对 fallback 行为的测试
+- 有针对“手写 `BuildRenderTree` 才允许 fallback”和“Razor 组件缺文档直接报错”的测试
+
+当前已落地的阶段 5 边界收敛：
+
+- generator 默认链现在显式使用 Razor SDK owning layer 的 `RazorVueRazorDocumentSemanticFrontend`
+- 该前端负责把 Roslyn component candidate 绑定到 `.razor` / `_Imports.razor` 路径
+- `Jazor.Common` 中的 `DefaultRazorSemanticFrontend` 已退回 Roslyn-only 语义前端，不再隐式承担 Razor 文档定位策略
+- 这使 `Jazor.Common` 保持“通用编排 + 显式依赖注入”，而 Razor SDK 文档绑定继续留在 `src/Jazor.RazorVue/RazorSdk/`
 
 ## 9. 阶段 6. 旧前端清理
 
@@ -314,7 +327,7 @@
 包含：
 
 - 切换策略
-- fallback
+- 仅限手写 `BuildRenderTree` 的 fallback
 - 主测试面验证
 
 ### PR5. 旧前端清理
@@ -344,6 +357,8 @@
 - `RazorVue_RazorIr_IfForeach_MapToStructuredTemplateNodes`
 - `RazorVue_TemplateFrontends_BuildRenderTreeAndIr_AgreeOnSupportedSubset`
 - `RazorVue_TemplateFrontend_DefaultsToRazorIr_WhenParityGatePasses`
+- `RazorVue_TemplateFrontend_FallsBackOnlyForHandwrittenBuildRenderTree`
+- `RazorVue_TemplateFrontend_RazorGeneratedComponentWithoutBoundDocument_FailsFast`
 
 ## 12. 风险与缓解
 
@@ -352,7 +367,7 @@
 | Razor SDK/toolset 接线不稳定 | 高 | 将接线隔离在专门宿主层，不把私有访问扩散到核心主链 |
 | IR 形状与预期不一致 | 高 | 先做节点盘点和样例归档，再做正式映射 |
 | 新前端破坏 setup/lifecycle/source-origin | 高 | 迁移只替换 template frontend，保留下游主链，强制 parity 测试 |
-| 切换后回归难定位 | 中 | 建双跑 parity 报告和受控 fallback |
+| 切换后回归难定位 | 中 | 建双跑 parity 报告，并把 fallback 严格限制为手写 `BuildRenderTree` authoring |
 | 过早删除旧前端 | 中 | 把清理延后到默认切换稳定之后 |
 
 ## 13. 完成门

@@ -1,13 +1,22 @@
 using ECMAScript.Contract;
 using ECMAScript.Vuetify;
 using Jazor.Compiler;
+using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Analysis;
+using Jazor.RazorVue.Extensibility;
+using Jazor.RazorVue.RenderTree;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
+using System.Collections.Immutable;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 namespace Jazor.RazorVue.Test;
 
@@ -618,7 +627,7 @@ public sealed class ESGeneratorTests
             "RazorVue.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -676,7 +685,7 @@ public sealed class ESGeneratorTests
             "RazorVue.DefaultOutput.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -727,7 +736,7 @@ public sealed class ESGeneratorTests
             "RazorVue.Sfc.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -788,7 +797,7 @@ public sealed class ESGeneratorTests
             "RazorVue.Sfc.PerComponent.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -862,7 +871,7 @@ public sealed class ESGeneratorTests
             "RazorVue.Sfc.PartialCatalog.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -919,7 +928,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InvalidOutputMode.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -955,13 +964,260 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithRazorAdditionalText_FlowsIndexedDocumentIntoInjectedTemplateFrontend()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """
+            @page "/todo"
+            <section>Hello from Razor doc</section>
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Generator.RazorDocument.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class TodoApp
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.AddContent(0, "Hello from generated render tree");
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var generator = new RazorVueGenerator(
+            legacyPipelineFactory: static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()),
+            sfcPipelineFactory: static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()));
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "legacy",
+            razorVueGenerator: generator,
+            additionalTexts:
+            [
+                new TestAdditionalText(documentPath.Replace('\\', '/'), razorDocumentText)
+            ]);
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        StringAssert.Contains(generatedSource, "@page");
+        StringAssert.Contains(generatedSource, "Hello from Razor doc");
+        Assert.IsFalse(generatedSource.Contains("Hello from generated render tree", StringComparison.Ordinal), generatedSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithAlignedRazorAdditionalText_DefaultGenerator_PrefersRazorIrForLegacyOutput()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.Legacy.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "legacy",
+            additionalTexts:
+            [
+                new TestAdditionalText(normalizedDocumentPath, razorDocumentText)
+            ]);
+        var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        StringAssert.Contains(generatedSource, "h(\\\"section\\\", [");
+        StringAssert.Contains(generatedSource, "h(\\\"h1\\\", props.title)");
+        StringAssert.Contains(generatedSource, "h(\\\"p\\\", \\\"Hello\\\")");
+        Assert.IsFalse(generatedSource.Contains("\\\"<p>Hello</p>\\\"", StringComparison.Ordinal), generatedSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoAdditionalText_DefaultGenerator_ReportsJAZORVGA001()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.MissingDocs.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "requires a bound Razor document");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithAlignedRazorAdditionalText_DefaultGenerator_PrefersRazorIrForSfcOutput()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.Sfc.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "sfc",
+            additionalTexts:
+            [
+                new TestAdditionalText(normalizedDocumentPath, razorDocumentText)
+            ]);
+        var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
+        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+        var artifactHint = hints.Single(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal));
+        var artifactSource = GetGeneratedSource(runResult, artifactHint);
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        StringAssert.Contains(artifactSource, "<section>");
+        StringAssert.Contains(artifactSource, "{{ props.title }}");
+        StringAssert.Contains(artifactSource, "<p>");
+        StringAssert.Contains(artifactSource, "Hello");
+        StringAssert.Contains(artifactSource, "</p>");
+        Assert.IsFalse(artifactSource.Contains("&lt;p&gt;Hello&lt;/p&gt;", StringComparison.Ordinal), artifactSource);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoAdditionalText_SfcOutput_ReportsJAZORVGA001()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.MissingDocs.Sfc.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "sfc");
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "requires a bound Razor document");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithNestedVueComponentUsage_EmitsNestedComponentRenderCall()
     {
         var compilation = CreateCompilation(
             "RazorVue.Success.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1016,7 +1272,7 @@ public sealed class ESGeneratorTests
             "RazorVue.PropsSlots.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1080,7 +1336,7 @@ public sealed class ESGeneratorTests
             "RazorVue.MissingComponent.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1148,7 +1404,7 @@ public sealed class ESGeneratorTests
             "RazorVue.AmbiguousComponent.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Demo.Components.Alpha;
             using Demo.Components.Beta;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -1228,7 +1484,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ReservedIntrinsicComponent.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -1295,7 +1551,7 @@ public sealed class ESGeneratorTests
             "RazorVue.SupportedLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1388,7 +1644,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ParameterlessLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1459,7 +1715,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ThisQualifiedParameterlessLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1530,7 +1786,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ThisQualifiedGenericLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1605,7 +1861,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1680,7 +1936,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1757,7 +2013,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1829,7 +2085,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1904,7 +2160,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1974,7 +2230,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ParameterlessOnAfterRenderLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2049,7 +2305,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2125,7 +2381,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2196,7 +2452,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2256,7 +2512,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2316,7 +2572,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2377,7 +2633,7 @@ public sealed class ESGeneratorTests
             "RazorVue.PassThroughOnInitializedLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2446,7 +2702,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2516,7 +2772,7 @@ public sealed class ESGeneratorTests
             "RazorVue.SyncOnAfterRenderLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2594,7 +2850,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2675,7 +2931,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2763,7 +3019,7 @@ public sealed class ESGeneratorTests
             "RazorVue.NoOpSyncLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2844,7 +3100,7 @@ public sealed class ESGeneratorTests
             "RazorVue.DisposeLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2906,7 +3162,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2967,7 +3223,7 @@ public sealed class ESGeneratorTests
             "RazorVue.DisposePassThroughLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3039,7 +3295,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3107,7 +3363,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnsupportedDisposeLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3166,7 +3422,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ConstantTrueShouldRender.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3225,7 +3481,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnsupportedShouldRender.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3283,7 +3539,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ComponentBaseShouldRender.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3343,7 +3599,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3403,7 +3659,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3468,7 +3724,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3541,7 +3797,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3614,7 +3870,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3674,7 +3930,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3739,7 +3995,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedParameterLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3806,7 +4062,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedNonParameterLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3874,7 +4130,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedNonParameterOnInitializedLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3943,7 +4199,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4011,7 +4267,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedNonParameterOnAfterRenderLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4088,7 +4344,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4164,7 +4420,7 @@ public sealed class ESGeneratorTests
             "RazorVue.NonParameterLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4229,7 +4485,7 @@ public sealed class ESGeneratorTests
             "RazorVue.NonParameterOnInitializedLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4294,7 +4550,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ThisQualifiedNonParameterOnInitializedLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4359,7 +4615,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ExpressionNonParameterOnInitializedLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4425,7 +4681,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4490,7 +4746,7 @@ public sealed class ESGeneratorTests
             "RazorVue.NonParameterOnAfterRenderLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4563,7 +4819,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ThisQualifiedNonParameterOnAfterRenderLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4636,7 +4892,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ExpressionNonParameterOnAfterRenderLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4710,7 +4966,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4784,7 +5040,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4862,7 +5118,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4943,7 +5199,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5015,7 +5271,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5088,7 +5344,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5161,7 +5417,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5233,7 +5489,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5306,7 +5562,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5379,7 +5635,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5453,7 +5709,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5525,7 +5781,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5617,7 +5873,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5689,7 +5945,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5762,7 +6018,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5859,7 +6115,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5951,7 +6207,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6038,7 +6294,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6130,7 +6386,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6206,7 +6462,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6279,7 +6535,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6376,7 +6632,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6463,7 +6719,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6545,7 +6801,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6617,7 +6873,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6689,7 +6945,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6761,7 +7017,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6833,7 +7089,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6905,7 +7161,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6977,7 +7233,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7049,7 +7305,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7121,7 +7377,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7194,7 +7450,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7281,7 +7537,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7365,7 +7621,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7438,7 +7694,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7511,7 +7767,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7593,7 +7849,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7667,7 +7923,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7741,7 +7997,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7815,7 +8071,7 @@ public sealed class ESGeneratorTests
             using System;
             using System.Collections.Generic;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7912,7 +8168,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7985,7 +8241,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedUnsupportedLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -8049,7 +8305,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -8114,7 +8370,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -8186,7 +8442,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedUnsupportedAfterRenderLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -8257,7 +8513,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InheritedUnsupportedParametersSetLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -8329,7 +8585,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -8401,7 +8657,7 @@ public sealed class ESGeneratorTests
             "RazorVue.LocalFirstRenderOnInitializedLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -8466,7 +8722,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -8530,7 +8786,7 @@ public sealed class ESGeneratorTests
             "RazorVue.LocalFirstRenderOnParametersSetLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8603,7 +8859,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8675,7 +8931,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ExpressionFirstRenderOnAfterRenderLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8748,7 +9004,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8820,7 +9076,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ParenthesizedFirstRenderOnAfterRenderLifecyclePayload.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8893,7 +9149,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8966,7 +9222,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9039,7 +9295,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9112,7 +9368,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9186,7 +9442,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9259,7 +9515,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9330,7 +9586,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9402,7 +9658,7 @@ public sealed class ESGeneratorTests
             "RazorVue.SetupLogic.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9465,7 +9721,7 @@ public sealed class ESGeneratorTests
             "RazorVue.ThreeLevelHelper.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9528,7 +9784,7 @@ public sealed class ESGeneratorTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9590,7 +9846,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnknownLibraryParameter.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
 
@@ -9642,7 +9898,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InvalidLibraryBindTarget.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -9702,7 +9958,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnknownLibrarySlot.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -9758,7 +10014,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnknownLibraryDefaultSlot.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
 
@@ -9810,7 +10066,7 @@ public sealed class ESGeneratorTests
             "RazorVue.TypedLibraryDefaultSlotContext.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9871,7 +10127,7 @@ public sealed class ESGeneratorTests
             "RazorVue.TypedLibrarySlotContext.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
 
@@ -9923,7 +10179,7 @@ public sealed class ESGeneratorTests
             "RazorVue.DuplicateLibraryDefaultSlot.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -9980,7 +10236,7 @@ public sealed class ESGeneratorTests
             "RazorVue.DuplicateLibraryNamedSlot.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -10037,7 +10293,7 @@ public sealed class ESGeneratorTests
             "RazorVue.MissingSlotValue.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10094,7 +10350,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InvalidLibraryComponentDeclaration.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -10153,7 +10409,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InvalidLibraryStyleDependencyDeclaration.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -10210,7 +10466,7 @@ public sealed class ESGeneratorTests
             "RazorVue.InvalidLibraryPluginRequirementDeclaration.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -10267,7 +10523,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnsupportedLifecycle.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -10327,7 +10583,7 @@ public sealed class ESGeneratorTests
             "RazorVue.UnsupportedField.Generated",
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -10390,6 +10646,81 @@ public sealed class ESGeneratorTests
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 
+    private static Compilation CreateAlignedRazorComponentCompilation(
+        string assemblyName,
+        string documentPath,
+        string documentText,
+        string componentSource,
+        string rootNamespace,
+        string? importsText = null)
+    {
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var baseCompilation = CSharpCompilation.Create(
+            assemblyName: assemblyName,
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    options: parseOptions,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+                    """,
+                    options: parseOptions,
+                    path: "ECMAScriptModuleAttribute.cs"),
+                CSharpSyntaxTree.ParseText(
+                    componentSource,
+                    options: parseOptions,
+                    path: Path.GetFileNameWithoutExtension(documentPath) + ".razor.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var projectEngine = RazorVueRazorCodeDocumentProvider.CreateProjectEngine(
+            documentPath,
+            parseOptions,
+            rootNamespace: rootNamespace);
+        var tagHelpers = RazorVueRazorCodeDocumentProvider.DiscoverTagHelpers(projectEngine, baseCompilation);
+        var importDocuments = string.IsNullOrWhiteSpace(importsText)
+            ? ImmutableArray<RazorSourceDocument>.Empty
+            : ImmutableArray.Create(
+                RazorVueRazorCodeDocumentProvider.CreateSourceDocument(
+                    new RazorVueRazorDocument(Path.Combine(Path.GetDirectoryName(documentPath)!, "_Imports.razor"), SourceText.From(importsText))));
+        var codeDocument = projectEngine.Process(
+            RazorVueRazorCodeDocumentProvider.CreateSourceDocument(
+                new RazorVueRazorDocument(documentPath, SourceText.From(documentText))),
+            RazorFileKind.Component,
+            importDocuments,
+            tagHelpers.Length == 0 ? null : TagHelperCollection.Create(tagHelpers));
+        var csharpDocument = RazorVueRazorCodeDocumentProvider.GetRequiredCSharpDocument(codeDocument);
+
+        var compilation = baseCompilation.AddSyntaxTrees(
+            CSharpSyntaxTree.ParseText(
+                csharpDocument.Text,
+                options: parseOptions,
+                path: Path.GetFileName(documentPath) + ".g.cs"));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+
+        return compilation;
+    }
+
     private static Compilation RunGenerator(Compilation compilation, out string generatedSource)
     {
         var (outputCompilation, runResult) = RunGeneratorWithResult(compilation);
@@ -10419,17 +10750,21 @@ public sealed class ESGeneratorTests
         return (outputCompilation, runResult);
     }
 
-    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(Compilation compilation, string? razorVueOutputMode = "legacy")
+    private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(
+        Compilation compilation,
+        string? razorVueOutputMode = "legacy",
+        RazorVueGenerator? razorVueGenerator = null,
+        AdditionalText[]? additionalTexts = null)
     {
         ISourceGenerator[] generators =
         [
             new ESGenerator().AsSourceGenerator(),
-            new RazorVueGenerator().AsSourceGenerator()
+            (razorVueGenerator ?? new RazorVueGenerator()).AsSourceGenerator()
         ];
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators,
-            additionalTexts: null,
+            additionalTexts: additionalTexts,
             parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options,
             optionsProvider: CreateAnalyzerConfigOptionsProvider(razorVueOutputMode),
             driverOptions: default);
@@ -10467,5 +10802,28 @@ public sealed class ESGeneratorTests
 
         public override bool TryGetValue(string key, out string value)
             => _values.TryGetValue(key, out value!);
+    }
+
+    private sealed class TestAdditionalText(string path, string text) : AdditionalText
+    {
+        private readonly SourceText _text = SourceText.From(text);
+
+        public override string Path { get; } = path;
+
+        public override SourceText GetText(CancellationToken cancellationToken = default)
+            => _text;
+    }
+
+    private sealed class RazorDocumentEchoTemplateFrontend : IRazorVueTemplateFrontend
+    {
+        public string Name => "Jazor.RazorVue.Test.ESGeneratorTests.RazorDocumentEchoTemplateFrontend";
+
+        public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
+        {
+            Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var document));
+            return new RazorVueRenderFragment(
+                ImmutableArray.Create<RazorVueRenderNode>(
+                    new RazorVueTextNode(document.Text.ToString().Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
+        }
     }
 }

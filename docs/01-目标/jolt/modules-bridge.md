@@ -57,17 +57,14 @@
 - `docs/01-目标/compiler/emit/` 是 emit lane 的 repo-level deep-doc 入口
 - `Jazor.EmitTest` 保留 emit-side regression coverage 的入口
 
-### Razor substrate
-
-- [Jazor.Razor README](../../../src/Jazor.Razor/README.md)
-
 ### RazorVue core
 
 - [Jazor.RazorVue README](../../../src/Jazor.RazorVue/README.md)
+- [RazorVue 文档入口](../razorvue/README.md)
 
 ### RazorVue analysis host
 
-- [Jazor.RazorVue.Analysis README](../../../src/Jazor.RazorVue.Analysis/README.md)
+- [Jazor.Analyzer README](../../../src/Jazor.Analyzer/README.md)
 
 ### WebIDL generator
 

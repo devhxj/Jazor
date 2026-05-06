@@ -11,7 +11,7 @@
 | 目录 | 对应源码 | 内容 |
 |------|---------|------|
 | `jolt/` | `src/Jolt/` | 完成度分析、问题清单、状态快照 |
-| `razorvue/` | RazorVue 线路 | 阶段性完成材料；当前物理实现已迁到 `src/Jazor.Common/RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/ECMAScript.Vuetify/` |
+| `razorvue/` | RazorVue 线路 | 阶段性完成材料；当前物理实现已迁到 `src/Jazor.RazorVue/`（含 `RazorSdk/`）、`src/Jazor.Analyzer/RazorVue/`、`src/ECMAScript.Vuetify/` |
 | `compiler/` | `src/Jazor.Compiler/` | 当前状态快照 + 历史测试审计 |
 | `emit/` | `src/Jazor.Emit/` | 当前状态快照 |
 | `sourcemap/` | `src/Jazor.Common/SourceMaps/` + `src/Jazor.Emit/SourceMaps/` | SourceMap 状态快照 |

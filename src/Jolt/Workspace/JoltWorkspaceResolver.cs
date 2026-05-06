@@ -4,7 +4,7 @@ using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using Jolt.DevServer;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -1817,3 +1817,4 @@ internal readonly record struct WorkspaceVueComponentResolution(
     string ComponentName,
     string AbsolutePath,
     string ImportPath);
+

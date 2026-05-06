@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Jolt.Analysis;
 using Jolt.Lsp.Coordination;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jazor.Vue;
 
 namespace Jolt.Lsp;
@@ -819,3 +819,4 @@ internal sealed class JazorLspDocumentService
             .ToArray();
     }
 }
+

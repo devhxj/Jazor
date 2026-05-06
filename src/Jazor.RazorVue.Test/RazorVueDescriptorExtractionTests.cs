@@ -1,7 +1,9 @@
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.Test;
 
@@ -14,7 +16,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -56,7 +58,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var snapshot = CreateSingleSnapshot(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -147,7 +149,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -206,7 +208,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -387,7 +389,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -421,7 +423,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -455,8 +457,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
-            using Jazor.RazorVue.Descriptor;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -525,7 +526,7 @@ public sealed class RazorVueDescriptorExtractionTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -592,7 +593,7 @@ public sealed class RazorVueDescriptorExtractionTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -663,7 +664,7 @@ public sealed class RazorVueDescriptorExtractionTests
         var snapshot = CreateSingleSnapshot(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -695,6 +696,210 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual(1, snapshot.Logic.Fields.Length);
         Assert.AreEqual("TitleText", snapshot.Logic.Fields[0].Name);
         Assert.AreEqual("FormatTitle", snapshot.Logic.Methods.Single().Name);
+    }
+
+    [TestMethod]
+    public void RazorVue_Snapshot_ResolvesPrimaryRazorDocumentAndImports_FromRazorGeneratedBuildRenderTree()
+    {
+        const string importsPath = @"D:\repo\Demo\_Imports.razor";
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Descriptor.RazorDocument.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    #line 1 "{{importsPath}}"
+                    using System;
+                    #line default
+                    #line hidden
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class TodoApp
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.OpenElement(0, "section");
+                                __builder.AddContent(1, "Hello");
+                                __builder.CloseElement();
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
+        Assert.AreEqual(documentPath, snapshot.RazorDocumentPath);
+        CollectionAssert.AreEqual(new[] { importsPath }, snapshot.RazorImportDocumentPaths.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_ResolvesPrimaryAndImportRazorDocuments_FromIndexedAdditionalTexts()
+    {
+        const string importsPath = @"D:\repo\Demo\_Imports.razor";
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string importsText = "@using Demo.Shared";
+        const string documentText = """
+            @page "/todo"
+            <section>Hello from Razor doc</section>
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Descriptor.RazorDocument.Catalog.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    #line 1 "{{importsPath}}"
+                    using System;
+                    #line default
+                    #line hidden
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class TodoApp
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.AddContent(0, "Hello from Razor doc");
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = RazorVueCompilationContext.TryCreate(
+            compilation,
+            RazorVueRazorDocumentSet.Create(
+            [
+                new RazorVueRazorDocument(importsPath.Replace('\\', '/'), SourceText.From(importsText)),
+                new RazorVueRazorDocument(documentPath.Replace('\\', '/'), SourceText.From(documentText))
+            ]));
+        Assert.IsNotNull(context);
+
+        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
+        Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var primaryDocument));
+        Assert.AreEqual(documentText, primaryDocument.Text.ToString());
+
+        var importDocuments = context.GetRazorImportDocuments(snapshot);
+        Assert.AreEqual(1, importDocuments.Length);
+        Assert.AreEqual(importsText, importDocuments[0].Text.ToString());
+    }
+
+    [TestMethod]
+    public void RazorVue_Snapshot_LeavesRazorDocumentReferenceEmpty_ForPlainCSharpComponent()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/plain-card")]
+                public class PlainCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        Assert.IsNull(snapshot.RazorDocumentPath);
+        Assert.IsTrue(snapshot.RazorImportDocumentPaths.IsDefaultOrEmpty);
     }
 
     private static RazorVueCompilationContext CreateContext(string source)
@@ -729,4 +934,3 @@ public sealed class RazorVueDescriptorExtractionTests
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 }
-

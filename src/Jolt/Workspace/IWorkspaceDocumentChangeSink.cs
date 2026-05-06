@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -24,3 +24,4 @@ internal sealed class NullWorkspaceDocumentChangeSink : IWorkspaceDocumentChange
         CancellationToken cancellationToken)
         => ValueTask.CompletedTask;
 }
+

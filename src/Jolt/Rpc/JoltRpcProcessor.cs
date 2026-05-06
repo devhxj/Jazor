@@ -1,5 +1,5 @@
-using Jazor.Common.VueContracts.Protocol;
-using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
+using Jazor.RazorVue.Protocol;
+using SharedJoltRpcMethodNames = Jazor.RazorVue.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Rpc;
 
@@ -99,3 +99,4 @@ public sealed class JoltRpcProcessor : IJoltRpcProcessor
                 details: exception.GetType().FullName));
     }
 }
+

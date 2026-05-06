@@ -1,7 +1,7 @@
 # Jazor.RazorVue 深度完成度分析报告（第四轮）
 
 > 分析日期：2026-04-20 
-> 分析范围：`src/Jazor.RazorVue/` + `src/Jazor.RazorVue.Analysis/` + `src/Jazor.RazorVue.Vuetify/` + `src/Jazor.Analyzer/RazorVue/`
+> 分析范围：`src/Jazor.RazorVue/` + `src/ECMAScript.Vuetify/` + `src/Jazor.Analyzer/RazorVue/` + `src/Jazor.Analyzer/VueHost/`
 
 ---
 
@@ -9,7 +9,7 @@
 
 | 维度 | 数值 |
 |------|------|
-| 项目数 | 4 个（RazorVue 核心、Analysis 生成器、Vuetify 组件库、Analyzer 诊断） |
+| 项目数 | 4 个（RazorVue 核心、Vuetify 组件库、Analyzer 诊断、VueHost 分析宿主） |
 | 源文件 | **96 个 .cs**（不含 `bin/obj`） |
 | 总代码行 | **~8,252 行** |
 | 测试方法（RazorVue 专项 5 文件） | **236** |
@@ -99,7 +99,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQuali
 
 - 当前工作区 `Jolt` 路线存在既有编译错误（与 RazorVue 改动无关），因此本轮采用 RazorVue 路线独立项目构建验证：
   - `dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj` ✅
-  - `dotnet build src/Jazor.RazorVue.Analysis/Jazor.RazorVue.Analysis.csproj` ✅
+  - `dotnet build src/Jolt/Jolt.csproj` ✅
   - `dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj` ✅
 
 ---

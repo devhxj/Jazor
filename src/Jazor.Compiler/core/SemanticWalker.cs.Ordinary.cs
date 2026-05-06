@@ -1,6 +1,7 @@
 using Acornima;
 using Acornima.Ast;
 using ECMAScript.Contract;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -393,9 +394,14 @@ public partial class SemanticWalker
 			return null;
 
 		if (type.TypeKind == TypeKind.Enum &&
-			type is INamedTypeSymbol enumType &&
-			enumType.EnumUnderlyingType is not null)
-			return BuildValueLiteral(enumType.EnumUnderlyingType, value);
+			type is INamedTypeSymbol enumType)
+		{
+			if (TryBuildStringEnumValueLiteral(enumType, value, out var stringEnumLiteral))
+				return stringEnumLiteral;
+
+			if (enumType.EnumUnderlyingType is not null)
+				return BuildValueLiteral(enumType.EnumUnderlyingType, value);
+		}
 
 		var valueStr = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
 		var (mapper, _) = GetMapperType(type);
@@ -407,61 +413,7 @@ public partial class SemanticWalker
 		// 字符串和字符字面量
 		else if (mapper == TypeMapper.String)
 		{
-			if (string.IsNullOrEmpty(valueStr))
-				return new StringLiteral("", "\"\"");
-
-			// 为 JavaScript 字符串字面量进行正确的转义处理
-			// JavaScript 字符串中需要转义的特殊字符：
-			// - 控制字符：\0 (null), \b (backspace), \f (form feed), \n (newline), \r (carriage return), \t (tab), \v (vertical tab)
-			// - 特殊字符：\\ (backslash), \" (double quote), \' (single quote)
-			// - Unicode 字符大于 0x7F 的可以保留原样（现代 JS 支持 UTF-8）
-			var escaped = new System.Text.StringBuilder();
-			foreach (char c in valueStr)
-			{
-				switch (c)
-				{
-					case '\0':
-						escaped.Append("\\0");
-						break;
-					case '\b':
-						escaped.Append("\\b");
-						break;
-					case '\f':
-						escaped.Append("\\f");
-						break;
-					case '\n':
-						escaped.Append("\\n");
-						break;
-					case '\r':
-						escaped.Append("\\r");
-						break;
-					case '\t':
-						escaped.Append("\\t");
-						break;
-					case '\v':
-						escaped.Append("\\v");
-						break;
-					case '\\':
-						escaped.Append("\\\\");
-						break;
-					case '"':
-						escaped.Append("\\\"");
-						break;
-					// 单引号在双引号字符串中不需要转义，但为了一致性可以保留
-					// case '\'':
-					//     escaped.Append("\\'");
-					//     break;
-					default:
-						// Unicode 字符可以直接保留（UTF-8 编码）
-						escaped.Append(c);
-						break;
-				}
-			}
-
-			// 使用双引号包裹
-			var formatted = $"\"{escaped}\"";
-
-			return new StringLiteral(valueStr, formatted);
+			return CreateStringLiteral(valueStr ?? string.Empty);
 		}
 
 		//  数值字面量：42 / 3.14
@@ -1557,11 +1509,26 @@ public partial class SemanticWalker
 
 		if (type.TypeKind == TypeKind.Enum)
 		{
-			if (type is INamedTypeSymbol enumType &&
-				enumType.EnumUnderlyingType is not null)
+			if (type is INamedTypeSymbol enumType)
 			{
-				var zeroValue = CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType);
-				return BuildValueLiteral(enumType.EnumUnderlyingType, zeroValue) ?? new NumericLiteral(0, "0");
+				if (Util.IsStringEnumType(enumType))
+				{
+					var zeroValue = enumType.EnumUnderlyingType is not null
+						? CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType)
+						: 0;
+					if (TryBuildStringEnumValueLiteral(enumType, zeroValue, out var stringEnumDefault))
+						return stringEnumDefault;
+
+					return HandleTransformationFailure<Expression>(
+						operation,
+						$"default({enumType.ToDisplayString(Format.NameFormat)}) is not supported because string enums require a declared zero-valued member mapping.");
+				}
+
+				if (enumType.EnumUnderlyingType is not null)
+				{
+					var zeroValue = CreateEnumUnderlyingZeroValue(enumType.EnumUnderlyingType);
+					return BuildValueLiteral(enumType.EnumUnderlyingType, zeroValue) ?? new NumericLiteral(0, "0");
+				}
 			}
 
 			return new NumericLiteral(0, "0");
@@ -1613,6 +1580,52 @@ public partial class SemanticWalker
 			SpecialType.System_UInt64 => 0UL,
 			_ => 0
 		};
+	}
+
+	private static StringLiteral CreateStringLiteral(string value)
+	{
+		if (string.IsNullOrEmpty(value))
+			return new StringLiteral("", "\"\"");
+
+		var escaped = new System.Text.StringBuilder();
+		foreach (char c in value)
+		{
+			switch (c)
+			{
+				case '\0':
+					escaped.Append("\\0");
+					break;
+				case '\b':
+					escaped.Append("\\b");
+					break;
+				case '\f':
+					escaped.Append("\\f");
+					break;
+				case '\n':
+					escaped.Append("\\n");
+					break;
+				case '\r':
+					escaped.Append("\\r");
+					break;
+				case '\t':
+					escaped.Append("\\t");
+					break;
+				case '\v':
+					escaped.Append("\\v");
+					break;
+				case '\\':
+					escaped.Append("\\\\");
+					break;
+				case '"':
+					escaped.Append("\\\"");
+					break;
+				default:
+					escaped.Append(c);
+					break;
+			}
+		}
+
+		return new StringLiteral(value, $"\"{escaped}\"");
 	}
 
 	private void RejectUnsupportedDefaultValueTypeIfNeeded(IOperation operation, ITypeSymbol type)
@@ -2035,13 +2048,18 @@ public partial class SemanticWalker
 		List<Expression> arguments,
 		Expression value)
 	{
+		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
+			propertyReference,
+			propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType,
+			"property assignment");
+
 		if (propertyReference.Property.SetMethod is not null)
 		{
 			var setterArguments = new List<Expression>(arguments.Count + 1);
 			setterArguments.AddRange(arguments);
 			setterArguments.Add(value);
 
-			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out var setterAlias);
+			var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, instance, out var setterAlias, propertyReference);
 			if (mapperExpr is not null)
 				return mapperExpr;
 

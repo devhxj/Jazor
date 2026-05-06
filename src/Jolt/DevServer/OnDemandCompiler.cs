@@ -7,7 +7,7 @@ using Jolt.Roslyn.InProc;
 using Jazor.Common.SourceMaps;
 using Jolt.SourceMap;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.DevServer;
 
@@ -1013,3 +1013,4 @@ internal sealed class OnDemandCompiler
         string Content,
         int GeneratedLineOffset);
 }
+

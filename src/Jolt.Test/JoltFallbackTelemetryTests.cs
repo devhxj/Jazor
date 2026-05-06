@@ -2,7 +2,7 @@ using System.Text.Json;
 using Jolt.Analysis;
 using Jolt.DevServer;
 using Jolt.Hosting;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Test;
 
@@ -154,3 +154,4 @@ public sealed class JoltFallbackTelemetryTests
         }
     }
 }
+

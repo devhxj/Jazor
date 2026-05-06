@@ -19,6 +19,7 @@ public static class Util
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     public const string ECMAScriptUnionAttributeMetadataName = "ECMAScript.ECMAScriptUnionAttribute";
+    public const string StringAttributeMetadataName = "ECMAScript.StringAttribute";
 
     private enum JsNameConfigKind
     {
@@ -279,6 +280,13 @@ public static class Util
 
     public static bool IsECMAScriptUnionMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == ECMAScriptUnionAttributeMetadataName;
+
+    public static bool IsStringEnumMarkerAttribute(INamedTypeSymbol? symbol)
+        => symbol?.ToDisplayString() == StringAttributeMetadataName;
+
+    public static bool IsStringEnumType(ITypeSymbol? symbol)
+        => symbol is INamedTypeSymbol { TypeKind: TypeKind.Enum } namedType &&
+           namedType.GetAttributes().Any(attribute => IsStringEnumMarkerAttribute(attribute.AttributeClass));
 
     public static bool IsECMAScriptUnionType(INamedTypeSymbol? symbol)
     {

@@ -15,7 +15,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components;
 
@@ -100,7 +100,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -132,7 +132,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -167,7 +167,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -198,7 +198,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -230,7 +230,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -263,7 +263,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -303,7 +303,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -340,7 +340,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -380,7 +380,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -428,7 +428,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -477,7 +477,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -513,7 +513,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -557,7 +557,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -596,7 +596,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -641,7 +641,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -680,7 +680,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -715,7 +715,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -754,7 +754,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -800,7 +800,7 @@ public sealed class RazorVueAnalyzerTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -838,7 +838,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -883,7 +883,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -931,7 +931,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -957,7 +957,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -986,7 +986,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -1015,7 +1015,7 @@ public sealed class RazorVueAnalyzerTests
         var diagnostics = await GetAnalyzerDiagnosticsAsync(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {

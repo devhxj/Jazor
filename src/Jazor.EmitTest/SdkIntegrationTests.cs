@@ -29,10 +29,16 @@ public sealed class SdkIntegrationTests
                 "lib/net10.0/ECMAScript.pdb",
                 "lib/net10.0/ECMAScript.Contract.dll",
                 "lib/net10.0/ECMAScript.Contract.pdb",
+                "lib/net10.0/ECMAScript.VueContract.dll",
+                "lib/net10.0/ECMAScript.VueContract.pdb",
+                "lib/net10.0/ECMAScript.Vue3.dll",
+                "lib/net10.0/ECMAScript.Vue3.pdb",
                 "lib/net10.0/Jazor.Compiler.dll",
                 "lib/net10.0/Jazor.Compiler.pdb",
                 "lib/net10.0/Jazor.Common.dll",
                 "lib/net10.0/Jazor.Common.pdb",
+                "lib/net10.0/Jazor.RazorVue.dll",
+                "lib/net10.0/Jazor.RazorVue.pdb",
                 "lib/net10.0/ECMAScript.Vuetify.dll",
                 "lib/net10.0/ECMAScript.Vuetify.pdb"
             },
@@ -46,10 +52,14 @@ public sealed class SdkIntegrationTests
                 "analyzers/dotnet/cs/Jazor.Analyzer.pdb",
                 "analyzers/dotnet/cs/ECMAScript.Contract.dll",
                 "analyzers/dotnet/cs/ECMAScript.Contract.pdb",
+                "analyzers/dotnet/cs/ECMAScript.VueContract.dll",
+                "analyzers/dotnet/cs/ECMAScript.VueContract.pdb",
                 "analyzers/dotnet/cs/Jazor.Compiler.dll",
                 "analyzers/dotnet/cs/Jazor.Compiler.pdb",
                 "analyzers/dotnet/cs/Jazor.Common.dll",
-                "analyzers/dotnet/cs/Jazor.Common.pdb"
+                "analyzers/dotnet/cs/Jazor.Common.pdb",
+                "analyzers/dotnet/cs/Jazor.RazorVue.dll",
+                "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("analyzers/dotnet/cs/", StringComparison.Ordinal)).ToArray());
     }
@@ -350,7 +360,7 @@ public sealed class SdkIntegrationTests
 
         StringAssert.Contains(componentModule, "vuetify/components");
         StringAssert.Contains(componentModule, "\"modelValue\": props.name");
-        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": props.nameChanged");
+        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": (__value) => emit(\"update:name\", __value)");
         StringAssert.Contains(hostRequirementsModule, "razorVueHostRequirements");
         StringAssert.Contains(hostRequirementsModule, "\"componentName\":\"ProfileForm\"");
         StringAssert.Contains(hostRequirementsModule, "\"componentId\":\"RazorVueSample.Host.ProfileForm\"");
@@ -453,7 +463,7 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -524,6 +534,7 @@ public sealed class SdkIntegrationTests
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
                 <JazorBundle>false</JazorBundle>
+                <JazorRazorVueOutputMode>legacy</JazorRazorVueOutputMode>
                 <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
               </PropertyGroup>
 
@@ -544,7 +555,7 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "DemoButton.cs"),
             """
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace Demo.Sample;
@@ -567,7 +578,7 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "CounterCard.cs"),
             """
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -713,7 +724,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(componentModule, "\"text\": props.label");
         StringAssert.Contains(componentModule, "\"disabled\": props.disabled");
         StringAssert.Contains(componentModule, "\"modelValue\": props.value");
-        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": props.valueChanged");
+        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": (__value) => emit(\"update:value\", __value)");
         StringAssert.Contains(componentModule, "header: (slotProps) => props.header(slotProps)");
         StringAssert.Contains(hostRequirementsModule, "export const razorVueStyles = Object.freeze([\"demo/button.css\"]);");
         StringAssert.Contains(hostRequirementsModule, "export const razorVuePluginRequirements = Object.freeze([\"demo-host\"]);");
@@ -792,6 +803,7 @@ public sealed class SdkIntegrationTests
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
                 <JazorBundle>true</JazorBundle>
+                <JazorRazorVueOutputMode>legacy</JazorRazorVueOutputMode>
                 <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
                 <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
               </PropertyGroup>
@@ -836,7 +848,7 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -901,7 +913,7 @@ public sealed class SdkIntegrationTests
 
         StringAssert.Contains(componentModule, "vuetify/components");
         StringAssert.Contains(componentModule, "\"modelValue\": props.name");
-        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": props.nameChanged");
+        StringAssert.Contains(componentModule, "\"onUpdate:modelValue\": (__value) => emit(\"update:name\", __value)");
         StringAssert.Contains(bundle, "razorVueHostRequirements");
         Assert.AreEqual("@import \"vuetify/styles\";\n", css);
 
@@ -1266,8 +1278,8 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "DemoButton.cs"),
             """
-            using Jazor.RazorVue;
-            using Jazor.RazorVue.Descriptor;
+            using ECMAScript.VueContract;
+            using ECMAScript.VueContract.Descriptor;
             using Microsoft.AspNetCore.Components;
 
             namespace Demo.Authoring;
@@ -1322,6 +1334,7 @@ public sealed class SdkIntegrationTests
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
                 <JazorBundle>true</JazorBundle>
+                <JazorRazorVueOutputMode>legacy</JazorRazorVueOutputMode>
                 <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
                 <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
               </PropertyGroup>
@@ -1369,7 +1382,7 @@ public sealed class SdkIntegrationTests
             """
             using Demo.Authoring;
             using ECMAScript;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1428,6 +1441,7 @@ public sealed class SdkIntegrationTests
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
                 <JazorBundle>true</JazorBundle>
+                <JazorRazorVueOutputMode>legacy</JazorRazorVueOutputMode>
                 <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
                 <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
               </PropertyGroup>
@@ -1479,7 +1493,7 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 

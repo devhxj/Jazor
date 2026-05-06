@@ -126,7 +126,8 @@ internal static class ClrRuntimeCatalogEmitter
             return false;
 
         var isRuntimeCarrier = string.Equals(typeSymbol.Name, "RuntimeModule", StringComparison.Ordinal);
-        if ((!isRuntimeCarrier && jazorAttr is null) || string.IsNullOrWhiteSpace(modulePath))
+        var isInternalHelperModule = jazorAttr is null && !string.IsNullOrWhiteSpace(modulePath);
+        if ((!isRuntimeCarrier && !isInternalHelperModule && jazorAttr is null) || string.IsNullOrWhiteSpace(modulePath))
             return false;
 
         if (!string.Equals(typeSymbol.ContainingNamespace?.ToDisplayString(), "Jazor.CLR", StringComparison.Ordinal))

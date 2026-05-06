@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -21,3 +21,4 @@ internal sealed record LspReferenceProviderContext(
     bool IncludeDeclaration,
     ProjectionTarget ProjectionTarget,
     IReadOnlyList<LspLocation> ExistingLocations);
+

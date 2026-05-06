@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -23,3 +23,4 @@ public interface IJoltWorkspaceStore
         string documentPath,
         CancellationToken cancellationToken);
 }
+

@@ -62,7 +62,7 @@ src/
 **定位**: 薄层 Roslyn Generator 和 Analyzer，只负责接线，不承载核心语义实现。
 
 **文件**:
-- `RazorVueGenerator.cs` - 实现 `IIncrementalGenerator`，生成 `Jazor.Generated.RazorVueCatalog.g.cs`
+- `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs` - 实现 `IIncrementalGenerator`，生成 `Jazor.Generated.RazorVueCatalog.g.cs`
 - 14 个诊断规则 (JAZORVGA001-JAZORVGA014) - 组件发现、参数验证、Slot 上下文、库桩声明等
 
 **工作流程**:
@@ -377,7 +377,7 @@ src/Jazor.RazorVue/
 └── IVueComponent.cs                # 组件基础接口
 
 src/Jazor.RazorVue.Analysis/
-└── RazorVueGenerator.cs            # Source Generator (544 行)
+└── src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs  # Source Generator
 
 src/Jazor.RazorVue.Vuetify/
 └── Components/                     # 35 个 Vuetify 组件桩
@@ -465,7 +465,7 @@ public interface IRazorVueSfcArtifactLowerer
 
 ## 10. 诊断规则
 
-RazorVue 提供以下诊断规则（在 `RazorVueGenerator.cs` 中定义）：
+RazorVue 提供以下诊断规则（在 `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs` 中定义）：
 
 | 规则 ID | 标题 | 严重性 |
 |---------|------|--------|

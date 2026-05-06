@@ -12,13 +12,16 @@ namespace Jazor.RazorVue.Test;
 [TestClass]
 public sealed class RazorVueSfcArtifactFactoryTests
 {
+    private static RazorVueSfcArtifactFactory CreateBuildRenderTreeArtifactFactory()
+        => new(BuildRenderTreeTemplateFrontend.Instance);
+
     [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersSimpleComponent_ToVueSfcArtifact()
     {
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -55,7 +58,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         Assert.AreEqual("CounterCard", artifact.ComponentName);
         Assert.AreEqual("components/counter-card.vue", artifact.RelativeSfcPath);
@@ -80,7 +83,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -114,13 +117,48 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcPipeline_CanUseInjectedTemplateFrontend_WhenBuildRenderTreeIsAbsent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/injected-pipeline-card")]
+                public class InjectedPipelineCard : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var frontend = new FixedTemplateFrontend(CreateInjectedSectionTree("Injected pipeline SFC"));
+        var artifact = new RazorVueSfcPipeline(frontend).Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.TemplateText, "Injected pipeline SFC");
+        Assert.AreEqual("InjectedPipelineCard", artifact.ComponentName);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersControlFlowIntoTemplateAndSetupBindings()
     {
         var context = CreateContext(
             """
             using System;
             using System.Collections.Generic;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -162,7 +200,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<template v-if=\"__jazorVueSfcBinding0\">");
         StringAssert.Contains(artifact.TemplateText, "<template v-for=\"item in __jazorVueSfcBinding1\">");
@@ -179,7 +217,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -217,7 +255,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<section>");
         StringAssert.Contains(artifact.TemplateText, "<h1>");
@@ -235,7 +273,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
-                    global using Jazor.RazorVue;
+                    global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
                     path: "RazorVueTestGlobalUsings.g.cs"),
@@ -299,7 +337,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsNotNull(context);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<section>");
         StringAssert.Contains(artifact.TemplateText, "<span>");
@@ -313,7 +351,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -362,7 +400,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ScriptSetupText, "import { onMounted, watch, computed } from \"vue\";");
         StringAssert.Contains(artifact.ScriptSetupText, "let _count = 1;");
@@ -382,7 +420,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -431,7 +469,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent from \"./child-card.vue\";");
         StringAssert.Contains(artifact.ScriptSetupText, "import { DemoButton as DemoButton } from \"demo/components\";");
@@ -447,7 +485,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -480,7 +518,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (props.title + \"!\"));");
         StringAssert.Contains(artifact.TemplateText, "<section :title=\"__jazorVueSfcBinding0\" />");
@@ -495,7 +533,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
-                    global using Jazor.RazorVue;
+                    global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
                     path: "RazorVueTestGlobalUsings.g.cs"),
@@ -557,7 +595,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsNotNull(context);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<VTextField :modelValue=\"props.modelValue\" @update:modelValue=\"__jazorVueSfcBinding0\" />");
         StringAssert.Contains(artifact.ScriptSetupText, "const props = defineProps<{ modelValue?: any }>();");
@@ -571,7 +609,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -606,7 +644,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         var snapshot = context.CreateSemanticSnapshots().Single();
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            new RazorVueSfcArtifactFactory().Lower(context, snapshot));
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "cannot hoist component-local expression");
@@ -618,7 +656,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -654,7 +692,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.ScriptSetupText, "import { computed } from \"vue\";");
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (props.count + 1));");
@@ -667,7 +705,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -707,7 +745,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent>");
         StringAssert.Contains(artifact.TemplateText, "<template #itemTemplate=\"context\">");
@@ -722,7 +760,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -765,7 +803,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<template #itemTemplate=\"context\">");
         StringAssert.Contains(artifact.TemplateText, "<slot name=\"itemTemplate\" v-bind=\"context\" />");
@@ -777,7 +815,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -816,7 +854,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
             }
             """);
 
-        var artifact = new RazorVueSfcArtifactFactory().Lower(context, context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Page"));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Page"));
 
         StringAssert.Contains(artifact.TemplateText, "<template #footer>");
         StringAssert.Contains(artifact.TemplateText, "<slot />");
@@ -829,7 +867,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -867,7 +905,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            new RazorVueSfcArtifactFactory().Lower(context, snapshot));
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ItemTemplate");
@@ -914,3 +952,4 @@ public sealed class RazorVueSfcArtifactFactoryTests
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
 }
+

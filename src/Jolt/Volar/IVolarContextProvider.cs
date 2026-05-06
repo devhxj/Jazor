@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Volar;
 
@@ -8,3 +8,4 @@ public interface IVolarContextProvider
         GetVolarContextRequest request,
         CancellationToken cancellationToken);
 }
+

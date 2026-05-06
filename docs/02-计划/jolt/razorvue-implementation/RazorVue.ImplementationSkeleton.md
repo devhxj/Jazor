@@ -183,7 +183,7 @@ src/Jazor.Razor/
   JazorComponent.cs
 
 src/Jazor.RazorVue.Analysis/
-  RazorVueGenerator.cs
+  RazorVue/Generation/RazorVueGenerator.cs
 ```
 
 建议的分析器侧布局：

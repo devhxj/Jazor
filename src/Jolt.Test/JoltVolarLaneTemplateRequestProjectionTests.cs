@@ -3,7 +3,7 @@ using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
@@ -352,3 +352,4 @@ public sealed class JoltVolarLaneTemplateRequestProjectionTests
         }
     }
 }
+

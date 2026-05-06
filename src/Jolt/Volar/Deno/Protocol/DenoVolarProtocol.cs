@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Volar.Deno.Protocol;
 
@@ -62,3 +62,4 @@ internal sealed class DenoTemplateRenameRequest : DenoTemplateRequest
 {
     public required string NewName { get; init; }
 }
+

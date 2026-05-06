@@ -1,5 +1,5 @@
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -17,3 +17,4 @@ internal interface ILspFoldingRangeProvider
 internal sealed record LspFoldingRangeProviderContext(
     DocumentSnapshot Document,
     IReadOnlyList<LspFoldingRange> ExistingRanges);
+

@@ -1,4 +1,4 @@
-using Jazor.RazorVue;
+using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;

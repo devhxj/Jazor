@@ -13,7 +13,7 @@ using Jolt.Lsp.Routing;
 using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 
@@ -1507,3 +1507,4 @@ internal sealed partial class InProcRoslynCodeService
         }
     }
 }
+

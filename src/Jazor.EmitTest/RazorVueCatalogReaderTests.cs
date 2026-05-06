@@ -7,6 +7,7 @@ using Jazor.RazorVue.Artifacts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using System.Reflection;
 
 namespace Jazor.EmitTest
@@ -47,7 +48,7 @@ namespace Jazor.EmitTest
                 "RazorVue.Reader.Integration.Tests",
                 """
                 using System;
-                using Jazor.RazorVue;
+                using ECMAScript.VueContract;
                 using Microsoft.AspNetCore.Components;
 
                 namespace ECMAScript
@@ -75,7 +76,7 @@ namespace Jazor.EmitTest
                 .Locations
                 .Single(static item => item.IsInSource);
             var expectedOrigin = RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Component);
-            var assembly = CompileRazorVueGeneratedAssembly(compilation);
+            var assembly = CompileRazorVueGeneratedAssembly(compilation, "legacy");
 
             var catalog = RazorVueCatalogReader.TryRead(assembly);
 
@@ -559,11 +560,14 @@ namespace Jazor.EmitTest
                 references: references,
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        private static Assembly CompileRazorVueGeneratedAssembly(Compilation compilation)
+        private static Assembly CompileRazorVueGeneratedAssembly(Compilation compilation, string razorVueOutputMode)
         {
-            GeneratorDriver driver = CSharpGeneratorDriver.Create([
-                new RazorVueGenerator().AsSourceGenerator()
-            ]);
+            GeneratorDriver driver = CSharpGeneratorDriver.Create(
+                [new RazorVueGenerator().AsSourceGenerator()],
+                additionalTexts: null,
+                parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options,
+                optionsProvider: CreateAnalyzerConfigOptionsProvider(razorVueOutputMode),
+                driverOptions: default);
             driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
 
             var diagnostics = outputCompilation.GetDiagnostics()
@@ -586,12 +590,40 @@ namespace Jazor.EmitTest
         private static IEnumerable<MetadataReference> CreateBaseReferences()
             => Net100.References.All.Cast<MetadataReference>();
 
-        private static IEnumerable<MetadataReference> CreateRazorVueReferences()
-            => CreateBaseReferences().Concat([
+        private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string razorVueOutputMode)
+            => new TestAnalyzerConfigOptionsProvider(new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["build_property.JazorRazorVueOutputMode"] = razorVueOutputMode
+            });
+
+		private static IEnumerable<MetadataReference> CreateRazorVueReferences()
+			=> CreateBaseReferences().Concat([
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]);
+
+        private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
+        {
+            private readonly AnalyzerConfigOptions _globalOptions = new TestAnalyzerConfigOptions(globalOptions);
+            private static readonly AnalyzerConfigOptions EmptyOptions = new TestAnalyzerConfigOptions(new Dictionary<string, string>(StringComparer.Ordinal));
+
+            public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
+
+            public override AnalyzerConfigOptions GetOptions(SyntaxTree tree)
+                => EmptyOptions;
+
+            public override AnalyzerConfigOptions GetOptions(AdditionalText textFile)
+                => EmptyOptions;
+        }
+
+        private sealed class TestAnalyzerConfigOptions(IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptions
+        {
+            private readonly IReadOnlyDictionary<string, string> _values = values;
+
+            public override bool TryGetValue(string key, out string value)
+                => _values.TryGetValue(key, out value!);
+        }
     }
 }
 

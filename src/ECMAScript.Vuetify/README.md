@@ -13,7 +13,7 @@
 
 ## Boundaries
 
-- 组件 authoring 元数据特性与 `IVueLibraryComponent` 来自 `Jazor.RazorVue` 命名空间，其物理实现位于 `Jazor.Common`。
+- 组件 authoring 元数据特性、`IVueLibraryComponent` 以及相关 authoring 枚举由 `ECMAScript.VueContract` 项目提供；实际代码命名空间统一为 `ECMAScript.VueContract` / `ECMAScript.VueContract.Descriptor`。
 - `ECMAScript.Vuetify` 不承载 RazorVue 生成器或分析逻辑；那些逻辑位于 `Jazor.Analyzer`。
 - Deno / npm 导入地址通过 `ECMAScript` 特性声明，例如 `npm:vuetify`。
 

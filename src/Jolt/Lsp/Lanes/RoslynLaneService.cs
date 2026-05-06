@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.Workspace;
 
@@ -432,3 +432,4 @@ internal sealed class RoslynLaneService : ILspLane
         return inProcResult ?? await fallback(document, cancellationToken);
     }
 }
+

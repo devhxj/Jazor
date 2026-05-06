@@ -1,5 +1,5 @@
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -17,3 +17,4 @@ internal interface ILspDocumentSymbolProvider
 internal sealed record LspDocumentSymbolProviderContext(
     DocumentSnapshot Document,
     IReadOnlyList<LspDocumentSymbol> ExistingSymbols);
+

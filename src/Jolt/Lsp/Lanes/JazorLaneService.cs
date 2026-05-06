@@ -1,5 +1,5 @@
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Lsp.Lanes;
 
@@ -100,3 +100,4 @@ internal sealed class JazorLaneService : ILspLane
         CancellationToken cancellationToken)
         => _documentService.GetCodeActionsAsync(document, diagnostics, cancellationToken);
 }
+

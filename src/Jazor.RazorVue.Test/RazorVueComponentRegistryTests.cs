@@ -146,7 +146,7 @@ public sealed class RazorVueComponentRegistryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -191,7 +191,7 @@ public sealed class RazorVueComponentRegistryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -240,7 +240,7 @@ public sealed class RazorVueComponentRegistryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -281,7 +281,7 @@ public sealed class RazorVueComponentRegistryTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {

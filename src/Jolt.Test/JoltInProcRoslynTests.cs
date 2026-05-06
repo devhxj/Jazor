@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.Roslyn.InProc;
 using Microsoft.CodeAnalysis;
@@ -1084,3 +1084,4 @@ public sealed class JoltInProcRoslynTests
         return LspProtocolHelpers.GetPosition(text, offset + advance);
     }
 }
+

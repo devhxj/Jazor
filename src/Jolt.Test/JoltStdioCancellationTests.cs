@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Analysis;
 using Jolt.Rpc;
 
@@ -55,3 +55,4 @@ public sealed class JoltStdioCancellationTests
             => ValueTask.FromException<string>(new InvalidOperationException("Processor should not be invoked."));
     }
 }
+

@@ -11,7 +11,9 @@ namespace Jazor.RazorVue.Test;
 internal static class RazorVueMetadataReferences
 {
     private const string AuthoringGlobalUsings = """
-        global using Jazor.RazorVue;
+        global using ECMAScript.VueContract;
+        global using ECMAScript.VueContract.Descriptor;
+        global using ECMAScript.VueContract;
         global using Microsoft.AspNetCore.Components;
         """;
 

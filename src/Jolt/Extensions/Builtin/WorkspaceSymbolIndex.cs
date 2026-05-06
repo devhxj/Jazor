@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions.Builtin;
 
@@ -183,3 +183,4 @@ internal sealed record IndexedDocumentSymbols(
     string DocumentPath,
     string Fingerprint,
     IReadOnlyList<LspWorkspaceSymbol> Symbols);
+

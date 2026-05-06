@@ -150,7 +150,7 @@ internal sealed class NullWorkspaceDocumentChangeSink : IWorkspaceDocumentChange
 
 ### 2.5 `DocumentSnapshot` 类型
 
-**文件位置**：`src/Jazor.VueContracts/Protocol/` （来自共享契约）
+**文件位置**：`src/Jazor.RazorVue/Protocol/` （来自共享契约）
 
 文档快照的数据结构：
 
@@ -160,14 +160,14 @@ public class DocumentSnapshot
     public string DocumentPath { get; }
     public DocumentKind DocumentKind { get; }
     public string Text { get; }
-    public int? Version { get; }
+    public string? Version { get; }
 }
 ```
 
 - `DocumentPath`：规范化的文档路径
 - `DocumentKind`：文档类型（Jazor、CSharp、Vue、JavaScript、TypeScript、Css、Unknown）
 - `Text`：文档内容
-- `Version`：文档版本号（可选，用于 LSP 版本管理）
+- `Version`：文档版本字符串（可选，用于 LSP/宿主版本管理）
 
 ## 3. 核心算法
 

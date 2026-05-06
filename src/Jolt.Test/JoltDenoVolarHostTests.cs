@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Lsp;
 using Jolt.Volar.Deno.Hosting;
 
@@ -76,3 +76,4 @@ public sealed class JoltDenoVolarHostTests
         }
     }
 }
+

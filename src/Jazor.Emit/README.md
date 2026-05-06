@@ -16,7 +16,7 @@
 ## Boundaries
 
 - `Jazor.Compiler` 负责 AST、文本、catalog 和 source-origin/source-map carriers。
-- `Jazor.Common.Emit` 与 `Jazor.Common.SourceMaps` 提供跨模块共享模型。
+- `Jazor.RazorVue.Emit` 与 `Jazor.Common.SourceMaps` 提供跨模块共享模型。
 - `Jazor.Emit` 只负责 host-facing 文件输出与 bundle orchestration。
 
 ## Key Files

@@ -24,7 +24,7 @@
 ## Boundaries
 
 - `Jolt` 不拥有编译器 lowering 规则；那属于 `Jazor.Compiler`。
-- RazorVue 共享语义与 DTO 不在 `Jolt` 内定义，而是在 `Jazor.Common`。
+- RazorVue 共享语义与宿主协议 DTO 不在 `Jolt` 内定义，而是在 `Jazor.RazorVue`。
 - transport-based analysis 仅保留为迁移兼容路径，不再是目标架构。
 
 ## Runtime Modes
@@ -58,8 +58,8 @@
 
 Jolt 现在不再在 `Protocol/Contracts/` 下自定义共享 DTO。共享契约统一位于：
 
-- `src/Jazor.Common/VueContracts/Documents/`
-- `src/Jazor.Common/VueContracts/Protocol/`
+- `src/Jazor.RazorVue/Documents/`
+- `src/Jazor.RazorVue/Protocol/`
 
 其中包括：
 

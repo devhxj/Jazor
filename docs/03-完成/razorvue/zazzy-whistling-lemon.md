@@ -43,7 +43,7 @@
 
 **新建 `RazorVueIrWalker`** — 核心类型，遍历 Razor IR 节点树，生成 SFC `<template>` 内容。
 
-- 文件: `src/Jazor.Common/RazorVue/IrExtraction/RazorVueIrWalker.cs`（新建）
+- 文件: `src/Jazor.RazorVue/IrExtraction/RazorVueIrWalker.cs`（新建）
 
   IR 节点 → SFC 映射规则：
 
@@ -58,7 +58,7 @@
   | `TagHelperIntermediateNode` | 根据具体 tag helper 类型分派 |
   | `RazorDirectiveIntermediateNode` | 提取 `@code` 块内容 |
 
-- 文件: `src/Jazor.Common/RazorVue/IrExtraction/RazorVueIrSfcBuilder.cs`（新建）
+- 文件: `src/Jazor.RazorVue/IrExtraction/RazorVueIrSfcBuilder.cs`（新建）
   - 组装完整 `.vue` 文件：`<template>` + `<script setup>` + `<style scoped>`
   - 从 IR 中提取 `@code` 块内容生成 `<script setup>`
   - 收集组件 import 依赖
@@ -69,7 +69,7 @@
 
 **新建 `RazorVueSfcPhase`** — 注册到 Razor 编译管线，在 IR 生成后执行。
 
-- 文件: `src/Jazor.Common/RazorVue/IrExtraction/RazorVueSfcPhase.cs`（新建）
+- 文件: `src/Jazor.RazorVue/IrExtraction/RazorVueSfcPhase.cs`（新建）
 
   ```csharp
   // 伪代码
@@ -119,10 +119,10 @@
 
 **标记/移除 IOperation 路径**
 
-- 文件: `src/Jazor.Common/RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs` — 标记 obsolete 或移除
-- 文件: `src/Jazor.Common/RazorVue/RenderTree/RazorVueRenderTree.cs` — 标记 obsolete 或移除
-- 文件: `src/Jazor.Common/RazorVue/Canonical/RazorVueCanonicalHModelFactory.cs` — 标记 obsolete 或移除
-- 文件: `src/Jazor.Common/RazorVue/Lowering/RazorVueSfcArtifactFactory.cs` — 标记 obsolete 或移除
+- 文件: `src/Jazor.RazorVue/RenderTree/RazorVueRenderTreeExtractor.cs` — 标记 obsolete 或移除
+- 文件: `src/Jazor.RazorVue/RenderTree/RazorVueRenderTree.cs` — 标记 obsolete 或移除
+- 文件: `src/Jazor.RazorVue/Canonical/RazorVueCanonicalHModelFactory.cs` — 标记 obsolete 或移除
+- 文件: `src/Jazor.RazorVue/Lowering/RazorVueSfcArtifactFactory.cs` — 标记 obsolete 或移除
 - 注意：先确保新管线端到端可用后再移除旧代码
 
 ## 关键文件清单
@@ -131,9 +131,9 @@
 |------|------|------|
 | `src/Jazor.Common/Jazor.Common.csproj` | 修改 | 添加 ILAccess.Fody 引用 |
 | `src/Jazor.Common/FodyWeavers.xml` | 新建 | Fody 配置 |
-| `src/Jazor.Common/RazorVue/IrExtraction/RazorVueIrWalker.cs` | 新建 | IR 节点遍历 → SFC 生成 |
-| `src/Jazor.Common/RazorVue/IrExtraction/RazorVueIrSfcBuilder.cs` | 新建 | SFC 文件组装 |
-| `src/Jazor.Common/RazorVue/IrExtraction/RazorVueSfcPhase.cs` | 新建 | 自定义 IRazorEnginePhase |
+| `src/Jazor.RazorVue/IrExtraction/RazorVueIrWalker.cs` | 新建 | IR 节点遍历 → SFC 生成 |
+| `src/Jazor.RazorVue/IrExtraction/RazorVueIrSfcBuilder.cs` | 新建 | SFC 文件组装 |
+| `src/Jazor.RazorVue/IrExtraction/RazorVueSfcPhase.cs` | 新建 | 自定义 IRazorEnginePhase |
 | `src/Jazor.Analyzer/RazorVue/RazorVueSfcPipeline.cs` | 修改 | 注册自定义 Phase |
 | `src/Jazor.Analyzer/RazorVue/RazorVueGenerator.cs` | 修改 | 读取 SFC 特征，写入 catalog class |
 

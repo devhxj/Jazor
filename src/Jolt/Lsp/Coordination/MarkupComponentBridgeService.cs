@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Lsp.Coordination;
@@ -839,3 +839,4 @@ internal readonly record struct ImportBindingCandidate(
     string Name,
     int StartOffset,
     int EndOffset);
+

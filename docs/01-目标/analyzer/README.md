@@ -42,12 +42,18 @@ Jazor.Analyzer
 - 兼容分析 RPC 的进程内/stdio 宿主
 
 对外命名空间仍保留 `Jazor.RazorVue.Analysis`，但物理程序集已经是 `Jazor.Analyzer`。
+当前物理分层建议读成：
+
+- `src/Jazor.Analyzer/RazorVue/Diagnostics/`：analyzer 本体、descriptor、known symbol helper
+- `src/Jazor.Analyzer/RazorVue/Generation/`：增量生成器
+- `src/Jazor.Analyzer/VueHost/`：`Jazor.Vue` 兼容分析 RPC / in-proc host
 
 ## 关键约束
 
 - 分析器负责 **尽早报错**，编译器负责 **最终使用点裁决**。
 - erased positions 上允许分析器更严格，编译器不必机械追平。
-- RazorVue 共享语义不在这里定义，而在 `src/Jazor.Common/RazorVue/`。
+- RazorVue 共享语义不在这里定义，而在 `src/Jazor.RazorVue/`；Razor SDK 桥接在同项目下的 `src/Jazor.RazorVue/RazorSdk/`。
+- `Jazor.Analyzer` 只保留 Roslyn/generator/analysis host 责任，不重新拥有 RazorVue core lowering 或 descriptor 语义。
 
 ## 诊断面
 

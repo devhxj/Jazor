@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Analysis;
 
 namespace Jolt.Test;
@@ -251,3 +251,4 @@ public sealed class JoltProcessCleanupTests
         }
     }
 }
+

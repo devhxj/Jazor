@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\ECMAScript.Contract\GlobalUsings.cs" Link="Shared\GlobalUsings.cs" />
+    <Compile Include="..\ECMAScript.Contract\IsExternalInit.cs" Link="Shared\IsExternalInit.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(CodeAnalysisVersion)">
       <PrivateAssets>all</PrivateAssets>
@@ -19,6 +24,7 @@
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" />
+    <ProjectReference Include="..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
   </ItemGroup>
 
   <ItemGroup>

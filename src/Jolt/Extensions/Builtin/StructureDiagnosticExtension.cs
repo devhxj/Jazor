@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Jolt.Lsp;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions.Builtin;
 
@@ -225,3 +225,4 @@ internal sealed class StructureDiagnosticExtension : IExtension, ILspDiagnosticP
         });
     }
 }
+

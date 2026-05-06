@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Components;
 using Jolt.Razor.Toolset;
 using Jolt.VirtualDocuments.Mapping;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Razor.InProc;
 
@@ -479,3 +479,4 @@ internal readonly record struct RazorDesignTimeCodeProjection(
     string ProjectedDocumentPath,
     string SourceText,
     ProjectionMap ProjectionMap);
+

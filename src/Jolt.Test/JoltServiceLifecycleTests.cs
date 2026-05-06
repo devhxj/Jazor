@@ -2,7 +2,7 @@ using Jolt.Analysis;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Services;
 using Jolt.Workspace;
 
@@ -150,3 +150,4 @@ public sealed class JoltServiceLifecycleTests
             => ValueTask.FromResult<LspWorkspaceEdit?>(null);
     }
 }
+

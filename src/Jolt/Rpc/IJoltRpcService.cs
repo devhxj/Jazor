@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Rpc;
 
@@ -32,3 +32,4 @@ public interface IJoltRpcService
         GetHotUpdatePlanRequest request,
         CancellationToken cancellationToken);
 }
+

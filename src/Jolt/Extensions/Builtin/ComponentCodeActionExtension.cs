@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Jazor.Vue;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Workspace;
 
 namespace Jolt.Extensions.Builtin;
@@ -216,3 +216,4 @@ internal sealed class ComponentCodeActionExtension : IExtension, ILspCodeActionP
         return leftStart <= rightEnd && rightStart <= leftEnd;
     }
 }
+

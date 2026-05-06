@@ -2672,6 +2672,38 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_CharIntrinsics_PreserveStringCarrierSemantics()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(string text)
+                {
+                    char last = text[^1];
+                    char upper = char.ToUpperInvariant(last);
+                    char lower = char.ToLowerInvariant(last);
+                    bool letter = char.IsLetter(last);
+                    bool whitespace = char.IsWhiteSpace(last);
+                    double numeric = char.GetNumericValue(last);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let last = _5ad63706a889c294(text, text.length - 1);
+  let upper = last.toUpperCase();
+  let lower = last.toLowerCase();
+  let letter = /[a-zA-Z]/.test(last);
+  let whitespace = _16e351e6f7b127f7(last);
+  let numeric = _d86c1e9964250116(last);
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_ImplicitIndexerReference_StringRange_UsesExclusiveEndSubstring()
 	{
 		var operation = GetFirstOperation<IImplicitIndexerReferenceOperation>(@"
@@ -3799,6 +3831,91 @@ public sealed class SemanticWalkerReferenceTest
 		AssertScriptEqual(@"{
   let dict = new Map;
   let found = dict.has(""key"");
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_IDictionaryContainsKey_WithRecordKey_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+
+            record Key(int Id);
+
+            class TestClass
+            {
+                void TestMethod(IDictionary<Key, int> dict, Key key)
+                {
+                    bool found = dict.ContainsKey(key);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "JS-stable default equality");
+		StringAssert.Contains(exception.Message, "System.Collections.Generic.IDictionary<Key, int>");
+		StringAssert.Contains(exception.Message, "Key");
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_ISetContains_WithRecordElement_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+
+            record Key(int Id);
+
+            class TestClass
+            {
+                void TestMethod(ISet<Key> set, Key key)
+                {
+                    bool found = set.Contains(key);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "JS-stable default equality");
+		StringAssert.Contains(exception.Message, "System.Collections.Generic.ISet<Key>");
+		StringAssert.Contains(exception.Message, "Key");
+	}
+
+	[TestMethod]
+	public void Visit_Invocation_IDictionaryContainsKey_WithPlainReferenceIdentityKey_Allows()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+
+            class Key
+            {
+                public int Id { get; set; }
+            }
+
+            class TestClass
+            {
+                void TestMethod(IDictionary<Key, int> dict, Key key)
+                {
+                    bool found = dict.ContainsKey(key);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let found = dict.has(key);
 }", script);
 	}
 
@@ -5469,6 +5586,96 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_Reference_ECMAScriptNumericEnumField_EmitsNumericLiteral()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var fractional = Intl.FractionalSecondDigits.Three;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.AreEqual(@"{
+  let fractional = 3;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IntlOptionRecords_ProjectStringEnumsToStringLiterals()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var displayOptions = new Intl.DisplayNamesOptions(
+                        LocaleMatcher: Intl.LocaleMatcher.BestFit,
+                        Style: Intl.LongShortNarrow.Narrow,
+                        Type: Intl.DisplayNamesType.Language,
+                        Fallback: Intl.DisplayNamesFallback.Code,
+                        LanguageDisplay: Intl.DisplayNamesLanguageDisplay.Dialect);
+                    var dateOptions = new Intl.DateTimeFormatOptions(
+                        Year: Intl.NumericTwoDigit.TwoDigit,
+                        FractionalSecondDigits: Intl.FractionalSecondDigits.Three,
+                        FormatMatcher: Intl.FormatMatcher.BestFit,
+                        DateStyle: Intl.DateTimeStyle.Short);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "localeMatcher: \"best fit\"");
+		StringAssert.Contains(script, "style: \"narrow\"");
+		StringAssert.Contains(script, "type: \"language\"");
+		StringAssert.Contains(script, "fallback: \"code\"");
+		StringAssert.Contains(script, "languageDisplay: \"dialect\"");
+		StringAssert.Contains(script, "year: \"2-digit\"");
+		StringAssert.Contains(script, "fractionalSecondDigits: 3");
+		StringAssert.Contains(script, "formatMatcher: \"best fit\"");
+		StringAssert.Contains(script, "dateStyle: \"short\"");
+		Assert.IsFalse(script.Contains("type: 0", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("formatMatcher: 0", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("dateStyle: 0", StringComparison.Ordinal), script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IntlResolvedOptions_CompareUsingStringEnumLiterals()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var resolved = new Intl.DisplayNames(
+                        new Intl.DisplayNamesOptions(Type: Intl.DisplayNamesType.Language))
+                        .ResolvedOptions();
+                    var isLanguage = resolved.Type == Intl.DisplayNamesType.Language;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "new Intl.DisplayNames({");
+		StringAssert.Contains(script, "type: \"language\"");
+		StringAssert.Contains(script, "let isLanguage = resolved.type === \"language\";");
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ReflectGet_UsesJsMemberName()
 	{
 		var block = GetBlockOperation(@"
@@ -5550,6 +5757,71 @@ public sealed class SemanticWalkerReferenceTest
   let dtf = new Intl.DateTimeFormat(""en-US"");
   let text = dtf.format(new Date);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
+	}
+
+	[TestMethod]
+	public void Visit_Reference_IntlNestedRuntimeTypes_PreserveIntlQualification()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(object provider)
+                {
+                    var usesNumberFormat = provider is Intl.NumberFormat;
+                    var numberFormat = new Intl.NumberFormat();
+                    var locale = new Intl.Locale(""zh-CN"");
+                    var displayNames = new Intl.DisplayNames(new Intl.DisplayNamesOptions(Type: Intl.DisplayNamesType.Language));
+                    var dateTimeFormat = new Intl.DateTimeFormat(""en-US"");
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "provider instanceof Intl.NumberFormat");
+		StringAssert.Contains(script, "let numberFormat = new Intl.NumberFormat");
+		StringAssert.Contains(script, "let locale = new Intl.Locale(\"zh-CN\")");
+		StringAssert.Contains(script, "let displayNames = new Intl.DisplayNames({");
+		StringAssert.Contains(script, "let dateTimeFormat = new Intl.DateTimeFormat(\"en-US\")");
+		Assert.IsFalse(script.Contains("instanceof NumberFormat", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("new NumberFormat", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("new Locale", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("new DisplayNames", StringComparison.Ordinal), script);
+		Assert.IsFalse(script.Contains("new DateTimeFormat", StringComparison.Ordinal), script);
+	}
+
+	[TestMethod]
+	public void Visit_Reference_PropertyDescriptor_LowersToObjectLiteral()
+	{
+		var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    Object.DefineProperty(this, Symbol.ToPrimitive, new ECMAScript.PropertyDescriptor
+                    {
+                        Value = (global::System.Func<string?, object>)ToPrimitive,
+                        Configurable = true
+                    });
+                }
+
+                object ToPrimitive(string? hint)
+                    => """";
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "Object.defineProperty(this, Symbol.toPrimitive, {");
+		StringAssert.Contains(script, "value: this.toPrimitive.bind(this),");
+		StringAssert.Contains(script, "configurable: true");
+		Assert.IsFalse(script.Contains("new PropertyDescriptor", StringComparison.Ordinal), script);
 	}
 
 	[TestMethod]

@@ -3,8 +3,10 @@ using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 using System.IO;
 
@@ -14,13 +16,22 @@ namespace Jazor.RazorVue.Test;
 [TestClass]
 public sealed class RazorVuePipelineTests
 {
+    private static RazorVuePipeline CreateBuildRenderTreePipeline()
+        => new(BuildRenderTreeTemplateFrontend.Instance);
+
+    private static RazorVuePipeline CreateBuildRenderTreePipeline(IRazorSemanticFrontend semanticFrontend)
+        => new(semanticFrontend, BuildRenderTreeTemplateFrontend.Instance);
+
+    private static RazorVuePipeline CreateDocumentAwarePipeline(IRazorVueTemplateFrontend templateFrontend)
+        => new(RazorVueRazorDocumentSemanticFrontend.Instance, templateFrontend);
+
     [TestMethod]
     public void RazorVue_Pipeline_ProducesFallbackRenderFunctionWhenNoRenderTreeExists()
     {
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -50,7 +61,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
 
         Assert.AreEqual("RazorVue.Pipeline.Tests", catalog.AssemblyName);
@@ -83,7 +94,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -108,12 +119,91 @@ public sealed class RazorVuePipelineTests
             """);
 
         var frontend = new FixedTemplateFrontend(CreateInjectedSectionTree("Injected by template frontend"));
-        var pipeline = new RazorVuePipeline(new TestRazorSemanticFrontend(), new RazorVueArtifactFactory(frontend));
+        var pipeline = new RazorVuePipeline(frontend);
         var artifact = pipeline.Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", \"Injected by template frontend\");");
         Assert.AreEqual("InjectedCard", artifact.ComponentName);
         Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.Identity.TemplateHash));
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_InjectedTemplateFrontend_CanReadPrimaryRazorDocumentFromContext()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """
+            @page "/todo"
+            <section>Hello from Razor doc</section>
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Pipeline.RazorDocument.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    $$"""
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Pages
+                    {
+                        public partial class TodoApp
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                    #line 1 "{{documentPath}}"
+                                __builder.AddContent(0, "Hello from generated render tree");
+                    #line default
+                    #line hidden
+                            }
+                        }
+                    }
+                    """,
+                    path: "TodoApp.razor.g.cs")
+            ],
+            references: CreateReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = CreateContext(
+            compilation,
+            RazorVueRazorDocumentSet.Create(
+            [
+                new RazorVueRazorDocument(documentPath.Replace('\\', '/'), SourceText.From(razorDocumentText))
+            ]));
+
+        var artifact = CreateDocumentAwarePipeline(new RazorDocumentEchoTemplateFrontend()).Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "@page \\\"/todo\\\"");
+        StringAssert.Contains(artifact.ModuleCode, "Hello from Razor doc");
+        Assert.IsFalse(artifact.ModuleCode.Contains("Hello from generated render tree", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -198,7 +288,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -234,7 +324,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts[0];
 
@@ -249,7 +339,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -282,7 +372,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
@@ -298,7 +388,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -328,7 +418,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ToolbarCard");
 
@@ -345,7 +435,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -378,7 +468,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ToolbarCard");
 
@@ -395,7 +485,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -436,7 +526,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         CollectionAssert.Contains(artifact.Imports.ToArray(), "demo/components");
         StringAssert.Contains(artifact.ModuleCode, "import { DemoButton as DemoButtonComponent } from \"demo/components\";");
@@ -452,7 +542,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -503,7 +593,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         CollectionAssert.AreEquivalent(new[] { "vue", "demo/components" }, artifact.Imports.ToArray());
         StringAssert.Contains(artifact.ModuleCode, "import { DemoButton as DemoButtonComponent, DemoCard as DemoCardComponent } from \"demo/components\";");
@@ -518,7 +608,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Jazor.RazorVue.Descriptor;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -575,7 +665,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "\"buttonLabel\": \"Save\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onSaveNow\": () => emit(\"save\")");
@@ -588,7 +678,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -635,7 +725,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VBtn as VBtnComponent, VTextField as VTextFieldComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"click\")");
@@ -651,7 +741,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -688,7 +778,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VDialog as VDialogComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.activator(context)");
@@ -704,7 +794,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -748,7 +838,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VCard as VCardComponent, VCardText as VCardTextComponent, VCardTitle as VCardTitleComponent, VCol as VColComponent, VContainer as VContainerComponent, VRow as VRowComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"fluid\": true");
@@ -766,7 +856,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -821,7 +911,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VCheckbox as VCheckboxComponent, VDivider as VDividerComponent, VSheet as VSheetComponent, VSpacer as VSpacerComponent, VToolbar as VToolbarComponent, VToolbarTitle as VToolbarTitleComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"surface\"");
@@ -843,7 +933,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -917,7 +1007,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VAlert as VAlertComponent, VChip as VChipComponent, VList as VListComponent, VListItem as VListItemComponent, VSwitch as VSwitchComponent, VTextarea as VTextareaComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"info\"");
@@ -943,7 +1033,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1011,12 +1101,13 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VAvatar as VAvatarComponent, VBadge as VBadgeComponent, VForm as VFormComponent, VMenu as VMenuComponent, VProgressCircular as VProgressCircularComponent, VProgressLinear as VProgressLinearComponent, VSelect as VSelectComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"fastFail\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.role");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.roleChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:role\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:menuOpen\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"closeOnContentClick\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"content\": \"3\"");
         StringAssert.Contains(artifact.ModuleCode, "\"size\": \"large\"");
@@ -1032,7 +1123,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using ECMAScript.Vuetify;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1117,7 +1208,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VAutocomplete as VAutocompleteComponent, VRadioGroup as VRadioGroupComponent, VSnackbar as VSnackbarComponent, VTab as VTabComponent, VTabs as VTabsComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"grow\": true");
@@ -1143,7 +1234,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
 
@@ -1172,7 +1263,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "Activator");
@@ -1185,7 +1276,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
 
@@ -1214,7 +1305,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ChildContent");
@@ -1227,7 +1318,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1266,7 +1357,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ChildContent");
@@ -1279,7 +1370,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -1313,7 +1404,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ChildContent");
@@ -1326,7 +1417,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -1360,7 +1451,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "Activator");
@@ -1373,7 +1464,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1409,7 +1500,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.MissingSlotValue, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ChildCard");
@@ -1422,7 +1513,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
 
@@ -1451,7 +1542,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "VBtn");
@@ -1464,7 +1555,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
             using ECMAScript.Vuetify;
@@ -1501,7 +1592,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.InvalidBindTarget, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "VBtn");
@@ -1517,7 +1608,7 @@ public sealed class RazorVuePipelineTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
-                    global using Jazor.RazorVue;
+                    global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
                     path: "RazorVueTestGlobalUsings.g.cs"),
@@ -1578,7 +1669,7 @@ public sealed class RazorVuePipelineTests
         var context = RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.modelValue");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:modelValue\", __value)");
@@ -1590,7 +1681,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1633,7 +1724,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
@@ -1646,7 +1737,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1682,7 +1773,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context)
+        var artifact = CreateBuildRenderTreePipeline().Execute(context)
             .Artifacts
             .Single(static artifact => artifact.ComponentName == "ParentCard");
 
@@ -1695,7 +1786,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1747,7 +1838,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
@@ -1761,7 +1852,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1803,7 +1894,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
@@ -1816,7 +1907,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1851,7 +1942,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", slots.default ? slots.default() : null);");
     }
@@ -1862,7 +1953,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1916,7 +2007,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "\"value\": props.value");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:value\": (__value) => emit(\"update:value\", __value)");
@@ -1930,7 +2021,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1969,7 +2060,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => props.itemTemplate(context)");
     }
@@ -1980,7 +2071,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2022,7 +2113,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => props.itemTemplate(context)");
     }
@@ -2033,7 +2124,7 @@ public sealed class RazorVuePipelineTests
         var compilation = CreateCompilation(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -2053,7 +2144,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline(new TestRazorSemanticFrontend());
+        var pipeline = CreateBuildRenderTreePipeline(new TestRazorSemanticFrontend());
         var catalog = pipeline.Execute(compilation);
 
         Assert.HasCount(1, catalog.Artifacts);
@@ -2066,7 +2157,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -2092,7 +2183,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var pipeline = new RazorVuePipeline();
+        var pipeline = CreateBuildRenderTreePipeline();
         var catalog = pipeline.Execute(context);
 
         Assert.HasCount(2, catalog.Artifacts);
@@ -2108,7 +2199,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2140,7 +2231,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -2150,7 +2241,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2186,7 +2277,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", props.value);");
@@ -2198,7 +2289,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2242,7 +2333,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], () => {");
@@ -2256,7 +2347,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2300,7 +2391,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
@@ -2314,7 +2405,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2362,7 +2453,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
@@ -2375,7 +2466,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2418,7 +2509,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
@@ -2432,7 +2523,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2475,7 +2566,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
@@ -2488,7 +2579,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2528,7 +2619,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(() => {");
@@ -2549,7 +2640,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2589,7 +2680,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
@@ -2611,7 +2702,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2656,7 +2747,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
@@ -2673,7 +2764,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2710,7 +2801,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
         Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
     }
@@ -2722,7 +2813,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2759,7 +2850,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
         Assert.IsFalse(artifact.ModuleCode.Contains("watch(() => [props.value], async () => {", StringComparison.Ordinal), artifact.ModuleCode);
     }
@@ -2771,7 +2862,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2808,7 +2899,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
         Assert.IsFalse(artifact.ModuleCode.Contains("onMounted(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.IsFalse(artifact.ModuleCode.Contains("onUpdated(async () => {", StringComparison.Ordinal), artifact.ModuleCode);
@@ -2821,7 +2912,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2861,7 +2952,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -2871,7 +2962,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2907,7 +2998,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -2917,7 +3008,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -2957,17 +3048,17 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
     public void RazorVue_Pipeline_SeparatesDescriptorTemplateAndLogicHashes()
     {
-        var descriptorA = new RazorVuePipeline().Execute(CreateContext(
+        var descriptorA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -2991,10 +3082,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var descriptorB = new RazorVuePipeline().Execute(CreateContext(
+        var descriptorB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3018,10 +3109,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var templateA = new RazorVuePipeline().Execute(CreateContext(
+        var templateA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3053,10 +3144,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var templateB = new RazorVuePipeline().Execute(CreateContext(
+        var templateB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3088,10 +3179,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var logicA = new RazorVuePipeline().Execute(CreateContext(
+        var logicA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3128,10 +3219,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var logicB = new RazorVuePipeline().Execute(CreateContext(
+        var logicB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3184,11 +3275,11 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_NoOpLifecycleDoesNotChangeLogicHash()
     {
-        var identityWithoutLifecycle = new RazorVuePipeline().Execute(CreateContext(
+        var identityWithoutLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3220,11 +3311,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityWithNoOpLifecycle = new RazorVuePipeline().Execute(CreateContext(
+        var identityWithNoOpLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3278,10 +3369,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_InheritedNoOpLifecycleDoesNotChangeLogicHash()
     {
-        var identityWithoutLifecycle = new RazorVuePipeline().Execute(CreateContext(
+        var identityWithoutLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3316,11 +3407,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityWithNoOpLifecycle = new RazorVuePipeline().Execute(CreateContext(
+        var identityWithNoOpLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3382,7 +3473,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -3410,7 +3501,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -3422,7 +3513,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3465,7 +3556,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Page");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Page");
         StringAssert.Contains(artifact.ModuleCode, "header: () =>");
         StringAssert.Contains(artifact.ModuleCode, "footer: () =>");
     }
@@ -3478,7 +3569,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3520,7 +3611,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Host");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Host");
         // Count is a plain int prop, should emit as a prop binding, not a slot
         StringAssert.Contains(artifact.ModuleCode, "\"count\": props.value");
         // No slot emission for Count
@@ -3535,7 +3626,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -3563,7 +3654,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         // No props, no emits, no slots, but has a static template body.
         // Expected: FullReloadRequired because with no reactive contract there is no safe
         // incremental reload boundary — the whole component must be replaced.
@@ -3581,7 +3672,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3624,7 +3715,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Page");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static a => a.ComponentName == "Page");
         // Multi-word PascalCase slot names must be lowercamelCase in the Vue slots object.
         StringAssert.Contains(artifact.ModuleCode, "headerContent: () =>");
         StringAssert.Contains(artifact.ModuleCode, "footerActions: () =>");
@@ -3639,7 +3730,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3676,7 +3767,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ItemTemplate");
@@ -3689,7 +3780,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -3719,7 +3810,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "let _count = 1;");
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", _count);");
     }
@@ -3730,7 +3821,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -3763,7 +3854,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "function calculate()");
         StringAssert.Contains(artifact.ModuleCode, "return 42;");
         StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", calculate());");
@@ -3775,7 +3866,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3814,7 +3905,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value)");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + value);");
@@ -3827,7 +3918,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -3866,7 +3957,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value, scale)");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + (value * scale));");
@@ -3879,7 +3970,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3913,7 +4004,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnParametersSet");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -3925,7 +4016,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3956,7 +4047,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitialized");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -3968,7 +4059,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -3999,7 +4090,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitialized");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4011,7 +4102,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4042,7 +4133,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitialized");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4055,7 +4146,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -4086,7 +4177,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitializedAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4098,7 +4189,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4137,7 +4228,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRender");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4149,7 +4240,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4188,7 +4279,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRender");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4200,7 +4291,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4239,7 +4330,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRender");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4252,7 +4343,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4291,7 +4382,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4304,7 +4395,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4341,7 +4432,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -4357,7 +4448,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4402,7 +4493,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(2, artifact.ModuleCode.Split("let firstRender = true;", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
         StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
@@ -4418,7 +4509,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4455,7 +4546,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4468,7 +4559,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4505,7 +4596,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -4521,7 +4612,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4558,7 +4649,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -4574,7 +4665,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4611,7 +4702,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4624,7 +4715,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4661,7 +4752,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -4677,7 +4768,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4715,7 +4806,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4728,7 +4819,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4767,7 +4858,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4780,7 +4871,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4817,7 +4908,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4830,7 +4921,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4887,7 +4978,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4900,7 +4991,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4937,7 +5028,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -4950,7 +5041,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -4988,7 +5079,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5001,7 +5092,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5063,7 +5154,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5076,7 +5167,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5133,7 +5224,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5146,7 +5237,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5198,7 +5289,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5211,7 +5302,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5268,7 +5359,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5281,7 +5372,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5322,7 +5413,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5335,7 +5426,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5373,7 +5464,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5386,7 +5477,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5448,7 +5539,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5461,7 +5552,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5513,7 +5604,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5526,7 +5617,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5573,7 +5664,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5586,7 +5677,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5623,7 +5714,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5636,7 +5727,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5673,7 +5764,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5686,7 +5777,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5723,7 +5814,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5736,7 +5827,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5773,7 +5864,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5786,7 +5877,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5823,7 +5914,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5836,7 +5927,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5873,7 +5964,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5886,7 +5977,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5923,7 +6014,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5936,7 +6027,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -5973,7 +6064,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -5986,7 +6077,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6024,7 +6115,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6037,7 +6128,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6089,7 +6180,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6102,7 +6193,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6151,7 +6242,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6164,7 +6255,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6201,7 +6292,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -6217,7 +6308,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6255,7 +6346,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6268,7 +6359,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6315,7 +6406,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6328,7 +6419,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6367,7 +6458,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6380,7 +6471,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6419,7 +6510,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6431,7 +6522,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -6465,7 +6556,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitialized");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6478,7 +6569,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -6512,7 +6603,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitializedAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6524,7 +6615,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6566,7 +6657,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRender");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6579,7 +6670,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6621,7 +6712,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6634,7 +6725,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6672,7 +6763,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6686,7 +6777,7 @@ public sealed class RazorVuePipelineTests
             using System;
             using System.Collections.Generic;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6748,7 +6839,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6761,7 +6852,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -6800,7 +6891,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -6812,7 +6903,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -6841,7 +6932,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitialized");
         Assert.AreEqual("Demo.Components.LifecycleCardBase", exception.OwnerComponentFullName);
@@ -6854,7 +6945,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
 
             namespace ECMAScript
             {
@@ -6884,7 +6975,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitializedAsync");
         Assert.AreEqual("Demo.Components.LifecycleCardBase", exception.OwnerComponentFullName);
@@ -6897,7 +6988,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -6935,7 +7026,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRenderAsync");
         Assert.AreEqual("Demo.Components.LifecycleCardBase", exception.OwnerComponentFullName);
@@ -6947,7 +7038,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -6984,7 +7075,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnAfterRender");
         Assert.AreEqual("Demo.Components.LifecycleCardBase", exception.OwnerComponentFullName);
@@ -6996,7 +7087,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -7033,7 +7124,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnParametersSet");
         Assert.AreEqual("Demo.Components.LifecycleCardBase", exception.OwnerComponentFullName);
@@ -7046,7 +7137,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components.Rendering;
 
             namespace ECMAScript
@@ -7084,7 +7175,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnParametersSetAsync");
         Assert.AreEqual("Demo.Components.LifecycleCardBase", exception.OwnerComponentFullName);
@@ -7096,7 +7187,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -7126,7 +7217,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitialized");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -7139,7 +7230,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
 
             namespace ECMAScript
@@ -7169,7 +7260,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnInitializedAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -7181,7 +7272,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7219,7 +7310,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnParametersSet");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -7232,7 +7323,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7270,7 +7361,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "OnParametersSetAsync");
         Assert.AreEqual("Demo.Components.LifecycleCard", exception.OwnerComponentFullName);
@@ -7282,7 +7373,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7319,7 +7410,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(() => {");
@@ -7335,7 +7426,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7372,7 +7463,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7387,7 +7478,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7424,7 +7515,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(() => {");
@@ -7440,7 +7531,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7477,7 +7568,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7493,7 +7584,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7530,7 +7621,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7546,7 +7637,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7591,7 +7682,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(2, artifact.ModuleCode.Split("let firstRender = true;", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
         StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
@@ -7607,7 +7698,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7644,7 +7735,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7660,7 +7751,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7698,7 +7789,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7714,7 +7805,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7751,7 +7842,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7767,7 +7858,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7802,7 +7893,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7818,7 +7909,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7855,7 +7946,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
@@ -7873,7 +7964,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7910,7 +8001,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -7921,7 +8012,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -7962,7 +8053,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -7972,7 +8063,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8009,7 +8100,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
@@ -8023,7 +8114,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8061,7 +8152,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "function formatOuter(value)");
         StringAssert.Contains(artifact.ModuleCode, "function formatInner(value)");
@@ -8076,7 +8167,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8116,7 +8207,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "const prefix = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatLeaf(value)");
@@ -8131,7 +8222,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8173,7 +8264,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(1, artifact.ModuleCode.Split("function formatLeaf(value)", StringSplitOptions.None).Length - 1, artifact.ModuleCode);
         StringAssert.Contains(artifact.ModuleCode, "formatA(props.value)");
@@ -8186,7 +8277,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8227,7 +8318,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "FormatInner");
         Assert.AreEqual("Demo.Components.ThreeLevelCard", exception.OwnerComponentFullName);
@@ -8240,7 +8331,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8281,7 +8372,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.AreEqual(RazorVueIssueCode.UnsupportedSetupLogicLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Message, "FormatInnerAsync");
         Assert.AreEqual("Demo.Components.AsyncHelperCard", exception.OwnerComponentFullName);
@@ -8295,7 +8386,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8332,7 +8423,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -8342,7 +8433,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8382,7 +8473,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -8393,7 +8484,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8442,17 +8533,17 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
     public void RazorVue_Pipeline_InheritedLogicMethodsNoOpLifecycleDoesNotChangeLogicHash()
     {
-        var identityWithoutNoOpLifecycle = new RazorVuePipeline().Execute(CreateContext(
+        var identityWithoutNoOpLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8492,11 +8583,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityWithNoOpLifecycle = new RazorVuePipeline().Execute(CreateContext(
+        var identityWithNoOpLifecycle = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8559,10 +8650,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedLogicMethodsCoexistWithInheritedLifecyclePayloadChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8613,10 +8704,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8677,10 +8768,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedLogicMethodsCoexistWithInheritedLifecycleAwaitShapeChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8728,11 +8819,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8795,7 +8886,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8843,7 +8934,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -8853,7 +8944,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8898,7 +8989,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"ready\");");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
@@ -8911,7 +9002,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -8956,7 +9047,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "onMounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "onUpdated(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "const currentFirstRender = firstRender;");
@@ -8972,7 +9063,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9012,7 +9103,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -9022,7 +9113,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9065,7 +9156,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -9076,7 +9167,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9120,7 +9211,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -9130,7 +9221,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9170,7 +9261,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h, onUnmounted } from \"vue\";");
         StringAssert.Contains(artifact.ModuleCode, "onUnmounted(() => {");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"valueDisposed\", props.value);");
@@ -9184,7 +9275,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9224,7 +9315,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h, onUnmounted } from \"vue\";");
         StringAssert.Contains(artifact.ModuleCode, "onUnmounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "await emit(\"disposed\");");
@@ -9237,7 +9328,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9285,7 +9376,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "onUnmounted(() => {");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"valueDisposed\", props.value);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
@@ -9298,7 +9389,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9343,7 +9434,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "onUnmounted(async () => {");
         StringAssert.Contains(artifact.ModuleCode, "await emit(\"disposedChanged\", true);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
@@ -9355,7 +9446,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9392,7 +9483,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => new RazorVuePipeline().Execute(context));
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.UnsupportedLifecycleLowering, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "Dispose");
@@ -9404,10 +9495,10 @@ public sealed class RazorVuePipelineTests
     {
         // Verify that adding/changing user logic methods changes the LogicHash
         // but does not affect DescriptorHash or TemplateHash.
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9444,10 +9535,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9501,7 +9592,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9545,17 +9636,17 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedLogicMethodSignatureChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9595,10 +9686,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9648,10 +9739,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedParameterLifecyclePayloadChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9697,10 +9788,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9756,10 +9847,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedAfterRenderPayloadChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9802,10 +9893,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9858,10 +9949,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenSupportedLifecyclePayloadChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9904,10 +9995,10 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -9960,10 +10051,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenSupportedLifecycleAwaitShapeChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10003,11 +10094,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10057,10 +10148,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedSupportedLifecycleAwaitShapeChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10103,11 +10194,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10160,10 +10251,10 @@ public sealed class RazorVuePipelineTests
     [TestMethod]
     public void RazorVue_Pipeline_LogicHashChangesWhenInheritedAfterRenderAwaitShapeChanges()
     {
-        var identityA = new RazorVuePipeline().Execute(CreateContext(
+        var identityA = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10203,11 +10294,11 @@ public sealed class RazorVuePipelineTests
             }
             """)).Artifacts.Single().Identity;
 
-        var identityB = new RazorVuePipeline().Execute(CreateContext(
+        var identityB = CreateBuildRenderTreePipeline().Execute(CreateContext(
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10262,7 +10353,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10310,7 +10401,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -10321,7 +10412,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10361,7 +10452,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -10371,7 +10462,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10408,7 +10499,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
@@ -10419,7 +10510,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10460,7 +10551,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
@@ -10471,7 +10562,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10508,7 +10599,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.IsFalse(artifact.ModuleCode.Contains("watch(", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
@@ -10520,7 +10611,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10557,7 +10648,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -10568,7 +10659,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10609,7 +10700,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -10620,7 +10711,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10661,7 +10752,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "import { defineComponent, h, watch } from \"vue\";");
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
         StringAssert.Contains(artifact.ModuleCode, "await emit(\"update:value\", props.value);");
@@ -10675,7 +10766,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10724,7 +10815,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
         StringAssert.Contains(artifact.ModuleCode, "await emit(\"update:value\", props.value);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
@@ -10737,7 +10828,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10787,7 +10878,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.IsFalse(artifact.ModuleCode.Contains("watch(() => [props.value], async () => {", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
@@ -10798,7 +10889,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10840,7 +10931,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
@@ -10851,7 +10942,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10895,7 +10986,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -10908,7 +10999,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -10949,7 +11040,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -10960,7 +11051,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11001,7 +11092,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "watch(() => [props.value], async () => {");
         StringAssert.Contains(artifact.ModuleCode, "await emit(\"update:value\", props.value);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
@@ -11014,7 +11105,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Threading.Tasks;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11052,7 +11143,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -11062,7 +11153,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11099,7 +11190,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -11109,7 +11200,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11151,7 +11242,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "onMounted(() => {");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
     }
@@ -11162,7 +11253,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11203,7 +11294,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.FullReloadRequired, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -11215,7 +11306,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11244,7 +11335,7 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         Assert.AreEqual(HmrBoundaryKind.Unknown, artifact.Identity.HmrBoundaryKind);
     }
 
@@ -11252,18 +11343,17 @@ public sealed class RazorVuePipelineTests
     {
         public string Name => "Jazor.CompilerTest.TestRazorSemanticFrontend";
 
-        public bool CanHandle(Compilation compilation)
-            => RazorVueCompilationContext.TryCreate(compilation) is not null;
+        public bool CanHandle(RazorVueCompilationContext context)
+            => context is not null;
 
-        public RazorVueEntryKind ClassifyEntry(Compilation compilation, INamedTypeSymbol symbol)
-            => GetRequiredContext(compilation).ClassifyEntry(symbol);
+        public RazorVueEntryKind ClassifyEntry(RazorVueCompilationContext context, INamedTypeSymbol symbol)
+            => GetRequiredContext(context).ClassifyEntry(symbol);
 
-        public ImmutableArray<RazorVueSemanticSnapshot> CreateSemanticSnapshots(Compilation compilation)
-            => GetRequiredContext(compilation).CreateSemanticSnapshots();
+        public ImmutableArray<RazorVueSemanticSnapshot> CreateSemanticSnapshots(RazorVueCompilationContext context)
+            => GetRequiredContext(context).CreateSemanticSnapshots();
 
-        private static RazorVueCompilationContext GetRequiredContext(Compilation compilation)
-            => RazorVueCompilationContext.TryCreate(compilation)
-               ?? throw new InvalidOperationException("The test frontend expected a valid RazorVue compilation context.");
+        private static RazorVueCompilationContext GetRequiredContext(RazorVueCompilationContext context)
+            => context ?? throw new InvalidOperationException("The test frontend expected a valid RazorVue compilation context.");
     }
 
     private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend
@@ -11278,16 +11368,38 @@ public sealed class RazorVuePipelineTests
         }
     }
 
+    private sealed class RazorDocumentEchoTemplateFrontend : IRazorVueTemplateFrontend
+    {
+        public string Name => "Jazor.RazorVue.Test.RazorDocumentEchoTemplateFrontend";
+
+        public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
+        {
+            Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var document));
+            return new RazorVueRenderFragment(
+                ImmutableArray.Create<RazorVueRenderNode>(
+                    new RazorVueTextNode(document.Text.ToString().Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
+        }
+    }
+
     private static RazorVueCompilationContext CreateContext(string source)
     {
         var compilation = CreateCompilation(source);
+        return CreateContext(compilation);
+    }
+
+    private static RazorVueCompilationContext CreateContext(
+        Compilation compilation,
+        RazorVueRazorDocumentSet? razorDocuments = null)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
 
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
 
-        var context = RazorVueCompilationContext.TryCreate(compilation);
+        var context = RazorVueCompilationContext.TryCreate(compilation, razorDocuments);
         Assert.IsNotNull(context);
         return context;
     }
@@ -11321,3 +11433,4 @@ public sealed class RazorVuePipelineTests
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
 }
+

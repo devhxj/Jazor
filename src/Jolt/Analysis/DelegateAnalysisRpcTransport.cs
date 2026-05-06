@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Analysis;
 
@@ -12,3 +12,4 @@ public sealed class DelegateAnalysisRpcTransport(
         CancellationToken cancellationToken)
         => _handler(request, cancellationToken);
 }
+

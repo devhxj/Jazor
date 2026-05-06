@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
 
@@ -239,3 +239,4 @@ internal sealed class DocumentProjectionResolver
     private static string NormalizePath(string documentPath)
         => documentPath.Replace('\\', '/');
 }
+

@@ -14,7 +14,7 @@ using Jolt.Razor.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Roslyn.InProc;
 
@@ -388,3 +388,4 @@ internal sealed partial class InProcRoslynCodeService
     private static string ComputeSha256(string text)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
 }
+

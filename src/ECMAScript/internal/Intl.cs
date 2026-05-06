@@ -70,6 +70,7 @@ public static class Intl
 	/// <summary>
 	/// 指定比较器的用途。usage: "sort" | "search"
 	/// </summary>
+	[String]
 	[Description("@#")]
 	public enum CollatorUsage
 	{
@@ -83,6 +84,7 @@ public static class Intl
 	/// <summary>
 	/// 选择本地化匹配算法。localeMatcher: "lookup" | "best fit"
 	/// </summary>
+	[String]
 	[Description("@#")]
 	public enum LocaleMatcher
 	{
@@ -95,6 +97,7 @@ public static class Intl
 	/// <summary>
 	/// 控制大小写字母的排序顺序。caseFirst: "upper" | "lower" | "false"
 	/// </summary>
+	[String]
 	[Description("@#")]
 	public enum CaseFirst
 	{
@@ -109,6 +112,7 @@ public static class Intl
 	/// <summary>
 	/// 指定比较的敏感度级别。sensitivity: "base" | "accent" | "case" | "variant"
 	/// </summary>
+	[String]
 	[Description("@#")]
 	public enum Sensitivity
 	{
@@ -125,6 +129,7 @@ public static class Intl
 	/// <summary>
 	/// 指定特定语言或场景的排序规则。collation: "big5han" | "compat" | "dict" | "direct" | "ducet" | "emoji" | "eor" | "gb2312" | "phonebk" | "phonetic" | "pinyin" | "reformed" | "searchjl" | "stroke" | "trad" | "unihan" | "zhuyin"。未指定时保持省略状态。
 	/// </summary>
+	[String]
 	[Description("@#")]
 	public enum Collation
 	{
@@ -252,6 +257,7 @@ public static class Intl
 		public virtual extern ResolvedCollatorOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumberFormatOptionsStyle
 	{
@@ -265,6 +271,7 @@ public static class Intl
 		Unit
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumberFormatOptionsCurrencyDisplay
 	{
@@ -278,6 +285,7 @@ public static class Intl
 		Name
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumberFormatCurrencySign
 	{
@@ -287,6 +295,7 @@ public static class Intl
 		Accounting
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumberFormatNotation
 	{
@@ -300,6 +309,7 @@ public static class Intl
 		Compact
 	}
 
+	[String]
 	[Description("@#")]
 	public enum CompactDisplay
 	{
@@ -309,6 +319,7 @@ public static class Intl
 		Long
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumberFormatSignDisplay
 	{
@@ -324,6 +335,7 @@ public static class Intl
 		Negative
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumberFormatUseGrouping
 	{
@@ -335,6 +347,7 @@ public static class Intl
 		Min2
 	}
 
+	[String]
 	[Description("@#")]
 	public enum RoundingMode
 	{
@@ -358,6 +371,7 @@ public static class Intl
 		HalfEven
 	}
 
+	[String]
 	[Description("@#")]
 	public enum RoundingPriority
 	{
@@ -369,6 +383,7 @@ public static class Intl
 		LessPrecision
 	}
 
+	[String]
 	[Description("@#")]
 	public enum TrailingZeroDisplay
 	{
@@ -666,6 +681,7 @@ public static class Intl
 		public extern override string ToString();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum HourCycle
 	{
@@ -719,7 +735,8 @@ public static class Intl
 		public extern string[] Weekend { get; }
 	}
 
-    [Description("@#")]
+	[String]
+	[Description("@#")]
 	public enum FormatMatcher
 	{
 		[Description("@#best fit")]
@@ -728,6 +745,7 @@ public static class Intl
 		Basic
 	}
 
+	[String]
 	[Description("@#")]
 	public enum LongShortNarrow
 	{
@@ -739,6 +757,7 @@ public static class Intl
 		Narrow
 	}
 
+	[String]
 	[Description("@#")]
 	public enum NumericTwoDigit
 	{
@@ -748,6 +767,7 @@ public static class Intl
 		TwoDigit
 	}
 
+	[String]
 	[Description("@#")]
 	public enum DateTimeStyle
 	{
@@ -761,6 +781,7 @@ public static class Intl
 		Short
 	}
 
+	[String]
 	[Description("@#")]
 	public enum TimeZoneName
 	{
@@ -951,6 +972,7 @@ public static class Intl
 		public virtual extern ResolvedDateTimeFormatOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum RelativeTimeFormatStyle
 	{
@@ -962,6 +984,7 @@ public static class Intl
 		Narrow
 	}
 
+	[String]
 	[Description("@#")]
 	public enum RelativeTimeFormatNumeric
 	{
@@ -971,6 +994,7 @@ public static class Intl
 		Auto
 	}
 
+	[String]
 	[Description("@#")]
 	public enum RelativeTimeUnit
 	{
@@ -1083,6 +1107,7 @@ public static class Intl
 	public extern ResolvedRelativeTimeFormatOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum DurationFormatStyle
 	{
@@ -1096,6 +1121,7 @@ public static class Intl
 		Digital
 	}
 
+	[String]
 	[Description("@#")]
 	public enum DurationDisplay
 	{
@@ -1109,6 +1135,7 @@ public static class Intl
 	/// Numeric-only duration-unit style used by sub-second units.
 	/// This stays separate because JavaScript allows <c>numeric</c> but not <c>2-digit</c> for these units.
 	/// </summary>
+	[String]
 	[Description("@#")]
 	public enum DurationNumericStyle
 	{
@@ -1270,6 +1297,7 @@ public static class Intl
 		public extern ResolvedDurationFormatOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum ListFormatType
 	{
@@ -1374,6 +1402,7 @@ public static class Intl
 		public extern ResolvedListFormatOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum PluralRulesType
 	{
@@ -1493,6 +1522,7 @@ public static class Intl
 		public extern ResolvedPluralRulesOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum DisplayNamesType
 	{
@@ -1510,6 +1540,7 @@ public static class Intl
 		DateTimeField
 	}
 
+	[String]
 	[Description("@#")]
 	public enum DisplayNamesFallback
 	{
@@ -1519,6 +1550,7 @@ public static class Intl
 		None
 	}
 
+	[String]
 	[Description("@#")]
 	public enum DisplayNamesLanguageDisplay
 	{
@@ -1600,6 +1632,7 @@ public static class Intl
 		public extern ResolvedDisplayNamesOptions ResolvedOptions();
 	}
 
+	[String]
 	[Description("@#")]
 	public enum SegmenterGranularity
 	{

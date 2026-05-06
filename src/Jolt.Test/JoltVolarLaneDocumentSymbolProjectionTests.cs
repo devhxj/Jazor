@@ -2,7 +2,7 @@ using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using Jolt.Lsp.Lanes;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
 using Jolt.VirtualDocuments.Registry;
@@ -259,3 +259,4 @@ public sealed class JoltVolarLaneDocumentSymbolProjectionTests
             => ValueTask.FromResult<LspWorkspaceEdit?>(null);
     }
 }
+

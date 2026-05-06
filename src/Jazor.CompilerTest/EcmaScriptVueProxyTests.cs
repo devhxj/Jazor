@@ -1045,19 +1045,19 @@ public sealed class EcmaScriptVueProxyTests
         static void AssertHelperVueName(MethodInfo[] methods, string methodName, string? runtimeName)
         {
             var matchingMethods = methods.Where(method => method.Name == methodName).ToArray();
-            Assert.IsTrue(matchingMethods.Length > 0, $"Missing Vue3 helper {methodName}.");
+            Assert.IsTrue(matchingMethods.Length > 0, $"Missing Vue helper {methodName}.");
 
             if (runtimeName is null)
             {
                 Assert.IsTrue(
                     matchingMethods.All(method => method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>() is null),
-                    $"Vue3 helper {methodName} should not pretend to be a direct Vue runtime API.");
+                    $"Vue helper {methodName} should not pretend to be a direct Vue runtime API.");
                 return;
             }
 
             Assert.IsTrue(
                 matchingMethods.All(method => method.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description == "@#" + runtimeName),
-                $"Vue3 helper alias {methodName} must preserve runtime mapping '{runtimeName}'.");
+                $"Vue helper alias {methodName} must preserve runtime mapping '{runtimeName}'.");
         }
     }
 

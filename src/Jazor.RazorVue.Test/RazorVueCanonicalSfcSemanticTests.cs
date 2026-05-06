@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.RenderTree;
 using Jazor.RazorVue.Sfc;
 using Microsoft.CodeAnalysis;
@@ -12,13 +13,16 @@ namespace Jazor.RazorVue.Test;
 [TestClass]
 public sealed class RazorVueCanonicalSfcSemanticTests
 {
+    private static RazorVueCanonicalHModelFactory CreateBuildRenderTreeCanonicalFactory()
+        => new(BuildRenderTreeTemplateFrontend.Instance);
+
     [TestMethod]
     public void RazorVue_CanonicalModelFactory_CreatesTemplateAndSfcSemanticModel_ForSimpleElementComponent()
     {
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -55,7 +59,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var canonical = new RazorVueCanonicalHModelFactory().Create(context, snapshot);
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
 
         Assert.AreEqual("CounterCard", canonical.ComponentName);
@@ -89,7 +93,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             """
             using System;
             using System.Collections.Generic;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -131,7 +135,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var canonical = new RazorVueCanonicalHModelFactory().Create(context, snapshot);
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
         var conditional = AssertNode<RazorVueCanonicalConditionalNode>(canonical.Template.Children.Single());
         var loop = AssertNode<RazorVueCanonicalForEachNode>(conditional.WhenTrue.Children.Single());
 
@@ -205,7 +209,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -241,7 +245,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single();
-        var canonical = new RazorVueCanonicalHModelFactory().Create(context, snapshot);
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
         var element = AssertNode<RazorVueCanonicalElementNode>(canonical.Template.Children.Single());
         var slotOutlet = AssertNode<RazorVueCanonicalSlotOutletNode>(element.Children.Children.Single());
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
@@ -260,7 +264,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -300,7 +304,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
-        var canonical = new RazorVueCanonicalHModelFactory().Create(context, snapshot);
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
         var component = AssertNode<RazorVueCanonicalComponentNode>(canonical.Template.Children.Single());
         var slot = component.Slots.Single();
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
@@ -320,7 +324,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         var context = CreateContext(
             """
             using System;
-            using Jazor.RazorVue;
+            using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -358,7 +362,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            new RazorVueCanonicalHModelFactory().Create(context, snapshot));
+            CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ItemTemplate");
@@ -389,3 +393,4 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         return context;
     }
 }
+

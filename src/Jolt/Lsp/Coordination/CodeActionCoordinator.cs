@@ -1,7 +1,7 @@
 using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Lsp.Coordination;
 
@@ -82,3 +82,4 @@ internal sealed class CodeActionCoordinator
             string.Equals(diagnostic.Source, "Jolt", StringComparison.Ordinal)
             || string.Equals(diagnostic.Code, "JAZORVUE001", StringComparison.Ordinal));
 }
+

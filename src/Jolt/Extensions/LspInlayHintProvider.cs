@@ -1,5 +1,5 @@
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions;
 
@@ -18,3 +18,4 @@ internal sealed record LspInlayHintProviderContext(
     DocumentSnapshot Document,
     LspRange Range,
     IReadOnlyList<LspInlayHint> ExistingHints);
+

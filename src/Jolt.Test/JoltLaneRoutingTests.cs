@@ -1,5 +1,5 @@
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Test;
 
@@ -104,3 +104,4 @@ public sealed class JoltLaneRoutingTests
         CollectionAssert.AreEqual(new[] { LaneKind.Jazor }, unknownLanes.ToArray());
     }
 }
+

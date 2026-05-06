@@ -115,9 +115,13 @@ public partial class SemanticWalker
 
 		// 当前编译器的声明侧会把用户代码中的成员类型扁平化为顶层运行时声明，
 		// 因此引用侧也必须使用同一个运行时名，不能继续保留 Outer.Inner 链。
-		// 运行时绑定里的静态宿主类型例外，它们本身就是运行时宿主层级的一部分。
-		if (Util.IsECMAScriptRuntimeType(namedType) && namedType.ContainingType.IsStatic)
-			return false;
+		// ECMAScript 运行时嵌套类型分两类：
+		// - [ECMAScriptModule] 宿主：声明侧已经发成同模块的顶层 named export，
+		//   引用侧必须按同一名字直接导入，不能依赖 Outer.Inner 模块对象。
+		// - 真实 JS 宿主（例如 Intl.*）：层级本身就是运行时对象结构，仍需保留。
+		if (namedType.ContainingType.IsStatic &&
+			HasEcmascriptSupportMarker(namedType.ContainingType))
+			return !string.IsNullOrWhiteSpace(GetEffectiveModuleImportPath(namedType));
 
 		return true;
 	}
@@ -769,7 +773,7 @@ public partial class SemanticWalker
 
 	private Expression GetFieldName(IOperation includeOp, IFieldSymbol symbol)
 	{
-		if (TryBuildECMAScriptEnumLiteral(symbol, out var enumLiteral))
+		if (TryBuildStringEnumLiteral(symbol, out var enumLiteral))
 			return enumLiteral;
 
 		// 检查是否是特殊常量字段（如 double.PositiveInfinity, double.NaN 等）
@@ -834,20 +838,54 @@ public partial class SemanticWalker
 		return new Identifier(GetCurrentModuleDeclaredOrConfigName(symbol));
 	}
 
-	private static bool TryBuildECMAScriptEnumLiteral(IFieldSymbol symbol, out Expression expression)
+	private static bool TryBuildStringEnumLiteral(IFieldSymbol symbol, out Expression expression)
 	{
 		expression = null!;
 		if (!symbol.HasConstantValue ||
 			symbol.ContainingType?.TypeKind != TypeKind.Enum ||
-			!Util.IsECMAScriptRuntimeType(symbol.ContainingType))
+			!Util.IsStringEnumType(symbol.ContainingType))
 			return false;
 
-		var alias = Util.GetSymbolConfigName(symbol);
-		if (string.IsNullOrEmpty(alias))
+		if (!TryGetStringEnumLiteralText(symbol, out var alias))
 			return false;
 
-		expression = new StringLiteral(alias!, $"\"{alias!.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
+		expression = CreateStringLiteral(alias!);
 		return true;
+	}
+
+	private static bool TryBuildStringEnumValueLiteral(INamedTypeSymbol enumType, object value, out Expression expression)
+	{
+		expression = null!;
+		if (!Util.IsStringEnumType(enumType))
+			return false;
+
+		foreach (var member in enumType.GetMembers().OfType<IFieldSymbol>())
+		{
+			if (!member.HasConstantValue ||
+				!Equals(member.ConstantValue, value) ||
+				!TryGetStringEnumLiteralText(member, out var literalText))
+			{
+				continue;
+			}
+
+			expression = CreateStringLiteral(literalText!);
+			return true;
+		}
+
+		return false;
+	}
+
+	private static bool TryGetStringEnumLiteralText(IFieldSymbol symbol, out string? literalText)
+	{
+		literalText = null;
+		if (symbol.ContainingType?.TypeKind != TypeKind.Enum ||
+			!Util.IsStringEnumType(symbol.ContainingType))
+		{
+			return false;
+		}
+
+		literalText = Util.GetSymbolConfigName(symbol) ?? symbol.Name;
+		return !string.IsNullOrEmpty(literalText);
 	}
 
 	private static bool IsDateLikeType(ITypeSymbol? type)
@@ -2213,6 +2251,11 @@ private bool TryExpandEcmascriptParamsArgument(
 			operation.Instance?.Type is IArrayTypeSymbol arrayType)
 			return WithOrigin(new NumericLiteral(arrayType.Rank, arrayType.Rank.ToString()), operation);
 
+		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
+			operation,
+			operation.Instance?.Type ?? operation.Property.ContainingType,
+			"property access");
+
 		// 处理属性调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
 		if (instance is not null && IsErasedUnionProjectionProperty(operation.Property))
@@ -2229,7 +2272,7 @@ private bool TryExpandEcmascriptParamsArgument(
 
 		// 检查白名单映射。索引器 getter 也必须先走这里，
 		// 否则会绕过运行时 helper，丢失越界/缺键等 CLR 语义。
-		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias);
+		var mapperExpr = GetWhiteListExpression(operation.Property.GetMethod!, argument, arguments, instance, out var alias, operation);
 		if (mapperExpr is not null)
 			return WithOriginIfMissing(mapperExpr, operation);
 
@@ -2302,6 +2345,11 @@ private bool TryExpandEcmascriptParamsArgument(
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, SenseArgument argument)
 	{
+		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
+			operation,
+			operation.Instance?.Type ?? operation.Method.ContainingType,
+			"method reference");
+
 		// 如果是白名单方法调用，需要生成本地代理方法
 		// 生成代理方法参数
 		var name = AllocateUniqueName(operation, argument, LoweringSite.MethodReferenceProxy());
@@ -2311,7 +2359,7 @@ private bool TryExpandEcmascriptParamsArgument(
 			.ToList();
 
 		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(operation.Method, operation.Syntax, operation.SemanticModel);
-		var valueExpr = GetWhiteListExpression(whiteListMethod, argument, args, out var alias);
+		var valueExpr = GetWhiteListExpression(whiteListMethod, argument, args, out var alias, operation);
 		if (valueExpr is not null)
 		{
 			// 生成箭头函数表达式作为代理方法
@@ -2362,14 +2410,14 @@ private bool TryExpandEcmascriptParamsArgument(
 		{
 			if (operation.Method.IsStatic)
 			{
-				if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel, methodName!, out var preferredStaticCallee) &&
+				if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
+					importedMethod is not null)
+					callee = importedMethod;
+				else if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Method, operation.Syntax, operation.SemanticModel, methodName!, out var preferredStaticCallee) &&
 					preferredStaticCallee is not null)
 					callee = preferredStaticCallee;
 				else if (extensionHost is not null)
 					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
-				else if (TryBuildImportedModuleMember(operation.Method.ContainingType, methodName!, argument, out var importedMethod) &&
-					importedMethod is not null)
-					callee = importedMethod;
 				else
 				{
 					var containing = BuildFullTypeName(operation.Method.ContainingType, argument);
@@ -2567,6 +2615,11 @@ private bool TryExpandEcmascriptParamsArgument(
 		bool allowIntrinsic = false,
 		IInvocationOperation? invocationOperation = null)
 	{
+		RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(
+			ownerOperation,
+			hostType ?? targetMethod.ContainingType,
+			"method invocation");
+
 		var whiteListMethod = ResolveStaticInterfaceProjectionMethod(targetMethod, syntax, semanticModel);
 		if (allowIntrinsic &&
 			invocationOperation is not null &&
@@ -2592,14 +2645,14 @@ private bool TryExpandEcmascriptParamsArgument(
 		{
 			if (targetMethod.IsStatic)
 			{
-				if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel, methodName!, out var preferredStaticCallee) &&
+				if (TryBuildImportedModuleMember(targetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
+					importedMethod is not null)
+					callee = importedMethod;
+				else if (TryBuildPreferredRuntimeStaticMemberAccess(targetMethod, syntax, semanticModel, methodName!, out var preferredStaticCallee) &&
 					preferredStaticCallee is not null)
 					callee = preferredStaticCallee;
 				else if (extensionHost is not null)
 					callee = new MemberExpression(extensionHost, property, computed: false, optional: false);
-				else if (TryBuildImportedModuleMember(targetMethod.ContainingType, methodName!, argument, out var importedMethod) &&
-					importedMethod is not null)
-					callee = importedMethod;
 				else
 				{
 					var containing = BuildFullTypeName(targetMethod.ContainingType, argument);

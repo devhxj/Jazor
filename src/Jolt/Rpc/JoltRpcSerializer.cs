@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Rpc;
 
@@ -13,3 +13,4 @@ public static class JoltRpcSerializer
     public static T? Deserialize<T>(string json)
         => ProtocolJsonSerializer.Deserialize<T>(json);
 }
+

@@ -1,5 +1,5 @@
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.VirtualDocuments.Models;
@@ -174,3 +174,4 @@ internal sealed class JazorProjectionService(InProcRoslynCodeService? inProcRosl
         return generatedStart >= 0;
     }
 }
+

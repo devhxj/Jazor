@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.DevServer;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Volar.Deno.Protocol;
@@ -2868,3 +2868,4 @@ public sealed class JoltFrontendLaneTests
         }
     }
 }
+

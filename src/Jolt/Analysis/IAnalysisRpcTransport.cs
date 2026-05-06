@@ -1,4 +1,4 @@
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Analysis;
 
@@ -8,3 +8,4 @@ public interface IAnalysisRpcTransport
         RpcRequestEnvelope request,
         CancellationToken cancellationToken);
 }
+

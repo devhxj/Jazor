@@ -16,14 +16,16 @@
 
 - `Jazor.Analyzer` 可以比 `Jazor.Compiler` 更严格，但编译器仍是最终 runtime-sensitive 验证层。
 - `ECMAScript.Contract` 提供最小契约，如 `Op` 和 `JazorAttribute`。
-- `Jazor.Common` 提供 `Format`、RazorVue 共享语义和协议 DTO。
+- `Jazor.Common` 提供 `Format` 与 `SourceMaps` 等真正通用实现。
+- `Jazor.RazorVue` 提供 RazorVue 共享语义、Razor SDK 桥接、宿主协议 DTO 和 emit/shared artifact 模型。
 - RazorVue 对外命名空间仍保留为 `Jazor.RazorVue.Analysis`，但物理程序集已经并入 `Jazor.Analyzer`。
 
 ## Current Layout
 
 - `Analyzer.cs`: ECMAScript 主线静态分析器。
-- `RazorVue/*.cs`: RazorVue authoring 诊断和增量生成器。
-- `RazorVue/Analysis/Analysis/*.cs`: 兼容分析 RPC、进程内分析运行时与序列化。
+- `RazorVue/Diagnostics/*.cs`: RazorVue authoring 诊断、descriptor 和 symbol helper。
+- `RazorVue/Generation/*.cs`: RazorVue 增量生成器。
+- `VueHost/*.cs`: `Jazor.Vue` 兼容分析 RPC、进程内分析运行时与序列化。
 - `AnalyzerReleases.*.md`: 分析器规则发布记录。
 
 ## Diagnostic Surface

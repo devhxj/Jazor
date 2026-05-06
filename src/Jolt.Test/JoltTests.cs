@@ -1,9 +1,9 @@
 using Jolt.Analysis;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Rpc;
 using Jolt.Services;
 using Jolt.Workspace;
-using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.RazorVue.Protocol.JoltRpcMethodNames;
 
 namespace Jolt.Test;
 
@@ -1803,3 +1803,4 @@ public sealed class JoltTests
         return assemblyPath;
     }
 }
+

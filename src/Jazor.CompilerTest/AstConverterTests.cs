@@ -14880,8 +14880,66 @@ export function create() {{
 
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("import {", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("export const RuntimeModule = {", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "this.items = materializeArray(collection);");
         StringAssert.Contains(script, "return new JQueue;");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithDirectImportedRuntimeHelpers_PrunesUnusedHostTypeImport()
+    {
+        var code = """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    public static bool IsReadOnlyDictionaryCarrier(object instance) => instance is not null;
+
+                    public static object MarkAsReadOnlyDictionaryCarrier(object instance) => instance;
+                }
+
+                [ECMAScript.ECMAScriptModule("System/ConsumerModule.js")]
+                public static class ConsumerModule
+                {
+                    public static bool Check(object value) => RuntimeModule.IsReadOnlyDictionaryCarrier(value);
+
+                    public static object Mark(object value) => RuntimeModule.MarkAsReadOnlyDictionaryCarrier(value);
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var consumer = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "ConsumerModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(consumer, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "import { isReadOnlyDictionaryCarrier, markAsReadOnlyDictionaryCarrier } from \"System/RuntimeModule.js\";");
+        Assert.IsFalse(script.Contains("import { RuntimeModule", StringComparison.Ordinal), script);
+        Assert.IsFalse(script.Contains("RuntimeModule,", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "return isReadOnlyDictionaryCarrier(value);");
+        StringAssert.Contains(script, "return markAsReadOnlyDictionaryCarrier(value);");
     }
 
     [TestMethod]

@@ -10,7 +10,7 @@ using Jolt.Analysis;
 using Jolt.Lsp;
 using Jolt.Razor.InProc;
 using Jolt.Workspace;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Test;
 
@@ -8657,3 +8657,4 @@ file static class TestDirectory
         }
     }
 }
+

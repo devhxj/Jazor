@@ -2,13 +2,13 @@ using Jolt.Analysis;
 using Jolt.Volar;
 using Jolt.Volar.Deno.Hosting;
 using Jolt.Hosting;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Roslyn.InProc;
 using Jolt.Rpc;
 using Jolt.VirtualDocuments.Mapping;
 using Jolt.Workspace;
 using System.Text.RegularExpressions;
-using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.RazorVue.Protocol.JoltRpcMethodNames;
 using Jazor.Vue;
 
 namespace Jolt.Services;
@@ -638,3 +638,4 @@ public sealed class JoltService : IJoltService, IJoltRpcService, IVolarContextPr
         int WorkspaceSourceDocumentCount,
         int CodeBehindDocumentCount);
 }
+

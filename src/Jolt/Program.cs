@@ -12,7 +12,7 @@ using Jolt.Lsp.Aggregation;
 using Jolt.Lsp.Coordination;
 using Jolt.Lsp.Lanes;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Razor.InProc;
 using Jolt.Razor.Toolset;
 using Jolt.Roslyn.InProc;
@@ -26,7 +26,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using System.Text.Json;
-using SharedJoltRpcMethodNames = Jazor.Common.VueContracts.Protocol.JoltRpcMethodNames;
+using SharedJoltRpcMethodNames = Jazor.RazorVue.Protocol.JoltRpcMethodNames;
 
 var useLsp = args.Any(static arg => string.Equals(arg, "--lsp", StringComparison.OrdinalIgnoreCase));
 var useDev = args.Any(static arg => string.Equals(arg, "--dev", StringComparison.OrdinalIgnoreCase));
@@ -717,3 +717,4 @@ file sealed class DevServerRuntime(
     public ValueTask DisposeAsync()
         => Server.DisposeAsync();
 }
+

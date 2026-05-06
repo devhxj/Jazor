@@ -162,9 +162,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
                     if (typeSymbol.TypeKind == TypeKind.Array)
                         return (TypeMapper.Array, "Array");
 
-                    // Enum 类型映射到 Number
+                    // enum 默认仍是数值域；只有显式 [String] 标记的 enum 才按字符串标量处理
                     else if (typeSymbol.TypeKind == TypeKind.Enum)
-                        return (TypeMapper.Number, "Number");
+                        return Util.IsStringEnumType(typeSymbol)
+                            ? (TypeMapper.String, "String")
+                            : (TypeMapper.Number, "Number");
 
                     // Date 相关类型（SpecialType 只包含 DateTime）
                     else if (displayName == "System.DateOnly")
@@ -333,6 +335,159 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         return IsDirectlySupportedExternalType(operation, typeSymbol) ? null : typeSymbol;
     }
+
+    private void RejectUnsupportedNativeMapSetEqualityBoundaryIfNeeded(IOperation operation, ITypeSymbol? hostType, string usage)
+    {
+        if (!TryGetNativeMapSetEqualitySurface(hostType, out var equalityType, out var role))
+            return;
+
+        if (HasJsStableNativeMapSetEquality(equalityType, out var reason))
+            return;
+
+        HandleTransformationFailure<Node>(
+            operation,
+            $"Collection type '{hostType!.ToDisplayString(Format.NameFormat)}' cannot be used for {usage} because its {role} type '{equalityType.ToDisplayString(Format.NameFormat)}' does not have JS-stable default equality under the current native Map/Set carrier. {reason}");
+    }
+
+    private static bool TryGetNativeMapSetEqualitySurface(ITypeSymbol? hostType, out ITypeSymbol equalityType, out string role)
+    {
+        if (hostType is INamedTypeSymbol namedType)
+        {
+            var displayName = namedType.OriginalDefinition.ToDisplayString(Format.NameFormat);
+            switch (displayName)
+            {
+                case "System.Collections.Generic.Dictionary<TKey, TValue>":
+                case "System.Collections.Generic.IDictionary<TKey, TValue>":
+                case "System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>":
+                    equalityType = namedType.TypeArguments[0];
+                    role = "key";
+                    return true;
+
+                case "System.Collections.Generic.HashSet<T>":
+                case "System.Collections.Generic.ISet<T>":
+                case "System.Collections.ObjectModel.ReadOnlySet<T>":
+                    equalityType = namedType.TypeArguments[0];
+                    role = "element";
+                    return true;
+            }
+        }
+
+        equalityType = null!;
+        role = string.Empty;
+        return false;
+    }
+
+    private bool HasJsStableNativeMapSetEquality(ITypeSymbol typeSymbol, out string reason)
+    {
+        var normalizedType = UnwrapNullableValueType(typeSymbol);
+        if (normalizedType.IsTupleType)
+        {
+            reason = "Tuple keys/elements lower structurally, but native JS Map/Set only compares carrier identity.";
+            return false;
+        }
+
+        if (normalizedType.TypeKind == TypeKind.Enum)
+        {
+            reason = string.Empty;
+            return true;
+        }
+
+        if (normalizedType is IArrayTypeSymbol)
+        {
+            reason = string.Empty;
+            return true;
+        }
+
+        switch (GetMapperType(normalizedType).Mapper)
+        {
+            case TypeMapper.Number:
+            case TypeMapper.String:
+            case TypeMapper.Boolean:
+            case TypeMapper.BigInt:
+                reason = string.Empty;
+                return true;
+        }
+
+        switch (normalizedType)
+        {
+            case ITypeParameterSymbol:
+                reason = "Type-parameter keys/elements are not statically known to have JS-stable default equality.";
+                return false;
+
+            case INamedTypeSymbol namedType when namedType.SpecialType == SpecialType.System_Object:
+                reason = "object keys/elements are not statically bounded to a JS-stable default equality contract.";
+                return false;
+
+            case INamedTypeSymbol { TypeKind: TypeKind.Interface }:
+                reason = "Interface-typed keys/elements are not statically known to have JS-stable default equality.";
+                return false;
+
+            case INamedTypeSymbol { TypeKind: TypeKind.Struct }:
+                reason = "Struct keys/elements use CLR value equality, but their JS carriers are compared by identity under native Map/Set.";
+                return false;
+
+            case INamedTypeSymbol { TypeKind: TypeKind.Delegate }:
+                reason = "Delegate equality is not modeled by native JS function identity.";
+                return false;
+
+            case INamedTypeSymbol { TypeKind: TypeKind.Class } namedType when HasCustomDefaultEqualitySemantics(namedType):
+                reason = "Reference type keys/elements with record/custom equality semantics are not preserved by native JS Map/Set identity checks.";
+                return false;
+
+            case INamedTypeSymbol { TypeKind: TypeKind.Class }:
+                reason = string.Empty;
+                return true;
+        }
+
+        reason = "This key/element type does not map to a JS-stable default equality contract under native Map/Set.";
+        return false;
+    }
+
+    private static ITypeSymbol UnwrapNullableValueType(ITypeSymbol typeSymbol)
+        => typeSymbol is INamedTypeSymbol
+        {
+            OriginalDefinition.SpecialType: SpecialType.System_Nullable_T,
+            TypeArguments.Length: 1
+        } nullableType
+            ? nullableType.TypeArguments[0]
+            : typeSymbol;
+
+    private static bool HasCustomDefaultEqualitySemantics(INamedTypeSymbol typeSymbol)
+    {
+        if (typeSymbol.IsRecord || ImplementsSelfIEquatable(typeSymbol))
+            return true;
+
+        for (var current = typeSymbol; current is not null; current = current.BaseType)
+        {
+            if (current.IsRecord || OverridesObjectEquals(current) || OverridesObjectGetHashCode(current))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool ImplementsSelfIEquatable(INamedTypeSymbol typeSymbol)
+        => typeSymbol.AllInterfaces.Any(iface =>
+            iface.OriginalDefinition.ToDisplayString(Format.NameFormat) == "System.IEquatable<T>" &&
+            iface.TypeArguments.Length == 1 &&
+            SymbolEqualityComparer.Default.Equals(iface.TypeArguments[0], typeSymbol));
+
+    private static bool OverridesObjectEquals(INamedTypeSymbol typeSymbol)
+        => typeSymbol
+            .GetMembers("Equals")
+            .OfType<IMethodSymbol>()
+            .Any(method =>
+                method.IsOverride &&
+                method.Parameters.Length == 1 &&
+                method.Parameters[0].Type.SpecialType == SpecialType.System_Object);
+
+    private static bool OverridesObjectGetHashCode(INamedTypeSymbol typeSymbol)
+        => typeSymbol
+            .GetMembers("GetHashCode")
+            .OfType<IMethodSymbol>()
+            .Any(method =>
+                method.IsOverride &&
+                method.Parameters.Length == 0);
 
     private bool IsDirectlySupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
     {

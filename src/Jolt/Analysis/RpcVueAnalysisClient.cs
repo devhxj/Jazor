@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 using Jolt.Rpc;
-using SharedVueAnalysisRpcMethodNames = Jazor.Common.VueContracts.Protocol.VueAnalysisRpcMethodNames;
+using SharedVueAnalysisRpcMethodNames = Jazor.RazorVue.Protocol.VueAnalysisRpcMethodNames;
 
 namespace Jolt.Analysis;
 
@@ -114,3 +114,4 @@ public sealed class RpcVueAnalysisClient : IVueAnalysisClient
         Console.Error.WriteLine(JsonSerializer.Serialize(payload));
     }
 }
+

@@ -1,6 +1,6 @@
 using Jolt.Lsp;
 using Jolt.Lsp.Routing;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Extensions.Builtin;
 
@@ -123,3 +123,4 @@ internal sealed class DirectiveCompletionExtension : IExtension, ILspCompletionP
         string Detail,
         string Documentation);
 }
+

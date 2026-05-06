@@ -1,5 +1,5 @@
 using Jazor.Vue;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Workspace;
 
@@ -203,3 +203,4 @@ internal sealed class JazorRelatedDocumentResolver
             => _items.GetEnumerator();
     }
 }
+

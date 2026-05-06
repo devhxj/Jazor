@@ -1,7 +1,7 @@
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
 using System.Text.Json;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Volar.Deno.Hosting;
 
@@ -534,3 +534,4 @@ internal sealed class DenoVolarHost : IDenoVolarHost
             VolarArtifacts = context?.Artifacts
         };
 }
+

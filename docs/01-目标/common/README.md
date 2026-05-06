@@ -7,7 +7,7 @@
 迁移之后，仓库把“最小契约”和“可带依赖的共享实现”明确拆成了两层：
 
 - `ECMAScript.Contract` 只保留最小、稳定、零依赖污染的契约。
-- `Jazor.Common` 承载真正需要跨模块复用的实现、DTO 和工具。
+- `Jazor.Common` 承载真正需要跨模块复用的实现、工具与 SourceMap 支撑。
 
 这样可以避免把 Roslyn、JSON、emit、RazorVue 共享代码塞进 `ECMAScript.*` 命名空间，同时也避免各项目重复维护自己的格式化、协议和中间模型。
 
@@ -30,14 +30,12 @@
 
 - `Format`：统一签名格式和稳定 hash 命名
 - `Jazor.Common.SourceMaps`：SourceMap 模型和写出
-- `Jazor.Common.Emit`：manifest 与 emit 共享模型
-- `Jazor.Common.VueContracts.*`：Jolt / 分析链路共享协议 DTO
-- `Jazor.RazorVue*`：RazorVue 共享语义、描述符、lowering、artifact 模型
+- `Jazor.RazorVue.Documents` / `Jazor.RazorVue.Protocol`：RazorVue/Jolt 分析与宿主协议 DTO
 
 ## 解决什么问题
 
 1. **避免命名空间污染**：依赖包和复杂共享实现不再进入 `ECMAScript.*` 契约层。
-2. **统一共享实现**：格式化、SourceMap、emit DTO、RazorVue 语义不再分散在多个旧项目里。
+2. **统一共享实现**：格式化、SourceMap、RazorVue 协议 DTO 不再分散在多个旧项目里。
 3. **稳定跨模块协作**：Analyzer、Compiler、Emit、Jolt、Generator 共享同一套低层契约和中间模型。
 
 ## 与其他项目的关系
@@ -55,11 +53,18 @@ Jazor.Common（共享实现）
     ├── Jazor.Analyzer
     ├── Jazor.Emit
     ├── Jolt
+    └── Jazor.RazorVue
+
+Jazor.RazorVue（RazorVue 专属实现）
+    ├── Jazor.Analyzer
+    ├── Jazor.Emit
+    ├── Jolt
+    ├── Jolt.Test
     └── ECMAScript.Vuetify
 ```
 
 ## 当前边界规则
 
 - 只要类型需要保持 **无外部依赖、低波动、跨程序集共享**，优先放 `ECMAScript.Contract`。
-- 只要类型需要 **Roslyn、JSON、SourceMap、协议 DTO、RazorVue 共享语义**，放 `Jazor.Common`。
-- RazorVue 的对外命名空间仍可以叫 `Jazor.RazorVue`，但其物理实现已经并入 `Jazor.Common`。
+- 只要类型需要 **JSON + 通用 SourceMap 支撑**，放 `Jazor.Common`。
+- 只要类型属于 **RazorVue 语义、Razor SDK 桥接、RazorVue/Jolt 协议 DTO、RazorVue manifest/update-plan 模型**，放 `Jazor.RazorVue`。

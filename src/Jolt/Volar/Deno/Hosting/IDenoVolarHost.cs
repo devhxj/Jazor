@@ -1,6 +1,6 @@
 using Jolt.Volar.Deno.Protocol;
 using Jolt.Lsp;
-using Jazor.Common.VueContracts.Protocol;
+using Jazor.RazorVue.Protocol;
 
 namespace Jolt.Volar.Deno.Hosting;
 
@@ -120,3 +120,4 @@ internal interface IDenoVolarHost : IAsyncDisposable
         DenoVolarIntelliSenseContext? context,
         CancellationToken cancellationToken);
 }
+
