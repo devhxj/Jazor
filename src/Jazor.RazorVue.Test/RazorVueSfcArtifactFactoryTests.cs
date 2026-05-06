@@ -1,7 +1,9 @@
 using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
+using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -73,6 +75,45 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_CanUseInjectedTemplateFrontend_WhenBuildRenderTreeIsAbsent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/injected-card")]
+                public class InjectedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory(new FixedTemplateFrontend(CreateInjectedSectionTree("Injected SFC")))
+            .Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "Injected SFC");
+        Assert.IsFalse(artifact.SfcText.Contains("return () => null;", StringComparison.Ordinal), artifact.SfcText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersControlFlowIntoTemplateAndSetupBindings()
     {
         var context = CreateContext(
@@ -130,6 +171,139 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => props.visible);");
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.items);");
         Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersRazorGeneratedChildContentLambdaShape()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public class LayoutCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                    {
+                        __builder.OpenElement(0, "section");
+                        __builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder2) =>
+                        {
+                            __builder2.OpenElement(2, "h1");
+                            __builder2.AddContent(3, "Title");
+                            __builder2.CloseElement();
+                            __builder2.OpenElement(4, "p");
+                            __builder2.AddContent(5, "Body");
+                            __builder2.CloseElement();
+                        }));
+                        __builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "<h1>");
+        StringAssert.Contains(artifact.TemplateText, "Title");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "Body");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersPartialRazorGeneratedBuildRenderTreeShape()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.SfcArtifact.PartialRazor.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using Jazor.RazorVue;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Components
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/partial-card")]
+                        public partial class PartialCard : ComponentBase, IVueComponent
+                        {
+                        }
+                    }
+                    """,
+                    path: "PartialCard.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using Microsoft.AspNetCore.Components;
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Components
+                    {
+                        public partial class PartialCard
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                                __builder.OpenElement(0, "section");
+                                __builder.AddAttribute(1, "ChildContent", (RenderFragment)((__builder2) =>
+                                {
+                                    __builder2.OpenElement(2, "span");
+                                    __builder2.AddContent(3, "FromRazor");
+                                    __builder2.CloseElement();
+                                }));
+                                __builder.CloseElement();
+                            }
+                        }
+                    }
+                    """,
+                    path: "PartialCard.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "FromRazor");
     }
 
     [TestMethod]
@@ -259,11 +433,11 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
         var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent from \"./components/child-card.vue\";");
+        StringAssert.Contains(artifact.ScriptSetupText, "import ChildCardComponent from \"./child-card.vue\";");
         StringAssert.Contains(artifact.ScriptSetupText, "import { DemoButton as DemoButton } from \"demo/components\";");
         StringAssert.Contains(artifact.TemplateText, "<ChildCardComponent />");
         StringAssert.Contains(artifact.TemplateText, "<DemoButton text=\"Save\" />");
-        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.vue");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./child-card.vue");
         CollectionAssert.Contains(artifact.Imports.ToArray(), "demo/components");
     }
 
@@ -310,6 +484,85 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (props.title + \"!\"));");
         StringAssert.Contains(artifact.TemplateText, "<section :title=\"__jazorVueSfcBinding0\" />");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersRazorGeneratedEventCallbackFactoryWrapper_ToComponentEmitBridge()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.SfcArtifact.RazorGeneratedEventCallback.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using Jazor.RazorVue;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+                    using ECMAScript.Vuetify;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Components
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                        public partial class EditorCard : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? ModelValue { get; set; }
+
+                            [Parameter]
+                            public EventCallback<string?> ModelValueChanged { get; set; }
+                        }
+                    }
+                    """,
+                    path: "EditorCard.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using ECMAScript.Vuetify;
+                    using Microsoft.AspNetCore.Components.CompilerServices;
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Components
+                    {
+                        public partial class EditorCard
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                                __builder.OpenComponent<VTextField>(0);
+                                __builder.AddComponentParameter(1, nameof(VTextField.ModelValue), RuntimeHelpers.TypeCheck<string?>(ModelValue));
+                                __builder.AddComponentParameter(2, nameof(VTextField.ModelValueChanged), RuntimeHelpers.TypeCheck<EventCallback<string?>>(EventCallback.Factory.Create<string?>(this, ModelValueChanged)));
+                                __builder.CloseComponent();
+                            }
+                        }
+                    }
+                    """,
+                    path: "EditorCard.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = new RazorVueSfcArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<VTextField :modelValue=\"props.modelValue\" @update:modelValue=\"__jazorVueSfcBinding0\" />");
+        StringAssert.Contains(artifact.ScriptSetupText, "const props = defineProps<{ modelValue?: any }>();");
+        StringAssert.Contains(artifact.ScriptSetupText, "const emit = defineEmits<{ (event: \"update:modelValue\", payload?: any): void }>();");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (__value) => emit(\"update:modelValue\", __value));");
     }
 
     [TestMethod]
@@ -637,4 +890,27 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.IsNotNull(context);
         return context;
     }
+
+    private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend
+    {
+        public string Name => "Jazor.RazorVue.Test.FixedSfcTemplateFrontend";
+
+        public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
+        {
+            _ = context;
+            _ = snapshot;
+            return renderTree;
+        }
+    }
+
+    private static RazorVueRenderFragment CreateInjectedSectionTree(string text)
+        => new(
+            ImmutableArray.Create<RazorVueRenderNode>(
+                new RazorVueElementNode(
+                    "section",
+                    ImmutableArray<RazorVueAttributeNode>.Empty,
+                    new RazorVueRenderFragment(
+                        ImmutableArray.Create<RazorVueRenderNode>(
+                            new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
+                    ImmutableArray<RazorVueSourceOrigin>.Empty)));
 }

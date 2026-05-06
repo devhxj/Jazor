@@ -19,9 +19,9 @@ public sealed class StaticModuleSourceMapTests
             """
             namespace Jazor.Generated
             {
-                public static partial class ModuleCatalog
+                internal static partial class ModuleCatalog
                 {
-                    public static System.Collections.IEnumerable GetModules() => _modules;
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
 
                     private static readonly GeneratedModule[] _modules = new GeneratedModule[]
                     {
@@ -62,9 +62,9 @@ public sealed class StaticModuleSourceMapTests
                     }
                 }
 
-                public static partial class ModuleSourceMapCatalog
+                internal static partial class ModuleSourceMapCatalog
                 {
-                    public static System.Collections.IEnumerable GetModules() => _modules;
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
 
                     private static readonly GeneratedModuleSourceMap[] _modules = new GeneratedModuleSourceMap[]
                     {
@@ -124,6 +124,61 @@ public sealed class StaticModuleSourceMapTests
         Assert.IsNull(plain.SourceMapRelativePath);
         Assert.IsNull(plain.SourceMapContent);
         Assert.IsNull(plain.MapHash);
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryRead_ReadsEcmascriptDedicatedCatalogType()
+    {
+        var assembly = CompileCatalogAssembly(
+            "ECMAScript.Runtime.Reader.Tests",
+            """
+            namespace ECMAScript
+            {
+                internal static partial class Catalog
+                {
+                    internal static System.Collections.IEnumerable GetModules() => _modules;
+
+                    private static readonly GeneratedModule[] _modules =
+                    [
+                        new GeneratedModule(
+                            assemblyName: "ECMAScript",
+                            typeName: "Jazor.CLR.RuntimeModule",
+                            id: "Jazor.CLR.RuntimeModule",
+                            relativePath: "System/RuntimeModule.js",
+                            content: "export const RuntimeModule = {};",
+                            hash: "hash-runtime")
+                    ];
+
+                    private sealed class GeneratedModule
+                    {
+                        public GeneratedModule(string assemblyName, string typeName, string id, string relativePath, string content, string hash)
+                        {
+                            AssemblyName = assemblyName;
+                            TypeName = typeName;
+                            Id = id;
+                            RelativePath = relativePath;
+                            Content = content;
+                            Hash = hash;
+                        }
+
+                        public string AssemblyName { get; }
+                        public string TypeName { get; }
+                        public string Id { get; }
+                        public string RelativePath { get; }
+                        public string Content { get; }
+                        public string Hash { get; }
+                    }
+                }
+            }
+            """);
+
+        var modules = CatalogReader.TryRead(assembly);
+
+        Assert.IsNotNull(modules);
+        Assert.HasCount(1, modules);
+        Assert.AreEqual("ECMAScript", modules[0].AssemblyName);
+        Assert.AreEqual("Jazor.CLR.RuntimeModule", modules[0].TypeName);
+        Assert.AreEqual("System/RuntimeModule.js", modules[0].RelativePath);
     }
 
     [TestMethod]

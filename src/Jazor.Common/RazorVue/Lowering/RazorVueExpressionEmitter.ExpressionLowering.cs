@@ -186,8 +186,8 @@ internal sealed partial class RazorVueExpressionEmitter
                 return "props." + ToLowerCamelCase(property.Property.Name);
             }
 
-            if (_emitsByRazorAlias.TryGetValue(property.Property.Name, out _))
-                return "props." + ToLowerCamelCase(property.Property.Name);
+            if (_emitsByRazorAlias.ContainsKey(property.Property.Name))
+                return EmitCurrentComponentCallbackReference(property.Property);
 
             throw new NotSupportedException(
                 $"RazorVue render currently only supports parameter properties in template expressions. Unsupported member: '{property.Property.Name}'.");
@@ -202,6 +202,9 @@ internal sealed partial class RazorVueExpressionEmitter
         {
             if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
                 return "props." + prop.Name;
+
+            if (_emitsByRazorAlias.ContainsKey(property.Property.Name))
+                return EmitCurrentComponentCallbackReference(property.Property);
 
             throw CreateUnsupportedSetupLogicException(
                 property.Property,
@@ -309,6 +312,10 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitInvocation(IInvocationOperation invocation)
     {
+        var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
+        if (normalizedCallbackFactory.Length != 0)
+            return normalizedCallbackFactory;
+
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
             return EmitExpression(invocation.Instance) + "(" +
@@ -338,6 +345,10 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitSetupInvocation(IInvocationOperation invocation)
     {
+        var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
+        if (normalizedCallbackFactory.Length != 0)
+            return normalizedCallbackFactory;
+
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
             return EmitSetupExpression(invocation.Instance) + "(" +
@@ -465,13 +476,59 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private static IOperation? Unwrap(IOperation? operation)
-    {
-        var current = operation;
-        while (current is IConversionOperation conversion && conversion.IsImplicit)
-            current = conversion.Operand;
+        => RazorVueOperationNormalizer.Unwrap(operation);
 
-        return current;
+    private string TryNormalizeRazorGeneratedCallbackFactory(IInvocationOperation invocation)
+    {
+        if (!IsEventCallbackFactoryCreate(invocation) || invocation.Arguments.Length < 2)
+            return string.Empty;
+
+        var receiver = Unwrap(invocation.Arguments[0].Value);
+        if (receiver is not IInstanceReferenceOperation)
+            return string.Empty;
+
+        var callbackTarget = Unwrap(invocation.Arguments[1].Value);
+        if (callbackTarget is null)
+            return string.Empty;
+
+        return callbackTarget switch
+        {
+            IPropertyReferenceOperation property when IsCurrentComponentMember(property.Property, property.Instance) =>
+                EmitCurrentComponentCallbackReference(property.Property),
+            IFieldReferenceOperation field when IsCurrentComponentMember(field.Field, field.Instance) =>
+                EmitCurrentComponentCallbackReference(field.Field),
+            _ => string.Empty
+        };
     }
+
+    private string EmitCurrentComponentCallbackReference(ISymbol symbol)
+    {
+        if (_emitsByRazorAlias.TryGetValue(symbol.Name, out var emitDescriptor))
+        {
+            var payloadParameterName = GetVueEmitPayloadParameterName(emitDescriptor);
+            return payloadParameterName.Length == 0
+                ? "() => emit(" + ToJavaScriptString(emitDescriptor.Name) + ")"
+                : "(" + payloadParameterName + ") => emit(" + ToJavaScriptString(emitDescriptor.Name) + ", " + payloadParameterName + ")";
+        }
+
+        if (_propsByPublicName.TryGetValue(symbol.Name, out var propDescriptor))
+            return "props." + propDescriptor.Name;
+
+        throw new NotSupportedException(
+            $"RazorVue render currently does not support callback member '{symbol.Name}' in component '{_snapshot.Descriptor.FullName}'.");
+    }
+
+    private static string GetVueEmitPayloadParameterName(VueEmitDescriptor emitDescriptor)
+        => string.Equals(emitDescriptor.PayloadTypeName, "void", StringComparison.Ordinal)
+            ? string.Empty
+            : "__value";
+
+    private static bool IsEventCallbackFactoryCreate(IInvocationOperation invocation)
+        => invocation.TargetMethod.Name == "Create" &&
+           string.Equals(
+               invocation.TargetMethod.ContainingType?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.EventCallbackFactory",
+               StringComparison.Ordinal);
 
     private static bool IsCallableSlotExpression(IOperation operation)
         => Unwrap(operation)?.Type?.TypeKind == TypeKind.Delegate;

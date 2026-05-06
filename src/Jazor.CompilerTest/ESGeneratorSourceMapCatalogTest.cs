@@ -61,13 +61,13 @@ public sealed class ESGeneratorSourceMapCatalogTest
         CollectionAssert.Contains(hintNames, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
 
         var moduleCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleCatalog.g.cs");
-        StringAssert.Contains(moduleCatalog, "public static partial class ModuleCatalog");
+        StringAssert.Contains(moduleCatalog, "internal static partial class ModuleCatalog");
         Assert.AreEqual(-1, moduleCatalog.IndexOf("SourceMapRelativePath", StringComparison.Ordinal));
         Assert.AreEqual(-1, moduleCatalog.IndexOf("SourceMapContent", StringComparison.Ordinal));
         Assert.AreEqual(-1, moduleCatalog.IndexOf("MapHash", StringComparison.Ordinal));
 
         var sourceMapCatalog = GetGeneratedSource(runResult, "Jazor.Generated.ModuleSourceMapCatalog.g.cs");
-        StringAssert.Contains(sourceMapCatalog, "public static partial class ModuleSourceMapCatalog");
+        StringAssert.Contains(sourceMapCatalog, "internal static partial class ModuleSourceMapCatalog");
         StringAssert.Contains(sourceMapCatalog, "sourceMapRelativePath:");
         StringAssert.Contains(sourceMapCatalog, "modules/math.mjs.map");
         StringAssert.Contains(sourceMapCatalog, "Demo/MathModule.cs");

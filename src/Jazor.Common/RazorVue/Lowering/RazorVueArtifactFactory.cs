@@ -30,7 +30,17 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         "SetParametersAsync",
         "ShouldRender");
 
-    private readonly RazorVueRenderTreeExtractor _renderTreeExtractor = new();
+    private readonly IRazorVueTemplateFrontend _templateFrontend;
+
+    public RazorVueArtifactFactory()
+        : this(BuildRenderTreeTemplateFrontend.Instance)
+    {
+    }
+
+    public RazorVueArtifactFactory(IRazorVueTemplateFrontend templateFrontend)
+    {
+        _templateFrontend = templateFrontend ?? throw new ArgumentNullException(nameof(templateFrontend));
+    }
 
     internal static RazorVueExpressionEmitter CreateExpressionEmitterForCanonicalization(
         RazorVueSemanticSnapshot snapshot,
@@ -52,7 +62,7 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
 
-        var renderTree = _renderTreeExtractor.Extract(context, snapshot);
+        var renderTree = _templateFrontend.CreateRenderTree(context, snapshot);
         return CreateCore(context, snapshot, renderTree);
     }
 

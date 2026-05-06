@@ -6,6 +6,15 @@ namespace Jazor.EmitTest;
 public sealed class ClrRuntimeCatalogReaderTests
 {
     [TestMethod]
+    public void CatalogReader_TryRead_UsesECMAScriptDedicatedCatalogTypeName()
+    {
+        var catalogType = typeof(ECMAScript.Number).Assembly.GetType("ECMAScript.Catalog", throwOnError: false, ignoreCase: false);
+
+        Assert.IsNotNull(catalogType);
+        Assert.IsNull(typeof(ECMAScript.Number).Assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: false, ignoreCase: false));
+    }
+
+    [TestMethod]
     public void CatalogReader_TryRead_ReadsClrRuntimeModules_FromEcmascriptAssembly()
     {
         var assembly = typeof(ECMAScript.Number).Assembly;
@@ -57,6 +66,10 @@ public sealed class ClrRuntimeCatalogReaderTests
 
         var runtimeModule = modules.Single(module => string.Equals(module.RelativePath, "System/RuntimeModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(runtimeModule.Content, "export const RuntimeModule = {");
+        Assert.IsFalse(runtimeModule.Content.Contains("from \"System/RuntimeModule.js\"", StringComparison.Ordinal), runtimeModule.Content);
+        Assert.IsFalse(runtimeModule.Content.Contains("import {", StringComparison.Ordinal), runtimeModule.Content);
+        StringAssert.Contains(runtimeModule.Content, "this.items = materializeArray(collection, ");
+        StringAssert.Contains(runtimeModule.Content, "return new JQueue;");
 
         var byteModule = modules.Single(module => string.Equals(module.RelativePath, "System/ByteModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(byteModule.Content, "export function _8719e4b3055c5188");
@@ -80,6 +93,24 @@ public sealed class ClrRuntimeCatalogReaderTests
         var stringModule = modules.Single(module => string.Equals(module.RelativePath, "System/StringModule.js", StringComparison.OrdinalIgnoreCase));
         StringAssert.Contains(stringModule.Content, "return instance.charAt(index);");
         Assert.IsFalse(stringModule.Content.Contains("return String.fromCharCode(i$8578349aab59a79b(instance, index));", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void CatalogReader_TryRead_ClrBigIntStatics_InlineToNativeLiterals()
+    {
+        var assembly = typeof(ECMAScript.Number).Assembly;
+
+        var modules = CatalogReader.TryRead(assembly);
+
+        Assert.IsNotNull(modules);
+
+        var allContent = string.Join("\n", modules.Select(static module => module.Content));
+        Assert.IsFalse(allContent.Contains("BigInt.zero", StringComparison.Ordinal), "CLR runtime catalog still contains invalid BigInt.zero access.");
+        Assert.IsFalse(allContent.Contains("BigInt.one", StringComparison.Ordinal), "CLR runtime catalog still contains invalid BigInt.one access.");
+        Assert.IsFalse(allContent.Contains("BigInt.minusOne", StringComparison.Ordinal), "CLR runtime catalog still contains invalid BigInt.minusOne access.");
+
+        var dateTimeModule = modules.Single(module => string.Equals(module.RelativePath, "System/DateTimeModule.js", StringComparison.OrdinalIgnoreCase));
+        StringAssert.Contains(dateTimeModule.Content, "function get_ZeroTicks() {\n  return 0n;\n}");
     }
 
     private static void AssertContainsModule(IReadOnlyList<EmitModuleRecord> modules, string relativePath)

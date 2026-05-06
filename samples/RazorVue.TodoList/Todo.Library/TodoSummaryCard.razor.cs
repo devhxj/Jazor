@@ -19,11 +19,15 @@ public partial class TodoSummaryCard : ComponentBase, IVueComponent
     [Parameter]
     public int PinnedCount { get; set; }
 
-    private string TotalLabel => TotalCount + " tasks in scope";
+    [Parameter]
+    public string? TotalText { get; set; }
 
-    private string CompletedLabel => CompletedCount + " completed";
+    [Parameter]
+    public string? CompletedText { get; set; }
 
-    private string OpenLabel => OpenCount + " still active";
+    [Parameter]
+    public string? OpenText { get; set; }
 
-    private string PinnedLabel => PinnedCount + " pinned for focus";
+    [Parameter]
+    public string? PinnedText { get; set; }
 }

@@ -591,7 +591,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var walker = new SemanticWalker(cancellationToken);
+        var walker = new SemanticWalker(_classSymbol, ModuleDeclaredNames, cancellationToken);
         var argument = CreateImportAwareArgument(Sense.Any);
         var visited = walker.Visit(operation, argument);
         MergeImports(argument);

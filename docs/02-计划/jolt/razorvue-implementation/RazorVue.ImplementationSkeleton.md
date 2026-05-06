@@ -22,6 +22,7 @@
 - [RazorVue.DenoHostContract.md](../../../01-目标/razorvue/design/RazorVue.DenoHostContract.md)
 - [RazorVue.HardRules.md](../../../01-目标/razorvue/design/RazorVue.HardRules.md)
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.RazorIrMigrationPlan.md](./RazorVue.RazorIrMigrationPlan.md)
 
 ## 1. 项目所有权
 
@@ -39,10 +40,11 @@
 不拥有：
 
 - 渲染树提取
+- Razor SDK / `RazorCodeDocument` / IR 宿主所有权
 - Vue lowering
 - 面向宿主的 catalog/物化
 
-### 1.2 `src/Jazor.Compiler`
+### 1.2 `src/Jazor.Common`
 
 拥有：
 
@@ -50,7 +52,7 @@
 - 语义快照提取
 - 组件描述符提取
 - 逻辑提取
-- 渲染树提取
+- 过渡模板前端提取
 - Vue lowering
 - RazorVue catalog/物化模型
 
@@ -72,7 +74,7 @@
 
 - `JazorComponent`
 - 静态模块 lowering
-- 已由 `src/Jazor.Compiler` 拥有的通用编译器基础设施
+- 已由 RazorVue 核心实现层拥有的通用基础设施
 
 ### 1.4 `src/Jazor.Razor`
 
@@ -87,7 +89,20 @@
 - Vue 优先的编写 API
 - 静态模块 lowering
 
-### 1.5 `src/Jazor.RazorVue.Analysis`
+### 1.5 RazorVue 专用 Razor SDK/toolset 宿主层
+
+拥有：
+
+- Razor SDK / toolset 对齐的 `RazorCodeDocument` 获取能力
+- 对 Razor compiler / source mappings / toolset 版本漂移的宿主隔离
+- 需要 SDK 私有访问时的最小爆炸半径
+
+不拥有：
+
+- RazorVue descriptor / lifecycle / setup / artifact 语义
+- 最终的 RazorVue generator catalog 输出
+
+### 1.6 `src/Jazor.RazorVue.Analysis`
 
 拥有：
 
@@ -99,9 +114,10 @@
 
 - `JazorComponent`
 - `VueComponent`
-- 已由 `src/Jazor.Compiler` 拥有的通用编译器核心契约
+- 已由 RazorVue 核心实现层拥有的通用核心契约
+- 直接拥有 Razor SDK phase / `RazorCodeDocument` 生命周期
 
-### 1.6 `src/Jazor.Emit`
+### 1.7 `src/Jazor.Emit`
 
 拥有：
 
@@ -110,7 +126,7 @@
 - `ModuleCatalog` 加 `RazorVueCatalog` 的过渡支持
 - `DenoHost` 交接
 
-### 1.7 `src/Jazor.CompilerTest`
+### 1.8 `src/Jazor.RazorVue.Test`
 
 拥有：
 
@@ -118,17 +134,18 @@
 - 提取测试
 - lowering 测试
 - 产物/catalog 测试
+- Razor IR/template frontend parity 测试
 
-第一阶段应将大部分验证保留在此处，而非创建新的测试项目。
+第一阶段的大部分 RazorVue 验证应保留在现有 RazorVue 测试面中，而不是把 Razor SDK/frontend 迁移测试挪到无关测试项目。
 
 ## 2. 建议的目录结构
 
 第一阶段应避免将 RazorVue 类型分散到不相关的文件中。
 
-建议的编译器侧布局：
+建议的 RazorVue 核心侧布局：
 
 ```text
-src/Jazor.Compiler/
+src/Jazor.Common/
   RazorVue/
     RazorVueCompilationSymbols.cs
     RazorVueCompilationContext.cs
@@ -142,8 +159,12 @@ src/Jazor.Compiler/
     Logic/
       RazorVueLogicExtractor.cs
     RenderTree/
-      RazorRenderTreeExtractor.cs
-      RazorRenderTreeBuilderPatterns.cs
+      RazorVueRenderTreeExtractor.cs
+      RazorVueRenderTreeBuilderPatterns.cs
+    IrExtraction/
+      RazorVueRazorDocumentProvider.cs
+      RazorVueIrTemplateExtractor.cs
+      RazorVueIrParityComparer.cs
     Lowering/
       RazorVueLoweringContext.cs
       VueComponentLowerer.cs
@@ -279,6 +300,7 @@ public sealed class RazorVuePipeline
 7. catalog/物化
 
 这将新路径与当前静态模块路径保持分离。
+当模板前端迁移到 `RazorCodeDocument` / Razor IR 时，也应首先替换 `RenderTree/IrExtraction` 层，而不是直接重写全部 lowering 和 artifact 结构。
 
 ## 5. 分析器拆分
 
@@ -336,12 +358,14 @@ public sealed class RazorVuePipeline
 
 ## 7. 首批测试文件
 
-建议在 `src/Jazor.CompilerTest/` 中的首批测试文件：
+建议在 `src/Jazor.RazorVue.Test/` 中的首批测试文件：
 
 - `RazorVueAnalyzerTests.cs`
 - `RazorVueDescriptorExtractionTests.cs`
 - `RazorVueLogicExtractionTests.cs`
 - `RazorVueRenderTreeExtractionTests.cs`
+- `RazorVueIrTemplateExtractionTests.cs`
+- `RazorVueTemplateFrontendParityTests.cs`
 - `RazorVueLoweringTests.cs`
 - `RazorVueArtifactEmissionTests.cs`
 - `RazorVuePipelineTests.cs`
@@ -359,6 +383,9 @@ public sealed class RazorVuePipeline
 - `RazorVue_RenderTree_OpenElementAddContent_ProducesElementNode`
 - `RazorVue_RenderTree_IfBlock_ProducesConditionalNode`
 - `RazorVue_RenderTree_Foreach_ProducesLoopNode`
+- `RazorVue_RazorIr_ElementTree_ProducesEquivalentTemplateNodeShape`
+- `RazorVue_RazorIr_IfForeach_ProducesEquivalentStructuredNodes`
+- `RazorVue_TemplateFrontends_BuildRenderTreeAndIr_AgreeOnSupportedSubset`
 - `RazorVue_Lowering_HtmlElement_LowersToHCall`
 - `RazorVue_Lowering_ComponentNode_LowersToComponentHCall`
 - `RazorVue_Artifact_IdentityHashes_AreSplit`
@@ -387,7 +414,7 @@ public sealed class RazorVuePipeline
 - 描述符提取
 - 描述符测试
 
-### PR3. 渲染树提取
+### PR3. 过渡模板前端提取
 
 包含：
 
@@ -395,7 +422,16 @@ public sealed class RazorVuePipeline
 - 构建器模式提取器
 - 渲染树测试
 
-### PR4. Lowering 和产物发射
+### PR4. Razor IR template frontend spike / parity
+
+包含：
+
+- `RazorCodeDocument` 获取宿主接线
+- IR 到模板中间模型提取
+- parity 测试
+- 不改变现有 descriptor / setup / lifecycle / artifact 主链
+
+### PR5. Lowering 和产物发射
 
 包含：
 
@@ -403,7 +439,7 @@ public sealed class RazorVuePipeline
 - lowering
 - 产物测试
 
-### PR5. 宿主过渡
+### PR6. 宿主过渡
 
 包含：
 
@@ -418,6 +454,7 @@ public sealed class RazorVuePipeline
 - Vuetify 特定的 lowering
 - Router/Pinia 集成
 - `.vue` SFC 生成
+- “直接从 IR 拼接最终 SFC 文本并同步删除现有 lowering 链”的一次性大切换
 - SSR/hydration 规划
 - 别名限定的组件标签语法
 - 广泛的 Razor 语法支持
@@ -431,6 +468,7 @@ public sealed class RazorVuePipeline
 3. 团队接受完全限定的组件名称作为第一阶段唯一的歧义规避方式
 4. 团队接受 `RazorSourceMap -> GeneratedSyntaxLocation -> GeneratedFallback` 来源层级
 5. 团队接受 RazorVue 与当前 `ModuleCatalog` 路径共存的过渡计划
+6. 团队接受 `RazorCodeDocument` / Razor IR 是长期模板语义前端，而 `BuildRenderTree` 提取只是过渡实现
 
 ## 11. 结论
 

@@ -472,11 +472,11 @@ namespace Jazor.EmitTest
 
             namespace Jazor.Generated
             {
-                public static class RazorVueCatalog
+                internal static class RazorVueCatalog
                 {
-                    public static string AssemblyName => "{{assemblyName}}";
+                    internal static string AssemblyName => "{{assemblyName}}";
 
-                    public static System.Collections.IEnumerable GetArtifacts()
+                    internal static System.Collections.IEnumerable GetArtifacts()
                         => {{getArtifactsExpression ?? "new object[] { new GeneratedArtifact() }"}};
 
                     private sealed class GeneratedArtifact
@@ -597,11 +597,11 @@ namespace Jazor.EmitTest
 
 namespace Jazor.Generated
 {
-    public static partial class RazorVueCatalog
+    internal static partial class RazorVueCatalog
     {
-        public static string AssemblyName { get; } = "RazorVue.Reader.Tests";
+        internal static string AssemblyName { get; } = "RazorVue.Reader.Tests";
 
-        public static System.Collections.IEnumerable GetArtifacts()
+        internal static System.Collections.IEnumerable GetArtifacts()
             => _artifacts;
 
         private static readonly GeneratedArtifact[] _artifacts =

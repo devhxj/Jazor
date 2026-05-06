@@ -11,7 +11,7 @@ namespace Jazor.Compiler;
 partial interface IWhiteList
 {
 	/// <summary>
-	/// static ECMAScript.Global.TypeOf(object)
+	/// static extern ECMAScript.Global.TypeOf(object)
 	/// </summary>
 	/// <param name="symbol"></param>
 	/// <param name="context"></param>
@@ -19,6 +19,6 @@ partial interface IWhiteList
 	/// <param name="args"></param>
 	/// <param name="originOperation"></param>
 	/// <returns></returns>
-	Expression? Compile_b58c68bda64ad0f8(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
+	Expression? Compile_27d71701fd254382(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation);
 
 }

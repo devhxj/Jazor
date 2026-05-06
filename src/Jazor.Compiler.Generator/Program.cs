@@ -63,7 +63,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
             if (typeOp == nameof(Op.Discard))
                 continue;
 
-            var typeName = SharedGeneration.FormatSymbolName(type);
+            var typeName = type.OriginalDefinition.ToDisplayString(Format.NameFormat);
             var modulePath = SharedGeneration.ReadModulePath(typeDeclaration.AttributeLists, semanticModel);
 
             if (typeOp != nameof(Op.Compile))
@@ -89,7 +89,7 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
 
                 if ((op == nameof(Op.Compile) || op == nameof(Op.Inline)) && string.IsNullOrEmpty(memberName))
                 {
-                    memberName = SharedGeneration.FormatSymbolName(member);
+                    memberName = member.OriginalDefinition.ToDisplayString(Format.NameFormat);
                     value ??= Format.HashName(memberName);
                 }
 
@@ -100,14 +100,14 @@ static void GenerateWhiteListArtifacts(string repoRoot, IEnumerable<MetadataRefe
                 {
                     if (property.GetMethod is not null)
                     {
-                        var getMemberName = SharedGeneration.FormatSymbolName(property.GetMethod);
+                        var getMemberName = property.GetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
                         if (seenMembers.Add(getMemberName))
                             members.Add((typeName, op, getMemberName, value, modulePath));
                     }
 
                     if (property.SetMethod is not null)
                     {
-                        var setMemberName = SharedGeneration.FormatSymbolName(property.SetMethod);
+                        var setMemberName = property.SetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
                         if (seenMembers.Add(setMemberName))
                             members.Add((typeName, op, setMemberName, value, modulePath));
                     }

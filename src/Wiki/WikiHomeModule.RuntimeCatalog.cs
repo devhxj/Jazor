@@ -26,7 +26,7 @@ src/Jazor.Compiler.Generator/Program.cs
 src/Jazor.Compiler.Generator/ClrRuntimeCatalogEmitter.cs
 src/Jazor.Compiler.Generator/ClrRuntimeSelection.cs
 src/Jazor.Compiler/WhiteList.cs.Generate.cs
-src/ECMAScript/Jazor.Generated.ClrRuntimeCatalog.g.cs
+src/ECMAScript/Catalog.g.cs
 src/Wiki/jazor/System/
 """),
                 H("p", "That single-run refresh matters. New CLR mappings should be visible to runtime-catalog emission in the same generator invocation, not only after a second pass.")

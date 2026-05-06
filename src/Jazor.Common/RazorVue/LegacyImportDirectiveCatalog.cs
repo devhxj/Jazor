@@ -3,7 +3,7 @@ namespace Jazor.RazorVue;
 public static class LegacyImportDirectiveCatalog
 {
     public const string DiagnosticCode = "JAZORVUE020";
-    public const string DiagnosticSource = "Jolt";
+    public const string DiagnosticSource = "RazorVue";
 
     public static IReadOnlyList<LegacyImportDirectiveOccurrence> FindOccurrences(string sourceText)
     {

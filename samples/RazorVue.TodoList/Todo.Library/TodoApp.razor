@@ -30,11 +30,11 @@
                         </VCol>
                         <VCol Cols="12" Md="4">
                             <VBtn Text="Add task"
-                                  OnClick="@AddTask" />
+                                  OnClick="@AddRequested" />
                         </VCol>
                     </VRow>
 
-                    @if (!string.IsNullOrWhiteSpace(StatusMessage))
+                    @if (StatusMessage != null && StatusMessage != "")
                     {
                         <p>@StatusMessage</p>
                     }
@@ -45,10 +45,14 @@
 
     <VRow Justify="center">
         <VCol Cols="12" Md="10" Lg="8">
-            <TodoSummaryCard TotalCount="@Tasks.Length"
+            <TodoSummaryCard TotalCount="@TotalCount"
                              CompletedCount="@CompletedCount"
                              OpenCount="@OpenCount"
-                             PinnedCount="@PinnedCount" />
+                             PinnedCount="@PinnedCount"
+                             TotalText="@($"{TotalCount} tasks in scope")"
+                             CompletedText="@($"{CompletedCount} completed")"
+                             OpenText="@($"{OpenCount} still active")"
+                             PinnedText="@($"{PinnedCount} pinned for focus")" />
         </VCol>
     </VRow>
 
@@ -57,27 +61,27 @@
             <VCard>
                 <VCardTitle Text="Tasks" />
                 <VCardText>
-                    @if (VisibleTasks.Length == 0)
+                    @if (VisibleCount == 0)
                     {
-                        <p>No tasks match the current filter.</p>
+                        <VAlert Type="info"
+                                Variant="tonal"
+                                Text="No tasks match the current filter." />
                     }
                     else
                     {
                         <VList Density="comfortable">
-                            @foreach (var item in VisibleTasks)
+                            @foreach (var item in Tasks!)
                             {
-                                <VListItem Title="@item.Title"
-                                           Subtitle="@BuildSubtitle(item)">
-                                    <VCheckbox Label="Done"
-                                               ModelValue="@item.IsDone"
-                                               ModelValueChanged="@CreateDoneChanged(item.Id)" />
-                                    @if (item.IsPinned)
-                                    {
-                                        <VChip Text="Pinned" Color="primary" />
-                                    }
-                                    <VBtn Text="@BuildPinButtonText(item)"
-                                          OnClick="@CreatePinToggle(item.Id)" />
-                                </VListItem>
+                                @if (ShowCompleted || !item.IsDone)
+                                {
+                                    <VListItem Title="@item.Title"
+                                               Subtitle="@(item.Category + " | " + (item.IsDone ? "Completed" : "Active"))">
+                                        @if (item.IsPinned)
+                                        {
+                                            <VChip Text="Pinned" Color="primary" />
+                                        }
+                                    </VListItem>
+                                }
                             }
                         </VList>
                     }

@@ -15,14 +15,16 @@ internal sealed class RazorVueSfcSemanticModelFactory
 
         ValidateTemplateEncodability(canonicalModel);
 
+        var ownerRelativeSfcPath = ChangeExtensionToVue(canonicalModel.RelativeComponentPath);
+        var componentImports = CollectComponentImports(canonicalModel, ownerRelativeSfcPath);
         var bindings = CollectLiftedBindings(canonicalModel.ComponentFullName, canonicalModel.Template);
         return new RazorVueSfcSemanticModel(
             ComponentName: canonicalModel.ComponentName,
             ComponentFullName: canonicalModel.ComponentFullName,
-            RelativeSfcPath: ChangeExtensionToVue(canonicalModel.RelativeComponentPath),
+            RelativeSfcPath: ownerRelativeSfcPath,
             Descriptor: canonicalModel.Descriptor,
-            Imports: CollectImports(canonicalModel),
-            ComponentImports: CollectComponentImports(canonicalModel),
+            Imports: CollectImports(componentImports),
+            ComponentImports: componentImports,
             Styles: canonicalModel.Styles,
             PluginRequirements: canonicalModel.PluginRequirements,
             Hints: canonicalModel.Hints,
@@ -32,29 +34,24 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 bindings.Sites.ToImmutable(),
                 canonicalModel.Template.Children.SelectMany(static child => child.SourceOrigins).ToImmutableArray()),
             ScriptSetupBlock: new RazorVueSfcScriptSetupBlockModel(canonicalModel.Setup, bindings.Bindings.ToImmutable(), canonicalModel.SourceOrigins),
-            StyleBlocks: canonicalModel.Styles
-                .Select(static style => new RazorVueSfcStyleBlockModel(
-                    Text: string.Empty,
-                    IsScoped: false,
-                    ModuleName: null,
-                    Language: null,
-                    SourceFilePath: style,
-                    SourceOrigins: ImmutableArray<RazorVueSourceOrigin>.Empty))
-                .ToImmutableArray(),
+            StyleBlocks: ImmutableArray<RazorVueSfcStyleBlockModel>.Empty,
             CustomBlocks: ImmutableArray<RazorVueSfcCustomBlockModel>.Empty);
     }
 
-    private static ImmutableArray<string> CollectImports(RazorVueCanonicalHComponentModel canonicalModel)
+    private static ImmutableArray<string> CollectImports(ImmutableArray<RazorVueSfcComponentImport> componentImports)
     {
         var builder = ImmutableArray.CreateBuilder<string>();
         builder.Add("vue");
 
-        foreach (var import in canonicalModel.Imports)
+        foreach (var import in componentImports)
         {
-            if (string.Equals(import, "vue", StringComparison.Ordinal))
+            if (string.IsNullOrWhiteSpace(import.ImportSpecifier) ||
+                string.Equals(import.ImportSpecifier, "vue", StringComparison.Ordinal))
+            {
                 continue;
+            }
 
-            builder.Add(NormalizeSfcImportSpecifier(import));
+            builder.Add(import.ImportSpecifier!);
         }
 
         return builder
@@ -62,7 +59,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
             .ToImmutableArray();
     }
 
-    private static ImmutableArray<RazorVueSfcComponentImport> CollectComponentImports(RazorVueCanonicalHComponentModel canonicalModel)
+    private static ImmutableArray<RazorVueSfcComponentImport> CollectComponentImports(RazorVueCanonicalHComponentModel canonicalModel, string ownerRelativeSfcPath)
     {
         var builder = ImmutableArray.CreateBuilder<RazorVueSfcComponentImport>();
         var seenKeys = new HashSet<string>(StringComparer.Ordinal);
@@ -100,7 +97,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 ComponentKey: component.ComponentFullName,
                 TemplateTagName: CreateTemplateTagName(component, descriptor),
                 LocalBindingName: CreateLocalBindingName(component, descriptor),
-                ImportSpecifier: NormalizeSfcImportSpecifier(descriptor.ImportSpecifier),
+                ImportSpecifier: NormalizeSfcImportSpecifier(descriptor.ImportSpecifier, descriptor.SourceKind, ownerRelativeSfcPath),
                 ExportName: descriptor.ExportName,
                 ImportKind: importKind));
         }
@@ -310,16 +307,89 @@ internal sealed class RazorVueSfcSemanticModelFactory
         return relativePath + ".vue";
     }
 
-    private static string NormalizeSfcImportSpecifier(string importSpecifier)
+    private static string NormalizeSfcImportSpecifier(
+        string importSpecifier,
+        VueComponentSourceKind sourceKind,
+        string ownerRelativeSfcPath)
     {
         if (string.IsNullOrWhiteSpace(importSpecifier))
             return importSpecifier;
 
-        return importSpecifier.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)
-            ? importSpecifier.Substring(0, importSpecifier.Length - 4) + ".vue"
-            : importSpecifier.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
-                ? importSpecifier.Substring(0, importSpecifier.Length - 3) + ".vue"
-                : importSpecifier;
+        if (sourceKind == VueComponentSourceKind.LibraryComponent)
+        {
+            return importSpecifier.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase)
+                ? importSpecifier.Substring(0, importSpecifier.Length - 4) + ".vue"
+                : importSpecifier.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+                    ? importSpecifier.Substring(0, importSpecifier.Length - 3) + ".vue"
+                    : importSpecifier;
+        }
+
+        var normalizedTarget = ChangeExtensionToVue(NormalizeOutputRelativeModulePath(importSpecifier));
+        return MakeRelativeImportPath(ownerRelativeSfcPath, normalizedTarget);
+    }
+
+    private static string MakeRelativeImportPath(string ownerRelativeSfcPath, string targetRootRelativePath)
+    {
+        var ownerDirectory = GetDirectoryPath(ownerRelativeSfcPath);
+        var ownerSegments = SplitPathSegments(ownerDirectory);
+        var targetSegments = SplitPathSegments(targetRootRelativePath);
+
+        var sharedPrefixLength = 0;
+        while (sharedPrefixLength < ownerSegments.Length &&
+               sharedPrefixLength < targetSegments.Length &&
+               string.Equals(ownerSegments[sharedPrefixLength], targetSegments[sharedPrefixLength], StringComparison.Ordinal))
+        {
+            sharedPrefixLength++;
+        }
+
+        var relativeSegments = Enumerable.Repeat("..", ownerSegments.Length - sharedPrefixLength)
+            .Concat(targetSegments.Skip(sharedPrefixLength))
+            .ToArray();
+        var relativePath = string.Join("/", relativeSegments);
+        return relativePath.StartsWith(".", StringComparison.Ordinal)
+            ? relativePath
+            : "./" + relativePath;
+    }
+
+    private static string GetDirectoryPath(string relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+            return string.Empty;
+
+        var normalized = relativePath.Replace('\\', '/');
+        var separatorIndex = normalized.LastIndexOf('/');
+        return separatorIndex < 0
+            ? string.Empty
+            : normalized.Substring(0, separatorIndex);
+    }
+
+    private static string[] SplitPathSegments(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return [];
+
+        return path
+            .Split('/')
+            .Where(static segment => !string.IsNullOrEmpty(segment))
+            .ToArray();
+    }
+
+    private static string NormalizeOutputRelativeModulePath(string relativePath)
+    {
+        var normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        while (normalized.StartsWith("./", StringComparison.Ordinal))
+            normalized = normalized.Substring(2);
+
+        if (string.IsNullOrWhiteSpace(normalized))
+            throw new InvalidOperationException("RazorVue artifact relative path cannot be empty.");
+
+        if (!normalized.EndsWith(".js", StringComparison.OrdinalIgnoreCase) &&
+            !normalized.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized += ".mjs";
+        }
+
+        return normalized;
     }
 
     private static string CreateTemplateTagName(

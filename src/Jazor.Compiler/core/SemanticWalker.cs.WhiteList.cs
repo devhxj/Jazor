@@ -14,12 +14,12 @@ namespace Jazor.Compiler;
 public partial class SemanticWalker
 {
 	/// <summary>
-	/// static ECMAScript.Global.TypeOf(object)
+	/// static extern ECMAScript.Global.TypeOf(object)
 	/// </summary>
 	/// <param name="handler"></param>
 	/// <param name="args"></param>
 	/// <returns></returns>
-	public Expression? Compile_b58c68bda64ad0f8(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation)
+	public Expression? Compile_27d71701fd254382(ISymbol symbol, SenseArgument context, Expression? handler, Expression?[] args, IOperation? originOperation)
 	{
 		if (handler is not null)
 			throw new InvalidOperationException("ECMAScript.Global.TypeOf(object) 不应接收实例 handler。");

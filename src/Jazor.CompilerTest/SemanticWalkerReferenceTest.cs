@@ -6373,7 +6373,7 @@ public sealed class SemanticWalkerReferenceTest
 		var walker = new SemanticWalker(true);
 
 		Assert.Throws<InvalidOperationException>(() =>
-			walker.Compile_b58c68bda64ad0f8(
+			walker.Compile_27d71701fd254382(
 				null!,
 				SenseArgument.Default,
 				new Identifier("host"),

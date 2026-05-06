@@ -14812,6 +14812,79 @@ export function create() {{
     }
 
     [TestMethod]
+    public async Task Convert_ClrRuntimeStyleNestedTypes_DoNotImportOwnModuleSymbols()
+    {
+        var code = """
+            using System;
+            using System.Collections.Generic;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScript.ECMAScriptModule("System/RuntimeModule.js")]
+                public static class RuntimeModule
+                {
+                    private static T[] MaterializeArray<T>(IEnumerable<T> collection)
+                    {
+                        var result = new List<T>();
+                        foreach (var item in collection)
+                            result.Add(item);
+
+                        return result.ToArray();
+                    }
+
+                    public sealed class JQueue<T>
+                    {
+                        public T[] Items { get; }
+
+                        public JQueue()
+                        {
+                            Items = new T[0];
+                        }
+
+                        public JQueue(IEnumerable<T> collection)
+                        {
+                            Items = MaterializeArray(collection);
+                        }
+
+                        public static JQueue<T> WithCapacity(int capacity)
+                        {
+                            return new JQueue<T>();
+                        }
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(code);
+        var runtimeModule = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "RuntimeModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+        var converter = new AstConverter(runtimeModule, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        Assert.IsFalse(script.Contains("import {", StringComparison.Ordinal), script);
+        StringAssert.Contains(script, "this.items = materializeArray(collection);");
+        StringAssert.Contains(script, "return new JQueue;");
+    }
+
+    [TestMethod]
     public async Task Convert_ClassWithEqualityComparerConcreteAndInterface_EmitsStableDedupedImports()
     {
         var code = """

@@ -17,6 +17,8 @@ internal sealed record RazorVueSemanticSnapshot(
     Compilation Compilation,
     INamedTypeSymbol ComponentSymbol,
     IMethodSymbol? BuildRenderTreeMethod,
+    string? RazorDocumentPath,
+    ImmutableArray<string> RazorImportDocumentPaths,
     VueLifecycleDescriptor Lifecycle,
     VueLogicDescriptor Logic,
     VueComponentDescriptor Descriptor,

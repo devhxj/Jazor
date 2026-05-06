@@ -49,8 +49,19 @@ internal sealed partial class RazorVueArtifactFactory
         var resolutionName = string.IsNullOrWhiteSpace(component.ResolutionName)
             ? component.ComponentName
             : component.ResolutionName;
+        resolutionName = NormalizeResolutionName(resolutionName);
 
         return registry.Resolve(resolutionName, resolutionContext);
+    }
+
+    private static string NormalizeResolutionName(string resolutionName)
+    {
+        if (string.IsNullOrWhiteSpace(resolutionName))
+            return resolutionName;
+
+        return resolutionName.StartsWith("global::", StringComparison.Ordinal)
+            ? resolutionName.Substring("global::".Length)
+            : resolutionName;
     }
 
     private static RazorVueCompilationIssueException CreateResolutionIssueException(

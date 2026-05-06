@@ -144,6 +144,9 @@ internal sealed class RazorVueRenderTreeExtractor
                 case "AddAttribute":
                     AddAttribute(invocation);
                     break;
+                case "AddComponentParameter":
+                    AddComponentParameter(invocation);
+                    break;
                 case "AddContent":
                     AddContent(invocation);
                     break;
@@ -209,9 +212,42 @@ internal sealed class RazorVueRenderTreeExtractor
             if (string.IsNullOrWhiteSpace(name))
                 return;
 
+            var value = GetInvocationArgument(invocation, 2);
+            if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
+                TryParseChildContent(value, out var childContent))
+            {
+                foreach (var child in childContent.Children)
+                    _openNodes.Peek().AddChild(child);
+                return;
+            }
+
             _openNodes.Peek().AddAttribute(new RazorVueAttributeNode(
                 name!,
-                GetInvocationArgument(invocation, 2),
+                value,
+                CreateOrigins(invocation, RazorVueOriginKind.Template)));
+        }
+
+        private void AddComponentParameter(IInvocationOperation invocation)
+        {
+            if (_openNodes.Count == 0)
+                return;
+
+            var name = GetConstantStringArgument(invocation, 1);
+            if (string.IsNullOrWhiteSpace(name))
+                return;
+
+            var value = GetInvocationArgument(invocation, 2);
+            if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
+                TryParseChildContent(value, out var childContent))
+            {
+                foreach (var child in childContent.Children)
+                    _openNodes.Peek().AddChild(child);
+                return;
+            }
+
+            _openNodes.Peek().AddAttribute(new RazorVueAttributeNode(
+                name!,
+                value,
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
         }
 
@@ -334,12 +370,42 @@ internal sealed class RazorVueRenderTreeExtractor
         }
 
         private static IOperation? Unwrap(IOperation? operation)
-        {
-            var current = operation;
-            while (current is IConversionOperation conversion && conversion.IsImplicit)
-                current = conversion.Operand;
+            => RazorVueOperationNormalizer.Unwrap(operation);
 
-            return current;
+        private bool TryParseChildContent(IOperation? operation, out RazorVueRenderFragment fragment)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            var current = Unwrap(operation);
+            if (current is not IDelegateCreationOperation delegateCreation)
+                return false;
+
+            var target = Unwrap(delegateCreation.Target);
+            if (target is not IAnonymousFunctionOperation anonymousFunction)
+                return false;
+
+            fragment = ParseAnonymousFunctionBody(anonymousFunction);
+            return true;
+        }
+
+        private RazorVueRenderFragment ParseAnonymousFunctionBody(IAnonymousFunctionOperation anonymousFunction)
+        {
+            var builderParameters = anonymousFunction.Symbol.Parameters
+                .Where(static parameter =>
+                    string.Equals(parameter.Name, "builder", StringComparison.Ordinal) ||
+                    string.Equals(parameter.Type.Name, "RenderTreeBuilder", StringComparison.Ordinal))
+                .ToImmutableHashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+
+            if (builderParameters.Count == 0)
+                return RazorVueRenderFragment.Empty;
+
+            var body = anonymousFunction.Body;
+            if (body is null)
+                return RazorVueRenderFragment.Empty;
+
+            if (body is IBlockOperation block)
+                return new Parser(_snapshot, _symbols, builderParameters).Parse(block.Operations);
+
+            return new Parser(_snapshot, _symbols, builderParameters).Parse([body]);
         }
 
         private static ImmutableArray<RazorVueSourceOrigin> CreateOrigins(IOperation operation, RazorVueOriginKind originKind)

@@ -16,6 +16,6 @@ public partial class SemanticWalker
 	partial void Generate(ref Dictionary<string, Func<ISymbol, SenseArgument, Expression?, Expression?[], IOperation?, Expression?>> funcs)
 	{
 		// 初始白名单特殊编译处理
-		funcs["static ECMAScript.Global.TypeOf(object)"] = Compile_b58c68bda64ad0f8;
+		funcs["static extern ECMAScript.Global.TypeOf(object)"] = Compile_27d71701fd254382;
 	}
 }

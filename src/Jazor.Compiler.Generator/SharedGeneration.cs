@@ -18,13 +18,6 @@ internal static class SharedGeneration
             .Replace("\t", "\\t", StringComparison.Ordinal);
     }
 
-    public static string FormatSymbolName(ISymbol symbol)
-    {
-        var name = symbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
-        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return string.Join(" ", parts.Where(x => x != "extern"));
-    }
-
     public static string FindRepositoryRoot()
     {
         foreach (var start in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })

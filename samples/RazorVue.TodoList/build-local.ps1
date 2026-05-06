@@ -24,14 +24,26 @@ $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 [xml]$sdkProject = Get-Content $jazorProject
 $packageVersion = $sdkProject.Project.PropertyGroup.Version
 
-dotnet build $runtimeProject -c $Configuration /m:1 /p:BuildInParallel=false
-dotnet build $contractProject -c $Configuration /m:1 /p:BuildInParallel=false
-dotnet build $vue3Project -c $Configuration /m:1 /p:BuildInParallel=false
-dotnet build $vuetifyProject -c $Configuration /m:1 /p:BuildInParallel=false
-dotnet build $analyzerProject -c $Configuration /m:1 /p:BuildInParallel=false
-dotnet publish $emitProject -c $Configuration -o $emitPublishDir /m:1 /p:BuildInParallel=false
-dotnet pack $jazorProject -c $Configuration --no-build -o $packageOutput
-dotnet pack $vuetifyProject -c $Configuration --no-build -o $packageOutput
+function Invoke-DotNet {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    & dotnet @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "dotnet $($Arguments -join ' ') failed with exit code $LASTEXITCODE."
+    }
+}
+
+Invoke-DotNet @("build", $runtimeProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
+Invoke-DotNet @("build", $contractProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
+Invoke-DotNet @("build", $vue3Project, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
+Invoke-DotNet @("build", $vuetifyProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
+Invoke-DotNet @("build", $analyzerProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
+Invoke-DotNet @("publish", $emitProject, "-c", $Configuration, "-o", $emitPublishDir, "/m:1", "/p:BuildInParallel=false")
+Invoke-DotNet @("pack", $jazorProject, "-c", $Configuration, "--no-build", "-o", $packageOutput)
+Invoke-DotNet @("pack", $vuetifyProject, "-c", $Configuration, "--no-build", "-o", $packageOutput)
 
 $packagePath = Join-Path $packageOutput "Jazor.$packageVersion.nupkg"
 $packageStamp = (Get-Item $packagePath).LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
@@ -53,4 +65,4 @@ if ($Bundle) {
     $buildArgs += "-p:JazorBundle=true"
 }
 
-dotnet @buildArgs
+Invoke-DotNet $buildArgs

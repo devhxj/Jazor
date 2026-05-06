@@ -75,3 +75,6 @@ and then mounts it with Vue + Vuetify.
 
 - The `.NET` host does not run the Vue app itself. Its responsibility is artifact generation and materialization.
 - The Vite app is intentionally small and explicit so the generated SFCs are consumed through a standard Vue toolchain.
+- `Todo.Library` currently sets `UseRazorSourceGenerator=false`. The current library-mode design-time path still depends on generated `*.razor.g.cs` being present in compilation.
+- The generated SFCs do not emit `<style src="vuetify/styles">` blocks. Style and plugin requirements stay in `__jazor/razorvue-host.mjs`, and the consumer imports `vuetify/styles` plus enables `vite-plugin-vuetify`.
+- `build-local.ps1` is fail-fast. If any framework build, pack, publish, or host rebuild step fails, the script stops instead of silently continuing with stale outputs.

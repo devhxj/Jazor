@@ -1,9 +1,12 @@
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
+using Jazor.RazorVue.Lowering;
+using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
+using System.IO;
 
 namespace Jazor.RazorVue.Test;
 
@@ -72,6 +75,121 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"value\"");
         StringAssert.Contains(artifact.ModuleCode, "\"update:value\"");
         StringAssert.Contains(artifact.ModuleCode, "\"save\"");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_CanUseInjectedTemplateFrontend_WhenBuildRenderTreeIsAbsent()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using Jazor.RazorVue;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/injected-card")]
+                public class InjectedCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var frontend = new FixedTemplateFrontend(CreateInjectedSectionTree("Injected by template frontend"));
+        var pipeline = new RazorVuePipeline(new TestRazorSemanticFrontend(), new RazorVueArtifactFactory(frontend));
+        var artifact = pipeline.Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", \"Injected by template frontend\");");
+        Assert.AreEqual("InjectedCard", artifact.ComponentName);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.Identity.TemplateHash));
+    }
+
+    [TestMethod]
+    public void RazorVue_CompilationContext_DoesNotRediscoverReferencedUserComponents_AsCurrentAssemblySnapshots()
+    {
+        var libraryCompilation = CSharpCompilation.Create(
+            assemblyName: "Referenced.Library",
+            syntaxTrees: RazorVueMetadataReferences.CreateSyntaxTrees(
+                """
+                using System;
+                using Microsoft.AspNetCore.Components.Rendering;
+
+                namespace ECMAScript
+                {
+                    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                    public sealed class ECMAScriptModuleAttribute : Attribute
+                    {
+                        public ECMAScriptModuleAttribute() { }
+                        public ECMAScriptModuleAttribute(string import) { }
+                    }
+                }
+
+                namespace Demo.Components
+                {
+                    [ECMAScript.ECMAScriptModule("./components/referenced-card")]
+                    public class ReferencedCard : ComponentBase, IVueComponent
+                    {
+                        [Parameter]
+                        public string? Title { get; set; }
+
+                        protected override void BuildRenderTree(RenderTreeBuilder builder)
+                        {
+                            builder.OpenElement(0, "section");
+                            builder.AddContent(1, Title);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+                """),
+            references: CreateReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        using var referencedImage = new MemoryStream();
+        var referencedEmit = libraryCompilation.Emit(referencedImage);
+        Assert.IsTrue(
+            referencedEmit.Success,
+            string.Join(Environment.NewLine, referencedEmit.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
+
+        var hostCompilation = CSharpCompilation.Create(
+            assemblyName: "Host.With.Static.Module",
+            syntaxTrees: RazorVueMetadataReferences.CreateSyntaxTrees(
+                """
+                using System;
+
+                namespace ECMAScript
+                {
+                    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                    public sealed class ECMAScriptModuleAttribute : Attribute
+                    {
+                        public ECMAScriptModuleAttribute() { }
+                        public ECMAScriptModuleAttribute(string import) { }
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("host/app.mjs")]
+                public static class HostModule
+                {
+                    public static string Boot() => "ready";
+                }
+                """),
+            references: RazorVueMetadataReferences.Create(MetadataReference.CreateFromImage(referencedImage.ToArray())),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = RazorVueCompilationContext.TryCreate(hostCompilation);
+        Assert.IsNotNull(context);
+        Assert.AreEqual(0, context.CreateSemanticSnapshots().Length);
     }
 
     [TestMethod]
@@ -460,7 +578,7 @@ public sealed class RazorVuePipelineTests
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "\"buttonLabel\": \"Save\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"onSaveNow\": props.onSave");
+        StringAssert.Contains(artifact.ModuleCode, "\"onSaveNow\": () => emit(\"save\")");
         StringAssert.Contains(artifact.ModuleCode, "actions: () => slots.default ? slots.default() : null");
     }
 
@@ -520,9 +638,9 @@ public sealed class RazorVuePipelineTests
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VBtn as VBtnComponent, VTextField as VTextFieldComponent } from \"vuetify/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": props.onClick");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"click\")");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.modelValue");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.modelValueChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:modelValue\", __value)");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -714,7 +832,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"vertical\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.enabledChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:enabled\", __value)");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -809,12 +927,12 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"nav\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"General\"");
         StringAssert.Contains(artifact.ModuleCode, "\"subtitle\": \"Workspace defaults\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": props.onPin");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"pin\")");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.enabledChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:enabled\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"rows\": 4");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.notes");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.notesChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:notes\", __value)");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -1004,17 +1122,17 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "import { VAutocomplete as VAutocompleteComponent, VRadioGroup as VRadioGroupComponent, VSnackbar as VSnackbarComponent, VTab as VTabComponent, VTabs as VTabsComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"grow\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.activeTab");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.activeTabChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:activeTab\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Overview\"");
         StringAssert.Contains(artifact.ModuleCode, "\"value\": \"history\"");
         StringAssert.Contains(artifact.ModuleCode, "\"inline\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.preference");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.preferenceChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:preference\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"chips\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.query");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.queryChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:query\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.snackbarOpen");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": props.snackbarOpenChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:snackbarOpen\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"timeout\": 2000");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
@@ -1391,6 +1509,82 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersRazorGeneratedEventCallbackFactoryWrapper_ToComponentEmitBridge()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Pipeline.RazorGeneratedEventCallback.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using Jazor.RazorVue;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+                    using ECMAScript.Vuetify;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Components
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                        public partial class EditorCard : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? ModelValue { get; set; }
+
+                            [Parameter]
+                            public EventCallback<string?> ModelValueChanged { get; set; }
+                        }
+                    }
+                    """,
+                    path: "EditorCard.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using ECMAScript.Vuetify;
+                    using Microsoft.AspNetCore.Components.CompilerServices;
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Components
+                    {
+                        public partial class EditorCard
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                                __builder.OpenComponent<VTextField>(0);
+                                __builder.AddComponentParameter(1, nameof(VTextField.ModelValue), RuntimeHelpers.TypeCheck<string?>(ModelValue));
+                                __builder.AddComponentParameter(2, nameof(VTextField.ModelValueChanged), RuntimeHelpers.TypeCheck<EventCallback<string?>>(EventCallback.Factory.Create<string?>(this, ModelValueChanged)));
+                                __builder.CloseComponent();
+                            }
+                        }
+                    }
+                    """,
+                    path: "EditorCard.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.modelValue");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:modelValue\", __value)");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersNestedComponentWithPropsAndDefaultSlot()
     {
         var context = CreateContext(
@@ -1725,7 +1919,7 @@ public sealed class RazorVuePipelineTests
         var artifact = new RazorVuePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "\"value\": props.value");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:value\": props.valueChanged");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:value\": (__value) => emit(\"update:value\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "header: () => slots.default ? slots.default() : null");
         StringAssert.Contains(artifact.ModuleCode, "default: () => \"inner\"");
     }
@@ -11072,6 +11266,18 @@ public sealed class RazorVuePipelineTests
                ?? throw new InvalidOperationException("The test frontend expected a valid RazorVue compilation context.");
     }
 
+    private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend
+    {
+        public string Name => "Jazor.RazorVue.Test.FixedTemplateFrontend";
+
+        public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
+        {
+            _ = context;
+            _ = snapshot;
+            return renderTree;
+        }
+    }
+
     private static RazorVueCompilationContext CreateContext(string source)
     {
         var compilation = CreateCompilation(source);
@@ -11103,4 +11309,15 @@ public sealed class RazorVuePipelineTests
 
     private static IEnumerable<MetadataReference> CreateReferences()
         => RazorVueMetadataReferences.Create();
+
+    private static RazorVueRenderFragment CreateInjectedSectionTree(string text)
+        => new(
+            ImmutableArray.Create<RazorVueRenderNode>(
+                new RazorVueElementNode(
+                    "section",
+                    ImmutableArray<RazorVueAttributeNode>.Empty,
+                    new RazorVueRenderFragment(
+                        ImmutableArray.Create<RazorVueRenderNode>(
+                            new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
+                    ImmutableArray<RazorVueSourceOrigin>.Empty)));
 }

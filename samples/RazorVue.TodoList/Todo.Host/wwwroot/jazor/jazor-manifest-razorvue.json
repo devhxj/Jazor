@@ -1,9 +1,9 @@
 {
-  "AssemblyName": "Todo.Host",
-  "GeneratedAtUtc": "2026-05-05T14:13:14.8108338Z",
+  "AssemblyName": "Todo.Library",
+  "GeneratedAtUtc": "2026-05-05T16:46:49.1362554Z",
   "Modules": [
     {
-      "AssemblyName": "Todo.Host",
+      "AssemblyName": "Todo.Library",
       "ComponentId": "Todo.Library.TodoApp",
       "ModuleId": "components/todo-app.vue",
       "ComponentName": "TodoApp",
@@ -11,21 +11,27 @@
       "SourceMapPath": "components/todo-app.vue.map",
       "OriginMapPath": "components/todo-app.vue.origins.json",
       "Imports": [
-        "vue"
+        "vue",
+        "vuetify/components",
+        "./todo-summary-card.vue"
       ],
-      "Styles": [],
-      "PluginRequirements": [],
-      "DescriptorHash": "0AE1F2C84A169A9F4906AD6DDBB48655197EF973D537744DB931B98805632B80",
-      "TemplateHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
-      "LogicHash": "3254C9642B8D178243BD5AF6B85487F9AE56790FC588DCB3AE474872FBEA0FAB",
-      "ContentHash": "65969AD7B45C6179A1360D9463EF3F11B8FD415C530B4A713728596C20FAA2B3",
-      "HmrBoundaryKind": 0,
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "448FCF81A53AD504E8C394D3127BD449F3A560AF556C4D79F68230F822A91057",
+      "TemplateHash": "793967A181D1B7655D8BECA56D4CA91F66BF3383CD30D7973B9902FEF9560C6F",
+      "LogicHash": "9B8F6BDD82D0E86431E529272BD24913A49EEBC7FF4DC043F26DBC1C02FBF807",
+      "ContentHash": "1A6956902561FA3990E527DAAA1C51A1EFAAE9460D206A325966491A9883CBFD",
+      "HmrBoundaryKind": 2,
       "RequiresHydration": false,
       "SupportsSsr": true,
       "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
     },
     {
-      "AssemblyName": "Todo.Host",
+      "AssemblyName": "Todo.Library",
       "ComponentId": "Todo.Library.TodoSummaryCard",
       "ModuleId": "components/todo-summary-card.vue",
       "ComponentName": "TodoSummaryCard",
@@ -33,20 +39,29 @@
       "SourceMapPath": "components/todo-summary-card.vue.map",
       "OriginMapPath": "components/todo-summary-card.vue.origins.json",
       "Imports": [
-        "vue"
+        "vue",
+        "vuetify/components"
       ],
-      "Styles": [],
-      "PluginRequirements": [],
-      "DescriptorHash": "2003525C5D1C81A9C813986767DAE13B9F79052900E31F3F84085D1D4CA3F193",
-      "TemplateHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
-      "LogicHash": "F46C300B59C7ACE0610576700FCA047879CA82A1F3313678482D01CCBE791DCD",
-      "ContentHash": "8D05992B642AC750DA75C2548173AAB6E605B2BF4A78FD9AB512DD6C078B81C1",
-      "HmrBoundaryKind": 0,
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "DF6DD2E6E88885517BBB192F3ECC3C3441933FF68CE8E8110B1FCCD796DCCEE2",
+      "TemplateHash": "22F336C53D6840572B11AAC45CD5313DDBDE624BAB3C81F84C2A1E5104BFD08D",
+      "LogicHash": "F48C3484D162D573A9D7B5E26D6586E0141164EFB1CED2BC7A7CF36878DB70F6",
+      "ContentHash": "2065788B4406235A446C83CEADC54F23AB1F87F80A828CD589052C360313CA58",
+      "HmrBoundaryKind": 2,
       "RequiresHydration": false,
       "SupportsSsr": true,
       "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
     }
   ],
-  "Styles": [],
-  "PluginRequirements": []
+  "Styles": [
+    "vuetify/styles"
+  ],
+  "PluginRequirements": [
+    "vuetify"
+  ]
 }

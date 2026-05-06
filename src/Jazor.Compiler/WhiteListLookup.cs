@@ -43,7 +43,7 @@ internal static class WhiteListLookup
 				(method.IsExtensionMethod || method.ReducedFrom is not null))
 			{
 				var extensionSource = method.ReducedFrom?.OriginalDefinition ?? method.OriginalDefinition;
-				staticExtensionKey = extensionSource.ToDisplayString(Format.StaticExtensionNameFormat);
+				staticExtensionKey = extensionSource.OriginalDefinition.ToDisplayString(Format.StaticExtensionNameFormat);
 				foreach (var lookupKey in EnumerateWhiteListLookupKeys(staticExtensionKey))
 				{
 					if (TryGetValue(mappings, lookupKey, out displayString, out value))
@@ -214,6 +214,9 @@ internal static class WhiteListLookup
 			return null;
 
 		var builder = new StringBuilder();
+		if (source.IsExtern)
+			builder.Append("extern ");
+
 		if (source.IsStatic)
 			builder.Append("static ");
 

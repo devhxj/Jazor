@@ -149,11 +149,11 @@ public sealed class RazorVueSfcCatalogReaderTests
 
         namespace Jazor.Generated
         {
-            public static class RazorVueCatalog
+            internal static class RazorVueCatalog
             {
-                public static string AssemblyName => "{{{assemblyName}}}";
+                internal static string AssemblyName => "{{{assemblyName}}}";
 
-                public static System.Collections.IEnumerable GetArtifacts()
+                internal static System.Collections.IEnumerable GetArtifacts()
                     => new object[] { new GeneratedArtifact() };
 
                 private sealed class GeneratedArtifact

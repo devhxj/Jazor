@@ -25,7 +25,7 @@
 1. 使用 Roslyn 解析扫描目录下的 `.cs` 文件。
 2. 读取类型和成员上的 `[Jazor]` 声明。
 3. 读取类型上的 `[ECMAScriptModule]` 模块路径。
-4. 归一化成员签名，必要时生成稳定 hash 名。
+4. 对未显式提供成员字符串的声明，按 `symbol.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)` 生成精确 whitelist key；必要时生成稳定 hash 名。
 5. 输出编译器白名单和 `Compile_*` 分发表。
 
 ## Generation Rules
@@ -37,9 +37,9 @@
 
 ## Dependency Model
 
-- 项目引用只有 `ECMAScript.Contract`。
-- 为了复用统一的签名格式与 hash 规则，生成器直接链接 `src/Jazor.Common/Format.cs` 源文件，而不是引用整个 `Jazor.Common` 程序集。
-- 这样可以保持工具依赖面小，同时保证生成规则和运行时 lookup 规则一致。
+- 项目直接引用 `ECMAScript.Contract` 与 `Jazor.Compiler`。
+- 统一的 whitelist key / hash 规则来自 `Jazor.Common`，生成器与编译器必须共用同一份 contract。
+- 生成器不得私自追加 key 改写规则；如果需要新的共享 fallback 或规范化，必须落到公共实现并补双侧测试。
 
 ## Run
 

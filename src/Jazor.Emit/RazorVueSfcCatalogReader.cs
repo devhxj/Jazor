@@ -11,7 +11,7 @@ internal static class RazorVueSfcCatalogReader
             return null;
 
         var assemblyName = ReadCatalogAssemblyName(catalogType);
-        var getArtifacts = catalogType.GetMethod("GetArtifacts", BindingFlags.Public | BindingFlags.Static)
+        var getArtifacts = catalogType.GetMethod("GetArtifacts", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static)
             ?? throw new InvalidOperationException($"GetArtifacts was not found in '{assembly.Location}'.");
 
         if (getArtifacts.Invoke(null, null) is not System.Collections.IEnumerable items)
@@ -31,7 +31,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static string ReadCatalogAssemblyName(Type catalogType)
     {
-        var property = catalogType.GetProperty("AssemblyName", BindingFlags.Public | BindingFlags.Static);
+        var property = catalogType.GetProperty("AssemblyName", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
         if (property?.GetValue(null) is string value)
             return value;
 
@@ -197,7 +197,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static object ReadObject(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property?.GetValue(item) is { } value)
             return value;
 
@@ -206,7 +206,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static bool ReadBool(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property?.GetValue(item) is bool value)
             return value;
 
@@ -215,7 +215,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static int ReadInt32(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property?.GetValue(item) is int value)
             return value;
 
@@ -224,7 +224,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static int? TryReadNullableInt32(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property is null)
             return null;
 
@@ -239,7 +239,7 @@ internal static class RazorVueSfcCatalogReader
     private static TEnum ReadEnum<TEnum>(Type itemType, object item, string propertyName)
         where TEnum : struct
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property?.GetValue(item) is { } value && Enum.TryParse<TEnum>(value.ToString(), ignoreCase: false, out var parsed))
             return parsed;
 
@@ -270,7 +270,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static System.Collections.IEnumerable? ReadEnumerable(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         if (property is null)
             throw new InvalidOperationException($"Property '{propertyName}' was not found on '{itemType.FullName}'.");
 
@@ -284,7 +284,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static string ReadString(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
         if (property?.GetValue(property.GetMethod?.IsStatic == true ? null : item) is string value)
             return value;
 
@@ -293,7 +293,7 @@ internal static class RazorVueSfcCatalogReader
 
     private static string? TryReadNullableString(Type itemType, object item, string propertyName)
     {
-        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+        var property = itemType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
         if (property is null)
             return null;
 

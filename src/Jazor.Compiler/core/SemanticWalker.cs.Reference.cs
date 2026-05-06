@@ -318,13 +318,27 @@ public partial class SemanticWalker
 		if (string.IsNullOrWhiteSpace(modulePath))
 			return false;
 
-		if (_moduleRootType is not null &&
-			SymbolEqualityComparer.Default.Equals(containingType, _moduleRootType))
+		if (IsCurrentModuleType(containingType))
 			return false;
 
 		var importId = context?.BindImportSpecifier(modulePath!, memberName) ?? new Identifier(memberName);
 		expression = importId;
 		return true;
+	}
+
+	private bool IsCurrentModuleType(ITypeSymbol? type)
+	{
+		if (_moduleRootType is null || type is null)
+			return false;
+
+		for (var current = type; current is not null; current = current.ContainingType)
+		{
+			if (SymbolEqualityComparer.Default.Equals(current, _moduleRootType) ||
+				SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, _moduleRootType.OriginalDefinition))
+				return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>

@@ -39,9 +39,16 @@ internal sealed class RazorVueCompilationContext
     public ImmutableArray<RazorVueComponentCandidate> DiscoverComponentCandidates()
     {
         var builder = ImmutableArray.CreateBuilder<RazorVueComponentCandidate>();
+        var currentAssembly = Compilation.Assembly;
         foreach (var symbol in EnumerateNamedTypes(Compilation.GlobalNamespace))
         {
             if (RazorVueEntryClassifier.Classify(symbol, Symbols) != RazorVueEntryKind.RazorVueComponent)
+                continue;
+
+            if (!SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, currentAssembly))
+                continue;
+
+            if (!HasCurrentCompilationSource(symbol))
                 continue;
 
             builder.Add(new RazorVueComponentCandidate(
@@ -112,11 +119,15 @@ internal sealed class RazorVueCompilationContext
             .Select(static directive => directive.Name!.ToString())
             .Distinct(StringComparer.Ordinal)
             .ToImmutableArray();
+        var razorDocumentPath = RazorVueRazorDocumentLocator.TryResolvePrimaryDocumentPath(candidate);
+        var razorImportDocumentPaths = RazorVueRazorDocumentLocator.ResolveImportDocumentPaths(candidate);
 
         return new RazorVueSemanticSnapshot(
             Compilation,
             candidate.ComponentSymbol,
             candidate.BuildRenderTreeMethod,
+            razorDocumentPath,
+            razorImportDocumentPaths,
             lifecycle,
             logic,
             descriptor,
@@ -220,4 +231,8 @@ internal sealed class RazorVueCompilationContext
                 yield return nestedChild;
         }
     }
+
+    private static bool HasCurrentCompilationSource(INamedTypeSymbol symbol)
+        => symbol.Locations.Any(static location => location.IsInSource) ||
+           symbol.DeclaringSyntaxReferences.Length > 0;
 }

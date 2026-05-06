@@ -6,14 +6,25 @@ using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
+using Jazor.RazorVue.RenderTree;
 using Jazor.RazorVue.Sfc;
 namespace Jazor.RazorVue.Lowering;
 
 internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
 {
-    private readonly RazorVueCanonicalHModelFactory _canonicalFactory = new();
+    private readonly RazorVueCanonicalHModelFactory _canonicalFactory;
     private readonly RazorVueSfcSemanticModelFactory _semanticFactory = new();
     private static readonly System.Threading.AsyncLocal<IReadOnlyDictionary<string, RazorVueSfcComponentImport>?> CurrentComponentImportMap = new();
+
+    public RazorVueSfcArtifactFactory()
+        : this(BuildRenderTreeTemplateFrontend.Instance)
+    {
+    }
+
+    public RazorVueSfcArtifactFactory(IRazorVueTemplateFrontend templateFrontend)
+    {
+        _canonicalFactory = new RazorVueCanonicalHModelFactory(templateFrontend);
+    }
 
     public VueSfcArtifact Lower(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
     {
@@ -383,11 +394,22 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                 bindingSiteMap,
                 pathPrefix + "/attr[" + index + "]",
                 templateScopeDepth);
-            builder.Append(" :")
-                .Append(attribute.Name)
-                .Append("=\"")
-                .Append(EscapeAttributeValue(expressionText))
-                .Append('"');
+            if (attribute.AttributeKind == RazorVueCanonicalAttributeKind.ComponentEvent)
+            {
+                builder.Append(" @")
+                    .Append(attribute.Name)
+                    .Append("=\"")
+                    .Append(EscapeAttributeValue(expressionText))
+                    .Append('"');
+            }
+            else
+            {
+                builder.Append(" :")
+                    .Append(attribute.Name)
+                    .Append("=\"")
+                    .Append(EscapeAttributeValue(expressionText))
+                    .Append('"');
+            }
         }
     }
 

@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -65,7 +66,7 @@ public static class Format
 		var hashBytes = sha256.ComputeHash(bytes);
 		var sb = new StringBuilder("_");
 		for (int i = 0; i < 8; i++)
-			sb.Append(hashBytes[i].ToString("x2"));
+			sb.Append(hashBytes[i].ToString("x2", CultureInfo.InvariantCulture));
 		return sb.ToString();
 	}
 }

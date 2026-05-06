@@ -114,11 +114,11 @@ public sealed class ESGeneratorTests
             namespace Jazor.Generated
             {
                 [global::System.Runtime.CompilerServices.CompilerGenerated]
-                public static partial class ModuleCatalog
+                internal static partial class ModuleCatalog
                 {
-                    public static string AssemblyName { get; } = "Downstream.Modules";
+                    internal static string AssemblyName { get; } = "Downstream.Modules";
 
-                    public static global::System.Collections.IEnumerable GetModules()
+                    internal static global::System.Collections.IEnumerable GetModules()
                     {
                         return _modules;
                     }
@@ -208,11 +208,11 @@ public sealed class ESGeneratorTests
             namespace Jazor.Generated
             {
                 [global::System.Runtime.CompilerServices.CompilerGenerated]
-                public static partial class ModuleCatalog
+                internal static partial class ModuleCatalog
                 {
-                    public static string AssemblyName { get; } = "Ordered.Modules";
+                    internal static string AssemblyName { get; } = "Ordered.Modules";
 
-                    public static global::System.Collections.IEnumerable GetModules()
+                    internal static global::System.Collections.IEnumerable GetModules()
                     {
                         return _modules;
                     }
@@ -389,11 +389,11 @@ public sealed class ESGeneratorTests
             namespace Jazor.Generated
             {
                 [global::System.Runtime.CompilerServices.CompilerGenerated]
-                public static partial class ModuleCatalog
+                internal static partial class ModuleCatalog
                 {
-                    public static string AssemblyName { get; } = "FallbackPath.Modules";
+                    internal static string AssemblyName { get; } = "FallbackPath.Modules";
 
-                    public static global::System.Collections.IEnumerable GetModules()
+                    internal static global::System.Collections.IEnumerable GetModules()
                     {
                         return _modules;
                     }
@@ -565,11 +565,11 @@ public sealed class ESGeneratorTests
             namespace Jazor.Generated
             {
                 [global::System.Runtime.CompilerServices.CompilerGenerated]
-                public static partial class ModuleCatalog
+                internal static partial class ModuleCatalog
                 {
-                    public static string AssemblyName { get; } = "EscapedContent.Modules";
+                    internal static string AssemblyName { get; } = "EscapedContent.Modules";
 
-                    public static global::System.Collections.IEnumerable GetModules()
+                    internal static global::System.Collections.IEnumerable GetModules()
                     {
                         return _modules;
                     }
@@ -662,7 +662,7 @@ public sealed class ESGeneratorTests
 
         CollectionAssert.DoesNotContain(hints, "Jazor.Generated.ModuleCatalog.g.cs");
         CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "public static partial class RazorVueCatalog");
+        StringAssert.Contains(generatedSource, "internal static partial class RazorVueCatalog");
         StringAssert.Contains(generatedSource, "components/counter-card.mjs");
         StringAssert.Contains(generatedSource, "CounterCard");
         StringAssert.Contains(generatedSource, "defineComponent");
@@ -907,9 +907,9 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
         Assert.IsFalse(
-            normalizedArtifactSource.Contains("[global::System.Runtime.CompilerServices.CompilerGenerated]\n    public static partial class RazorVueCatalog", StringComparison.Ordinal),
+            normalizedArtifactSource.Contains("[global::System.Runtime.CompilerServices.CompilerGenerated]\n    internal static partial class RazorVueCatalog", StringComparison.Ordinal),
             artifactSource);
-        StringAssert.Contains(normalizedCatalogSource, "[global::System.Runtime.CompilerServices.CompilerGenerated]\n    public static partial class RazorVueCatalog");
+        StringAssert.Contains(normalizedCatalogSource, "[global::System.Runtime.CompilerServices.CompilerGenerated]\n    internal static partial class RazorVueCatalog");
     }
 
     [TestMethod]

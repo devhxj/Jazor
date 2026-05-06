@@ -72,9 +72,13 @@ internal static class RazorVueEntryClassifier
     }
 
     public static IMethodSymbol? FindBuildRenderTreeMethod(INamedTypeSymbol symbol)
-        => FindHierarchyMethod(symbol, "BuildRenderTree", static method =>
-            method.Parameters.Length == 1 &&
-            method.MethodKind == MethodKind.Ordinary);
+        => FindHierarchyMethod(
+            symbol,
+            "BuildRenderTree",
+            static method =>
+                method.Parameters.Length == 1 &&
+                method.MethodKind == MethodKind.Ordinary,
+            requireSourceBackedSyntax: true);
 
     public static IMethodSymbol? FindOnInitializedMethod(INamedTypeSymbol symbol)
         => FindOrdinaryMethod(symbol, "OnInitialized", parameterCount: 0);
@@ -169,7 +173,8 @@ internal static class RazorVueEntryClassifier
     private static IMethodSymbol? FindHierarchyMethod(
         INamedTypeSymbol symbol,
         string methodName,
-        Func<IMethodSymbol, bool> predicate)
+        Func<IMethodSymbol, bool> predicate,
+        bool requireSourceBackedSyntax = false)
     {
         for (var current = symbol; current is not null; current = current.BaseType)
         {
@@ -177,7 +182,9 @@ internal static class RazorVueEntryClassifier
                 .OfType<IMethodSymbol>()
                 .FirstOrDefault(candidate =>
                     !candidate.IsStatic &&
-                    candidate.Locations.Any(static location => location.IsInSource) &&
+                    (!requireSourceBackedSyntax || HasSourceBackedSyntax(candidate)) &&
+                    (!requireSourceBackedSyntax || candidate.Locations.Any(static location => location.IsInSource) || candidate.DeclaringSyntaxReferences.Length > 0) &&
+                    (requireSourceBackedSyntax || candidate.Locations.Any(static location => location.IsInSource)) &&
                     predicate(candidate));
             if (method is not null)
                 return method;
@@ -185,6 +192,10 @@ internal static class RazorVueEntryClassifier
 
         return null;
     }
+
+    private static bool HasSourceBackedSyntax(IMethodSymbol method)
+        => method.Locations.Any(static location => location.IsInSource) ||
+           method.DeclaringSyntaxReferences.Length > 0;
 
     private static bool DerivesFrom(ITypeSymbol? symbol, INamedTypeSymbol baseType)
     {
@@ -200,4 +211,3 @@ internal static class RazorVueEntryClassifier
     private static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol interfaceType)
         => symbol.AllInterfaces.Any(candidate => Comparer.Equals(candidate.OriginalDefinition, interfaceType));
 }
-

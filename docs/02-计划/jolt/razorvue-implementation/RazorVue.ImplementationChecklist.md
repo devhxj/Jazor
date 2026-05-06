@@ -15,6 +15,7 @@
 - [RazorVue.Design.md](../../../01-目标/razorvue/design/RazorVue.Design.md)
 - [RazorVue.HardRules.md](../../../01-目标/razorvue/design/RazorVue.HardRules.md)
 - [RazorVue.Pitfalls.md](../../../01-目标/razorvue/design/RazorVue.Pitfalls.md)
+- [RazorVue.RazorIrMigrationPlan.md](./RazorVue.RazorIrMigrationPlan.md)
 
 ## 1. 前置条件
 
@@ -35,8 +36,8 @@
 1. 发现 `[ECMAScriptModule]` Razor 组件
 2. 强制执行 `JazorComponent` / `VueComponent` 约束
 3. 提取 props / emits / slots / bind 元数据
-4. 从 `BuildRenderTree` 恢复最小渲染树模型
-5. 将该模型 lowering 为 Vue `defineComponent + render`
+4. 提供可工作的模板语义前端，并保留从 Razor 源到 Vue 模板结构的稳定恢复路径
+5. 将该模型 lowering 为 Vue `defineComponent + render` 或 `.vue` SFC
 6. 发出 `DenoHost` 可消费的清单
 7. 保留最小 source-origin 元数据
 8. 保留最小 HMR 身份元数据
@@ -55,7 +56,7 @@
 
 仓库已部分完成：
 
-- P4 最小 `BuildRenderTree` 提取
+- P4 最小模板结构提取（当前以 `BuildRenderTree`/`IOperation` 过渡实现为主）
 - P5 Razor -> Vue lowering
 - 结构化生成器诊断（超越回退表面）
 
@@ -82,6 +83,7 @@
 - 完整的组件实例语义
 - `Dispose*`、`ShouldRender` 和 `SetParametersAsync` 的运行时等效 lowering
 - 更广泛的控制流覆盖验证
+- `RazorCodeDocument` / Razor IR 前端替代当前 `BuildRenderTree` 过渡提取
 - 全面的 Razor 语法覆盖验证
 - 最终的 `DenoHost` 端到端集成
 - 最终的 HMR/sourcemap 输出
@@ -89,6 +91,23 @@
 当前不支持的分析/lowering 形状的回退仍然是通常情况下来自 `RazorVueGenerator` 的 `JAZORVGA001`。当前薄的 `Jazor.RazorVue.Analysis` 宿主路径也为 `JAZORVGA002`（未找到组件）、`JAZORVGA003`（短组件名称歧义）、`JAZORVGA004`（保留的内部名称冲突）、`JAZORVGA005`（不支持的生命周期 lowering）和 `JAZORVGA006`（不支持的 setup 侧逻辑 lowering）投射结构化问题诊断。
 
 ## 3. P0. 基础和约束
+
+### 3.1.1 明确模板语义前端迁移方向
+
+任务：
+
+- 将 `BuildRenderTree` / `IOperation` 模板提取明确标记为过渡前端，而非长期终态
+- 接受 `RazorCodeDocument` / Razor IR 替代 `BuildRenderTree` 作为正式迁移方向
+- 明确迁移边界：
+  - 优先替换 template frontend
+  - 不直接删除现有 descriptor / lifecycle / setup logic / source-origin / HMR identity 链
+  - 不将 `Jazor.Analyzer` 变成 Razor SDK 语义宿主
+
+验收：
+
+- 执行清单明确区分“过渡模板前端”和“长期模板前端”
+- 后续阶段不会再把 `BuildRenderTree` 提取误写为最终架构
+- RazorVue 核心语义所有权仍保持在当前核心实现层，而不是回流到薄宿主
 
 ### 3.1 定义语义载体和宿主迁移边界
 
@@ -400,7 +419,10 @@
 
 - 生命周期/状态/API 提取有覆盖
 
-## 7. P4. 最小 `BuildRenderTree` 提取
+## 7. P4. 最小模板结构提取（过渡实现）
+
+> Note: 本阶段的 `BuildRenderTree` / `IOperation` 路径是过渡实现，用于先闭合当前可工作的 RazorVue 通道。
+> 它不再被视为 RazorVue 模板语义前端的最终形态。
 
 ### 7.1 定义最小渲染树模型
 
@@ -419,6 +441,7 @@
 验收：
 
 - 渲染 lowering 不依赖于原始 operation 遍历
+- 下游 canonical / SFC / artifact lowering 与具体前端来源解耦
 
 ### 7.2 识别最小构建器模式
 
@@ -435,6 +458,7 @@
 验收：
 
 - 最小支持的 Razor 模板子集可被重建
+- 控制流和节点形状有可替换的前端边界，而不是直接绑死在 `RenderTreeBuilder` 调用序列上
 
 ### 7.3 支持最小模板结构
 
@@ -474,10 +498,103 @@
 验收：
 
 - 渲染树提取有回归保护
+- 当前测试可作为后续 Razor IR parity 的基线
 
-## 8. P5. Razor -> Vue Lowering
+## 8. P4.5 `RazorCodeDocument` / Razor IR 模板前端迁移
 
-### 8.1 定义 Vue 组件模型
+> See also: [RazorVue.RazorIrMigrationPlan.md](./RazorVue.RazorIrMigrationPlan.md)
+
+> Positioning: 这是从当前 `BuildRenderTree` 过渡提取迁移到长期模板语义前端的正式阶段。
+> 它替换 template frontend，但默认保留现有 canonical / SFC / artifact / diagnostics / identity 主链，直到 parity 被证明。
+
+### 8.1 证明可稳定获取 Razor IR
+
+任务：
+
+- 证明在当前编译/生成器执行环境中可以稳定取得 `RazorCodeDocument`
+- 证明可以拿到与当前组件输入一一对应的 IR/document 边界
+- 明确这条链路落在哪个项目：
+  - 可以依赖 Razor SDK / toolset 的宿主层
+  - 不能把 Razor SDK internal 访问随意扩散到薄 analyzer 宿主或无关公共层
+
+验收：
+
+- 存在一个可重复运行的 spike 或正式接线点，能为指定 RazorVue 组件返回 `RazorCodeDocument`
+- 文档明确实际 owning project，而不是假设 `Jazor.Analyzer` 直接拥有 Razor 编译管线
+
+### 8.2 定义 IR 到模板中间模型的映射
+
+任务：
+
+- 将 Razor IR 映射到现有模板中间模型，或定义与现有 canonical/template lowering 等价的新中间模型
+- 覆盖至少以下形状：
+  - element
+  - component
+  - text
+  - interpolation
+  - attribute / parameter
+  - conditional
+  - foreach
+  - slot / child-content 相关结构
+- 优先保住 usage-site 模板语义，而不是直接拼接最终 `.vue` 文本
+
+验收：
+
+- 新前端的输出可以被当前 canonical / SFC / artifact lowering 消费，或有明确的兼容适配层
+- 不需要为 template frontend 迁移同步重写 setup/lifecycle/descriptor lowering
+
+### 8.3 保持现有逻辑与元数据主链
+
+任务：
+
+- 保留当前 `RazorVueSemanticSnapshot` 承载的 descriptor / lifecycle / logic carriers
+- 保留当前 source-origin、identity、HMR boundary、generator diagnostics 约定
+- 明确：
+  - 模板前端迁移不等于直接把 `@code` 文本塞进 `<script setup>`
+  - setup/lifecycle 继续走现有安全 lowering 路径，直到存在被证明更稳的替代
+
+验收：
+
+- IR 迁移不会导致现有 setup/lifecycle/diagnostic 行为静默退化
+- 迁移后产物身份和 source-origin 仍保持分层、稳定、可测试
+
+### 8.4 建立 parity 测试与切换门
+
+任务：
+
+- 为当前 `BuildRenderTree` 前端与新 Razor IR 前端建立 parity 测试
+- 至少比较：
+  - 模板节点形状
+  - `if` / `foreach` 结构
+  - 组件与 slot 结构
+  - 模板 source-origin
+  - 最终 SFC/template 片段或 artifact hash 的稳定性
+- 在 parity 被证明前，不删除旧前端
+
+验收：
+
+- 新旧前端对已支持子集的输出差异可见、可审计
+- 存在明确切换门，而不是“一次性替换并删除旧链”
+
+### 8.5 渐进切换与清理
+
+任务：
+
+- 在 parity 通过后，将默认 template frontend 切换到 `RazorCodeDocument` / Razor IR
+- 保留受控的 fallback 或 feature-flag，直到新前端在主测试面上稳定
+- 仅在以下条件满足后才移除旧 `BuildRenderTree` 提取：
+  - 支持子集 parity 已证明
+  - 诊断与 source-origin 未退化
+  - SFC / artifact / emit 下游无需再依赖旧前端特有形状
+
+验收：
+
+- 仓库的默认长期路线不再依赖 `BuildRenderTree` 恢复模板结构
+- 旧前端的移除发生在验证之后，而不是设计假设阶段
+
+## 9. P5. Razor -> Vue Lowering
+
+### 9.1 定义 Vue 组件模型
 
 任务：
 
@@ -492,7 +609,7 @@
 
 - lowering 目标是稳定的模型，而非直接的字符串输出
 
-### 8.2 Lowering HTML 元素
+### 9.2 Lowering HTML 元素
 
 任务：
 
@@ -507,7 +624,7 @@
 
 - HTML 节点 lowering 为 Vue `h("tag", ...)`
 
-### 8.3 Lowering 组件节点
+### 9.3 Lowering 组件节点
 
 任务：
 
@@ -524,7 +641,7 @@
 
 - 组件节点 lowering 为 `h(Component, props, slots)`
 
-### 8.4 Lowering 结构节点
+### 9.4 Lowering 结构节点
 
 任务：
 
@@ -536,7 +653,7 @@
 
 - 最小控制流结构正确 lowering
 
-### 8.5 Lowering 生命周期语法糖
+### 9.5 Lowering 生命周期语法糖
 
 任务：
 
@@ -550,7 +667,7 @@
 
 - 生成 Vue 生命周期/watch 等效项
 
-### 8.6 在 lowering 中保留 source origin
+### 9.6 在 lowering 中保留 source origin
 
 任务：
 
@@ -560,7 +677,7 @@
 
 - origin 链不会在渲染树提取处终止
 
-### 8.7 测试
+### 9.7 测试
 
 任务：
 
@@ -570,9 +687,9 @@
 
 - lowering 形状受到回归测试或快照保护
 
-## 9. P6. 产物发射
+## 10. P6. 产物发射
 
-### 9.1 定义产物结构
+### 10.1 定义产物结构
 
 任务：
 
@@ -590,7 +707,7 @@
 - 产物模型足够稳定可供宿主消费
 - 产物模型与最终文件写入步骤显式分离
 
-### 9.2 发出标准 Vue ESM
+### 10.2 发出标准 Vue ESM
 
 任务：
 
@@ -603,7 +720,7 @@
 
 - 输出可读且确定
 
-### 9.3 发出描述符提供者或等效元数据
+### 10.3 发出描述符提供者或等效元数据
 
 任务：
 
@@ -613,7 +730,7 @@
 
 - 其他组件可以消费组件契约
 
-### 9.4 预留 HMR 身份数据
+### 10.4 预留 HMR 身份数据
 
 任务：
 
@@ -629,7 +746,7 @@
 
 - 产物身份是分离的，而非合并为一个通用哈希
 
-### 9.5 在产物中保留 source-origin 交接
+### 10.5 在产物中保留 source-origin 交接
 
 任务：
 
@@ -640,7 +757,7 @@
 
 - source-origin 元数据在宿主交接前不被丢弃
 
-### 9.6 测试
+### 10.6 测试
 
 任务：
 
@@ -650,9 +767,9 @@
 
 - 模块输出、imports、哈希和元数据有回归保护
 
-## 10. P7. `DenoHost` 集成
+## 11. P7. `DenoHost` 集成
 
-### 10.1 定义宿主清单契约
+### 11.1 定义宿主清单契约
 
 任务：
 
@@ -668,7 +785,7 @@
 
 - 宿主侧消费契约是显式的
 
-### 10.2 集成构建交接
+### 11.2 集成构建交接
 
 任务：
 
@@ -681,7 +798,7 @@
 - `DenoHost` 可以消费 RazorVue 输出
 - 当前静态模块打包仍然正常工作
 
-### 10.3 最小端到端验证
+### 11.3 最小端到端验证
 
 任务：
 
@@ -691,7 +808,7 @@
 
 - 编译器加宿主闭合了第一个可用循环
 
-## 11. P8. 延后工作
+## 12. P8. 延后工作
 
 以下内容不在第一阶段里程碑之内：
 
@@ -701,42 +818,43 @@
 - SSR/hydration 策略完善
 - 完整的 sourcemap 发射
 - HMR 运行时行为
-- `.vue` SFC 输出
 - 通用多框架抽象
 
 此阶段的管理规则：
 
 - 在第一阶段完成门满足之前，不要开始生态深度的实现工作
 
-## 12. 测试策略
+## 13. 测试策略
 
 第一阶段测试应分层：
 
 1. 分析器发现和诊断
 2. 契约提取
 3. 逻辑提取
-4. 渲染树提取
-5. Vue lowering
-6. 产物发射
-7. 最小宿主集成
+4. 过渡模板前端提取（`BuildRenderTree` / `IOperation`）
+5. Razor IR 模板前端 parity 与切换验证
+6. Vue lowering
+7. 产物发射
+8. 最小宿主集成
 
 不要仅依赖端到端测试。
 
-## 13. 第一阶段完成门
+## 14. 第一阶段完成门
 
 第一阶段仅在以下条件全部满足时才算完成：
 
 1. `[ECMAScriptModule]` RazorVue 组件发现稳定。
 2. `JazorComponent` / `VueComponent` 约束被强制执行。
 3. props/emits/slots/model 元数据已被提取。
-4. 最小渲染树恢复工作正常。
-5. Vue `defineComponent + render` ESM 已被发出。
+4. 当前模板前端可工作，且长期迁移方向已明确指向 `RazorCodeDocument` / Razor IR。
+5. Vue `defineComponent + render` ESM 或 `.vue` SFC 已被发出。
 6. `DenoHost` 可以消费清单。
 7. source-origin 元数据在主管线中存活。
 8. 产物身份足够分离以支撑后续 HMR。
 9. 主管线有回归测试覆盖。
+10. 新模板前端替换旧前端之前，已存在明确 parity 验证和切换门。
 
-## 14. 结论
+## 15. 结论
 
 这份清单不是关于快速实现所有内容。
 它是关于确保 RazorVue 能够按照保留架构、诊断、元数据和未来可扩展性的顺序构建，而无需重新打开已确定的设计决策。

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis;
@@ -11,7 +12,17 @@ namespace Jazor.RazorVue.Canonical;
 
 internal sealed class RazorVueCanonicalHModelFactory
 {
-    private readonly RazorVueRenderTreeExtractor _renderTreeExtractor = new();
+    private readonly IRazorVueTemplateFrontend _templateFrontend;
+
+    public RazorVueCanonicalHModelFactory()
+        : this(BuildRenderTreeTemplateFrontend.Instance)
+    {
+    }
+
+    public RazorVueCanonicalHModelFactory(IRazorVueTemplateFrontend templateFrontend)
+    {
+        _templateFrontend = templateFrontend ?? throw new ArgumentNullException(nameof(templateFrontend));
+    }
 
     public RazorVueCanonicalHComponentModel Create(
         RazorVueCompilationContext context,
@@ -22,7 +33,7 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
 
-        var renderTree = _renderTreeExtractor.Extract(context, snapshot);
+        var renderTree = _templateFrontend.CreateRenderTree(context, snapshot);
         return Create(context, snapshot, renderTree);
     }
 
@@ -589,13 +600,7 @@ internal sealed class RazorVueCanonicalHModelFactory
         => descriptor.Slots.ToImmutableDictionary(static slot => slot.PublicName, static slot => slot, StringComparer.Ordinal);
 
     private static IOperation? Unwrap(IOperation? operation)
-    {
-        var current = operation;
-        while (current is IConversionOperation conversion && conversion.IsImplicit)
-            current = conversion.Operand;
-
-        return current;
-    }
+        => RazorVueOperationNormalizer.Unwrap(operation);
 
     private static ImmutableDictionary<string, VueComponentDescriptor> ResolveComponents(
         RazorVueCompilationContext context,

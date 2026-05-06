@@ -14,6 +14,7 @@
     <Project Path="src/Jazor.CLR.Test/Jazor.CLR.Test.csproj" />
     <Project Path="src/Jazor.CompilerTest/Jazor.CompilerTest.csproj" />
     <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
+    <Project Path="src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj" />
     <Project Path="src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj" />
     <Project Path="src/Jolt.Test/Jolt.Test.csproj" />
   </Folder>

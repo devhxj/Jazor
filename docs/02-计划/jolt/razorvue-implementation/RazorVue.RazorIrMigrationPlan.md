@@ -1,0 +1,380 @@
+# RazorVue Razor IR 迁移计划
+
+> Status: 活跃计划
+> Positioning: RazorVue 模板语义前端从 `BuildRenderTree` / `IOperation` 过渡到 `RazorCodeDocument` / Razor IR 的专门执行计划。
+> Note: 本计划只负责 template frontend 迁移，不默认重写现有 descriptor、setup/lifecycle lowering、artifact identity 或宿主交接主链。
+
+本文档将 RazorVue 的模板前端迁移拆成可执行阶段。
+
+它不把 “改用 Razor IR” 视为一次性替换。
+它要求先证明接线、语义等价和分层边界，再推动默认前端切换。
+
+相关文档：
+
+- [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
+- [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
+- [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
+- [zazzy-whistling-lemon.md](../../../03-完成/razorvue/zazzy-whistling-lemon.md)
+
+## 1. 迁移目标
+
+本迁移只在以下目标上达成一致：
+
+1. 不再把 `BuildRenderTree` 恢复视为 RazorVue 模板语义前端的长期路线
+2. 使用 `RazorCodeDocument` / Razor IR 获取更直接的模板结构信息
+3. 保留现有 RazorVue 下游主链：
+   - descriptor 提取
+   - lifecycle / setup logic lowering
+   - source-origin
+   - identity / HMR boundary
+   - catalog / emit / host handoff
+4. 在 parity 证明前，不删除旧前端
+
+## 2. 非目标
+
+本迁移默认不做以下事情：
+
+1. 不把 `@code` 文本直接拼进 `<script setup>`
+2. 不把 `Jazor.Analyzer` 变成 Razor SDK phase 宿主
+3. 不因为引入 IR 就同步删除 canonical / SFC / artifact lowering
+4. 不在第一步就承诺覆盖所有 Razor 语法形状
+5. 不把“不确定如何映射”的节点静默降级成看起来合理的模板字符串
+
+## 3. 前置条件
+
+在以下条件成立之前，不要开始真正的默认前端切换：
+
+1. 当前 `BuildRenderTree` 前端已覆盖仓库主测试面中的已支持子集
+2. 现有 RazorVue SFC / artifact 路径具备稳定测试基线
+3. 有明确的 Razor SDK/toolset 宿主层可以承载 `RazorCodeDocument` 获取
+4. 团队接受 template frontend 替换优先于全链路重写
+
+如果这些前提不成立，IR 迁移将变成边做边猜。
+
+## 4. 阶段 1. 宿主接线证明
+
+目标：
+
+- 证明当前仓库内可以稳定取得 `RazorCodeDocument`
+
+任务：
+
+- 选择实际 owning project：
+  - 首选已有 Razor SDK/toolset 宿主层
+  - 不把获取逻辑散落到薄 analyzer 宿主
+- 建立最小实验接线：
+  - 输入 RazorVue 组件文档或文本
+  - 返回 `RazorCodeDocument`
+  - 能拿到对应的 IR/document 边界
+- 记录需要的 SDK 依赖和版本对齐策略
+- 记录是否需要 internal API 访问，以及爆炸半径控制在哪一层
+- 先以独立测试项目证明当前 SDK 实际 API 面，而不是预设历史/猜测 API 名称
+
+验收：
+
+- 存在一个可重复运行的入口，可以为指定 RazorVue 组件返回 `RazorCodeDocument`
+- 文档明确“谁拥有 Razor SDK/toolset 接线”
+- 若需要 internal/private 访问，访问点数量和 owning layer 是显式的
+- 已记录当前 SDK 暴露的文档节点入口名；不要假设一定存在 `GetDocumentIntermediateNode()`
+
+验证：
+
+- 最小宿主测试能创建 `RazorCodeDocument`
+- 对至少一个真实 RazorVue fixture 返回非空 IR/document
+
+当前仓库已验证的最小事实：
+
+- 可以在独立测试项目中直接引用 Razor compiler 二进制并创建 `RazorCodeDocument`
+- 当前 SDK 暴露的是 `GetDocumentNode()` / `GetRequiredDocumentNode()`，而不是文档里早期假设的 `GetDocumentIntermediateNode()`
+- 这说明后续迁移实现必须以“当前真实 API 面”为准，而不是照搬旧资料或其他宿主中的猜测命名
+- 独立测试项目现在还可以解析出与仓库 `global.json` / 当前测试构建实际一致的 Razor SDK toolset，并验证运行时加载的 `Microsoft.CodeAnalysis.Razor.Compiler.dll` 与该 SDK source-generator 二进制哈希一致
+- 这意味着后续关于“当前独立 spike 看到的 Razor 行为”可以明确归因到仓库当前锁定 SDK（当前为 `10.0.203`），而不是机器上更高版本/预览版 SDK 漂移
+- 在当前最小独立宿主中，基础 markup、正文插值、属性插值以及混合 markup 的 `if` / `foreach` 形状都可以通过 document node 树稳定盘点
+- 但当前最小独立宿主下，控制流仍主要表现为穿插于节点树中的 `CSharpCodeIntermediateNode` token 片段，而不是已经整理好的专门条件/循环中间模型
+- 更重要的是，当前 spike 仍以 `tagHelpers: null` 运行；大写标签目前只被观察为 `MarkupElementIntermediateNode`，这还不能证明“组件标签 / child content / slot 语义”已经进入可消费的 component-aware IR 路径
+- 当前最小独立宿主确实加载了 component 相关 Razor pass 和 `TagHelperDiscoveryService`
+- 进一步的独立探针显示：当前最小独立宿主里 `TagHelperDiscoveryService` 虽然存在，但其 `_producerFactories` 集合实际为空
+- 这说明当前问题不能再理解成“service 对外类型存在就等于 discovery 能工作”；更底层的 producer factory 注入根本没有在当前最小 host 中完成
+- 更进一步的独立探针显示：无论输入是当前编译单元内定义的 component / classic tag helper，还是先编译成 metadata reference 再挂到 host compilation，`TryGetDiscoverer(...)` 都返回 `False`
+- 这说明当前阻塞并不是“discoverer 已建立但产出为零”，而是独立 spike 尚未具备让 Razor discovery service 构造 discoverer 的上层发现上下文
+- 最新独立探针进一步证明：当测试宿主显式按官方 Razor producer factory 清单向 `RazorProjectEngineBuilder.Features` 注入
+  - `DefaultTagHelperProducer+Factory`
+  - `BindTagHelperProducer+Factory`
+  - `ComponentTagHelperProducer+Factory`
+  - `EventHandlerTagHelperProducer+Factory`
+  - `KeyTagHelperProducer+Factory`
+  - `RefTagHelperProducer+Factory`
+  - `SplatTagHelperProducer+Factory`
+  - `FormNameTagHelperProducer+Factory`
+  - `RenderModeTagHelperProducer+Factory`
+  之后，`TryGetDiscoverer(...)` 会从 `False` 变为 `True`
+- 这把根因进一步收敛为：当前最小独立 host 并不是“不可能做 component-aware discovery”，而是没有走到 Razor 官方用于装配 producer factory 的初始化切片
+- 基于 Razor 官方源码的进一步校准已经确认：
+  - `Microsoft.CodeAnalysis.Razor.CompilerFeatures.Register(builder)` 负责注册 component/bind/event/ref/key/splat 等 producer factories
+  - `Microsoft.AspNetCore.Mvc.Razor.Extensions.RazorExtensions.Register(builder)` 负责补上 `DefaultTagHelperProducer+Factory` 以及 MVC 相关扩展
+  - Razor 官方 source generator 宿主实际走的是 `CompilerFeatures.Register(builder) + RazorExtensions.Register(builder)` 组合
+- 当前独立测试项目已把这条官方注册路径接入并验证：
+  - 仅 `CompilerFeatures.Register(builder)` 即可让 `TryGetDiscoverer(...)` 为 component compilation 返回 `True`
+  - 在同一路径下，`GetTagHelpers(...)` 与 `GetTagHelpersForCompilation(...)` 都已经可以返回 probe component `Probe.Components.CounterCard` 的 descriptor
+  - 走完整的 source-generator 对齐路径 `CompilerFeatures.Register(builder) + RazorExtensions.Register(builder)` 时，除了 component descriptors，还能返回 probe classic tag helper `Probe.TagHelpers.DemoCardTagHelper` 的 descriptor
+- 这意味着“`ProcessDesignTime` + 手搓 `Compilation` + 直接 discovery”本身并不是根本错误；先前失败的真正原因是独立宿主缺少 Razor 官方的初始化注册切片
+- 因此下一阶段的重点已经从“还能不能发现 descriptor”切换为“RazorVue 生产实现到底放在哪个 Razor SDK 对齐宿主层，以及如何在保留 `BuildRenderTree` 正常生成的同时并行产出 Vue SFC catalog”
+
+## 5. 阶段 2. IR 节点盘点与支持边界
+
+目标：
+
+- 明确已支持 RazorVue 子集在 Razor IR 中实际长什么样
+
+任务：
+
+- 为以下形状建立样例与节点盘点：
+  - element
+  - component
+  - text / markup
+  - interpolation
+  - attribute / parameter
+  - `if`
+  - `foreach`
+  - child content / slot
+- 记录每种形状对应的 IR 节点和必要上下文
+- 区分三类情况：
+  - 可直接结构化映射
+  - 可经受控适配映射
+  - 当前不支持，必须显式失败
+
+验收：
+
+- 已支持子集有明确的 IR 节点对照表
+- 不支持形状有显式记录，不再依赖“到时候看 IR 长什么样”
+
+验证：
+
+- 至少有一组文档化 fixture 与节点盘点输出对应
+
+当前已确认的阶段 2 事实：
+
+- 普通元素在当前树中可见为 `MarkupElementIntermediateNode`
+- 正文 `@expr` 当前可见为 `CSharpExpressionIntermediateNode`
+- 属性值中的 `@expr` 当前可见为 `CSharpExpressionAttributeValueIntermediateNode`
+- `if` / `foreach` 在当前最小宿主里至少保留为与 markup 交错的 `CSharpCodeIntermediateNode` 片段，这说明后续映射需要处理“代码 token 包裹结构化 markup”的组合形态
+- 当前还不能把“组件节点”“默认 slot”“命名 slot”“typed child content”纳入已盘点完成的事实表；要先补一个 component-aware host，把 tag helper / component discovery 接线接上，再继续这些形状的盘点
+- 当前“component-aware host” 的阻塞已经缩小到发现上下文层，而不是 `RazorCodeDocument` 基础接线层：
+  - component passes 已存在
+  - discovery service 已存在
+  - 当前锁定 SDK 的 Razor compiler 二进制已被独立测试宿主实际加载
+  - 但 `_producerFactories` 当前为空
+  - `TryGetDiscoverer(...)` 目前直接返回 `False`
+  - 而显式注入官方 producer factories 后，`TryGetDiscoverer(...)` 可以变成 `True`
+  - 因此独立 spike 缺少的是“官方 producer factory 装配所在的 Razor SDK 初始化切片”，而不只是某个 descriptor 输入细节
+
+## 6. 阶段 3. IR 到模板中间模型映射
+
+目标：
+
+- 用 Razor IR 替换旧 template frontend，而不是直接生成最终 SFC 文本
+
+任务：
+
+- 选择迁移目标：
+  - 复用现有 `RazorVueRenderFragment` / canonical template 输入形状
+  - 或定义新模板中间模型，并提供显式适配层
+- 为以下形状建立映射：
+  - HTML element
+  - component
+  - text / interpolation
+  - attribute / parameter
+  - conditional
+  - foreach
+  - slot / child content
+- 显式处理 source-origin 采集
+- 对无法可靠映射的节点抛出结构化失败，而不是直接拼模板文本
+
+验收：
+
+- 新前端输出可以被当前 canonical / SFC / artifact lowering 消费
+- 下游不需要为前端迁移重写 setup/lifecycle/descriptor 主链
+- source-origin 不因为前端迁移丢失
+
+验证：
+
+- 针对每种已支持节点形状有单元测试
+- 新前端能驱动至少一个真实组件走完当前 template lowering 主链
+
+## 7. 阶段 4. parity 测试
+
+目标：
+
+- 证明新旧前端在已支持子集上语义等价
+
+任务：
+
+- 建立新旧前端双跑测试
+- 至少比较：
+  - 模板节点形状
+  - `if` / `foreach` 结构
+  - 组件解析名与 slot 结构
+  - template source-origin
+  - 最终 template 片段或 artifact hash 稳定性
+- 对差异做分类：
+  - 等价但文本不同
+  - 真实语义偏差
+  - 当前不支持形状
+
+验收：
+
+- 已支持子集的语义差异是显式可见的
+- 不存在“默认切换后再看哪里坏了”的盲切
+
+验证：
+
+- 有专门的 parity 测试类
+- parity 报告能指出具体组件/节点形状差异
+
+## 8. 阶段 5. 默认切换
+
+目标：
+
+- 在验证通过后，将 Razor IR 前端设为默认模板前端
+
+任务：
+
+- 引入受控切换方式：
+  - feature flag
+  - 配置
+  - 或默认新前端 + 保守 fallback
+- 将主 pipeline 默认指向新前端
+- 保留短期 fallback，以便处理遗漏形状
+- 明确哪些失败仍应回退旧前端，哪些必须直接报错
+
+验收：
+
+- 默认构建路径不再依赖 `BuildRenderTree` 恢复模板结构
+- 切换策略是显式的，不依赖隐式异常吞掉后换路
+
+验证：
+
+- RazorVue 主测试面在默认新前端下通过
+- 有针对 fallback 行为的测试
+
+## 9. 阶段 6. 旧前端清理
+
+目标：
+
+- 在默认路线稳定后清理过渡实现
+
+任务：
+
+- 统计旧 `BuildRenderTree` 前端的剩余依赖点
+- 仅在以下条件全部满足后才删除旧前端：
+  - parity 已证明
+  - 主测试面稳定
+  - source-origin / diagnostics / identity 未退化
+  - 下游无旧前端特有耦合
+- 删除或 obsolete 旧前端类型，并更新文档
+
+验收：
+
+- 仓库默认路线不再以 `BuildRenderTree` 为模板语义前端
+- 清理发生在验证之后，而不是设计预期阶段
+
+验证：
+
+- 删除旧前端后，主 RazorVue 测试面仍通过
+- 相关文档不再把 `BuildRenderTree` 提取写成长期架构
+
+## 10. 推荐的 PR 顺序
+
+### PR1. `RazorCodeDocument` 获取 spike
+
+包含：
+
+- 宿主接线
+- 最小实验测试
+- 不触及主 pipeline 默认路径
+
+### PR2. IR 节点盘点与最小映射
+
+包含：
+
+- IR 节点样例
+- 最小 template 中间模型映射
+- 单元测试
+
+### PR3. parity 测试框架
+
+包含：
+
+- 新旧前端双跑
+- 差异报告
+- 已支持子集基线
+
+### PR4. 默认前端切换
+
+包含：
+
+- 切换策略
+- fallback
+- 主测试面验证
+
+### PR5. 旧前端清理
+
+包含：
+
+- obsolete / 删除旧提取器
+- 文档更新
+- 最终回归验证
+
+## 11. 测试策略
+
+建议的测试分层：
+
+1. `RazorCodeDocument` 获取测试
+2. IR 节点映射测试
+3. template source-origin 测试
+4. 新旧前端 parity 测试
+5. 默认切换测试
+6. 旧前端清理后的回归测试
+
+建议的早期测试名称：
+
+- `RazorVue_RazorDocumentProvider_ComponentDocument_CreatesCodeDocument`
+- `RazorVue_RazorIr_ElementNode_MapsToTemplateElement`
+- `RazorVue_RazorIr_ComponentNode_MapsToTemplateComponent`
+- `RazorVue_RazorIr_IfForeach_MapToStructuredTemplateNodes`
+- `RazorVue_TemplateFrontends_BuildRenderTreeAndIr_AgreeOnSupportedSubset`
+- `RazorVue_TemplateFrontend_DefaultsToRazorIr_WhenParityGatePasses`
+
+## 12. 风险与缓解
+
+| 风险 | 影响 | 缓解 |
+|------|------|------|
+| Razor SDK/toolset 接线不稳定 | 高 | 将接线隔离在专门宿主层，不把私有访问扩散到核心主链 |
+| IR 形状与预期不一致 | 高 | 先做节点盘点和样例归档，再做正式映射 |
+| 新前端破坏 setup/lifecycle/source-origin | 高 | 迁移只替换 template frontend，保留下游主链，强制 parity 测试 |
+| 切换后回归难定位 | 中 | 建双跑 parity 报告和受控 fallback |
+| 过早删除旧前端 | 中 | 把清理延后到默认切换稳定之后 |
+
+## 13. 完成门
+
+Razor IR 模板前端迁移仅在以下条件全部满足时才算完成：
+
+1. `RazorCodeDocument` 获取路径稳定
+2. IR 到模板中间模型的已支持映射完成
+3. 新旧前端 parity 在主支持子集上已证明
+4. 默认前端已切换到 Razor IR
+5. source-origin / diagnostics / identity 未退化
+6. 旧 `BuildRenderTree` 前端已删除或降为非默认且有明确清理计划
+
+## 14. 结论
+
+使用 `RazorCodeDocument` / Razor IR 代替 `BuildRenderTree` 是必要方向。
+
+正确吸收当前补充方案的方式是：
+
+1. 接受 `RazorCodeDocument` / Razor IR 取代 `BuildRenderTree` 作为长期 template frontend
+2. 接受“先证明 SDK/toolset 宿主与发现上下文，再做正式映射”的阶段顺序
+3. 不接受“直接从 IR 拼最终 SFC 文本，并把 `@code` 文本直接并入 `<script setup>`，同时绕过现有 descriptor / lifecycle / setup / artifact 主链”的一步到位切法
+
+因此，正确的做法不是直接跳到“从 IR 拼 SFC 文本并删除旧链”，
+而是把 template frontend 迁移当成一个有宿主接线、发现上下文、结构映射、parity 验证和默认切换门的独立工程任务。

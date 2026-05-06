@@ -78,10 +78,10 @@ internal static partial class WhiteList
 		types["void"] = new(Op.Allowed);
 		
 		// 初始化成员
-		members["static ECMAScript.BigInt.Zero.get"] = new(Op.Inline, "0n");
-		members["static ECMAScript.BigInt.One.get"] = new(Op.Inline, "1n");
-		members["static ECMAScript.BigInt.Two.get"] = new(Op.Inline, "2n");
-		members["static ECMAScript.BigInt.MinusOne.get"] = new(Op.Inline, "-1n");
+		members["static extern ECMAScript.BigInt.Zero.get"] = new(Op.Inline, "0n");
+		members["static extern ECMAScript.BigInt.One.get"] = new(Op.Inline, "1n");
+		members["static extern ECMAScript.BigInt.Two.get"] = new(Op.Inline, "2n");
+		members["static extern ECMAScript.BigInt.MinusOne.get"] = new(Op.Inline, "-1n");
 		members["System.Array.Length.get"] = new(Op.Alias, "length");
 		members["System.Array.LongLength.get"] = new(Op.Inline, "BigInt((__arg1).length)");
 		members["static System.Array.AsReadOnly<T>(T[])"] = new(Op.Import, "_abd52ebcdb6fefcb", "System/ArrayModule.js");

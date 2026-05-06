@@ -26,7 +26,7 @@ src/Wiki/wwwroot/index.html
 src/Wiki/jazor/main.mjs
 src/Wiki/jazor/System/
 src/Jazor.Compiler.Generator/Program.cs
-src/ECMAScript/Jazor.Generated.ClrRuntimeCatalog.g.cs
+src/ECMAScript/Catalog.g.cs
 """),
                 H("p", "Rebuild the project and verify the import-map prefix still points to `/jazor/System/`.")
             ]),
