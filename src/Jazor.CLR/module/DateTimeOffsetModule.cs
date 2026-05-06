@@ -7,7 +7,12 @@ public static class DateTimeOffsetModule
 	private static BigInt ZeroTicks => BigInt.Zero;
 	private static BigInt UnixEpochTicks => BigIntFn("621355968000000000");
 	private static BigInt FileTimeUnixEpochTicks => BigIntFn("116444736000000000");
+	private static BigInt TicksPerMicrosecond => BigIntFn("10");
 	private static BigInt TicksPerMillisecond => BigIntFn("10000");
+	private static BigInt TicksPerSecond => BigIntFn("10000000");
+	private static BigInt TicksPerMinute => BigIntFn("600000000");
+	private static BigInt TicksPerHour => BigIntFn("36000000000");
+	private static BigInt TicksPerDay => BigIntFn("864000000000");
 	private static BigInt OffsetMinuteTicks => BigIntFn("600000000");
 	private static BigInt MaxOffsetTicks => BigIntFn("504000000000");
 	private static BigInt MaxDateTimeTicks => BigIntFn("3155378975999999999");
@@ -1092,7 +1097,7 @@ public static class DateTimeOffsetModule
 		return true;
 	}
 
-	private static BigInt CreateRoundedTicksFromDouble(Number value)
+	private static BigInt CreateAddUnitTicks(Number value, BigInt ticksPerUnit)
 	{
 		if (DoubleModule._24e14b276e0c7e30(value))
 			throw new Error("ArgumentException: Value cannot be NaN.");
@@ -1100,11 +1105,13 @@ public static class DateTimeOffsetModule
 		if (!DoubleModule._aed2927097617729(value))
 			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
 
-		var rounded = Math.RoundFn(value);
-		if (!DoubleModule._aed2927097617729(rounded))
+		var maxUnitCount = NumberFn(MaxDateTimeTicks) / NumberFn(ticksPerUnit);
+		if (Math.AbsFn(value) > maxUnitCount)
 			throw new Error("ArgumentOutOfRangeException: Value is outside the supported DateTimeOffset range.");
 
-		return BigIntFn(rounded);
+		var integralPart = Math.TruncFn(value);
+		var fractionalPart = value - integralPart;
+		return BigIntFn(integralPart) * ticksPerUnit + BigIntFn(Math.TruncFn(fractionalPart * NumberFn(ticksPerUnit)));
 	}
 
 	private static Number GetDateTimeStylesValue(object styles)
@@ -1657,7 +1664,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddDays(double)")]
 	public static RuntimeModule.JDateTimeOffset _7fd735ce2102a3cc(RuntimeModule.JDateTimeOffset instance, Number days)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(days * 864000000000d), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateAddUnitTicks(days, TicksPerDay), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddHours(hours)
@@ -1665,7 +1672,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddHours(double)")]
 	public static RuntimeModule.JDateTimeOffset _309c83b8a2fbc988(RuntimeModule.JDateTimeOffset instance, Number hours)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(hours * 36000000000d), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateAddUnitTicks(hours, TicksPerHour), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMilliseconds(milliseconds)
@@ -1673,7 +1680,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddMilliseconds(double)")]
 	public static RuntimeModule.JDateTimeOffset _1528b452af6dd41d(RuntimeModule.JDateTimeOffset instance, Number milliseconds)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(milliseconds * 10000d), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateAddUnitTicks(milliseconds, TicksPerMillisecond), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMicroseconds(microseconds)
@@ -1681,7 +1688,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddMicroseconds(double)")]
 	public static RuntimeModule.JDateTimeOffset _4775ccfee8ed671f(RuntimeModule.JDateTimeOffset instance, Number microseconds)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(microseconds * 10d), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateAddUnitTicks(microseconds, TicksPerMicrosecond), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMinutes(minutes)
@@ -1689,7 +1696,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddMinutes(double)")]
 	public static RuntimeModule.JDateTimeOffset _97aff1e2f4740394(RuntimeModule.JDateTimeOffset instance, Number minutes)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(minutes * 600000000d), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateAddUnitTicks(minutes, TicksPerMinute), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddMonths(months)
@@ -1705,7 +1712,7 @@ public static class DateTimeOffsetModule
 	/// </summary>
 	[Jazor(Op.Import, "System.DateTimeOffset.AddSeconds(double)")]
 	public static RuntimeModule.JDateTimeOffset _54a4d6d554458fdb(RuntimeModule.JDateTimeOffset instance, Number seconds)
-		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateRoundedTicksFromDouble(seconds * 10000000d), instance.OffsetTicks);
+		=> CreateFromUtcTicks(GetUtcTicks(instance) + CreateAddUnitTicks(seconds, TicksPerSecond), instance.OffsetTicks);
 
 	/// <summary>
 	/// C#: instance.AddTicks(ticks)

@@ -156,14 +156,16 @@ public static class DoubleModule
 	public extern static Number _f28ac141e9398355();
 
 	// 静态判断方法
-	[Jazor(Op.Alias, "static double.IsFinite(double)", "isFinite")]
-	public extern static bool _aed2927097617729(Number d);
+	[Jazor(Op.Import, "static double.IsFinite(double)")]
+	public static bool _aed2927097617729(Number d)
+		=> IsFiniteCore(d);
 
 	[Jazor(Op.Inline, "static double.IsInfinity(double)", "(__arg1 === Infinity || __arg1 === -Infinity)")]
 	public extern static bool _8dab2b2ebaef92eb(Number d);
 
-	[Jazor(Op.Alias, "static double.IsNaN(double)", "isNaN")]
-	public extern static bool _24e14b276e0c7e30(Number d);
+	[Jazor(Op.Import, "static double.IsNaN(double)")]
+	public static bool _24e14b276e0c7e30(Number d)
+		=> IsNaN(d);
 
 	[Jazor(Op.Inline, "static double.IsNegative(double)", "(Object.is(__arg1, -0) || __arg1 < 0)")]
 	public extern static bool _2f6ba4398ec15d8d(Number d);

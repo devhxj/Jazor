@@ -49,7 +49,7 @@ public static class TimeOnlyModule
 			+ BigIntFn(microsecond) * BigIntFn(10));
 	}
 
-	private static BigInt CreateRoundedTicksFromDouble(Number value)
+	private static BigInt CreateTruncatedTicksFromDouble(Number value)
 	{
 		if (DoubleModule._24e14b276e0c7e30(value))
 			throw new Error("ArgumentException: Value cannot be NaN.");
@@ -57,11 +57,7 @@ public static class TimeOnlyModule
 		if (!DoubleModule._aed2927097617729(value))
 			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
 
-		var rounded = Math.RoundFn(value);
-		if (!DoubleModule._aed2927097617729(rounded))
-			throw new Error("ArgumentOutOfRangeException: Value is outside the supported TimeOnly range.");
-
-		return BigIntFn(rounded);
+		return BigIntFn(Math.TruncFn(value));
 	}
 
 	private static Array<object?> AddWithWrappedDays(RuntimeModule.JTimeOnly instance, BigInt deltaTicks)
@@ -139,10 +135,9 @@ public static class TimeOnlyModule
 
 	private static Number GetDateTimeStylesValue(object style)
 	{
+		// DateTimeStyles 在当前 lowering 中会擦除为数值字面量。
 		if (style is Number numberStyle)
 			return numberStyle;
-		if (style is System.Globalization.DateTimeStyles enumStyle)
-			return NumberFn((int)enumStyle);
 		if (style == null)
 			return 0;
 
@@ -300,7 +295,7 @@ public static class TimeOnlyModule
 	[Jazor(Op.Import, "System.TimeOnly.AddHours(double)")]
 	public static RuntimeModule.JTimeOnly _8e71fa0d2695e84f(RuntimeModule.JTimeOnly instance, Number value)
 	{
-		var delta = new RuntimeModule.JTimeSpan(CreateRoundedTicksFromDouble(value * 36000000000d));
+		var delta = new RuntimeModule.JTimeSpan(CreateTruncatedTicksFromDouble(value * 36000000000d));
 		return _4c935b985e7b6e02(instance, delta);
 	}
 
@@ -310,7 +305,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.AddHours(double, out int)")]
 	public static Array<object?> _ad6cad38823a5ef6(RuntimeModule.JTimeOnly instance, Number value, Number wrappedDays)
-		=> AddWithWrappedDays(instance, CreateRoundedTicksFromDouble(value * 36000000000d));
+		=> AddWithWrappedDays(instance, CreateTruncatedTicksFromDouble(value * 36000000000d));
 
 	/// <summary>
 	/// C#: instance.AddMinutes(value)
@@ -319,7 +314,7 @@ public static class TimeOnlyModule
 	[Jazor(Op.Import, "System.TimeOnly.AddMinutes(double)")]
 	public static RuntimeModule.JTimeOnly _77bd7db30cbf3bc9(RuntimeModule.JTimeOnly instance, Number value)
 	{
-		var delta = new RuntimeModule.JTimeSpan(CreateRoundedTicksFromDouble(value * 600000000d));
+		var delta = new RuntimeModule.JTimeSpan(CreateTruncatedTicksFromDouble(value * 600000000d));
 		return _4c935b985e7b6e02(instance, delta);
 	}
 
@@ -329,7 +324,7 @@ public static class TimeOnlyModule
 	/// </summary>
 	[Jazor(Op.Import, "System.TimeOnly.AddMinutes(double, out int)")]
 	public static Array<object?> _e698cb9920401887(RuntimeModule.JTimeOnly instance, Number value, Number wrappedDays)
-		=> AddWithWrappedDays(instance, CreateRoundedTicksFromDouble(value * 600000000d));
+		=> AddWithWrappedDays(instance, CreateTruncatedTicksFromDouble(value * 600000000d));
 
 	/// <summary>
 	/// C#: instance.IsBetween(start, end)

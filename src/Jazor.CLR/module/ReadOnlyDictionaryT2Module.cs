@@ -21,7 +21,7 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 
 		var source = (Map<TKey, TValue>)dictionary;
 		var snapshot = new Map<TKey, TValue>(source.Entries());
-		return DictionaryCarrierRuntime.MarkAsReadOnlyCarrier(snapshot);
+		return RuntimeModule.MarkAsReadOnlyDictionaryCarrier(snapshot);
 	}
 
 	/// <summary>
@@ -30,7 +30,7 @@ public static class ReadOnlyDictionaryT2Module<TKey, TValue> where TKey : notnul
 	/// </summary>
 	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Empty.get")]
 	public static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue> _43b396f1b8e0a68f()
-		=> (System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>)(object)DictionaryCarrierRuntime.MarkAsReadOnlyCarrier(new Map<TKey, TValue>());
+		=> (System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>)(object)RuntimeModule.MarkAsReadOnlyDictionaryCarrier(new Map<TKey, TValue>());
 
 	[Jazor(Op.Discard ,"System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.Keys.get")]
 	public extern static System.Collections.ObjectModel.ReadOnlyDictionary<TKey, TValue>.KeyCollection _4044dececdd2d744(Map<TKey,TValue> instance);

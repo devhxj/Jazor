@@ -68,12 +68,11 @@ public static class DecimalModule
 		return (integerStyle & integerFlag) == integerFlag;
 	}
 
+	// NumberStyles 在当前 lowering 中会擦除为数值字面量。
 	private static Number GetNumberStylesValue(object style)
 	{
 		if (style is Number numberStyle)
 			return numberStyle | 0;
-		if (style is System.Globalization.NumberStyles enumStyle)
-			return NumberFn((int)enumStyle);
 
 		throw new Error("ArgumentException: Invalid NumberStyles value.");
 	}
@@ -564,12 +563,11 @@ public static class DecimalModule
 		return integral;
 	}
 
+	// MidpointRounding 在当前 lowering 中会擦除为数值字面量。
 	private static Number GetMidpointRoundingValue(object mode)
 	{
 		if (mode is Number numberMode)
 			return numberMode;
-		if (mode is System.MidpointRounding enumMode)
-			return NumberFn((int)enumMode);
 
 		throw new Error("ArgumentException: Invalid MidpointRounding value.");
 	}

@@ -30,9 +30,9 @@ public static class ComparerT1Module<T>
 		if (x is Number leftNumber && y is Number rightNumber)
 		{
 			if (IsNaN(leftNumber))
-				return IsNaN(rightNumber) ? 0 : -1;
+				return IsNaN(rightNumber) ? 0 : 1;
 			if (IsNaN(rightNumber))
-				return 1;
+				return -1;
 			if (leftNumber < rightNumber)
 				return -1;
 			if (leftNumber > rightNumber)
@@ -61,15 +61,7 @@ public static class ComparerT1Module<T>
 			return 0;
 		}
 
-		var leftText = x.ToString();
-		var rightText = y.ToString();
-		if (leftText is null)
-			return rightText is null ? 0 : -1;
-		if (rightText is null)
-			return 1;
-		if (leftText == rightText)
-			return 0;
-		return leftText < rightText ? -1 : 1;
+		throw new Error("ArgumentException: At least one object must implement IComparable.");
 	}
 
 	internal static Number CompareCore(T x, T y)

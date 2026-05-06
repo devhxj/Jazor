@@ -51,6 +51,23 @@ public sealed class DateTimeCharacterizationTests
     }
 
     [TestMethod]
+    public void DateTimeOffset_FromUnspecifiedDateTime_TreatsClockTimeAsLocal()
+    {
+        var value = DateTime.SpecifyKind(
+            DateTime.Parse(
+                "2024-01-02T03:04:05",
+                CultureInfo.InvariantCulture),
+            DateTimeKind.Unspecified);
+
+        var constructed = new DateTimeOffset(value);
+        DateTimeOffset converted = value;
+
+        Assert.AreEqual(TimeZoneInfo.Local.GetUtcOffset(value), constructed.Offset);
+        Assert.AreEqual(value, constructed.DateTime);
+        Assert.AreEqual(constructed, converted);
+    }
+
+    [TestMethod]
     public void DateTimeOffset_ToString_StandardFormats_Match_Runtime()
     {
         var value = DateTimeOffset.Parse(

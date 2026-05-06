@@ -17,6 +17,22 @@ namespace Jazor.CLR;
 [Jazor(Op.Alias, "long","BigInt")]
 public static class Int64Module
 {
+	private static BigInt RotateBitWidth => BigIntFn(64);
+	private static BigInt RotateMask => BigIntFn("18446744073709551615");
+	private static BigInt RotateModulus => BigIntFn("18446744073709551616");
+	private static BigInt RotateSignBit => BigIntFn("9223372036854775808");
+
+	private static BigInt NormalizeRotateBits(BigInt value)
+		=> value & RotateMask;
+
+	private static BigInt NormalizeSignedRotateResult(BigInt value)
+	{
+		var masked = NormalizeRotateBits(value);
+		return masked >= RotateSignBit
+			? masked - RotateModulus
+			: masked;
+	}
+
 	/// <summary>
 	/// C#: long.MaxValue
 	/// JS: 9223372036854775807n
@@ -213,20 +229,34 @@ public static class Int64Module
 	[Jazor(Op.Import, "static long.RotateLeft(long, int)")]
 	public static BigInt _62ef461b6a515b85(BigInt value, Number rotateAmount)
 	{
-		var amount = BigIntFn(rotateAmount % 64);
-		if (amount < BigInt.Zero)
-			amount = amount + BigIntFn(64);
-		return (value << amount) | (value >> (BigIntFn(64) - amount));
+		var amount = rotateAmount % 64;
+		if (amount < 0)
+			amount += 64;
+
+		var shift = BigIntFn(amount);
+		var normalized = NormalizeRotateBits(value);
+		if (shift == 0)
+			return NormalizeSignedRotateResult(normalized);
+
+		var rotated = ((normalized << shift) | (normalized >> (RotateBitWidth - shift))) & RotateMask;
+		return NormalizeSignedRotateResult(rotated);
 	}
 
 	///<summary>Rotates a value right by a given amount.</summary>
 	[Jazor(Op.Import, "static long.RotateRight(long, int)")]
 	public static BigInt _6a70bc88f689ce73(BigInt value, Number rotateAmount)
 	{
-		var amount = BigIntFn(rotateAmount % 64);
-		if (amount < BigInt.Zero)
-			amount = amount + BigIntFn(64);
-		return (value >> amount) | (value << (BigIntFn(64) - amount));
+		var amount = rotateAmount % 64;
+		if (amount < 0)
+			amount += 64;
+
+		var shift = BigIntFn(amount);
+		var normalized = NormalizeRotateBits(value);
+		if (shift == 0)
+			return NormalizeSignedRotateResult(normalized);
+
+		var rotated = ((normalized >> shift) | (normalized << (RotateBitWidth - shift))) & RotateMask;
+		return NormalizeSignedRotateResult(rotated);
 	}
 
 	///<summary>Computes the number of trailing zeros in a value.</summary>

@@ -15,7 +15,7 @@ public static class ISetT1Module<T>
 		if (instance is null)
 			throw new Error("NullReferenceException: instance is null.");
 
-		if (SetCarrierRuntime.IsReadOnlyCarrier(instance))
+		if (RuntimeModule.IsReadOnlySetCarrier(instance))
 			throw new Error("NotSupportedException: Collection is read-only.");
 	}
 

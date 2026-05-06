@@ -15,7 +15,7 @@ public static class ReadOnlySetT1Module<T>
 
 		// Snapshot from IEnumerable so any iterable-backed ISet projection can flow through here.
 		var snapshot = new Set<T>(set);
-		return SetCarrierRuntime.MarkAsReadOnlyCarrier(snapshot);
+		return RuntimeModule.MarkAsReadOnlySetCarrier(snapshot);
 	}
 
 	/// <summary>
@@ -24,7 +24,7 @@ public static class ReadOnlySetT1Module<T>
 	/// </summary>
 	[Jazor(Op.Import, "static System.Collections.ObjectModel.ReadOnlySet<T>.Empty.get")]
 	public static System.Collections.ObjectModel.ReadOnlySet<T> _843cd8664672a9f8()
-		=> (System.Collections.ObjectModel.ReadOnlySet<T>)(object)SetCarrierRuntime.MarkAsReadOnlyCarrier(new Set<T>());
+		=> (System.Collections.ObjectModel.ReadOnlySet<T>)(object)RuntimeModule.MarkAsReadOnlySetCarrier(new Set<T>());
 
 	/// <summary>
 	/// C#: instance.Count

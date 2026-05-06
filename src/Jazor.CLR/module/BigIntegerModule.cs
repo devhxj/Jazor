@@ -224,6 +224,38 @@ public static class BigIntegerModule
 		return 0;
 	}
 
+	private static BigInt GetBitLengthCore(BigInt instance)
+	{
+		if (instance == BigInt.Zero)
+			return BigInt.Zero;
+
+		var isNegative = instance < BigInt.Zero;
+		var value = isNegative ? -instance - BigInt.One : instance;
+		var bitLength = BigInt.Zero;
+
+		while (value > BigInt.Zero)
+		{
+			bitLength += BigInt.One;
+			value >>= BigInt.One;
+		}
+
+		return bitLength;
+	}
+
+	private static Number ComputePositiveLog(BigInt value, Number baseValue)
+	{
+		if (value <= BigIntFn(Number.MAX_SAFE_INTEGER))
+			return Math.Log(NumberFn(value), baseValue);
+
+		var bitLength = NumberFn(GetBitLengthCore(value));
+		var shift = bitLength - 64;
+		var x = shift > 0
+			? value >> BigIntFn(shift)
+			: value << BigIntFn(-shift);
+
+		return Math.Log(NumberFn(x), baseValue) + shift / Math.Log(baseValue, 2);
+	}
+
 	/// <summary>
 	/// C#: BigInteger.Parse(value)
 	/// JS: BigInt(value.trim()) with validation
@@ -368,62 +400,31 @@ public static class BigIntegerModule
 	///<summary>Returns the natural (base <see langword="e" />) logarithm of a specified number.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log(System.Numerics.BigInteger)")]
 	public static Number _fb5a811e7a32a324(BigInt value)
-	{
-		if (value <= BigInt.Zero)
-			throw new Error("Logarithm is undefined for non-positive numbers");
-
-		var str = value.ToString()!;
-		var exponent = str.Length - 1;
-		var mantissa = NumberFn(str.Substring(0, 15));
-
-		return Math.Log(mantissa) + exponent * Math.Log(10);
-	}	
+		=> _acb5aef300c8db0c(value, Math.E);
 
 	///<summary>Returns the logarithm of a specified number in a specified base.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log(System.Numerics.BigInteger, double)")]
 	public static Number _acb5aef300c8db0c(BigInt value, Number baseValue)
 	{
-		if (value <= BigInt.Zero)
-			throw new RangeError("Logarithm is undefined for non-positive numbers");
+		if (value < BigInt.Zero || baseValue == 1d)
+			return Number.NaN;
 
-		if (baseValue <= 0 || baseValue == 1)
-			throw new RangeError("Base must be positive and not equal to 1");
+		if (baseValue == Number.POSITIVE_INFINITY)
+			return value == BigInt.One ? 0d : Number.NaN;
 
-		if (value == BigInt.One)
-			return 0;
+		if (baseValue == 0d && value != BigInt.One)
+			return Number.NaN;
 
-		if (baseValue == Math.E)
-			return Math.Log(NumberFn(value));
+		if (value == BigInt.Zero)
+			return Math.Log(0d, baseValue);
 
-		if (value <= Number.MAX_SAFE_INTEGER)
-			return Math.Log(NumberFn(value)) / Math.LogFn(baseValue);
-
-		var str = value.ToString()!;
-		var digitCount = str.Length;
-		var significantDigits = str.Substring(0, 15);
-		var mantissa = ParseFloat(significantDigits) / Math.Pow(10, significantDigits.Length - 1);
-		var exponent = digitCount - 1;
-		var lnValue = Math.Log(mantissa) + exponent * Math.LN10;
-		var lnBase = Math.Log(baseValue);
-
-		return lnValue / lnBase;
+		return ComputePositiveLog(value, baseValue);
 	}
 
 	///<summary>Returns the base 10 logarithm of a specified number.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.Log10(System.Numerics.BigInteger)")]
 	public static Number _f276cbd7c3b305ea(BigInt value)
-	{
-		if (value <= BigInt.Zero)
-			throw new RangeError("Logarithm is undefined for non-positive numbers");
-
-		if (value == BigInt.One)
-			return 0;
-
-		var str = value.ToString()!;
-		return (str.Length <= 15)
-			? Math.Log10(NumberFn(value))
-			: Math.Log10(NumberFn(str.Substring(0, 15))) + (str.Length - 15);
-	}	
+		=> _acb5aef300c8db0c(value, 10d);
 
 	///<summary>Finds the greatest common divisor of two <see cref="T:System.Numerics.BigInteger" /> values.</summary>
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.GreatestCommonDivisor(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
@@ -466,23 +467,31 @@ public static class BigIntegerModule
 	[Jazor(Op.Import ,"static System.Numerics.BigInteger.ModPow(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger)")]
 	public static BigInt _ec6961a106ca5bf3(BigInt value, BigInt exponent, BigInt modulus)
 	{
-		if (modulus == BigInt.One)
+		if (exponent < BigInt.Zero)
+			throw new Error("ArgumentOutOfRangeException: Exponent must be non-negative.");
+
+		if (modulus == BigInt.Zero)
+			throw new Error("DivideByZeroException");
+
+		var modulusMagnitude = modulus < BigInt.Zero ? -modulus : modulus;
+		if (modulusMagnitude == BigInt.One)
 			return BigInt.Zero;
 
 		var result = BigInt.One;
-		var val = value % modulus;
+		var negativeResult = value < BigInt.Zero && (exponent & BigInt.One) == BigInt.One;
+		var val = (value < BigInt.Zero ? -value : value) % modulusMagnitude;
 		var exp = exponent;
 
 		while (exp > BigInt.Zero)
 		{
-			if (exp % BigInt.Two == BigInt.One)
-				result = (result * val) % modulus;
+			if ((exp & BigInt.One) == BigInt.One)
+				result = (result * val) % modulusMagnitude;
 
 			exp >>= BigInt.One;
-			val = (val * val) % modulus;
+			val = (val * val) % modulusMagnitude;
 		}
 
-		return result;
+		return negativeResult && result != BigInt.Zero ? -result : result;
 	}	
 
 	///<summary>Raises a <see cref="T:System.Numerics.BigInteger" /> value to the power of a specified value.</summary>
@@ -1166,22 +1175,7 @@ public static class BigIntegerModule
 	///<summary>Gets the number of bits required for shortest two's complement representation of the current instance without the sign bit.</summary>
 	[Jazor(Op.Import, "System.Numerics.BigInteger.GetBitLength()")]
 	public static BigInt _41fe76dfb4ee2ab2(BigInt instance)
-	{
-		if (instance == BigInt.Zero)
-			return BigInt.Zero;
-
-		var isNegative = instance < BigInt.Zero;
-		var value = isNegative ? -instance - BigInt.One : instance;
-		var bitLength = BigInt.Zero;
-
-		while (value > BigInt.Zero)
-		{
-			bitLength += BigInt.One;
-			value >>= BigInt.One;
-		}
-
-		return bitLength;
-	}
+		=> GetBitLengthCore(instance);
 
 	///<summary>Computes the quotient and remainder of two values.</summary>
 	[Jazor(Op.Import, "static System.Numerics.BigInteger.DivRem(System.Numerics.BigInteger, System.Numerics.BigInteger)")]
@@ -1201,11 +1195,15 @@ public static class BigIntegerModule
 	public static BigInt _276680abacb93277(BigInt value)
 	{
 		if (value == BigInt.Zero)
+			return BigIntFn(32);
+		if (value < BigInt.Zero)
 			return BigInt.Zero;
 
-		// BigInt 是任意精度，没有固定的位宽，因此没有前导零的概念
-		// 返回 0 表示值是从第一位开始的
-		return BigInt.Zero;
+		var remainder = GetBitLengthCore(value) % BigIntFn(32);
+		if (remainder == BigInt.Zero)
+			return BigInt.Zero;
+
+		return BigIntFn(32) - remainder;
 	}	
 
 	///<summary>Computes the number of bits that are set in a value.</summary>

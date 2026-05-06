@@ -733,19 +733,33 @@ public static class ListT1Module<T>
 		}
 	}
 
+	private static Number CompareDefault(T left, T right)
+		=> ComparerT1Module<T>.CompareCore(left, right);
+
 	/// <summary>
 	/// C#: list.Sort()
-	/// JS: array.sort()
+	/// JS: array.sort(defaultComparer)
 	/// </summary>
-	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Sort()", "sort")]
-	public extern static void _36a478f36b41a6d2(Array<T> instance);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Sort()")]
+	public static void _36a478f36b41a6d2(Array<T> instance)
+	{
+		EnsureInstance(instance);
+		instance.Sort((left, right) => CompareDefault(left, right));
+	}
 
 	/// <summary>
 	/// C#: list.Sort(comparer)
-	/// JS: array.sort((a, b) => comparer(a, b))
+	/// JS: array.sort((a, b) => comparer.Compare(a, b))
 	/// </summary>
-	[Jazor(Op.Alias, "System.Collections.Generic.List<T>.Sort(System.Collections.Generic.IComparer<T>)", "sort")]
-	public extern static void _5fa599e721e252ff(Array<T> instance, IComparer<T>? comparer);
+	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Sort(System.Collections.Generic.IComparer<T>)")]
+	public static void _5fa599e721e252ff(Array<T> instance, IComparer<T>? comparer)
+	{
+		EnsureInstance(instance);
+		if (comparer is null)
+			instance.Sort((left, right) => CompareDefault(left, right));
+		else
+			instance.Sort((left, right) => comparer.Compare(left, right));
+	}
 
 	/// <summary>
 	/// C#: list.Sort(index, count, comparer)
@@ -754,6 +768,7 @@ public static class ListT1Module<T>
 	[Jazor(Op.Import, "System.Collections.Generic.List<T>.Sort(int, int, System.Collections.Generic.IComparer<T>)")]
 	public static void _19207851b52a5287(Array<T> instance, Number index, Number count, IComparer<T>? comparer)
 	{
+		EnsureInstance(instance);
 		EnsureRemoveRange(instance, index, count);
 		if (count <= 1)
 			return;
@@ -762,7 +777,7 @@ public static class ListT1Module<T>
 		if (comparer != null)
 			subArray.Sort((a, b) => comparer.Compare(a, b));
 		else
-			subArray.Sort();
+			subArray.Sort((left, right) => CompareDefault(left, right));
 		for (uint i = 0; i < (uint)count; i++)
 			instance[(uint)index + i] = subArray[i];
 	}

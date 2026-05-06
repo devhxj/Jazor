@@ -31,6 +31,119 @@ public static class RuntimeModule
 		return result;
 	}
 
+	private const string ReadOnlyCarrierMarker = "__jazor$readonly";
+	private const string ReadOnlyCarrierMutationMessage = "NotSupportedException: Collection is read-only.";
+
+	internal static bool IsReadOnlySetCarrier<T>(Set<T> instance)
+		=> instance is not null &&
+		   Object.HasOwn(instance, ReadOnlyCarrierMarker);
+
+	private static Set<T> ThrowReadOnlySetAdd<T>(T item)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlySetDelete<T>(T item)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static void ThrowReadOnlySetClear<T>()
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	internal static Set<T> MarkAsReadOnlySetCarrier<T>(Set<T> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		// Keep the marker API idempotent so repeated wrapping paths remain stable.
+		if (IsReadOnlySetCarrier(instance))
+			return instance;
+
+		Object.DefineProperty(instance, ReadOnlyCarrierMarker, new ECMAScript.PropertyDescriptor
+		{
+			Value = true,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+
+		// Set cannot be made read-only via Object.freeze; override mutators on the carrier.
+		Object.DefineProperty(instance, "add", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<T, Set<T>>)ThrowReadOnlySetAdd<T>,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<T, bool>)ThrowReadOnlySetDelete<T>,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Action)ThrowReadOnlySetClear<T>,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+		return instance;
+	}
+
+	internal static bool IsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
+		=> instance is not null &&
+		   Object.HasOwn(instance, ReadOnlyCarrierMarker);
+
+	private static Map<TKey, TValue> ThrowReadOnlyDictionarySet<TKey, TValue>(TKey key, TValue value)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static bool ThrowReadOnlyDictionaryDelete<TKey, TValue>(TKey key)
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	private static void ThrowReadOnlyDictionaryClear<TKey, TValue>()
+		=> throw new Error(ReadOnlyCarrierMutationMessage);
+
+	internal static Map<TKey, TValue> MarkAsReadOnlyDictionaryCarrier<TKey, TValue>(Map<TKey, TValue> instance)
+	{
+		if (instance is null)
+			throw new Error("NullReferenceException: instance is null.");
+
+		// Keep the marker API idempotent so repeated wrapping paths remain stable.
+		if (IsReadOnlyDictionaryCarrier(instance))
+			return instance;
+
+		Object.DefineProperty(instance, ReadOnlyCarrierMarker, new ECMAScript.PropertyDescriptor
+		{
+			Value = true,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+
+		// Map cannot be made read-only via Object.freeze; override mutators on the carrier.
+		Object.DefineProperty(instance, "set", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<TKey, TValue, Map<TKey, TValue>>)ThrowReadOnlyDictionarySet<TKey, TValue>,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+		Object.DefineProperty(instance, "delete", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Func<TKey, bool>)ThrowReadOnlyDictionaryDelete<TKey, TValue>,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+		Object.DefineProperty(instance, "clear", new ECMAScript.PropertyDescriptor
+		{
+			Value = (Action)ThrowReadOnlyDictionaryClear<TKey, TValue>,
+			Enumerable = false,
+			Writable = false,
+			Configurable = false
+		});
+		return instance;
+	}
+
 	public sealed class JDateTime
 	{
 		[Description("@#date")]
@@ -278,7 +391,7 @@ public static class RuntimeModule
 		public JStack()
 		{
 			this.Kind = "stack";
-			this.Items = new Array<T>();
+			this.Items = [];
 		}
 
 		public static JStack<T> WithCapacity(Number capacity)

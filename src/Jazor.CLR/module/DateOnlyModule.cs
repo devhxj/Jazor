@@ -98,10 +98,9 @@ public static class DateOnlyModule
 
 	private static Number GetDateTimeStylesValue(object style)
 	{
+		// DateTimeStyles 在当前 lowering 中会擦除为数值字面量。
 		if (style is Number numberStyle)
 			return numberStyle;
-		if (style is System.Globalization.DateTimeStyles enumStyle)
-			return NumberFn((int)enumStyle);
 		if (style == null)
 			return 0;
 

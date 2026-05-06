@@ -22,6 +22,10 @@ public static class DateTimeModule
 	private static BigInt FileTimeUnixEpochTicks => BigIntFn("116444736000000000");
 	private static BigInt TicksPerMicrosecond => BigIntFn("10");
 	private static BigInt TicksPerMillisecond => BigIntFn("10000");
+	private static BigInt TicksPerSecond => BigIntFn("10000000");
+	private static BigInt TicksPerMinute => BigIntFn("600000000");
+	private static BigInt TicksPerHour => BigIntFn("36000000000");
+	private static BigInt TicksPerDay => BigIntFn("864000000000");
 	private static BigInt OffsetMinuteTicks => BigIntFn("600000000");
 	private static BigInt ZeroTicks => BigInt.Zero;
 	private static BigInt BinaryKindShift => BigIntFn("4611686018427387904");
@@ -1118,6 +1122,23 @@ public static class DateTimeModule
 		return BigIntFn(rounded);
 	}
 
+	private static BigInt CreateAddUnitTicks(Number value, BigInt ticksPerUnit)
+	{
+		if (DoubleModule._24e14b276e0c7e30(value))
+			throw new Error("ArgumentException: Value cannot be NaN.");
+
+		if (!DoubleModule._aed2927097617729(value))
+			throw new Error("ArgumentOutOfRangeException: Value must be finite.");
+
+		var maxUnitCount = NumberFn(MaxDateTimeTicks) / NumberFn(ticksPerUnit);
+		if (Math.AbsFn(value) > maxUnitCount)
+			throw new Error("ArgumentOutOfRangeException: Value is outside the supported DateTime range.");
+
+		var integralPart = Math.TruncFn(value);
+		var fractionalPart = value - integralPart;
+		return BigIntFn(integralPart) * ticksPerUnit + BigIntFn(Math.TruncFn(fractionalPart * NumberFn(ticksPerUnit)));
+	}
+
 	private static Number GetDateTimeStylesValue(object styles)
 	{
 		if (styles is Number numberStyle)
@@ -1475,27 +1496,27 @@ public static class DateTimeModule
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of days to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddDays(double)")]
 	public static RuntimeModule.JDateTime _558a3f189d9149d7(RuntimeModule.JDateTime instance, Number value)
-		=> CreateFromTicks(GetTicks(instance) + CreateRoundedTicksFromDouble(value * 864000000000d), instance.Kind);
+		=> CreateFromTicks(GetTicks(instance) + CreateAddUnitTicks(value, TicksPerDay), instance.Kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of hours to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddHours(double)")]
 	public static RuntimeModule.JDateTime _101af978213c19c5(RuntimeModule.JDateTime instance, Number value)
-		=> CreateFromTicks(GetTicks(instance) + CreateRoundedTicksFromDouble(value * 36000000000d), instance.Kind);
+		=> CreateFromTicks(GetTicks(instance) + CreateAddUnitTicks(value, TicksPerHour), instance.Kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of milliseconds to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddMilliseconds(double)")]
 	public static RuntimeModule.JDateTime _2b29e4c11fa12daa(RuntimeModule.JDateTime instance, Number value)
-		=> CreateFromTicks(GetTicks(instance) + CreateRoundedTicksFromDouble(value * 10000d), instance.Kind);
+		=> CreateFromTicks(GetTicks(instance) + CreateAddUnitTicks(value, TicksPerMillisecond), instance.Kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of microseconds to the value of this instance.</summary>
 	[Jazor(Op.Import ,"System.DateTime.AddMicroseconds(double)")]
 	public static RuntimeModule.JDateTime _2b47368c73a3e1f2(RuntimeModule.JDateTime instance, Number value)
-		=> CreateFromTicks(GetTicks(instance) + CreateRoundedTicksFromDouble(value * 10d), instance.Kind);
+		=> CreateFromTicks(GetTicks(instance) + CreateAddUnitTicks(value, TicksPerMicrosecond), instance.Kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of minutes to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddMinutes(double)")]
 	public static RuntimeModule.JDateTime _8bdc25943cf2d39b(RuntimeModule.JDateTime instance, Number value)
-		=> CreateFromTicks(GetTicks(instance) + CreateRoundedTicksFromDouble(value * 600000000d), instance.Kind);
+		=> CreateFromTicks(GetTicks(instance) + CreateAddUnitTicks(value, TicksPerMinute), instance.Kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of months to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddMonths(int)")]
@@ -1505,7 +1526,7 @@ public static class DateTimeModule
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of seconds to the value of this instance.</summary>
 	[Jazor(Op.Import, "System.DateTime.AddSeconds(double)")]
 	public static RuntimeModule.JDateTime _57045f93edac1460(RuntimeModule.JDateTime instance, Number value)
-		=> CreateFromTicks(GetTicks(instance) + CreateRoundedTicksFromDouble(value * 10000000d), instance.Kind);
+		=> CreateFromTicks(GetTicks(instance) + CreateAddUnitTicks(value, TicksPerSecond), instance.Kind);
 
 	///<summary>Returns a new <see cref="T:System.DateTime" /> that adds the specified number of ticks to the value of this instance.</summary>
 	[Jazor(Op.Import ,"System.DateTime.AddTicks(long)")]

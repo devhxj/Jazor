@@ -10,7 +10,10 @@ public static class TimeSpanModule
 	private static BigInt TicksPerMinute => BigIntFn("600000000");
 	private static BigInt TicksPerHour => BigIntFn("36000000000");
 	private static BigInt TicksPerDay => BigIntFn("864000000000");
+	private static BigInt MaxTimeSpanTicks => BigIntFn("9223372036854775807");
 	private static BigInt MinTimeSpanTicks => BigIntFn("-9223372036854775808");
+	private static Number MaxTimeSpanTicksAsDouble => 9223372036854775807d;
+	private static Number MinTimeSpanTicksAsDouble => -9223372036854775808d;
 
 	private static bool IsAsciiDigit(char value)
 		=> value >= '0' && value <= '9';
@@ -49,6 +52,38 @@ public static class TimeSpanModule
 		return new RuntimeModule.JTimeSpan(-instance.Ticks);
 	}
 
+	private static Number RoundToEven(Number value)
+	{
+		var truncated = Math.TruncFn(value);
+		var difference = value - truncated;
+		if (difference > 0.5)
+			return truncated + 1;
+		if (difference < -0.5)
+			return truncated - 1;
+		if (difference > -0.5 && difference < 0.5)
+			return truncated;
+
+		return (BigIntFn(Math.AbsFn(truncated)) & BigInt.One) == BigInt.One
+			? difference > 0 ? truncated + 1 : truncated - 1
+			: truncated;
+	}
+
+	private static RuntimeModule.JTimeSpan CreateFromTruncatedTicks(Number value)
+	{
+		if (DoubleModule._24e14b276e0c7e30(value))
+			throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
+
+		if (!DoubleModule._aed2927097617729(value))
+			throw new Error("OverflowException: TimeSpan is too long or too short.");
+
+		if (value > MaxTimeSpanTicksAsDouble || value < MinTimeSpanTicksAsDouble)
+			throw new Error("OverflowException: TimeSpan is too long or too short.");
+		if (value == MaxTimeSpanTicksAsDouble)
+			return new(MaxTimeSpanTicks);
+
+		return new(BigIntFn(Math.TruncFn(value)));
+	}
+
 	private static RuntimeModule.JTimeSpan CreateFromRoundedTicks(Number value)
 	{
 		if (DoubleModule._24e14b276e0c7e30(value))
@@ -57,11 +92,69 @@ public static class TimeSpanModule
 		if (!DoubleModule._aed2927097617729(value))
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
 
-		var rounded = Math.RoundFn(value);
-		if (!DoubleModule._aed2927097617729(rounded))
+		var rounded = RoundToEven(value);
+		if (rounded > MaxTimeSpanTicksAsDouble || rounded < MinTimeSpanTicksAsDouble)
 			throw new Error("OverflowException: TimeSpan is too long or too short.");
+		if (rounded == MaxTimeSpanTicksAsDouble)
+			return new(MaxTimeSpanTicks);
 
 		return new(BigIntFn(rounded));
+	}
+
+	private static Array<BigInt> GetFiniteDoubleRatio(Number value)
+	{
+		var buffer = new ArrayBuffer(8);
+		var view = new DataView(buffer);
+		view.SetFloat64(0, value, false);
+
+		var high = view.GetUint32(0, false);
+		var low = view.GetUint32(4, false);
+		var sign = high >= 2147483648d ? -1 : 1;
+		var exponentBits = Math.FloorFn(high / 1048576d) % 2048d;
+		var mantissa = (BigIntFn(high % 1048576d) << BigIntFn(32)) | BigIntFn(low);
+
+		BigInt significand;
+		Number exponent;
+		if (exponentBits == 0)
+		{
+			significand = mantissa;
+			exponent = -1074;
+		}
+		else
+		{
+			significand = (BigInt.One << BigIntFn(52)) | mantissa;
+			exponent = exponentBits - 1075d;
+		}
+
+		if (sign < 0)
+			significand = -significand;
+
+		if (exponent >= 0)
+			return [significand << BigIntFn(exponent), BigInt.One];
+
+		return [significand, BigInt.One << BigIntFn(-exponent)];
+	}
+
+	private static RuntimeModule.JTimeSpan CreateFromRoundedRationalTicks(BigInt numerator, BigInt denominator)
+	{
+		if (denominator <= BigInt.Zero)
+			throw new Error("ArgumentException: Denominator must be positive.");
+
+		var isNegative = numerator < BigInt.Zero;
+		var magnitude = isNegative ? -numerator : numerator;
+		var quotient = magnitude / denominator;
+		var remainder = magnitude % denominator;
+		var doubledRemainder = remainder << BigInt.One;
+
+		if (doubledRemainder > denominator ||
+			(doubledRemainder == denominator && (quotient & BigInt.One) == BigInt.One))
+			quotient += BigInt.One;
+
+		var rounded = isNegative ? -quotient : quotient;
+		if (rounded > MaxTimeSpanTicks || rounded < MinTimeSpanTicks)
+			throw new Error("OverflowException: TimeSpan is too long or too short.");
+
+		return new(rounded);
 	}
 
 	private static RuntimeModule.JTimeSpan Create(BigInt days, BigInt hours, BigInt minutes, BigInt seconds, BigInt milliseconds, BigInt microseconds)
@@ -85,10 +178,30 @@ public static class TimeSpanModule
 			ToWholeBigInt(microseconds, "ArgumentOutOfRangeException: Microseconds must be a whole number."));
 
 	private static RuntimeModule.JTimeSpan MultiplyByDouble(RuntimeModule.JTimeSpan instance, Number factor)
-		=> CreateFromRoundedTicks(NumberFn(instance.Ticks) * factor);
+	{
+		if (DoubleModule._24e14b276e0c7e30(factor) || !DoubleModule._aed2927097617729(factor))
+			return CreateFromRoundedTicks(NumberFn(instance.Ticks) * factor);
+
+		var ratio = GetFiniteDoubleRatio(factor);
+		return CreateFromRoundedRationalTicks(instance.Ticks * ratio[0], ratio[1]);
+	}
 
 	private static RuntimeModule.JTimeSpan DivideByDouble(RuntimeModule.JTimeSpan instance, Number divisor)
-		=> CreateFromRoundedTicks(NumberFn(instance.Ticks) / divisor);
+	{
+		if (DoubleModule._24e14b276e0c7e30(divisor) || !DoubleModule._aed2927097617729(divisor) || divisor == 0d)
+			return CreateFromRoundedTicks(NumberFn(instance.Ticks) / divisor);
+
+		var ratio = GetFiniteDoubleRatio(divisor);
+		var numerator = instance.Ticks * ratio[1];
+		var denominator = ratio[0];
+		if (denominator < BigInt.Zero)
+		{
+			numerator = -numerator;
+			denominator = -denominator;
+		}
+
+		return CreateFromRoundedRationalTicks(numerator, denominator);
+	}
 
 	private static RuntimeModule.JTimeSpan ParseCore(string input)
 	{
@@ -486,7 +599,7 @@ public static class TimeSpanModule
 	[Jazor(Op.Import, "static System.TimeSpan.FromDays(double)")]
 	public static RuntimeModule.JTimeSpan _174093cb4f47884f(Number value)
 	{
-		return CreateFromRoundedTicks(value * 864000000000d);
+		return CreateFromTruncatedTicks(value * 864000000000d);
 	}
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the absolute value of the current <see cref="T:System.TimeSpan" /> object.</summary>
@@ -577,7 +690,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromHours(double)")]
 	public static RuntimeModule.JTimeSpan _105dc0462f9876d6(Number value)
-		=> CreateFromRoundedTicks(value * 36000000000d);
+		=> CreateFromTruncatedTicks(value * 36000000000d);
 
 	/// <summary>
 	/// C#: TimeSpan.FromMilliseconds(double)
@@ -585,7 +698,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromMilliseconds(double)")]
 	public static RuntimeModule.JTimeSpan _a6de3a3b561d553b(Number value)
-		=> CreateFromRoundedTicks(value * 10000d);
+		=> CreateFromTruncatedTicks(value * 10000d);
 
 	/// <summary>
 	/// C#: TimeSpan.FromMicroseconds(double)
@@ -593,7 +706,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromMicroseconds(double)")]
 	public static RuntimeModule.JTimeSpan _e05c52466faba973(Number value)
-		=> CreateFromRoundedTicks(value * 10d);
+		=> CreateFromTruncatedTicks(value * 10d);
 
 	/// <summary>
 	/// C#: TimeSpan.FromMinutes(double)
@@ -601,7 +714,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromMinutes(double)")]
 	public static RuntimeModule.JTimeSpan _2af67432bdd77d15(Number value)
-		=> CreateFromRoundedTicks(value * 600000000d);
+		=> CreateFromTruncatedTicks(value * 600000000d);
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the negated value of this instance.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Negate()")]
@@ -613,7 +726,7 @@ public static class TimeSpanModule
 	/// </summary>
 	[Jazor(Op.Import, "static System.TimeSpan.FromSeconds(double)")]
 	public static RuntimeModule.JTimeSpan _77a04fa2e0b66990(Number value)
-		=> CreateFromRoundedTicks(value * 10000000d);
+		=> CreateFromTruncatedTicks(value * 10000000d);
 
 	///<summary>Returns a new <see cref="T:System.TimeSpan" /> object whose value is the difference between the specified <see cref="T:System.TimeSpan" /> object and this instance.</summary>
 	[Jazor(Op.Import ,"System.TimeSpan.Subtract(System.TimeSpan)")]

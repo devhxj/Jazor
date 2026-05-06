@@ -42,7 +42,7 @@ public static class IDictionaryT2Module<TKey, TValue>
 		EnsureInstance(instance);
 
 		// ReadOnlyDictionary 运行时 carrier 共享 Map；接口写入口必须守住只读边界。
-		if (DictionaryCarrierRuntime.IsReadOnlyCarrier(instance))
+		if (RuntimeModule.IsReadOnlyDictionaryCarrier(instance))
 			throw new Error("NotSupportedException: Collection is read-only.");
 		instance.Set(key, value);
 	}

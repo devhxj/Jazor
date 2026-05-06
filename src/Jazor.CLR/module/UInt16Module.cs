@@ -29,15 +29,14 @@ public static class UInt16Module
 			return false;
 
 		var start = 0;
-		if (trimmed[0] == '+')
+		var first = trimmed[0];
+		if (first == '+' || first == '-')
 		{
 			if (trimmed.Length == 1)
 				return false;
 
 			start = 1;
 		}
-		else if (trimmed[0] == '-')
-			return false;
 
 		for (var i = start; i < trimmed.Length; i++)
 		{
@@ -54,6 +53,39 @@ public static class UInt16Module
 
 		value = parsed;
 		return true;
+	}
+
+	private static bool IsOverflowUInt16Text(string? s)
+	{
+		if (s == null)
+			return false;
+
+		var trimmed = s.Trim();
+		if (trimmed.Length == 0)
+			return false;
+
+		var start = 0;
+		var first = trimmed[0];
+		if (first == '+' || first == '-')
+		{
+			if (trimmed.Length == 1)
+				return false;
+
+			start = 1;
+		}
+
+		for (var i = start; i < trimmed.Length; i++)
+		{
+			var ch = trimmed[i];
+			if (ch < '0' || ch > '9')
+				return false;
+		}
+
+		var parsed = NumberFn(trimmed);
+		if (IsNaN(parsed) || Math.FloorFn(parsed) != parsed)
+			return false;
+
+		return parsed < 0 || parsed > 65535;
 	}
 
 	/// <summary>
@@ -151,7 +183,11 @@ public static class UInt16Module
 		if (s == null)
 			throw new Error("ArgumentNullException: String cannot be null.");
 		if (!TryParseUInt16Core(s, out var value))
+		{
+			if (IsOverflowUInt16Text(s))
+				throw new Error("OverflowException: Value was either too large or too small for a UInt16.");
 			throw new Error($"FormatException: String '{s}' was not recognized as a valid UInt16.");
+		}
 
 		return value;
 	}

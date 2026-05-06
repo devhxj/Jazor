@@ -751,7 +751,7 @@ public static class StringModule
 
 		var pattern = "[";
 		for (var i = 0; i < separator.Length; i++)
-			pattern += EscapeRegexCharClassChar(separator[i]);
+			pattern += EscapeRegexCharClassChar(separator.Substring(i, 1));
 
 		return pattern + "]";
 	}
@@ -771,19 +771,19 @@ public static class StringModule
 
 			hasSeparator = true;
 			for (var j = 0; j < separator.Length; j++)
-				pattern += EscapeRegexCharClassChar(separator[j]);
+				pattern += EscapeRegexCharClassChar(separator.Substring(j, 1));
 		}
 
 		return hasSeparator ? pattern + "]" : @"\s+";
 	}
 
-	private static string EscapeRegexCharClassChar(char ch) => ch switch
+	private static string EscapeRegexCharClassChar(string ch) => ch switch
 	{
-		'\\' => "\\\\",
-		']' => "\\]",
-		'^' => "\\^",
-		'-' => "\\-",
-		_ => ch.ToString()
+		"\\" => "\\\\",
+		"]" => "\\]",
+		"^" => "\\^",
+		"-" => "\\-",
+		_ => ch
 	};
 
 	private static string[] ApplySplitOptions(string[] parts, object options)

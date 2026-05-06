@@ -27,6 +27,15 @@ public static class ArrayModule<T>
 	[ECMAScriptInline("null")]
 	private extern static T? MissingValue();
 
+	private static Number CompareDefault(T left, T right)
+		=> ComparerT1Module<T>.CompareCore(left, right);
+
+	private static Number CompareDefaultObject(object? left, object? right)
+		=> ComparerT1Module<object?>.CompareObjectsCore(left, right);
+
+	private static Number CompareDefaultKey<TKey>(TKey left, TKey right)
+		=> ComparerT1Module<TKey>.CompareCore(left, right);
+
 	#region 属性
 
 	/// <summary>
@@ -470,7 +479,7 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
+			var cmp = CompareDefaultObject(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -502,7 +511,7 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
+			var cmp = CompareDefaultObject(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -528,9 +537,9 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = comparer != null
+			Number cmp = comparer != null
 				? comparer.Compare(array[mid], value)
-				: string.Compare(array[mid]?.ToString(), value?.ToString());
+				: CompareDefaultObject(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -562,9 +571,9 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = comparer != null
+			Number cmp = comparer != null
 				? comparer.Compare(array[mid], value)
-				: string.Compare(array[mid]?.ToString(), value?.ToString());
+				: CompareDefaultObject(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -590,7 +599,7 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
+			var cmp = CompareDefault(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -616,9 +625,9 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = comparer != null
+			Number cmp = comparer != null
 				? comparer.Compare(array[mid], value)
-				: string.Compare(array[mid]?.ToString(), value?.ToString());
+				: CompareDefault(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -650,7 +659,7 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = string.Compare(array[mid]?.ToString(), value?.ToString());
+			var cmp = CompareDefault(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -682,9 +691,9 @@ public static class ArrayModule<T>
 		while (left <= right)
 		{
 			var mid = left + Math.FloorFn((right - left) / 2);
-			var cmp = comparer != null
+			Number cmp = comparer != null
 				? comparer.Compare(array[mid], value)
-				: string.Compare(array[mid]?.ToString(), value?.ToString());
+				: CompareDefault(array[mid], value);
 			if (cmp == 0) return mid;
 			if (cmp < 0) left = mid + 1;
 			else right = mid - 1;
@@ -1255,7 +1264,7 @@ public static class ArrayModule<T>
 		if (array == null)
 			throw new Error("ArgumentNullException: array is null");
 
-		array.Sort();
+		array.Sort((left, right) => CompareDefault(left, right));
 	}
 
 	///<summary>Sorts a pair of one-dimensional <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the <see cref="T:System.IComparable" /> implementation of each key.</summary>
@@ -1268,7 +1277,7 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentException: keys and items have different lengths");
 		// JS 不支持直接按键排序两个数组，需要实现
 		// 简化实现：只排序 keys，忽略 items
-		keys.Sort();
+		keys.Sort((left, right) => CompareDefault(left, right));
 	}
 
 	///<summary>Sorts the elements in a range of elements in a one-dimensional <see cref="T:System.Array" /> using the <see cref="T:System.IComparable" /> implementation of each element of the <see cref="T:System.Array" />.</summary>
@@ -1286,7 +1295,7 @@ public static class ArrayModule<T>
 
 		// 提取子数组，排序后放回
 		var subArray = array.Slice(index, index + length);
-		subArray.Sort();
+		subArray.Sort((left, right) => CompareDefault(left, right));
 		for (Number i = 0; i < length; i++)
 			array[index + i] = subArray[i];
 	}
@@ -1301,7 +1310,7 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentException: invalid index or length");
 
 		var subArray = keys.Slice(index, index + length);
-		subArray.Sort();
+		subArray.Sort((left, right) => CompareDefault(left, right));
 		for (Number i = 0; i < length; i++)
 			keys[index + i] = subArray[i];
 	}
@@ -1313,7 +1322,7 @@ public static class ArrayModule<T>
 		if (array == null)
 			throw new Error("ArgumentNullException: array is null");
 		if (comparer == null)
-			array.Sort();
+			array.Sort((left, right) => CompareDefault(left, right));
 		else
 			array.Sort((a, b) => comparer.Compare(a, b));
 	}
@@ -1325,7 +1334,7 @@ public static class ArrayModule<T>
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
 		if (comparer == null)
-			keys.Sort();
+			keys.Sort((left, right) => CompareDefault(left, right));
 		else
 			keys.Sort((a, b) => comparer.Compare(a, b));
 	}
@@ -1341,7 +1350,7 @@ public static class ArrayModule<T>
 
 		var subArray = array.Slice(index, index + length);
 		if (comparer == null)
-			subArray.Sort();
+			subArray.Sort((left, right) => CompareDefault(left, right));
 		else
 			subArray.Sort((a, b) => comparer.Compare(a, b));
 		for (Number i = 0; i < length; i++)
@@ -1359,7 +1368,7 @@ public static class ArrayModule<T>
 
 		var subArray = keys.Slice(index, index + length);
 		if (comparer == null)
-			subArray.Sort();
+			subArray.Sort((left, right) => CompareDefault(left, right));
 		else
 			subArray.Sort((a, b) => comparer.Compare(a, b));
 		for (Number i = 0; i < length; i++)
@@ -1372,7 +1381,7 @@ public static class ArrayModule<T>
 	{
 		if (array == null)
 			throw new Error("ArgumentNullException: array is null");
-		array.Sort();
+		array.Sort((left, right) => CompareDefault(left, right));
 	}
 
 	///<summary>Sorts a pair of <see cref="T:System.Array" /> objects (one contains the keys and the other contains the corresponding items) based on the keys in the first <see cref="T:System.Array" /> using the <see cref="T:System.IComparable`1" /> generic interface implementation of each key.</summary>
@@ -1381,7 +1390,7 @@ public static class ArrayModule<T>
 	{
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
-		keys.Sort();
+		keys.Sort((left, right) => CompareDefaultKey(left, right));
 	}
 
 	///<summary>Sorts the elements in a range of elements in an <see cref="T:System.Array" /> using the <see cref="T:System.IComparable`1" /> generic interface implementation of each element of the <see cref="T:System.Array" />.</summary>
@@ -1394,7 +1403,7 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentException: invalid index or length");
 
 		var subArray = array.Slice(index, index + length);
-		subArray.Sort();
+		subArray.Sort((left, right) => CompareDefault(left, right));
 		for (Number i = 0; i < length; i++)
 			array[index + i] = subArray[i];
 	}
@@ -1409,7 +1418,7 @@ public static class ArrayModule<T>
 			throw new Error("ArgumentException: invalid index or length");
 
 		var subArray = keys.Slice(index, index + length);
-		subArray.Sort();
+		subArray.Sort((left, right) => CompareDefaultKey(left, right));
 		for (Number i = 0; i < length; i++)
 			keys[index + i] = subArray[i];
 	}
@@ -1421,7 +1430,7 @@ public static class ArrayModule<T>
 		if (array == null)
 			throw new Error("ArgumentNullException: array is null");
 		if (comparer == null)
-			array.Sort();
+			array.Sort((left, right) => CompareDefault(left, right));
 		else
 			array.Sort(comparer.Compare);
 	}
@@ -1433,7 +1442,7 @@ public static class ArrayModule<T>
 		if (keys == null)
 			throw new Error("ArgumentNullException: keys is null");
 		if (comparer == null)
-			keys.Sort();
+			keys.Sort((left, right) => CompareDefaultKey(left, right));
 		else
 			keys.Sort(comparer.Compare);
 	}
@@ -1449,7 +1458,7 @@ public static class ArrayModule<T>
 
 		var subArray = array.Slice(index, index + length);
 		if (comparer == null)
-			subArray.Sort();
+			subArray.Sort((left, right) => CompareDefault(left, right));
 		else
 			subArray.Sort(comparer.Compare);
 		for (Number i = 0; i < length; i++)
@@ -1467,7 +1476,7 @@ public static class ArrayModule<T>
 
 		var subArray = keys.Slice(index, index + length);
 		if (comparer == null)
-			subArray.Sort();
+			subArray.Sort((left, right) => CompareDefaultKey(left, right));
 		else
 			subArray.Sort(comparer.Compare);
 		for (Number i = 0; i < length; i++)
