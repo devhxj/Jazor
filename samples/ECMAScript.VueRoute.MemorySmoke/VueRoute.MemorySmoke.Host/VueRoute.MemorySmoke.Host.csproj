@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <JazorEmit>true</JazorEmit>
+    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+    <JazorBundle>false</JazorBundle>
+    <!-- extern-based JS host contracts are intentional in this sample. -->
+    <NoWarn>$(NoWarn);CS0626</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+  </ItemGroup>
+</Project>
