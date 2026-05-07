@@ -432,6 +432,165 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalJazorPackage_WithVueRouteInjectionAndReactiveAuthoring_EmitsTypedVueRouterContracts()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "VueRouteReactiveSdkSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+
+        WriteFile(
+            Path.Combine(projectRoot, "VueRouteReactiveSdkSample.csproj"),
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>false</JazorBundle>
+                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            Console.WriteLine("VueRoute reactive SDK sample");
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using static ECMAScript.VueRoute;
+
+            namespace VueRouteReactiveSdkSample;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Build(Router router, RouteLocation location, RouteLocationNormalized normalized)
+                {
+                    var routeRef = ShallowRef(UseRoute());
+                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => normalized.Matched[0]);
+
+                    Provide(VueRoute.RouterKey, router);
+                    Provide(VueRoute.RouteLocationKey, UseRoute());
+                    Provide(VueRoute.RouterViewLocationKey, routeRef);
+                    Provide(VueRoute.MatchedRouteKey, matched);
+                    Provide(VueRoute.ViewDepthKey, 2);
+
+                    var injectedRouter = Inject(VueRoute.RouterKey)!;
+                    var injectedRoute = Inject(VueRoute.RouteLocationKey)!;
+                    var injectedRouteRef = Inject(VueRoute.RouterViewLocationKey)!;
+                    var injectedMatched = Inject(VueRoute.MatchedRouteKey)!;
+                    var injectedDepth = Inject(VueRoute.ViewDepthKey)!;
+                    var loadedFromLocation = LoadRouteLocation(location);
+                    var loadedFromNormalized = LoadRouteLocation(normalized);
+                    var link = UseLink(new UseLinkOptions
+                    {
+                        To = ToRef(() => new RouteLocationAsRelative
+                        {
+                            Name = injectedRoute.Name!
+                        }),
+                        Replace = Computed(() => true)
+                    });
+
+                    TriggerRef(routeRef);
+                    return injectedRouter.CurrentRoute.Value.Path
+                        + injectedRoute.Path
+                        + injectedRouteRef.Value.Path
+                        + injectedMatched.Value!.Path
+                        + injectedDepth.AsNumber!.ToString()
+                        + link.Href.Value
+                        + link.Route.Value.Href
+                        + loadedFromLocation.ToString()
+                        + loadedFromNormalized.ToString();
+                }
+            }
+            """);
+
+        var projectPath = Path.Combine(projectRoot, "VueRouteReactiveSdkSample.csproj");
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
+
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
+        Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
+
+        var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
+
+        Assert.AreEqual(
+            "import { computed, inject, provide, shallowRef, toRef, triggerRef } from \"npm:vue@3\";",
+            GetImportLine(module, "npm:vue@3"));
+        var vueRouterImport = GetImportLine(module, "npm:vue-router@4");
+        StringAssert.Contains(vueRouterImport, "loadRouteLocation");
+        StringAssert.Contains(vueRouterImport, "matchedRouteKey");
+        StringAssert.Contains(vueRouterImport, "routeLocationKey");
+        StringAssert.Contains(vueRouterImport, "routerKey");
+        StringAssert.Contains(vueRouterImport, "routerViewLocationKey");
+        StringAssert.Contains(vueRouterImport, "useLink");
+        StringAssert.Contains(vueRouterImport, "useRoute");
+        StringAssert.Contains(vueRouterImport, "viewDepthKey");
+        StringAssert.Contains(module, "let routeRef = shallowRef(useRoute());");
+        StringAssert.Contains(module, "let matched = computed(() => {");
+        StringAssert.Contains(module, "provide(routerKey, router);");
+        StringAssert.Contains(module, "provide(routeLocationKey, useRoute());");
+        StringAssert.Contains(module, "provide(routerViewLocationKey, routeRef);");
+        StringAssert.Contains(module, "provide(matchedRouteKey, matched);");
+        StringAssert.Contains(module, "provide(viewDepthKey, 2);");
+        StringAssert.Contains(module, "let injectedRouter = inject(routerKey);");
+        StringAssert.Contains(module, "let injectedRoute = inject(routeLocationKey);");
+        StringAssert.Contains(module, "let injectedRouteRef = inject(routerViewLocationKey);");
+        StringAssert.Contains(module, "let injectedMatched = inject(matchedRouteKey);");
+        StringAssert.Contains(module, "let injectedDepth = inject(viewDepthKey);");
+        StringAssert.Contains(module, "let loadedFromLocation = loadRouteLocation(location);");
+        StringAssert.Contains(module, "let loadedFromNormalized = loadRouteLocation(normalized);");
+        StringAssert.Contains(module, "let link = useLink({");
+        StringAssert.Contains(module, "triggerRef(routeRef);");
+        StringAssert.Contains(module, "injectedRouter.currentRoute.value.path");
+        StringAssert.Contains(module, "injectedRoute.path");
+        StringAssert.Contains(module, "injectedRouteRef.value.path");
+        StringAssert.Contains(module, "injectedMatched.value.path");
+        StringAssert.Contains(module, "injectedDepth.toString()");
+        StringAssert.Contains(module, "link.href.value");
+        StringAssert.Contains(module, "link.route.value.href");
+
+        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+        var emittedRelativePaths = manifest.RootElement
+            .GetProperty("Modules")
+            .EnumerateArray()
+            .Select(static moduleEntry => moduleEntry.GetProperty("RelativePath").GetString())
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray()!;
+
+        CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
+    }
+
+    [TestMethod]
     public async Task Build_LocalJazorPackage_WithSourceReferencedRazorVueSample_EmitsRazorVueOutputs()
     {
         var package = await LocalPackage.Value;
