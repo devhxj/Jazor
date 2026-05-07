@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using ECMAScript.Contract;
+using static ECMAScript.Vue3;
 
 namespace ECMAScript;
 

@@ -40,7 +40,7 @@ new RouteRecordSingleView
 new RouteRecordSingleView
 {
     Path = "/lazy",
-    Component = RawRouteComponent.From(() => Promise<ECMAScript.VueContract.IVueComponent>.Resolve(component))
+    Component = RawRouteComponent.From(() => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component))
 };
 ```
 
@@ -50,7 +50,7 @@ new RouteRecordSingleView
 var components = new RawRouteComponents
 {
     { "default", component },
-    { "sidebar", () => Promise<ECMAScript.VueContract.IVueComponent>.Resolve(component) }
+    { "sidebar", () => Promise<ECMAScript.Vue3.IVueComponent>.Resolve(component) }
 };
 ```
 

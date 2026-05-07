@@ -155,10 +155,10 @@ public static partial class VueRoute
 	public extern static IPromise<RouteLocationNormalizedLoaded> LoadRouteLocation(RouteLocationNormalized route);
 
 	/// <summary>
-	/// Ensures a resolved route has loaded all lazy route components and is ready for rendering.
+	/// Ensures a route-location object shape has loaded all lazy route components and is ready for rendering.
 	/// </summary>
 	[Description("@#loadRouteLocation")]
-	public extern static IPromise<RouteLocationNormalizedLoaded> LoadRouteLocation(RouteLocationResolved route);
+	public extern static IPromise<RouteLocationNormalizedLoaded> LoadRouteLocation(RouteLocation route);
 
 	/// <summary>
 	/// Sentinel route representing Vue Router's start location before the first navigation resolves.
@@ -188,7 +188,7 @@ public static partial class VueRoute
 	/// Typed injection key for the matched route record currently rendered by the nearest router view.
 	/// </summary>
 	[Description("@#matchedRouteKey")]
-	public extern static Vue3.VueInjectionKey<Vue3.VueReadonlyRef<RouteRecordNormalized?>> MatchedRouteKey { get; }
+	public extern static Vue3.VueInjectionKey<Vue3.VueComputedRef<RouteRecordNormalized?>> MatchedRouteKey { get; }
 
 	/// <summary>
 	/// Typed injection key for the current router-view nesting depth.

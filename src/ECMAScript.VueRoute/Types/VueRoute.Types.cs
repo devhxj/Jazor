@@ -634,7 +634,7 @@ public abstract class RouterHistory
 public abstract record Router : Vue3.VuePlugin
 {
 	[Description("@#currentRoute")]
-	public extern Vue3.VueReadonlyRef<RouteLocationNormalizedLoaded> CurrentRoute { get; }
+	public extern Vue3.VueShallowRef<RouteLocationNormalizedLoaded> CurrentRoute { get; }
 
 	[Description("@#listening")]
 	public extern bool Listening { get; set; }
@@ -821,7 +821,7 @@ public record RawRouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 	public extern void Add(string key, RawRouteComponent value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, ECMAScript.VueContract.IVueComponent value);
+	public extern void Add(string key, ECMAScript.Vue3.IVueComponent value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(string key, RouteComponentLoader value);
@@ -839,7 +839,7 @@ public record RouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 	public extern void Add(string key, RouteComponent value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, ECMAScript.VueContract.IVueComponent value);
+	public extern void Add(string key, ECMAScript.Vue3.IVueComponent value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(string key, RouteComponentLoader value);
@@ -917,12 +917,6 @@ public abstract record RouteRecordBase : Vue3.VueProps
 	[Description("@#alias")]
 	public RouteRecordAlias? Alias { get; init; }
 
-	[Description("@#redirect")]
-	public RouteRedirectOption? Redirect { get; init; }
-
-	[Description("@#children")]
-	public RouteRecordRaw[]? Children { get; init; }
-
 	[Description("@#meta")]
 	public RouteMeta? Meta { get; init; }
 
@@ -959,10 +953,13 @@ public record RouteRecordSingleViewWithChildren : RouteRecordBase
 	public RawRouteComponent? Component { get; init; }
 
 	[Description("@#children")]
-	public new RouteRecordRaw[] Children { get; init; } = default!;
+	public RouteRecordRaw[] Children { get; init; } = default!;
 
 	[Description("@#props")]
 	public RouteRecordProps? Props { get; init; }
+
+	[Description("@#redirect")]
+	public RouteRecordRedirectOption? Redirect { get; init; }
 }
 
 [ECMAScript]
@@ -984,18 +981,24 @@ public record RouteRecordMultipleViewsWithChildren : RouteRecordBase
 	public RawRouteComponents? Components { get; init; }
 
 	[Description("@#children")]
-	public new RouteRecordRaw[] Children { get; init; } = default!;
+	public RouteRecordRaw[] Children { get; init; } = default!;
 
 	[Description("@#props")]
 	public RouteRecordNamedViewProps? Props { get; init; }
+
+	[Description("@#redirect")]
+	public RouteRecordRedirectOption? Redirect { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
 public record RouteRecordRedirect : RouteRecordBase
 {
+	[Description("@#children")]
+	public RouteRecordRaw[]? Children { get; init; }
+
 	[Description("@#redirect")]
-	public new RouteRedirectOption Redirect { get; init; } = default!;
+	public RouteRecordRedirectOption Redirect { get; init; } = default!;
 }
 
 [String]
@@ -1086,16 +1089,16 @@ public abstract class UseLinkReturn
 	}
 
 	[Description("@#route")]
-	public extern Vue3.VueReadonlyRef<RouteLocationResolved> Route { get; }
+	public extern Vue3.VueComputedRef<RouteLocationResolved> Route { get; }
 
 	[Description("@#href")]
-	public extern Vue3.VueReadonlyRef<string> Href { get; }
+	public extern Vue3.VueComputedRef<string> Href { get; }
 
 	[Description("@#isActive")]
-	public extern Vue3.VueReadonlyRef<bool> IsActive { get; }
+	public extern Vue3.VueComputedRef<bool> IsActive { get; }
 
 	[Description("@#isExactActive")]
-	public extern Vue3.VueReadonlyRef<bool> IsExactActive { get; }
+	public extern Vue3.VueComputedRef<bool> IsExactActive { get; }
 
 	[Description("@#navigate")]
 	public extern IPromise<RouteNavigationResult?> Navigate();

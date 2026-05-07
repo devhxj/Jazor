@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using ECMAScript.Contract;
+using static ECMAScript.Vue3;
 
 namespace ECMAScript;
 
