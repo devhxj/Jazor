@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using DenoHost.Core;
 using Jazor.Common.SourceMaps;
@@ -17,6 +18,10 @@ internal sealed class ModuleBundler
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly JsonSerializerOptions DenoConfigSerializerOptions = new()
+    {
+        WriteIndented = true
+    };
     private static readonly SourceMapChainBuilder ChainBuilder = new();
     private static readonly SourceMapWriter SourceMapWriter = new();
     private static readonly RazorVueHostAssetWriter RazorVueHostAssetWriter = new();
@@ -101,6 +106,7 @@ internal sealed class ModuleBundler
             bundleWorkspace,
             entryRelativePaths,
             razorVueHostRequirementsRelativePath);
+        await EnsureBundleWorkspaceDenoConfigAsync(bundleWorkspace);
 
         try
         {
@@ -172,6 +178,19 @@ internal sealed class ModuleBundler
 
         await File.WriteAllTextAsync(tempEntryPath, entryCode, Utf8WithoutBom);
         await File.WriteAllTextAsync(entryMapPath, SourceMapWriter.Write(entryMap), Utf8WithoutBom);
+    }
+
+    private static async Task EnsureBundleWorkspaceDenoConfigAsync(string bundleWorkspace)
+    {
+        var denoConfigPath = Path.Combine(bundleWorkspace, "deno.json");
+        var denoConfig = JsonSerializer.Serialize(
+            new
+            {
+                nodeModulesDir = "auto"
+            },
+            DenoConfigSerializerOptions);
+
+        await File.WriteAllTextAsync(denoConfigPath, denoConfig, Utf8WithoutBom);
     }
 
     private static async Task<SourceMapDocument> BuildEntrySourceMapAsync(string bundleWorkspace, string entryFileName, IReadOnlyList<string> entryRelativePaths)

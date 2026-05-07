@@ -591,6 +591,192 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalJazorPackage_WithVueRouteReactiveAuthoring_BundlesThroughBundledDeno_AndResolvesVuePackages()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "VueRouteReactiveBundleSdkSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+
+        WriteFile(
+            Path.Combine(projectRoot, "VueRouteReactiveBundleSdkSample.csproj"),
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>true</JazorBundle>
+                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+                <JazorBundleOut>$(MSBuildProjectDirectory)\wwwroot\app.bundle.js</JazorBundleOut>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            Console.WriteLine("VueRoute reactive bundle SDK sample");
+            """);
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using static ECMAScript.VueRoute;
+
+            namespace VueRouteReactiveBundleSdkSample;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static Router CreateAppRouter()
+                {
+                    return VueRoute.CreateRouter(new RouterOptions
+                    {
+                        History = VueRoute.CreateWebHistory("/bundle-base"),
+                        Routes =
+                        [
+                            new RouteRecordRedirect
+                            {
+                                Path = "/bundle-home",
+                                Redirect = "/bundle-users"
+                            },
+                            new RouteRecordSingleView
+                            {
+                                Path = "/bundle-users",
+                                Name = "bundle-user",
+                                Props = true
+                            }
+                        ]
+                    });
+                }
+
+                public static string Build(Router router, RouteLocation location, RouteLocationNormalized normalized)
+                {
+                    var routeRef = ShallowRef(UseRoute());
+                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => normalized.Matched[0]);
+
+                    Provide(VueRoute.RouterKey, router);
+                    Provide(VueRoute.RouteLocationKey, UseRoute());
+                    Provide(VueRoute.RouterViewLocationKey, routeRef);
+                    Provide(VueRoute.MatchedRouteKey, matched);
+                    Provide(VueRoute.ViewDepthKey, 3);
+
+                    var injectedRouter = Inject(VueRoute.RouterKey)!;
+                    var injectedRoute = Inject(VueRoute.RouteLocationKey)!;
+                    var injectedRouteRef = Inject(VueRoute.RouterViewLocationKey)!;
+                    var injectedMatched = Inject(VueRoute.MatchedRouteKey)!;
+                    var injectedDepth = Inject(VueRoute.ViewDepthKey)!;
+                    var loadedFromLocation = LoadRouteLocation(location);
+                    var loadedFromNormalized = LoadRouteLocation(normalized);
+                    var link = UseLink(new UseLinkOptions
+                    {
+                        To = ToRef(() => new RouteLocationAsRelative
+                        {
+                            Name = injectedRoute.Name!
+                        }),
+                        Replace = Computed(() => true)
+                    });
+
+                    TriggerRef(routeRef);
+                    return injectedRouter.CurrentRoute.Value.Path
+                        + injectedRoute.Path
+                        + injectedRouteRef.Value.Path
+                        + injectedMatched.Value!.Path
+                        + injectedDepth.AsNumber!.ToString()
+                        + link.Href.Value
+                        + link.Route.Value.Href
+                        + loadedFromLocation.ToString()
+                        + loadedFromNormalized.ToString();
+                }
+            }
+            """);
+
+        var projectPath = Path.Combine(projectRoot, "VueRouteReactiveBundleSdkSample.csproj");
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot");
+        var moduleRoot = Path.Combine(outputRoot, "jazor");
+        var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
+        var modulePath = Path.Combine(moduleRoot, "host", "app.mjs");
+        var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
+        var bundleSourceMapPath = Path.Combine(outputRoot, "app.bundle.js.map");
+
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
+        Assert.IsTrue(File.Exists(modulePath), $"Module was not generated: {modulePath}");
+        Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
+        Assert.IsTrue(File.Exists(bundleSourceMapPath), $"Bundle source map was not generated: {bundleSourceMapPath}");
+
+        var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
+        var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
+        var bundleSourceMap = (await File.ReadAllTextAsync(bundleSourceMapPath)).ReplaceLineEndings("\n");
+
+        Assert.AreEqual(
+            "import { computed, inject, provide, shallowRef, toRef, triggerRef } from \"npm:vue@3\";",
+            GetImportLine(module, "npm:vue@3"));
+        var vueRouterImport = GetImportLine(module, "npm:vue-router@4");
+        StringAssert.Contains(vueRouterImport, "createRouter");
+        StringAssert.Contains(vueRouterImport, "createWebHistory");
+        StringAssert.Contains(vueRouterImport, "loadRouteLocation");
+        StringAssert.Contains(vueRouterImport, "matchedRouteKey");
+        StringAssert.Contains(vueRouterImport, "routeLocationKey");
+        StringAssert.Contains(vueRouterImport, "routerKey");
+        StringAssert.Contains(vueRouterImport, "routerViewLocationKey");
+        StringAssert.Contains(vueRouterImport, "useLink");
+        StringAssert.Contains(vueRouterImport, "useRoute");
+        StringAssert.Contains(vueRouterImport, "viewDepthKey");
+
+        StringAssert.Contains(bundle, "/bundle-base");
+        StringAssert.Contains(bundle, "/bundle-home");
+        StringAssert.Contains(bundle, "/bundle-users");
+        StringAssert.Contains(bundle, "bundle-user");
+        StringAssert.Contains(bundle, "sourceMappingURL=app.bundle.js.map");
+        Assert.IsFalse(
+            bundle.Contains("from \"npm:vue-router@4\"", StringComparison.Ordinal),
+            "Bundle should not keep unresolved vue-router imports.");
+        Assert.IsFalse(
+            bundle.Contains("from \"npm:vue@3\"", StringComparison.Ordinal),
+            "Bundle should not keep unresolved vue imports.");
+
+        StringAssert.Contains(bundleSourceMap, "\"sources\"");
+        Assert.IsTrue(
+            bundleSourceMap.Contains("host/app.mjs", StringComparison.Ordinal)
+            || bundleSourceMap.Contains("AppModule.cs", StringComparison.Ordinal),
+            "Bundle source map should preserve authored module provenance.");
+
+        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+        var emittedRelativePaths = manifest.RootElement
+            .GetProperty("Modules")
+            .EnumerateArray()
+            .Select(static moduleEntry => moduleEntry.GetProperty("RelativePath").GetString())
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .ToArray()!;
+
+        CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
+    }
+
+    [TestMethod]
     public async Task Build_LocalJazorPackage_WithSourceReferencedRazorVueSample_EmitsRazorVueOutputs()
     {
         var package = await LocalPackage.Value;
