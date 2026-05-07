@@ -83,7 +83,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         StringAssert.Contains(source, "\"vueroute\"");
         StringAssert.Contains(source, "src\\ECMAScript.VueRoute.Test\\ECMAScript.VueRoute.Test.csproj");
         StringAssert.Contains(source, "\"vueroute\" { $vueRouteTestProject }");
-        StringAssert.Contains(source, "default { $compilerTestProject, $clrTestProject, $piniaTestProject, $vueRouteTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }");
+        StringAssert.Contains(source, "default { $compilerTestProject, $clrTestProject, $piniaTestProject, $piniaTestingTestProject, $vueRouteTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }");
     }
 
     [TestMethod]

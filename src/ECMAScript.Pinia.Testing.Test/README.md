@@ -5,7 +5,7 @@
 ## Scope
 
 - `@pinia/testing` 独立项目布局与仓库接线守护。
-- `createTestingPinia()`、`TestingOptions`、`TestingInitialState`、spy factory contract 的反射验证。
+- `createTestingPinia()`、`TestingOptions`、`TestingInitialState`、spy factory contract、`ProjectPlugin(...)` typed plugin projection 的反射验证。
 - 编译边界验证，确保 `ECMAScript.Pinia.Testing` 能被 `Jazor.Compiler` 消费并正常降级为 `@pinia/testing` 导入。
 
 ## Run

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using ECMAScript.Contract;
 
 namespace ECMAScript;
@@ -463,6 +464,169 @@ public readonly struct HistoryStateValue
 [ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
+public readonly struct RouterErrorValue
+{
+	private readonly byte _kind;
+	private readonly Error? _error;
+	private readonly string? _string;
+	private readonly Number? _number;
+	private readonly bool? _bool;
+	private readonly BigInt? _bigInt;
+	private readonly Symbol? _symbol;
+	private readonly IObject? _object;
+	private readonly Array<RouterErrorValue?>? _array;
+
+	private RouterErrorValue(Error value)
+	{
+		_kind = 1;
+		_error = value;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_bigInt = default;
+		_symbol = default;
+		_object = default;
+		_array = default;
+	}
+
+	private RouterErrorValue(string value)
+	{
+		_kind = 2;
+		_error = default;
+		_string = value;
+		_number = default;
+		_bool = default;
+		_bigInt = default;
+		_symbol = default;
+		_object = default;
+		_array = default;
+	}
+
+	private RouterErrorValue(Number value)
+	{
+		_kind = 3;
+		_error = default;
+		_string = default;
+		_number = value;
+		_bool = default;
+		_bigInt = default;
+		_symbol = default;
+		_object = default;
+		_array = default;
+	}
+
+	private RouterErrorValue(bool value)
+	{
+		_kind = 4;
+		_error = default;
+		_string = default;
+		_number = default;
+		_bool = value;
+		_bigInt = default;
+		_symbol = default;
+		_object = default;
+		_array = default;
+	}
+
+	private RouterErrorValue(BigInt value)
+	{
+		_kind = 5;
+		_error = default;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_bigInt = value;
+		_symbol = default;
+		_object = default;
+		_array = default;
+	}
+
+	private RouterErrorValue(Symbol value)
+	{
+		_kind = 6;
+		_error = default;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_bigInt = default;
+		_symbol = value;
+		_object = default;
+		_array = default;
+	}
+
+	private RouterErrorValue(IObject value)
+	{
+		_kind = 7;
+		_error = default;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_bigInt = default;
+		_symbol = default;
+		_object = value;
+		_array = default;
+	}
+
+	private RouterErrorValue(Array<RouterErrorValue?> value)
+	{
+		_kind = 8;
+		_error = default;
+		_string = default;
+		_number = default;
+		_bool = default;
+		_bigInt = default;
+		_symbol = default;
+		_object = default;
+		_array = value;
+	}
+
+	public Error? AsError => _kind == 1 ? _error : default;
+
+	public string? AsString => _kind == 2 ? _string : default;
+
+	public Number? AsNumber => _kind == 3 ? _number : default;
+
+	public bool? AsBool => _kind == 4 ? _bool : default;
+
+	public BigInt? AsBigInt => _kind == 5 ? _bigInt : default;
+
+	public Symbol? AsSymbol => _kind == 6 ? _symbol : default;
+
+	public IObject? AsObject => _kind == 7 ? _object : default;
+
+	public Array<RouterErrorValue?>? AsArray => _kind == 8 ? _array : default;
+
+	public static implicit operator RouterErrorValue(Error value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(string value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(Number value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(bool value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(BigInt value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(Symbol value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(Array<RouterErrorValue?> value)
+		=> new(value);
+
+	public static implicit operator RouterErrorValue(RouterErrorValue?[] value)
+		=> new((Array<RouterErrorValue?>)value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterErrorValue From(IObject value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
 public readonly struct RawRouteComponent
 {
 	private readonly byte _kind;
@@ -490,6 +654,9 @@ public readonly struct RawRouteComponent
 	[ECMAScriptInline("__arg1")]
 	public extern static RawRouteComponent From(IVueComponent value);
 
+	[ECMAScriptInline("__arg1")]
+	public extern static RawRouteComponent From(RouteComponentLoader value);
+
 	public static implicit operator RawRouteComponent(RouteComponentLoader value)
 		=> new(value);
 
@@ -504,17 +671,34 @@ public readonly struct RouteComponent
 {
 	private readonly byte _kind;
 	private readonly IVueComponent? _component;
+	private readonly RouteComponentLoader? _loader;
 
 	private RouteComponent(IVueComponent value)
 	{
 		_kind = 1;
 		_component = value;
+		_loader = default;
+	}
+
+	private RouteComponent(RouteComponentLoader value)
+	{
+		_kind = 2;
+		_component = default;
+		_loader = value;
 	}
 
 	public IVueComponent? AsComponent => _kind == 1 ? _component : default;
 
+	public RouteComponentLoader? AsLoader => _kind == 2 ? _loader : default;
+
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteComponent From(IVueComponent value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteComponent From(RouteComponentLoader value);
+
+	public static implicit operator RouteComponent(RouteComponentLoader value)
+		=> new(value);
 }
 
 [ECMAScript]
@@ -565,6 +749,55 @@ public readonly struct RouteRecordProps
 
 	public static implicit operator RouteRecordProps(RouteRecordPropsResolver value)
 		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordProps From(bool value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordProps From(Vue3.VueProps value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordProps From(RouteRecordPropsResolver value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouteRecordNamedViewProps
+{
+	private readonly byte _kind;
+	private readonly bool? _bool;
+	private readonly RouteNamedProps? _namedProps;
+
+	private RouteRecordNamedViewProps(bool value)
+	{
+		_kind = 1;
+		_bool = value;
+		_namedProps = default;
+	}
+
+	private RouteRecordNamedViewProps(RouteNamedProps value)
+	{
+		_kind = 2;
+		_bool = default;
+		_namedProps = value;
+	}
+
+	public bool? AsBool => _kind == 1 ? _bool : default;
+
+	public RouteNamedProps? AsNamedProps => _kind == 2 ? _namedProps : default;
+
+	public static implicit operator RouteRecordNamedViewProps(bool value)
+		=> new(value);
+
+	public static implicit operator RouteRecordNamedViewProps(RouteNamedProps value)
+		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordNamedViewProps From(bool value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordNamedViewProps From(RouteNamedProps value);
 }
 
 [ECMAScript]
@@ -652,14 +885,14 @@ public readonly struct NavigationGuardReturn
 	private readonly byte _kind;
 	private readonly bool? _bool;
 	private readonly RouteLocationRaw? _location;
-	private readonly NavigationGuardNextCallback? _callback;
+	private readonly Error? _error;
 
 	private NavigationGuardReturn(bool value)
 	{
 		_kind = 1;
 		_bool = value;
 		_location = default;
-		_callback = default;
+		_error = default;
 	}
 
 	private NavigationGuardReturn(RouteLocationRaw value)
@@ -667,22 +900,22 @@ public readonly struct NavigationGuardReturn
 		_kind = 2;
 		_bool = default;
 		_location = value;
-		_callback = default;
+		_error = default;
 	}
 
-	private NavigationGuardReturn(NavigationGuardNextCallback value)
+	private NavigationGuardReturn(Error value)
 	{
 		_kind = 3;
 		_bool = default;
 		_location = default;
-		_callback = value;
+		_error = value;
 	}
 
 	public bool? AsBool => _kind == 1 ? _bool : default;
 
 	public RouteLocationRaw? AsLocation => _kind == 2 ? _location : default;
 
-	public NavigationGuardNextCallback? AsCallback => _kind == 3 ? _callback : default;
+	public Error? AsError => _kind == 3 ? _error : default;
 
 	public static implicit operator NavigationGuardReturn(bool value)
 		=> new(value);
@@ -699,7 +932,27 @@ public readonly struct NavigationGuardReturn
 	public static implicit operator NavigationGuardReturn(RouteLocationAsRelative value)
 		=> new(value);
 
-	public static implicit operator NavigationGuardReturn(NavigationGuardNextCallback value)
+	public static implicit operator NavigationGuardReturn(Error value)
+		=> new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouteNavigationResult
+{
+	private readonly byte _kind;
+	private readonly NavigationFailure? _failure;
+
+	private RouteNavigationResult(NavigationFailure value)
+	{
+		_kind = 1;
+		_failure = value;
+	}
+
+	public NavigationFailure? AsFailure => _kind == 1 ? _failure : default;
+
+	public static implicit operator RouteNavigationResult(NavigationFailure value)
 		=> new(value);
 }
 
@@ -769,6 +1022,18 @@ public readonly struct NavigationGuardHandler
 
 	public static implicit operator NavigationGuardHandler(LegacyAsyncRouteNavigationGuard value)
 		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static NavigationGuardHandler From(RouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static NavigationGuardHandler From(AsyncRouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static NavigationGuardHandler From(LegacyRouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static NavigationGuardHandler From(LegacyAsyncRouteNavigationGuard value);
 }
 
 [ECMAScript]
@@ -803,6 +1068,21 @@ public readonly struct RouteRecordBeforeEnter
 
 	public static implicit operator RouteRecordBeforeEnter(NavigationGuardHandler[] value)
 		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(NavigationGuardHandler value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(RouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(AsyncRouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(LegacyRouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(LegacyAsyncRouteNavigationGuard value);
 }
 
 [ECMAScript]
@@ -846,6 +1126,15 @@ public readonly struct RouteRedirectOption
 
 	public static implicit operator RouteRedirectOption(RouteRedirectCallback value)
 		=> new(value);
+
+	public static implicit operator RouteRedirectOption(Func<RouteLocation, RouteLocationNormalizedLoaded, RouteLocationRaw> value)
+		=> new(new RouteRedirectCallback(value));
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRedirectOption From(RouteLocationRaw value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRedirectOption From(RouteRedirectCallback value);
 }
 
 [ECMAScript]
@@ -977,65 +1266,56 @@ public readonly struct RouteParamRaw
 {
 	private readonly byte _kind;
 	private readonly string? _string;
-	private readonly string[]? _strings;
+	private readonly Array<RouteParamRaw>? _array;
 	private readonly Number? _number;
-	private readonly Number[]? _numbers;
 
 	private RouteParamRaw(string value)
 	{
 		_kind = 1;
 		_string = value;
-		_strings = default;
+		_array = default;
 		_number = default;
-		_numbers = default;
 	}
 
-	private RouteParamRaw(string[] value)
+	private RouteParamRaw(Array<RouteParamRaw> value)
 	{
 		_kind = 2;
 		_string = default;
-		_strings = value;
+		_array = value;
 		_number = default;
-		_numbers = default;
 	}
 
 	private RouteParamRaw(Number value)
 	{
 		_kind = 3;
 		_string = default;
-		_strings = default;
+		_array = default;
 		_number = value;
-		_numbers = default;
-	}
-
-	private RouteParamRaw(Number[] value)
-	{
-		_kind = 4;
-		_string = default;
-		_strings = default;
-		_number = default;
-		_numbers = value;
 	}
 
 	public string? AsString => _kind == 1 ? _string : default;
 
-	public string[]? AsStrings => _kind == 2 ? _strings : default;
+	public Array<RouteParamRaw>? AsArray => _kind == 2 ? _array : default;
 
 	public Number? AsNumber => _kind == 3 ? _number : default;
-
-	public Number[]? AsNumbers => _kind == 4 ? _numbers : default;
 
 	public static implicit operator RouteParamRaw(string value)
 		=> new(value);
 
 	public static implicit operator RouteParamRaw(string[] value)
-		=> new(value);
+		=> new((Array<RouteParamRaw>)value.Select(static item => (RouteParamRaw)item).ToArray());
 
 	public static implicit operator RouteParamRaw(Number value)
 		=> new(value);
 
-	public static implicit operator RouteParamRaw(Number[] value)
+	public static implicit operator RouteParamRaw(Array<RouteParamRaw> value)
 		=> new(value);
+
+	public static implicit operator RouteParamRaw(RouteParamRaw[] value)
+		=> new((Array<RouteParamRaw>)value);
+
+	public static implicit operator RouteParamRaw(Number[] value)
+		=> new((Array<RouteParamRaw>)value.Select(static item => (RouteParamRaw)item).ToArray());
 }
 
 [ECMAScript]
@@ -1045,30 +1325,33 @@ public readonly struct LocationQueryValue
 {
 	private readonly byte _kind;
 	private readonly string? _string;
-	private readonly string[]? _strings;
+	private readonly Array<string?>? _array;
 
 	private LocationQueryValue(string value)
 	{
 		_kind = 1;
 		_string = value;
-		_strings = default;
+		_array = default;
 	}
 
-	private LocationQueryValue(string[] value)
+	private LocationQueryValue(Array<string?> value)
 	{
 		_kind = 2;
 		_string = default;
-		_strings = value;
+		_array = value;
 	}
 
 	public string? AsString => _kind == 1 ? _string : default;
 
-	public string[]? AsStrings => _kind == 2 ? _strings : default;
+	public Array<string?>? AsArray => _kind == 2 ? _array : default;
 
 	public static implicit operator LocationQueryValue(string value)
 		=> new(value);
 
 	public static implicit operator LocationQueryValue(string[] value)
+		=> new((Array<string?>)value);
+
+	public static implicit operator LocationQueryValue(Array<string?> value)
 		=> new(value);
 }
 
@@ -1079,63 +1362,54 @@ public readonly struct LocationQueryValueRaw
 {
 	private readonly byte _kind;
 	private readonly string? _string;
-	private readonly string[]? _strings;
+	private readonly Array<LocationQueryValueRaw?>? _array;
 	private readonly Number? _number;
-	private readonly Number[]? _numbers;
 
 	private LocationQueryValueRaw(string value)
 	{
 		_kind = 1;
 		_string = value;
-		_strings = default;
+		_array = default;
 		_number = default;
-		_numbers = default;
 	}
 
-	private LocationQueryValueRaw(string[] value)
+	private LocationQueryValueRaw(Array<LocationQueryValueRaw?> value)
 	{
 		_kind = 2;
 		_string = default;
-		_strings = value;
+		_array = value;
 		_number = default;
-		_numbers = default;
 	}
 
 	private LocationQueryValueRaw(Number value)
 	{
 		_kind = 3;
 		_string = default;
-		_strings = default;
+		_array = default;
 		_number = value;
-		_numbers = default;
-	}
-
-	private LocationQueryValueRaw(Number[] value)
-	{
-		_kind = 4;
-		_string = default;
-		_strings = default;
-		_number = default;
-		_numbers = value;
 	}
 
 	public string? AsString => _kind == 1 ? _string : default;
 
-	public string[]? AsStrings => _kind == 2 ? _strings : default;
+	public Array<LocationQueryValueRaw?>? AsArray => _kind == 2 ? _array : default;
 
 	public Number? AsNumber => _kind == 3 ? _number : default;
-
-	public Number[]? AsNumbers => _kind == 4 ? _numbers : default;
 
 	public static implicit operator LocationQueryValueRaw(string value)
 		=> new(value);
 
 	public static implicit operator LocationQueryValueRaw(string[] value)
-		=> new(value);
+		=> new((Array<LocationQueryValueRaw?>)value.Select(static item => (LocationQueryValueRaw?)item).ToArray());
 
 	public static implicit operator LocationQueryValueRaw(Number value)
 		=> new(value);
 
-	public static implicit operator LocationQueryValueRaw(Number[] value)
+	public static implicit operator LocationQueryValueRaw(Array<LocationQueryValueRaw?> value)
 		=> new(value);
+
+	public static implicit operator LocationQueryValueRaw(LocationQueryValueRaw?[] value)
+		=> new((Array<LocationQueryValueRaw?>)value);
+
+	public static implicit operator LocationQueryValueRaw(Number[] value)
+		=> new((Array<LocationQueryValueRaw?>)value.Select(static item => (LocationQueryValueRaw?)item).ToArray());
 }

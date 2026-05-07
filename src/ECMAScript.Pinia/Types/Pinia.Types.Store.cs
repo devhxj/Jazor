@@ -532,7 +532,34 @@ public static partial class Pinia
 		public extern void After(Action<PiniaValue?> callback);
 
 		/// <summary>
-		/// Registers a callback that runs when the action throws.
+		/// Registers a callback that receives the action result after the action completes,
+		/// projected to an explicit user-declared result type.
+		/// </summary>
+		/// <typeparam name="TResult">The expected action result type.</typeparam>
+		/// <param name="callback">The callback to invoke after action completion.</param>
+		[Description("@#after")]
+		public extern void After<TResult>(Action<TResult> callback);
+
+		/// <summary>
+		/// Registers a callback that runs when the action throws or rejects, using the
+		/// bridge's unknown-like <see cref="PiniaValue"/> projection.
+		/// </summary>
+		/// <param name="callback">The callback to invoke when the action throws.</param>
+		[Description("@#onError")]
+		public extern void OnAnyError(Action<PiniaValue?> callback);
+
+		/// <summary>
+		/// Registers a callback that runs when the action throws or rejects, projected
+		/// to an explicit user-declared error type.
+		/// </summary>
+		/// <typeparam name="TError">The expected error value type.</typeparam>
+		/// <param name="callback">The callback to invoke when the action throws.</param>
+		[Description("@#onError")]
+		public extern void OnError<TError>(Action<TError> callback);
+
+		/// <summary>
+		/// Registers a callback that runs when the action throws, using the CLR-like
+		/// <see cref="Error"/> convenience projection for common host paths.
 		/// </summary>
 		/// <param name="callback">The callback to invoke when the action throws.</param>
 		[Description("@#onError")]
@@ -555,6 +582,310 @@ public static partial class Pinia
 		/// </summary>
 		[Description("@#store")]
 		public extern TStore Store { get; }
+	}
+
+	/// <summary>
+	/// Explicit projected view over a typed Pinia action-listener context when the
+	/// caller wants to bind the action name and argument-array view to stronger
+	/// user-declared contracts.
+	/// This wrapper does not create a new runtime object; it only exposes additional
+	/// typed views over the same action context instance.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection supplied by the listener context.</typeparam>
+	/// <typeparam name="TActionName">The explicit action-name contract expected by the caller.</typeparam>
+	/// <typeparam name="TArgs">The explicit argument-array view contract expected by the caller.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ProjectedActionContext<TStore, TActionName, TArgs> : StoreActionListenerContext<TStore>
+		where TStore : class
+		where TArgs : class
+	{
+		protected ProjectedActionContext()
+		{
+		}
+
+		/// <summary>
+		/// Returns the same runtime action name projected to a stronger user-declared
+		/// action-name contract.
+		/// </summary>
+		[Description("@#name")]
+		public extern TActionName ActionName { get; }
+
+		/// <summary>
+		/// Returns the same runtime argument array projected to a stronger user-declared
+		/// argument-view contract.
+		/// </summary>
+		[Description("@#args")]
+		public extern TArgs ActionArgs { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array.
+	/// This wrapper keeps the same runtime array object and exposes the shared array
+	/// contract used by higher-arity typed slot projections.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		/// <summary>
+		/// The runtime array length.
+		/// </summary>
+		[Description("@#length")]
+		public extern int Length { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with one typed slot.
+	/// </summary>
+	/// <typeparam name="TArg0">The type of the first action argument.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0> : ActionArgsView
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		/// <summary>
+		/// The first runtime argument projected to a stronger user-declared type.
+		/// </summary>
+		[Description("@#[0]")]
+		public extern TArg0 Arg0 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with two typed slots.
+	/// </summary>
+	/// <typeparam name="TArg0">The type of the first action argument.</typeparam>
+	/// <typeparam name="TArg1">The type of the second action argument.</typeparam>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1> : ActionArgsView<TArg0>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		/// <summary>
+		/// The second runtime argument projected to a stronger user-declared type.
+		/// </summary>
+		[Description("@#[1]")]
+		public extern TArg1 Arg1 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with three typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2> : ActionArgsView<TArg0, TArg1>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[2]")]
+		public extern TArg2 Arg2 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with four typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3> : ActionArgsView<TArg0, TArg1, TArg2>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[3]")]
+		public extern TArg3 Arg3 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with five typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4> : ActionArgsView<TArg0, TArg1, TArg2, TArg3>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[4]")]
+		public extern TArg4 Arg4 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with six typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[5]")]
+		public extern TArg5 Arg5 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with seven typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[6]")]
+		public extern TArg6 Arg6 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with eight typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[7]")]
+		public extern TArg7 Arg7 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with nine typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[8]")]
+		public extern TArg8 Arg8 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with ten typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[9]")]
+		public extern TArg9 Arg9 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with eleven typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[10]")]
+		public extern TArg10 Arg10 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with twelve typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[11]")]
+		public extern TArg11 Arg11 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with thirteen typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[12]")]
+		public extern TArg12 Arg12 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with fourteen typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[13]")]
+		public extern TArg13 Arg13 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with fifteen typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[14]")]
+		public extern TArg14 Arg14 { get; }
+	}
+
+	/// <summary>
+	/// Explicit typed view over a Pinia action argument array with sixteen typed slots.
+	/// </summary>
+	[ECMAScript]
+	[Description("@#")]
+	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14>
+	{
+		protected ActionArgsView()
+		{
+		}
+
+		[Description("@#[15]")]
+		public extern TArg15 Arg15 { get; }
 	}
 
 	/// <summary>

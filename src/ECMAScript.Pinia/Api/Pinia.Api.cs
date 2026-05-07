@@ -7,6 +7,10 @@ public static partial class Pinia
 {
 	private const string IdentityInlineTemplate = "__arg1";
 
+	private const string ClearActivePiniaInlineTemplate = "setActivePinia(undefined)";
+
+	private const string TryProjectActionContextInlineTemplate = "(__arg1.name === __arg2 ? __arg1 : null)";
+
 	/// <summary>
 	/// Creates a Pinia root instance that can be installed on a Vue app via
 	/// <c>app.use(createPinia())</c>.
@@ -98,6 +102,15 @@ public static partial class Pinia
 	/// <returns>The same <paramref name="pinia"/> instance.</returns>
 	[Description("@#setActivePinia")]
 	public extern static PiniaInstance SetActivePinia(PiniaInstance pinia);
+
+	/// <summary>
+	/// Clears the currently active Pinia root instance.
+	/// This is the explicit host binding for Pinia's <c>setActivePinia(undefined)</c> contract.
+	/// </summary>
+	/// <returns>The cleared active root, which maps to <c>null</c> / <c>undefined</c> on the host side.</returns>
+	[Description("@#setActivePinia")]
+	[ECMAScriptInline(ClearActivePiniaInlineTemplate)]
+	public extern static PiniaInstance? ClearActivePinia();
 
 	/// <summary>
 	/// Disposes a Pinia root instance and every store attached to it.
@@ -344,6 +357,38 @@ public static partial class Pinia
 	public extern static ProjectedStore<TStore, TCustomProperties> ProjectStore<TStore, TCustomProperties>(TStore store)
 		where TStore : class
 		where TCustomProperties : Vue3.VueProps;
+
+	/// <summary>
+	/// Projects a typed action-listener context to an explicit wrapper that binds the
+	/// action name and argument-array view to stronger user-declared contracts.
+	/// This is a compile-time projection only and does not create a new runtime object.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection supplied by the listener context.</typeparam>
+	/// <typeparam name="TActionName">The explicit action-name contract expected by the caller.</typeparam>
+	/// <typeparam name="TArgs">The explicit argument-array view contract expected by the caller.</typeparam>
+	/// <param name="context">The typed action-listener context to project.</param>
+	/// <returns>An explicit projected wrapper over the same runtime action context object.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static ProjectedActionContext<TStore, TActionName, TArgs> ProjectActionContext<TStore, TActionName, TArgs>(StoreActionListenerContext<TStore> context)
+		where TStore : class
+		where TArgs : class;
+
+	/// <summary>
+	/// Projects a typed action-listener context to an explicit wrapper only when the
+	/// runtime action name matches the expected literal action name supplied by the
+	/// caller. This keeps the same runtime context object on success and returns
+	/// <c>null</c> otherwise.
+	/// </summary>
+	/// <typeparam name="TStore">The base typed store projection supplied by the listener context.</typeparam>
+	/// <typeparam name="TActionName">The explicit action-name contract expected by the caller.</typeparam>
+	/// <typeparam name="TArgs">The explicit argument-array view contract expected by the caller.</typeparam>
+	/// <param name="context">The typed action-listener context to project.</param>
+	/// <param name="expectedActionName">The runtime action name that must match for the projection to succeed.</param>
+	/// <returns>The same runtime action context projected to the stronger contract when the name matches; otherwise <c>null</c>.</returns>
+	[ECMAScriptInline(TryProjectActionContextInlineTemplate)]
+	public extern static ProjectedActionContext<TStore, TActionName, TArgs>? TryProjectActionContext<TStore, TActionName, TArgs>(StoreActionListenerContext<TStore> context, string expectedActionName)
+		where TStore : class
+		where TArgs : class;
 
 	/// <summary>
 	/// Projects a live store instance to an explicit wrapper exposing the base store

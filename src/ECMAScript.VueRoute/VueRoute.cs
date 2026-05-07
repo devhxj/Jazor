@@ -22,23 +22,39 @@ public delegate void AfterNavigationHook(RouteLocationNormalizedLoaded to, Route
 
 public delegate IPromise<IVueComponent> RouteComponentLoader();
 
-public delegate RouteLocationRaw RouteRedirectCallback(RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+public delegate RouteLocationRaw RouteRedirectCallback(RouteLocation to, RouteLocationNormalizedLoaded from);
 
 public delegate void NavigationGuardNextCallback(Vue3.VueComponentPublicInstance instance);
 
-public delegate void NavigationGuardNext(NavigationGuardNextArgument? value);
+public delegate void NavigationGuardNext(NavigationGuardNextArgument? value = default);
 
 public delegate NavigationGuardReturn? LegacyRouteNavigationGuard(RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next);
 
 public delegate IPromise<NavigationGuardReturn?> LegacyAsyncRouteNavigationGuard(RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next);
 
-public delegate void RouterErrorHandler(Vue3.VueValue? error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+public delegate void ErrorRouterErrorHandler(Error error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
-public delegate IPromise<NavigationFailure?> RouterLinkNavigateCallback(MouseEvent? @event = null);
+public delegate void NavigationFailureRouterErrorHandler(NavigationFailure error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
-public delegate Vue3.IVNode RouterLinkSlotCallback(RouterLinkSlotScope link);
+public delegate void StringRouterErrorHandler(string error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
-public delegate Vue3.IVNode RouterViewSlotCallback(RouterViewSlotScope scope);
+public delegate void NumberRouterErrorHandler(Number error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate void BooleanRouterErrorHandler(bool error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate void BigIntRouterErrorHandler(BigInt error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate void SymbolRouterErrorHandler(Symbol error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate void ObjectRouterErrorHandler(IObject error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate void ArrayRouterErrorHandler(Array<RouterErrorValue?> error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate IPromise<RouteNavigationResult?> RouterLinkNavigateCallback(MouseEvent? @event = null);
+
+public delegate Vue3.IVNode[] RouterLinkSlotCallback(RouterLinkSlotScope link);
+
+public delegate Vue3.IVNode[] RouterViewSlotCallback(RouterViewSlotScope scope);
 
 public delegate void RouterHistoryNavigationCallback(string to, string from, RouterHistoryNavigationInformation information);
 

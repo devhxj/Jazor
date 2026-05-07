@@ -13,6 +13,12 @@
 public static partial class Global
 {
 	/// <summary>
+	/// Returns the JavaScript undefined value.
+	/// </summary>
+	[Jazor("undefined")]
+	public extern static T Undefined<T>();
+
+	/// <summary>
 	/// Returns the JavaScript type of the value.
 	/// </summary>
 	[Jazor]

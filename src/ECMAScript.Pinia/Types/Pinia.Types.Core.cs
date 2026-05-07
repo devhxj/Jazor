@@ -138,6 +138,45 @@ public static partial class Pinia
 		public extern global::System.Action<T1, T2, T3> Action<T1, T2, T3>(global::System.Action<T1, T2, T3> callback, string? name = null);
 
 		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4> Action<T1, T2, T3, T4>(global::System.Action<T1, T2, T3, T4> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5> Action<T1, T2, T3, T4, T5>(global::System.Action<T1, T2, T3, T4, T5> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6> Action<T1, T2, T3, T4, T5, T6>(global::System.Action<T1, T2, T3, T4, T5, T6> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7> Action<T1, T2, T3, T4, T5, T6, T7>(global::System.Action<T1, T2, T3, T4, T5, T6, T7> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8> Action<T1, T2, T3, T4, T5, T6, T7, T8>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> callback, string? name = null);
+
+		[Description("@#action")]
 		public extern global::System.Func<TResult> Action<TResult>(global::System.Func<TResult> callback, string? name = null);
 
 		[Description("@#action")]
@@ -148,6 +187,45 @@ public static partial class Pinia
 
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, TResult> Action<T1, T2, T3, TResult>(global::System.Func<T1, T2, T3, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, TResult> Action<T1, T2, T3, T4, TResult>(global::System.Func<T1, T2, T3, T4, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, TResult> Action<T1, T2, T3, T4, T5, TResult>(global::System.Func<T1, T2, T3, T4, T5, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, TResult> Action<T1, T2, T3, T4, T5, T6, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, TResult> Action<T1, T2, T3, T4, T5, T6, T7, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> callback, string? name = null);
+
+		[Description("@#action")]
+		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> callback, string? name = null);
 	}
 
 	/// <summary>
@@ -253,6 +331,7 @@ public static partial class Pinia
 	/// <summary>
 	/// Mutation kind reported by Pinia subscriptions.
 	/// </summary>
+	[String]
 	public enum MutationType
 	{
 		/// <summary>
@@ -264,32 +343,26 @@ public static partial class Pinia
 		/// <summary>
 		/// <c>$patch({ ... })</c> object patch.
 		/// </summary>
-		[Description("@#patchObject")]
+		[Description("@#patch object")]
 		PatchObject,
 
 		/// <summary>
 		/// <c>$patch((state) =&gt; ...)</c> function patch.
 		/// </summary>
-		[Description("@#patchFunction")]
+		[Description("@#patch function")]
 		PatchFunction
 	}
 
 	/// <summary>
 	/// Options for <c>$subscribe()</c>.
 	/// </summary>
-	public record SubscribeOptions
+	public record SubscribeOptions : Vue3.VueWatchOptions
 	{
 		/// <summary>
 		/// Keep the subscription alive even when no component is currently using the store.
 		/// </summary>
 		[Description("@#detached")]
 		public bool? Detached { get; init; }
-
-		/// <summary>
-		/// Controls when the underlying watcher callback flushes relative to Vue updates.
-		/// </summary>
-		[Description("@#flush")]
-		public Vue3.VueWatchFlush? Flush { get; init; }
 	}
 
 	/// <summary>

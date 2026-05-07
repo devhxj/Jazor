@@ -14,6 +14,15 @@ public record RouterOptions : Vue3.VueProps
 	[Description("@#routes")]
 	public RouteRecordRaw[] Routes { get; init; } = default!;
 
+	[Description("@#sensitive")]
+	public bool? Sensitive { get; init; }
+
+	[Description("@#strict")]
+	public bool? Strict { get; init; }
+
+	[Description("@#end")]
+	public bool? End { get; init; }
+
 	[Description("@#linkActiveClass")]
 	public string? LinkActiveClass { get; init; }
 
@@ -32,7 +41,76 @@ public record RouterOptions : Vue3.VueProps
 
 [ECMAScript]
 [Description("@#")]
-public record RouteMeta : Vue3.VueDictionary<Vue3.VueValue>;
+public sealed class RouteMetaValue
+{
+	private RouteMetaValue()
+	{
+	}
+
+	public extern static implicit operator RouteMetaValue(string value);
+
+	public extern static implicit operator RouteMetaValue(bool value);
+
+	public extern static implicit operator RouteMetaValue(Number value);
+
+	public extern static implicit operator RouteMetaValue(BigInt value);
+
+	public extern static implicit operator RouteMetaValue(Symbol value);
+
+	public extern static implicit operator RouteMetaValue(char value);
+
+	public extern static implicit operator RouteMetaValue(double value);
+
+	public extern static implicit operator RouteMetaValue(float value);
+
+	public extern static implicit operator RouteMetaValue(int value);
+
+	public extern static implicit operator RouteMetaValue(long value);
+
+	public extern static implicit operator RouteMetaValue(short value);
+
+	public extern static implicit operator RouteMetaValue(ushort value);
+
+	public extern static implicit operator RouteMetaValue(byte value);
+
+	public extern static implicit operator RouteMetaValue(sbyte value);
+
+	public extern static implicit operator RouteMetaValue(uint value);
+
+	public extern static implicit operator RouteMetaValue(ulong value);
+
+	public extern static implicit operator RouteMetaValue(decimal value);
+
+	public extern static implicit operator RouteMetaValue(Action value);
+
+	public extern static implicit operator RouteMetaValue(Vue3.VueProps value);
+
+	public extern static implicit operator RouteMetaValue(Array<RouteMetaValue?> value);
+
+	public extern static implicit operator RouteMetaValue(RouteMetaValue?[] value);
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteMeta : Vue3.VueProps, System.Collections.IEnumerable
+{
+	public extern RouteMetaValue? this[string key] { get; set; }
+
+	public extern RouteMetaValue? this[Number key] { get; set; }
+
+	public extern RouteMetaValue? this[Symbol key] { get; set; }
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, RouteMetaValue? value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(Number key, RouteMetaValue? value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(Symbol key, RouteMetaValue? value);
+
+	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
+}
 
 [ECMAScript]
 [Description("@#")]
@@ -40,8 +118,13 @@ public record HistoryState : Vue3.VueProps, System.Collections.IEnumerable
 {
 	public extern HistoryStateValue? this[string key] { get; set; }
 
+	public extern HistoryStateValue? this[Number key] { get; set; }
+
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, HistoryStateValue value);
+	public extern void Add(string key, HistoryStateValue? value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(Number key, HistoryStateValue? value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -53,7 +136,7 @@ public record LocationQuery : Vue3.VueProps, System.Collections.IEnumerable
 	public extern LocationQueryValue? this[string key] { get; set; }
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, LocationQueryValue value);
+	public extern void Add(string key, LocationQueryValue? value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -64,8 +147,13 @@ public record LocationQueryRaw : Vue3.VueProps, System.Collections.IEnumerable
 {
 	public extern LocationQueryValueRaw? this[string key] { get; set; }
 
+	public extern LocationQueryValueRaw? this[Number key] { get; set; }
+
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, LocationQueryValueRaw value);
+	public extern void Add(string key, LocationQueryValueRaw? value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(Number key, LocationQueryValueRaw? value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -89,7 +177,7 @@ public record RouteParamsRaw : Vue3.VueProps, System.Collections.IEnumerable
 	public extern RouteParamRaw? this[string key] { get; set; }
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, RouteParamRaw value);
+	public extern void Add(string key, RouteParamRaw? value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -211,7 +299,7 @@ public abstract class RouteRecordNormalized
 	public extern RouteRecordRaw[] Children { get; }
 
 	[Description("@#props")]
-	public extern RouteNamedProps? Props { get; }
+	public extern RouteNamedProps Props { get; }
 
 	[Description("@#beforeEnter")]
 	public extern RouteRecordBeforeEnter? BeforeEnter { get; }
@@ -402,10 +490,10 @@ public abstract record Router : Vue3.VuePlugin
 	public extern RouteLocationResolved Resolve(RouteLocationRaw to, RouteLocationNormalizedLoaded currentLocation);
 
 	[Description("@#push")]
-	public extern IPromise<NavigationFailure?> Push(RouteLocationRaw to);
+	public extern IPromise<RouteNavigationResult?> Push(RouteLocationRaw to);
 
 	[Description("@#replace")]
-	public extern IPromise<NavigationFailure?> Replace(RouteLocationRaw to);
+	public extern IPromise<RouteNavigationResult?> Replace(RouteLocationRaw to);
 
 	[Description("@#go")]
 	public extern void Go(Number delta);
@@ -417,16 +505,58 @@ public abstract record Router : Vue3.VuePlugin
 	public extern void Forward();
 
 	[Description("@#beforeEach")]
-	public extern Action BeforeEach(NavigationGuardHandler guard);
+	public extern Action BeforeEach(RouteNavigationGuard guard);
 
 	[Description("@#beforeResolve")]
-	public extern Action BeforeResolve(NavigationGuardHandler guard);
+	public extern Action BeforeEach(AsyncRouteNavigationGuard guard);
+
+	[Description("@#beforeEach")]
+	public extern Action BeforeEach(LegacyRouteNavigationGuard guard);
+
+	[Description("@#beforeEach")]
+	public extern Action BeforeEach(LegacyAsyncRouteNavigationGuard guard);
+
+	[Description("@#beforeResolve")]
+	public extern Action BeforeResolve(RouteNavigationGuard guard);
+
+	[Description("@#beforeResolve")]
+	public extern Action BeforeResolve(AsyncRouteNavigationGuard guard);
+
+	[Description("@#beforeResolve")]
+	public extern Action BeforeResolve(LegacyRouteNavigationGuard guard);
+
+	[Description("@#beforeResolve")]
+	public extern Action BeforeResolve(LegacyAsyncRouteNavigationGuard guard);
 
 	[Description("@#afterEach")]
 	public extern Action AfterEach(AfterNavigationHook hook);
 
 	[Description("@#onError")]
-	public extern Action OnError(RouterErrorHandler handler);
+	public extern Action OnError(ErrorRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(NavigationFailureRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(StringRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(NumberRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(BooleanRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(BigIntRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(SymbolRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(ObjectRouterErrorHandler handler);
+
+	[Description("@#onError")]
+	public extern Action OnError(ArrayRouterErrorHandler handler);
 
 	[Description("@#isReady")]
 	public extern IPromise IsReady();
@@ -505,7 +635,7 @@ public record RouteComponentInstanceMap : Vue3.VueProps, System.Collections.IEnu
 	public extern Vue3.VueComponentPublicInstance? this[string key] { get; set; }
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public extern void Add(string key, Vue3.VueComponentPublicInstance value);
+	public extern void Add(string key, Vue3.VueComponentPublicInstance? value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -518,6 +648,15 @@ public record RouteNamedProps : Vue3.VueProps, System.Collections.IEnumerable
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(string key, RouteRecordProps value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, bool value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, Vue3.VueProps value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, RouteRecordPropsResolver value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -570,7 +709,17 @@ public record RouteRecordSingleView : RouteRecordBase
 
 [ECMAScript]
 [Description("@#")]
-public record RouteRecordSingleViewWithChildren : RouteRecordSingleView;
+public record RouteRecordSingleViewWithChildren : RouteRecordBase
+{
+	[Description("@#component")]
+	public RawRouteComponent? Component { get; init; }
+
+	[Description("@#children")]
+	public new RouteRecordRaw[] Children { get; init; } = default!;
+
+	[Description("@#props")]
+	public RouteRecordProps? Props { get; init; }
+}
 
 [ECMAScript]
 [Description("@#")]
@@ -580,16 +729,30 @@ public record RouteRecordMultipleViews : RouteRecordBase
 	public RawRouteComponents Components { get; init; } = default!;
 
 	[Description("@#props")]
-	public RouteNamedProps? Props { get; init; }
+	public RouteRecordNamedViewProps? Props { get; init; }
 }
 
 [ECMAScript]
 [Description("@#")]
-public record RouteRecordMultipleViewsWithChildren : RouteRecordMultipleViews;
+public record RouteRecordMultipleViewsWithChildren : RouteRecordBase
+{
+	[Description("@#components")]
+	public RawRouteComponents? Components { get; init; }
+
+	[Description("@#children")]
+	public new RouteRecordRaw[] Children { get; init; } = default!;
+
+	[Description("@#props")]
+	public RouteRecordNamedViewProps? Props { get; init; }
+}
 
 [ECMAScript]
 [Description("@#")]
-public record RouteRecordRedirect : RouteRecordBase;
+public record RouteRecordRedirect : RouteRecordBase
+{
+	[Description("@#redirect")]
+	public new RouteRedirectOption Redirect { get; init; } = default!;
+}
 
 [String]
 public enum RouterLinkAriaCurrentValue
@@ -691,10 +854,10 @@ public abstract class UseLinkReturn
 	public extern Vue3.VueReadonlyRef<bool> IsExactActive { get; }
 
 	[Description("@#navigate")]
-	public extern IPromise<NavigationFailure?> Navigate();
+	public extern IPromise<RouteNavigationResult?> Navigate();
 
 	[Description("@#navigate")]
-	public extern IPromise<NavigationFailure?> Navigate(MouseEvent @event);
+	public extern IPromise<RouteNavigationResult?> Navigate(MouseEvent @event);
 }
 
 [ECMAScript]
@@ -725,7 +888,7 @@ public record ScrollPositionCoordinates : Vue3.VueProps
 public record ScrollPositionElement : ScrollPositionCoordinates
 {
 	[Description("@#el")]
-	public Vue3.VueValue El { get; init; } = default!;
+	public ScrollPositionTarget El { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -745,12 +908,47 @@ public record ScrollPositionNormalized : Vue3.VueProps
 [ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
+public readonly struct ScrollPositionTarget
+{
+	private readonly byte _kind;
+	private readonly string? _selector;
+	private readonly Element? _element;
+
+	private ScrollPositionTarget(string value)
+	{
+		_kind = 1;
+		_selector = value;
+		_element = default;
+	}
+
+	private ScrollPositionTarget(Element value)
+	{
+		_kind = 2;
+		_selector = default;
+		_element = value;
+	}
+
+	public string? AsSelector => _kind == 1 ? _selector : default;
+
+	public Element? AsElement => _kind == 2 ? _element : default;
+
+	public static implicit operator ScrollPositionTarget(string value)
+		=> new(value);
+
+	public static implicit operator ScrollPositionTarget(Element value)
+		=> new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
 public readonly struct RouterScrollResult
 {
 	private readonly byte _kind;
 	private readonly bool? _bool;
 	private readonly ScrollPositionCoordinates? _coordinates;
 	private readonly ScrollPositionElement? _element;
+	private readonly ScrollPositionNormalized? _normalized;
 
 	private RouterScrollResult(bool value)
 	{
@@ -758,6 +956,7 @@ public readonly struct RouterScrollResult
 		_bool = value;
 		_coordinates = default;
 		_element = default;
+		_normalized = default;
 	}
 
 	private RouterScrollResult(ScrollPositionCoordinates value)
@@ -766,6 +965,7 @@ public readonly struct RouterScrollResult
 		_bool = default;
 		_coordinates = value;
 		_element = default;
+		_normalized = default;
 	}
 
 	private RouterScrollResult(ScrollPositionElement value)
@@ -774,6 +974,16 @@ public readonly struct RouterScrollResult
 		_bool = default;
 		_coordinates = default;
 		_element = value;
+		_normalized = default;
+	}
+
+	private RouterScrollResult(ScrollPositionNormalized value)
+	{
+		_kind = 4;
+		_bool = default;
+		_coordinates = default;
+		_element = default;
+		_normalized = value;
 	}
 
 	public bool? AsBool => _kind == 1 ? _bool : default;
@@ -782,6 +992,8 @@ public readonly struct RouterScrollResult
 
 	public ScrollPositionElement? AsElement => _kind == 3 ? _element : default;
 
+	public ScrollPositionNormalized? AsNormalized => _kind == 4 ? _normalized : default;
+
 	public static implicit operator RouterScrollResult(bool value)
 		=> new(value);
 
@@ -789,6 +1001,9 @@ public readonly struct RouterScrollResult
 		=> new(value);
 
 	public static implicit operator RouterScrollResult(ScrollPositionElement value)
+		=> new(value);
+
+	public static implicit operator RouterScrollResult(ScrollPositionNormalized value)
 		=> new(value);
 }
 
@@ -824,6 +1039,12 @@ public readonly struct RouterScrollHandler
 
 	public static implicit operator RouterScrollHandler(AsyncRouterScrollBehavior value)
 		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterScrollHandler From(RouterScrollBehavior value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterScrollHandler From(AsyncRouterScrollBehavior value);
 }
 
 [ECMAScript]

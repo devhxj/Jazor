@@ -68,13 +68,49 @@ public static partial class VueRoute
 	/// Registers a composition API leave guard on the active matched route record.
 	/// </summary>
 	[Description("@#onBeforeRouteLeave")]
-	public extern static void OnBeforeRouteLeave(NavigationGuardHandler guard);
+	public extern static void OnBeforeRouteLeave(RouteNavigationGuard guard);
+
+	/// <summary>
+	/// Registers an async composition API leave guard on the active matched route record.
+	/// </summary>
+	[Description("@#onBeforeRouteLeave")]
+	public extern static void OnBeforeRouteLeave(AsyncRouteNavigationGuard guard);
+
+	/// <summary>
+	/// Registers a legacy next-callback composition API leave guard on the active matched route record.
+	/// </summary>
+	[Description("@#onBeforeRouteLeave")]
+	public extern static void OnBeforeRouteLeave(LegacyRouteNavigationGuard guard);
+
+	/// <summary>
+	/// Registers an async legacy next-callback composition API leave guard on the active matched route record.
+	/// </summary>
+	[Description("@#onBeforeRouteLeave")]
+	public extern static void OnBeforeRouteLeave(LegacyAsyncRouteNavigationGuard guard);
 
 	/// <summary>
 	/// Registers a composition API update guard on the active matched route record.
 	/// </summary>
 	[Description("@#onBeforeRouteUpdate")]
-	public extern static void OnBeforeRouteUpdate(NavigationGuardHandler guard);
+	public extern static void OnBeforeRouteUpdate(RouteNavigationGuard guard);
+
+	/// <summary>
+	/// Registers an async composition API update guard on the active matched route record.
+	/// </summary>
+	[Description("@#onBeforeRouteUpdate")]
+	public extern static void OnBeforeRouteUpdate(AsyncRouteNavigationGuard guard);
+
+	/// <summary>
+	/// Registers a legacy next-callback composition API update guard on the active matched route record.
+	/// </summary>
+	[Description("@#onBeforeRouteUpdate")]
+	public extern static void OnBeforeRouteUpdate(LegacyRouteNavigationGuard guard);
+
+	/// <summary>
+	/// Registers an async legacy next-callback composition API update guard on the active matched route record.
+	/// </summary>
+	[Description("@#onBeforeRouteUpdate")]
+	public extern static void OnBeforeRouteUpdate(LegacyAsyncRouteNavigationGuard guard);
 
 	/// <summary>
 	/// Determines whether the supplied error is a Vue Router navigation failure.
