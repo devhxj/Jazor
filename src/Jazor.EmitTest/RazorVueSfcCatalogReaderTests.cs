@@ -347,7 +347,7 @@ public sealed class RazorVueSfcCatalogReaderTests
             [CSharpSyntaxTree.ParseText(source, path: sourcePath)],
             Net100.References.All.Cast<MetadataReference>().Concat([
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

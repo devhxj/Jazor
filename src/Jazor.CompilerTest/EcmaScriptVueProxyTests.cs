@@ -562,7 +562,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(typeof(System.Collections.IEnumerable).IsAssignableFrom(directiveRegistryType));
         Assert.IsNotNull(componentIndexer);
         Assert.IsNotNull(directiveIndexer);
-        Assert.AreEqual(typeof(ECMAScript.VueContract.IVueComponent), componentIndexer.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), componentIndexer.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueDirective), directiveIndexer.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, componentIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         CollectionAssert.AreEqual(new[] { typeof(string) }, directiveIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
@@ -1214,7 +1214,7 @@ public sealed class EcmaScriptVueProxyTests
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(bool));
         RequiredStatic(staticMethods, nameof(Vue3.ResolveComponent), static method =>
-            method.ReturnType == typeof(ECMAScript.VueContract.IVueComponent) &&
+            method.ReturnType == typeof(ECMAScript.Vue3.IVueComponent) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
         RequiredStatic(staticMethods, nameof(Vue3.ResolveDirective), static method =>
             method.ReturnType == typeof(VueDirectiveValue) &&
@@ -1808,7 +1808,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(asyncErrorInvoke);
         Assert.IsTrue(asyncLoaderInvoke.ReturnType.IsGenericType);
         Assert.AreEqual(typeof(IPromise<>), asyncLoaderInvoke.ReturnType.GetGenericTypeDefinition());
-        Assert.AreEqual(typeof(ECMAScript.VueContract.IVueComponent), asyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), asyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
         Assert.IsTrue(typedAsyncLoaderInvoke.ReturnType.IsGenericType);
         Assert.AreEqual(typeof(IPromise<>), typedAsyncLoaderInvoke.ReturnType.GetGenericTypeDefinition());
         Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>), typedAsyncLoaderInvoke.ReturnType.GetGenericArguments()[0]);
@@ -1816,7 +1816,7 @@ public sealed class EcmaScriptVueProxyTests
             new[] { typeof(Error), typeof(VueAsyncComponentRetryCallback), typeof(VueAsyncComponentRetryCallback), typeof(Number) },
             asyncErrorInvoke.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
         Assert.AreEqual(typeof(VueAsyncComponentLoader), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Loader))!.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.VueContract.IVueComponent), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.LoadingComponent))!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.LoadingComponent))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Delay))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Timeout))!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), asyncOptionsType.GetProperty(nameof(VueAsyncComponentOptions.Suspensible))!.PropertyType.UnwrapNullable());
@@ -1837,11 +1837,11 @@ public sealed class EcmaScriptVueProxyTests
 
         RequiredMethod(staticMethods, nameof(Vue3.DefineAsyncComponent), static method =>
             !method.IsGenericMethodDefinition &&
-            method.ReturnType == typeof(ECMAScript.VueContract.IVueComponent) &&
+            method.ReturnType == typeof(ECMAScript.Vue3.IVueComponent) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueAsyncComponentLoader) }));
         RequiredMethod(staticMethods, nameof(Vue3.DefineAsyncComponent), static method =>
             !method.IsGenericMethodDefinition &&
-            method.ReturnType == typeof(ECMAScript.VueContract.IVueComponent) &&
+            method.ReturnType == typeof(ECMAScript.Vue3.IVueComponent) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(VueAsyncComponentOptions) }));
         RequiredMethod(staticMethods, nameof(Vue3.DefineAsyncComponent), static method =>
             method.IsGenericMethodDefinition &&
@@ -1982,7 +1982,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNotNull(componentRegistryIndexer);
         Assert.IsNotNull(eventHandlersIndexer);
         Assert.IsNotNull(typedEventHandlersIndexer);
-        Assert.AreEqual(typeof(ECMAScript.VueContract.IVueComponent), componentRegistryIndexer!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(ECMAScript.Vue3.IVueComponent), componentRegistryIndexer!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Action), eventHandlersIndexer!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueEventHandler<MouseEvent>), typedEventHandlersIndexer!.PropertyType.UnwrapNullable());
         CollectionAssert.AreEqual(new[] { typeof(string) }, componentRegistryIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
@@ -2162,7 +2162,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueTypedSetupCallback<TestVueProps, TestVueSlots>), setup.PropertyType);
         Assert.AreEqual(typeof(TestVueSlots), slots.PropertyType);
         Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent<TestVueProps>).IsAssignableFrom(typedComponent));
-        Assert.IsTrue(typeof(ECMAScript.VueContract.IVueComponent).IsAssignableFrom(typedComponent));
+        Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent).IsAssignableFrom(typedComponent));
 
         var parameters = defineComponentOverload.GetParameters();
         Assert.AreEqual(1, parameters.Length);
@@ -2187,7 +2187,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsNotNull(setup);
         Assert.AreEqual(typeof(VueTypedSlotSetupCallback<TestVueSlots>), setup.PropertyType);
-        Assert.IsTrue(typeof(ECMAScript.VueContract.IVueComponent).IsAssignableFrom(slotComponent));
+        Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent).IsAssignableFrom(slotComponent));
 
         var parameters = defineComponentOverload.GetParameters();
         Assert.AreEqual(1, parameters.Length);
@@ -2527,7 +2527,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return !method.IsGenericMethodDefinition &&
                    parameters.Length == 2 &&
-                   parameters[0].ParameterType == typeof(ECMAScript.VueContract.IVueComponent) &&
+                   parameters[0].ParameterType == typeof(ECMAScript.Vue3.IVueComponent) &&
                    parameters[1].ParameterType == typeof(VueSlots);
         }));
         Assert.IsTrue(slotOverloads.Any(static method =>
@@ -2535,7 +2535,7 @@ public sealed class EcmaScriptVueProxyTests
             var parameters = method.GetParameters();
             return !method.IsGenericMethodDefinition &&
                    parameters.Length == 3 &&
-                   parameters[0].ParameterType == typeof(ECMAScript.VueContract.IVueComponent) &&
+                   parameters[0].ParameterType == typeof(ECMAScript.Vue3.IVueComponent) &&
                    parameters[1].ParameterType == typeof(VueProps) &&
                    parameters[2].ParameterType == typeof(VueSlots);
         }));
@@ -2593,12 +2593,12 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), typeof(IVNode)));
         Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), typeof(IVNode[])));
         Assert.IsTrue(HasOverload(overloads, typeof(string), typeof(VueProps), typeof(VueChild)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.VueContract.IVueComponent), typeof(IVNode)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.VueContract.IVueComponent), typeof(IVNode[])));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.VueContract.IVueComponent), typeof(VueChild)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.VueContract.IVueComponent), typeof(VueProps), typeof(IVNode)));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.VueContract.IVueComponent), typeof(VueProps), typeof(IVNode[])));
-        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.VueContract.IVueComponent), typeof(VueProps), typeof(VueChild)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(IVNode)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(IVNode[])));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueChild)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueProps), typeof(IVNode)));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueProps), typeof(IVNode[])));
+        Assert.IsTrue(HasOverload(overloads, typeof(ECMAScript.Vue3.IVueComponent), typeof(VueProps), typeof(VueChild)));
 
         Assert.IsFalse(overloads.Any(static parameters =>
             parameters.Any(static parameter =>
@@ -2982,7 +2982,7 @@ public sealed class EcmaScriptVueProxyTests
 
             var receiverType = parameters[0].ParameterType;
             var childType = parameters[^1].ParameterType;
-            if (receiverType != typeof(ECMAScript.VueContract.IVueComponent) &&
+            if (receiverType != typeof(ECMAScript.Vue3.IVueComponent) &&
                 !(receiverType.IsGenericType &&
                   (receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueSlotComponent<>) ||
                    receiverType.GetGenericTypeDefinition() == typeof(ECMAScript.Vue3.IVueComponent<,>))))
@@ -3008,7 +3008,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(exportedComponents.Length > 0);
         foreach (var property in exportedComponents)
         {
-            Assert.IsTrue(typeof(ECMAScript.VueContract.IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
+            Assert.IsTrue(typeof(ECMAScript.Vue3.IVueComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.IsTrue(typeof(IVuetifyComponent).IsAssignableFrom(property.PropertyType), property.Name);
             Assert.AreEqual(property.PropertyType, registryProperties[property.Name].PropertyType.UnwrapNullable(), property.Name);
         }

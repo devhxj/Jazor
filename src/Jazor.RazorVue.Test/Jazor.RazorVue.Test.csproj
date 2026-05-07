@@ -12,6 +12,7 @@
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\Jazor.Common\Jazor.Common.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />

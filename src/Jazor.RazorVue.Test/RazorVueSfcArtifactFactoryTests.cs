@@ -848,7 +848,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithComponentLocalVariableInTemplate_ThrowsUnsupportedTemplateEncoding()
+    public void RazorVue_SfcArtifactFactory_WithComponentLocalVariableDeclarationInBuildRenderTree_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
             """
@@ -890,12 +890,13 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
             CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
 
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "cannot hoist component-local expression");
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
+        StringAssert.Contains(exception.Issue.Message, "localTitle");
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithLoopBodyComponentLocalVariableInTemplate_ThrowsUnsupportedTemplateEncoding()
+    public void RazorVue_SfcArtifactFactory_WithLoopBodyComponentLocalVariableDeclarationInBuildRenderTree_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
             """
@@ -941,9 +942,54 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
             CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
 
-        Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "component-local expression");
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
         StringAssert.Contains(exception.Issue.Message, "decorated");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersExpressionBodiedCurrentComponentRenderHelperMethod()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/render-helper-card")]
+                public class RenderHelperCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        RenderBody(builder);
+                    }
+
+                    private void RenderBody(RenderTreeBuilder builder)
+                        => builder.AddContent(0, Title);
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "{{ props.title }}");
     }
 
     [TestMethod]
@@ -1001,6 +1047,57 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "component-local expression");
         StringAssert.Contains(exception.Issue.Message, "decorated");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithConditionalReturnInBuildRenderTree_ThrowsCanonicalizationFailed()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/conditional-return-card")]
+                public class ConditionalReturnCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Hide { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        if (Hide)
+                        {
+                            return;
+                        }
+
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, "ready");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "return");
     }
 
     [TestMethod]

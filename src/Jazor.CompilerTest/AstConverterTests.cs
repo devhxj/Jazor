@@ -42,9 +42,9 @@ public sealed class AstConverterTests
             references.AddRange(additionalReferences);
 
         if (ContainsVue3Reference(references) &&
-            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
-            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location));
+            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location));
         }
 
         return references.ToArray();
@@ -7849,7 +7849,7 @@ export function render() {
 
                     private static VueComponentRegistry BuildComponents()
                     {
-                        ECMAScript.VueContract.IVueComponent child = Vue3.DefineComponent(new VueComponentOptions
+                        ECMAScript.Vue3.IVueComponent child = Vue3.DefineComponent(new VueComponentOptions
                         {
                             Name = "ChildView"
                         });

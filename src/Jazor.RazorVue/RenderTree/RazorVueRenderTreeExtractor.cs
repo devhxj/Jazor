@@ -131,10 +131,28 @@ internal sealed class RazorVueRenderTreeExtractor
                         ParseOperation(child);
                     break;
                 case IVariableDeclarationGroupOperation variableDeclarationGroup:
-                    RegisterBuilderAliases(variableDeclarationGroup);
+                    ParseVariableDeclarationGroup(variableDeclarationGroup);
                     break;
+                case IInvocationOperation invocation:
+                    ParseOperationExpression(invocation);
+                    break;
+                case ILocalFunctionOperation:
+                case IEmptyOperation:
+                    break;
+                case IReturnOperation { IsImplicit: true }:
+                    break;
+                case IReturnOperation returnOperation:
+                    throw CreateStructuralIssue(
+                        returnOperation,
+                        $"BuildRenderTree does not support 'return' statements during RazorVue template extraction in component '{_snapshot.Descriptor.FullName}'. Move this control flow outside the render body or use the Razor IR frontend.");
+                case ILoopOperation loop:
+                    throw CreateStructuralIssue(
+                        loop,
+                        $"BuildRenderTree does not support loop statement '{GetOperationDisplay(loop)}' in component '{_snapshot.Descriptor.FullName}'. Only canonicalizable 'for' and 'foreach' loops are supported.");
                 default:
-                    break;
+                    throw CreateStructuralIssue(
+                        current,
+                        $"BuildRenderTree does not support statement '{GetOperationDisplay(current)}' ({current.Kind}) in component '{_snapshot.Descriptor.FullName}'.");
             }
         }
 
@@ -143,13 +161,26 @@ internal sealed class RazorVueRenderTreeExtractor
             var statementOperation = Unwrap(expressionStatement.Operation);
             if (statementOperation is ISimpleAssignmentOperation assignment)
             {
-                RegisterBuilderAliasAssignment(assignment);
-                return;
+                if (TryRegisterBuilderAliasAssignment(assignment))
+                    return;
+
+                throw CreateStructuralIssue(
+                    assignment,
+                    $"BuildRenderTree does not support assignment statement '{GetOperationDisplay(assignment)}' in component '{_snapshot.Descriptor.FullName}'. Only direct RenderTreeBuilder local alias assignments are supported.");
             }
 
             if (statementOperation is not IInvocationOperation invocation)
-                return;
+            {
+                throw CreateStructuralIssue(
+                    statementOperation ?? expressionStatement,
+                    $"BuildRenderTree does not support statement '{GetOperationDisplay(statementOperation ?? expressionStatement)}' in component '{_snapshot.Descriptor.FullName}'.");
+            }
 
+            ParseOperationExpression(invocation);
+        }
+
+        private void ParseOperationExpression(IInvocationOperation invocation)
+        {
             if (TryParseCurrentComponentRenderHelperInvocation(invocation))
                 return;
 
@@ -163,7 +194,9 @@ internal sealed class RazorVueRenderTreeExtractor
                         "Use the active builder parameter or a direct local alias of that parameter.");
                 }
 
-                return;
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree does not support standalone invocation '{GetBuilderCallDisplayName(invocation)}' in component '{_snapshot.Descriptor.FullName}'. Only RenderTreeBuilder calls and supported render helpers may participate in RazorVue template extraction.");
             }
 
             switch (invocation.TargetMethod.Name)
@@ -547,32 +580,48 @@ internal sealed class RazorVueRenderTreeExtractor
             };
         }
 
-        private void RegisterBuilderAliases(IVariableDeclarationGroupOperation declarationGroup)
+        private void ParseVariableDeclarationGroup(IVariableDeclarationGroupOperation declarationGroup)
         {
             foreach (var declaration in declarationGroup.Declarations)
             {
                 foreach (var declarator in declaration.Declarators)
-                    SetBuilderAlias(declarator.Symbol, declarator.Initializer?.Value);
+                {
+                    if (TryRegisterBuilderAliasDeclaration(declarator))
+                        continue;
+
+                    throw CreateStructuralIssue(
+                        declarator,
+                        $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'. Only direct RenderTreeBuilder local alias declarations are supported.");
+                }
             }
         }
 
-        private void RegisterBuilderAliasAssignment(ISimpleAssignmentOperation assignment)
+        private bool TryRegisterBuilderAliasDeclaration(IVariableDeclaratorOperation declarator)
+        {
+            if (!IsRenderTreeBuilderType(declarator.Symbol.Type))
+                return false;
+
+            var value = declarator.Initializer?.Value;
+            if (!IsKnownBuilderReference(value))
+                return false;
+
+            _builderAliases.Add(declarator.Symbol);
+            return true;
+        }
+
+        private bool TryRegisterBuilderAliasAssignment(ISimpleAssignmentOperation assignment)
         {
             if (assignment.Target is not ILocalReferenceOperation localReference)
-                return;
+                return false;
 
-            SetBuilderAlias(localReference.Local, assignment.Value);
-        }
+            if (!IsRenderTreeBuilderType(localReference.Local.Type))
+                return false;
 
-        private void SetBuilderAlias(ILocalSymbol localSymbol, IOperation? value)
-        {
-            if (IsRenderTreeBuilderType(localSymbol.Type) && IsKnownBuilderReference(value))
-            {
-                _builderAliases.Add(localSymbol);
-                return;
-            }
+            if (!IsKnownBuilderReference(assignment.Value))
+                return false;
 
-            _builderAliases.Remove(localSymbol);
+            _builderAliases.Add(localReference.Local);
+            return true;
         }
 
         private bool IsCurrentComponentRenderHelperCandidate(IMethodSymbol method, IOperation? instance)
@@ -677,8 +726,8 @@ internal sealed class RazorVueRenderTreeExtractor
                 if (operation is IBlockOperation block)
                     return block.Operations;
 
-                if (operation is not null)
-                    return ImmutableArray.Create(operation);
+                if (TryGetOperationStatements(operation, out var statements))
+                    return statements;
             }
 
             throw CreateUnsupportedBuilderCall(
@@ -1049,6 +1098,30 @@ internal sealed class RazorVueRenderTreeExtractor
             return builderParameters.Count > 0;
         }
 
+        private static bool TryGetOperationStatements(
+            IOperation? operation,
+            out ImmutableArray<IOperation> statements)
+        {
+            statements = ImmutableArray<IOperation>.Empty;
+            var current = Unwrap(operation);
+            if (current is null)
+                return false;
+
+            if (current is IBlockOperation block)
+            {
+                statements = block.Operations;
+                return true;
+            }
+
+            if (current is IInvocationOperation invocation)
+            {
+                statements = ImmutableArray.Create<IOperation>(invocation);
+                return true;
+            }
+
+            return false;
+        }
+
         private static bool TryGetSingleBuilderParameter(
             IAnonymousFunctionOperation anonymousFunction,
             out IParameterSymbol builderParameter)
@@ -1142,6 +1215,14 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private static string GetBuilderCallDisplayName(IInvocationOperation invocation)
             => invocation.TargetMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+        private static string GetOperationDisplay(IOperation operation)
+        {
+            var display = operation.Syntax?.ToString()?.Trim();
+            return string.IsNullOrWhiteSpace(display)
+                ? operation.Kind.ToString()
+                : display!;
+        }
 
         private sealed class RegionScope(ImmutableArray<RazorVueSourceOrigin> origins)
             : OpenFrame(origins)

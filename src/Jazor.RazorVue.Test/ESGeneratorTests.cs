@@ -662,7 +662,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -717,7 +717,7 @@ public sealed class ESGeneratorTests
             }
             """,
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: null);
@@ -768,7 +768,7 @@ public sealed class ESGeneratorTests
             }
             """,
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
@@ -843,7 +843,7 @@ public sealed class ESGeneratorTests
             }
             """,
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
@@ -900,7 +900,7 @@ public sealed class ESGeneratorTests
             }
             """,
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (outputCompilation, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "sfc");
@@ -950,7 +950,7 @@ public sealed class ESGeneratorTests
             }
             """,
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation, razorVueOutputMode: "broken-mode");
@@ -1250,7 +1250,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1315,7 +1315,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1368,7 +1368,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1449,7 +1449,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1516,7 +1516,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1607,7 +1607,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1682,7 +1682,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1753,7 +1753,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1827,7 +1827,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1902,7 +1902,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -1979,7 +1979,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2051,7 +2051,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2126,7 +2126,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2208,7 +2208,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2269,7 +2269,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2344,7 +2344,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2426,7 +2426,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2489,7 +2489,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2549,7 +2549,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2609,7 +2609,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2678,7 +2678,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2747,7 +2747,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2811,7 +2811,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2895,7 +2895,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -2979,7 +2979,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3063,7 +3063,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3137,7 +3137,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3199,7 +3199,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3271,7 +3271,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3340,7 +3340,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3400,7 +3400,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3459,7 +3459,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3518,7 +3518,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3576,7 +3576,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3636,7 +3636,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3700,7 +3700,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3773,7 +3773,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3847,7 +3847,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3908,7 +3908,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -3971,7 +3971,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4030,7 +4030,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4096,7 +4096,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4164,7 +4164,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4233,7 +4233,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4309,7 +4309,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4386,7 +4386,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4451,7 +4451,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4516,7 +4516,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4581,7 +4581,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4646,7 +4646,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4712,7 +4712,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4785,7 +4785,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4858,7 +4858,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -4931,7 +4931,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5005,7 +5005,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5077,7 +5077,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5163,7 +5163,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5236,7 +5236,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5308,7 +5308,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5381,7 +5381,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5454,7 +5454,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5526,7 +5526,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5600,7 +5600,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5674,7 +5674,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5746,7 +5746,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5838,7 +5838,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5910,7 +5910,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -5983,7 +5983,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6080,7 +6080,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6172,7 +6172,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6259,7 +6259,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6351,7 +6351,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6427,7 +6427,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6500,7 +6500,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6597,7 +6597,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6684,7 +6684,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6766,7 +6766,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6838,7 +6838,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6910,7 +6910,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -6982,7 +6982,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7054,7 +7054,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7126,7 +7126,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7198,7 +7198,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7270,7 +7270,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7342,7 +7342,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7415,7 +7415,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7502,7 +7502,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7586,7 +7586,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7658,7 +7658,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7732,7 +7732,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7814,7 +7814,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7888,7 +7888,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -7962,7 +7962,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8035,7 +8035,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8133,7 +8133,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8207,7 +8207,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8270,7 +8270,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8335,7 +8335,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8408,7 +8408,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8479,7 +8479,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8550,7 +8550,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8623,7 +8623,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8687,7 +8687,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8752,7 +8752,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8824,7 +8824,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8897,7 +8897,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -8968,7 +8968,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9041,7 +9041,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9113,7 +9113,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9186,7 +9186,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9259,7 +9259,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9332,7 +9332,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9406,7 +9406,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9479,7 +9479,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9550,7 +9550,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9623,7 +9623,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9691,7 +9691,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9762,7 +9762,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9825,7 +9825,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -9875,7 +9875,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -9935,7 +9935,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -9991,7 +9991,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -10043,7 +10043,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VIcon).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -10105,7 +10105,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10156,7 +10156,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VBtn).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -10213,7 +10213,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -10270,7 +10270,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
@@ -10329,7 +10329,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10382,8 +10382,8 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueLibraryComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10434,7 +10434,7 @@ public sealed class ESGeneratorTests
             }
             """,
             MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10495,8 +10495,8 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueLibraryComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10552,8 +10552,8 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueLibraryComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueLibraryComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10599,7 +10599,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);
@@ -10664,7 +10664,7 @@ public sealed class ESGeneratorTests
             }
             """,
 			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-			MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
 
         var (_, runResult) = RunAllGeneratorsWithResult(compilation);

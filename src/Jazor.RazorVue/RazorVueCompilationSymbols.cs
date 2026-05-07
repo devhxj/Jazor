@@ -28,7 +28,7 @@ internal sealed record RazorVueCompilationSymbols(
         var ecmaScriptModuleAttribute = compilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
         // 生产 authoring 面保持低 TFM：组件边界只由接口标记表达，不再依赖 VueComponent/JazorComponent 基类。
         var jazorComponent = compilation.GetTypeByMetadataName("ECMAScript.Contract.IUIComponent");
-        var vueComponent = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueComponent");
+        var vueComponent = compilation.GetTypeByMetadataName("ECMAScript.Vue3.IVueComponent");
         var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
 
         if (ecmaScriptModuleAttribute is null ||

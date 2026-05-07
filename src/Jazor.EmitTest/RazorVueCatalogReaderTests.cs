@@ -599,7 +599,7 @@ namespace Jazor.EmitTest
 		private static IEnumerable<MetadataReference> CreateRazorVueReferences()
 			=> CreateBaseReferences().Concat([
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]);
 
