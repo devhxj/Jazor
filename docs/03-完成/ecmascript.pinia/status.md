@@ -132,6 +132,7 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - `pwsh ./scripts/test-dotnet.ps1 -Project pinia` 可作为统一入口运行
 - `pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing` 可作为统一入口运行
 - `samples/ECMAScript.Pinia.Counter/build-local.ps1` 可重建本地 sample host
+- `samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 现默认把 generated modules 输出到仓库内隔离 `.tmp/sample-smoke/.../jazor/` 路径，并通过 consumer 侧 Vite alias + `JAZOR_GENERATED_ROOT` 消费，避免 smoke 运行后污染已跟踪 `wwwroot/jazor` 产物
 - layout guard 已约束：
   - `Api/` + `Types/` 分层
   - `Pinia.cs` 壳文件边界
@@ -172,6 +173,11 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - frontend-side Vitest runtime validation for JS HMR bridge、Pinia root disposal、store `$dispose()` 与 root recreate
 - frontend-side Vitest runtime/DOM validation for app-unmount -> `disposePinia(...)` 自动回收
 - frontend-side Vitest runtime/DOM validation for explicit multi-root isolation
+
+2026-05-07 基线复核：
+
+- `dotnet test src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj -v minimal -p:UseSharedCompilation=false`：62/62 通过
+- 本轮样例 smoke 目标已从“验证功能可跑”进一步收口到“验证后不写脏跟踪产物”，作为 production-oriented sample 的工程约束
 
 ## 下一步行动
 

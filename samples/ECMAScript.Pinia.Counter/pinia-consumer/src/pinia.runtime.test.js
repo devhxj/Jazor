@@ -2,18 +2,18 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { disposePinia, getActivePinia } from "pinia";
 import { createHmrBridge } from "./pinia.hmr-bridge.js";
 import { createManagedPiniaRoot } from "./pinia.root-lifecycle.js";
-import { clearConfiguredActivePinia } from "../../Pinia.Counter.Host/wwwroot/jazor/host/app.mjs";
+import { clearConfiguredActivePinia } from "host/app.mjs";
 import {
   createFactoryTestingRoot,
   createTypedTestingRoot,
   createStrictTestingRoot,
   createTestingRoot
-} from "../../Pinia.Counter.Host/wwwroot/jazor/tests/counter-testing.mjs";
+} from "tests/counter-testing.mjs";
 import {
   useCounterStore,
   useProjectedCounterStore
-} from "../../Pinia.Counter.Host/wwwroot/jazor/stores/counter-store.mjs";
-import { compareIsolatedRoots } from "../../Pinia.Counter.Host/wwwroot/jazor/components/counter-isolation.mjs";
+} from "stores/counter-store.mjs";
+import { compareIsolatedRoots } from "components/counter-isolation.mjs";
 
 describe("pinia runtime integration seams", () => {
   const ephemeralPiniaRoots = [];

@@ -1,8 +1,8 @@
-import { createConfiguredPinia } from "../../Pinia.Counter.Host/wwwroot/jazor/host/app.mjs";
+import { createConfiguredPinia } from "host/app.mjs";
 import {
   createCounterHotHandler,
   createProjectedCounterHotHandler
-} from "../../Pinia.Counter.Host/wwwroot/jazor/components/counter-hmr.mjs";
+} from "components/counter-hmr.mjs";
 
 export function createHmrBridge(hot) {
   const pinia = createConfiguredPinia();

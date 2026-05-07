@@ -1,7 +1,8 @@
 param(
     [string]$Configuration = "Debug",
     [switch]$BuildLocal,
-    [switch]$FrontendOnly
+    [switch]$FrontendOnly,
+    [string]$GeneratedOutputRoot = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,7 +13,12 @@ $buildLocalScript = Join-Path $sampleRoot "build-local.ps1"
 $consumerRoot = Join-Path $sampleRoot "pinia-consumer"
 $hostRoot = Join-Path $sampleRoot "Pinia.Counter.Host"
 $hostAssemblyPath = Join-Path $hostRoot "bin\$Configuration\net10.0\Pinia.Counter.Host.dll"
-$jazorRoot = Join-Path $hostRoot "wwwroot\jazor"
+$defaultGeneratedOutputRoot = Join-Path $repoRoot ".tmp\sample-smoke\ECMAScript.Pinia.Counter\$Configuration\jazor"
+if ([string]::IsNullOrWhiteSpace($GeneratedOutputRoot)) {
+    $GeneratedOutputRoot = $defaultGeneratedOutputRoot
+}
+
+$jazorRoot = [System.IO.Path]::GetFullPath($GeneratedOutputRoot)
 $counterStoreModulePath = Join-Path $jazorRoot "stores\counter-store.mjs"
 $testingModulePath = Join-Path $jazorRoot "tests\counter-testing.mjs"
 $hostAppModulePath = Join-Path $jazorRoot "host\app.mjs"
@@ -117,7 +123,7 @@ function Assert-GeneratedHostArtifacts {
 }
 
 if (-not $FrontendOnly -or $BuildLocal) {
-    & $buildLocalScript -Configuration $Configuration
+    & $buildLocalScript -Configuration $Configuration -JazorOutDir $jazorRoot
     if ($LASTEXITCODE -ne 0) {
         throw "build-local.ps1 failed with exit code ${LASTEXITCODE}."
     }
@@ -132,6 +138,10 @@ if ($env:CI -eq "true" -or -not (Test-Path -LiteralPath $consumerNodeModulesPath
     Invoke-Npm -Arguments @("ci")
 }
 
+$previousGeneratedRoot = $env:JAZOR_GENERATED_ROOT
+$restoreGeneratedRoot = -not [string]::IsNullOrEmpty($previousGeneratedRoot)
+$env:JAZOR_GENERATED_ROOT = $jazorRoot
+
 Push-Location $consumerRoot
 try {
     Invoke-Npm -Arguments @("run", "build")
@@ -139,7 +149,14 @@ try {
 }
 finally {
     Pop-Location
+
+    if ($restoreGeneratedRoot) {
+        $env:JAZOR_GENERATED_ROOT = $previousGeneratedRoot
+    }
+    else {
+        Remove-Item Env:JAZOR_GENERATED_ROOT -ErrorAction SilentlyContinue
+    }
 }
 
 Write-Host "ECMAScript.Pinia sample smoke verification passed."
-Write-Host "Verified: local Jazor package pack, clean sample host restore/build, generated Pinia/testing modules, Vite build, and Vitest runtime/DOM coverage."
+Write-Host "Verified: local Jazor package pack, isolated generated Pinia/testing modules, Vite build, and Vitest runtime/DOM coverage."

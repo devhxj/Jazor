@@ -122,6 +122,7 @@
 - `samples/ECMAScript.Pinia.Counter/` 小型 store authoring sample
 - Vue3 + Pinia 联动示例
 - `storeToRefs()` + `$patch()` + `$reset()` 的最小消费场景
+- `verify-smoke.ps1` 默认隔离 generated output，并通过 consumer alias 消费，不再要求 smoke 改写已跟踪 `wwwroot/jazor` 产物
 
 后续仍可按需求追加：
 

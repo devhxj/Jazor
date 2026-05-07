@@ -2,7 +2,7 @@ import {
   clearConfiguredActivePinia,
   createConfiguredPinia,
   createPiniaInstallationApp
-} from "../../Pinia.Counter.Host/wwwroot/jazor/host/app.mjs";
+} from "host/app.mjs";
 import {
   disposePinia,
   getActivePinia,

@@ -1,7 +1,8 @@
 param(
     [string]$Configuration = "Debug",
     [string]$BaseOutputPath = "",
-    [string]$BaseIntermediateOutputPath = ""
+    [string]$BaseIntermediateOutputPath = "",
+    [string]$JazorOutDir = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,6 +17,7 @@ $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 $baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
 $baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
+$jazorOutDirWasExplicit = $PSBoundParameters.ContainsKey("JazorOutDir")
 
 [xml]$sdkProject = Get-Content (Join-Path $repoRoot "src\Jazor\Jazor.csproj")
 $packageVersion = $sdkProject.Project.PropertyGroup.Version
@@ -34,6 +36,19 @@ function Invoke-DotNet {
 
 if (Test-Path $packageOutput) {
     Remove-Item -LiteralPath $packageOutput -Recurse -Force
+}
+
+if ($jazorOutDirWasExplicit -and -not [string]::IsNullOrWhiteSpace($JazorOutDir)) {
+    $resolvedRepoRoot = [System.IO.Path]::GetFullPath($repoRoot)
+    $resolvedJazorOutDir = [System.IO.Path]::GetFullPath($JazorOutDir)
+
+    if (-not $resolvedJazorOutDir.StartsWith($resolvedRepoRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Explicit JazorOutDir must stay within the repository root: $resolvedJazorOutDir"
+    }
+
+    if (Test-Path -LiteralPath $resolvedJazorOutDir) {
+        Remove-Item -LiteralPath $resolvedJazorOutDir -Recurse -Force
+    }
 }
 
 & $publishScript -Configuration $Configuration -OutputDirectory $packageOutput -SkipPush
@@ -64,6 +79,10 @@ if ($baseOutputPathWasExplicit) {
 
 if ($baseIntermediateOutputPathWasExplicit) {
     $buildArgs += "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath"
+}
+
+if ($jazorOutDirWasExplicit) {
+    $buildArgs += "-p:JazorOutDir=$JazorOutDir"
 }
 
 $buildArgs += "/nr:false"

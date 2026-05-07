@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { nextTick } from "vue";
-import { createConfiguredApp } from "../../Pinia.Counter.Host/wwwroot/jazor/host/app.mjs";
+import { createConfiguredApp } from "host/app.mjs";
 
 function createHost() {
   const host = document.createElement("div");

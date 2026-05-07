@@ -9,7 +9,7 @@ This sample demonstrates the current `ECMAScript.Pinia` consumption path with a 
 The sample is split into:
 
 - `Pinia.Counter.Host`: Jazor host that emits the generated modules to `wwwroot/jazor/`
-- `pinia-consumer`: minimal Vite frontend that imports the generated host module and now also includes a Vitest smoke test against the generated Pinia/testing modules
+- `pinia-consumer`: minimal Vite frontend that resolves the generated host modules through Vite aliases and includes a Vitest smoke test against the generated Pinia/testing modules
 
 ## Build from this repository
 
@@ -49,6 +49,7 @@ This validates the production-oriented consumer path:
 
 - pack `Jazor` from the current repository state
 - rebuild `Pinia.Counter.Host` against the freshly packed local NuGet
+- emit generated modules into an isolated `.tmp/sample-smoke/.../jazor/` directory by default so the smoke run does not dirty tracked sample artifacts
 - assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
 - run the Vite build
 - run the frontend Vitest runtime/DOM suites
@@ -71,11 +72,12 @@ npm test
 
 The consumer imports:
 
-- the generated host bootstrap from `..\Pinia.Counter.Host\wwwroot\jazor\host\app.mjs`
+- the generated host bootstrap through the `host/*` Vite alias
 - the generated internal `components/*`, `stores/*`, and `tests/*` modules through Vite aliases
 
 It also aliases `npm:vue@3` to the local `vue` package so the generated Jazor modules can run inside a standard Vite toolchain.
 The Vitest setup also aliases `@pinia/testing` so the generated `tests/counter-testing.mjs` artifact can execute as a normal frontend-side testing seam.
+Set `JAZOR_GENERATED_ROOT` if you want the consumer to resolve generated modules from a non-default output directory.
 The generated root app now also installs the sample Pinia audit plugin through `createConfiguredPinia()`, so projected custom properties/state are exercised through the same runtime path the sample UI uses.
 The generated root app also disposes its Pinia root on `app.unmount()`, so repeated mount/unmount flows do not retain store state or plugin side effects.
 The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate(...)` stays generated in C# while `import.meta.hot.accept(...)` remains an explicit host concern.

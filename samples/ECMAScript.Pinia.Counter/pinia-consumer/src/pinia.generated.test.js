@@ -5,13 +5,13 @@ import {
   createTypedTestingRoot,
   createStrictTestingRoot,
   createTestingRoot
-} from "../../Pinia.Counter.Host/wwwroot/jazor/tests/counter-testing.mjs";
-import { createConfiguredPinia } from "../../Pinia.Counter.Host/wwwroot/jazor/host/app.mjs";
-import { useCounterStore, installAuditPlugin } from "../../Pinia.Counter.Host/wwwroot/jazor/stores/counter-store.mjs";
+} from "tests/counter-testing.mjs";
+import { createConfiguredPinia } from "host/app.mjs";
+import { useCounterStore, installAuditPlugin } from "stores/counter-store.mjs";
 import {
   useHydrationOptionStore,
   useHydrationStore
-} from "../../Pinia.Counter.Host/wwwroot/jazor/components/counter-hydration.mjs";
+} from "components/counter-hydration.mjs";
 
 describe("generated pinia sample modules", () => {
   beforeEach(() => {
