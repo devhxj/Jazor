@@ -32,34 +32,21 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 
 <table>
 <tr><th nowrap>层级</th><th>组件</th><th>状态</th></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>编译器核心（SemanticWalker、AstConverter）</td><td>稳定 — 仓库中最成熟的部分</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript 模块发射（<code>[ECMAScriptModule]</code> → <code>.mjs</code>）</td><td>稳定</td></tr>
+<tr><td nowrap><strong>已可用</strong></td><td>编译器核心（SemanticWalker、AstConverter）— 1,848 测试</td><td>稳定 — 仓库中最成熟的部分</td></tr>
+<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript 模块发射（<code>[ECMAScriptModule]</code> → <code>.mjs</code>）— 84 测试</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>ECMAScript.Vue3 绑定（h、ref、reactive、生命周期、createApp）</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>MSBuild 集成（JazorEmit、JazorBundle、JazorOutDir）</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>Jazor.Analyzer（白名单编译时验证）</td><td>稳定</td></tr>
+<tr><td nowrap><strong>已可用</strong></td><td>CLR 运行时模块 — 70 测试</td><td>稳定</td></tr>
+<tr><td nowrap><strong>进行中</strong></td><td>RazorVue（SFC 管线、规范 h() 模型）— 64+ 测试</td><td>已提取为独立项目，for-loop lowering 进行中</td></tr>
+<tr><td nowrap><strong>进行中</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 80 测试</td><td>初始落地，API 覆盖持续扩展</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>SourceMap</td><td>局部可用 — 模块级 <code>.mjs.map</code>，尚未全覆盖</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>Deno 打包</td><td><code>JazorBundle</code> 目标支持基本场景</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>调试</td><td>设计和里程碑代码已就位，尚未面向用户</td></tr>
-<tr><td nowrap><strong>远期</strong></td><td>RazorVue</td><td>完整的 Razor 组件框架 + Source Generator — <a href="docs/01-目标/razorvue/README.md">设计文档</a></td></tr>
-<tr><td nowrap><strong>远期</strong></td><td>Jolt</td><td>开发工具链：LSP、HMR、DevServer、调试、构建 — <a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
+<tr><td nowrap><strong>远期</strong></td><td>Jolt（LSP、HMR、DevServer、调试、构建）— 774 测试</td><td>Phase 1–6 收口中，<a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
 </table>
 
-当前用户应基于**已可用**层进行开发。远期项目有详尽的设计文档和里程碑代码，但尚未达到可对外使用的程度。
-
-### 项目数据
-
-| 指标 | 数值 |
-|------|------|
-| 解决方案项目 | 29 |
-| 测试项目 | 11 |
-| 生产代码 | ~122K 行 |
-| 测试代码 | ~164K 行 |
-| 总测试数 | ~3,000 |
-| 编译器测试 | 1,848 |
-| Jolt 测试 | 774 |
-| CLR 测试 | 70 |
-| RazorVue 测试 | 64+ |
-| Emit 测试 | 84 |
+当前用户应基于**已可用**层进行开发。29 项目 · ~122K 生产代码 · ~164K 测试代码 · ~3,000 总测试。
 
 ---
 

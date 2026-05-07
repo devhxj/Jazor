@@ -31,34 +31,21 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 
 <table>
 <tr><th nowrap>Tier</th><th>Component</th><th>Status</th></tr>
-<tr><td nowrap><strong>Working</strong></td><td>Compiler core (SemanticWalker, AstConverter)</td><td>Stable — the most mature part</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>ECMAScript module emission (<code>[ECMAScriptModule]</code> → <code>.mjs</code>)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>Compiler core (SemanticWalker, AstConverter) — 1,848 tests</td><td>Stable — the most mature part</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>ECMAScript module emission (<code>[ECMAScriptModule]</code> → <code>.mjs</code>) — 84 tests</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>ECMAScript.Vue3 bindings (h, ref, reactive, lifecycle, createApp)</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>MSBuild integration (JazorEmit, JazorBundle, JazorOutDir)</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>Jazor.Analyzer (whitelist compile-time validation)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>CLR runtime modules — 70 tests</td><td>Stable</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>RazorVue (SFC pipeline, canonical h() model) — 64+ tests</td><td>Extracted to standalone project, for-loop lowering in progress</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 80 tests</td><td>Initial landing, expanding API coverage</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>SourceMap</td><td>Narrow lane — module-level <code>.mjs.map</code>, not full coverage yet</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>Deno bundling</td><td><code>JazorBundle</code> target works for basic cases</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>Debugging</td><td>Design and milestone code exist, not user-facing yet</td></tr>
-<tr><td nowrap><strong>Long-term</strong></td><td>RazorVue</td><td>Full Razor component framework with Source Generator — <a href="docs/01-目标/razorvue/README.md">Design</a></td></tr>
-<tr><td nowrap><strong>Long-term</strong></td><td>Jolt</td><td>Dev toolchain: LSP, HMR, DevServer, debug, build — <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
+<tr><td nowrap><strong>Long-term</strong></td><td>Jolt (LSP, HMR, DevServer, debug, build) — 774 tests</td><td>Phase 1–6 closing, <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
 </table>
 
-Users today should target the **Working** tier. The Long-term items have extensive design documents and milestone code but are not ready for external consumption.
-
-### By the Numbers
-
-| Metric | Value |
-|--------|-------|
-| Solution projects | 29 |
-| Test projects | 11 |
-| Production code | ~122K LoC |
-| Test code | ~164K LoC |
-| Total tests | ~3,000 |
-| Compiler tests | 1,848 |
-| Jolt tests | 774 |
-| CLR tests | 70 |
-| RazorVue tests | 64+ |
-| Emit tests | 84 |
+Users today should target the **Working** tier. 29 projects · ~122K production LoC · ~164K test LoC · ~3,000 total tests.
 
 ---
 
