@@ -190,6 +190,7 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
@@ -1460,7 +1461,8 @@ public sealed class BuildRenderTreeTemplateFrontendTests
             () => BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.CanonicalizationFailed, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "while");
+        StringAssert.Contains(exception.Issue.Message, "local variable declaration");
+        StringAssert.Contains(exception.Issue.Message, "index");
     }
 
     [TestMethod]

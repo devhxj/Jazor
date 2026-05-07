@@ -11,9 +11,9 @@ namespace Jazor.RazorVue.Test;
 internal static class RazorVueMetadataReferences
 {
     private const string AuthoringGlobalUsings = """
+        global using static ECMAScript.Vue3;
         global using ECMAScript.VueContract;
         global using ECMAScript.VueContract.Descriptor;
-        global using ECMAScript.VueContract;
         global using Microsoft.AspNetCore.Components;
         """;
 
@@ -33,9 +33,10 @@ internal static class RazorVueMetadataReferences
         }
 
         AddAssemblyReference(references, seenPaths, typeof(ComponentBase));
-		AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Contract.IUIComponent));
+        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Contract.IUIComponent));
         AddAssemblyReference(references, seenPaths, typeof(SpreadAttribute));
         AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Vue3.IVueComponent));
+        AddAssemblyReference(references, seenPaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
         AddAssemblyReference(references, seenPaths, typeof(VBtn));
         AddAssemblyReference(references, seenPaths, typeof(Jazor.RazorVue.JazorVueCompiler));
 

@@ -61,6 +61,9 @@ internal sealed partial class RazorVueExpressionEmitter
             case RazorVueExpressionNode expression:
                 builder.Append("expr(").Append(expression.Expression.Syntax.ToString()).Append(')');
                 break;
+            case RazorVueUnsupportedTemplateNode unsupported:
+                builder.Append("unsupported(").Append(unsupported.Message).Append(')');
+                break;
             case RazorVueSlotOutletNode slot:
                 builder.Append("slot(").Append(slot.SlotName).Append(')');
                 break;

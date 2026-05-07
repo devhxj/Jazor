@@ -28,7 +28,7 @@ internal sealed record RazorVueCompilationSymbols(
         var ecmaScriptModuleAttribute = compilation.GetTypeByMetadataName("ECMAScript.ECMAScriptModuleAttribute");
         // 生产 authoring 面保持低 TFM：组件边界只由接口标记表达，不再依赖 VueComponent/JazorComponent 基类。
         var jazorComponent = compilation.GetTypeByMetadataName("ECMAScript.Contract.IUIComponent");
-        var vueComponent = compilation.GetTypeByMetadataName("ECMAScript.Vue3.IVueComponent");
+        var vueComponent = compilation.GetTypeByMetadataName("ECMAScript.Vue3+IVueComponent");
         var componentBase = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
 
         if (ecmaScriptModuleAttribute is null ||
@@ -46,7 +46,7 @@ internal sealed record RazorVueCompilationSymbols(
         var renderFragment = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment");
         var renderFragmentOfT = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.RenderFragment`1");
         var vueLibraryComponent = compilation.GetTypeByMetadataName("Jazor.RazorVue.VueLibraryComponent");
-        var iVueLibraryComponent = compilation.GetTypeByMetadataName("ECMAScript.VueContract.IVueLibraryComponent");
+        var iVueLibraryComponent = compilation.GetTypeByMetadataName("ECMAScript.Vue3+IVueLibraryComponent");
         var vueLibraryComponentAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryComponentAttribute");
         var vueLibraryStyleAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryStyleAttribute");
         var vueLibraryPluginRequirementAttribute = compilation.GetTypeByMetadataName("ECMAScript.VueContract.VueLibraryPluginRequirementAttribute");

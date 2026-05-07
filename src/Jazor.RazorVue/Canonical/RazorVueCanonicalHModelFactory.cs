@@ -139,6 +139,10 @@ internal sealed class RazorVueCanonicalHModelFactory
                 expression,
                 allowedLocalSymbols,
                 allowedParameterSymbols),
+            RazorVueUnsupportedTemplateNode unsupported => throw CreateUnsupportedExpressionException(
+                snapshot,
+                unsupported.Origins,
+                unsupported.Message),
             RazorVueSlotOutletNode slot => new RazorVueCanonicalSlotOutletNode(
                 SlotName: slot.SlotName,
                 ArgumentExpressionText: slot.Argument is null
@@ -720,6 +724,22 @@ internal sealed class RazorVueCanonicalHModelFactory
             message,
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origin);
+    }
+
+    private static RazorVueCompilationIssueException CreateUnsupportedExpressionException(
+        RazorVueSemanticSnapshot snapshot,
+        ImmutableArray<RazorVueSourceOrigin> origins,
+        string message)
+    {
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnsupportedTemplateEncoding,
+            RazorVueIssueSeverity.Error,
+            message,
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(
+            issue,
+            snapshot.Descriptor.FullName,
+            origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : origins[0]);
     }
 
     private static RazorVueCompilationIssueException CreateUnsupportedCanonicalizationException(

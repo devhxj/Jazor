@@ -65,6 +65,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly HashSet<IMethodSymbol> _activeRenderHelperMethods;
         private readonly List<RazorVueRenderNode> _rootChildren = [];
         private readonly Stack<OpenFrame> _openFrames = new();
+        private readonly bool _deferUnsupportedTemplateLocals;
 
         public Parser(
             RazorVueSemanticSnapshot snapshot,
@@ -72,7 +73,8 @@ internal sealed class RazorVueRenderTreeExtractor
             RazorVueCompilationSymbols symbols,
             ImmutableHashSet<IParameterSymbol> builderParameters,
             IEnumerable<ILocalSymbol>? builderAliases = null,
-            IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null)
+            IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null,
+            bool deferUnsupportedTemplateLocals = false)
         {
             _snapshot = snapshot;
             _compilation = compilation;
@@ -84,6 +86,7 @@ internal sealed class RazorVueRenderTreeExtractor
             _activeRenderHelperMethods = activeRenderHelperMethods is null
                 ? new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default)
                 : new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
+            _deferUnsupportedTemplateLocals = deferUnsupportedTemplateLocals;
         }
 
         public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
@@ -582,28 +585,45 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void ParseVariableDeclarationGroup(IVariableDeclarationGroupOperation declarationGroup)
         {
+            if (_deferUnsupportedTemplateLocals && IsTemplateScopedDeclarationGroup(declarationGroup, out var deferredIssue))
+            {
+                AddNode(new RazorVueUnsupportedTemplateNode(
+                    deferredIssue,
+                    CreateOrigins(declarationGroup, RazorVueOriginKind.Template)));
+                return;
+            }
+
             foreach (var declaration in declarationGroup.Declarations)
             {
                 foreach (var declarator in declaration.Declarators)
                 {
-                    if (TryRegisterBuilderAliasDeclaration(declarator))
+                    if (TryRegisterBuilderAliasDeclaration(declarator, out var failureMessage))
                         continue;
 
                     throw CreateStructuralIssue(
                         declarator,
-                        $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'. Only direct RenderTreeBuilder local alias declarations are supported.");
+                        failureMessage);
                 }
             }
         }
 
-        private bool TryRegisterBuilderAliasDeclaration(IVariableDeclaratorOperation declarator)
+        private bool TryRegisterBuilderAliasDeclaration(
+            IVariableDeclaratorOperation declarator,
+            out string failureMessage)
         {
+            failureMessage =
+                $"BuildRenderTree does not support local variable declaration '{GetOperationDisplay(declarator)}' in component '{_snapshot.Descriptor.FullName}'. Only direct RenderTreeBuilder local alias declarations are supported.";
+
             if (!IsRenderTreeBuilderType(declarator.Symbol.Type))
                 return false;
 
             var value = declarator.Initializer?.Value;
             if (!IsKnownBuilderReference(value))
+            {
+                failureMessage =
+                    $"BuildRenderTree local alias '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}' must be initialized from the active RenderTreeBuilder parameter or a direct local alias. Other RenderTreeBuilder receivers cannot be tracked safely.";
                 return false;
+            }
 
             _builderAliases.Add(declarator.Symbol);
             return true;
@@ -1054,9 +1074,44 @@ internal sealed class RazorVueRenderTreeExtractor
                 return RazorVueRenderFragment.Empty;
 
             if (body is IBlockOperation block)
-                return new Parser(_snapshot, _compilation, _symbols, builderParameters, activeRenderHelperMethods: _activeRenderHelperMethods).Parse(block.Operations);
+                return new Parser(
+                    _snapshot,
+                    _compilation,
+                    _symbols,
+                    builderParameters,
+                    activeRenderHelperMethods: _activeRenderHelperMethods,
+                    deferUnsupportedTemplateLocals: anonymousFunction.Symbol.Parameters.Length == 1).Parse(block.Operations);
 
-            return new Parser(_snapshot, _compilation, _symbols, builderParameters, activeRenderHelperMethods: _activeRenderHelperMethods).Parse([body]);
+            return new Parser(
+                _snapshot,
+                _compilation,
+                _symbols,
+                builderParameters,
+                activeRenderHelperMethods: _activeRenderHelperMethods,
+                deferUnsupportedTemplateLocals: anonymousFunction.Symbol.Parameters.Length == 1).Parse([body]);
+        }
+
+        private bool IsTemplateScopedDeclarationGroup(
+            IVariableDeclarationGroupOperation declarationGroup,
+            out string message)
+        {
+            message = string.Empty;
+            foreach (var declaration in declarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                {
+                    if (IsRenderTreeBuilderType(declarator.Symbol.Type))
+                        return false;
+
+                    var display = GetOperationDisplay(declarator);
+                    message =
+                        $"RazorVue template expression cannot hoist component-local expression '{declarator.Symbol.Name}' in component '{_snapshot.Descriptor.FullName}'. " +
+                        $"The typed slot template introduces local variable declaration '{display}' that cannot be encoded into template scope safely.";
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool TryGetAnonymousFunction(

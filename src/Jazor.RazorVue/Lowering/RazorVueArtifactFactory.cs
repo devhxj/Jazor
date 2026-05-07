@@ -268,6 +268,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 case RazorVueExpressionNode:
                 case RazorVueSlotOutletNode:
                     return true;
+                case RazorVueUnsupportedTemplateNode:
+                    return true;
                 case RazorVueConditionalNode conditional:
                     if (HasTemplateShape(conditional.WhenTrue) || HasTemplateShape(conditional.WhenFalse))
                         return true;
@@ -304,6 +306,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     if (HasUnsupportedTemplateNode(loop.Body))
                         return true;
                     break;
+                case RazorVueUnsupportedTemplateNode:
+                    return true;
                 case RazorVueRenderNode:
                     break;
                 default:

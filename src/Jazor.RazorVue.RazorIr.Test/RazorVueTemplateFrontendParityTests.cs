@@ -283,6 +283,7 @@ public sealed class RazorVueTemplateFrontendParityTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
@@ -347,6 +348,7 @@ public sealed class RazorVueTemplateFrontendParityTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,

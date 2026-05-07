@@ -45,6 +45,10 @@ internal sealed record RazorVueExpressionNode(
     IOperation Expression,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal sealed record RazorVueUnsupportedTemplateNode(
+    string Message,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
 internal sealed record RazorVueSlotOutletNode(
     string SlotName,
     IOperation? Argument,

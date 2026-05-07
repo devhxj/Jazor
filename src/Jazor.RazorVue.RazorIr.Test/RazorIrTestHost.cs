@@ -554,8 +554,23 @@ internal static class RazorIrTestHost
             referencePaths.Add(assembly.Location);
         }
 
+        AddAssemblyLocation(referencePaths, typeof(ECMAScript.Vue3));
+        AddAssemblyLocation(referencePaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
+        AddAssemblyLocation(referencePaths, typeof(Microsoft.AspNetCore.Components.ComponentBase));
+        AddAssemblyLocation(referencePaths, typeof(Microsoft.CodeAnalysis.Compilation));
+        AddAssemblyLocation(referencePaths, typeof(Microsoft.CodeAnalysis.CSharp.CSharpCompilation));
+
         return referencePaths
             .Select(static path => MetadataReference.CreateFromFile(path))
             .ToArray();
+    }
+
+    private static void AddAssemblyLocation(HashSet<string> referencePaths, Type markerType)
+    {
+        var location = markerType.Assembly.Location;
+        if (!string.IsNullOrWhiteSpace(location))
+        {
+            referencePaths.Add(location);
+        }
     }
 }

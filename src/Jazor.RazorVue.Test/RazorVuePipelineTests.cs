@@ -142,6 +142,7 @@ public sealed class RazorVuePipelineTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
@@ -221,6 +222,7 @@ public sealed class RazorVuePipelineTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
@@ -1908,6 +1910,7 @@ public sealed class RazorVuePipelineTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
@@ -2721,6 +2724,7 @@ public sealed class RazorVuePipelineTests
             [
                 CSharpSyntaxTree.ParseText(
                     """
+                    global using static ECMAScript.Vue3;
                     global using ECMAScript.VueContract;
                     global using Microsoft.AspNetCore.Components;
                     """,
