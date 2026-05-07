@@ -479,7 +479,7 @@ public sealed class SdkIntegrationTests
                 public static string Build(Router router, RouteLocation location, RouteLocationNormalized normalized)
                 {
                     var routeRef = ShallowRef(UseRoute());
-                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => normalized.Matched[0]);
+                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => (RouteRecordNormalized?)normalized.Matched[0]);
 
                     Provide(VueRoute.RouterKey, router);
                     Provide(VueRoute.RouteLocationKey, UseRoute());
@@ -661,7 +661,7 @@ public sealed class SdkIntegrationTests
                 public static string Build(Router router, RouteLocation location, RouteLocationNormalized normalized)
                 {
                     var routeRef = ShallowRef(UseRoute());
-                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => normalized.Matched[0]);
+                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => (RouteRecordNormalized?)normalized.Matched[0]);
 
                     Provide(VueRoute.RouterKey, router);
                     Provide(VueRoute.RouteLocationKey, UseRoute());

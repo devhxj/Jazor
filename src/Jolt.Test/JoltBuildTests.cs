@@ -780,6 +780,102 @@ public sealed class JoltBuildTests
     }
 
     [TestMethod]
+    public async Task DenoBundleRunner_RunAsync_BundlesNpmVueAndVueRouterDependencies_WhenWorkspaceEnablesAutoNodeModules()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(tempDir, "src"));
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "package.json"),
+                """
+                {
+                  "dependencies": {
+                    "vue": "^3.5.13",
+                    "vue-router": "^4.5.1"
+                  }
+                }
+                """);
+            await File.WriteAllTextAsync(
+                Path.Combine(tempDir, "src", "main.js"),
+                """
+                import { computed } from "npm:vue@3";
+                import { createMemoryHistory, createRouter } from "npm:vue-router@4";
+
+                const router = createRouter({
+                  history: createMemoryHistory("/bundle-base"),
+                  routes: [{ path: "/users", name: "users", component: { render() { return null; } } }]
+                });
+
+                export const routeCount = computed(() => router.getRoutes().length);
+                console.log(routeCount.value);
+                """);
+
+            var devOptions = new DevServerOptions
+            {
+                RootDirectory = tempDir,
+                Host = "127.0.0.1",
+                Port = 0,
+                HmrEnabled = false,
+                VolarCompiler = "stub"
+            };
+
+            var moduleResolver = new ModuleResolver(tempDir);
+            var compiler = new OnDemandCompiler(
+                new JazorVueParser(),
+                new JazorVueCompiler(),
+                frontendCompiler: null,
+                new CompilationCache(),
+                new DependencyGraph(moduleResolver),
+                moduleResolver);
+
+            await using var server = new DevHttpServer(
+                devOptions,
+                compiler,
+                moduleResolver,
+                new HtmlTransformer(devOptions));
+            await server.StartAsync(CancellationToken.None);
+
+            var buildOptions = new BuildOptions
+            {
+                RootDirectory = tempDir,
+                OutDir = "dist",
+                SourceMap = SourceMapOption.External,
+                Minify = false,
+                CodeSplitting = false
+            };
+            using var context = new BuildContext(buildOptions);
+            var runner = new DenoBundleRunner(context);
+
+            var entryUri = new Uri(server.ListeningUri!, "/src/main.js");
+            var result = await runner.RunAsync(entryUri, CancellationToken.None);
+
+            Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics.Select(static diagnostic => diagnostic.Message)));
+            Assert.AreEqual(1, result.Chunks.Count);
+
+            var chunkPath = Path.Combine(tempDir, result.Chunks[0].FilePath.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(chunkPath));
+            var chunkContent = await File.ReadAllTextAsync(chunkPath);
+            StringAssert.Contains(chunkContent, "/bundle-base");
+            StringAssert.Contains(chunkContent, "/users");
+            Assert.IsFalse(
+                chunkContent.Contains("npm:vue-router@4", StringComparison.Ordinal),
+                "Bundled chunk should not retain unresolved vue-router npm imports.");
+            Assert.IsFalse(
+                chunkContent.Contains("npm:vue@3", StringComparison.Ordinal),
+                "Bundled chunk should not retain unresolved vue npm imports.");
+
+            Assert.IsNotNull(result.Chunks[0].SourceMapPath);
+            var sourceMapPath = Path.Combine(tempDir, result.Chunks[0].SourceMapPath!.Replace('/', Path.DirectorySeparatorChar));
+            Assert.IsTrue(File.Exists(sourceMapPath));
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
     public void DenoBundleRunner_ShouldTraverseBundleOutputDirectory_ReturnsFalse_ForReparsePoint()
     {
         var assetsDirectory = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "deno-bundle-assets-" + Guid.NewGuid().ToString("N")));
@@ -2209,6 +2305,24 @@ public sealed class JoltBuildTests
             StringAssert.Contains(json, "\"pinia/\": \"npm:pinia@^2.3.1/\"");
             StringAssert.Contains(json, "\"vue-router\": \"npm:vue-router@~4.5.1\"");
             Assert.IsFalse(json.Contains("local-lib", StringComparison.Ordinal), "file: dependencies should be excluded from the Deno import map");
+        }
+        finally
+        {
+            DeleteDirectory(tempDir);
+        }
+    }
+
+    [TestMethod]
+    public async Task DenoBuildImportMapGenerator_GenerateDenoConfigAsync_EnablesAutoNodeModules()
+    {
+        var tempDir = CreateTemporaryDirectory();
+        try
+        {
+            var denoConfigPath = await DenoBuildImportMapGenerator.GenerateDenoConfigAsync(tempDir, CancellationToken.None);
+            var json = await File.ReadAllTextAsync(denoConfigPath);
+
+            Assert.IsTrue(File.Exists(denoConfigPath));
+            StringAssert.Contains(json, "\"nodeModulesDir\": \"auto\"");
         }
         finally
         {

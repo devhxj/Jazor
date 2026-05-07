@@ -53,6 +53,7 @@ internal sealed class DenoBundleRunner
         await using var bundlerProxy = await BundlerModuleProxyServer.StartAsync(entryUri, cancellationToken);
         var bundlerEntryUri = bundlerProxy.CreateBundlerEntryUri(entryUri);
         var importMapPath = await DenoBuildImportMapGenerator.GenerateAsync(_context.RootDirectory, cancellationToken);
+        var denoConfigPath = await DenoBuildImportMapGenerator.GenerateDenoConfigAsync(_context.RootDirectory, cancellationToken);
         var provisionalOutputPath = Path.Combine(assetsDirectory, "index.js");
 
         var startInfo = new ProcessStartInfo
@@ -75,7 +76,8 @@ internal sealed class DenoBundleRunner
         startInfo.ArgumentList.Add("--conditions");
         startInfo.ArgumentList.Add("production");
         startInfo.ArgumentList.Add("--quiet");
-        startInfo.ArgumentList.Add("--no-config");
+        startInfo.ArgumentList.Add("--config");
+        startInfo.ArgumentList.Add(denoConfigPath);
         startInfo.ArgumentList.Add("--import-map");
         startInfo.ArgumentList.Add(importMapPath);
         startInfo.ArgumentList.Add($"--allow-import={bundlerEntryUri.Host}:{bundlerEntryUri.Port}");

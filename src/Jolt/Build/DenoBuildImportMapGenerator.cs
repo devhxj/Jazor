@@ -12,6 +12,10 @@ internal static class DenoBuildImportMapGenerator
     {
         WriteIndented = true
     };
+    private static readonly JsonSerializerOptions DenoConfigSerializerOptions = new()
+    {
+        WriteIndented = true
+    };
 
     public static async Task<string> GenerateAsync(
         string rootDirectory,
@@ -61,6 +65,40 @@ internal static class DenoBuildImportMapGenerator
         return importMapPath;
     }
 
+    public static async Task<string> GenerateDenoConfigAsync(
+        string rootDirectory,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
+        cancellationToken.ThrowIfCancellationRequested();
+        rootDirectory = Path.GetFullPath(rootDirectory);
+
+        var jazorDirectory = EnsureTrustedBuildMetadataPath(
+            rootDirectory,
+            rootDirectory,
+            Path.Combine(rootDirectory, ".jazor"),
+            allowMissingLeaf: true);
+        Directory.CreateDirectory(jazorDirectory);
+
+        var denoConfigPath = EnsureTrustedBuildMetadataPath(
+            rootDirectory,
+            jazorDirectory,
+            Path.Combine(jazorDirectory, "build.deno.json"),
+            allowMissingLeaf: true);
+        var serializedDenoConfig = SerializeDenoConfig();
+        if (File.Exists(denoConfigPath))
+        {
+            var existingDenoConfig = await File.ReadAllTextAsync(denoConfigPath, cancellationToken);
+            if (string.Equals(existingDenoConfig, serializedDenoConfig, StringComparison.Ordinal))
+            {
+                return denoConfigPath;
+            }
+        }
+
+        await File.WriteAllTextAsync(denoConfigPath, serializedDenoConfig, cancellationToken);
+        return denoConfigPath;
+    }
+
     private static string SerializeImportMap(IReadOnlyDictionary<string, string> imports)
     {
         var orderedImports = imports
@@ -71,6 +109,14 @@ internal static class DenoBuildImportMapGenerator
                 StringComparer.Ordinal);
         return JsonSerializer.Serialize(new { imports = orderedImports }, ImportMapSerializerOptions);
     }
+
+    private static string SerializeDenoConfig()
+        => JsonSerializer.Serialize(
+            new
+            {
+                nodeModulesDir = "auto"
+            },
+            DenoConfigSerializerOptions);
 
     private static void AddPackageImports(
         JsonElement root,
