@@ -172,6 +172,51 @@ public sealed class EcmaScriptPiniaTestingImportTests
 	}
 
 	[TestMethod]
+	public async Task Convert_ClassUsingProjectedTypedStubActionPredicate_GeneratesSameRuntimePredicateConfiguration()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern int Count { get; set; }
+				}
+
+				[ECMAScriptModule("tests/testing-options-typed-predicate.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions
+						{
+							StubActions = ProjectStubActionPredicate<CounterStore>(ShouldStub),
+							WritableComputed = true
+						});
+
+					private static bool ShouldStub(string actionName, CounterStore store)
+						=> actionName == "increment" && store.Id == "counter" && store.Count >= 0;
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: shouldStub");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
 	public async Task Convert_ClassUsingTestingOptionsNamedStubActions_GeneratesArrayConfiguration()
 	{
 		var code = """

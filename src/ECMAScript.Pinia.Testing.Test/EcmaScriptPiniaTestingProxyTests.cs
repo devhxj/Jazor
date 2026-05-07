@@ -27,7 +27,8 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 			typeof(PiniaTesting.TestingStubActions),
 			typeof(PiniaTestingSpyFactory),
 			typeof(PiniaTestingSpyFactory<>).MakeGenericType(typeof(Action)),
-			typeof(PiniaTestingStubActionPredicate)
+			typeof(PiniaTestingStubActionPredicate),
+			typeof(PiniaTestingStubActionPredicate<>).MakeGenericType(typeof(Pinia.StoreGeneric))
 		};
 
 		foreach (var type in runtimeTypes)
@@ -80,6 +81,22 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.IsTrue(methods.Any(static method => method.GetGenericArguments().Length == 3));
 		Assert.IsTrue(methods.Any(static method => method.GetGenericArguments().Length == 4));
 		Assert.IsTrue(methods.Any(static method => method.GetGenericArguments().Length == 5));
+	}
+
+	[TestMethod]
+	public void PiniaTesting_StaticApi_ExposesTypedStubActionPredicateProjection()
+	{
+		var methods = typeof(PiniaTesting)
+			.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(PiniaTesting.ProjectStubActionPredicate))
+			.ToArray();
+
+		Assert.AreEqual(1, methods.Length);
+		Assert.AreEqual(typeof(PiniaTestingStubActionPredicate), methods[0].ReturnType);
+		Assert.AreEqual(1, methods[0].GetGenericArguments().Length);
+		Assert.AreEqual(1, methods[0].GetParameters().Length);
+		Assert.IsTrue(methods[0].GetParameters()[0].ParameterType.IsGenericType);
+		Assert.AreEqual(typeof(PiniaTestingStubActionPredicate<>), methods[0].GetParameters()[0].ParameterType.GetGenericTypeDefinition());
 	}
 
 	[TestMethod]

@@ -510,6 +510,43 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_RawRouteComponent_ImplicitConversion_FromRouteComponent_PreservesLazyLoaderBranch()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static RawRouteComponent BuildRawLoader()
+                {
+                    ECMAScript.VueContract.IVueComponent component = null!;
+                    RouteComponent typed = RouteComponent.From(() => Promise<ECMAScript.VueContract.IVueComponent>.Resolve(component));
+                    RawRouteComponent raw = typed;
+                    return raw;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let typed = () => {");
+        StringAssert.Contains(script, "return Promise.resolve(component);");
+        StringAssert.Contains(script, "let raw = typed;");
+        StringAssert.Contains(script, "return raw;");
+    }
+
+    [TestMethod]
     public async Task VueRoute_CurrentRoutePathAccess_CompilesThroughVueReadonlyRefValue()
     {
         var code = """

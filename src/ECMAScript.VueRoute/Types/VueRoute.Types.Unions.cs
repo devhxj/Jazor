@@ -661,7 +661,7 @@ public readonly struct RawRouteComponent
 		=> new(value);
 
 	public static implicit operator RawRouteComponent(RouteComponent value)
-		=> new(value.AsComponent!);
+		=> value.AsLoader is not null ? new(value.AsLoader) : new(value.AsComponent!);
 }
 
 [ECMAScript]
