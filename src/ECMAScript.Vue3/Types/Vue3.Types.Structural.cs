@@ -369,6 +369,58 @@ public static partial class Vue3
 	}
 
 	/// <summary>
+	/// A readonly computed ref produced by Vue's <c>computed(getter)</c>. This remains
+	/// distinct from the broader <see cref="VueReadonlyRef{T}"/> contract so library
+	/// surfaces can preserve official APIs that specifically guarantee computed semantics.
+	/// </summary>
+	/// <typeparam name="T">The computed value type.</typeparam>
+	public abstract class VueComputedRef<T> : VueReadonlyRef<T>
+	{
+		protected VueComputedRef()
+		{
+		}
+	}
+
+	/// <summary>
+	/// A writable computed ref produced by Vue's <c>computed({ get, set })</c> overload.
+	/// This remains distinct from generic writable refs so higher-level libraries can
+	/// encode official writable-computed contracts without collapsing them into
+	/// <see cref="IVueRef{T}"/>.
+	/// </summary>
+	/// <typeparam name="T">The computed value type.</typeparam>
+	public abstract class VueWritableComputedRef<T> : IVueRef<T>
+	{
+		protected VueWritableComputedRef()
+		{
+		}
+
+		/// <summary>
+		/// Gets or sets the current computed value.
+		/// </summary>
+		[Description("@#value")]
+		public extern T Value { get; set; }
+	}
+
+	/// <summary>
+	/// A shallow ref produced by Vue's <c>shallowRef()</c>. The outer <c>value</c> slot
+	/// is reactive while nested object members are not recursively converted to deep
+	/// reactive proxies by Vue.
+	/// </summary>
+	/// <typeparam name="T">The wrapped value type.</typeparam>
+	public abstract class VueShallowRef<T> : IVueRef<T>
+	{
+		protected VueShallowRef()
+		{
+		}
+
+		/// <summary>
+		/// Gets or sets the wrapped shallow reactive value.
+		/// </summary>
+		[Description("@#value")]
+		public extern T Value { get; set; }
+	}
+
+	/// <summary>
 	/// Untyped refs object returned by <c>toRefs()</c>. Keys are final runtime property
 	/// names and values are linked refs for those properties.
 	/// </summary>

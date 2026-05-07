@@ -328,7 +328,7 @@ public delegate Vue3.VueProps? VueDirectiveSSRPropsCallback<TValue>(Vue3.VueDire
 /// resolves to the component definition.
 /// </summary>
 /// <returns>A promise resolving to the async component definition.</returns>
-public delegate IPromise<ECMAScript.VueContract.IVueComponent> VueAsyncComponentLoader();
+public delegate IPromise<Vue3.IVueComponent> VueAsyncComponentLoader();
 
 /// <summary>
 /// Loader callback for a strongly typed Vue async component.
@@ -336,7 +336,7 @@ public delegate IPromise<ECMAScript.VueContract.IVueComponent> VueAsyncComponent
 /// <typeparam name="TComponent">The component contract produced by the loader.</typeparam>
 /// <returns>A promise resolving to the typed async component definition.</returns>
 public delegate IPromise<TComponent> VueAsyncComponentLoader<TComponent>()
-	where TComponent : ECMAScript.VueContract.IVueComponent;
+	where TComponent : ECMAScript.Vue3.IVueComponent;
 
 /// <summary>
 /// Callback used by Vue async component error handling to retry or fail the load.
@@ -471,4 +471,19 @@ public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TVal
 [Description("@#")]
 public static partial class Vue3
 {
+	/// <summary>
+	/// RazorVue/Vue3 authoring component contract.
+	/// Components are expected to inherit <c>ComponentBase</c> and implement this marker.
+	/// </summary>
+	public interface IVueComponent : IUIComponent
+	{
+	}
+
+	/// <summary>
+	/// Marker for external Vue library component stubs that participate in
+	/// descriptor/registry flows without being treated as ordinary user components.
+	/// </summary>
+	public interface IVueLibraryComponent : IVueComponent
+	{
+	}
 }

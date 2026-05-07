@@ -11,7 +11,7 @@ public static partial class Vue3
 	/// to select the correct <c>h()</c> overload for props-only components.
 	/// </summary>
 	/// <typeparam name="TProps">The props record type describing the component's accepted props.</typeparam>
-	public interface IVueComponent<TProps> : ECMAScript.VueContract.IVueComponent
+	public interface IVueComponent<TProps> : ECMAScript.Vue3.IVueComponent
 		where TProps : VueProps
 	{
 	}
@@ -21,7 +21,7 @@ public static partial class Vue3
 	/// this interface to select the correct <c>h()</c> overload for slots-only components.
 	/// </summary>
 	/// <typeparam name="TSlots">The slots record type describing the component's accepted slots.</typeparam>
-	public interface IVueSlotComponent<TSlots> : ECMAScript.VueContract.IVueComponent
+	public interface IVueSlotComponent<TSlots> : ECMAScript.Vue3.IVueComponent
 		where TSlots : VueSlots
 	{
 	}

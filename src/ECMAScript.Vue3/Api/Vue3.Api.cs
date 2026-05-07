@@ -247,7 +247,7 @@ public static partial class Vue3
 	/// <returns>A typed async component reference that preserves prop/slot contracts.</returns>
 	[Description("@#defineAsyncComponent")]
 	public extern static TComponent DefineAsyncComponent<TComponent>(VueAsyncComponentOptions<TComponent> options)
-		where TComponent : ECMAScript.VueContract.IVueComponent;
+		where TComponent : ECMAScript.Vue3.IVueComponent;
 
 	/// <summary>
 	/// Vue's built-in <c>Transition</c> component for animating a single element or

@@ -109,7 +109,7 @@ public static partial class Vue3
 	/// <param name="value">The initial value of the shallow ref.</param>
 	/// <returns>A shallow ref whose <c>Value</c> property only triggers on replacement, not on deep mutation.</returns>
 	[Description("@#shallowRef")]
-	public extern static IVueRef<T> ShallowRef<T>(T value);
+	public extern static VueShallowRef<T> ShallowRef<T>(T value);
 
 	/// <summary>
 	/// Forces effects depending on a shallow ref to re-run.
@@ -117,7 +117,7 @@ public static partial class Vue3
 	/// <typeparam name="T">The type of the ref value.</typeparam>
 	/// <param name="value">The ref to trigger.</param>
 	[Description("@#triggerRef")]
-	public extern static void TriggerRef<T>(IVueRef<T> value);
+	public extern static void TriggerRef<T>(VueShallowRef<T> value);
 
 	/// <summary>
 	/// Creates a custom ref whose dependency tracking and triggering are controlled by
@@ -179,9 +179,9 @@ public static partial class Vue3
 	/// </summary>
 	/// <typeparam name="T">The getter result type.</typeparam>
 	/// <param name="getter">The getter to wrap.</param>
-	/// <returns>A readonly ref backed by the supplied getter.</returns>
+	/// <returns>A computed readonly ref backed by the supplied getter.</returns>
 	[Description("@#toRef")]
-	public extern static VueReadonlyRef<T> ToRef<T>(Func<T> getter);
+	public extern static VueComputedRef<T> ToRef<T>(Func<T> getter);
 
 	/// <summary>
 	/// Creates a linked ref for a property on a reactive object. The value type is
@@ -259,9 +259,9 @@ public static partial class Vue3
 	/// </summary>
 	/// <typeparam name="T">The type of the computed value.</typeparam>
 	/// <param name="getter">A function that computes the derived value. Reactive values accessed inside are tracked as dependencies.</param>
-	/// <returns>A readonly ref whose <c>Value</c> is the latest computed result.</returns>
+	/// <returns>A computed readonly ref whose <c>Value</c> is the latest computed result.</returns>
 	[Description("@#computed")]
-	public extern static VueReadonlyRef<T> Computed<T>(Func<T> getter);
+	public extern static VueComputedRef<T> Computed<T>(Func<T> getter);
 
 	/// <summary>
 	/// Creates a writable computed ref from explicit get/set delegates.
@@ -270,7 +270,7 @@ public static partial class Vue3
 	/// <param name="options">Plain Vue computed options containing <c>get</c> and <c>set</c>.</param>
 	/// <returns>A writable computed ref.</returns>
 	[Description("@#computed")]
-	public extern static IVueRef<T> Computed<T>(VueWritableComputedOptions<T> options);
+	public extern static VueWritableComputedRef<T> Computed<T>(VueWritableComputedOptions<T> options);
 
 	/// <summary>
 	/// Watches a reactive source and calls the callback when it changes. The callback
