@@ -82,6 +82,15 @@ public static partial class PiniaTesting
 
 		public PiniaTestingStubActionPredicate? AsPredicate => _kind == 3 ? _predicate : default;
 
+		[ECMAScriptInline("__arg1")]
+		public extern static TestingStubActions From(bool value);
+
+		[ECMAScriptInline("__arg1")]
+		public extern static TestingStubActions From(string[] value);
+
+		[ECMAScriptInline("__arg1")]
+		public extern static TestingStubActions From(PiniaTestingStubActionPredicate value);
+
 		public static implicit operator TestingStubActions(bool value)
 			=> new(value);
 
@@ -89,6 +98,74 @@ public static partial class PiniaTesting
 			=> new(value);
 
 		public static implicit operator TestingStubActions(PiniaTestingStubActionPredicate value)
+			=> new(value);
+	}
+
+	/// <summary>
+	/// Strongly typed <c>stubActions</c> configuration accepted by
+	/// <c>@pinia/testing</c> when the caller wants predicate authoring to receive one
+	/// explicit store projection.
+	/// Runtime shape remains the same official Pinia union:
+	/// global boolean, explicit action-name list, or predicate function.
+	/// </summary>
+	/// <typeparam name="TStore">The concrete store projection expected by the predicate branch.</typeparam>
+	[ECMAScript]
+	[ECMAScriptUnion]
+	[Description("@#")]
+	public readonly struct TestingStubActions<TStore>
+		where TStore : class
+	{
+		private readonly byte _kind;
+		private readonly bool _boolean;
+		private readonly string[]? _names;
+		private readonly PiniaTestingStubActionPredicate<TStore>? _predicate;
+
+		private TestingStubActions(bool value)
+		{
+			_kind = 1;
+			_boolean = value;
+			_names = default;
+			_predicate = default;
+		}
+
+		private TestingStubActions(string[] value)
+		{
+			_kind = 2;
+			_boolean = default;
+			_names = value;
+			_predicate = default;
+		}
+
+		private TestingStubActions(PiniaTestingStubActionPredicate<TStore> value)
+		{
+			_kind = 3;
+			_boolean = default;
+			_names = default;
+			_predicate = value;
+		}
+
+		public bool? AsBoolean => _kind == 1 ? _boolean : default(bool?);
+
+		public string[]? AsNames => _kind == 2 ? _names : default;
+
+		public PiniaTestingStubActionPredicate<TStore>? AsPredicate => _kind == 3 ? _predicate : default;
+
+		[ECMAScriptInline("__arg1")]
+		public extern static TestingStubActions<TStore> From(bool value);
+
+		[ECMAScriptInline("__arg1")]
+		public extern static TestingStubActions<TStore> From(string[] value);
+
+		[ECMAScriptInline("__arg1")]
+		public extern static TestingStubActions<TStore> From(PiniaTestingStubActionPredicate<TStore> value);
+
+		public static implicit operator TestingStubActions<TStore>(bool value)
+			=> new(value);
+
+		public static implicit operator TestingStubActions<TStore>(string[] value)
+			=> new(value);
+
+		public static implicit operator TestingStubActions<TStore>(PiniaTestingStubActionPredicate<TStore> value)
 			=> new(value);
 	}
 
@@ -169,5 +246,25 @@ public static partial class PiniaTesting
 		/// </summary>
 		[Description("@#createSpy")]
 		public new PiniaTestingSpyFactory<TDelegate>? CreateSpy { get; init; }
+	}
+
+	/// <summary>
+	/// Typed testing options accepted by <c>createTestingPinia()</c> when the caller
+	/// wants to preserve one explicit delegate shape for <c>createSpy</c> and one
+	/// explicit store projection for predicate-style <c>stubActions</c> authoring.
+	/// Runtime object shape remains the same as <see cref="TestingOptions"/>.
+	/// </summary>
+	/// <typeparam name="TDelegate">The concrete delegate shape expected by <c>createSpy</c>.</typeparam>
+	/// <typeparam name="TStore">The concrete store projection expected by predicate-style <c>stubActions</c>.</typeparam>
+	public record TestingOptions<TDelegate, TStore> : TestingOptions<TDelegate>
+		where TDelegate : Delegate
+		where TStore : class
+	{
+		/// <summary>
+		/// Controls whether store actions are replaced with spies by default while
+		/// preserving one explicit store projection for predicate-style authoring.
+		/// </summary>
+		[Description("@#stubActions")]
+		public new TestingStubActions<TStore>? StubActions { get; init; }
 	}
 }

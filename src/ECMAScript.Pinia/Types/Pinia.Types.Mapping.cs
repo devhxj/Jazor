@@ -52,6 +52,12 @@ public static partial class Pinia
 
 		public PiniaMapStateSelector<TStore>? AsSelector => _kind == 2 ? _selector : default;
 
+		[ECMAScriptInline("__arg1")]
+		public extern static PiniaStateMapValue<TStore> From(string value);
+
+		[ECMAScriptInline("__arg1")]
+		public extern static PiniaStateMapValue<TStore> From(PiniaMapStateSelector<TStore> value);
+
 		public static implicit operator PiniaStateMapValue<TStore>(string value)
 			=> new(value);
 

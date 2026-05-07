@@ -540,6 +540,17 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.IsTrue(typeof(Vue3.VueDictionary<string>).IsAssignableFrom(typeof(Pinia.PiniaKeyMapper)));
 		Assert.IsTrue(typeof(Vue3.VueDictionary<Pinia.PiniaStateMapValue<Pinia.StoreGeneric>>)
 			.IsAssignableFrom(typeof(Pinia.PiniaStateMapper<Pinia.StoreGeneric>)));
+
+		var mapValueType = typeof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>);
+		var fromKey = mapValueType.GetMethod(nameof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string) });
+		var fromSelector = mapValueType.GetMethod(nameof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(PiniaMapStateSelector<Pinia.StoreGeneric>) });
+
+		Assert.IsNotNull(fromKey);
+		Assert.IsNotNull(fromSelector);
+		Assert.AreEqual(typeof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>), fromKey!.ReturnType);
+		Assert.AreEqual(typeof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>), fromSelector!.ReturnType);
+		Assert.AreEqual("__arg1", fromKey.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", fromSelector.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 	}
 
 	[TestMethod]

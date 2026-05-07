@@ -211,6 +211,77 @@ public sealed class EcmaScriptPiniaImportTests
 	}
 
 	[TestMethod]
+	public async Task Convert_ClassUsingMapStateObjectFormFactories_GeneratesMappedComputedObject()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using ECMAScript.VueContract;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.Vue3;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				[ECMAScriptModule("components/counter-panel-factories.mjs")]
+				public static class CounterPanelModule
+				{
+					public static IVueComponent Component = DefineComponent(new VueComponentOptions
+					{
+						Name = "CounterPanel",
+						Computed = CreateComputed(),
+						Render = Render
+					});
+
+					private static VueProps CreateComputed()
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+
+						return MapState(useCounterStore, new PiniaStateMapper<CounterStore>
+						{
+							{ "count", PiniaStateMapValue<CounterStore>.From("count") },
+							{ "doubleCount", PiniaStateMapValue<CounterStore>.From("double") },
+							{ "tripleCount", PiniaStateMapValue<CounterStore>.From(ReadTriple) }
+						});
+					}
+
+					public static IVNode Render()
+						=> H("section", "ready");
+
+					private static CounterState CreateState()
+						=> new CounterState
+						{
+							Count = 0
+						};
+
+					private static PiniaValue ReadTriple(CounterStore store)
+						=> store.State.Count * 3;
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterPanelModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { defineStore, mapState } from \"pinia\";");
+		StringAssert.Contains(script, "return mapState(useCounterStore, {");
+		StringAssert.Contains(script, "count: \"count\"");
+		StringAssert.Contains(script, "doubleCount: \"double\"");
+		StringAssert.Contains(script, "tripleCount: readTriple");
+	}
+
+	[TestMethod]
 	public async Task Convert_ClassUsingMapWritableStateAndMapActions_GeneratesHelperImports()
 	{
 		var code = """
@@ -425,6 +496,77 @@ public sealed class EcmaScriptPiniaImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "import { defineStore, mapGetters } from \"pinia\";");
 		StringAssert.Contains(script, "return mapGetters(useCounterStore, [\"double\"]);");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingMapGettersObjectFormFactories_GeneratesMappedComputedObject()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using ECMAScript.VueContract;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.Vue3;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				[ECMAScriptModule("components/counter-getters-factories.mjs")]
+				public static class CounterGetterModule
+				{
+					public static IVueComponent Component = DefineComponent(new VueComponentOptions
+					{
+						Name = "CounterGetterPanel",
+						Computed = CreateComputed(),
+						Render = Render
+					});
+
+					private static VueProps CreateComputed()
+					{
+						var useCounterStore = DefineStore<CounterStore, CounterState>("counter", new DefineStoreOptions<CounterState>
+						{
+							State = CreateState
+						});
+
+						return MapGetters(useCounterStore, new PiniaStateMapper<CounterStore>
+						{
+							{ "count", PiniaStateMapValue<CounterStore>.From("count") },
+							{ "doubleCount", PiniaStateMapValue<CounterStore>.From("double") },
+							{ "tripleCount", PiniaStateMapValue<CounterStore>.From(ReadTriple) }
+						});
+					}
+
+					public static IVNode Render()
+						=> H("section", "ready");
+
+					private static CounterState CreateState()
+						=> new CounterState
+						{
+							Count = 0
+						};
+
+					private static PiniaValue ReadTriple(CounterStore store)
+						=> store.State.Count * 3;
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterGetterModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { defineStore, mapGetters } from \"pinia\";");
+		StringAssert.Contains(script, "return mapGetters(useCounterStore, {");
+		StringAssert.Contains(script, "count: \"count\"");
+		StringAssert.Contains(script, "doubleCount: \"double\"");
+		StringAssert.Contains(script, "tripleCount: readTriple");
 	}
 
 	[TestMethod]

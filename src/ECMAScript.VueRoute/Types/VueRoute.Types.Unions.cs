@@ -295,6 +295,18 @@ public readonly struct RouteLocationRawMaybeRef
 	public static implicit operator RouteLocationRawMaybeRef(RouteLocationAsRelative value)
 		=> new(value);
 
+	public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationRaw> value)
+		=> new(value);
+
+	public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<string> value)
+		=> new(value);
+
+	public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsPath> value)
+		=> new(value);
+
+	public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsRelative> value)
+		=> new(value);
+
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteLocationRawMaybeRef From(Vue3.IVueRef<RouteLocationRaw> value);
 
@@ -361,6 +373,9 @@ public readonly struct RouteBooleanMaybeRef
 	public Vue3.VueReadonlyRef<bool>? AsReadonlyRef => _kind == 3 ? _readonlyRef : default;
 
 	public static implicit operator RouteBooleanMaybeRef(bool value)
+		=> new(value);
+
+	public static implicit operator RouteBooleanMaybeRef(Vue3.VueReadonlyRef<bool> value)
 		=> new(value);
 
 	[ECMAScriptInline("__arg1")]
@@ -875,6 +890,9 @@ public readonly struct NavigationGuardNextArgument
 
 	public static implicit operator NavigationGuardNextArgument(Error value)
 		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static NavigationGuardNextArgument From(NavigationGuardNextCallback value);
 }
 
 [ECMAScript]
@@ -1073,16 +1091,31 @@ public readonly struct RouteRecordBeforeEnter
 	public extern static RouteRecordBeforeEnter From(NavigationGuardHandler value);
 
 	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(NavigationGuardHandler[] value);
+
+	[ECMAScriptInline("__arg1")]
 	public extern static RouteRecordBeforeEnter From(RouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(RouteNavigationGuard[] value);
 
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteRecordBeforeEnter From(AsyncRouteNavigationGuard value);
 
 	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(AsyncRouteNavigationGuard[] value);
+
+	[ECMAScriptInline("__arg1")]
 	public extern static RouteRecordBeforeEnter From(LegacyRouteNavigationGuard value);
 
 	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(LegacyRouteNavigationGuard[] value);
+
+	[ECMAScriptInline("__arg1")]
 	public extern static RouteRecordBeforeEnter From(LegacyAsyncRouteNavigationGuard value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordBeforeEnter From(LegacyAsyncRouteNavigationGuard[] value);
 }
 
 [ECMAScript]
@@ -1126,9 +1159,6 @@ public readonly struct RouteRedirectOption
 
 	public static implicit operator RouteRedirectOption(RouteRedirectCallback value)
 		=> new(value);
-
-	public static implicit operator RouteRedirectOption(Func<RouteLocation, RouteLocationNormalizedLoaded, RouteLocationRaw> value)
-		=> new(new RouteRedirectCallback(value));
 
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteRedirectOption From(RouteLocationRaw value);

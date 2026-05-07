@@ -38,6 +38,32 @@ public static partial class PiniaTesting
 		where TStore : class;
 
 	/// <summary>
+	/// Projects a typed <c>stubActions</c> predicate to the untyped runtime predicate
+	/// shape required by <see cref="TestingStubActions"/>.
+	/// This is a compile-time projection only and does not create a new runtime
+	/// function object.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection supplied to the predicate.</typeparam>
+	/// <param name="predicate">The typed stub-action predicate to project.</param>
+	/// <returns>The same runtime predicate projected to the untyped testing-options surface.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static PiniaTestingStubActionPredicate ProjectStubActionPredicate<TStore>(PiniaTestingStubActionPredicate<TStore> predicate)
+		where TStore : class;
+
+	/// <summary>
+	/// Projects a typed <c>stubActions</c> predicate directly to the typed testing
+	/// union surface used by <see cref="TestingOptions{TDelegate,TStore}.StubActions"/>.
+	/// This is a compile-time projection only and does not create a new runtime
+	/// predicate or wrapper object.
+	/// </summary>
+	/// <typeparam name="TStore">The typed store projection supplied to the predicate.</typeparam>
+	/// <param name="predicate">The typed stub-action predicate to project.</param>
+	/// <returns>The same runtime predicate projected to the typed <c>stubActions</c> union surface.</returns>
+	[ECMAScriptInline(IdentityInlineTemplate)]
+	public extern static TestingStubActions<TStore> ProjectStubActions<TStore>(PiniaTestingStubActionPredicate<TStore> predicate)
+		where TStore : class;
+
+	/// <summary>
 	/// Projects a typed Pinia plugin callback with typed store-definition options to
 	/// the untyped runtime plugin shape required by <see cref="TestingOptions.Plugins"/>.
 	/// This is a compile-time projection only and does not create a new runtime

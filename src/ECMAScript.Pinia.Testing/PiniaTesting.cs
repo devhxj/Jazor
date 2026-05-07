@@ -30,6 +30,17 @@ public delegate TDelegate PiniaTestingSpyFactory<TDelegate>(TDelegate? callback)
 /// <returns><c>true</c> when the action should be replaced with a stub.</returns>
 public delegate bool PiniaTestingStubActionPredicate(string actionName, Pinia.StoreGeneric store);
 
+/// <summary>
+/// Typed predicate used by <c>@pinia/testing</c> when callers want the stub-action
+/// decision callback to receive one explicit store projection.
+/// </summary>
+/// <typeparam name="TStore">The concrete store projection expected by the predicate.</typeparam>
+/// <param name="actionName">The action name currently being configured.</param>
+/// <param name="store">The concrete store instance owning the action, projected to <typeparamref name="TStore"/>.</param>
+/// <returns><c>true</c> when the action should be replaced with a stub.</returns>
+public delegate bool PiniaTestingStubActionPredicate<TStore>(string actionName, TStore store)
+	where TStore : class;
+
 [ECMAScript("@pinia/testing")]
 [Description("@#")]
 public static partial class PiniaTesting

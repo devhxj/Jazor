@@ -171,6 +171,51 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_LegacyGuardNext_Compiles_WithCallbackArgumentAuthoring()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static RouteRecordSingleView BuildRecord(RawRouteComponent component)
+                {
+                    return new RouteRecordSingleView
+                    {
+                        Path = "/users",
+                        Component = component,
+                        BeforeEnter = RouteRecordBeforeEnter.From((RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next) =>
+                        {
+                            next(NavigationGuardNextArgument.From((Vue3.VueComponentPublicInstance instance) =>
+                            {
+                                _ = instance;
+                            }));
+                            return true;
+                        })
+                    };
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "beforeEnter: (to, from, next) => {");
+        StringAssert.Contains(script, "next(instance => {");
+        StringAssert.Contains(script, "return true;");
+    }
+
+    [TestMethod]
     public async Task VueRoute_NavigationGuardAuthoring_Compiles_WithExplicitMethodOverloads_AndPropertyFactories()
     {
         var code = """
@@ -249,6 +294,68 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_BeforeEnterArrayAuthoring_Compiles_WithTypedGuardArrayFactories()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static RouteRecordSingleView BuildRecord(RawRouteComponent component)
+                {
+                    var syncGuards = new RouteNavigationGuard[]
+                    {
+                        (RouteLocationNormalized to, RouteLocationNormalizedLoaded from) => true,
+                        (RouteLocationNormalized to, RouteLocationNormalizedLoaded from) => new RouteLocationAsPath
+                        {
+                            Path = "/login",
+                            Hash = to.Hash
+                        }
+                    };
+                    var legacyGuards = new LegacyRouteNavigationGuard[]
+                    {
+                        (RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next) =>
+                        {
+                            next();
+                            return true;
+                        }
+                    };
+                    var legacyBeforeEnter = RouteRecordBeforeEnter.From(legacyGuards);
+
+                    return new RouteRecordSingleView
+                    {
+                        Path = "/users",
+                        Component = component,
+                        BeforeEnter = RouteRecordBeforeEnter.From(syncGuards)
+                    };
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let syncGuards = [(to, from) => {");
+        StringAssert.Contains(script, "return true;");
+        StringAssert.Contains(script, "path: \"/login\"");
+        StringAssert.Contains(script, "hash: to.hash");
+        StringAssert.Contains(script, "let legacyGuards = [(to, from, next) => {");
+        StringAssert.Contains(script, "next(null);");
+        StringAssert.Contains(script, "let legacyBeforeEnter = legacyGuards;");
+        StringAssert.Contains(script, "beforeEnter: syncGuards");
+    }
+
+    [TestMethod]
     public async Task VueRoute_RoutePropsAndRedirectAuthoring_Compiles_WithExplicitFactories_AndStronglyTypedNamedPropEntries()
     {
         var code = """
@@ -270,6 +377,16 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                     {
                         Featured = true
                     };
+                    RouteRecordPropsResolver propsResolver = (RouteLocationNormalized to) => new TestViewProps
+                    {
+                        Featured = to.Name != null
+                    };
+                    RouteRedirectCallback redirectCallback = (RouteLocation to, RouteLocationNormalizedLoaded from) => new RouteLocationAsPath
+                    {
+                        Path = to.Path + from.FullPath,
+                        Hash = to.Hash,
+                        Replace = true
+                    };
 
                     return new RouterOptions
                     {
@@ -280,10 +397,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                             {
                                 Path = "/users/:id",
                                 Component = component,
-                                Props = RouteRecordProps.From((RouteLocationNormalized to) => new TestViewProps
-                                {
-                                    Featured = to.Name != null
-                                })
+                                Props = propsResolver
                             },
                             new RouteRecordMultipleViews
                             {
@@ -302,12 +416,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                             new RouteRecordRedirect
                             {
                                 Path = "/legacy",
-                                Redirect = RouteRedirectOption.From((RouteLocation to, RouteLocationNormalizedLoaded from) => new RouteLocationAsPath
-                                {
-                                    Path = to.Path + from.FullPath,
-                                    Hash = to.Hash,
-                                    Replace = true
-                                })
+                                Redirect = redirectCallback
                             }
                         ]
                     };
@@ -329,13 +438,15 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "let staticProps = {");
         StringAssert.Contains(script, "featured: true");
-        StringAssert.Contains(script, "props: to => {");
+        StringAssert.Contains(script, "let propsResolver = to => {");
         StringAssert.Contains(script, "featured: to.name !== null");
+        StringAssert.Contains(script, "props: propsResolver");
         StringAssert.Contains(script, "default: true");
         StringAssert.Contains(script, "sidebar: staticProps");
         StringAssert.Contains(script, "footer: to => {");
         StringAssert.Contains(script, "featured: to.path !== \"\"");
-        StringAssert.Contains(script, "redirect: (to, from) => {");
+        StringAssert.Contains(script, "let redirectCallback = (to, from) => {");
+        StringAssert.Contains(script, "redirect: redirectCallback");
         StringAssert.Contains(script, "path: to.path + from.fullPath");
         StringAssert.Contains(script, "hash: to.hash");
         StringAssert.Contains(script, "replace: true");
@@ -507,6 +618,123 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "return Promise.resolve(component);");
         StringAssert.Contains(script, "export function buildTypedLoader()");
         StringAssert.Contains(script, "return () => {");
+    }
+
+    [TestMethod]
+    public void VueRoute_RouteComponentAuthoring_RejectsDirectInterfaceAssignment_AndRequiresExplicitFactories()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static RouteRecordSingleView BuildSingle(ECMAScript.VueContract.IVueComponent component)
+                {
+                    return new RouteRecordSingleView
+                    {
+                        Path = "/users",
+                        Component = component
+                    };
+                }
+
+                public static RouteComponent BuildLoaded(ECMAScript.VueContract.IVueComponent component)
+                {
+                    return component;
+                }
+            }
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            "ECMAScript.VueRoute.Test.Assembly.DirectComponentAssignment",
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
+            }),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var diagnostics = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "CS0029"),
+            string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    [TestMethod]
+    public async Task VueRoute_RawRouteComponents_CollectionInitializer_Compiles_WithLazyLoaderEntries()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static RawRouteComponents BuildComponents()
+                {
+                    ECMAScript.VueContract.IVueComponent component = null!;
+                    return new RawRouteComponents
+                    {
+                        { "default", () => Promise<ECMAScript.VueContract.IVueComponent>.Resolve(component) },
+                        { "sidebar", () => Promise<ECMAScript.VueContract.IVueComponent>.Resolve(component) }
+                    };
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "default: () => {");
+        StringAssert.Contains(script, "sidebar: () => {");
+        StringAssert.Contains(script, "return Promise.resolve(component);");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_RawRouteComponents_CollectionInitializer_Compiles_WithDirectComponentEntries()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static RawRouteComponents BuildComponents(ECMAScript.VueContract.IVueComponent component)
+                {
+                    return new RawRouteComponents
+                    {
+                        { "default", component },
+                        { "sidebar", component }
+                    };
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "default: component");
+        StringAssert.Contains(script, "sidebar: component");
     }
 
     [TestMethod]
@@ -797,6 +1025,51 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "8: \"tenant\"");
         StringAssert.Contains(script, "[featureKey]: nested");
         StringAssert.Contains(script, "meta: { primary: meta, secondary: collectionMeta }");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_RouteMeta_Compiles_WithCallbackAuthoring_InCollectionAndIndexerForms()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static RouteMeta BuildMeta(Symbol featureKey)
+                {
+                    var callbackMeta = new RouteMeta
+                    {
+                        { "onEnter", () => { } },
+                        { (Number)9, () => { } },
+                        { featureKey, () => { } }
+                    };
+
+                    callbackMeta["onLeave"] = RouteMetaValue.From(() => { });
+
+                    return callbackMeta;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let callbackMeta = {");
+        StringAssert.Contains(script, "onEnter: () => {");
+        StringAssert.Contains(script, "9: () => {");
+        StringAssert.Contains(script, "[featureKey]: () => {");
+        StringAssert.Contains(script, "callbackMeta[\"onLeave\"] = () => {");
+        StringAssert.Contains(script, "return callbackMeta;");
     }
 
     [TestMethod]
@@ -1257,6 +1530,237 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "viewTransition: true");
         StringAssert.Contains(script, "let props = { to: \"/users\", ariaCurrentValue: \"location\" };");
         StringAssert.Contains(script, "return link.navigate();");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_UseLinkMaybeRefContracts_Compile_WithDirectReadonlyRefAssignments()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static IPromise<RouteNavigationResult?> BuildLink()
+                {
+                    var toReadonly = ToRef(() => new RouteLocationAsRelative
+                    {
+                        Name = "users"
+                    });
+                    var replaceReadonly = Computed(() => true);
+                    var link = UseLink(new UseLinkOptions
+                    {
+                        To = toReadonly,
+                        Replace = replaceReadonly,
+                        ViewTransition = true
+                    });
+
+                    return link.Navigate();
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let toReadonly = toRef(() => {");
+        StringAssert.Contains(script, "return { name: \"users\" };");
+        StringAssert.Contains(script, "let replaceReadonly = computed(() => {");
+        StringAssert.Contains(script, "let link = useLink({");
+        StringAssert.Contains(script, "to: toReadonly,");
+        StringAssert.Contains(script, "replace: replaceReadonly,");
+        StringAssert.Contains(script, "return link.navigate();");
+    }
+
+    [TestMethod]
+    public void VueRoute_UseLinkMaybeRefContracts_RejectDirectWritableRefAssignments_AndRequireExplicitFactories()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static IPromise<RouteNavigationResult?> BuildLink()
+                {
+                    var toRef = Ref(new RouteLocationAsRelative
+                    {
+                        Name = "users"
+                    });
+                    var replaceRef = Ref(true);
+                    var link = UseLink(new UseLinkOptions
+                    {
+                        To = toRef,
+                        Replace = replaceRef,
+                        ViewTransition = true
+                    });
+
+                    return link.Navigate();
+                }
+            }
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            "ECMAScript.VueRoute.Test.Assembly.DirectWritableMaybeRefAssignment",
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
+            }),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var diagnostics = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "CS0029"),
+            string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    [TestMethod]
+    public async Task VueRoute_StronglyTypedDelegateVariables_Compile_WithoutFrom_WhenCSharpAlreadyExpressesTheContract()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public sealed record TestViewProps : ECMAScript.Vue3.VueProps
+            {
+            }
+
+            public static class TestClass
+            {
+                public static RouterOptions BuildOptions(RouterHistory history, RawRouteComponent component)
+                {
+                    RouteRecordPropsResolver propsResolver = (RouteLocationNormalized to) => new TestViewProps();
+                    RouteRedirectCallback redirectCallback = (RouteLocation to, RouteLocationNormalizedLoaded from) => "/home";
+                    RouterScrollBehavior scrollBehavior = (RouteLocationNormalized to, RouteLocationNormalizedLoaded from, ScrollPositionNormalized? savedPosition) => false;
+
+                    return new RouterOptions
+                    {
+                        History = history,
+                        Routes =
+                        [
+                            new RouteRecordSingleView
+                            {
+                                Path = "/users",
+                                Component = component,
+                                Props = propsResolver
+                            },
+                            new RouteRecordRedirect
+                            {
+                                Path = "/legacy",
+                                Redirect = redirectCallback
+                            }
+                        ],
+                        ScrollBehavior = scrollBehavior
+                    };
+                }
+
+                public static bool RunLegacyNext(NavigationGuardNext next)
+                {
+                    NavigationGuardNextCallback callback = (Vue3.VueComponentPublicInstance instance) =>
+                    {
+                        _ = instance;
+                    };
+                    next(callback);
+                    return true;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "props: propsResolver");
+        StringAssert.Contains(script, "redirect: redirectCallback");
+        StringAssert.Contains(script, "scrollBehavior: scrollBehavior");
+        StringAssert.Contains(script, "next(callback);");
+    }
+
+    [TestMethod]
+    public void VueRoute_DirectLambdaUnionAssignments_Reject_WhenCSharpCannotBind_AndRequireExplicitFactories()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public sealed record TestViewProps : ECMAScript.Vue3.VueProps
+            {
+            }
+
+            public static class TestClass
+            {
+                public static RouterOptions BuildOptions(RouterHistory history, RawRouteComponent component)
+                {
+                    NavigationGuardNext next = null!;
+
+                    next((Vue3.VueComponentPublicInstance instance) =>
+                    {
+                        _ = instance;
+                    });
+
+                    return new RouterOptions
+                    {
+                        History = history,
+                        Routes =
+                        [
+                            new RouteRecordSingleView
+                            {
+                                Path = "/users",
+                                Component = component,
+                                Props = (RouteLocationNormalized to) => new TestViewProps()
+                            },
+                            new RouteRecordRedirect
+                            {
+                                Path = "/legacy",
+                                Redirect = (RouteLocation to, RouteLocationNormalizedLoaded from) => "/home"
+                            }
+                        ],
+                        ScrollBehavior = (RouteLocationNormalized to, RouteLocationNormalizedLoaded from, ScrollPositionNormalized? savedPosition) => false
+                    };
+                }
+            }
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            "ECMAScript.VueRoute.Test.Assembly.DirectLambdaUnionAssignments",
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
+            }),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var diagnostics = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+
+        Assert.IsTrue(diagnostics.Any(static diagnostic =>
+                diagnostic.Id is "CS1660" or "CS1503" or "CS0029"),
+            string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
     }
 
     [TestMethod]

@@ -23,8 +23,10 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 			typeof(PiniaTesting),
 			typeof(PiniaTesting.TestingPinia),
 			typeof(PiniaTesting.TestingOptions),
+			typeof(PiniaTesting.TestingOptions<,>).MakeGenericType(typeof(Action<int>), typeof(Pinia.StoreGeneric)),
 			typeof(PiniaTesting.TestingInitialState),
 			typeof(PiniaTesting.TestingStubActions),
+			typeof(PiniaTesting.TestingStubActions<>).MakeGenericType(typeof(Pinia.StoreGeneric)),
 			typeof(PiniaTestingSpyFactory),
 			typeof(PiniaTestingSpyFactory<>).MakeGenericType(typeof(Action)),
 			typeof(PiniaTestingStubActionPredicate),
@@ -100,6 +102,23 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 	}
 
 	[TestMethod]
+	public void PiniaTesting_StaticApi_ExposesTypedStubActionsUnionProjection()
+	{
+		var methods = typeof(PiniaTesting)
+			.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+			.Where(static method => method.Name == nameof(PiniaTesting.ProjectStubActions))
+			.ToArray();
+
+		Assert.AreEqual(1, methods.Length);
+		Assert.IsTrue(methods[0].ReturnType.IsGenericType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions<>), methods[0].ReturnType.GetGenericTypeDefinition());
+		Assert.AreEqual(1, methods[0].GetGenericArguments().Length);
+		Assert.AreEqual(1, methods[0].GetParameters().Length);
+		Assert.IsTrue(methods[0].GetParameters()[0].ParameterType.IsGenericType);
+		Assert.AreEqual(typeof(PiniaTestingStubActionPredicate<>), methods[0].GetParameters()[0].ParameterType.GetGenericTypeDefinition());
+	}
+
+	[TestMethod]
 	public void PiniaTesting_TestingOptions_ExposeProductionGradeConfigurationSurface()
 	{
 		var optionsType = typeof(PiniaTesting.TestingOptions);
@@ -146,6 +165,24 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 	}
 
 	[TestMethod]
+	public void PiniaTesting_CombinedTypedTestingOptions_ExposeTypedCreateSpyAndTypedStubActionsProjection()
+	{
+		var optionsType = typeof(PiniaTesting.TestingOptions<Action<int>, Pinia.StoreGeneric>);
+		var createSpy = optionsType
+			.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+			.Single(property => property.Name == nameof(PiniaTesting.TestingOptions.CreateSpy)
+				&& property.PropertyType == typeof(PiniaTestingSpyFactory<Action<int>>));
+		var stubActions = optionsType.GetProperty(nameof(PiniaTesting.TestingOptions.StubActions), BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+		Assert.IsNotNull(createSpy);
+		Assert.IsNotNull(stubActions);
+		Assert.AreEqual(typeof(PiniaTestingSpyFactory<Action<int>>), createSpy!.PropertyType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>?), stubActions!.PropertyType);
+		Assert.IsTrue(typeof(PiniaTesting.TestingOptions).IsAssignableFrom(optionsType));
+		Assert.IsTrue(typeof(Vue3.VueProps).IsAssignableFrom(optionsType));
+	}
+
+	[TestMethod]
 	public void PiniaTesting_TestingPinia_ExposesFakeAppBoundary()
 	{
 		var app = typeof(PiniaTesting.TestingPinia)
@@ -162,6 +199,9 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		var asBoolean = stubActionsType.GetProperty(nameof(PiniaTesting.TestingStubActions.AsBoolean), BindingFlags.Public | BindingFlags.Instance);
 		var asNames = stubActionsType.GetProperty(nameof(PiniaTesting.TestingStubActions.AsNames), BindingFlags.Public | BindingFlags.Instance);
 		var asPredicate = stubActionsType.GetProperty(nameof(PiniaTesting.TestingStubActions.AsPredicate), BindingFlags.Public | BindingFlags.Instance);
+		var fromBoolean = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(bool) });
+		var fromNames = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string[]) });
+		var fromPredicate = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(PiniaTestingStubActionPredicate) });
 		var implicitOperators = stubActionsType
 			.GetMethods(BindingFlags.Public | BindingFlags.Static)
 			.Where(static method => method.Name == "op_Implicit")
@@ -170,12 +210,56 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.IsNotNull(asBoolean);
 		Assert.IsNotNull(asNames);
 		Assert.IsNotNull(asPredicate);
+		Assert.IsNotNull(fromBoolean);
+		Assert.IsNotNull(fromNames);
+		Assert.IsNotNull(fromPredicate);
 		Assert.AreEqual(typeof(bool?), asBoolean!.PropertyType);
 		Assert.AreEqual(typeof(string[]), asNames!.PropertyType);
 		Assert.AreEqual(typeof(PiniaTestingStubActionPredicate), asPredicate!.PropertyType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions), fromBoolean!.ReturnType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions), fromNames!.ReturnType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions), fromPredicate!.ReturnType);
+		Assert.AreEqual("__arg1", fromBoolean.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", fromNames.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", fromPredicate.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(bool)));
 		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(string[])));
 		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(PiniaTestingStubActionPredicate)));
+	}
+
+	[TestMethod]
+	public void PiniaTesting_TypedStubActions_ModelsBooleanNamedListOrTypedPredicateConfiguration()
+	{
+		var stubActionsType = typeof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>);
+		var asBoolean = stubActionsType.GetProperty(nameof(PiniaTesting.TestingStubActions.AsBoolean), BindingFlags.Public | BindingFlags.Instance);
+		var asNames = stubActionsType.GetProperty(nameof(PiniaTesting.TestingStubActions.AsNames), BindingFlags.Public | BindingFlags.Instance);
+		var asPredicate = stubActionsType.GetProperty(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.AsPredicate), BindingFlags.Public | BindingFlags.Instance);
+		var fromBoolean = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(bool) });
+		var fromNames = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string[]) });
+		var fromPredicate = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(PiniaTestingStubActionPredicate<Pinia.StoreGeneric>) });
+		var implicitOperators = stubActionsType
+			.GetMethods(BindingFlags.Public | BindingFlags.Static)
+			.Where(static method => method.Name == "op_Implicit")
+			.ToArray();
+
+		Assert.IsNotNull(asBoolean);
+		Assert.IsNotNull(asNames);
+		Assert.IsNotNull(asPredicate);
+		Assert.IsNotNull(fromBoolean);
+		Assert.IsNotNull(fromNames);
+		Assert.IsNotNull(fromPredicate);
+		Assert.AreEqual(typeof(bool?), asBoolean!.PropertyType);
+		Assert.AreEqual(typeof(string[]), asNames!.PropertyType);
+		Assert.AreEqual(typeof(PiniaTestingStubActionPredicate<Pinia.StoreGeneric>), asPredicate!.PropertyType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>), fromBoolean!.ReturnType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>), fromNames!.ReturnType);
+		Assert.AreEqual(typeof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>), fromPredicate!.ReturnType);
+		Assert.AreEqual("__arg1", fromBoolean.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", fromNames.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.AreEqual("__arg1", fromPredicate.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(bool)));
+		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(string[])));
+		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(PiniaTestingStubActionPredicate<Pinia.StoreGeneric>)));
 	}
 
 	[TestMethod]

@@ -197,6 +197,11 @@ public sealed class EcmaScriptVueRouteProxyTests
             .ToArray();
         var implicitComponent = implicitOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(RouteComponent));
         var implicitLoader = implicitOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(RouteComponentLoader));
+        var routeComponentOperators = typeof(RouteComponent)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(static method => method.Name == "op_Implicit")
+            .ToArray();
+        var routeImplicitLoader = routeComponentOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(RouteComponentLoader));
 
         Assert.IsNotNull(from);
         Assert.IsNotNull(fromLoader);
@@ -204,6 +209,7 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNotNull(rawFromLoader);
         Assert.IsNotNull(implicitComponent);
         Assert.IsNotNull(implicitLoader);
+        Assert.IsNotNull(routeImplicitLoader);
         Assert.AreEqual(typeof(RouteComponent), from!.ReturnType);
         Assert.AreEqual("__arg1", from.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         CollectionAssert.AreEqual(new[] { typeof(ECMAScript.VueContract.IVueComponent) }, from.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
@@ -220,9 +226,10 @@ public sealed class EcmaScriptVueRouteProxyTests
 
         Assert.AreEqual(typeof(RawRouteComponent), implicitComponent!.ReturnType);
         CollectionAssert.AreEqual(new[] { typeof(RouteComponent) }, implicitComponent.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
-
         Assert.AreEqual(typeof(RawRouteComponent), implicitLoader!.ReturnType);
         CollectionAssert.AreEqual(new[] { typeof(RouteComponentLoader) }, implicitLoader.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        Assert.AreEqual(typeof(RouteComponent), routeImplicitLoader!.ReturnType);
+        CollectionAssert.AreEqual(new[] { typeof(RouteComponentLoader) }, routeImplicitLoader.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());
     }
 
     [TestMethod]
@@ -268,6 +275,10 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.AreEqual("__arg1", namedViewDictionaryFactory.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", redirectLocationFactory.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", redirectCallbackFactory.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.IsNull(redirectOptionType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .SingleOrDefault(static method =>
+                method.Name == "op_Implicit" &&
+                method.GetParameters().Single().ParameterType == typeof(Func<RouteLocation, RouteLocationNormalizedLoaded, RouteLocationRaw>)));
     }
 
     [TestMethod]
@@ -404,6 +415,10 @@ public sealed class EcmaScriptVueRouteProxyTests
         var stringAdd = routeMetaType.GetMethod(nameof(RouteMeta.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(string), typeof(RouteMetaValue) }, modifiers: null);
         var numberAdd = routeMetaType.GetMethod(nameof(RouteMeta.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(Number), typeof(RouteMetaValue) }, modifiers: null);
         var symbolAdd = routeMetaType.GetMethod(nameof(RouteMeta.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(Symbol), typeof(RouteMetaValue) }, modifiers: null);
+        var actionStringAdd = routeMetaType.GetMethod(nameof(RouteMeta.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(string), typeof(Action) }, modifiers: null);
+        var actionNumberAdd = routeMetaType.GetMethod(nameof(RouteMeta.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(Number), typeof(Action) }, modifiers: null);
+        var actionSymbolAdd = routeMetaType.GetMethod(nameof(RouteMeta.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(Symbol), typeof(Action) }, modifiers: null);
+        var actionFactory = routeMetaValueType.GetMethod(nameof(RouteMetaValue.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Action) });
         var operators = routeMetaValueType
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .Where(static method => method.Name == "op_Implicit")
@@ -418,6 +433,10 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNotNull(stringAdd);
         Assert.IsNotNull(numberAdd);
         Assert.IsNotNull(symbolAdd);
+        Assert.IsNotNull(actionStringAdd);
+        Assert.IsNotNull(actionNumberAdd);
+        Assert.IsNotNull(actionSymbolAdd);
+        Assert.IsNotNull(actionFactory);
         Assert.IsNotNull(symbolOperator);
         Assert.IsNotNull(vuePropsOperator);
         Assert.IsNotNull(mixedArrayOperator);
@@ -430,6 +449,7 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.AreEqual(NullabilityState.Nullable, nullability.Create(stringAdd!.GetParameters()[1]).ReadState);
         Assert.AreEqual(NullabilityState.Nullable, nullability.Create(numberAdd!.GetParameters()[1]).ReadState);
         Assert.AreEqual(NullabilityState.Nullable, nullability.Create(symbolAdd!.GetParameters()[1]).ReadState);
+        Assert.AreEqual("__arg1", actionFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(RouteMetaValue), symbolOperator!.ReturnType);
         Assert.AreEqual(typeof(RouteMetaValue), vuePropsOperator!.ReturnType);
         Assert.AreEqual(typeof(RouteMetaValue), mixedArrayOperator!.ReturnType);
@@ -560,6 +580,11 @@ public sealed class EcmaScriptVueRouteProxyTests
         var beforeEnterAsyncFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(AsyncRouteNavigationGuard) });
         var beforeEnterLegacySyncFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(LegacyRouteNavigationGuard) });
         var beforeEnterLegacyAsyncFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(LegacyAsyncRouteNavigationGuard) });
+        var beforeEnterGuardArrayFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(NavigationGuardHandler[]) });
+        var beforeEnterSyncArrayFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(RouteNavigationGuard[]) });
+        var beforeEnterAsyncArrayFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(AsyncRouteNavigationGuard[]) });
+        var beforeEnterLegacySyncArrayFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(LegacyRouteNavigationGuard[]) });
+        var beforeEnterLegacyAsyncArrayFactory = beforeEnterType.GetMethod(nameof(RouteRecordBeforeEnter.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(LegacyAsyncRouteNavigationGuard[]) });
 
         Assert.IsNotNull(syncFactory);
         Assert.IsNotNull(asyncFactory);
@@ -570,6 +595,11 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNotNull(beforeEnterAsyncFactory);
         Assert.IsNotNull(beforeEnterLegacySyncFactory);
         Assert.IsNotNull(beforeEnterLegacyAsyncFactory);
+        Assert.IsNotNull(beforeEnterGuardArrayFactory);
+        Assert.IsNotNull(beforeEnterSyncArrayFactory);
+        Assert.IsNotNull(beforeEnterAsyncArrayFactory);
+        Assert.IsNotNull(beforeEnterLegacySyncArrayFactory);
+        Assert.IsNotNull(beforeEnterLegacyAsyncArrayFactory);
         Assert.AreEqual("__arg1", syncFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", asyncFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", legacySyncFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
@@ -579,6 +609,11 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.AreEqual("__arg1", beforeEnterAsyncFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", beforeEnterLegacySyncFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", beforeEnterLegacyAsyncFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", beforeEnterGuardArrayFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", beforeEnterSyncArrayFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", beforeEnterAsyncArrayFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", beforeEnterLegacySyncArrayFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", beforeEnterLegacyAsyncArrayFactory!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
     }
 
     [TestMethod]
@@ -680,6 +715,10 @@ public sealed class EcmaScriptVueRouteProxyTests
         var nullability = new NullabilityInfoContext();
         var routeRecordSingleViewComponent = typeof(RouteRecordSingleView).GetProperty(nameof(RouteRecordSingleView.Component), BindingFlags.Public | BindingFlags.Instance);
         var routeRecordMultipleViewsComponents = typeof(RouteRecordMultipleViews).GetProperty(nameof(RouteRecordMultipleViews.Components), BindingFlags.Public | BindingFlags.Instance);
+        var rawRouteComponentsComponentAdd = typeof(RawRouteComponents).GetMethod(nameof(RawRouteComponents.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(string), typeof(ECMAScript.VueContract.IVueComponent) }, modifiers: null);
+        var rawRouteComponentsLoaderAdd = typeof(RawRouteComponents).GetMethod(nameof(RawRouteComponents.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(string), typeof(RouteComponentLoader) }, modifiers: null);
+        var routeComponentsComponentAdd = typeof(RouteComponents).GetMethod(nameof(RouteComponents.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(string), typeof(ECMAScript.VueContract.IVueComponent) }, modifiers: null);
+        var routeComponentsLoaderAdd = typeof(RouteComponents).GetMethod(nameof(RouteComponents.Add), BindingFlags.Public | BindingFlags.Instance, binder: null, types: new[] { typeof(string), typeof(RouteComponentLoader) }, modifiers: null);
         var routeRecordRedirectRedirect = typeof(RouteRecordRedirect)
             .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .Single(static property => property.Name == nameof(RouteRecordBase.Redirect));
@@ -690,6 +729,10 @@ public sealed class EcmaScriptVueRouteProxyTests
 
         Assert.IsNotNull(routeRecordSingleViewComponent);
         Assert.IsNotNull(routeRecordMultipleViewsComponents);
+        Assert.IsNotNull(rawRouteComponentsComponentAdd);
+        Assert.IsNotNull(rawRouteComponentsLoaderAdd);
+        Assert.IsNotNull(routeComponentsComponentAdd);
+        Assert.IsNotNull(routeComponentsLoaderAdd);
         Assert.IsNotNull(routeRecordRedirectRedirect);
         Assert.IsNotNull(routeRecordNormalizedProps);
         Assert.IsNotNull(routeLocationMatchedComponents);
@@ -708,6 +751,7 @@ public sealed class EcmaScriptVueRouteProxyTests
     {
         var redirectInvoke = typeof(RouteRedirectCallback).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var nextInvoke = typeof(NavigationGuardNext).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
+        var nextCallbackFactory = typeof(NavigationGuardNextArgument).GetMethod(nameof(NavigationGuardNextArgument.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(NavigationGuardNextCallback) });
         var guardReturnType = typeof(NavigationGuardReturn);
         var guardReturnOperators = guardReturnType
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -719,6 +763,7 @@ public sealed class EcmaScriptVueRouteProxyTests
 
         Assert.IsNotNull(redirectInvoke);
         Assert.IsNotNull(nextInvoke);
+        Assert.IsNotNull(nextCallbackFactory);
         Assert.IsNotNull(errorReturn);
         Assert.IsNull(nextCallbackReturn);
         Assert.IsNull(guardAsCallback);
@@ -730,6 +775,8 @@ public sealed class EcmaScriptVueRouteProxyTests
             nextInvoke!.GetParameters().Select(static parameter => Nullable.GetUnderlyingType(parameter.ParameterType) ?? parameter.ParameterType).ToArray());
         Assert.IsTrue(nextInvoke.GetParameters().Single().HasDefaultValue);
         Assert.IsNull(nextInvoke.GetParameters().Single().DefaultValue);
+        Assert.AreEqual(typeof(NavigationGuardNextArgument), nextCallbackFactory!.ReturnType);
+        Assert.AreEqual("__arg1", nextCallbackFactory.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual(typeof(RouteLocationRaw), redirectInvoke.ReturnType);
         Assert.AreEqual(typeof(NavigationGuardReturn), errorReturn!.ReturnType);
     }
@@ -901,9 +948,19 @@ public sealed class EcmaScriptVueRouteProxyTests
         var slotComponent = typeof(RouterViewSlotScope).GetProperty(nameof(RouterViewSlotScope.Component), BindingFlags.Public | BindingFlags.Instance);
         var routerLinkSlotInvoke = typeof(RouterLinkSlotCallback).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var routerViewSlotInvoke = typeof(RouterViewSlotCallback).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
+        var routeMaybeRefOperators = typeof(RouteLocationRawMaybeRef)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(static method => method.Name == "op_Implicit")
+            .ToArray();
+        var boolMaybeRefOperators = typeof(RouteBooleanMaybeRef)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(static method => method.Name == "op_Implicit")
+            .ToArray();
         var routeMaybeRefFromRef = typeof(RouteLocationRawMaybeRef).GetMethod(nameof(RouteLocationRawMaybeRef.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Vue3.IVueRef<RouteLocationAsRelative>) });
         var routeMaybeRefFromReadonly = typeof(RouteLocationRawMaybeRef).GetMethod(nameof(RouteLocationRawMaybeRef.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Vue3.VueReadonlyRef<RouteLocationAsRelative>) });
         var boolMaybeRefFromReadonly = typeof(RouteBooleanMaybeRef).GetMethod(nameof(RouteBooleanMaybeRef.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(Vue3.VueReadonlyRef<bool>) });
+        var routeReadonlyOperator = routeMaybeRefOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(Vue3.VueReadonlyRef<RouteLocationAsRelative>));
+        var boolReadonlyOperator = boolMaybeRefOperators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(Vue3.VueReadonlyRef<bool>));
 
         Assert.IsNotNull(useLinkTo);
         Assert.IsNotNull(useLinkReplace);
@@ -921,6 +978,8 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNotNull(routeMaybeRefFromRef);
         Assert.IsNotNull(routeMaybeRefFromReadonly);
         Assert.IsNotNull(boolMaybeRefFromReadonly);
+        Assert.IsNotNull(routeReadonlyOperator);
+        Assert.IsNotNull(boolReadonlyOperator);
         Assert.AreEqual(typeof(RouteLocationRawMaybeRef), useLinkTo!.PropertyType);
         Assert.AreEqual(typeof(RouteBooleanMaybeRef), Nullable.GetUnderlyingType(useLinkReplace!.PropertyType) ?? useLinkReplace.PropertyType);
         Assert.AreEqual(typeof(UseLinkReturn), useLinkMethod!.ReturnType);
@@ -937,6 +996,8 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.AreEqual("__arg1", routeMaybeRefFromRef!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", routeMaybeRefFromReadonly!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", boolMaybeRefFromReadonly!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual(typeof(RouteLocationRawMaybeRef), routeReadonlyOperator!.ReturnType);
+        Assert.AreEqual(typeof(RouteBooleanMaybeRef), boolReadonlyOperator!.ReturnType);
     }
 
     [TestMethod]

@@ -14,6 +14,7 @@
 - 为 setup-store `defineStore(id, setup, options?)` 提供 helper-aware callback overload 与 `actions` options contract，而不是继续停留在“无参 callback + 空 options 壳类型”。
 - `SetupStoreHelpers.Action(fn, name?)` 覆盖 `Action` / `Func` 委托族直到 .NET 框架上限（16 输入参数），避免把 setup-store action helper 再裁成低参数数目的样例级接口。
 - 对 4 参数及以上的方法组，当前 C# 语言推断通常需要显式 generic 参数或先落到委托局部变量；这是语言绑定特性，不是 Pinia runtime 缺口。
+- 为 `mapState()` / `mapGetters()` 的 object-form mapper 提供 `PiniaStateMapValue<TStore>.From(...)`，让对象初始化器里的 key / selector 分支都能稳定承接方法组与显式 mapper value，而不依赖多跳隐式转换。
 - 为 plugin-added custom properties / custom state 提供显式投影 helper：`ProjectStore(...)` / `ProjectStoreDefinition(...)` 只做类型级 identity 投影，不引入伪 runtime API。
 - 为链式 plugin authoring 提供 projected plugin context：高阶 `PiniaPluginContext<TStore, TOptions, ...>` 与 `PiniaInstance.Use(...)` overload 可以直接在 plugin callback 中读取前置插件加进来的 store/store.$state 扩展。
 - 保持对 Vue 侧依赖的边界明确：Pinia 绑定依赖 `ECMAScript.Vue3`，不反向污染 `ECMAScript` 核心模块。

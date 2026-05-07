@@ -83,6 +83,9 @@ public sealed class RouteMetaValue
 
 	public extern static implicit operator RouteMetaValue(Action value);
 
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteMetaValue From(Action value);
+
 	public extern static implicit operator RouteMetaValue(Vue3.VueProps value);
 
 	public extern static implicit operator RouteMetaValue(Array<RouteMetaValue?> value);
@@ -104,10 +107,19 @@ public record RouteMeta : Vue3.VueProps, System.Collections.IEnumerable
 	public extern void Add(string key, RouteMetaValue? value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, Action value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(Number key, RouteMetaValue? value);
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(Number key, Action value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(Symbol key, RouteMetaValue? value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(Symbol key, Action value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
@@ -589,6 +601,12 @@ public record RawRouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(string key, RawRouteComponent value);
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, ECMAScript.VueContract.IVueComponent value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, RouteComponentLoader value);
+
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }
 
@@ -600,6 +618,12 @@ public record RouteComponents : Vue3.VueProps, System.Collections.IEnumerable
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public extern void Add(string key, RouteComponent value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, ECMAScript.VueContract.IVueComponent value);
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	public extern void Add(string key, RouteComponentLoader value);
 
 	extern System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator();
 }

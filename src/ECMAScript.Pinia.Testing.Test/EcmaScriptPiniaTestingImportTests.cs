@@ -172,6 +172,102 @@ public sealed class EcmaScriptPiniaTestingImportTests
 	}
 
 	[TestMethod]
+	public async Task Convert_ClassUsingTestingOptionsPredicateStubActionsFactory_GeneratesPredicateConfiguration()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				[ECMAScriptModule("tests/testing-options-predicate-factory.mjs")]
+				public static class CounterTestingModule
+				{
+					public static PiniaTesting.TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions
+						{
+							StubActions = TestingStubActions.From(ShouldStub),
+							WritableComputed = true
+						});
+
+					private static bool ShouldStub(string actionName, Pinia.StoreGeneric store)
+						=> actionName == "increment" && store.Id == "counter";
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: shouldStub");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingTestingOptionsBooleanStubActionsFactory_GeneratesBooleanConfiguration()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				[ECMAScriptModule("tests/testing-options-boolean-factory.mjs")]
+				public static class CounterTestingModule
+				{
+					public static PiniaTesting.TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions
+						{
+							StubActions = TestingStubActions.From(false),
+							WritableComputed = true
+						});
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: false");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingTestingOptionsNamedListStubActionsFactory_GeneratesNamedListConfiguration()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				[ECMAScriptModule("tests/testing-options-named-list-factory.mjs")]
+				public static class CounterTestingModule
+				{
+					public static PiniaTesting.TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions
+						{
+							StubActions = TestingStubActions.From(["increment", "resetStatus"]),
+							WritableComputed = true
+						});
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: [\"increment\", \"resetStatus\"]");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
 	public async Task Convert_ClassUsingProjectedTypedStubActionPredicate_GeneratesSameRuntimePredicateConfiguration()
 	{
 		var code = """
@@ -405,6 +501,340 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		StringAssert.Contains(script, "return createTestingPinia({");
 		StringAssert.Contains(script, "stubActions: false");
 		StringAssert.Contains(script, "createSpy: wrapSpy");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingCombinedTypedTestingOptions_GeneratesSameRuntimeConfiguration()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern int Count { get; set; }
+				}
+
+				[ECMAScriptModule("tests/testing-options-combined-typed.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions<Action<int>, CounterStore>
+						{
+							StubActions = ProjectStubActions<CounterStore>(ShouldStub),
+							CreateSpy = WrapSpy,
+							WritableComputed = true
+						});
+
+					private static bool ShouldStub(string actionName, CounterStore store)
+						=> actionName == "increment" && store.Id == "counter" && store.Count >= 0;
+
+					private static Action<int> WrapSpy(Action<int>? callback)
+						=> callback ?? Noop;
+
+					private static void Noop(int value)
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: shouldStub");
+		StringAssert.Contains(script, "createSpy: wrapSpy");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingCombinedTypedTestingOptionsWithActionDelegate_GeneratesSameRuntimeConfiguration()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern int Count { get; set; }
+				}
+
+				[ECMAScriptModule("tests/testing-options-combined-typed-action-delegate.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions<Action, CounterStore>
+						{
+							StubActions = ProjectStubActions<CounterStore>(ShouldStub),
+							CreateSpy = WrapSpy,
+							WritableComputed = true
+						});
+
+					private static bool ShouldStub(string actionName, CounterStore store)
+						=> actionName == "increment" && store.Id == "counter" && store.Count >= 0;
+
+					private static Action WrapSpy(Action? callback)
+						=> callback ?? Noop;
+
+					private static void Noop()
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: shouldStub");
+		StringAssert.Contains(script, "createSpy: wrapSpy");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingCombinedTypedTestingOptionsBooleanStubActions_GeneratesSameRuntimeConfiguration()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				[ECMAScriptModule("tests/testing-options-combined-typed-boolean.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions<Action<int>, CounterStore>
+						{
+							StubActions = TestingStubActions<CounterStore>.From(false),
+							CreateSpy = WrapSpy,
+							WritableComputed = true,
+							StubPatch = true,
+							StubReset = true,
+							FakeApp = true
+						});
+
+					private static Action<int> WrapSpy(Action<int>? callback)
+						=> callback ?? Noop;
+
+					private static void Noop(int value)
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: false");
+		StringAssert.Contains(script, "createSpy: wrapSpy");
+		StringAssert.Contains(script, "writableComputed: true");
+		StringAssert.Contains(script, "stubPatch: true");
+		StringAssert.Contains(script, "stubReset: true");
+		StringAssert.Contains(script, "fakeApp: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingCombinedTypedTestingOptionsNamedListStubActions_GeneratesSameRuntimeConfiguration()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+				}
+
+				[ECMAScriptModule("tests/testing-options-combined-typed-named-list.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions<Action<int>, CounterStore>
+						{
+							StubActions = TestingStubActions<CounterStore>.From(["increment", "resetStatus"]),
+							CreateSpy = WrapSpy,
+							WritableComputed = true,
+							StubPatch = false,
+							StubReset = false,
+							FakeApp = true
+						});
+
+					private static Action<int> WrapSpy(Action<int>? callback)
+						=> callback ?? Noop;
+
+					private static void Noop(int value)
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: [\"increment\", \"resetStatus\"]");
+		StringAssert.Contains(script, "createSpy: wrapSpy");
+		StringAssert.Contains(script, "writableComputed: true");
+		StringAssert.Contains(script, "stubPatch: false");
+		StringAssert.Contains(script, "stubReset: false");
+		StringAssert.Contains(script, "fakeApp: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingCombinedTypedTestingOptionsFactory_GeneratesSameRuntimeConfiguration()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern int Count { get; set; }
+				}
+
+				[ECMAScriptModule("tests/testing-options-combined-typed-factory.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions<Action<int>, CounterStore>
+						{
+							StubActions = TestingStubActions<CounterStore>.From(ShouldStub),
+							CreateSpy = WrapSpy,
+							WritableComputed = true
+						});
+
+					private static bool ShouldStub(string actionName, CounterStore store)
+						=> actionName == "increment" && store.Id == "counter" && store.Count >= 0;
+
+					private static Action<int> WrapSpy(Action<int>? callback)
+						=> callback ?? Noop;
+
+					private static void Noop(int value)
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: shouldStub");
+		StringAssert.Contains(script, "createSpy: wrapSpy");
+		StringAssert.Contains(script, "writableComputed: true");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingCombinedTypedTestingOptionsActionDelegateFactory_GeneratesSameRuntimeConfiguration()
+	{
+		var code = """
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+			using static ECMAScript.PiniaTesting;
+
+			namespace Demo
+			{
+				public sealed record CounterState : PiniaStateTree
+				{
+					public int Count { get; init; }
+				}
+
+				public abstract class CounterStore : Store<CounterState>
+				{
+					public extern int Count { get; set; }
+				}
+
+				[ECMAScriptModule("tests/testing-options-combined-typed-action-delegate-factory.mjs")]
+				public static class CounterTestingModule
+				{
+					public static TestingPinia CreateRoot()
+						=> CreateTestingPinia(new TestingOptions<Action, CounterStore>
+						{
+							StubActions = TestingStubActions<CounterStore>.From(ShouldStub),
+							CreateSpy = WrapSpy,
+							WritableComputed = true
+						});
+
+					private static bool ShouldStub(string actionName, CounterStore store)
+						=> actionName == "increment" && store.Id == "counter" && store.Count >= 0;
+
+					private static Action WrapSpy(Action? callback)
+						=> callback ?? Noop;
+
+					private static void Noop()
+					{
+					}
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterTestingModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "import { createTestingPinia } from \"@pinia/testing\";");
+		StringAssert.Contains(script, "return createTestingPinia({");
+		StringAssert.Contains(script, "stubActions: shouldStub");
+		StringAssert.Contains(script, "createSpy: wrapSpy");
+		StringAssert.Contains(script, "writableComputed: true");
 	}
 
 	[TestMethod]
