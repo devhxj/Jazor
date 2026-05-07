@@ -96,6 +96,54 @@ internal sealed class RazorVueRazorIrOperationResolver
         return operation is not null;
     }
 
+    public bool TryResolveGeneratedExpression(
+        string expressionText,
+        SourceSpan? sourceSpan,
+        out IOperation operation)
+    {
+        operation = default!;
+        if (string.IsNullOrWhiteSpace(expressionText))
+            return false;
+
+        var normalizedTarget = NormalizeComparableCode(expressionText);
+        if (normalizedTarget.Length == 0)
+            return false;
+
+        TextSpan? preferredSpan = null;
+        if (sourceSpan is not null &&
+            TryMapToGeneratedSpan(sourceSpan.Value, out var generatedSpan))
+        {
+            preferredSpan = generatedSpan;
+        }
+
+        var candidates = _generatedRoot.DescendantNodes()
+            .OfType<ExpressionSyntax>()
+            .Where(candidate =>
+                string.Equals(
+                    NormalizeComparableCode(candidate.ToString()),
+                    normalizedTarget,
+                    StringComparison.Ordinal))
+            .Select(candidate => new
+            {
+                Candidate = candidate,
+                Operation = GetBestOperation(candidate),
+                Score = ScoreGeneratedExpressionCandidate(candidate, preferredSpan)
+            })
+            .Where(item => item.Operation is not null)
+            .OrderByDescending(item => item.Score)
+            .ThenBy(item => item.Candidate.Span.Length)
+            .ThenBy(item => item.Candidate.SpanStart)
+            .ToArray();
+
+        foreach (var candidate in candidates)
+        {
+            operation = candidate.Operation!;
+            return true;
+        }
+
+        return false;
+    }
+
     public bool TryResolveConditional(SourceSpan? sourceSpan, out ResolvedConditional conditional)
     {
         conditional = default;
@@ -294,6 +342,24 @@ internal sealed class RazorVueRazorIrOperationResolver
         return null;
     }
 
+    private static int ScoreGeneratedExpressionCandidate(ExpressionSyntax candidate, TextSpan? preferredSpan)
+    {
+        if (preferredSpan is null)
+            return 0;
+
+        var span = preferredSpan.Value;
+        if (Contains(candidate.FullSpan, span) || Contains(candidate.Span, span))
+            return 4;
+
+        if (Contains(span, candidate.FullSpan) || Contains(span, candidate.Span))
+            return 3;
+
+        if (Overlaps(candidate.FullSpan, span) || Overlaps(candidate.Span, span))
+            return 2;
+
+        return 0;
+    }
+
     private bool TryResolveStatement<TStatementSyntax>(SourceSpan? sourceSpan, out TStatementSyntax? syntax)
         where TStatementSyntax : SyntaxNode
     {
@@ -399,6 +465,14 @@ internal sealed class RazorVueRazorIrOperationResolver
         {
             return path!.Replace('\\', '/');
         }
+    }
+
+    private static string NormalizeComparableCode(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        return new string(text.Where(static character => !char.IsWhiteSpace(character)).ToArray());
     }
 
     private static StringComparer PathComparer

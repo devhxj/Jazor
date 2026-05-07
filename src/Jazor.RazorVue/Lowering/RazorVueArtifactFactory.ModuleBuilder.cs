@@ -20,8 +20,9 @@ internal sealed partial class RazorVueArtifactFactory
     {
         var descriptor = snapshot.Descriptor;
         var builder = new StringBuilder();
-        AppendVueImports(builder, snapshot, resolvedComponents);
         var renderExpression = expressionEmitter.EmitFragment(renderTree);
+        var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
+        AppendVueImports(builder, snapshot, resolvedComponents);
         builder.AppendLine();
         builder.AppendLine("export default defineComponent({");
         builder.Append("  name: \"").Append(descriptor.Name).AppendLine("\",");
@@ -30,6 +31,8 @@ internal sealed partial class RazorVueArtifactFactory
         builder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, "    ");
+        if (requiresAttributeMergeHelper)
+            RazorVueAttributeMergeHelper.AppendHelper(builder, "    ");
         AppendLifecycleLowering(builder, snapshot);
         AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
         builder.Append("    return () => ").Append(renderExpression).AppendLine(";");

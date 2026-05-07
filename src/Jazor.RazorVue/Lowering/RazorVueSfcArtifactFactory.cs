@@ -47,7 +47,10 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             static item => item.BindingName,
             StringComparer.Ordinal);
         var templateText = BuildTemplateBlockText(semantic.TemplateBlock.Template, bindingSiteMap);
-        var scriptSetupText = BuildScriptSetupBlockText(snapshot, semantic);
+        var scriptSetupText = BuildScriptSetupBlockText(
+            snapshot,
+            semantic,
+            RazorVueAttributeMergeHelper.ContainsInvocation(templateText));
         CurrentComponentImportMap.Value = null;
         var styleBlocks = BuildStyleBlocks(semantic.StyleBlocks);
         var customBlocks = BuildCustomBlocks(semantic.CustomBlocks);
@@ -341,7 +344,20 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         if (!string.IsNullOrWhiteSpace(slot.ParameterName))
             builder.Append("=\"").Append(slot.ParameterName).Append('"');
         builder.AppendLine(">");
-        if (slot.ValueKind == RazorVueCanonicalSlotValueKind.ForwardedSlot)
+        if (!slot.Children.Children.IsDefaultOrEmpty)
+        {
+            for (var index = 0; index < slot.Children.Children.Length; index++)
+            {
+                AppendTemplateNode(
+                    builder,
+                    slot.Children.Children[index],
+                    depth + 1,
+                    bindingSiteMap,
+                    path + "/child[" + index + "]",
+                    string.IsNullOrWhiteSpace(slot.ParameterName) ? templateScopeDepth : templateScopeDepth + 1);
+            }
+        }
+        else if (slot.ValueKind == RazorVueCanonicalSlotValueKind.ForwardedSlot)
         {
             builder.Append(indent)
                 .Append("  ")
@@ -370,59 +386,179 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
 
     private static void AppendAttributeBindings(
         StringBuilder builder,
-        ImmutableArray<RazorVueCanonicalAttributeBinding> attributes,
+        ImmutableArray<RazorVueCanonicalAttributeEntry> attributes,
         IReadOnlyDictionary<string, string> bindingSiteMap,
         string pathPrefix,
         int templateScopeDepth)
     {
+        if (RequiresMergedAttributeBinding(attributes))
+        {
+            AppendMergedAttributeBinding(builder, attributes, bindingSiteMap, pathPrefix, templateScopeDepth);
+            return;
+        }
+
         for (var index = 0; index < attributes.Length; index++)
         {
-            var attribute = attributes[index];
-            if (attribute.ExpressionText is null)
+            switch (attributes[index])
             {
-                builder.Append(' ').Append(attribute.Name);
-                continue;
-            }
+                case RazorVueCanonicalAttributeBinding attribute:
+                    if (attribute.ExpressionText is null)
+                    {
+                        builder.Append(' ').Append(attribute.Name);
+                        continue;
+                    }
 
-            if (attribute.BindingKind == RazorVueExpressionBindingKind.Literal &&
-                attribute.TemplateEncodability == RazorVueTemplateEncodability.DirectTemplate)
-            {
-                builder.Append(' ')
-                    .Append(attribute.Name)
-                    .Append("=\"")
-                    .Append(EscapeAttributeValue(attribute.ExpressionText.Trim('"')))
-                    .Append('"');
-                continue;
-            }
+                    if (attribute.BindingKind == RazorVueExpressionBindingKind.Literal &&
+                        attribute.TemplateEncodability == RazorVueTemplateEncodability.DirectTemplate)
+                    {
+                        builder.Append(' ')
+                            .Append(attribute.Name)
+                            .Append("=\"")
+                            .Append(EscapeAttributeValue(attribute.ExpressionText.Trim('"')))
+                            .Append('"');
+                        continue;
+                    }
 
-            var expressionText = ResolveTemplateExpression(
-                attribute.ExpressionText,
-                attribute.TemplateEncodability,
-                bindingSiteMap,
-                pathPrefix + "/attr[" + index + "]",
-                templateScopeDepth);
-            if (attribute.AttributeKind == RazorVueCanonicalAttributeKind.ComponentEvent)
-            {
-                builder.Append(" @")
-                    .Append(attribute.Name)
-                    .Append("=\"")
-                    .Append(EscapeAttributeValue(expressionText))
-                    .Append('"');
-            }
-            else
-            {
-                builder.Append(" :")
-                    .Append(attribute.Name)
-                    .Append("=\"")
-                    .Append(EscapeAttributeValue(expressionText))
-                    .Append('"');
+                    var expressionText = ResolveTemplateExpression(
+                        attribute.ExpressionText,
+                        attribute.TemplateEncodability,
+                        bindingSiteMap,
+                        pathPrefix + "/attr[" + index + "]",
+                        templateScopeDepth);
+                    if (attribute.AttributeKind == RazorVueCanonicalAttributeKind.ComponentEvent)
+                    {
+                        builder.Append(" @")
+                            .Append(attribute.Name)
+                            .Append("=\"")
+                            .Append(EscapeAttributeValue(expressionText))
+                            .Append('"');
+                    }
+                    else
+                    {
+                        builder.Append(" :")
+                            .Append(attribute.Name)
+                            .Append("=\"")
+                            .Append(EscapeAttributeValue(expressionText))
+                            .Append('"');
+                    }
+                    break;
+                case RazorVueCanonicalAttributeSpreadBinding spread:
+                    var spreadExpression = ResolveTemplateExpression(
+                        spread.ExpressionText,
+                        spread.TemplateEncodability,
+                        bindingSiteMap,
+                        pathPrefix + "/attr[" + index + "]/spread",
+                        templateScopeDepth);
+                    builder.Append(" v-bind=\"")
+                        .Append(EscapeAttributeValue(spreadExpression))
+                        .Append('"');
+                    break;
             }
         }
     }
 
+    private static bool RequiresMergedAttributeBinding(ImmutableArray<RazorVueCanonicalAttributeEntry> attributes)
+    {
+        if (attributes.IsDefaultOrEmpty)
+            return false;
+
+        var seenKeys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var attributeEntry in attributes)
+        {
+            if (attributeEntry is RazorVueCanonicalAttributeSpreadBinding)
+                return true;
+
+            var attribute = (RazorVueCanonicalAttributeBinding)attributeEntry;
+            if (!seenKeys.Add(GetMergedAttributeObjectKey(attribute)))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static void AppendMergedAttributeBinding(
+        StringBuilder builder,
+        ImmutableArray<RazorVueCanonicalAttributeEntry> attributes,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string pathPrefix,
+        int templateScopeDepth)
+    {
+        var segments = new List<string>();
+        var objectEntries = new List<string>();
+
+        for (var index = 0; index < attributes.Length; index++)
+        {
+            switch (attributes[index])
+            {
+                case RazorVueCanonicalAttributeBinding attribute:
+                    var expressionText = attribute.ExpressionText is null
+                        ? "true"
+                        : ResolveTemplateExpression(
+                            attribute.ExpressionText,
+                            attribute.TemplateEncodability,
+                            bindingSiteMap,
+                            pathPrefix + "/attr[" + index + "]",
+                            templateScopeDepth);
+                    objectEntries.Add(ToJavaScriptString(GetMergedAttributeObjectKey(attribute)) + ": " + expressionText);
+                    break;
+
+                case RazorVueCanonicalAttributeSpreadBinding spread:
+                    FlushMergedAttributeObjectEntries(segments, objectEntries);
+                    var spreadExpression = ResolveTemplateExpression(
+                        spread.ExpressionText,
+                        spread.TemplateEncodability,
+                        bindingSiteMap,
+                        pathPrefix + "/attr[" + index + "]/spread",
+                        templateScopeDepth);
+                    segments.Add(spreadExpression);
+                    break;
+            }
+        }
+
+        FlushMergedAttributeObjectEntries(segments, objectEntries);
+        builder.Append(" v-bind=\"")
+            .Append(EscapeAttributeValue(RazorVueAttributeMergeHelper.BuildInvocation(segments)))
+            .Append('"');
+    }
+
+    private static void FlushMergedAttributeObjectEntries(List<string> segments, List<string> objectEntries)
+    {
+        if (objectEntries.Count == 0)
+            return;
+
+        segments.Add("{ " + string.Join(", ", objectEntries) + " }");
+        objectEntries.Clear();
+    }
+
+    private static string GetMergedAttributeObjectKey(RazorVueCanonicalAttributeBinding attribute)
+        => attribute.AttributeKind == RazorVueCanonicalAttributeKind.ComponentEvent
+            ? ToVueEventHandlerName(attribute.Name)
+            : attribute.Name;
+
+    private static string ToVueEventHandlerName(string eventName)
+    {
+        if (string.IsNullOrEmpty(eventName))
+            return "on";
+
+        if (IsVueEventHandlerName(eventName))
+            return eventName;
+
+        return "on" + char.ToUpperInvariant(eventName[0]) + eventName.Substring(1);
+    }
+
+    private static bool IsVueEventHandlerName(string eventName)
+    {
+        if (!eventName.StartsWith("on", StringComparison.Ordinal) || eventName.Length <= 2)
+            return false;
+
+        var marker = eventName[2];
+        return char.IsUpper(marker) || marker == ':';
+    }
+
     private static string BuildScriptSetupBlockText(
         RazorVueSemanticSnapshot snapshot,
-        RazorVueSfcSemanticModel semantic)
+        RazorVueSfcSemanticModel semantic,
+        bool requiresAttributeMergeHelper)
     {
         var builder = new StringBuilder();
 
@@ -443,6 +579,8 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.AppendLine(">();");
         if (RazorVueForLoopLoweringSupport.ContainsForLoop(semantic.TemplateBlock.Template))
             RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, string.Empty);
+        if (requiresAttributeMergeHelper)
+            RazorVueAttributeMergeHelper.AppendHelper(builder, string.Empty);
 
         var expressionEmitter = new RazorVueExpressionEmitter(snapshot);
         RazorVueSetupAndLifecycleLoweringSupport.AppendLifecycleLowering(builder, snapshot, string.Empty);
@@ -582,7 +720,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.AppendLine(descriptor.ExportName);
         builder.AppendLine("flags:" + descriptor.Flags);
         foreach (var prop in descriptor.Props.OrderBy(static item => item.PublicName, StringComparer.Ordinal))
-            builder.AppendLine(prop.PublicName + "|" + prop.Name + "|" + prop.TypeName + "|" + prop.Required + "|" + prop.AcceptsBinding + "|" + (prop.DefaultExpression ?? string.Empty) + "|" + prop.Kind);
+            builder.AppendLine(prop.PublicName + "|" + prop.Name + "|" + prop.TypeName + "|" + prop.Required + "|" + prop.AcceptsBinding + "|" + (prop.DefaultExpression ?? string.Empty) + "|" + prop.Kind + "|" + prop.CaptureUnmatchedValues);
         foreach (var emit in descriptor.Emits.OrderBy(static item => item.RazorAlias, StringComparer.Ordinal))
             builder.AppendLine(emit.RazorAlias + "|" + emit.Name + "|" + emit.PayloadTypeName + "|" + emit.Kind);
         foreach (var slot in descriptor.Slots.OrderBy(static item => item.Name, StringComparer.Ordinal))

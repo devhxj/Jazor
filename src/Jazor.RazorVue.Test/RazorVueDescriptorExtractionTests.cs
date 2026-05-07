@@ -203,6 +203,79 @@ public sealed class RazorVueDescriptorExtractionTests
     }
 
     [TestMethod]
+    public void RazorVue_Snapshot_CaptureUnmatchedValuesParameter_IsProjectedIntoDescriptor()
+    {
+        var snapshot = CreateSingleSnapshot(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                }
+            }
+            """);
+
+        var descriptor = snapshot.Descriptor;
+        var additionalAttributes = descriptor.Props.Single(static prop => prop.PublicName == "AdditionalAttributes");
+        Assert.IsTrue(additionalAttributes.CaptureUnmatchedValues);
+    }
+
+    [TestMethod]
+    public void RazorVue_Context_InvalidComponentCaptureUnmatchedValuesDeclaration_ThrowsStructuredIssue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public class Panel : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyList<string>? AdditionalAttributes { get; set; }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => context.CreateSemanticSnapshots());
+        Assert.AreEqual(RazorVueIssueCode.InvalidComponentDeclaration, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "CaptureUnmatchedValues");
+        StringAssert.Contains(exception.Issue.Message, "AdditionalAttributes");
+    }
+
+    [TestMethod]
     public void RazorVue_Context_DiscoversVuetifyPackageLibraryDescriptors_FromReferencedAssembly()
     {
         var context = CreateContext(

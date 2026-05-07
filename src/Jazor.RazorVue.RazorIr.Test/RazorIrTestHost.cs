@@ -36,7 +36,10 @@ internal static class RazorIrTestHost
         "Content",
         "Prefix",
         "Suffix",
-        "Name"
+        "Name",
+        "IsParameterized",
+        "ParameterName",
+        "TypeName"
     ];
 
     public static RazorProjectEngine CreateProjectEngine(string documentPath)

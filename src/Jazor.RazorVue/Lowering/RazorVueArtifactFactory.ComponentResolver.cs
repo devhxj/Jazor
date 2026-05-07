@@ -168,6 +168,11 @@ internal sealed partial class RazorVueArtifactFactory
         {
             case RazorVueComponentNode component:
                 components.Add(component);
+                foreach (var slotTemplate in component.SlotTemplates)
+                {
+                    foreach (var child in slotTemplate.Children.Children)
+                        CollectComponents(child, components);
+                }
                 foreach (var child in component.Children.Children)
                     CollectComponents(child, components);
                 break;

@@ -61,7 +61,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private readonly RazorVueCompilationSymbols _symbols;
         private readonly ImmutableHashSet<IParameterSymbol> _builderParameters;
         private readonly List<RazorVueRenderNode> _rootChildren = [];
-        private readonly Stack<OpenNodeBuilder> _openNodes = new();
+        private readonly Stack<OpenFrame> _openFrames = new();
 
         public Parser(
             RazorVueSemanticSnapshot snapshot,
@@ -78,8 +78,8 @@ internal sealed class RazorVueRenderTreeExtractor
             foreach (var operation in operations)
                 ParseOperation(operation);
 
-            while (_openNodes.Count > 0)
-                AddNode(_openNodes.Pop().Build());
+            if (_openFrames.Count > 0)
+                throw CreateStructuralIssueForUnclosedFrames();
 
             return new RazorVueRenderFragment(_rootChildren.ToImmutableArray());
         }
@@ -137,13 +137,13 @@ internal sealed class RazorVueRenderTreeExtractor
                     OpenElement(invocation);
                     break;
                 case "CloseElement":
-                    CloseCurrentNode(expectedComponent: false);
+                    CloseCurrentNode(invocation, expectedComponent: false);
                     break;
                 case "OpenComponent":
                     OpenComponent(invocation);
                     break;
                 case "CloseComponent":
-                    CloseCurrentNode(expectedComponent: true);
+                    CloseCurrentNode(invocation, expectedComponent: true);
                     break;
                 case "AddAttribute":
                     AddAttribute(invocation);
@@ -151,37 +151,84 @@ internal sealed class RazorVueRenderTreeExtractor
                 case "AddComponentParameter":
                     AddComponentParameter(invocation);
                     break;
+                case "AddMultipleAttributes":
+                    AddMultipleAttributes(invocation);
+                    break;
+                case "OpenRegion":
+                    OpenRegion(invocation);
+                    break;
+                case "CloseRegion":
+                    CloseRegion(invocation);
+                    break;
                 case "AddContent":
                     AddContent(invocation);
                     break;
                 case "AddMarkupContent":
                     AddMarkupContent(invocation);
                     break;
+                default:
+                    throw CreateUnsupportedBuilderCall(
+                        invocation,
+                        $"RazorVue BuildRenderTree frontend does not support builder call '{GetBuilderCallDisplayName(invocation)}' in component '{_snapshot.Descriptor.FullName}'.");
             }
         }
 
         private void OpenElement(IInvocationOperation invocation)
         {
             var tagName = GetConstantStringArgument(invocation, 1);
-            if (!string.IsNullOrWhiteSpace(tagName))
-                _openNodes.Push(new ElementBuilder(tagName!, CreateOrigins(invocation, RazorVueOriginKind.Template)));
+            if (string.IsNullOrWhiteSpace(tagName))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' requires a constant element name in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            _openFrames.Push(new ElementBuilder(tagName!, CreateOrigins(invocation, RazorVueOriginKind.Template)));
         }
 
         private void OpenComponent(IInvocationOperation invocation)
         {
-            if (invocation.TargetMethod.TypeArguments.Length != 1)
-                return;
+            if (!TryResolveOpenComponent(invocation, out var componentType, out var resolutionName))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' must specify a concrete component type that RazorVue can resolve in component '{_snapshot.Descriptor.FullName}'.");
+            }
 
-            var componentType = invocation.TargetMethod.TypeArguments[0];
-            var resolutionName = GetComponentResolutionName(invocation, componentType.ToDisplayString());
-            _openNodes.Push(new ComponentBuilder(
+            _openFrames.Push(new ComponentBuilder(
                 componentType.Name,
                 componentType.ToDisplayString(),
                 resolutionName,
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
         }
 
-        private static string GetComponentResolutionName(IInvocationOperation invocation, string fallback)
+        private static bool TryResolveOpenComponent(
+            IInvocationOperation invocation,
+            out INamedTypeSymbol componentType,
+            out string resolutionName)
+        {
+            componentType = default!;
+            resolutionName = string.Empty;
+
+            if (invocation.TargetMethod.TypeArguments.Length == 1 &&
+                invocation.TargetMethod.TypeArguments[0] is INamedTypeSymbol genericComponentType)
+            {
+                componentType = genericComponentType;
+                resolutionName = GetGenericComponentResolutionName(invocation, componentType.ToDisplayString());
+                return true;
+            }
+
+            if (GetInvocationArgument(invocation, 1) is ITypeOfOperation { TypeOperand: INamedTypeSymbol explicitComponentType } typeOfOperation)
+            {
+                componentType = explicitComponentType;
+                resolutionName = GetTypeOfComponentResolutionName(typeOfOperation, componentType.ToDisplayString());
+                return true;
+            }
+
+            return false;
+        }
+
+        private static string GetGenericComponentResolutionName(IInvocationOperation invocation, string fallback)
         {
             if (invocation.Syntax is not InvocationExpressionSyntax invocationSyntax)
                 return fallback;
@@ -195,37 +242,85 @@ internal sealed class RazorVueRenderTreeExtractor
             return genericName.TypeArgumentList.Arguments[0].ToString();
         }
 
-        private void CloseCurrentNode(bool expectedComponent)
+        private static string GetTypeOfComponentResolutionName(ITypeOfOperation typeOfOperation, string fallback)
+            => typeOfOperation.Syntax is TypeOfExpressionSyntax { Type: { } typeSyntax }
+                ? typeSyntax.ToString()
+                : fallback;
+
+        private void OpenRegion(IInvocationOperation invocation)
+            => _openFrames.Push(new RegionScope(CreateOrigins(invocation, RazorVueOriginKind.Template)));
+
+        private void CloseRegion(IInvocationOperation invocation)
         {
-            if (_openNodes.Count == 0)
-                return;
+            if (_openFrames.Count == 0)
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered 'CloseRegion' without a matching open region in component '{_snapshot.Descriptor.FullName}'.");
+            }
 
-            var current = _openNodes.Pop();
+            if (_openFrames.Peek() is not RegionScope)
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered 'CloseRegion' while the current open frame is {_openFrames.Peek().Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            _openFrames.Pop();
+        }
+
+        private void CloseCurrentNode(IInvocationOperation invocation, bool expectedComponent)
+        {
+            if (_openFrames.Count == 0)
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' without a matching open frame in component '{_snapshot.Descriptor.FullName}'.");
+
+            if (_openFrames.Peek() is not OpenNodeBuilder current)
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' while the current open frame is {_openFrames.Peek().Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
             if (current is ComponentBuilder != expectedComponent)
-                return;
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' while the current open node is {current.Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+            }
 
+            _openFrames.Pop();
             AddNode(current.Build());
         }
 
         private void AddAttribute(IInvocationOperation invocation)
         {
-            if (_openNodes.Count == 0)
-                return;
-
             var name = GetConstantStringArgument(invocation, 1);
             if (string.IsNullOrWhiteSpace(name))
-                return;
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' requires a constant attribute name in component '{_snapshot.Descriptor.FullName}'.");
+            }
 
             var value = GetInvocationArgument(invocation, 2);
+            var currentNode = GetRequiredOpenNodeBuilder(invocation);
+            if (TryHandleComponentSlotValue(currentNode, name!, value, invocation))
+                return;
+
             if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
                 TryParseChildContent(value, out var childContent))
             {
                 foreach (var child in childContent.Children)
-                    _openNodes.Peek().AddChild(child);
+                    currentNode.AddChild(child);
                 return;
             }
 
-            _openNodes.Peek().AddAttribute(new RazorVueAttributeNode(
+            if (ShouldOmitElementAttribute(currentNode, value))
+                return;
+
+            currentNode.AddAttribute(new RazorVueAttributeNode(
                 name!,
                 value,
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
@@ -233,24 +328,41 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void AddComponentParameter(IInvocationOperation invocation)
         {
-            if (_openNodes.Count == 0)
-                return;
-
             var name = GetConstantStringArgument(invocation, 1);
             if (string.IsNullOrWhiteSpace(name))
-                return;
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' requires a constant parameter name in component '{_snapshot.Descriptor.FullName}'.");
+            }
 
             var value = GetInvocationArgument(invocation, 2);
+            var currentNode = GetRequiredOpenComponentBuilder(invocation);
+            if (TryHandleComponentSlotValue(currentNode, name!, value, invocation))
+                return;
+
             if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
                 TryParseChildContent(value, out var childContent))
             {
                 foreach (var child in childContent.Children)
-                    _openNodes.Peek().AddChild(child);
+                    currentNode.AddChild(child);
                 return;
             }
 
-            _openNodes.Peek().AddAttribute(new RazorVueAttributeNode(
+            currentNode.AddAttribute(new RazorVueAttributeNode(
                 name!,
+                value,
+                CreateOrigins(invocation, RazorVueOriginKind.Template)));
+        }
+
+        private void AddMultipleAttributes(IInvocationOperation invocation)
+        {
+            var value = GetInvocationArgument(invocation, 1);
+            if (value is null || IsConstantNull(value))
+                return;
+
+            var currentNode = GetRequiredOpenNodeBuilder(invocation);
+            currentNode.AddAttribute(new RazorVueAttributeSpreadNode(
                 value,
                 CreateOrigins(invocation, RazorVueOriginKind.Template)));
         }
@@ -258,22 +370,43 @@ internal sealed class RazorVueRenderTreeExtractor
         private void AddContent(IInvocationOperation invocation)
         {
             var value = GetInvocationArgument(invocation, 1);
-            if (value is null)
+            if (value is null || IsConstantNull(value))
                 return;
 
             var origins = CreateOrigins(invocation, RazorVueOriginKind.Template);
-            if (TryGetConstantString(value) is string text)
-            {
-                AddNode(new RazorVueTextNode(text, origins));
-                return;
-            }
-
             if (TryResolveSlotOutlet(value, out var slotName))
             {
                 AddNode(new RazorVueSlotOutletNode(
                     slotName,
                     GetInvocationArgument(invocation, 2),
                     origins));
+                return;
+            }
+
+            if (IsMarkupStringAddContent(invocation))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' emits raw markup that RazorVue cannot safely canonicalize in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            if (TryParseAddContentRenderFragment(invocation, value, out var fragment))
+            {
+                foreach (var child in fragment.Children)
+                    AddNode(child);
+                return;
+            }
+
+            if (IsRenderFragmentAddContent(invocation))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses a RenderFragment shape that RazorVue cannot canonicalize in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            if (TryGetConstantString(value) is string text)
+            {
+                AddNode(new RazorVueTextNode(text, origins));
                 return;
             }
 
@@ -284,11 +417,11 @@ internal sealed class RazorVueRenderTreeExtractor
         {
             if (TryGetConstantString(GetInvocationArgument(invocation, 1)) is not string markup ||
                 string.IsNullOrEmpty(markup))
-            {
                 return;
-            }
 
-            AddNode(new RazorVueTextNode(markup, CreateOrigins(invocation, RazorVueOriginKind.Template)));
+            throw CreateUnsupportedBuilderCall(
+                invocation,
+                $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' emits raw markup that RazorVue cannot safely canonicalize in component '{_snapshot.Descriptor.FullName}'.");
         }
 
         private RazorVueRenderFragment ParseNestedBranch(IOperation? operation)
@@ -324,8 +457,8 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void AddNode(RazorVueRenderNode node)
         {
-            if (_openNodes.Count > 0)
-                _openNodes.Peek().AddChild(node);
+            if (TryGetNearestOpenNodeBuilder(out var currentNode))
+                currentNode.AddChild(node);
             else
                 _rootChildren.Add(node);
         }
@@ -364,10 +497,58 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private bool IsCurrentComponentMember(ISymbol symbol, IOperation? instance)
         {
-            if (!SymbolEqualityComparer.Default.Equals(symbol.ContainingType, _snapshot.ComponentSymbol))
-                return false;
+            for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
+                    return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
+            }
 
-            return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
+            return false;
+        }
+
+        private OpenNodeBuilder GetRequiredOpenNodeBuilder(IInvocationOperation invocation)
+        {
+            if (_openFrames.Count == 0)
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' without an open element or component frame in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            if (_openFrames.Peek() is not OpenNodeBuilder currentNode)
+            {
+                throw CreateStructuralIssue(
+                    invocation,
+                    $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' while the current open frame is {_openFrames.Peek().Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            return currentNode;
+        }
+
+        private ComponentBuilder GetRequiredOpenComponentBuilder(IInvocationOperation invocation)
+        {
+            var currentNode = GetRequiredOpenNodeBuilder(invocation);
+            if (currentNode is ComponentBuilder componentBuilder)
+                return componentBuilder;
+
+            throw CreateStructuralIssue(
+                invocation,
+                $"BuildRenderTree encountered '{invocation.TargetMethod.Name}' while the current open node is {currentNode.Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private bool TryGetNearestOpenNodeBuilder(out OpenNodeBuilder currentNode)
+        {
+            foreach (var frame in _openFrames)
+            {
+                if (frame is OpenNodeBuilder nodeBuilder)
+                {
+                    currentNode = nodeBuilder;
+                    return true;
+                }
+            }
+
+            currentNode = default!;
+            return false;
         }
 
         private static IOperation? GetInvocationArgument(IInvocationOperation invocation, int index)
@@ -391,33 +572,169 @@ internal sealed class RazorVueRenderTreeExtractor
             return null;
         }
 
+        private static bool IsConstantNull(IOperation? operation)
+        {
+            var current = Unwrap(operation);
+            return current?.ConstantValue.HasValue == true &&
+                   current.ConstantValue.Value is null;
+        }
+
         private static IOperation? Unwrap(IOperation? operation)
             => RazorVueOperationNormalizer.Unwrap(operation);
+
+        private bool ShouldOmitElementAttribute(OpenNodeBuilder currentNode, IOperation? value)
+        {
+            if (currentNode is not ElementBuilder)
+                return false;
+
+            if (value is null)
+                return false;
+
+            var current = Unwrap(value);
+            if (current is null)
+                return false;
+
+            if (IsConstantNull(current))
+                return true;
+
+            return current.ConstantValue.HasValue &&
+                   current.ConstantValue.Value is bool boolValue &&
+                   !boolValue;
+        }
+
+        private bool TryHandleComponentSlotValue(
+            OpenNodeBuilder currentNode,
+            string name,
+            IOperation? value,
+            IInvocationOperation invocation)
+        {
+            if (currentNode is not ComponentBuilder)
+                return false;
+
+            if (!TryParseSlotTemplate(value, out var slotTemplate))
+                return false;
+
+            if (string.Equals(name, "ChildContent", StringComparison.Ordinal) &&
+                string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
+            {
+                foreach (var child in slotTemplate.Children.Children)
+                    currentNode.AddChild(child);
+                return true;
+            }
+
+            currentNode.AddSlotTemplate(new RazorVueComponentSlotTemplateNode(
+                PublicName: name,
+                SlotName: string.Equals(name, "ChildContent", StringComparison.Ordinal)
+                    ? "default"
+                    : ToLowerCamelCase(name),
+                ParameterName: slotTemplate.ParameterName,
+                Children: slotTemplate.Children,
+                Origins: CreateOrigins(invocation, RazorVueOriginKind.Template)));
+            return true;
+        }
 
         private bool TryParseChildContent(IOperation? operation, out RazorVueRenderFragment fragment)
         {
             fragment = RazorVueRenderFragment.Empty;
-            var current = Unwrap(operation);
-            if (current is not IDelegateCreationOperation delegateCreation)
+            if (!TryParseSlotTemplate(operation, out var slotTemplate))
                 return false;
 
-            var target = Unwrap(delegateCreation.Target);
-            if (target is not IAnonymousFunctionOperation anonymousFunction)
+            if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
                 return false;
 
-            fragment = ParseAnonymousFunctionBody(anonymousFunction);
+            fragment = slotTemplate.Children;
+            return true;
+        }
+
+        private bool TryParseAddContentRenderFragment(
+            IInvocationOperation invocation,
+            IOperation value,
+            out RazorVueRenderFragment fragment)
+        {
+            fragment = RazorVueRenderFragment.Empty;
+            if (!IsRenderFragmentAddContent(invocation))
+                return false;
+
+            if (invocation.Arguments.Length != 2)
+                return false;
+
+            return TryParseChildContent(value, out fragment);
+        }
+
+        private bool TryParseSlotTemplate(IOperation? operation, out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (!TryGetAnonymousFunction(operation, out var anonymousFunction))
+                return false;
+
+            if (TryParseUntypedSlotTemplate(anonymousFunction, out slotTemplate))
+                return true;
+
+            if (TryParseTypedSlotTemplate(anonymousFunction, out slotTemplate))
+                return true;
+
+            return false;
+        }
+
+        private bool TryParseUntypedSlotTemplate(
+            IAnonymousFunctionOperation anonymousFunction,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (!TryGetSingleBuilderParameter(anonymousFunction, out _))
+                return false;
+
+            slotTemplate = new ParsedSlotTemplate(
+                ParameterName: null,
+                Children: ParseAnonymousFunctionBody(anonymousFunction));
+            return true;
+        }
+
+        private bool TryParseTypedSlotTemplate(
+            IAnonymousFunctionOperation anonymousFunction,
+            out ParsedSlotTemplate slotTemplate)
+        {
+            slotTemplate = default;
+            if (anonymousFunction.Symbol.Parameters.Length != 1)
+                return false;
+
+            var slotContextParameter = anonymousFunction.Symbol.Parameters[0];
+            var body = anonymousFunction.Body;
+            if (body is null)
+                return false;
+
+            IOperation? returnedBuilderFactory = null;
+            switch (Unwrap(body))
+            {
+                case IAnonymousFunctionOperation nestedAnonymousFunction:
+                    returnedBuilderFactory = nestedAnonymousFunction;
+                    break;
+                case IDelegateCreationOperation delegateCreation:
+                    returnedBuilderFactory = delegateCreation;
+                    break;
+                case IBlockOperation block when TryGetSingleReturnedValue(block, out var returnValue):
+                    returnedBuilderFactory = returnValue;
+                    break;
+                case IReturnOperation returnOperation when returnOperation.ReturnedValue is not null:
+                    returnedBuilderFactory = returnOperation.ReturnedValue;
+                    break;
+            }
+
+            if (!TryGetAnonymousFunction(returnedBuilderFactory, out var builderAnonymousFunction))
+                return false;
+
+            if (!TryGetSingleBuilderParameter(builderAnonymousFunction, out _))
+                return false;
+
+            slotTemplate = new ParsedSlotTemplate(
+                ParameterName: slotContextParameter.Name,
+                Children: ParseAnonymousFunctionBody(builderAnonymousFunction));
             return true;
         }
 
         private RazorVueRenderFragment ParseAnonymousFunctionBody(IAnonymousFunctionOperation anonymousFunction)
         {
-            var builderParameters = anonymousFunction.Symbol.Parameters
-                .Where(static parameter =>
-                    string.Equals(parameter.Name, "builder", StringComparison.Ordinal) ||
-                    string.Equals(parameter.Type.Name, "RenderTreeBuilder", StringComparison.Ordinal))
-                .ToImmutableHashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
-
-            if (builderParameters.Count == 0)
+            if (!TryGetBuilderParameters(anonymousFunction, out var builderParameters))
                 return RazorVueRenderFragment.Empty;
 
             var body = anonymousFunction.Body;
@@ -428,6 +745,161 @@ internal sealed class RazorVueRenderTreeExtractor
                 return new Parser(_snapshot, _symbols, builderParameters).Parse(block.Operations);
 
             return new Parser(_snapshot, _symbols, builderParameters).Parse([body]);
+        }
+
+        private static bool TryGetAnonymousFunction(
+            IOperation? operation,
+            out IAnonymousFunctionOperation anonymousFunction)
+        {
+            anonymousFunction = default!;
+            var current = UnwrapDelegateCarrier(operation);
+            switch (current)
+            {
+                case IAnonymousFunctionOperation directAnonymousFunction:
+                    anonymousFunction = directAnonymousFunction;
+                    return true;
+                case IDelegateCreationOperation delegateCreation when UnwrapDelegateCarrier(delegateCreation.Target) is IAnonymousFunctionOperation targetAnonymousFunction:
+                    anonymousFunction = targetAnonymousFunction;
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static IOperation? UnwrapDelegateCarrier(IOperation? operation)
+        {
+            var current = Unwrap(operation);
+            while (current is IConversionOperation conversion)
+                current = Unwrap(conversion.Operand);
+            return current;
+        }
+
+        private static bool TryGetBuilderParameters(
+            IAnonymousFunctionOperation anonymousFunction,
+            out ImmutableHashSet<IParameterSymbol> builderParameters)
+        {
+            builderParameters = anonymousFunction.Symbol.Parameters
+                .Where(static parameter =>
+                    string.Equals(parameter.Name, "builder", StringComparison.Ordinal) ||
+                    string.Equals(parameter.Type.Name, "RenderTreeBuilder", StringComparison.Ordinal))
+                .ToImmutableHashSet<IParameterSymbol>(SymbolEqualityComparer.Default);
+            return builderParameters.Count > 0;
+        }
+
+        private static bool TryGetSingleBuilderParameter(
+            IAnonymousFunctionOperation anonymousFunction,
+            out IParameterSymbol builderParameter)
+        {
+            builderParameter = default!;
+            if (!TryGetBuilderParameters(anonymousFunction, out var builderParameters) ||
+                builderParameters.Count != 1)
+            {
+                return false;
+            }
+
+            builderParameter = builderParameters.Single();
+            return true;
+        }
+
+        private static bool TryGetSingleReturnedValue(IBlockOperation block, out IOperation? returnedValue)
+        {
+            returnedValue = null;
+            if (block.Operations.Length != 1 ||
+                block.Operations[0] is not IReturnOperation returnOperation)
+            {
+                return false;
+            }
+
+            returnedValue = returnOperation.ReturnedValue;
+            return returnedValue is not null;
+        }
+
+        private bool IsRenderFragmentAddContent(IInvocationOperation invocation)
+            => invocation.Arguments.Length >= 2 &&
+               IsRenderFragmentType(invocation.TargetMethod.Parameters[1].Type);
+
+        private bool IsMarkupStringAddContent(IInvocationOperation invocation)
+            => invocation.Arguments.Length >= 2 &&
+               IsMarkupStringType(invocation.TargetMethod.Parameters[1].Type);
+
+        private bool IsRenderFragmentType(ITypeSymbol? typeSymbol)
+        {
+            if (typeSymbol is null)
+                return false;
+
+            if (typeSymbol is INamedTypeSymbol namedType &&
+                namedType.IsGenericType &&
+                namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            {
+                typeSymbol = namedType.TypeArguments[0];
+            }
+
+            return IsRenderFragment(typeSymbol);
+        }
+
+        private static bool IsMarkupStringType(ITypeSymbol? typeSymbol)
+        {
+            if (typeSymbol is null)
+                return false;
+
+            if (typeSymbol is INamedTypeSymbol namedType &&
+                namedType.IsGenericType &&
+                namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            {
+                typeSymbol = namedType.TypeArguments[0];
+            }
+
+            return string.Equals(
+                typeSymbol.ToDisplayString(),
+                "Microsoft.AspNetCore.Components.MarkupString",
+                StringComparison.Ordinal);
+        }
+
+        private RazorVueCompilationIssueException CreateStructuralIssue(
+            IOperation operation,
+            string message)
+            => CreateStructuralIssue(
+                operation.Syntax is null
+                    ? _snapshot.Origins.FirstOrDefault() is { } origin ? ImmutableArray.Create(origin) : ImmutableArray<RazorVueSourceOrigin>.Empty
+                    : CreateOrigins(operation, RazorVueOriginKind.Template),
+                message);
+
+        private RazorVueCompilationIssueException CreateStructuralIssueForUnclosedFrames()
+        {
+            var current = _openFrames.Peek();
+            return CreateStructuralIssue(
+                current.Origins,
+                $"BuildRenderTree ended with {_openFrames.Count} unclosed frame(s); innermost open frame is {current.Describe()} in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private RazorVueCompilationIssueException CreateUnsupportedBuilderCall(
+            IInvocationOperation invocation,
+            string message)
+            => CreateStructuralIssue(invocation, message);
+
+        private static string GetBuilderCallDisplayName(IInvocationOperation invocation)
+            => invocation.TargetMethod.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+
+        private sealed class RegionScope(ImmutableArray<RazorVueSourceOrigin> origins)
+            : OpenFrame(origins)
+        {
+            public override string Describe()
+                => "region";
+        }
+
+        private RazorVueCompilationIssueException CreateStructuralIssue(
+            ImmutableArray<RazorVueSourceOrigin> origins,
+            string message)
+        {
+            var issue = new RazorVueCompilationIssue(
+                RazorVueIssueCode.CanonicalizationFailed,
+                RazorVueIssueSeverity.Error,
+                message,
+                ImmutableArray<string>.Empty);
+            return new RazorVueCompilationIssueException(
+                issue,
+                _snapshot.Descriptor.FullName,
+                origins.IsDefaultOrEmpty ? _snapshot.Origins.FirstOrDefault() : origins[0]);
         }
 
         private static ImmutableArray<RazorVueSourceOrigin> CreateOrigins(IOperation operation, RazorVueOriginKind originKind)
@@ -449,31 +921,54 @@ internal sealed class RazorVueRenderTreeExtractor
             return char.ToLowerInvariant(value[0]) + value.Substring(1);
         }
 
+        private readonly record struct ParsedSlotTemplate(
+            string? ParameterName,
+            RazorVueRenderFragment Children);
+
     }
 
-    private abstract class OpenNodeBuilder
+    private abstract class OpenFrame
     {
-        private readonly List<RazorVueAttributeNode> _attributes = [];
-        private readonly List<RazorVueRenderNode> _children = [];
-
-        protected OpenNodeBuilder(ImmutableArray<RazorVueSourceOrigin> origins)
+        protected OpenFrame(ImmutableArray<RazorVueSourceOrigin> origins)
         {
             Origins = origins;
         }
 
-        protected ImmutableArray<RazorVueSourceOrigin> Origins { get; }
+        public ImmutableArray<RazorVueSourceOrigin> Origins { get; }
 
-        public void AddAttribute(RazorVueAttributeNode attribute)
+        public abstract string Describe();
+    }
+
+    private abstract class OpenNodeBuilder : OpenFrame
+    {
+        private readonly List<RazorVueAttributeEntry> _attributes = [];
+        private readonly List<RazorVueComponentSlotTemplateNode> _slotTemplates = [];
+        private readonly List<RazorVueRenderNode> _children = [];
+
+        protected OpenNodeBuilder(ImmutableArray<RazorVueSourceOrigin> origins)
+            : base(origins)
+        {
+        }
+
+        public void AddAttribute(RazorVueAttributeEntry attribute)
             => _attributes.Add(attribute);
+
+        public void AddSlotTemplate(RazorVueComponentSlotTemplateNode slotTemplate)
+            => _slotTemplates.Add(slotTemplate);
 
         public void AddChild(RazorVueRenderNode child)
             => _children.Add(child);
 
-        protected ImmutableArray<RazorVueAttributeNode> BuildAttributes()
+        protected ImmutableArray<RazorVueAttributeEntry> BuildAttributes()
             => _attributes.ToImmutableArray();
+
+        protected ImmutableArray<RazorVueComponentSlotTemplateNode> BuildSlotTemplates()
+            => _slotTemplates.ToImmutableArray();
 
         protected RazorVueRenderFragment BuildChildren()
             => new(_children.ToImmutableArray());
+
+        public abstract override string Describe();
 
         public abstract RazorVueRenderNode Build();
     }
@@ -481,6 +976,9 @@ internal sealed class RazorVueRenderTreeExtractor
     private sealed class ElementBuilder(string tagName, ImmutableArray<RazorVueSourceOrigin> origins)
         : OpenNodeBuilder(origins)
     {
+        public override string Describe()
+            => $"element <{tagName}>";
+
         public override RazorVueRenderNode Build()
             => new RazorVueElementNode(tagName, BuildAttributes(), BuildChildren(), Origins);
     }
@@ -488,7 +986,10 @@ internal sealed class RazorVueRenderTreeExtractor
     private sealed class ComponentBuilder(string componentName, string componentFullName, string resolutionName, ImmutableArray<RazorVueSourceOrigin> origins)
         : OpenNodeBuilder(origins)
     {
+        public override string Describe()
+            => $"component '{componentFullName}'";
+
         public override RazorVueRenderNode Build()
-            => new RazorVueComponentNode(componentName, componentFullName, resolutionName, BuildAttributes(), BuildChildren(), Origins);
+            => new RazorVueComponentNode(componentName, componentFullName, resolutionName, BuildAttributes(), BuildSlotTemplates(), BuildChildren(), Origins);
     }
 }

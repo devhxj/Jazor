@@ -160,6 +160,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             throw CreateUnsupportedCanonicalizationException(snapshot, component.ComponentName, component.Origins);
 
         var slotBindings = CreateComponentSlotBindings(snapshot, expressionEmitter, component, resolvedDescriptor);
+        slotBindings = slotBindings.AddRange(CreateComponentSlotTemplateBindings(snapshot, expressionEmitter, resolvedComponents, component, resolvedDescriptor));
         if (!component.Children.Children.IsDefaultOrEmpty)
         {
             slotBindings = slotBindings.Add(new RazorVueCanonicalSlotBinding(
@@ -171,6 +172,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                 ForwardedSlotName: null,
                 BindingKind: RazorVueExpressionBindingKind.None,
                 TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
+                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, component.Children),
                 SourceOrigins: component.Children.Children
                     .SelectMany(static child => child.Origins)
                     .ToImmutableArray()));
@@ -183,7 +185,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             ResolvedDescriptor: resolvedDescriptor,
             Attributes: CreateComponentAttributeBindings(snapshot, expressionEmitter, component, resolvedDescriptor),
             Slots: slotBindings,
-            Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, component.Children),
+            Children: RazorVueCanonicalTemplateFragment.Empty,
             TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
             SideEffectClassification: RazorVueSideEffectClassification.None,
             SourceOrigins: component.Origins);
@@ -203,40 +205,79 @@ internal sealed class RazorVueCanonicalHModelFactory
             SourceOrigins: expression.Origins);
     }
 
-    private static ImmutableArray<RazorVueCanonicalAttributeBinding> CreateHtmlAttributeBindings(
+    private static ImmutableArray<RazorVueCanonicalAttributeEntry> CreateHtmlAttributeBindings(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
-        ImmutableArray<RazorVueAttributeNode> attributes)
+        ImmutableArray<RazorVueAttributeEntry> attributes)
     {
         if (attributes.IsDefaultOrEmpty)
-            return ImmutableArray<RazorVueCanonicalAttributeBinding>.Empty;
+            return ImmutableArray<RazorVueCanonicalAttributeEntry>.Empty;
 
-        return attributes.Select(attribute => new RazorVueCanonicalAttributeBinding(
-                Name: attribute.Name,
-                ExpressionText: attribute.Value is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value),
-                AttributeKind: RazorVueCanonicalAttributeKind.HtmlAttribute,
-                BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
-                TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
-                SourceOrigins: attribute.Origins))
-            .ToImmutableArray();
+        var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalAttributeEntry>();
+        foreach (var attributeEntry in attributes)
+        {
+            switch (attributeEntry)
+            {
+                case RazorVueAttributeNode attribute:
+                    builder.Add(new RazorVueCanonicalAttributeBinding(
+                        Name: attribute.Name,
+                        ExpressionText: attribute.Value is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value),
+                        AttributeKind: RazorVueCanonicalAttributeKind.HtmlAttribute,
+                        BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
+                        TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
+                        SourceOrigins: attribute.Origins));
+                    break;
+                case RazorVueAttributeSpreadNode spread:
+                    builder.Add(new RazorVueCanonicalAttributeSpreadBinding(
+                        ExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, spread.Expression),
+                        BindingKind: ClassifyBindingKind(snapshot, spread.Expression),
+                        TemplateEncodability: ClassifyTemplateEncodability(spread.Expression),
+                        SourceOrigins: spread.Origins));
+                    break;
+                default:
+                    throw CreateUnsupportedCanonicalizationException(snapshot, attributeEntry.GetType().Name, attributeEntry.Origins);
+            }
+        }
+
+        return builder.ToImmutable();
     }
 
-    private static ImmutableArray<RazorVueCanonicalAttributeBinding> CreateComponentAttributeBindings(
+    private static ImmutableArray<RazorVueCanonicalAttributeEntry> CreateComponentAttributeBindings(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
         RazorVueComponentNode component,
         VueComponentDescriptor descriptor)
     {
         if (component.Attributes.IsDefaultOrEmpty)
-            return ImmutableArray<RazorVueCanonicalAttributeBinding>.Empty;
+            return ImmutableArray<RazorVueCanonicalAttributeEntry>.Empty;
 
         var propsByName = BuildPropsByName(descriptor);
         var emitsByAlias = BuildEmitsByAlias(descriptor);
         var slotsByPublicName = BuildSlotsByPublicName(descriptor);
-        var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalAttributeBinding>();
+        var unmatchedValuesProp = component.Attributes
+            .OfType<RazorVueAttributeSpreadNode>()
+            .Select(spread => GetCaptureUnmatchedValuesProp(snapshot, descriptor, spread))
+            .FirstOrDefault(static prop => prop is not null);
+        var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalAttributeEntry>();
 
-        foreach (var attribute in component.Attributes)
+        foreach (var attributeEntry in component.Attributes)
         {
+            if (attributeEntry is RazorVueAttributeSpreadNode spread)
+            {
+                if (unmatchedValuesProp is null)
+                    throw CreateUnsupportedComponentSpreadException(snapshot, descriptor, spread);
+
+                builder.Add(new RazorVueCanonicalAttributeSpreadBinding(
+                    ExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, spread.Expression),
+                    BindingKind: ClassifyBindingKind(snapshot, spread.Expression),
+                    TemplateEncodability: ClassifyTemplateEncodability(spread.Expression),
+                    SourceOrigins: spread.Origins));
+                continue;
+            }
+
+            if (attributeEntry is not RazorVueAttributeNode attribute)
+                throw CreateUnsupportedCanonicalizationException(snapshot, attributeEntry.GetType().Name, attributeEntry.Origins);
+
             if (slotsByPublicName.ContainsKey(attribute.Name))
                 continue;
 
@@ -282,8 +323,11 @@ internal sealed class RazorVueCanonicalHModelFactory
         var slotsByPublicName = BuildSlotsByPublicName(descriptor);
         var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalSlotBinding>();
 
-        foreach (var attribute in component.Attributes)
+        foreach (var attributeEntry in component.Attributes)
         {
+            if (attributeEntry is not RazorVueAttributeNode attribute)
+                continue;
+
             if (!slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor))
                 continue;
 
@@ -311,7 +355,77 @@ internal sealed class RazorVueCanonicalHModelFactory
                 ForwardedSlotName: forwardedSlotName,
                 BindingKind: ClassifySlotBindingKind(snapshot, attribute.Value, valueKind),
                 TemplateEncodability: ClassifySlotTemplateEncodability(attribute.Value, valueKind),
+                Children: RazorVueCanonicalTemplateFragment.Empty,
                 SourceOrigins: attribute.Origins));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<RazorVueCanonicalSlotBinding> CreateComponentSlotTemplateBindings(
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueExpressionEmitter expressionEmitter,
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        RazorVueComponentNode component,
+        VueComponentDescriptor descriptor)
+    {
+        if (component.SlotTemplates.IsDefaultOrEmpty)
+            return ImmutableArray<RazorVueCanonicalSlotBinding>.Empty;
+
+        var slotsByPublicName = BuildSlotsByPublicName(descriptor);
+        var assignedNames = new HashSet<string>(StringComparer.Ordinal);
+        var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalSlotBinding>();
+
+        foreach (var slotTemplate in component.SlotTemplates)
+        {
+            if (!slotsByPublicName.TryGetValue(slotTemplate.PublicName, out var slotDescriptor))
+            {
+                var attribute = new RazorVueAttributeNode(slotTemplate.PublicName, null, slotTemplate.Origins);
+                throw CreateUnknownComponentAttributeException(snapshot, descriptor, attribute);
+            }
+
+            if (!assignedNames.Add(slotTemplate.PublicName))
+            {
+                var issue = new RazorVueCompilationIssue(
+                    RazorVueIssueCode.DuplicateSlotValue,
+                    RazorVueIssueSeverity.Error,
+                    $"Component '{descriptor.Name}' receives child content parameter '{slotTemplate.PublicName}' more than once.",
+                    ImmutableArray<string>.Empty);
+                throw new RazorVueCompilationIssueException(
+                    issue,
+                    snapshot.Descriptor.FullName,
+                    slotTemplate.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : slotTemplate.Origins[0]);
+            }
+
+            if (slotDescriptor.Parameters.IsDefaultOrEmpty)
+            {
+                if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
+                {
+                    throw CreateSlotContextMisuseException(
+                        snapshot,
+                        slotDescriptor,
+                        new RazorVueAttributeNode(slotTemplate.PublicName, null, slotTemplate.Origins));
+                }
+            }
+            else if (string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
+            {
+                throw CreateSlotContextMisuseException(
+                    snapshot,
+                    slotDescriptor,
+                    new RazorVueAttributeNode(slotTemplate.PublicName, null, slotTemplate.Origins));
+            }
+
+            builder.Add(new RazorVueCanonicalSlotBinding(
+                SlotName: slotDescriptor.Name,
+                IsDefault: slotDescriptor.IsDefault,
+                ParameterName: slotDescriptor.Parameters.IsDefaultOrEmpty ? null : slotTemplate.ParameterName,
+                ValueKind: RazorVueCanonicalSlotValueKind.None,
+                ValueExpressionText: null,
+                ForwardedSlotName: null,
+                BindingKind: RazorVueExpressionBindingKind.None,
+                TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
+                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, slotTemplate.Children),
+                SourceOrigins: slotTemplate.Origins));
         }
 
         return builder.ToImmutable();
@@ -606,6 +720,56 @@ internal sealed class RazorVueCanonicalHModelFactory
         }
 
         return builder.ToImmutable();
+    }
+
+    private static VuePropDescriptor? GetCaptureUnmatchedValuesProp(
+        RazorVueSemanticSnapshot snapshot,
+        VueComponentDescriptor descriptor,
+        RazorVueAttributeSpreadNode spread)
+    {
+        var captureUnmatchedValueProps = descriptor.Props
+            .Where(static prop => prop.CaptureUnmatchedValues)
+            .Take(2)
+            .ToArray();
+
+        return captureUnmatchedValueProps.Length switch
+        {
+            0 => null,
+            1 => captureUnmatchedValueProps[0],
+            _ => throw CreateDuplicateCaptureUnmatchedValuesException(snapshot, descriptor, spread)
+        };
+    }
+
+    private static RazorVueCompilationIssueException CreateUnsupportedComponentSpreadException(
+        RazorVueSemanticSnapshot snapshot,
+        VueComponentDescriptor descriptor,
+        RazorVueAttributeSpreadNode spread)
+    {
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.UnknownParameter,
+            RazorVueIssueSeverity.Error,
+            $"Component '{descriptor.Name}' does not declare a [Parameter(CaptureUnmatchedValues = true)] sink for arbitrary attributes.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(
+            issue,
+            snapshot.Descriptor.FullName,
+            spread.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : spread.Origins[0]);
+    }
+
+    private static RazorVueCompilationIssueException CreateDuplicateCaptureUnmatchedValuesException(
+        RazorVueSemanticSnapshot snapshot,
+        VueComponentDescriptor descriptor,
+        RazorVueAttributeSpreadNode spread)
+    {
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.CanonicalizationFailed,
+            RazorVueIssueSeverity.Error,
+            $"Component '{descriptor.Name}' declares multiple [Parameter(CaptureUnmatchedValues = true)] sinks; RazorVue requires exactly one.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(
+            issue,
+            snapshot.Descriptor.FullName,
+            spread.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : spread.Origins[0]);
     }
 
     private static ImmutableDictionary<string, VueEmitDescriptor> BuildEmitsByAlias(VueComponentDescriptor descriptor)

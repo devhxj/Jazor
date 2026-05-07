@@ -217,4 +217,119 @@ public sealed class RazorDocumentNodeInventoryTests
         StringAssert.Contains(tree, "CSharpExpressionIntermediateNode");
     }
 
+    [TestMethod]
+    public void AlignedContext_ForElementSplat_ProducesSplatInventory()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<div title="@Title" @attributes="AdditionalAttributes">Hello</div>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.ElementSplat",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                }
+            }
+            """);
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+        TestContext.WriteLine(tree);
+        StringAssert.Contains(tree, "HtmlAttributeIntermediateNode AttributeName=\"@attributes\"");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForComponentNamedAndTypedChildContent_ProducesComponentChildContentInventory()
+    {
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            @"D:\temp\InventoryNamedTypedChildContent.razor",
+            """
+            <LayoutCard Title="@title">
+                <Header>
+                    <h1>@title</h1>
+                </Header>
+                <ItemTemplate Context="item">
+                    <p>@item</p>
+                </ItemTemplate>
+            </LayoutCard>
+
+            @code {
+                private string title = "Title";
+            }
+            """,
+            importSources: [],
+            tagHelpers: null);
+
+        var documentNode = RazorIrTestHost.GetDocumentNode(codeDocument);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(documentNode);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "LayoutCard");
+    }
+
+    [TestMethod]
+    public void AlignedContext_ForComponentNamedAndTypedChildContent_ProducesComponentChildContentNodes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard Title="@Title">
+                <Header>
+                    <h1>@Title</h1>
+                </Header>
+                <ItemTemplate Context="item">
+                    <p>@item</p>
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Inventory.NamedTypedChildContent",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var tree = RazorVueRazorIrTestContextFactory.GetDocumentTreeDump(context, snapshot);
+
+        TestContext.WriteLine(tree);
+
+        StringAssert.Contains(tree, "ComponentIntermediateNode");
+        StringAssert.Contains(tree, "ComponentChildContentIntermediateNode AttributeName=\"Header\"");
+        StringAssert.Contains(tree, "ComponentChildContentIntermediateNode AttributeName=\"ItemTemplate\"");
+    }
+
 }

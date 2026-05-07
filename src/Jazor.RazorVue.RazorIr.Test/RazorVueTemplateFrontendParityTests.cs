@@ -44,6 +44,36 @@ public sealed class RazorVueTemplateFrontendParityTests
     }
 
     [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForElementSplat()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<div title="@Title" @attributes="AdditionalAttributes">Hello</div>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.ElementSplat.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                }
+            }
+            """);
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
     public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForComponentAndDefaultChildContent()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -54,6 +84,53 @@ public sealed class RazorVueTemplateFrontendParityTests
             documentPath,
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentAndChildComponentSource());
+
+        AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
+    }
+
+    [TestMethod]
+    public void PreferredTemplateFrontendAndRazorIr_AgreeOnSupportedSubset_ForNamedAndTypedChildContent()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard Title="@Title">
+                <Header>
+                    <h1>@Title</h1>
+                </Header>
+                <ItemTemplate Context="item">
+                    <p>@item</p>
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.Parity.NamedTypedChildContent.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
 
         AssertParity(RazorVuePreferredTemplateFrontend.Instance, new RazorVueRazorIrTemplateFrontend(), context, snapshot);
     }
@@ -370,6 +447,7 @@ public sealed class RazorVueTemplateFrontendParityTests
                 builder.Append("Component(").Append(component.ComponentName).Append('|').Append(component.ComponentFullName).Append(')');
                 AppendAttributes(builder, component.Attributes, includeOrigins: false);
                 builder.AppendLine();
+                AppendSlotTemplates(builder, component.SlotTemplates, depth + 1);
                 AppendFragment(builder, component.Children, depth + 1);
                 break;
             case RazorVueTextNode text:
@@ -420,7 +498,7 @@ public sealed class RazorVueTemplateFrontendParityTests
         }
     }
 
-    private static void AppendAttributes(StringBuilder builder, ImmutableArray<RazorVueAttributeNode> attributes, bool includeOrigins)
+    private static void AppendAttributes(StringBuilder builder, ImmutableArray<RazorVueAttributeEntry> attributes, bool includeOrigins)
     {
         if (attributes.IsDefaultOrEmpty)
             return;
@@ -431,13 +509,36 @@ public sealed class RazorVueTemplateFrontendParityTests
             if (index > 0)
                 builder.Append(", ");
 
-            var attribute = attributes[index];
-            builder.Append(attribute.Name).Append('=').Append(attribute.Value?.Syntax.ToString() ?? "true");
-            if (includeOrigins)
-                builder.Append('@').Append(DescribeOrigins(attribute.Origins));
+            switch (attributes[index])
+            {
+                case RazorVueAttributeNode attribute:
+                    builder.Append(attribute.Name).Append('=').Append(attribute.Value?.Syntax.ToString() ?? "true");
+                    if (includeOrigins)
+                        builder.Append('@').Append(DescribeOrigins(attribute.Origins));
+                    break;
+                case RazorVueAttributeSpreadNode spread:
+                    builder.Append("...").Append(spread.Expression.Syntax.ToString());
+                    if (includeOrigins)
+                        builder.Append('@').Append(DescribeOrigins(spread.Origins));
+                    break;
+            }
         }
 
         builder.Append(']');
+    }
+
+    private static void AppendSlotTemplates(StringBuilder builder, ImmutableArray<RazorVueComponentSlotTemplateNode> slotTemplates, int depth)
+    {
+        foreach (var slotTemplate in slotTemplates)
+        {
+            builder.Append(' ', depth * 2)
+                .Append("SlotTemplate(")
+                .Append(slotTemplate.PublicName);
+            if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
+                builder.Append('|').Append(slotTemplate.ParameterName);
+            builder.Append(')').AppendLine();
+            AppendFragment(builder, slotTemplate.Children, depth + 1);
+        }
     }
 
     private static int CountOrigins(RazorVueRenderFragment fragment)
@@ -476,6 +577,14 @@ public sealed class RazorVueTemplateFrontendParityTests
                 foreach (var attribute in component.Attributes)
                 {
                     foreach (var origin in attribute.Origins)
+                        yield return origin;
+                }
+
+                foreach (var slotTemplate in component.SlotTemplates)
+                {
+                    foreach (var origin in slotTemplate.Origins)
+                        yield return origin;
+                    foreach (var origin in EnumerateOrigins(slotTemplate.Children))
                         yield return origin;
                 }
 

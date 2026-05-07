@@ -25,6 +25,7 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         RazorVueDiagnosticDescriptors.SlotContextMisuse,
         RazorVueDiagnosticDescriptors.DuplicateSlotValue,
         RazorVueDiagnosticDescriptors.MissingSlotValue,
+        RazorVueDiagnosticDescriptors.InvalidComponentDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryStyleDependencyDeclaration,
         RazorVueDiagnosticDescriptors.InvalidLibraryPluginRequirementDeclaration
@@ -57,8 +58,25 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
         // bound Razor AdditionalText set, so its authoring validation stays on the
         // explicit BuildRenderTree lowering path instead of inferring a host default.
         var lowerer = new RazorVueArtifactFactory(BuildRenderTreeTemplateFrontend.Instance);
-        foreach (var snapshot in compilationContext.CreateSemanticSnapshots())
+        foreach (var candidate in compilationContext.DiscoverComponentCandidates())
         {
+            RazorVueSemanticSnapshot snapshot;
+            try
+            {
+                snapshot = compilationContext.CreateSemanticSnapshot(candidate);
+            }
+            catch (RazorVueCompilationIssueException exception)
+            {
+                if (!TryGetDescriptor(exception.Issue.Code, out var descriptor))
+                    continue;
+
+                context.ReportDiagnostic(Diagnostic.Create(
+                    descriptor,
+                    GetDiagnosticLocation(candidate.ComponentSymbol, candidate.BuildRenderTreeMethod, exception.Origin),
+                    exception.Issue.Message));
+                continue;
+            }
+
             try
             {
                 lowerer.Lower(compilationContext, snapshot);
@@ -227,6 +245,9 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
             case RazorVueIssueCode.MissingSlotValue:
                 descriptor = RazorVueDiagnosticDescriptors.MissingSlotValue;
                 return true;
+            case RazorVueIssueCode.InvalidComponentDeclaration:
+                descriptor = RazorVueDiagnosticDescriptors.InvalidComponentDeclaration;
+                return true;
             case RazorVueIssueCode.InvalidLibraryComponentDeclaration:
                 descriptor = RazorVueDiagnosticDescriptors.InvalidLibraryComponentDeclaration;
                 return true;
@@ -245,8 +266,14 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
     private static Location GetDiagnosticLocation(
         RazorVueSemanticSnapshot snapshot,
         RazorVueSourceOrigin? origin)
+        => GetDiagnosticLocation(snapshot.ComponentSymbol, snapshot.BuildRenderTreeMethod, origin);
+
+    private static Location GetDiagnosticLocation(
+        INamedTypeSymbol componentSymbol,
+        IMethodSymbol? buildRenderTreeMethod,
+        RazorVueSourceOrigin? origin)
     {
-        var sourceTree = snapshot.ComponentSymbol.DeclaringSyntaxReferences
+        var sourceTree = componentSymbol.DeclaringSyntaxReferences
             .Select(static reference => reference.SyntaxTree)
             .FirstOrDefault();
         if (origin is not null &&
@@ -258,8 +285,8 @@ public sealed class RazorVueAuthoringAnalyzer : DiagnosticAnalyzer
             return Location.Create(sourceTree, new TextSpan(origin.SourceSpanStart, origin.SourceSpanLength));
         }
 
-        return snapshot.BuildRenderTreeMethod?.Locations.FirstOrDefault(static location => location.IsInSource) ??
-               snapshot.ComponentSymbol.Locations.FirstOrDefault(static location => location.IsInSource) ??
+        return buildRenderTreeMethod?.Locations.FirstOrDefault(static location => location.IsInSource) ??
+               componentSymbol.Locations.FirstOrDefault(static location => location.IsInSource) ??
                Location.None;
     }
 }

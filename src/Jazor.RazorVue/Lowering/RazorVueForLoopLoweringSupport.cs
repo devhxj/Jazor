@@ -16,8 +16,15 @@ internal static class RazorVueForLoopLoweringSupport
                     return true;
                 case RazorVueElementNode element when ContainsForLoop(element.Children):
                     return true;
-                case RazorVueComponentNode component when ContainsForLoop(component.Children):
-                    return true;
+                case RazorVueComponentNode component:
+                    if (ContainsForLoop(component.Children))
+                        return true;
+                    foreach (var slotTemplate in component.SlotTemplates)
+                    {
+                        if (ContainsForLoop(slotTemplate.Children))
+                            return true;
+                    }
+                    break;
                 case RazorVueConditionalNode conditional when ContainsForLoop(conditional.WhenTrue) || ContainsForLoop(conditional.WhenFalse):
                     return true;
                 case RazorVueForEachNode loop when ContainsForLoop(loop.Body):
@@ -38,8 +45,15 @@ internal static class RazorVueForLoopLoweringSupport
                     return true;
                 case RazorVueCanonicalElementNode element when ContainsForLoop(element.Children):
                     return true;
-                case RazorVueCanonicalComponentNode component when ContainsForLoop(component.Children):
-                    return true;
+                case RazorVueCanonicalComponentNode component:
+                    if (ContainsForLoop(component.Children))
+                        return true;
+                    foreach (var slot in component.Slots)
+                    {
+                        if (ContainsForLoop(slot.Children))
+                            return true;
+                    }
+                    break;
                 case RazorVueCanonicalConditionalNode conditional when ContainsForLoop(conditional.WhenTrue) || ContainsForLoop(conditional.WhenFalse):
                     return true;
                 case RazorVueCanonicalForEachNode loop when ContainsForLoop(loop.Body):

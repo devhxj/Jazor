@@ -1,6 +1,7 @@
 using System.IO;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.RazorSdk;
 using Jazor.RazorVue.RenderTree;
 using Microsoft.AspNetCore.Razor.Language;
@@ -72,15 +73,212 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         Assert.IsNotNull(element);
         Assert.AreEqual(2, element.Attributes.Length);
 
-        var titleAttribute = element.Attributes.Single(static attribute => attribute.Name == "title");
+        var titleAttribute = element.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "title");
         Assert.IsNotNull(titleAttribute.Value);
         Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleAttribute.Value);
         Assert.AreEqual("Title", ((IPropertyReferenceOperation)titleAttribute.Value).Property.Name);
 
-        var classAttribute = element.Attributes.Single(static attribute => attribute.Name == "class");
+        var classAttribute = element.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "class");
         Assert.IsNotNull(classAttribute.Value);
         Assert.IsTrue(classAttribute.Value.ConstantValue.HasValue);
         Assert.AreEqual("hero", classAttribute.Value.ConstantValue.Value);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForElementSplat_ProducesAttributeSpread()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<div title="@Title" @attributes="AdditionalAttributes">Hello</div>""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementSplat.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var element = renderTree.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(element);
+        Assert.AreEqual(2, element.Attributes.Length);
+        Assert.IsInstanceOfType<RazorVueAttributeNode>(element.Attributes[0]);
+        Assert.IsInstanceOfType<RazorVueAttributeSpreadNode>(element.Attributes[1]);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForElementBind_CurrentHostStillExposesRawBindAttribute()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Title" />""";
+
+        var codeDocument = RazorIrTestHost.CreateCodeDocument(
+            documentPath,
+            documentText,
+            importSources: [],
+            tagHelpers: null);
+        var tree = RazorIrTestHost.DumpIntermediateNodeTree(RazorIrTestHost.GetDocumentNode(codeDocument));
+
+        StringAssert.Contains(tree, "HtmlAttributeIntermediateNode AttributeName=\"@bind\"");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBind_CurrentlyFailsFast()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Title" />""";
+
+        var (context, _) = RazorVueRazorIrTestContextFactory.CreateContext(
+            "RazorVue.RazorIr.TemplateFrontend.ElementBind.Pipeline.Tests",
+            documentPath,
+            documentText,
+            RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
+
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
+            new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+                .Execute(context));
+
+        StringAssert.Contains(exception.Message, "requires a bound Razor document");
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForComponentBindAttribute_ProducesValueAndValueChangedAttributes()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<EditorCard @bind-Value="Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ComponentBind.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                public partial class EditorCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var component = renderTree.Children[0] as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        Assert.AreEqual("EditorCard", component.ComponentName);
+        Assert.AreEqual(2, component.Attributes.Length);
+
+        var valueAttribute = component.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "Value");
+        Assert.IsNotNull(valueAttribute.Value);
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(valueAttribute.Value);
+
+        var valueChangedAttribute = component.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "ValueChanged");
+        Assert.IsNotNull(valueChangedAttribute.Value);
+        Assert.IsInstanceOfType<IInvocationOperation>(valueChangedAttribute.Value);
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerComponentBindAttribute()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<EditorCard @bind-Value="Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ComponentBind.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                public partial class EditorCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> TitleChanged { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": props.title");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:value\": (__value) => emit(\"update:title\", __value)");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForComponentBindWithoutBindableHostTarget_ReportsInvalidBindTarget()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<EditorCard @bind-Value="Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.ComponentBind.InvalidTarget.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                public partial class EditorCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Value { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ValueChanged { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.InvalidBindTarget, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Title");
     }
 
     [TestMethod]
@@ -105,7 +303,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(component.ComponentFullName, "Demo.Pages.ChildCard");
 
         Assert.AreEqual(1, component.Attributes.Length);
-        var titleAttribute = component.Attributes[0];
+        var titleAttribute = Assert.IsInstanceOfType<RazorVueAttributeNode>(component.Attributes[0]);
         Assert.AreEqual("Title", titleAttribute.Name);
         Assert.IsNotNull(titleAttribute.Value);
         Assert.IsInstanceOfType<IPropertyReferenceOperation>(titleAttribute.Value);
@@ -116,6 +314,80 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         var bodyText = childElement.Children.Children[0] as RazorVueTextNode;
         Assert.IsNotNull(bodyText);
         Assert.AreEqual("Body", bodyText.Text);
+    }
+
+    [TestMethod]
+    public void CreateRenderTree_ForComponentNamedAndTypedChildContent_ProducesStructuredSlots()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard Title="@Title">
+                <Header>
+                    <h1>@Title</h1>
+                </Header>
+                <ItemTemplate Context="item">
+                    <p>@item</p>
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.NamedTypedChildContent.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var frontend = new RazorVueRazorIrTemplateFrontend();
+        var renderTree = frontend.CreateRenderTree(context, snapshot);
+
+        var component = renderTree.Children[0] as RazorVueComponentNode;
+        Assert.IsNotNull(component);
+        Assert.AreEqual("LayoutCard", component.ComponentName);
+        Assert.AreEqual("LayoutCard", component.ResolutionName);
+        Assert.AreEqual(1, component.Attributes.Length);
+        Assert.AreEqual("Title", Assert.IsInstanceOfType<RazorVueAttributeNode>(component.Attributes[0]).Name);
+        Assert.AreEqual(2, component.SlotTemplates.Length);
+        Assert.AreEqual(0, component.Children.Children.Length);
+
+        var headerSlot = component.SlotTemplates.Single(static slot => slot.PublicName == "Header");
+        Assert.AreEqual("header", headerSlot.SlotName);
+        Assert.IsNull(headerSlot.ParameterName);
+        var headerElement = headerSlot.Children.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(headerElement);
+        Assert.AreEqual("h1", headerElement.TagName);
+
+        var itemTemplateSlot = component.SlotTemplates.Single(static slot => slot.PublicName == "ItemTemplate");
+        Assert.AreEqual("itemTemplate", itemTemplateSlot.SlotName);
+        Assert.AreEqual("item", itemTemplateSlot.ParameterName);
+        var paragraph = itemTemplateSlot.Children.Children[0] as RazorVueElementNode;
+        Assert.IsNotNull(paragraph);
+        Assert.AreEqual("p", paragraph.TagName);
+        var itemExpression = paragraph.Children.Children[0] as RazorVueExpressionNode;
+        Assert.IsNotNull(itemExpression);
+        Assert.IsInstanceOfType<IParameterReferenceOperation>(itemExpression.Expression);
     }
 
     [TestMethod]
@@ -141,6 +413,57 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             artifact.SourceOrigins.Any(origin =>
                 origin.MappingQuality == RazorVueMappingQuality.ExactSource &&
                 string.Equals(origin.SourceFilePath, documentPath, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerNamedAndTypedChildContent()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <LayoutCard Title="@Title">
+                <Header>
+                    <h1>@Title</h1>
+                </Header>
+                <ItemTemplate Context="item">
+                    <p>@item</p>
+                </ItemTemplate>
+            </LayoutCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.NamedTypedChildContent.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public partial class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<string>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "\"title\": props.title");
+        StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", item)");
     }
 
     [TestMethod]

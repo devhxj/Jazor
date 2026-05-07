@@ -141,7 +141,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                 prop.Required + "|" +
                 prop.AcceptsBinding + "|" +
                 (prop.DefaultExpression ?? string.Empty) + "|" +
-                prop.Kind);
+                prop.Kind + "|" +
+                prop.CaptureUnmatchedValues);
         foreach (var emit in descriptor.Emits.OrderBy(static item => item.RazorAlias, StringComparer.Ordinal))
             descriptorShape.AppendLine(emit.RazorAlias + "|" + emit.Name + "|" + emit.PayloadTypeName + "|" + emit.Kind);
         foreach (var slot in descriptor.Slots.OrderBy(static item => item.Name, StringComparer.Ordinal))

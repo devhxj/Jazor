@@ -16,7 +16,7 @@ internal abstract record RazorVueRenderNode(
 
 internal sealed record RazorVueElementNode(
     string TagName,
-    ImmutableArray<RazorVueAttributeNode> Attributes,
+    ImmutableArray<RazorVueAttributeEntry> Attributes,
     RazorVueRenderFragment Children,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
@@ -24,9 +24,17 @@ internal sealed record RazorVueComponentNode(
     string ComponentName,
     string ComponentFullName,
     string ResolutionName,
-    ImmutableArray<RazorVueAttributeNode> Attributes,
+    ImmutableArray<RazorVueAttributeEntry> Attributes,
+    ImmutableArray<RazorVueComponentSlotTemplateNode> SlotTemplates,
     RazorVueRenderFragment Children,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
+
+internal sealed record RazorVueComponentSlotTemplateNode(
+    string PublicName,
+    string SlotName,
+    string? ParameterName,
+    RazorVueRenderFragment Children,
+    ImmutableArray<RazorVueSourceOrigin> Origins);
 
 internal sealed record RazorVueTextNode(
     string Text,
@@ -63,10 +71,17 @@ internal sealed record RazorVueForNode(
     RazorVueRenderFragment Body,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
+internal abstract record RazorVueAttributeEntry(
+    ImmutableArray<RazorVueSourceOrigin> Origins);
+
 internal sealed record RazorVueAttributeNode(
     string Name,
     IOperation? Value,
-    ImmutableArray<RazorVueSourceOrigin> Origins);
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins);
+
+internal sealed record RazorVueAttributeSpreadNode(
+    IOperation Expression,
+    ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueAttributeEntry(Origins);
 
 internal enum RazorVueForConditionKind
 {

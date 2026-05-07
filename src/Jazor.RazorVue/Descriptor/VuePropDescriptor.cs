@@ -7,4 +7,5 @@ internal sealed record VuePropDescriptor(
     bool Required,
     bool AcceptsBinding,
     string? DefaultExpression,
-    VuePropKind Kind);
+    VuePropKind Kind,
+    bool CaptureUnmatchedValues);

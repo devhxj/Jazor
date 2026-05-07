@@ -355,6 +355,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (normalizedCallbackFactory.Length != 0)
             return normalizedCallbackFactory;
 
+        if (TryNormalizeRazorInferredEventCallback(invocation, out var normalizedInferredCallback))
+            return normalizedInferredCallback;
+
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
             return EmitExpression(invocation.Instance) + "(" +
@@ -387,6 +390,9 @@ internal sealed partial class RazorVueExpressionEmitter
         var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
         if (normalizedCallbackFactory.Length != 0)
             return normalizedCallbackFactory;
+
+        if (TryNormalizeRazorInferredEventCallback(invocation, out var normalizedInferredCallback))
+            return normalizedInferredCallback;
 
         if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
         {
@@ -530,6 +536,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (callbackTarget is null)
             return string.Empty;
 
+        if (TryNormalizeRazorInferredEventCallback(callbackTarget, out var inferredCallbackFactory))
+            return inferredCallbackFactory;
+
         return callbackTarget switch
         {
             IPropertyReferenceOperation property when IsCurrentComponentMember(property.Property, property.Instance) =>
@@ -540,9 +549,147 @@ internal sealed partial class RazorVueExpressionEmitter
         };
     }
 
+    private bool TryNormalizeRazorInferredEventCallback(IOperation callbackTarget, out string expression)
+    {
+        expression = string.Empty;
+        if (callbackTarget is not IInvocationOperation invocation ||
+            !IsInferredEventCallback(invocation) ||
+            invocation.Arguments.Length < 2)
+        {
+            return false;
+        }
+
+        if (!TryGetAssignedLambdaTarget(invocation.Arguments[1].Value, out var assignedTarget))
+            return false;
+
+        switch (assignedTarget)
+        {
+            case IPropertyReferenceOperation property when IsCurrentComponentMember(property.Property, property.Instance):
+                var changedAlias = GetBindChangedSymbol(property.Property);
+                if (!_emitsByRazorAlias.ContainsKey(changedAlias))
+                    throw CreateInvalidBindTargetException(property.Property);
+
+                expression = EmitCurrentComponentCallbackReference(changedAlias);
+                return true;
+            case IFieldReferenceOperation field when IsCurrentComponentMember(field.Field, field.Instance):
+                _requiredSetupFields.Add(field.Field);
+                expression = "(__value) => (" + ToLowerCamelCase(field.Field.Name) + " = __value)";
+                return true;
+            case ILocalReferenceOperation local:
+                expression = "(__value) => (" + local.Local.Name + " = __value)";
+                return true;
+            case IParameterReferenceOperation:
+                throw CreateUnsupportedSetupLogicException(
+                    _snapshot.ComponentSymbol,
+                    $"RazorVue setup-side logic does not support assigning to method parameters from generated two-way binding in component '{_snapshot.Descriptor.FullName}'.");
+            default:
+                return false;
+        }
+    }
+
+    private bool TryGetAssignedLambdaTarget(IOperation operation, out IOperation target)
+    {
+        target = default!;
+        if (!TryGetAnonymousFunction(operation, out var anonymousFunction))
+            return false;
+
+        var body = UnwrapLambdaBody(anonymousFunction.Body);
+
+        if (body is not ISimpleAssignmentOperation assignment)
+            return false;
+
+        target = Unwrap(assignment.Target)!;
+        return target is not null;
+    }
+
+    private static IOperation? UnwrapLambdaBody(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        while (true)
+        {
+            switch (current)
+            {
+                case IBlockOperation block:
+                    if (TryGetSingleEffectiveLambdaOperation(block, out var effectiveOperation))
+                    {
+                        current = Unwrap(effectiveOperation);
+                        continue;
+                    }
+
+                    return current;
+                case IExpressionStatementOperation statement:
+                    current = Unwrap(statement.Operation);
+                    continue;
+                case IReturnOperation returnOperation when returnOperation.ReturnedValue is not null:
+                    current = Unwrap(returnOperation.ReturnedValue);
+                    continue;
+                default:
+                    return current;
+            }
+        }
+    }
+
+    private static bool TryGetSingleEffectiveLambdaOperation(
+        IBlockOperation block,
+        out IOperation effectiveOperation)
+    {
+        effectiveOperation = default!;
+        if (block.Operations.Length == 0)
+            return false;
+
+        var effectiveOperations = block.Operations
+            .Where(static operation => operation is not IReturnOperation { ReturnedValue: null })
+            .ToArray();
+        if (effectiveOperations.Length != 1)
+            return false;
+
+        effectiveOperation = effectiveOperations[0];
+        return true;
+    }
+
+    private static bool TryGetAnonymousFunction(IOperation? operation, out IAnonymousFunctionOperation anonymousFunction)
+    {
+        anonymousFunction = default!;
+        var current = UnwrapDelegateCarrier(operation);
+        switch (current)
+        {
+            case IAnonymousFunctionOperation directAnonymousFunction:
+                anonymousFunction = directAnonymousFunction;
+                return true;
+            case IDelegateCreationOperation delegateCreation when UnwrapDelegateCarrier(delegateCreation.Target) is IAnonymousFunctionOperation targetAnonymousFunction:
+                anonymousFunction = targetAnonymousFunction;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static IOperation? UnwrapDelegateCarrier(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        while (current is IConversionOperation conversion)
+            current = Unwrap(conversion.Operand);
+        return current;
+    }
+
+    private static bool IsInferredEventCallback(IInvocationOperation invocation)
+        => invocation.TargetMethod.Name == "CreateInferredEventCallback" &&
+           string.Equals(
+               invocation.TargetMethod.ContainingType?.ToDisplayString(),
+               "Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers",
+               StringComparison.Ordinal);
+
+    private static string GetBindChangedSymbol(IPropertySymbol property)
+        => property.Name + "Changed";
+
     private string EmitCurrentComponentCallbackReference(ISymbol symbol)
     {
-        if (_emitsByRazorAlias.TryGetValue(symbol.Name, out var emitDescriptor))
+        return EmitCurrentComponentCallbackReference(symbol.Name);
+    }
+
+    private string EmitCurrentComponentCallbackReference(string razorAlias)
+    {
+        if (_emitsByRazorAlias.TryGetValue(razorAlias, out var emitDescriptor))
         {
             var payloadParameterName = GetVueEmitPayloadParameterName(emitDescriptor);
             return payloadParameterName.Length == 0
@@ -550,17 +697,31 @@ internal sealed partial class RazorVueExpressionEmitter
                 : "(" + payloadParameterName + ") => emit(" + ToJavaScriptString(emitDescriptor.Name) + ", " + payloadParameterName + ")";
         }
 
-        if (_propsByPublicName.TryGetValue(symbol.Name, out var propDescriptor))
+        if (_propsByPublicName.TryGetValue(razorAlias, out var propDescriptor))
             return "props." + propDescriptor.Name;
 
         throw new NotSupportedException(
-            $"RazorVue render currently does not support callback member '{symbol.Name}' in component '{_snapshot.Descriptor.FullName}'.");
+            $"RazorVue render currently does not support callback member '{razorAlias}' in component '{_snapshot.Descriptor.FullName}'.");
     }
 
     private static string GetVueEmitPayloadParameterName(VueEmitDescriptor emitDescriptor)
         => string.Equals(emitDescriptor.PayloadTypeName, "void", StringComparison.Ordinal)
             ? string.Empty
             : "__value";
+
+    private RazorVueCompilationIssueException CreateInvalidBindTargetException(IPropertySymbol property)
+    {
+        var originLocation = property.Locations.FirstOrDefault(static location => location.IsInSource);
+        var origin = originLocation is null
+            ? null
+            : RazorVueSourceOrigin.FromLocation(originLocation, RazorVueOriginKind.Logic);
+        var issue = new RazorVueCompilationIssue(
+            RazorVueIssueCode.InvalidBindTarget,
+            RazorVueIssueSeverity.Error,
+            $"Component '{_snapshot.Descriptor.Name}' does not support two-way binding for parameter '{property.Name}'.",
+            ImmutableArray<string>.Empty);
+        return new RazorVueCompilationIssueException(issue, _snapshot.Descriptor.FullName, origin);
+    }
 
     private static bool IsEventCallbackFactoryCreate(IInvocationOperation invocation)
         => invocation.TargetMethod.Name == "Create" &&

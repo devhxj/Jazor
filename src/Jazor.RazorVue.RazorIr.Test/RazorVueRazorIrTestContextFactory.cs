@@ -17,6 +17,35 @@ internal static class RazorVueRazorIrTestContextFactory
         string documentText,
         string componentSource,
         string? importsText = "@using Demo.Pages")
+        => CreateContextCore(
+            assemblyName,
+            documentPath,
+            documentText,
+            componentSource,
+            importsText,
+            requireSdkAlignedGeneratedSource: true);
+
+    public static (Jazor.RazorVue.RazorVueCompilationContext Context, RazorVueSemanticSnapshot Snapshot) CreateContext(
+        string assemblyName,
+        string documentPath,
+        string documentText,
+        string componentSource,
+        string? importsText = "@using Demo.Pages")
+        => CreateContextCore(
+            assemblyName,
+            documentPath,
+            documentText,
+            componentSource,
+            importsText,
+            requireSdkAlignedGeneratedSource: false);
+
+    private static (Jazor.RazorVue.RazorVueCompilationContext Context, RazorVueSemanticSnapshot Snapshot) CreateContextCore(
+        string assemblyName,
+        string documentPath,
+        string documentText,
+        string componentSource,
+        string? importsText,
+        bool requireSdkAlignedGeneratedSource)
     {
         var importsPath = Path.Combine(Path.GetDirectoryName(documentPath)!, "_Imports.razor");
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
@@ -94,7 +123,8 @@ internal static class RazorVueRazorIrTestContextFactory
 
         Assert.IsNotNull(context);
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single(static item => item.Descriptor.Name == "TodoApp");
-        AssertSdkAlignedGeneratedSource(context, snapshot);
+        if (requireSdkAlignedGeneratedSource)
+            AssertSdkAlignedGeneratedSource(context, snapshot);
         return (context, snapshot);
     }
 

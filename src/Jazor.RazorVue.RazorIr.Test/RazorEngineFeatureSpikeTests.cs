@@ -1,6 +1,10 @@
 using System.Reflection;
+using Jazor.RazorVue.RazorSdk;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.RazorIr.Test;
 
@@ -53,6 +57,243 @@ public sealed class RazorEngineFeatureSpikeTests
             tree.Contains("@bind", StringComparison.Ordinal) ||
             tree.Contains("bind", StringComparison.OrdinalIgnoreCase),
             "The tree did not expose any obvious trace of @bind processing; re-check whether built-in component/tag-helper passes are active in this host.");
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForBindDirectiveAttribute_CanInspectGeneratedCSharpAndMappedRazorPath()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Title" />""";
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var baseCompilation = CSharpCompilation.Create(
+            "RazorVue.RazorIr.BindPathProbe",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    options: parseOptions,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? Title { get; set; }
+                        }
+                    }
+                    """,
+                    options: parseOptions,
+                    path: "TodoApp.razor.cs")
+            ],
+            references: RazorIrTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var projectEngine = RazorVueRazorCodeDocumentProvider.CreateProjectEngine(
+            documentPath,
+            parseOptions,
+            rootNamespace: "Demo.Pages");
+        var tagHelpers = RazorVueRazorCodeDocumentProvider.DiscoverTagHelpers(projectEngine, baseCompilation);
+        var codeDocument = projectEngine.Process(
+            RazorVueRazorCodeDocumentProvider.CreateSourceDocument(
+                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))),
+            RazorFileKind.Component,
+            [],
+            tagHelpers.Length == 0 ? null : TagHelperCollection.Create(tagHelpers));
+        var csharpDocument = RazorVueRazorCodeDocumentProvider.GetRequiredCSharpDocument(codeDocument);
+
+        TestContext.WriteLine("Generated C#:");
+        TestContext.WriteLine(csharpDocument.Text.ToString());
+
+        var compilation = baseCompilation.AddSyntaxTrees(
+            CSharpSyntaxTree.ParseText(
+                csharpDocument.Text,
+                options: parseOptions,
+                path: Path.GetFileName(documentPath) + ".g.cs"));
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(
+            compilation,
+            Jazor.RazorVue.RazorVueRazorDocumentSet.Create(
+            [
+                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))
+            ]));
+        Assert.IsNotNull(context);
+
+        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single(static item => item.Descriptor.Name == "TodoApp");
+        TestContext.WriteLine("Resolved RazorDocumentPath: " + (snapshot.RazorDocumentPath ?? "<null>"));
+
+        Assert.IsNotNull(snapshot.BuildRenderTreeMethod);
+        foreach (var syntaxReference in snapshot.BuildRenderTreeMethod.DeclaringSyntaxReferences)
+        {
+            if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
+                continue;
+
+            foreach (var nodeOrToken in methodSyntax.Body!.DescendantNodesAndTokensAndSelf())
+            {
+                var mapped = nodeOrToken.GetLocation().GetMappedLineSpan();
+                if (!mapped.HasMappedPath)
+                    continue;
+
+                TestContext.WriteLine(nodeOrToken.Kind() + " => " + mapped.Path);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForBindDirectiveAttribute_WithOfficialSourceGeneratorRegistration_CanInspectGeneratedCSharp()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<input @bind="Title" />""";
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var baseCompilation = CSharpCompilation.Create(
+            "RazorVue.RazorIr.BindPathProbe.OfficialRegistration",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    options: parseOptions,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? Title { get; set; }
+                        }
+                    }
+                    """,
+                    options: parseOptions,
+                    path: "TodoApp.razor.cs")
+            ],
+            references: RazorIrTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var projectEngine = RazorIrTestHost.CreateProjectEngineWithOfficialSourceGeneratorRegistration(documentPath);
+        var sourceDocument = RazorSourceDocument.Create(documentText, documentPath);
+        var tagHelpers = RazorIrTestHost.DiscoverTagHelpers(projectEngine, baseCompilation);
+        var codeDocument = projectEngine.ProcessDesignTime(
+            sourceDocument,
+            RazorFileKind.Component,
+            [],
+            tagHelpers.Length == 0 ? null : TagHelperCollection.Create(tagHelpers));
+        var csharpDocument = RazorVueRazorCodeDocumentProvider.GetRequiredCSharpDocument(codeDocument);
+
+        TestContext.WriteLine("Official registration generated C#:");
+        TestContext.WriteLine(csharpDocument.Text.ToString());
+    }
+
+    [TestMethod]
+    public void ProcessDesignTime_ForComponentBindDirectiveAttribute_CanInspectGeneratedCSharpAndTree()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<EditorCard @bind-Value="Title" />""";
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
+        var baseCompilation = CSharpCompilation.Create(
+            "RazorVue.RazorIr.ComponentBindProbe",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    options: parseOptions,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Pages
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/editor-card")]
+                        public partial class EditorCard : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? Value { get; set; }
+
+                            [Parameter]
+                            public EventCallback<string?> ValueChanged { get; set; }
+                        }
+
+                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                        public partial class TodoApp : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public string? Title { get; set; }
+                        }
+                    }
+                    """,
+                    options: parseOptions,
+                    path: "TodoApp.razor.cs")
+            ],
+            references: RazorIrTestHost.CreateMetadataReferences(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var projectEngine = RazorVueRazorCodeDocumentProvider.CreateProjectEngine(
+            documentPath,
+            parseOptions,
+            rootNamespace: "Demo.Pages");
+        var tagHelpers = RazorVueRazorCodeDocumentProvider.DiscoverTagHelpers(projectEngine, baseCompilation);
+        var codeDocument = projectEngine.Process(
+            RazorVueRazorCodeDocumentProvider.CreateSourceDocument(
+                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))),
+            RazorFileKind.Component,
+            [],
+            tagHelpers.Length == 0 ? null : TagHelperCollection.Create(tagHelpers));
+        var csharpDocument = RazorVueRazorCodeDocumentProvider.GetRequiredCSharpDocument(codeDocument);
+        var documentNode = RazorVueRazorCodeDocumentProvider.GetDocumentNode(codeDocument);
+
+        TestContext.WriteLine("Component bind generated C#:");
+        TestContext.WriteLine(csharpDocument.Text.ToString());
+        TestContext.WriteLine("Component bind tree:");
+        TestContext.WriteLine(RazorIrTestHost.DumpIntermediateNodeTree(documentNode));
     }
 
     [TestMethod]

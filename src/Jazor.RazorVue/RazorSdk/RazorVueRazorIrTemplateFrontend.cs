@@ -287,14 +287,16 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             RejectElementExtensions(node.Captures, "ReferenceCaptureIntermediateNode");
             RejectElementExtensions(node.SetKeys, "SetKeyIntermediateNode");
 
-            var attributes = node.Attributes
-                .Select(ConvertHtmlAttribute)
-                .ToImmutableArray();
+            var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
+            foreach (var attribute in node.Attributes)
+                attributes.Add(ConvertHtmlAttributeEntry(attribute));
+            foreach (var splat in node.Body.OfType<SplatIntermediateNode>())
+                attributes.Add(ConvertSplatAttribute(splat));
             var children = ConvertTemplateMethodBody(node.Body);
 
             return new RazorVueElementNode(
                 node.TagName,
-                attributes,
+                attributes.ToImmutable(),
                 children,
                 CreateOrigins(node.Source));
         }
@@ -303,9 +305,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         {
             RejectComponentExtensions(node.Captures, "ReferenceCaptureIntermediateNode");
             RejectComponentExtensions(node.SetKeys, "SetKeyIntermediateNode");
-            RejectComponentExtensions(node.Splats, "SplatIntermediateNode");
 
-            var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeNode>();
+            var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
             foreach (var attribute in node.Attributes)
             {
                 if (attribute.IsDesignTimePropertyAccessHelper)
@@ -315,21 +316,29 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                 attributes.Add(ConvertComponentAttribute(attribute));
             }
+            foreach (var splat in node.Splats)
+                attributes.Add(ConvertSplatAttribute(splat));
 
             var children = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
+            var slotTemplates = ImmutableArray.CreateBuilder<RazorVueComponentSlotTemplateNode>();
             foreach (var childContent in node.ChildContents)
             {
-                if (childContent.IsParameterized)
-                    throw CreateUnsupportedNodeException(childContent, "parameterized ComponentChildContentIntermediateNode");
-
-                if (!string.Equals(childContent.AttributeName, "ChildContent", StringComparison.Ordinal))
+                var slotFragment = ConvertTemplateMethodBody(childContent.Children);
+                if (string.Equals(childContent.AttributeName, "ChildContent", StringComparison.Ordinal))
                 {
-                    throw CreateUnsupportedNodeException(
-                        childContent,
-                        $"named ComponentChildContentIntermediateNode '{childContent.AttributeName}'");
+                    children.AddRange(slotFragment.Children);
+                    continue;
                 }
 
-                children.AddRange(ConvertTemplateMethodBody(childContent.Children).Children);
+                var slotName = ToLowerCamelCase(childContent.AttributeName);
+                slotTemplates.Add(new RazorVueComponentSlotTemplateNode(
+                    PublicName: childContent.AttributeName,
+                    SlotName: slotName,
+                    ParameterName: childContent.IsParameterized
+                        ? childContent.ParameterName
+                        : null,
+                    Children: slotFragment,
+                    Origins: CreateOrigins(childContent.Source ?? node.Source ?? node.StartTagSpan)));
             }
 
             return new RazorVueComponentNode(
@@ -337,6 +346,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 NormalizeTypeName(node.TypeName),
                 string.IsNullOrWhiteSpace(node.TagName) ? GetComponentName(node) : node.TagName,
                 attributes.ToImmutable(),
+                slotTemplates.ToImmutable(),
                 new RazorVueRenderFragment(children.ToImmutable()),
                 CreateOrigins(node.Source is null ? node.StartTagSpan : node.Source));
         }
@@ -390,19 +400,45 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 CreateOrigins(node.Source));
         }
 
+        private RazorVueAttributeEntry ConvertHtmlAttributeEntry(HtmlAttributeIntermediateNode node)
+        {
+            if (string.Equals(node.AttributeName, "@attributes", StringComparison.Ordinal))
+            {
+                var value = ResolveAttributeValue(node.AttributeName, node.Children, node.Source)
+                    ?? throw CreateUnsupportedAttributeException(
+                        node.Source,
+                        $"RazorVue Razor IR frontend requires an expression value for '@attributes' in component '{_snapshot.Descriptor.FullName}'.");
+                return new RazorVueAttributeSpreadNode(
+                    value,
+                    CreateOrigins(node.Source));
+            }
+
+            return ConvertHtmlAttribute(node);
+        }
+
         private RazorVueAttributeNode ConvertComponentAttribute(ComponentAttributeIntermediateNode node)
         {
-            var value = ResolveAttributeValue(node.AttributeName, node.Children, node.Source);
+            var value = ResolveAttributeValue(node.AttributeName, node.Children, node.Source, node);
             return new RazorVueAttributeNode(
                 node.AttributeName,
                 value,
                 CreateOrigins(node.Source));
         }
 
+        private RazorVueAttributeSpreadNode ConvertSplatAttribute(SplatIntermediateNode node)
+        {
+            var sourceSpan = GetRequiredSourceSpan(node, "SplatIntermediateNode");
+            var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR splat attribute");
+            return new RazorVueAttributeSpreadNode(
+                operation,
+                CreateOrigins(node.Source));
+        }
+
         private IOperation? ResolveAttributeValue(
             string attributeName,
             IntermediateNodeCollection children,
-            SourceSpan? fallbackSource)
+            SourceSpan? fallbackSource,
+            IntermediateNode? ownerNode = null)
         {
             if (children.Count == 0)
                 return fallbackSource is null
@@ -419,18 +455,46 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return children[0] switch
             {
                 HtmlContentIntermediateNode html => ResolveLiteralAttributeValue(html),
-                CSharpExpressionIntermediateNode expressionNode => _resolver.ResolveRequiredOperation(
-                    GetRequiredSourceSpan(expressionNode, $"CSharpExpression value for attribute '{attributeName}'"),
-                    $"Razor IR expression attribute '{attributeName}'"),
-                CSharpExpressionAttributeValueIntermediateNode expression => _resolver.ResolveRequiredOperation(
-                    GetRequiredSourceSpan(expression, $"CSharpExpressionAttributeValue for attribute '{attributeName}'"),
-                    $"Razor IR expression attribute '{attributeName}'"),
+                CSharpExpressionIntermediateNode expressionNode => ResolveExpressionAttributeOperation(
+                    attributeName,
+                    expressionNode,
+                    fallbackSource,
+                    ownerNode),
+                CSharpExpressionAttributeValueIntermediateNode expression => ResolveExpressionAttributeOperation(
+                    attributeName,
+                    expression,
+                    fallbackSource,
+                    ownerNode),
                 CSharpCodeAttributeValueIntermediateNode code => throw CreateUnsupportedNodeException(
                     code,
                     $"CSharpCodeAttributeValueIntermediateNode '{attributeName}'"),
                 HtmlAttributeValueIntermediateNode htmlValue => ResolveLiteralAttributeValue(htmlValue),
                 _ => throw CreateUnsupportedNodeException(children[0], $"{children[0].GetType().Name} '{attributeName}'")
             };
+        }
+
+        private IOperation ResolveExpressionAttributeOperation(
+            string attributeName,
+            IntermediateNode expressionNode,
+            SourceSpan? fallbackSource,
+            IntermediateNode? ownerNode)
+        {
+            var generatedExpressionText = GetNodeText(expressionNode);
+            var sourceSpan = GetBestSourceSpan(expressionNode) ??
+                             GetBestSourceSpan(ownerNode ?? expressionNode) ??
+                             fallbackSource;
+            if (_resolver.TryResolveGeneratedExpression(generatedExpressionText, sourceSpan, out var generatedExpressionOperation))
+                return generatedExpressionOperation;
+
+            if (sourceSpan is null)
+            {
+                throw new InvalidOperationException(
+                    $"The Razor IR node 'expression attribute {attributeName}' did not expose a source span.");
+            }
+
+            return _resolver.ResolveRequiredOperation(
+                sourceSpan,
+                $"Razor IR expression attribute '{attributeName}'");
         }
 
         private IOperation ResolveLiteralAttributeValue(IntermediateNode node)
@@ -1182,7 +1246,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 index++;
                 SkipWhitespace(markup, ref index);
                 var startTagName = ReadName(markup, ref index);
-                var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeNode>();
+                var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
                 var selfClosing = false;
 
                 while (index < markup.Length)
@@ -1367,11 +1431,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private sealed class StaticElementBuilder(
             string tagName,
-            ImmutableArray<RazorVueAttributeNode> attributes,
+            ImmutableArray<RazorVueAttributeEntry> attributes,
             ImmutableArray<RazorVueSourceOrigin> origins)
         {
             public string TagName { get; } = tagName;
-            public ImmutableArray<RazorVueAttributeNode> Attributes { get; } = attributes;
+            public ImmutableArray<RazorVueAttributeEntry> Attributes { get; } = attributes;
             public ImmutableArray<RazorVueSourceOrigin> Origins { get; } = origins;
             public ImmutableArray<RazorVueRenderNode>.Builder Children { get; } = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
 

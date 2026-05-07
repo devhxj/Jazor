@@ -154,6 +154,14 @@ internal sealed partial class RazorVueExpressionEmitter
                         yield return origin;
                 }
 
+                foreach (var slotTemplate in component.SlotTemplates)
+                {
+                    foreach (var origin in slotTemplate.Origins)
+                        yield return origin;
+                    foreach (var childOrigin in CollectOrigins(slotTemplate.Children))
+                        yield return childOrigin;
+                }
+
                 foreach (var childOrigin in CollectOrigins(component.Children))
                     yield return childOrigin;
                 break;

@@ -22,6 +22,7 @@ internal static class VueComponentDescriptorFactory
     {
         return CreateDescriptor(
             candidate.ComponentSymbol,
+            context.Compilation,
             context.Symbols,
             VueComponentSourceKind.UserComponent,
             GetUserImportSpecifier(candidate.ComponentSymbol, context.Symbols),
@@ -41,6 +42,7 @@ internal static class VueComponentDescriptorFactory
         var metadata = GetLibraryMetadata(componentSymbol, symbols);
         return CreateDescriptor(
             componentSymbol,
+            context.Compilation,
             symbols,
             VueComponentSourceKind.LibraryComponent,
             metadata.ImportSpecifier,
@@ -51,6 +53,7 @@ internal static class VueComponentDescriptorFactory
 
     private static VueComponentDescriptor CreateDescriptor(
         INamedTypeSymbol componentSymbol,
+        Compilation compilation,
         RazorVueCompilationSymbols symbols,
         VueComponentSourceKind sourceKind,
         string importSpecifier,
@@ -67,6 +70,7 @@ internal static class VueComponentDescriptorFactory
         var props = ImmutableArray.CreateBuilder<VuePropDescriptor>();
         var emits = ImmutableArray.CreateBuilder<VueEmitDescriptor>();
         var slots = ImmutableArray.CreateBuilder<VueSlotDescriptor>();
+        var captureUnmatchedValuesProperties = ImmutableArray.CreateBuilder<IPropertySymbol>();
         var bindableParameters = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var property in parameterProperties)
@@ -109,6 +113,7 @@ internal static class VueComponentDescriptorFactory
             var publicName = property.Name;
             var inferredAcceptsBinding = bindPairs.Contains(publicName);
             var acceptsBinding = propOverride?.AcceptsBinding ?? inferredAcceptsBinding;
+            var captureUnmatchedValues = HasCaptureUnmatchedValues(property, symbols);
             var kind = propOverride is not null && propOverride.HasKindOverride
                 ? propOverride.Kind
                 : acceptsBinding
@@ -121,7 +126,11 @@ internal static class VueComponentDescriptorFactory
                 Required: propOverride?.Required ?? false,
                 AcceptsBinding: acceptsBinding,
                 DefaultExpression: propOverride?.DefaultExpression,
-                Kind: kind));
+                Kind: kind,
+                CaptureUnmatchedValues: captureUnmatchedValues));
+
+            if (captureUnmatchedValues)
+                captureUnmatchedValuesProperties.Add(property);
 
             if (acceptsBinding)
                 bindableParameters.Add(publicName);
@@ -159,6 +168,12 @@ internal static class VueComponentDescriptorFactory
                 componentSymbol,
                 $"Library component '{FormatFullName(componentSymbol)}' declares more than one default slot.");
         }
+
+        ValidateCaptureUnmatchedValuesParameters(
+            componentSymbol,
+            compilation,
+            captureUnmatchedValuesProperties.ToImmutable(),
+            sourceKind);
 
         return new VueComponentDescriptor(
             Name: componentSymbol.Name,
@@ -706,6 +721,84 @@ internal static class VueComponentDescriptorFactory
            typeSymbol is INamedTypeSymbol namedType &&
            Comparer.Equals(namedType.OriginalDefinition, symbols.RenderFragmentOfT);
 
+    private static bool HasCaptureUnmatchedValues(IPropertySymbol property, RazorVueCompilationSymbols symbols)
+    {
+        if (symbols.ParameterAttribute is null)
+            return false;
+
+        foreach (var attribute in property.GetAttributes())
+        {
+            if (!Comparer.Equals(attribute.AttributeClass, symbols.ParameterAttribute))
+                continue;
+
+            foreach (var pair in attribute.NamedArguments)
+            {
+                if (string.Equals(pair.Key, "CaptureUnmatchedValues", StringComparison.Ordinal) &&
+                    pair.Value.Value is bool boolValue)
+                {
+                    return boolValue;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void ValidateCaptureUnmatchedValuesParameters(
+        INamedTypeSymbol componentSymbol,
+        Compilation compilation,
+        ImmutableArray<IPropertySymbol> captureUnmatchedValuesProperties,
+        VueComponentSourceKind sourceKind)
+    {
+        if (captureUnmatchedValuesProperties.IsDefaultOrEmpty)
+            return;
+
+        if (captureUnmatchedValuesProperties.Length > 1)
+        {
+            throw CreateInvalidCaptureUnmatchedValuesException(
+                componentSymbol,
+                captureUnmatchedValuesProperties[1],
+                sourceKind,
+                $"RazorVue component '{FormatFullName(componentSymbol)}' declares multiple [Parameter(CaptureUnmatchedValues = true)] parameters. Only one such parameter is allowed.");
+        }
+
+        var property = captureUnmatchedValuesProperties[0];
+        if (IsSupportedCaptureUnmatchedValuesType(property.Type, compilation))
+            return;
+
+        throw CreateInvalidCaptureUnmatchedValuesException(
+            componentSymbol,
+            property,
+            sourceKind,
+            $"RazorVue component '{FormatFullName(componentSymbol)}' applies [Parameter(CaptureUnmatchedValues = true)] to '{property.Name}', but its type '{FormatTypeName(property.Type)}' must accept Dictionary<string, object> values and must be usable as IEnumerable<KeyValuePair<string, object>>.");
+    }
+
+    private static bool IsSupportedCaptureUnmatchedValuesType(ITypeSymbol typeSymbol, Compilation compilation)
+    {
+        var dictionaryDefinition = compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2");
+        var enumerableDefinition = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
+        var keyValuePairDefinition = compilation.GetTypeByMetadataName("System.Collections.Generic.KeyValuePair`2");
+        var stringType = compilation.GetSpecialType(SpecialType.System_String);
+        var objectType = compilation.GetSpecialType(SpecialType.System_Object);
+
+        if (dictionaryDefinition is null ||
+            enumerableDefinition is null ||
+            keyValuePairDefinition is null ||
+            stringType.SpecialType == SpecialType.None ||
+            objectType.SpecialType == SpecialType.None)
+        {
+            return true;
+        }
+
+        var keyValuePairType = keyValuePairDefinition.Construct(stringType, objectType);
+        var dictionaryType = dictionaryDefinition.Construct(stringType, objectType);
+        var enumerableType = enumerableDefinition.Construct(keyValuePairType);
+
+        var acceptsFrameworkDictionary = compilation.HasImplicitConversion(dictionaryType, typeSymbol);
+        var usableWithAddMultipleAttributes = compilation.HasImplicitConversion(typeSymbol, enumerableType);
+        return acceptsFrameworkDictionary && usableWithAddMultipleAttributes;
+    }
+
     private static IPropertySymbol GetRequiredParameter(
         INamedTypeSymbol componentSymbol,
         ImmutableDictionary<string, IPropertySymbol> parameterLookup,
@@ -724,6 +817,16 @@ internal static class VueComponentDescriptorFactory
         INamedTypeSymbol componentSymbol,
         string message)
         => CreateLibraryMetadataIssueException(componentSymbol, RazorVueIssueCode.InvalidLibraryComponentDeclaration, message);
+
+    private static RazorVueCompilationIssueException CreateInvalidComponentDeclarationException(
+        INamedTypeSymbol componentSymbol,
+        IPropertySymbol property,
+        string message)
+        => CreateComponentDeclarationIssueException(
+            componentSymbol,
+            property,
+            RazorVueIssueCode.InvalidComponentDeclaration,
+            message);
 
     private static RazorVueCompilationIssueException CreateInvalidLibraryStyleDependencyDeclarationException(
         INamedTypeSymbol componentSymbol,
@@ -751,6 +854,35 @@ internal static class VueComponentDescriptorFactory
             : RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Descriptor);
         return new RazorVueCompilationIssueException(issue, FormatFullName(componentSymbol), origin);
     }
+
+    private static RazorVueCompilationIssueException CreateComponentDeclarationIssueException(
+        INamedTypeSymbol componentSymbol,
+        IPropertySymbol property,
+        RazorVueIssueCode issueCode,
+        string message)
+    {
+        var issue = new RazorVueCompilationIssue(
+            issueCode,
+            RazorVueIssueSeverity.Error,
+            message,
+            ImmutableArray<string>.Empty);
+        var location = property.Locations.FirstOrDefault(static item => item.IsInSource) ??
+                       componentSymbol.Locations.FirstOrDefault(static item => item.IsInSource) ??
+                       Location.None;
+        var origin = location == Location.None
+            ? null
+            : RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Descriptor);
+        return new RazorVueCompilationIssueException(issue, FormatFullName(componentSymbol), origin);
+    }
+
+    private static RazorVueCompilationIssueException CreateInvalidCaptureUnmatchedValuesException(
+        INamedTypeSymbol componentSymbol,
+        IPropertySymbol property,
+        VueComponentSourceKind sourceKind,
+        string message)
+        => sourceKind == VueComponentSourceKind.LibraryComponent
+            ? CreateInvalidLibraryComponentDeclarationException(componentSymbol, message)
+            : CreateInvalidComponentDeclarationException(componentSymbol, property, message);
 
     private static string ToEmitName(string propertyName)
     {
@@ -818,4 +950,3 @@ internal static class VueComponentDescriptorFactory
         string? ContextTypeName,
         string? ContextParameterName);
 }
-

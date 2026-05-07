@@ -40,7 +40,7 @@ internal abstract record RazorVueCanonicalTemplateNode(
 
 internal sealed record RazorVueCanonicalElementNode(
     string TagName,
-    ImmutableArray<RazorVueCanonicalAttributeBinding> Attributes,
+    ImmutableArray<RazorVueCanonicalAttributeEntry> Attributes,
     RazorVueCanonicalTemplateFragment Children,
     RazorVueTemplateEncodability TemplateEncodability,
     RazorVueSideEffectClassification SideEffectClassification,
@@ -52,7 +52,7 @@ internal sealed record RazorVueCanonicalComponentNode(
     string ComponentFullName,
     string ResolutionName,
     VueComponentDescriptor? ResolvedDescriptor,
-    ImmutableArray<RazorVueCanonicalAttributeBinding> Attributes,
+    ImmutableArray<RazorVueCanonicalAttributeEntry> Attributes,
     ImmutableArray<RazorVueCanonicalSlotBinding> Slots,
     RazorVueCanonicalTemplateFragment Children,
     RazorVueTemplateEncodability TemplateEncodability,
@@ -120,13 +120,25 @@ internal sealed record RazorVueCanonicalSlotOutletNode(
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
     : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.SlotOutlet, TemplateEncodability, SideEffectClassification, SourceOrigins);
 
+internal abstract record RazorVueCanonicalAttributeEntry(
+    RazorVueTemplateEncodability TemplateEncodability,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
+
 internal sealed record RazorVueCanonicalAttributeBinding(
     string Name,
     string? ExpressionText,
     RazorVueCanonicalAttributeKind AttributeKind,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
-    ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
+    : RazorVueCanonicalAttributeEntry(TemplateEncodability, SourceOrigins);
+
+internal sealed record RazorVueCanonicalAttributeSpreadBinding(
+    string ExpressionText,
+    RazorVueExpressionBindingKind BindingKind,
+    RazorVueTemplateEncodability TemplateEncodability,
+    ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
+    : RazorVueCanonicalAttributeEntry(TemplateEncodability, SourceOrigins);
 
 internal sealed record RazorVueCanonicalSlotBinding(
     string SlotName,
@@ -137,6 +149,7 @@ internal sealed record RazorVueCanonicalSlotBinding(
     string? ForwardedSlotName,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueCanonicalTemplateFragment Children,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal enum RazorVueCanonicalSlotValueKind

@@ -52,6 +52,7 @@ internal sealed partial class RazorVueExpressionEmitter
             case RazorVueComponentNode component:
                 builder.Append("component(").Append(component.ComponentName).Append(')');
                 AppendAttributesShape(builder, component.Attributes);
+                AppendSlotTemplatesShape(builder, component.SlotTemplates);
                 AppendFragmentShape(builder, component.Children);
                 break;
             case RazorVueTextNode text:
@@ -91,7 +92,7 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
-    private static void AppendAttributesShape(StringBuilder builder, ImmutableArray<RazorVueAttributeNode> attributes)
+    private static void AppendAttributesShape(StringBuilder builder, ImmutableArray<RazorVueAttributeEntry> attributes)
     {
         builder.Append('{');
         for (var i = 0; i < attributes.Length; i++)
@@ -99,13 +100,39 @@ internal sealed partial class RazorVueExpressionEmitter
             if (i > 0)
                 builder.Append(',');
 
-            var attribute = attributes[i];
-            builder.Append(attribute.Name);
-            if (attribute.Value is not null)
-                builder.Append('=').Append(attribute.Value.Syntax.ToString());
+            switch (attributes[i])
+            {
+                case RazorVueAttributeNode attribute:
+                    builder.Append(attribute.Name);
+                    if (attribute.Value is not null)
+                        builder.Append('=').Append(attribute.Value.Syntax.ToString());
+                    break;
+                case RazorVueAttributeSpreadNode spread:
+                    builder.Append("...");
+                    builder.Append(spread.Expression.Syntax.ToString());
+                    break;
+            }
         }
 
         builder.Append('}');
+    }
+
+    private void AppendSlotTemplatesShape(StringBuilder builder, ImmutableArray<RazorVueComponentSlotTemplateNode> slotTemplates)
+    {
+        builder.Append('<');
+        for (var i = 0; i < slotTemplates.Length; i++)
+        {
+            if (i > 0)
+                builder.Append(',');
+
+            var slotTemplate = slotTemplates[i];
+            builder.Append(slotTemplate.PublicName);
+            if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
+                builder.Append('(').Append(slotTemplate.ParameterName).Append(')');
+            AppendFragmentShape(builder, slotTemplate.Children);
+        }
+
+        builder.Append('>');
     }
 
     private static ImmutableDictionary<string, ImmutableDictionary<string, VuePropDescriptor>> BuildComponentPropsByPublicName(

@@ -17,6 +17,7 @@ internal enum RazorVueIssueCode
     UnsupportedSetupLogicLowering,
     CanonicalizationFailed,
     UnsupportedTemplateEncoding,
+    InvalidComponentDeclaration,
     InvalidLibraryComponentDeclaration,
     InvalidLibraryStyleDependencyDeclaration,
     InvalidLibraryPluginRequirementDeclaration,

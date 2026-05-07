@@ -413,6 +413,59 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersElementAddMultipleAttributes_UsingBlazorStyleMergeHelper()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddAttribute(1, "title", Title);
+                        builder.AddAttribute(2, "class", "left");
+                        builder.AddMultipleAttributes(3, AdditionalAttributes);
+                        builder.AddAttribute(4, "class", "right");
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        Assert.IsFalse(artifact.ModuleCode.Contains("mergeProps", StringComparison.Ordinal), artifact.ModuleCode);
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "return () => h(\"section\", __jazorVueMergeAttributes({ \"title\": props.title, \"class\": \"left\" }, props.additionalAttributes, { \"class\": \"right\" }));");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersNestedComponentToVueComponentCall()
     {
         var context = CreateContext(
@@ -459,6 +512,174 @@ public sealed class RazorVuePipelineTests
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/child-card.mjs");
         StringAssert.Contains(artifact.ModuleCode, "import ChildCardComponent from \"./components/child-card.mjs\";");
         StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent);");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersComponentAddMultipleAttributes_WhenTargetHasCaptureUnmatchedValues()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "Title", Title);
+                        builder.AddAttribute(2, "class", "left");
+                        builder.AddMultipleAttributes(3, AdditionalAttributes);
+                        builder.AddAttribute(4, "class", "right");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Host");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        Assert.IsFalse(artifact.ModuleCode.Contains("mergeProps", StringComparison.Ordinal), artifact.ModuleCode);
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "return () => h(ChildCardComponent, __jazorVueMergeAttributes({ \"title\": props.title, \"class\": \"left\" }, props.additionalAttributes, { \"class\": \"right\" }));");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_RejectsComponentAddMultipleAttributes_WhenTargetLacksCaptureUnmatchedValues()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddMultipleAttributes(1, AdditionalAttributes);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "CaptureUnmatchedValues");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_RejectsComponentAddMultipleAttributes_WhenTargetDeclaresMultipleCaptureUnmatchedValuesSinks()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IDictionary<string, object?>? MoreAdditionalAttributes { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddMultipleAttributes(1, AdditionalAttributes);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.InvalidComponentDeclaration, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "multiple [Parameter(CaptureUnmatchedValues = true)]");
     }
 
     [TestMethod]
@@ -2382,6 +2603,220 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (context) => props.itemTemplate(context)");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersInlineNamedSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? Header { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "Header", (RenderFragment)((headerBuilder) =>
+                        {
+                            headerBuilder.OpenElement(2, "h1");
+                            headerBuilder.AddContent(3, Title);
+                            headerBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
+
+        StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", props.title)");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersInlineTypedSlotTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ChildCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", (RenderFragment<int>)((item) => (itemBuilder) =>
+                        {
+                            itemBuilder.OpenElement(2, "p");
+                            itemBuilder.AddContent(3, item);
+                            itemBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
+
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", item)");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersRazorGeneratedTypedSlotTemplate_WithNestedComponentEventBridgeAndConditional()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Pipeline.RazorGeneratedTypedSlotSubtree.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Components
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                        public class ItemEditor : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public int ModelValue { get; set; }
+
+                            [Parameter]
+                            public EventCallback<int> ModelValueChanged { get; set; }
+                        }
+
+                        [ECMAScript.ECMAScriptModule("./components/list-card")]
+                        public class ListCard : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public RenderFragment<int>? ItemTemplate { get; set; }
+                        }
+
+                        [ECMAScript.ECMAScriptModule("./components/page")]
+                        public partial class Page : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public int Threshold { get; set; }
+
+                            [Parameter]
+                            public EventCallback<int> ValueChanged { get; set; }
+                        }
+                    }
+                    """,
+                    path: "Page.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using Microsoft.AspNetCore.Components.CompilerServices;
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Components
+                    {
+                        public partial class Page
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                                __builder.OpenComponent<ListCard>(0);
+                                __builder.AddComponentParameter(1, nameof(ListCard.ItemTemplate), RuntimeHelpers.TypeCheck<RenderFragment<int>>((RenderFragment<int>)((item) => (__slotBuilder) =>
+                                {
+                                    if (item > Threshold)
+                                    {
+                                        __slotBuilder.OpenComponent<ItemEditor>(2);
+                                        __slotBuilder.AddComponentParameter(3, nameof(ItemEditor.ModelValue), RuntimeHelpers.TypeCheck<int>(item));
+                                        __slotBuilder.AddComponentParameter(4, nameof(ItemEditor.ModelValueChanged), RuntimeHelpers.TypeCheck<EventCallback<int>>(EventCallback.Factory.Create<int>(this, ValueChanged)));
+                                        __slotBuilder.CloseComponent();
+                                    }
+                                    else
+                                    {
+                                        __slotBuilder.OpenElement(5, "span");
+                                        __slotBuilder.AddContent(6, item);
+                                        __slotBuilder.CloseElement();
+                                    }
+                                })));
+                                __builder.CloseComponent();
+                            }
+                        }
+                    }
+                    """,
+                    path: "Page.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "Page");
+
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/item-editor.mjs");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/list-card.mjs");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((item > props.threshold) ? h(ItemEditorComponent, { \"modelValue\": item, \"onUpdate:modelValue\": (__value) => emit(\"valueChanged\", __value) }) : h(\"span\", item))");
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueSfcBinding", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]
@@ -11693,7 +12128,7 @@ public sealed class RazorVuePipelineTests
             ImmutableArray.Create<RazorVueRenderNode>(
                 new RazorVueElementNode(
                     "section",
-                    ImmutableArray<RazorVueAttributeNode>.Empty,
+                    ImmutableArray<RazorVueAttributeEntry>.Empty,
                     new RazorVueRenderFragment(
                         ImmutableArray.Create<RazorVueRenderNode>(
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),

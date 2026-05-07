@@ -70,8 +70,9 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         var root = (RazorVueCanonicalElementNode)canonical.Template.Children[0];
         Assert.AreEqual("section", root.TagName);
         Assert.HasCount(1, root.Attributes);
-        Assert.AreEqual("data-count", root.Attributes[0].Name);
-        Assert.AreEqual("props.value", root.Attributes[0].ExpressionText);
+        var rootAttribute = AssertNode<RazorVueCanonicalAttributeBinding>(root.Attributes[0]);
+        Assert.AreEqual("data-count", rootAttribute.Name);
+        Assert.AreEqual("props.value", rootAttribute.ExpressionText);
         Assert.HasCount(1, root.Children.Children);
         Assert.IsInstanceOfType<RazorVueCanonicalInterpolationNode>(root.Children.Children[0]);
 
@@ -485,6 +486,261 @@ public sealed class RazorVueCanonicalSfcSemanticTests
 
         Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ItemTemplate");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcSemanticModelFactory_CollectsNestedComponentImport_FromExplicitSlotTemplateChildren()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/badge-chip")]
+                public class BadgeChip : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Value { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/page")]
+                public class Page : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ListCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", (RenderFragment<int>)((item) => (itemBuilder) =>
+                        {
+                            itemBuilder.OpenComponent<BadgeChip>(2);
+                            itemBuilder.AddAttribute(3, "Value", item);
+                            itemBuilder.CloseComponent();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Page");
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        CollectionAssert.Contains(sfc.Imports.ToArray(), "./badge-chip.vue");
+        CollectionAssert.Contains(sfc.Imports.ToArray(), "./list-card.vue");
+        Assert.IsTrue(
+            sfc.ComponentImports.Any(static import =>
+                import.ComponentKey.EndsWith(".BadgeChip", StringComparison.Ordinal) &&
+                string.Equals(import.ImportSpecifier, "./badge-chip.vue", StringComparison.Ordinal)),
+            string.Join(Environment.NewLine, sfc.ComponentImports.Select(static import => $"{import.ComponentKey} => {import.ImportSpecifier}")));
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcSemanticModelFactory_DoesNotLiftScopedSlotChildExpressions_IntoTopLevelSetupBindings()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/list-card")]
+                public class ListCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ItemTemplate { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/page")]
+                public class Page : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public int Threshold { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<ListCard>(0);
+                        builder.AddAttribute(1, "ItemTemplate", (RenderFragment<int>)((item) => (itemBuilder) =>
+                        {
+                            if (item > Threshold)
+                            {
+                                itemBuilder.OpenElement(2, "strong");
+                                itemBuilder.AddContent(3, item);
+                                itemBuilder.CloseElement();
+                            }
+                            else
+                            {
+                                itemBuilder.OpenElement(4, "span");
+                                itemBuilder.AddContent(5, item);
+                                itemBuilder.CloseElement();
+                            }
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Page");
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var component = AssertNode<RazorVueCanonicalComponentNode>(canonical.Template.Children.Single());
+        var slot = component.Slots.Single(static slot => slot.SlotName == "itemTemplate");
+        var conditional = AssertNode<RazorVueCanonicalConditionalNode>(slot.Children.Children.Single());
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, conditional.TemplateEncodability);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcSemanticModelFactory_DoesNotLiftRazorGeneratedTypedSlotSubtreeBindings_AndCollectsNestedImports()
+    {
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "RazorVue.Canonical.RazorGeneratedTypedSlotSubtree.Tests",
+            syntaxTrees:
+            [
+                CSharpSyntaxTree.ParseText(
+                    """
+                    global using ECMAScript.VueContract;
+                    global using Microsoft.AspNetCore.Components;
+                    """,
+                    path: "RazorVueTestGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using System;
+
+                    namespace ECMAScript
+                    {
+                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                        public sealed class ECMAScriptModuleAttribute : Attribute
+                        {
+                            public ECMAScriptModuleAttribute() { }
+                            public ECMAScriptModuleAttribute(string import) { }
+                        }
+                    }
+
+                    namespace Demo.Components
+                    {
+                        [ECMAScript.ECMAScriptModule("./components/item-editor")]
+                        public class ItemEditor : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public int ModelValue { get; set; }
+
+                            [Parameter]
+                            public EventCallback<int> ModelValueChanged { get; set; }
+                        }
+
+                        [ECMAScript.ECMAScriptModule("./components/list-card")]
+                        public class ListCard : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public RenderFragment<int>? ItemTemplate { get; set; }
+                        }
+
+                        [ECMAScript.ECMAScriptModule("./components/page")]
+                        public partial class Page : ComponentBase, IVueComponent
+                        {
+                            [Parameter]
+                            public int Threshold { get; set; }
+
+                            [Parameter]
+                            public EventCallback<int> ValueChanged { get; set; }
+                        }
+                    }
+                    """,
+                    path: "Page.razor.cs"),
+                CSharpSyntaxTree.ParseText(
+                    """
+                    using Microsoft.AspNetCore.Components.CompilerServices;
+                    using Microsoft.AspNetCore.Components.Rendering;
+
+                    namespace Demo.Components
+                    {
+                        public partial class Page
+                        {
+                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                            {
+                                __builder.OpenComponent<ListCard>(0);
+                                __builder.AddComponentParameter(1, nameof(ListCard.ItemTemplate), RuntimeHelpers.TypeCheck<RenderFragment<int>>((RenderFragment<int>)((item) => (__slotBuilder) =>
+                                {
+                                    if (item > Threshold)
+                                    {
+                                        __slotBuilder.OpenComponent<ItemEditor>(2);
+                                        __slotBuilder.AddComponentParameter(3, nameof(ItemEditor.ModelValue), RuntimeHelpers.TypeCheck<int>(item));
+                                        __slotBuilder.AddComponentParameter(4, nameof(ItemEditor.ModelValueChanged), RuntimeHelpers.TypeCheck<EventCallback<int>>(EventCallback.Factory.Create<int>(this, ValueChanged)));
+                                        __slotBuilder.CloseComponent();
+                                    }
+                                    else
+                                    {
+                                        __slotBuilder.OpenElement(5, "span");
+                                        __slotBuilder.AddContent(6, item);
+                                        __slotBuilder.CloseElement();
+                                    }
+                                })));
+                                __builder.CloseComponent();
+                            }
+                        }
+                    }
+                    """,
+                    path: "Page.razor.g.cs")
+            ],
+            references: RazorVueMetadataReferences.Create(),
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        var context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Page");
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var component = AssertNode<RazorVueCanonicalComponentNode>(canonical.Template.Children.Single());
+        var slot = component.Slots.Single(static candidate => candidate.SlotName == "itemTemplate");
+        var conditional = AssertNode<RazorVueCanonicalConditionalNode>(slot.Children.Children.Single());
+        var nestedComponent = AssertNode<RazorVueCanonicalComponentNode>(conditional.WhenTrue.Children.Single());
+        var eventBinding = nestedComponent.Attributes.OfType<RazorVueCanonicalAttributeBinding>().Single(static attribute => attribute.AttributeKind == RazorVueCanonicalAttributeKind.ComponentEvent);
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, conditional.TemplateEncodability);
+        Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, eventBinding.TemplateEncodability);
+        Assert.AreEqual("update:modelValue", eventBinding.Name);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
+        Assert.IsTrue(sfc.TemplateBlock.BindingSites.IsDefaultOrEmpty);
+        CollectionAssert.Contains(sfc.Imports.ToArray(), "./item-editor.vue");
+        CollectionAssert.Contains(sfc.Imports.ToArray(), "./list-card.vue");
     }
 
     private static T AssertNode<T>(object value)

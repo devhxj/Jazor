@@ -10403,6 +10403,57 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithInvalidComponentCaptureUnmatchedValuesDeclaration_ReportsJAZORVGA017()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.InvalidComponentCaptureUnmatchedValuesDeclaration.Generated",
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/panel")]
+                public sealed class InvalidPanel : ComponentBase, IVueComponent
+                {
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyList<string>? AdditionalAttributes { get; set; }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA017")
+            .ToArray();
+        var fallbackDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "CaptureUnmatchedValues");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "AdditionalAttributes");
+        Assert.AreEqual(0, fallbackDiagnostics.Length, string.Join("\n", fallbackDiagnostics.Select(static x => x.ToString())));
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithInvalidLibraryStyleDependencyDeclaration_ReportsJAZORVGA013()
     {
         var compilation = CreateCompilation(

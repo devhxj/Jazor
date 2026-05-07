@@ -212,22 +212,33 @@ internal sealed class RazorVueSfcSemanticModelFactory
 
     private static void CollectLiftedBindings(
         string ownerComponentFullName,
-        ImmutableArray<RazorVueCanonicalAttributeBinding> attributes,
+        ImmutableArray<RazorVueCanonicalAttributeEntry> attributes,
         BindingCollection bindings,
         int templateScopeDepth,
         string pathPrefix)
     {
         for (var index = 0; index < attributes.Length; index++)
         {
-            var attribute = attributes[index];
-            if (attribute.ExpressionText is null ||
-                !ShouldLiftExpression(attribute.TemplateEncodability, templateScopeDepth))
+            switch (attributes[index])
             {
-                continue;
-            }
+                case RazorVueCanonicalAttributeBinding attribute:
+                    if (attribute.ExpressionText is null ||
+                        !ShouldLiftExpression(attribute.TemplateEncodability, templateScopeDepth))
+                    {
+                        continue;
+                    }
 
-            EnsureLiftableBindingKind(ownerComponentFullName, attribute.BindingKind, attribute.SourceOrigins, attribute.ExpressionText);
-            bindings.Add(pathPrefix + "/attr[" + index + "]", attribute.ExpressionText, attribute.SourceOrigins);
+                    EnsureLiftableBindingKind(ownerComponentFullName, attribute.BindingKind, attribute.SourceOrigins, attribute.ExpressionText);
+                    bindings.Add(pathPrefix + "/attr[" + index + "]", attribute.ExpressionText, attribute.SourceOrigins);
+                    break;
+                case RazorVueCanonicalAttributeSpreadBinding spread:
+                    if (!ShouldLiftExpression(spread.TemplateEncodability, templateScopeDepth))
+                        continue;
+
+                    EnsureLiftableBindingKind(ownerComponentFullName, spread.BindingKind, spread.SourceOrigins, spread.ExpressionText);
+                    bindings.Add(pathPrefix + "/attr[" + index + "]/spread", spread.ExpressionText, spread.SourceOrigins);
+                    break;
+            }
         }
     }
 
@@ -249,10 +260,14 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 ? templateScopeDepth
                 : templateScopeDepth + 1;
             if (!ShouldLiftExpression(slot.TemplateEncodability, effectiveScopeDepth))
+            {
+                CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");
                 continue;
+            }
 
             EnsureLiftableBindingKind(ownerComponentFullName, slot.BindingKind, slot.SourceOrigins, slot.ValueExpressionText);
             bindings.Add(pathPrefix + "/slot[" + index + "]", slot.ValueExpressionText, slot.SourceOrigins);
+            CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");
         }
     }
 
@@ -290,6 +305,11 @@ internal sealed class RazorVueSfcSemanticModelFactory
                         yield return nested;
                     break;
                 case RazorVueCanonicalComponentNode component:
+                    foreach (var slot in component.Slots)
+                    {
+                        foreach (var nested in EnumerateNodes(slot.Children))
+                            yield return nested;
+                    }
                     foreach (var nested in EnumerateNodes(component.Children))
                         yield return nested;
                     break;
