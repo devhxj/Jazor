@@ -438,6 +438,48 @@ public sealed class EcmaScriptVueRouteProxyTests
     }
 
     [TestMethod]
+    public void VueRoute_HistoryStateValue_SupportsRecursiveTypedArrayAuthoring_ForOfficialHistoryStateSemantics()
+    {
+        var nullability = new NullabilityInfoContext();
+        var historyStateValueType = typeof(HistoryStateValue);
+        var asArray = historyStateValueType.GetProperty(nameof(HistoryStateValue.AsArray), BindingFlags.Public | BindingFlags.Instance);
+        var operators = historyStateValueType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(static method => method.Name == "op_Implicit")
+            .ToArray();
+        var nullableStringArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(string[]));
+        var boolArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(bool[]));
+        var nullableBoolArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(bool?[]));
+        var numberArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(Number[]));
+        var nullableNumberArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(Number?[]));
+        var historyStateArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(HistoryState[]));
+        var mixedArrayOperator = operators.SingleOrDefault(static method => method.GetParameters().Single().ParameterType == typeof(HistoryStateValue?[]));
+
+        Assert.IsNotNull(asArray);
+        Assert.IsNotNull(nullableStringArrayOperator);
+        Assert.IsNotNull(boolArrayOperator);
+        Assert.IsNotNull(nullableBoolArrayOperator);
+        Assert.IsNotNull(numberArrayOperator);
+        Assert.IsNotNull(nullableNumberArrayOperator);
+        Assert.IsNotNull(historyStateArrayOperator);
+        Assert.IsNotNull(mixedArrayOperator);
+        Assert.AreEqual(typeof(Array<HistoryStateValue?>), asArray!.PropertyType);
+        Assert.AreEqual(typeof(HistoryStateValue), nullableStringArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(HistoryStateValue), boolArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(HistoryStateValue), nullableBoolArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(HistoryStateValue), numberArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(HistoryStateValue), nullableNumberArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(HistoryStateValue), historyStateArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(HistoryStateValue), mixedArrayOperator!.ReturnType);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(asArray).ReadState);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(nullableStringArrayOperator.GetParameters()[0]).ElementType!.ReadState);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(nullableBoolArrayOperator.GetParameters()[0]).ElementType!.ReadState);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(nullableNumberArrayOperator.GetParameters()[0]).ElementType!.ReadState);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(historyStateArrayOperator.GetParameters()[0]).ElementType!.ReadState);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(mixedArrayOperator.GetParameters()[0]).ElementType!.ReadState);
+    }
+
+    [TestMethod]
     public void VueRoute_RouteParamRaw_UsesMixedScalarArrayContract_ForOfficialParamSemantics()
     {
         var routeParamRawArray = typeof(RouteParamRaw).GetProperty(nameof(RouteParamRaw.AsArray), BindingFlags.Public | BindingFlags.Instance);
@@ -786,7 +828,13 @@ public sealed class EcmaScriptVueRouteProxyTests
 
         RequiredInstance(methods, nameof(RouterHistory.Push), static method =>
             method.ReturnType == typeof(void) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
+        RequiredInstance(methods, nameof(RouterHistory.Push), static method =>
+            method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(HistoryState) }));
+        RequiredInstance(methods, nameof(RouterHistory.Replace), static method =>
+            method.ReturnType == typeof(void) &&
+            method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }));
         RequiredInstance(methods, nameof(RouterHistory.Replace), static method =>
             method.ReturnType == typeof(void) &&
             method.GetParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string), typeof(HistoryState) }));
@@ -970,13 +1018,29 @@ public sealed class EcmaScriptVueRouteProxyTests
         var sensitive = routerOptionsType.GetProperty(nameof(RouteRecordBase.Sensitive), BindingFlags.Public | BindingFlags.Instance);
         var strict = routerOptionsType.GetProperty(nameof(RouteRecordBase.Strict), BindingFlags.Public | BindingFlags.Instance);
         var end = routerOptionsType.GetProperty(nameof(RouteRecordBase.End), BindingFlags.Public | BindingFlags.Instance);
+        var pathParserEnd = typeof(PathParserOptions).GetProperty(nameof(PathParserOptions.End), BindingFlags.Public | BindingFlags.Instance);
+        var routeRecordBaseEnd = typeof(RouteRecordBase).GetProperty(nameof(RouteRecordBase.End), BindingFlags.Public | BindingFlags.Instance);
+        var routerEndObsolete = end?.GetCustomAttribute<ObsoleteAttribute>();
+        var pathParserEndObsolete = pathParserEnd?.GetCustomAttribute<ObsoleteAttribute>();
+        var routeRecordEndObsolete = routeRecordBaseEnd?.GetCustomAttribute<ObsoleteAttribute>();
 
         Assert.IsNotNull(sensitive);
         Assert.IsNotNull(strict);
         Assert.IsNotNull(end);
+        Assert.IsNotNull(pathParserEnd);
+        Assert.IsNotNull(routeRecordBaseEnd);
+        Assert.IsNotNull(routerEndObsolete);
+        Assert.IsNotNull(pathParserEndObsolete);
+        Assert.IsNotNull(routeRecordEndObsolete);
         Assert.AreEqual(typeof(bool), Nullable.GetUnderlyingType(sensitive!.PropertyType) ?? sensitive.PropertyType);
         Assert.AreEqual(typeof(bool), Nullable.GetUnderlyingType(strict!.PropertyType) ?? strict.PropertyType);
         Assert.AreEqual(typeof(bool), Nullable.GetUnderlyingType(end!.PropertyType) ?? end.PropertyType);
+        StringAssert.Contains(routerEndObsolete!.Message, "deprecated", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(routerEndObsolete.Message, "always true", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(pathParserEndObsolete!.Message, "deprecated", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(pathParserEndObsolete.Message, "always true", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(routeRecordEndObsolete!.Message, "deprecated", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(routeRecordEndObsolete.Message, "always true", StringComparison.OrdinalIgnoreCase);
     }
 
     [TestMethod]

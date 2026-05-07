@@ -580,6 +580,24 @@ public readonly struct HistoryStateValue
 	public static implicit operator HistoryStateValue(HistoryState value)
 		=> new(value);
 
+	public static implicit operator HistoryStateValue(string?[] value)
+		=> new((Array<HistoryStateValue?>)value.Select(static item => item is null ? null : (HistoryStateValue?)item).ToArray());
+
+	public static implicit operator HistoryStateValue(Number[] value)
+		=> new((Array<HistoryStateValue?>)value.Select(static item => (HistoryStateValue?)item).ToArray());
+
+	public static implicit operator HistoryStateValue(Number?[] value)
+		=> new((Array<HistoryStateValue?>)value.Select(static item => item is null ? null : (HistoryStateValue?)item.Value).ToArray());
+
+	public static implicit operator HistoryStateValue(bool[] value)
+		=> new((Array<HistoryStateValue?>)value.Select(static item => (HistoryStateValue?)item).ToArray());
+
+	public static implicit operator HistoryStateValue(bool?[] value)
+		=> new((Array<HistoryStateValue?>)value.Select(static item => item is null ? null : (HistoryStateValue?)item.Value).ToArray());
+
+	public static implicit operator HistoryStateValue(HistoryState?[] value)
+		=> new((Array<HistoryStateValue?>)value.Select(static item => item is null ? null : (HistoryStateValue?)item).ToArray());
+
 	public static implicit operator HistoryStateValue(Array<HistoryStateValue?> value)
 		=> new(value);
 

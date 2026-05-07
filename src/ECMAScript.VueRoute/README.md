@@ -139,6 +139,7 @@ var link = UseLink(new UseLinkOptions
 
 - 如果你已经有一个强类型委托变量、类实例变量、或可直接命中的 union 分支值，优先直接赋值。
 - 如果你写的是 lambda / delegate 字面量，而 Roslyn 不能直接把它绑定到目标 nullable union 或 wrapper 属性，再使用显式 `From(...)`。
+- 对 `history.state` 这类递归值面，优先直接写 `string?[]` / `bool?[]` / `Number?[]` / `HistoryState?[]` 等强类型数组；不需要手工把每个元素先包成 `HistoryStateValue`。
 
 ```csharp
 RouteRecordPropsResolver propsResolver = (RouteLocationNormalized to) => new UserProps();
@@ -164,6 +165,22 @@ var options = new RouterOptions
     Routes = [route, redirect],
     ScrollBehavior = scrollBehavior
 };
+
+var state = new HistoryState
+{
+    ["tags"] = new string?[] { "users", null, "detail" },
+    ["flags"] = new bool?[] { true, false, null },
+    ["steps"] = new Number?[] { (Number)1, null, (Number)2 },
+    ["trail"] = new HistoryState?[]
+    {
+        new HistoryState { ["kind"] = "root" },
+        null
+    }
+};
+
+history.Push("/users");
+history.Replace("/users/7");
+history.Push("/users/7", state);
 ```
 
 不要把 `From(...)` 当成默认习惯用法。只有在 C# 不能直接绑定字面量 authoring 形式时，才把它当作语言边界补位。

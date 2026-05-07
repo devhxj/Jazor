@@ -21,6 +21,7 @@ public record RouterOptions : Vue3.VueProps
 	public bool? Strict { get; init; }
 
 	[Description("@#end")]
+	[Obsolete("Vue Router 4 documents end as deprecated and always true. Do not author new router options with End.")]
 	public bool? End { get; init; }
 
 	[Description("@#linkActiveClass")]
@@ -332,6 +333,7 @@ public record PathParserOptions : Vue3.VueProps
 	public bool? Strict { get; init; }
 
 	[Description("@#end")]
+	[Obsolete("Vue Router 4 documents end as deprecated and always true. Do not author new path parser options with End.")]
 	public bool? End { get; init; }
 }
 
@@ -600,7 +602,13 @@ public abstract class RouterHistory
 	public extern HistoryState State { get; }
 
 	[Description("@#push")]
+	public extern void Push(string to);
+
+	[Description("@#push")]
 	public extern void Push(string to, HistoryState? data);
+
+	[Description("@#replace")]
+	public extern void Replace(string to);
 
 	[Description("@#replace")]
 	public extern void Replace(string to, HistoryState? data);
@@ -928,6 +936,7 @@ public abstract record RouteRecordBase : Vue3.VueProps
 	public bool? Strict { get; init; }
 
 	[Description("@#end")]
+	[Obsolete("Vue Router 4 documents end as deprecated and always true. Do not author new route records with End.")]
 	public bool? End { get; init; }
 }
 

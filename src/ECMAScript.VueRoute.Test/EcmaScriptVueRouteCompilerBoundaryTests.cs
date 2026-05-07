@@ -1683,6 +1683,78 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public void VueRoute_EndOptionSurface_Compile_EmitsObsoleteWarnings_ButStaysCompatible()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static RouterOptions BuildOptions(RouterHistory history, RawRouteComponent component)
+                {
+                    return new RouterOptions
+                    {
+                        History = history,
+                        End = true,
+                        Routes =
+                        [
+                            new RouteRecordSingleView
+                            {
+                                Path = "/users",
+                                Component = component,
+                                End = false
+                            }
+                        ],
+                        ScrollBehavior = false ? null : default
+                    };
+                }
+
+                public static RouterMatcher BuildMatcher()
+                {
+                    return CreateRouterMatcher(
+                    [
+                        new RouteRecordRedirect
+                        {
+                            Path = "/",
+                            Redirect = "/home"
+                        }
+                    ],
+                    new PathParserOptions
+                    {
+                        Strict = true,
+                        End = true
+                    });
+                }
+            }
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            "ECMAScript.VueRoute.Test.Assembly.EndWarnings",
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
+            }),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        var warnings = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Warning)
+            .ToArray();
+
+        Assert.IsFalse(errors.Length > 0, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+        Assert.IsTrue(warnings.Any(static diagnostic => diagnostic.Id == "CS0618"),
+            string.Join(Environment.NewLine, warnings.Select(static diagnostic => diagnostic.ToString())));
+        Assert.IsTrue(warnings.Any(static diagnostic => diagnostic.GetMessage().Contains("always true", StringComparison.OrdinalIgnoreCase)),
+            string.Join(Environment.NewLine, warnings.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    [TestMethod]
     public async Task VueRoute_LocationQueryRaw_AndHistoryState_Compile_WithNumericLiteralKeys()
     {
         var code = """
@@ -2371,6 +2443,96 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "let stop = history.listen((to, from, info) => {");
         StringAssert.Contains(script, "history.go(-1, false);");
         StringAssert.Contains(script, "state: state");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_RouterHistory_Compile_WithOptionalStateOverloads()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static string ConfigureHistory(RouterHistory history)
+                {
+                    history.Push("/users");
+                    history.Replace("/users/7");
+
+                    return history.CreateHref("/users/7");
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "history.push(\"/users\");");
+        StringAssert.Contains(script, "history.replace(\"/users/7\");");
+        StringAssert.Contains(script, "return history.createHref(\"/users/7\");");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_HistoryState_Compile_WithDirectTypedArrayAuthoring_ForRecursiveStateValues()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static string BuildState()
+                {
+                    var state = new HistoryState
+                    {
+                        ["tags"] = new string?[] { "users", null, "detail" },
+                        ["flags"] = new bool?[] { true, false, null },
+                        ["steps"] = new Number?[] { (Number)1, null, (Number)2 },
+                        ["trail"] = new HistoryState?[]
+                        {
+                            new HistoryState
+                            {
+                                ["kind"] = "root"
+                            },
+                            null,
+                            new HistoryState
+                            {
+                                ["kind"] = "leaf",
+                                ["visible"] = true
+                            }
+                        }
+                    };
+
+                    return "ok";
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let state = {");
+        StringAssert.Contains(script, "tags: [\"users\", null, \"detail\"],");
+        StringAssert.Contains(script, "flags: [true, false, null],");
+        StringAssert.Contains(script, "steps: [1, null, 2],");
+        StringAssert.Contains(script, "trail: [{ kind: \"root\" }, null, { kind: \"leaf\", visible: true }]");
+        StringAssert.Contains(script, "return \"ok\";");
     }
 
     [TestMethod]
