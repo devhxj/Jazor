@@ -285,6 +285,40 @@ public partial class SemanticWalker
 		   operation.ConstantValue.HasValue &&
 		   operation.ConstantValue.Value is null;
 
+	private static bool ShouldOmitStaticNullObjectLiteralMember(
+		IOperation initializer,
+		ISymbol? orderSymbol,
+		ITypeSymbol? hostType)
+	{
+		if (!IsStaticallyKnownNull(initializer))
+			return false;
+
+		if (orderSymbol is IPropertySymbol propertySymbol &&
+			TryGetSpreadAttribute(propertySymbol, out _))
+		{
+			return true;
+		}
+
+		return IsVueDictionaryHostType(hostType);
+	}
+
+	private static bool IsVueDictionaryHostType(ITypeSymbol? typeSymbol)
+	{
+		if (typeSymbol is not INamedTypeSymbol namedType)
+			return false;
+
+		for (var current = namedType; current is not null; current = current.BaseType)
+		{
+			var display = current.OriginalDefinition.ToDisplayString(Format.NameFormat);
+			if (display is "ECMAScript.Vue3.VueDictionary" or "ECMAScript.Vue3.VueDictionary<TValue>")
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static IPropertySymbol? ResolveEcmascriptRecordProperty(INamedTypeSymbol type, IParameterSymbol? parameter)
 	{
 		if (parameter is null)
@@ -1050,6 +1084,12 @@ public partial class SemanticWalker
 			return true;
 		}
 
+		if (TryCreateNumericObjectPropertyKey(operation, keyType, out key))
+		{
+			computed = false;
+			return true;
+		}
+
 		if (IsObjectLiteralComputedKeyType(keyType))
 		{
 			var translatedKey = TranslateTupleForTarget(operation, keyType, argument);
@@ -1066,9 +1106,80 @@ public partial class SemanticWalker
 		return false;
 	}
 
+	private static bool TryCreateNumericObjectPropertyKey(
+		IOperation operation,
+		ITypeSymbol? keyType,
+		out Expression key)
+	{
+		key = null!;
+		if (keyType is not INamedTypeSymbol namedType ||
+			namedType.OriginalDefinition.ToDisplayString(Format.NameFormat) != "ECMAScript.Number")
+		{
+			return false;
+		}
+
+		if (!TryExtractNumericObjectKeyLiteral(operation, out var literal))
+			return false;
+
+		key = literal;
+		return true;
+	}
+
+	private static bool TryExtractNumericObjectKeyLiteral(
+		IOperation operation,
+		out NumericLiteral literal)
+	{
+		if (operation.ConstantValue is { HasValue: true, Value: not null } constantValue &&
+			TryCreateNumericLiteral(constantValue.Value, out literal))
+		{
+			return true;
+		}
+
+		if (operation is IConversionOperation conversion &&
+			TryExtractNumericObjectKeyLiteral(conversion.Operand, out literal))
+		{
+			return true;
+		}
+
+		literal = null!;
+		return false;
+	}
+
+	private static bool TryCreateNumericLiteral(
+		object value,
+		out NumericLiteral literal)
+	{
+		var createdLiteral = value switch
+		{
+			byte numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			sbyte numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			short numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			ushort numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			int numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			uint numberValue => new NumericLiteral(numberValue, numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			float numberValue => new NumericLiteral(numberValue, numberValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
+			double numberValue => new NumericLiteral(numberValue, numberValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
+			decimal numberValue => new NumericLiteral(System.Convert.ToDouble(numberValue), numberValue.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+			_ => null
+		};
+
+		if (createdLiteral is null)
+		{
+			literal = null!;
+			return false;
+		}
+
+		literal = createdLiteral;
+		return true;
+	}
+
 	private static bool IsObjectLiteralComputedKeyType(ITypeSymbol? keyType)
 		=> keyType is INamedTypeSymbol namedType &&
 		   namedType.OriginalDefinition.ToDisplayString() == SymbolFullName;
+
+	private static bool IsObjectLiteralNumericKeyType(ITypeSymbol? keyType)
+		=> keyType is INamedTypeSymbol namedType &&
+		   namedType.OriginalDefinition.ToDisplayString(Format.NameFormat) == "ECMAScript.Number";
 
 	private void RejectUnsupportedDynamicObjectLiteralKey(IOperation operation, ITypeSymbol? hostType, string usage)
 	{
@@ -1437,13 +1548,19 @@ public partial class SemanticWalker
 			ISymbol? orderSymbol = null;
 			if (initializer is ISimpleAssignmentOperation simpleAssignmentOp)
 			{
+				orderSymbol = GetObjectInitializerMemberSymbol(simpleAssignmentOp);
+				var hostType = simpleAssignmentOp.Target switch
+				{
+					IPropertyReferenceOperation propertyReferenceOperation => propertyReferenceOperation.Instance?.Type ?? propertyReferenceOperation.Property.ContainingType,
+					IFieldReferenceOperation fieldReferenceOperation => fieldReferenceOperation.Instance?.Type ?? fieldReferenceOperation.Field.ContainingType,
+					_ => null
+				};
 				if (expandRecordMembers &&
-					IsStaticallyKnownNull(simpleAssignmentOp.Value))
+					ShouldOmitStaticNullObjectLiteralMember(simpleAssignmentOp.Value, orderSymbol, hostType))
 				{
 					continue;
 				}
 
-				orderSymbol = GetObjectInitializerMemberSymbol(simpleAssignmentOp);
 				if (TryBuildObjectLiteralIndexerProperty(simpleAssignmentOp, argument, out var indexerProperty))
 				{
 					nodes.Add(indexerProperty);
@@ -1500,7 +1617,10 @@ public partial class SemanticWalker
 				if (TryBuildObjectLiteralAddProperty(invocationOp, argument, out var addProperty))
 				{
 					if (expandRecordMembers &&
-						IsStaticallyKnownNull(invocationOp.Arguments[1].Value))
+						ShouldOmitStaticNullObjectLiteralMember(
+							invocationOp.Arguments[1].Value,
+							null,
+							invocationOp.Instance?.Type ?? invocationOp.TargetMethod.ContainingType))
 					{
 						continue;
 					}
@@ -1617,10 +1737,18 @@ public partial class SemanticWalker
 
 		var keyType = targetMethod.Parameters[0].Type;
 		if (keyType.SpecialType != SpecialType.System_String &&
+			!IsObjectLiteralNumericKeyType(keyType) &&
 			!IsObjectLiteralComputedKeyType(keyType))
 		{
 			return false;
 		}
+
+		var valueType = targetMethod.Parameters[1].Type;
+		if (valueType is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableValueType)
+			valueType = nullableValueType.TypeArguments[0];
+
+		if (valueType.SpecialType == SpecialType.System_Void)
+			return false;
 
 		return IsObjectLiteralHostType(invocation.Instance?.Type ?? targetMethod.ContainingType);
 	}

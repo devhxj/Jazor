@@ -78,6 +78,7 @@ internal static partial class WhiteList
 		types["void"] = new(Op.Allowed);
 		
 		// 初始化成员
+		members["static extern ECMAScript.Global.Undefined<T>()"] = new(Op.Inline, "undefined");
 		members["static extern ECMAScript.BigInt.Zero.get"] = new(Op.Inline, "0n");
 		members["static extern ECMAScript.BigInt.One.get"] = new(Op.Inline, "1n");
 		members["static extern ECMAScript.BigInt.Two.get"] = new(Op.Inline, "2n");

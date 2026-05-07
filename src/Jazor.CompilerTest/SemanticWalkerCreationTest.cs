@@ -28,7 +28,9 @@ public sealed class SemanticWalkerCreationTest
 		global using static ECMAScript.Global;";
 
         var references = Basic.Reference.Assemblies.Net100.References.All
-            .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+            .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",
             syntaxTrees: [
@@ -1131,6 +1133,93 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralIndexerOnVuePropsCarrier_StaticNullLiteral_IsPreserved()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var query = new LocationQueryRaw
+                    {
+                        [""empty""] = null,
+                        [""page""] = (Number)1
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ empty: null, page: 1 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralIndexerOnVuePropsCarrier_StaticUndefinedLiteral_AndMixedArray_ArePreserved()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+            using static ECMAScript.Global;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var query = new LocationQueryRaw
+                    {
+                        [""drop""] = Undefined<LocationQueryValueRaw?>(),
+                        [""page""] = (Number)1,
+                        [""tags""] = new LocationQueryValueRaw?[] { ""a"", Undefined<LocationQueryValueRaw?>(), null, (Number)3 }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{
+  drop: undefined,
+  page: 1,
+  tags: [""a"", undefined, null, 3]
+}", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_VueDictionaryIndexer_StaticNullLiteral_IsOmitted()
+    {
+        var block = GetBlockOperation(@"
+            using static ECMAScript.Vue3;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var attrs = new VueDictionary
+                    {
+                        [""title""] = ""hello"",
+                        [""skip""] = null
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ title: ""hello"" }", script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_RecordSpreadProperty_FlattensNestedRecord()
     {
         var block = GetBlockOperation(@"
@@ -1395,6 +1484,114 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{ [countKey]: 1 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralAddOnVuePropsCarrier_StaticNullLiteral_IsPreserved()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var query = new LocationQueryRaw
+                    {
+                        { ""empty"", null },
+                        { ""page"", (Number)1 }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ empty: null, page: 1 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralAddOnVuePropsCarrier_StaticUndefinedLiteral_IsPreserved()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+            using static ECMAScript.Global;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var query = new LocationQueryRaw
+                    {
+                        { ""drop"", Undefined<LocationQueryValueRaw?>() },
+                        { ""page"", (Number)1 }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ drop: undefined, page: 1 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_ObjectLiteralAddOnVuePropsCarrier_NumericKey_UsesNumericProperty()
+    {
+        var block = GetBlockOperation(@"
+            using ECMAScript;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var state = new HistoryState
+                    {
+                        { (Number)7, (Number)9 }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ 7: 9 }", script);
+    }
+
+    [TestMethod]
+    public void VisitObjectCreation_VueDictionaryAdd_StaticNullLiteral_IsOmitted()
+    {
+        var block = GetBlockOperation(@"
+            using static ECMAScript.Vue3;
+
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var attrs = new VueDictionary
+                    {
+                        { ""title"", ""hello"" },
+                        { ""skip"", null }
+                    };
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ title: ""hello"" }", script);
     }
 
     [TestMethod]

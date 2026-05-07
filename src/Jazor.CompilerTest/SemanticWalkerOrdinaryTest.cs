@@ -1917,6 +1917,33 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   /// <summary>
+  /// 测试 Global.Undefined&lt;T&gt; 会稳定降级为 JavaScript undefined 字面量
+  /// </summary>
+  [TestMethod]
+  public void Visit_Invocation_GlobalUndefined_InlinesUndefinedLiteral()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                string? TestMethod()
+                {
+                    string? value = Undefined<string?>();
+                    return value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    AssertScriptEqual(@"{
+  let value = undefined;
+  return value;
+}", script);
+  }
+
+  /// <summary>
   /// 测试 Task 状态属性会映射到 Promise 状态跟踪 helper
   /// </summary>
   [TestMethod]

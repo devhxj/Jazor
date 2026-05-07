@@ -34,13 +34,18 @@ public sealed partial class SemanticWalker
     /// 这让 Inline 保持“声明式模板”的写法，同时避免旧方案里
     /// “参数转字符串再整体 parse”带来的结构不稳定问题。
     /// </summary>
-    private static Expression InstantiateInlineTemplate(string signature, string template, IReadOnlyList<Expression> arguments)
+    private static Expression InstantiateInlineTemplate(
+        string signature,
+        string template,
+        IReadOnlyList<Expression> arguments,
+        string? importedIdentifierName = null,
+        Identifier? importedBinding = null)
     {
         var parsedTemplate = InlineTemplateCache.GetOrAdd(signature, _ => ParseInlineTemplate(signature, template));
         if (parsedTemplate.PlaceholderCount > arguments.Count)
             throw new InvalidOperationException($"Inline template '{signature}' expects at least {parsedTemplate.PlaceholderCount} arguments, but received {arguments.Count}.");
 
-        return (Expression) (new InlinePlaceholderRewriter(signature, arguments).Visit(parsedTemplate.Ast)
+        return (Expression) (new InlinePlaceholderRewriter(signature, arguments, importedIdentifierName, importedBinding).Visit(parsedTemplate.Ast)
             ?? throw new InvalidOperationException($"Inline template '{signature}' produced a null AST."));
     }
 
@@ -94,12 +99,20 @@ public sealed partial class SemanticWalker
     /// 不适合承担需要动态拼接标识符片段、引入语句、控制求值顺序的复杂语义。
     /// 这类场景应升级到 Op.Compile。
     /// </summary>
-    private sealed class InlinePlaceholderRewriter(string signature, IReadOnlyList<Expression> arguments) : AstRewriter
+    private sealed class InlinePlaceholderRewriter(
+        string signature,
+        IReadOnlyList<Expression> arguments,
+        string? importedIdentifierName,
+        Identifier? importedBinding) : AstRewriter
     {
         protected override object VisitIdentifier(Identifier node)
         {
             if (!TryGetPlaceholderIndex(node.Name, out var index))
-                return node;
+                return importedBinding is not null &&
+                       !string.IsNullOrWhiteSpace(importedIdentifierName) &&
+                       string.Equals(node.Name, importedIdentifierName, StringComparison.Ordinal)
+                    ? importedBinding
+                    : node;
 
             if ((uint) index >= (uint) arguments.Count)
                 throw new InvalidOperationException($"Inline template '{signature}' references argument index {index}, but only {arguments.Count} argument(s) were supplied.");
@@ -107,6 +120,22 @@ public sealed partial class SemanticWalker
             // 直接把占位符节点替换成真实参数 AST。
             // 这里不做字符串展开，也不重新 parse。
             return arguments[index];
+        }
+
+        protected override object VisitMemberExpression(MemberExpression node)
+        {
+            var @object = (Expression?) Visit(node.Object) ?? node.Object;
+            var property = node.Computed
+                ? (Expression?) Visit(node.Property) ?? node.Property
+                : node.Property;
+
+            if (ReferenceEquals(@object, node.Object) &&
+                ReferenceEquals(property, node.Property))
+            {
+                return node;
+            }
+
+            return new MemberExpression(@object, property, node.Computed, node.Optional);
         }
 
         private static bool TryGetPlaceholderIndex(string? name, out int index)

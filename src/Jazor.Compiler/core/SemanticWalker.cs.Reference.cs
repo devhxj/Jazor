@@ -977,11 +977,44 @@ public partial class SemanticWalker
 
 	private static Expression BuildAliasedPropertyAccess(Expression instance, string propertyName, bool optional, bool invoke)
 	{
-		var member = new MemberExpression(instance, new Identifier(propertyName), computed: false, optional: optional);
+		var member = TryBuildComputedAliasProperty(propertyName, out var computedProperty)
+			? new MemberExpression(instance, computedProperty, computed: true, optional: optional)
+			: new MemberExpression(instance, new Identifier(propertyName), computed: false, optional: optional);
 		if (!invoke)
 			return member;
 
 		return new CallExpression(member, NodeList.Empty<Expression>(), optional: false);
+	}
+
+	private static bool TryBuildComputedAliasProperty(string propertyName, out Expression property)
+	{
+		property = null!;
+		if (propertyName.Length < 3 ||
+			propertyName[0] != '[' ||
+			propertyName[propertyName.Length - 1] != ']')
+		{
+			return false;
+		}
+
+		var inner = propertyName.Substring(1, propertyName.Length - 2).Trim();
+		if (inner.Length == 0)
+			return false;
+
+		if (int.TryParse(inner, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var numericIndex))
+		{
+			property = new NumericLiteral(numericIndex, numericIndex.ToString(System.Globalization.CultureInfo.InvariantCulture));
+			return true;
+		}
+
+		if ((inner[0] == '"' && inner[inner.Length - 1] == '"') ||
+			(inner[0] == '\'' && inner[inner.Length - 1] == '\''))
+		{
+			var literal = inner.Substring(1, inner.Length - 2);
+			property = new StringLiteral(literal, $"\"{EscapeJavaScriptString(literal)}\"");
+			return true;
+		}
+
+		return false;
 	}
 
 	private static Expression BuildArrayFrom(Expression value) =>
@@ -1285,7 +1318,22 @@ private bool TryExpandEcmascriptParamsArgument(
 		{
 			var signature = method.OriginalDefinition.ToDisplayString(Format.NameFormat);
 			var inlineArguments = CreateLegacyWhiteListArguments(method, arguments, instance);
-			expression = InstantiateInlineTemplate(signature, inlineTemplate, inlineArguments);
+			var importedIdentifierName = default(string);
+			Identifier? importedBinding = null;
+			var modulePath = method.IsStatic ? GetModuleImportPath(method.ContainingType) : null;
+			if (!string.IsNullOrWhiteSpace(modulePath))
+			{
+				importedIdentifierName = Util.GetConfigOrSymbolName(method);
+				if (!string.IsNullOrWhiteSpace(importedIdentifierName))
+					importedBinding = argument.BindImportSpecifier(modulePath!, importedIdentifierName!);
+			}
+
+			expression = InstantiateInlineTemplate(
+				signature,
+				inlineTemplate,
+				inlineArguments,
+				importedIdentifierName,
+				importedBinding);
 			return true;
 		}
 
