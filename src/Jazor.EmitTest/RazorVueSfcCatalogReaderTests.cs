@@ -74,6 +74,7 @@ public sealed class RazorVueSfcCatalogReaderTests
             """
             using System;
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -359,8 +360,7 @@ public sealed class RazorVueSfcCatalogReaderTests
     private static string CreateRazorVueGlobalUsingsSource()
         => """
            global using ECMAScript.VueContract;
-           global using IVueComponent = ECMAScript.Vue3.IVueComponent;
-           global using IVueLibraryComponent = ECMAScript.Vue3.IVueLibraryComponent;
+           global using static ECMAScript.Vue3;
            """;
 
     private static Assembly CompileRazorVueGeneratedAssembly(Compilation compilation, string razorVueOutputMode)

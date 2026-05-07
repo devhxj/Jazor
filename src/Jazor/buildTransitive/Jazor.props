@@ -4,7 +4,9 @@
     <JazorEmit Condition="'$(JazorEmit)' == '' and '$(OutputType)' == 'Exe'">true</JazorEmit>
     <JazorEmit Condition="'$(JazorEmit)' == '' and '$(OutputType)' != 'Exe'">false</JazorEmit>
     <JazorRazorVueOutputMode Condition="'$(JazorRazorVueOutputMode)' == ''">sfc</JazorRazorVueOutputMode>
-    <JazorOutDir Condition="'$(JazorOutDir)' == ''">$(IntermediateOutputPath)jazor\$(TargetFramework)\modules\</JazorOutDir>
+    <JazorDevOutDir Condition="'$(JazorDevOutDir)' == ''">$(MSBuildProjectDirectory)\jazor\</JazorDevOutDir>
+    <JazorPublishOutDir Condition="'$(JazorPublishOutDir)' == ''">$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorPublishOutDir>
+    <JazorOutDir Condition="'$(JazorOutDir)' == ''">$(JazorDevOutDir)</JazorOutDir>
     <JazorBundle Condition="'$(JazorBundle)' == ''">false</JazorBundle>
     <JazorBundleOut Condition="'$(JazorBundleOut)' == ''">$(OutDir)jazor\app.js</JazorBundleOut>
     <JazorCleanEmit Condition="'$(JazorCleanEmit)' == ''">true</JazorCleanEmit>
@@ -13,9 +15,5 @@
 
   <ItemGroup>
     <CompilerVisibleProperty Include="JazorRazorVueOutputMode" />
-    <!-- Preserve the historical RazorVue authoring markers without globally importing
-         the entire Vue3 API surface into every Jazor consumer project. -->
-    <Using Include="ECMAScript.Vue3.IVueComponent" Alias="IVueComponent" />
-    <Using Include="ECMAScript.Vue3.IVueLibraryComponent" Alias="IVueLibraryComponent" />
   </ItemGroup>
 </Project>

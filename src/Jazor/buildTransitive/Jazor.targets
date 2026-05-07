@@ -4,7 +4,11 @@
           AfterTargets="Build"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorEmit)' == 'true' and Exists('$(TargetPath)')">
     <PropertyGroup>
-      <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
+      <_JazorDefaultDevOutDir>$([System.IO.Path]::GetFullPath('$(JazorDevOutDir)'))</_JazorDefaultDevOutDir>
+      <_JazorResolvedRequestedOutDir>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorResolvedRequestedOutDir>
+      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
+      <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
+      <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
       <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll'))</JazorEmitToolPath>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest.json</JazorManifestPath>
       <JazorRazorVueManifestPath Condition="'$(JazorRazorVueManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest-razorvue.json</JazorRazorVueManifestPath>
@@ -38,14 +42,18 @@
           AfterTargets="JazorEmit"
           Condition="'$(DesignTimeBuild)' != 'true' and '$(JazorBundle)' == 'true' and '$(JazorEmit)' == 'true'">
     <PropertyGroup>
-      <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
+      <_JazorDefaultDevOutDir>$([System.IO.Path]::GetFullPath('$(JazorDevOutDir)'))</_JazorDefaultDevOutDir>
+      <_JazorResolvedRequestedOutDir>$([System.IO.Path]::GetFullPath('$(JazorOutDir)'))</_JazorResolvedRequestedOutDir>
+      <_JazorSelectedOutDir Condition="'$(_IsPublishing)' == 'true' and '$(_JazorResolvedRequestedOutDir)' == '$(_JazorDefaultDevOutDir)'">$(JazorPublishOutDir)</_JazorSelectedOutDir>
+      <_JazorSelectedOutDir Condition="'$(_JazorSelectedOutDir)' == ''">$(JazorOutDir)</_JazorSelectedOutDir>
+      <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))\jazor-manifest.json</JazorManifestPath>
       <_JazorBundleOut>$([System.IO.Path]::GetFullPath('$(JazorBundleOut)'))</_JazorBundleOut>
       <JazorBundleRazorVueCssPath Condition="'$(JazorBundleRazorVueCssPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.css'))))</JazorBundleRazorVueCssPath>
       <JazorBundleRazorVueHostContractPath Condition="'$(JazorBundleRazorVueHostContractPath)' == '' and '$(JazorBundleRazorJoltContractPath)' != ''">$(JazorBundleRazorJoltContractPath)</JazorBundleRazorVueHostContractPath>
       <JazorBundleRazorVueHostContractPath Condition="'$(JazorBundleRazorVueHostContractPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.host.json'))))</JazorBundleRazorVueHostContractPath>
       <JazorBundleRazorVueUpdatePlanPath Condition="'$(JazorBundleRazorVueUpdatePlanPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.update-plan.json'))))</JazorBundleRazorVueUpdatePlanPath>
       <JazorPreviousRazorVueManifestSnapshotPath Condition="'$(JazorPreviousRazorVueManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest-razorvue.json'))</JazorPreviousRazorVueManifestSnapshotPath>
-      <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
+      <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
       <_JazorManifestPathForBundle>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorManifestPathForBundle>
       <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\net10.0\Jazor.Emit.dll'))</JazorEmitToolPath>
     </PropertyGroup>

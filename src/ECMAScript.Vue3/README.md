@@ -52,6 +52,19 @@
 - Options API object-form inject 可通过 `VueInjectOptions<T>` / `VueInjectEntry<T>` / `VueInjectRegistry<T>` 表达；`VueDictionary` 现已支持 string / `Symbol` key object authoring，不新增 compiler 特路。
 - `[Spread]` 等语法糖由通用属性机制驱动，不绑定 Vue 命名空间。
 
+## Authoring Contract
+
+- `IVueComponent` / `IVueLibraryComponent` 的 canonical 类型定义在 `ECMAScript.Vue3`。
+- `ECMAScript.VueContract` 只承载 RazorVue library-mode 相关的 attribute / descriptor contract，例如 `VueLibraryComponentAttribute`、`VuePropKind`、`VueEmitKind`、`VueComponentFlags`。
+- RazorVue authoring 走显式按需导入，不通过 `Jazor` NuGet 包对 consumer 做全局 marker 注入。
+- 如果组件作者要直接使用 `IVueComponent` / `IVueLibraryComponent` 简名，应该在文件或共享 global usings 中显式添加：
+
+```csharp
+using static ECMAScript.Vue3;
+```
+
+- 如果 authoring 需要完整 Vue 3 API surface，例如 `H(...)`、`DefineComponent(...)`、`Ref(...)`、`Computed(...)`、`OnMounted(...)`，同样应显式 `using static ECMAScript.Vue3;` 或显式使用 `ECMAScript.Vue3` 成员。
+
 ### Naming Policy
 
 - 对应 Vue 官方公开 API 的绑定名，默认只允许大小写变化，不额外改词、不重排缩写。

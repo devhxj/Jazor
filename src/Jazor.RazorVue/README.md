@@ -18,7 +18,9 @@
 - `Jazor.Emit` 负责 `.mjs` / `.vue` / manifest / source map 的物化与 bundling。
 - `Jolt` 负责 LSP、DevServer、进程管理、工作区与运行时宿主编排。
 - `Jazor.Common` 只保留真正通用的 `Format` 与 `SourceMaps`，不再拥有 RazorVue/Jolt 协议 DTO。
-- 用户直接 authoring 的 `IVueComponent` / `IVueLibraryComponent` 保持在 `ECMAScript.Vue3`；`VueLibrary*` 标记类型以及 `VuePropKind` / `VueEmitKind` / `VueComponentFlags` 归属 `ECMAScript.VueContract` / `ECMAScript.VueContract.Descriptor`，`Jazor.RazorVue` 直接消费这组正式合同，不保留旧位置回退。
+- 用户直接 authoring 的 `IVueComponent` / `IVueLibraryComponent` canonical 类型保持在 `ECMAScript.Vue3`；`VueLibrary*` 标记类型以及 `VuePropKind` / `VueEmitKind` / `VueComponentFlags` 归属 `ECMAScript.VueContract` / `ECMAScript.VueContract.Descriptor`，`Jazor.RazorVue` 直接消费这组正式合同，不保留旧位置回退。
+- RazorVue 的 consumer authoring 合同是显式按需导入，而不是由 `Jazor` NuGet 包自动注入 marker alias。
+- 组件文件如需直接使用 `IVueComponent` / `IVueLibraryComponent` 简名，应显式声明 `using static ECMAScript.Vue3;`；完整 Vue3 API 亦同。
 
 ## Current Layout
 

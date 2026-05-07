@@ -68,6 +68,13 @@ public sealed class SdkIntegrationTests
                 "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("analyzers/dotnet/cs/", StringComparison.Ordinal)).ToArray());
+        CollectionAssert.IsSubsetOf(
+            new[]
+            {
+                "buildTransitive/Jazor.props",
+                "buildTransitive/Jazor.targets"
+            },
+            entryNames);
     }
 
     [TestMethod]
@@ -310,6 +317,144 @@ public sealed class SdkIntegrationTests
             .ToArray()!;
         CollectionAssert.Contains(emittedRelativePaths, "System/DecimalModule.js");
         CollectionAssert.Contains(emittedRelativePaths, "System/Globalization/CultureInfoModule.js");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_StaticHost_UsesProjectRootJazorByDefault()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "StaticHostDefaultBuildSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
+
+        var build = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var devJazorRoot = Path.Combine(projectRoot, "jazor");
+        var publishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "host", "app.mjs")));
+        Assert.IsFalse(Directory.Exists(publishJazorRoot), $"Build should not materialize publish assets under '{publishJazorRoot}'.");
+    }
+
+    [TestMethod]
+    public async Task Publish_LocalJazorPackage_StaticHost_UsesWwwrootJazorByDefault()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "StaticHostDefaultPublishSample");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateDefaultOutputStaticHostProject(projectRoot);
+
+        var publish = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "publish",
+                projectPath,
+                "-c",
+                "Debug",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, publish.ExitCode, publish.ToString());
+
+        var devJazorRoot = Path.Combine(projectRoot, "jazor");
+        var publishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs")));
+        Assert.IsFalse(Directory.Exists(devJazorRoot), $"Publish should not fall back to the development output root '{devJazorRoot}'.");
+    }
+
+    [TestMethod]
+    public async Task Build_LocalJazorPackage_SourceReferencedRazorVue_UsesProjectRootJazorByDefault()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var hostRoot = Path.Combine(workspace.RootPath, "RazorVueDefaultBuild.Host");
+        var projectPath = CreateDefaultOutputRazorVueSampleProject(hostRoot, package);
+
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var devJazorRoot = Path.Combine(hostRoot, "jazor");
+        var publishJazorRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest-razorvue.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "components", "profile-form.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "__jazor", "razorvue-host.mjs")));
+        Assert.IsFalse(Directory.Exists(publishJazorRoot), $"Build should not materialize RazorVue publish assets under '{publishJazorRoot}'.");
+    }
+
+    [TestMethod]
+    public async Task Publish_LocalJazorPackage_SourceReferencedRazorVue_UsesWwwrootJazorByDefault()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var hostRoot = Path.Combine(workspace.RootPath, "RazorVueDefaultPublish.Host");
+        var projectPath = CreateDefaultOutputRazorVueSampleProject(hostRoot, package);
+
+        var publish = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "publish",
+                projectPath,
+                "-c",
+                "Debug",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, publish.ExitCode, publish.ToString());
+
+        var devJazorRoot = Path.Combine(hostRoot, "jazor");
+        var publishJazorRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest-razorvue.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "components", "profile-form.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "__jazor", "razorvue-host.mjs")));
+        Assert.IsFalse(Directory.Exists(devJazorRoot), $"Publish should not fall back to the RazorVue development output root '{devJazorRoot}'.");
     }
 
     [TestMethod]
@@ -936,6 +1081,7 @@ public sealed class SdkIntegrationTests
             using ECMAScript;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1028,6 +1174,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "DemoButton.cs"),
             """
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
 
             namespace Demo.Sample;
@@ -1051,6 +1198,7 @@ public sealed class SdkIntegrationTests
             Path.Combine(projectRoot, "CounterCard.cs"),
             """
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1321,6 +1469,7 @@ public sealed class SdkIntegrationTests
             using ECMAScript;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1752,6 +1901,7 @@ public sealed class SdkIntegrationTests
             """
             using ECMAScript.VueContract;
             using ECMAScript.VueContract.Descriptor;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
 
             namespace Demo.Authoring;
@@ -1780,6 +1930,155 @@ public sealed class SdkIntegrationTests
 
                 [Parameter]
                 public RenderFragment<string>? Header { get; set; }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateDefaultOutputStaticHostProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "StaticHostDefaultOutput.csproj");
+
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            Console.WriteLine("Static host default output sample");
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace StaticHostDefaultOutput;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "ready";
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateDefaultOutputRazorVueSampleProject(string hostRoot, LocalPackageFixture package)
+    {
+        Directory.CreateDirectory(hostRoot);
+
+        var contractProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Contract", "ECMAScript.Contract.csproj");
+        var vuetifyProjectPath = Path.Combine(package.RepoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj");
+        var projectPath = Path.Combine(hostRoot, "RazorVueDefaultOutput.Host.csproj");
+
+        WriteFile(
+            projectPath,
+            $$"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>false</JazorBundle>
+                <JazorRazorVueOutputMode>legacy</JazorRazorVueOutputMode>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <ProjectReference Include="{{contractProjectPath}}" />
+                <ProjectReference Include="{{vuetifyProjectPath}}" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(hostRoot, "Program.cs"),
+            """
+            namespace RazorVueDefaultOutput.Host;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(hostRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace RazorVueDefaultOutput.Host;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "ready";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(hostRoot, "ProfileForm.cs"),
+            """
+            using ECMAScript;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace RazorVueDefaultOutput.Host;
+
+            [ECMAScriptModule("./components/profile-form")]
+            public sealed class ProfileForm : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public string? Name { get; set; }
+
+                [Parameter]
+                public EventCallback<string?> NameChanged { get; set; }
+
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VTextField>(0);
+                    builder.AddAttribute(1, nameof(VTextField.Label), "Name");
+                    builder.AddAttribute(2, nameof(VTextField.ModelValue), Name);
+                    builder.AddAttribute(3, nameof(VTextField.ModelValueChanged), NameChanged);
+                    builder.CloseComponent();
+                }
             }
             """);
 
@@ -1855,6 +2154,7 @@ public sealed class SdkIntegrationTests
             using Demo.Authoring;
             using ECMAScript;
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 
@@ -1966,6 +2266,7 @@ public sealed class SdkIntegrationTests
             using ECMAScript;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
+            using static ECMAScript.Vue3;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
 

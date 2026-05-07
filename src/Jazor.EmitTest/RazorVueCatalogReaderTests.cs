@@ -49,6 +49,7 @@ namespace Jazor.EmitTest
                 """
                 using System;
                 using ECMAScript.VueContract;
+                using static ECMAScript.Vue3;
                 using Microsoft.AspNetCore.Components;
 
                 namespace ECMAScript
@@ -612,12 +613,11 @@ namespace Jazor.EmitTest
 				MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]);
 
-        private static string CreateRazorVueGlobalUsingsSource()
-            => """
-               global using ECMAScript.VueContract;
-               global using IVueComponent = ECMAScript.Vue3.IVueComponent;
-               global using IVueLibraryComponent = ECMAScript.Vue3.IVueLibraryComponent;
-               """;
+    private static string CreateRazorVueGlobalUsingsSource()
+        => """
+           global using ECMAScript.VueContract;
+           global using static ECMAScript.Vue3;
+           """;
 
         private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
         {
