@@ -74,7 +74,8 @@ The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate
 - explicit `StoreDefinition<TStore>.Use()` store resolution
 - typed `storeToRefs()` projections
 - projected plugin store / store-definition authoring via `ProjectStoreDefinition(...)`
-- projected store flowing through `storeToRefs()`, `mapState()`, and `mapActions()`
+- projected store flowing through `storeToRefs()`, object-form `mapState()`, and `mapActions()`
+- object-form `mapState()` explicit union factory authoring through `PiniaStateMapValue<TStore>.From("key")` and `PiniaStateMapValue<TStore>.From(selector)`
 - multi-store Options API helper authoring via `mapStores()` + `setMapStoreSuffix("")`
 - `$subscribe()` cookbook coverage across direct mutation, object patch, and function patch flows
 - `skipHydrate()` / `shouldHydrate()` plus option-store `hydrate(storeState, initialState)` cookbook coverage
@@ -88,8 +89,12 @@ The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate
 - generated host helper coverage for clearing the active root via `ClearActivePinia()` instead of consumer-side raw `setActivePinia(undefined)` calls
 - generated root-app teardown coverage for `app.unmount()` -> `disposePinia(...)`
 - testing-only state seeding, selective `stubActions`, and plugin install ordering through `TestingOptions`
+- combined typed testing-root authoring through `TestingOptions<TDelegate, TStore>` without changing the emitted `@pinia/testing` runtime shape
 - testing-root `fakeApp` / `TestingPinia.app` runtime seam
 - testing-only named-action `stubActions` contract through the standalone `ECMAScript.Pinia.Testing` line
+- testing-root typed `stubActions` predicate projection through `ProjectStubActionPredicate<TStore>(...)`
+- testing-root combined typed `createSpy` + typed `stubActions` projection through `ProjectStubActions<TStore>(...)`
+- testing-root combined typed `createSpy` + typed `stubActions` explicit union factory path through `TestingStubActions<TStore>.From(...)`
 - testing-root typed/projected plugin reuse through `ProjectPlugin(...)`, including projected custom-state writes on the generated testing root
 - strict testing-root coverage for named action stubs plus `stubPatch` / `stubReset`
 - frontend-side Vitest smoke coverage against generated `createTestingPinia()` + store modules

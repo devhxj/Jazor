@@ -15,6 +15,10 @@ public sealed record CounterOptionsComputed : VueProps
 
     public Func<string> Status { get; init; } = default!;
 
+    public Func<int> DoubleCount { get; init; } = default!;
+
+    public Func<int> TripleCount { get; init; } = default!;
+
     public Func<string> AuditTag { get; init; } = default!;
 }
 
@@ -41,7 +45,14 @@ public static class CounterCookbookModule
     private static CounterOptionsComputed CreateComputed()
         => MapState<CounterOptionsComputed, ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>(
             CounterStoreModule.UseProjectedCounterStore,
-            ["count", "status", "auditTag"]);
+            new PiniaStateMapper<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>
+            {
+                { "count", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("count") },
+                { "status", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("status") },
+                { "doubleCount", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("doubleCount") },
+                { "tripleCount", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From(ReadTripleCount) },
+                { "auditTag", PiniaStateMapValue<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>.From("auditTag") }
+            });
 
     private static CounterOptionsMethods CreateMethods()
         => MapActions<CounterOptionsMethods, ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>>(
@@ -69,7 +80,9 @@ public static class CounterCookbookModule
                 H("li", "auditTag: " + projectedStore.AsCustomProperties().AuditTag),
                 H("li", "persistedAt: " + projectedStore.AsCustomState().PersistedAt),
                 H("li", "countRef: " + refs["count"]!.Value),
-                H("li", "statusRef: " + refs["status"]!.Value)
+                H("li", "statusRef: " + refs["status"]!.Value),
+                H("li", "doubleCount: " + projectedStore.AsStore().DoubleCount),
+                H("li", "tripleCount: " + ReadTripleCount(projectedStore))
             }),
             H("div", new VueObject
             {
@@ -96,4 +109,7 @@ public static class CounterCookbookModule
                 ["onClick"] = handler
             }
         }, label);
+
+    private static PiniaValue ReadTripleCount(ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState> store)
+        => store.AsStore().Count * 3;
 }

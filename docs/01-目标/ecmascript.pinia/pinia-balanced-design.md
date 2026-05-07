@@ -101,4 +101,4 @@ Pinia 绑定当然会依赖 compiler 做 import/lowering 验证，但这不等�
 
 - plugin 投影模式的更多 sample 和推荐 authoring 约定
 - 更完整的使用示例与文档索引
-- 视需求决定是否覆盖 `@pinia/testing`
+- `@pinia/testing` 已作为独立外部库线落地；后续方向转为更长尾 options、typed authoring 组合面与 sample/cookbook 扩展，而不是“是否覆盖”

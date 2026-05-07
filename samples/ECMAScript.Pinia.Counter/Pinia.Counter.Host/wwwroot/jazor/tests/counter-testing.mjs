@@ -12,6 +12,30 @@ export function createTestingRoot() {
     createSpy: wrapSpy
   });
 }
+export function createTypedTestingRoot() {
+  return createTestingPinia({
+    initialState: { counter: { count: 12, status: "Seeded from combined typed createTestingPinia()." } },
+    stubActions: shouldStubTypedAction,
+    writableComputed: true,
+    stubPatch: false,
+    stubReset: false,
+    fakeApp: true,
+    plugins: [typedTestingAuditPlugin],
+    createSpy: wrapActionSpy
+  });
+}
+export function createFactoryTestingRoot() {
+  return createTestingPinia({
+    initialState: { counter: { count: 18, status: "Seeded from combined typed factory createTestingPinia()." } },
+    stubActions: shouldStubFactoryAction,
+    writableComputed: true,
+    stubPatch: false,
+    stubReset: false,
+    fakeApp: true,
+    plugins: [typedTestingAuditPlugin],
+    createSpy: wrapActionSpy
+  });
+}
 export function createStrictTestingRoot() {
   return createTestingPinia({
     initialState: { counter: { count: 15, status: "Seeded from strict createTestingPinia()." } },
@@ -27,7 +51,16 @@ export function createStrictTestingRoot() {
 function shouldStubAction(actionName, store) {
   return actionName === "decrement" && store.$id === "counter";
 }
+function shouldStubTypedAction(actionName, store) {
+  return actionName === "increment" && store.$id === "counter" && store.count >= 12;
+}
+function shouldStubFactoryAction(actionName, store) {
+  return actionName === "decrement" && store.$id === "counter" && store.count >= 18;
+}
 function wrapSpy(callback) {
+  return callback ?? noop;
+}
+function wrapActionSpy(callback) {
   return callback ?? noop;
 }
 function noop() { }

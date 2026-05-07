@@ -48,6 +48,8 @@ describe("generated pinia app DOM", () => {
     expect(host.textContent).toContain("HMR cookbook");
     expect(host.textContent).toContain("auditTag: counter:audited");
     expect(host.textContent).toContain("persistedAt: component:counter");
+    expect(host.textContent).toContain("doubleCount: 4");
+    expect(host.textContent).toContain("tripleCount: 6");
     expect(host.textContent).toContain("mapped component store ids: counter + activity");
     expect(host.textContent).toContain("should hydrate client-only note: false");
     expect(host.textContent).toContain("option-store status: serialized SSR payload -> hydrate(storeState, initialState)");
@@ -77,6 +79,8 @@ describe("generated pinia app DOM", () => {
 
     expect(host.textContent).toContain("mutation kind: $patch({ ... }) object merge");
     expect(host.textContent).toContain("payload summary: payload.status = Object patch updated the counter store.");
+    expect(host.textContent).toContain("doubleCount: 12");
+    expect(host.textContent).toContain("tripleCount: 18");
     expect(host.textContent).toMatch(/notifications seen: [2-9]\d*/);
 
     clickButton(host, "Prime HMR snapshot");

@@ -8,7 +8,13 @@ export let component = defineComponent({
   setup: setup
 });
 function createComputed() {
-  return mapState(useProjectedCounterStore, ["count", "status", "auditTag"]);
+  return mapState(useProjectedCounterStore, {
+    count: "count",
+    status: "status",
+    doubleCount: "doubleCount",
+    tripleCount: readTripleCount,
+    auditTag: "auditTag"
+  });
 }
 function createMethods() {
   return mapActions(useProjectedCounterStore, ["increment", "decrement"]);
@@ -20,7 +26,7 @@ function setup() {
   let customState = projectedStore.$state;
   customState.persistedAt = "component:" + baseStore.$id;
   return () => {
-    return h("section", { class: "counter-cookbook-shell" }, [h("h2", "Projected plugin cookbook"), h("p", "Projected store definitions flow through storeToRefs(), Options API helpers, and direct custom-property/custom-state projections without inventing a separate runtime object."), h("ul", [h("li", "auditTag: " + projectedStore.auditTag), h("li", "persistedAt: " + projectedStore.$state.persistedAt), h("li", "countRef: " + refs["count"].value), h("li", "statusRef: " + refs["status"].value)]), h("div", { class: "counter-actions" }, [createActionButton("Projected increment", "action-button action-button--accent", baseStore.increment.bind(baseStore)), createActionButton("Projected decrement", "action-button", baseStore.decrement.bind(baseStore))]), h("p", { class: "counter-status" }, "Options API helpers are configured through CreateComputed()/CreateMethods(); the live card shows the projected store + projected refs path.")]);
+    return h("section", { class: "counter-cookbook-shell" }, [h("h2", "Projected plugin cookbook"), h("p", "Projected store definitions flow through storeToRefs(), Options API helpers, and direct custom-property/custom-state projections without inventing a separate runtime object."), h("ul", [h("li", "auditTag: " + projectedStore.auditTag), h("li", "persistedAt: " + projectedStore.$state.persistedAt), h("li", "countRef: " + refs["count"].value), h("li", "statusRef: " + refs["status"].value), h("li", "doubleCount: " + projectedStore.doubleCount), h("li", "tripleCount: " + readTripleCount(projectedStore))]), h("div", { class: "counter-actions" }, [createActionButton("Projected increment", "action-button action-button--accent", baseStore.increment.bind(baseStore)), createActionButton("Projected decrement", "action-button", baseStore.decrement.bind(baseStore))]), h("p", { class: "counter-status" }, "Options API helpers are configured through CreateComputed()/CreateMethods(); the live card shows the projected store + projected refs path.")]);
   };
 }
 function createActionButton(label, className, handler) {
@@ -29,5 +35,8 @@ function createActionButton(label, className, handler) {
     class: className,
     onClick: handler
   }, label);
+}
+function readTripleCount(store) {
+  return store.count * 3;
 }
 //# sourceMappingURL=counter-cookbook.mjs.map

@@ -24,8 +24,8 @@
 | Refs / hydration / HMR | `storeToRefs()` | `StoreToRefs(...)` | 已覆盖 | 支持默认 refs bag 和用户自定义 typed refs |
 | Refs / hydration / HMR | `skipHydrate()` / `shouldHydrate()` | `SkipHydrate(...)` / `ShouldHydrate(...)` | 已覆盖 | 直接映射 |
 | Refs / hydration / HMR | `acceptHMRUpdate()` | `AcceptHMRUpdate(...)` | 已覆盖 | 返回 `PiniaHotUpdateHandler` |
-| Options API helpers | `mapState()` | `MapState(...)` | 已覆盖 | 支持 array-form 和 object-form mapper |
-| Options API helpers | `mapGetters()` | `MapGetters(...)` | 已覆盖 | 明确标记为 `MapState()` 别名 |
+| Options API helpers | `mapState()` | `MapState(...)` | 已覆盖 | 支持 array-form 和 object-form mapper；object-form 可用 `PiniaStateMapValue<TStore>.From(...)` 稳定承接 key / selector 分支 |
+| Options API helpers | `mapGetters()` | `MapGetters(...)` | 已覆盖 | 明确标记为 `MapState()` 别名；object-form 同样复用 `PiniaStateMapValue<TStore>.From(...)` 稳定承接 key / selector 分支 |
 | Options API helpers | `mapWritableState()` | `MapWritableState(...)` | 已覆盖 | 支持 array-form 和 object-form mapper |
 | Options API helpers | `mapActions()` | `MapActions(...)` | 已覆盖 | 支持 array-form 和 object-form mapper |
 | Options API helpers | `mapStores()` | `MapStores(...)` | 已覆盖 | 依赖非泛型 `StoreDefinition` 基类承接异构列表 |
@@ -33,7 +33,7 @@
 | Plugin surface | `pinia.use(...)` / `PiniaPluginContext` | `PiniaInstance.Use(...)` / `PiniaPluginContext` / `PiniaPluginContext<TStore, TOptions>` / `PiniaPluginContext<TStore, TOptions, ...>` / `DefineStoreOptionsInPlugin` | 已覆盖 | 支持 untyped、typed、以及 chained-plugin projected context/options 投影 |
 | Plugin surface | plugin-added custom properties / custom state typed propagation | `ProjectStore(...)` / `ProjectStoreDefinition(...)` + `ProjectedStore<...>` / `ProjectedStoreDefinition<...>` | 已覆盖 | 使用显式 identity 投影承接 store / store.$state 的 plugin 扩展，不做 TS module augmentation 等价物 |
 | TS utility types | `_Spread` / `_MapStateReturn` / `MapStoresCustomization` 等 | 无 | 暂不覆盖 | C# 不追求镜像 Pinia 的全部类型级工具 |
-| Testing package | `@pinia/testing` / `createTestingPinia()` | `ECMAScript.Pinia.Testing` / `PiniaTesting.CreateTestingPinia(...)` / `TestingPinia` / `TestingOptions` / `TestingOptions<TDelegate>` / `ProjectPlugin(...)` | 已覆盖 | 作为独立外部库与独立测试工程落地，不混入 `ECMAScript.Pinia` 主包；`stubActions` 已覆盖 `bool | string[] | predicate`，`createSpy` 同时支持非泛型与显式 typed delegate authoring，typed/projected plugin 可通过显式 identity 投影复用到 testing root |
+| Testing package | `@pinia/testing` / `createTestingPinia()` | `ECMAScript.Pinia.Testing` / `PiniaTesting.CreateTestingPinia(...)` / `TestingPinia` / `TestingOptions` / `TestingOptions<TDelegate>` / `TestingOptions<TDelegate, TStore>` / `ProjectPlugin(...)` / `ProjectStubActionPredicate(...)` / `ProjectStubActions(...)` | 已覆盖 | 作为独立外部库与独立测试工程落地，不混入 `ECMAScript.Pinia` 主包；`stubActions` 已覆盖 `bool | string[] | predicate`，并提供 `TestingStubActions.From(...)` / `TestingStubActions<TStore>.From(...)` 显式 union factory、typed predicate identity 投影与 typed union projection；`createSpy` 同时支持非泛型、显式 typed delegate authoring，以及与 typed predicate 组合的 options surface；typed/projected plugin 可通过显式 identity 投影复用到 testing root |
 
 ## 关键差异
 
@@ -58,6 +58,9 @@ Pinia 官方允许 object-form mapper 使用自定义函数，并在运行时访
 
 - `PiniaMapStateSelector<TStore>`
 - `PiniaStateMapValue<TStore>`
+
+对象初始化器场景下，如果需要显式收口 key / selector 分支，使用 `PiniaStateMapValue<TStore>.From(...)`。  
+该 helper 只做类型级 identity 投影，不改变 runtime mapper object shape，也不为 selector 额外包一层函数。
 
 组件实例 `this` 不做类型化建模。
 
@@ -115,8 +118,13 @@ Pinia 官方 TypeScript 类型把 `$onAction()` 的 context 建模成按 action 
 - `TestingOptions`
 - `TestingInitialState`
 - `TestingStubActions`（`bool | string[] | predicate`）
+- `TestingStubActions<TStore>`（typed predicate branch，不改变 runtime union shape）
 - `PiniaTestingSpyFactory`
 - `TestingOptions<TDelegate>`（typed `createSpy` authoring，不改变 runtime `createSpy` field shape）
+- `TestingOptions<TDelegate, TStore>`（typed `createSpy` + typed predicate-style `stubActions` 的组合 authoring，不改变 runtime options shape）
+- `TestingStubActions.From(...)` / `TestingStubActions<TStore>.From(...)`（对象初始化器内稳定承接 `stubActions` union 分支，不改变 runtime `stubActions` shape）
+- `ProjectStubActionPredicate<TStore>(...)`（typed `stubActions` predicate 到 testing union predicate 分支的显式 identity 投影）
+- `ProjectStubActions<TStore>(...)`（typed `stubActions` predicate 到 typed testing union surface 的显式 identity 投影）
 - `ProjectPlugin(...)`（typed / projected Pinia plugin 到 testing `plugins` 列表的显式 identity 投影）
 - `writableComputed` / `stubPatch` / `stubReset` / `fakeApp` / `plugins`
 
@@ -126,6 +134,8 @@ Pinia 官方 TypeScript 类型把 `$onAction()` 的 context 建模成按 action 
 - plugin install list
 - named-action `stubActions`
 - predicate-style `stubActions`
+- typed predicate-style `stubActions` projection
+- combined typed `createSpy` + typed predicate `stubActions` options lowering
 - `writableComputed`
 - testing root sample module
 - `fakeApp` + `TestingPinia.app` runtime seam

@@ -4,6 +4,8 @@ import { createHmrBridge } from "./pinia.hmr-bridge.js";
 import { createManagedPiniaRoot } from "./pinia.root-lifecycle.js";
 import { clearConfiguredActivePinia } from "../../Pinia.Counter.Host/wwwroot/jazor/host/app.mjs";
 import {
+  createFactoryTestingRoot,
+  createTypedTestingRoot,
   createStrictTestingRoot,
   createTestingRoot
 } from "../../Pinia.Counter.Host/wwwroot/jazor/tests/counter-testing.mjs";
@@ -75,6 +77,44 @@ describe("pinia runtime integration seams", () => {
 
     expect(projectedStore.auditTag).toBe("counter:testing");
     expect(projectedStore.$state.persistedAt).toBe("testing:counter:typed");
+  });
+
+  it("keeps the combined typed testing root observable at runtime", () => {
+    const testingPinia = createTypedTestingRoot();
+    ephemeralPiniaRoots.push(testingPinia);
+    const projectedStore = useProjectedCounterStore(testingPinia);
+    const store = useCounterStore(testingPinia);
+
+    expect(testingPinia.app).toBeDefined();
+    expect(projectedStore.auditTag).toBe("counter:testing");
+    expect(projectedStore.$state.persistedAt).toBe("testing:counter:typed");
+    expect(store.count).toBe(12);
+
+    store.increment();
+    expect(store.count).toBe(12);
+
+    store.decrement();
+    expect(store.count).toBe(11);
+    expect(store.status).toBe("decrement() updated the store.");
+  });
+
+  it("keeps the combined typed factory testing root observable at runtime", () => {
+    const testingPinia = createFactoryTestingRoot();
+    ephemeralPiniaRoots.push(testingPinia);
+    const projectedStore = useProjectedCounterStore(testingPinia);
+    const store = useCounterStore(testingPinia);
+
+    expect(testingPinia.app).toBeDefined();
+    expect(projectedStore.auditTag).toBe("counter:testing");
+    expect(projectedStore.$state.persistedAt).toBe("testing:counter:typed");
+    expect(store.count).toBe(18);
+
+    store.increment();
+    expect(store.count).toBe(19);
+
+    store.decrement();
+    expect(store.count).toBe(19);
+    expect(store.status).toBe("increment() updated the store.");
   });
 
   it("disposes an individual store scope without deleting the retained pinia state snapshot", () => {

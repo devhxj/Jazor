@@ -11,7 +11,6 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $packageProject = Join-Path $repoRoot "src\Jazor\Jazor.csproj"
-$emitProject = Join-Path $repoRoot "src\Jazor.Emit\Jazor.Emit.csproj"
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 
@@ -49,6 +48,71 @@ function Get-ProjectPropertyValue {
     return ""
 }
 
+function Resolve-LocalPackInputPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectDirectory,
+        [Parameter(Mandatory = $true)]
+        [string]$Include,
+        [Parameter(Mandatory = $true)]
+        [string]$Configuration
+    )
+
+    $resolved = $Include.Replace('$(Configuration)', $Configuration)
+    $resolved = $resolved.Replace('$(MSBuildThisFileDirectory)', "$ProjectDirectory\")
+
+    if ([System.IO.Path]::IsPathRooted($resolved)) {
+        return $resolved
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $ProjectDirectory $resolved))
+}
+
+function Assert-NoBuildPackInputsExist {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PackageProjectPath,
+        [Parameter(Mandatory = $true)]
+        [xml]$Project,
+        [Parameter(Mandatory = $true)]
+        [string]$Configuration
+    )
+
+    $projectDirectory = Split-Path -Parent $PackageProjectPath
+    $missingInputs = New-Object System.Collections.Generic.List[string]
+
+    foreach ($itemGroup in $Project.Project.ItemGroup) {
+        foreach ($noneItem in $itemGroup.None) {
+            $include = [string]$noneItem.Include
+            if ([string]::IsNullOrWhiteSpace($include) -or -not $include.StartsWith("..\", [StringComparison]::Ordinal)) {
+                continue
+            }
+
+            if ($include.Contains("$(NuGetPackageRoot)", [StringComparison]::Ordinal)) {
+                continue
+            }
+
+            $resolvedPath = Resolve-LocalPackInputPath -ProjectDirectory $projectDirectory -Include $include -Configuration $Configuration
+            if (-not (Test-Path -LiteralPath $resolvedPath)) {
+                $missingInputs.Add($resolvedPath)
+            }
+        }
+    }
+
+    $emitPublishDir = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\Jazor.Emit\bin\$Configuration\net10.0\publish"))
+    if (-not (Test-Path -LiteralPath $emitPublishDir)) {
+        $missingInputs.Add("$emitPublishDir (Jazor.Emit publish output directory)")
+    }
+    elseif (-not (Get-ChildItem -LiteralPath $emitPublishDir -Recurse -File | Select-Object -First 1)) {
+        $missingInputs.Add("$emitPublishDir (Jazor.Emit publish output directory is empty)")
+    }
+
+    if ($missingInputs.Count -gt 0) {
+        $details = ($missingInputs | Sort-Object | Get-Unique | ForEach-Object { " - $_" }) -join [Environment]::NewLine
+        throw "NoBuild was requested, but required package inputs are missing.`n$details`nRun publish-nuget.ps1 once without -NoBuild to prepare the full package artifacts."
+    }
+}
+
 [xml]$projectXml = Get-Content $packageProject
 $packageId = Get-ProjectPropertyValue -Project $projectXml -Name "PackageId"
 if ([string]::IsNullOrWhiteSpace($packageId)) {
@@ -74,34 +138,18 @@ $resolvedOutputDirectory = if ([System.IO.Path]::IsPathRooted($OutputDirectory))
 
 New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
 
-if (-not $NoBuild) {
-    $dependencyProjects = @(
-        (Join-Path $repoRoot "src\ECMAScript\ECMAScript.csproj"),
-        (Join-Path $repoRoot "src\ECMAScript.Contract\ECMAScript.Contract.csproj"),
-        (Join-Path $repoRoot "src\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj"),
-        (Join-Path $repoRoot "src\Jazor.Common\Jazor.Common.csproj"),
-        (Join-Path $repoRoot "src\Jazor.Compiler\Jazor.Compiler.csproj"),
-        (Join-Path $repoRoot "src\Jazor.Analyzer\Jazor.Analyzer.csproj")
-    )
-
-    foreach ($project in $dependencyProjects) {
-        Invoke-DotNet -Arguments @("build", $project, "-c", $Configuration, "-v", "minimal")
-    }
-
-    Invoke-DotNet -Arguments @("publish", $emitProject, "-c", $Configuration, "-v", "minimal")
-}
-
 $packArgs = @(
     "pack",
     $packageProject,
     "-c", $Configuration,
     "-o", $resolvedOutputDirectory,
-    "-p:JazorPreparePackageArtifacts=false",
     "-v", "minimal"
 )
 
 if ($NoBuild) {
+    Assert-NoBuildPackInputsExist -PackageProjectPath $packageProject -Project $projectXml -Configuration $Configuration
     $packArgs += "--no-build"
+    $packArgs += "-p:JazorPreparePackageArtifacts=false"
 }
 Invoke-DotNet -Arguments $packArgs
 

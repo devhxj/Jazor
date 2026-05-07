@@ -31,7 +31,7 @@ public static class CounterTestingModule
                     Status = "Seeded from createTestingPinia()."
                 }
             },
-            StubActions = (PiniaTestingStubActionPredicate)ShouldStubAction,
+            StubActions = ProjectStubActionPredicate<CounterStore>(ShouldStubAction),
             WritableComputed = true,
             StubPatch = false,
             StubReset = false,
@@ -41,6 +41,52 @@ public static class CounterTestingModule
                 TypedTestingAuditPlugin
             ],
             CreateSpy = WrapSpy
+        });
+
+    public static TestingPinia CreateTypedTestingRoot()
+        => CreateTestingPinia(new TestingOptions<Action, CounterStore>
+        {
+            InitialState = new CounterTestingInitialState
+            {
+                Counter = new CounterStatePatch
+                {
+                    Count = 12,
+                    Status = "Seeded from combined typed createTestingPinia()."
+                }
+            },
+            StubActions = ProjectStubActions<CounterStore>(ShouldStubTypedAction),
+            WritableComputed = true,
+            StubPatch = false,
+            StubReset = false,
+            FakeApp = true,
+            Plugins =
+            [
+                TypedTestingAuditPlugin
+            ],
+            CreateSpy = WrapActionSpy
+        });
+
+    public static TestingPinia CreateFactoryTestingRoot()
+        => CreateTestingPinia(new TestingOptions<Action, CounterStore>
+        {
+            InitialState = new CounterTestingInitialState
+            {
+                Counter = new CounterStatePatch
+                {
+                    Count = 18,
+                    Status = "Seeded from combined typed factory createTestingPinia()."
+                }
+            },
+            StubActions = TestingStubActions<CounterStore>.From(ShouldStubFactoryAction),
+            WritableComputed = true,
+            StubPatch = false,
+            StubReset = false,
+            FakeApp = true,
+            Plugins =
+            [
+                TypedTestingAuditPlugin
+            ],
+            CreateSpy = WrapActionSpy
         });
 
     public static TestingPinia CreateStrictTestingRoot()
@@ -66,11 +112,20 @@ public static class CounterTestingModule
             CreateSpy = WrapSpy
         });
 
-    private static bool ShouldStubAction(string actionName, StoreGeneric store)
+    private static bool ShouldStubAction(string actionName, CounterStore store)
         => actionName == "decrement" && store.Id == "counter";
+
+    private static bool ShouldStubTypedAction(string actionName, CounterStore store)
+        => actionName == "increment" && store.Id == "counter" && store.Count >= 12;
+
+    private static bool ShouldStubFactoryAction(string actionName, CounterStore store)
+        => actionName == "decrement" && store.Id == "counter" && store.Count >= 18;
 
     private static Delegate WrapSpy(Delegate? callback)
         => callback ?? ((Action)Noop);
+
+    private static Action WrapActionSpy(Action? callback)
+        => callback ?? Noop;
 
     private static void Noop()
     {

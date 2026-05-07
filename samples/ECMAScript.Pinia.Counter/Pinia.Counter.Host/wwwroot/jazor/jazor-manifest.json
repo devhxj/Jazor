@@ -1,6 +1,6 @@
 {
   "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\ECMAScript.Pinia.Counter\\Pinia.Counter.Host\\bin\\Debug\\net10.0\\Pinia.Counter.Host.dll",
-  "GeneratedAtUtc": "2026-05-07T04:10:05.7238452Z",
+  "GeneratedAtUtc": "2026-05-07T07:00:08.1523091Z",
   "Modules": [
     {
       "AssemblyName": "Pinia.Counter.Host",
@@ -16,9 +16,9 @@
       "TypeName": "Pinia.Counter.Host.CounterCookbookModule",
       "Id": "Pinia.Counter.Host.CounterCookbookModule",
       "RelativePath": "components/counter-cookbook.mjs",
-      "Hash": "723C68AC39D4E3F76662B0389A3B1B8373A1B052C9FE59D376C0407E0B7C4A66",
+      "Hash": "0D60786EFDB080D903A0B95EE4A6DB6437B6BFCEE0A6E207AF48EFE9563085F7",
       "SourceMapPath": "components/counter-cookbook.mjs.map",
-      "MapHash": "ABE3070548CF12A516075BC48433107382D9607620498A3667B474392E6E930F"
+      "MapHash": "09786A7F60EC8010B7F7A6F739781FB657C245D8E5A138ED7CBF1E05CE3A2A97"
     },
     {
       "AssemblyName": "Pinia.Counter.Host",
@@ -447,9 +447,9 @@
       "TypeName": "Pinia.Counter.Host.CounterTestingModule",
       "Id": "Pinia.Counter.Host.CounterTestingModule",
       "RelativePath": "tests/counter-testing.mjs",
-      "Hash": "9227318D76CFC93546447EF90B2A9B7743A9FB322FE02055E1FEE0061A9EEFD7",
+      "Hash": "356C3D7B1E572ED5034098052A2B34C890E95D0C84EC3B5CC7B2E08C9CC8E510",
       "SourceMapPath": "tests/counter-testing.mjs.map",
-      "MapHash": "870064AE0CC09374165C3C2971CBD72FDD147332E73EDBE40FB089B630B48B76"
+      "MapHash": "7168CF28A7562BB80C2E0BFF207A50EB622921BE61C29FCB9CCCC191C8F1834F"
     }
   ]
 }

@@ -23,6 +23,8 @@
 - setup-store helper / options 合同已补齐，覆盖 `PiniaSetupStoreFactory<TStore>`、`SetupStoreHelpers.Action(...)`、`DefineSetupStoreOptions<TActions>`，且 `SetupStoreHelpers.Action(...)` 已覆盖到 .NET 标准 `Action` / `Func` 委托族的 16 输入参数上限；
 - plugin merge 投影合同已补齐，覆盖 `ProjectStore(...)`、`ProjectStoreDefinition(...)`、`ProjectedStore<...>`、`ProjectedStoreDefinition<...>`；
 - projected store-definition 已统一继承 `StoreDefinition<TStore>` 调用面，`storeToRefs` / HMR / Options API helper 组合路径已补回归；
+- `ECMAScript.Pinia` 已补 `PiniaStateMapValue<TStore>.From(...)`，使 `mapState()` / `mapGetters()` 的 object-form mapper 能在对象初始化器中稳定承接 key / selector 分支，同时保持 runtime 仍发出同一个 Pinia mapper object shape；
+- `samples/ECMAScript.Pinia.Counter` 已补 object-form `mapState()` cookbook，覆盖 `PiniaStateMapValue<TStore>.From("key")` 与 `PiniaStateMapValue<TStore>.From(selector)` 的真实 generated DOM/runtime 路径；
 - sample 已扩到 cookbook 级，覆盖 plugin projection、projected store refs、Options API helper 组合和 testing root module；
 - sample 已继续扩到 multi-store / subscription cookbook，覆盖 `mapStores()` + `setMapStoreSuffix("")` 与 `$subscribe()` direct / object-patch / function-patch 组合路径；
 - `pinia-consumer` 已补 Vitest smoke example，直接验证生成的 `createTestingPinia()` root 与 generated store module 可在正常前端测试框架中协同运行；
@@ -36,8 +38,13 @@
 - `ECMAScript.Pinia.Testing` 已补 `stubActions: string[]` 联合 contract，并追加独立 lowering/proxy 回归；
 - `ECMAScript.Pinia.Testing` 已补 `TestingPinia.app` contract，使 `fakeApp` 宿主边界可被显式 authoring / 回归验证；
 - `ECMAScript.Pinia.Testing` 已补 `TestingOptions<TDelegate>`，使 `createSpy` 可按显式 delegate 形状 authoring，同时保持 runtime 仍发出同一个 `createSpy` object-form 配置字段；
+- `ECMAScript.Pinia.Testing` 已补 `TestingStubActions.From(...)` 与 `TestingStubActions<TStore>.From(...)`，使 `TestingOptions` / `TestingOptions<TDelegate, TStore>` 的对象初始化器可以稳定承接 `bool | string[] | predicate` 分支，同时保持 runtime 仍发出同一个官方 `stubActions` union shape；
+- `ECMAScript.Pinia.Testing` 已补 `ProjectStubActionPredicate<TStore>(...)`，使 `stubActions` predicate 可按显式 store 投影 authoring，同时保持 runtime 仍发出同一个 predicate 函数对象；
+- `ECMAScript.Pinia.Testing` 已补 `TestingStubActions<TStore>`、`TestingOptions<TDelegate, TStore>` 与 `ProjectStubActions<TStore>(...)`，使 typed `createSpy` 与 typed predicate-style `stubActions` 可以在同一个 testing options object 上组合 authoring，同时保持 runtime 仍发出同一个官方 `@pinia/testing` options shape；
 - `ECMAScript.Pinia.Testing` 已补 `ProjectPlugin(...)`，使 testing root 的 `plugins` 列表可以无损复用主包里的 typed / projected Pinia plugin callback，同时保持 runtime 仍发出同一个 plugin 函数对象；
-- `samples/ECMAScript.Pinia.Counter` 的 testing root 已切到 `ProjectPlugin(...)` 路径，并追加前端运行时断言验证 projected testing plugin 对 custom properties / custom state 的真实生效；
+- `samples/ECMAScript.Pinia.Counter` 的 testing root 已切到 `ProjectPlugin(...)` + `ProjectStubActionPredicate<TStore>(...)` 路径，并追加前端运行时断言验证 projected testing plugin 对 custom properties / custom state 的真实生效；
+- `samples/ECMAScript.Pinia.Counter` 已补 combined typed testing root，覆盖 `TestingOptions<TDelegate, TStore>` + `ProjectStubActions<TStore>(...)` + typed `createSpy` 的真实 generated runtime / Vitest 路径；
+- `samples/ECMAScript.Pinia.Counter` 已补 combined typed testing root 的 explicit union factory 路线，覆盖 `TestingStubActions<TStore>.From(...)` + typed `createSpy` 的真实 generated runtime / Vitest 路径；
 - sample/testing consumer 已补 stricter testing-root 验证，覆盖 named `stubActions` + `stubPatch` + `stubReset` 的真实 generated runtime 行为；
 - sample/consumer 已补 explicit multi-root isolation cookbook，覆盖 `StoreDefinition.Use(pinia)` / projected store-definition / plugin custom state 在双 root 下的不串扰行为；
 - sample root 已补 app-unmount teardown，覆盖 `app.unmount()` -> `disposePinia(...)` 自动回收与 repeated mount/unmount 后的干净 root 语义；
@@ -151,8 +158,13 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - `skipHydrate` / `shouldHydrate` / option-store `hydrate`
 - `getActivePinia` / `setActivePinia` / `clearActivePinia` / `disposePinia`
 - `mapState` / `mapGetters` / `mapWritableState` / `mapActions` / `mapStores`
+- `mapState` / `mapGetters` object-form union factory lowering（`PiniaStateMapValue<TStore>.From(...)`）
 - `@pinia/testing` `createTestingPinia(...)` / `TestingOptions` lowering
+- `@pinia/testing` object-initializer union factory lowering（`TestingStubActions.From(...)` / `TestingStubActions<TStore>.From(...)`）
 - `@pinia/testing` named-list/predicate `stubActions` / `plugins` / `writableComputed` cookbook lowering
+- `@pinia/testing` combined typed options 的 boolean / named-list / predicate `stubActions` lowering
+- `@pinia/testing` typed predicate `stubActions` identity projection lowering
+- `@pinia/testing` combined typed `createSpy` + typed predicate `stubActions` options lowering
 - `@pinia/testing` fake-app `TestingPinia.app` lowering / proxy contract
 - `@pinia/testing` strict root runtime validation for named action stubs and patch/reset stubs
 - frontend-side Vitest smoke validation for generated testing/store modules

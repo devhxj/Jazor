@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setActivePinia } from "pinia";
 import {
+  createFactoryTestingRoot,
+  createTypedTestingRoot,
   createStrictTestingRoot,
   createTestingRoot
 } from "../../Pinia.Counter.Host/wwwroot/jazor/tests/counter-testing.mjs";
@@ -49,6 +51,49 @@ describe("generated pinia sample modules", () => {
     store.$reset();
     expect(store.count).toBe(2);
     expect(store.status).toBe("Store seeded through defineStore().");
+  });
+
+  it("supports combined typed testing options while keeping runtime shape unchanged", () => {
+    setActivePinia(createTypedTestingRoot());
+
+    const store = useCounterStore();
+
+    expect(store.count).toBe(12);
+    expect(store.status).toBe("Seeded from combined typed createTestingPinia().");
+    expect(store.$state.persistedAt).toBe("testing:counter:typed");
+
+    store.increment();
+    expect(store.count).toBe(12);
+    expect(store.status).toBe("Seeded from combined typed createTestingPinia().");
+
+    store.decrement();
+    expect(store.count).toBe(11);
+    expect(store.status).toBe("decrement() updated the store.");
+
+    store.$patch({
+      count: 21,
+      status: "typed root patch"
+    });
+    expect(store.count).toBe(21);
+    expect(store.status).toBe("typed root patch");
+  });
+
+  it("supports combined typed testing options through the explicit union factory path", () => {
+    setActivePinia(createFactoryTestingRoot());
+
+    const store = useCounterStore();
+
+    expect(store.count).toBe(18);
+    expect(store.status).toBe("Seeded from combined typed factory createTestingPinia().");
+    expect(store.$state.persistedAt).toBe("testing:counter:typed");
+
+    store.increment();
+    expect(store.count).toBe(19);
+    expect(store.status).toBe("increment() updated the store.");
+
+    store.decrement();
+    expect(store.count).toBe(19);
+    expect(store.status).toBe("increment() updated the store.");
   });
 
   it("can wrap the generated plugin callback with a JS spy", () => {

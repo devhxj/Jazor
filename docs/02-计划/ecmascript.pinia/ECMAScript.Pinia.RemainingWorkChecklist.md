@@ -17,6 +17,13 @@
 
 当前更准确的状态是：**基础落地已完成，后续进入增量覆盖与 authoring contract 继续收口阶段**。
 
+当前补充约束：
+
+- 已按 `ECMAScript.VueRoute` 的经验在确认存在对象初始化器 authoring 不稳定点的 union 上增补显式 `From(...)` factory；
+- 当前已落到 `PiniaStateMapValue<TStore>` 与 `TestingStubActions` / `TestingStubActions<TStore>`；
+- 这些 factory 都是类型级 identity 投影，不改变 runtime object / union shape；
+- 后续不机械把 `From(...)` 铺到全部 union，只在确有 object-initializer / 方法组 / 多跳隐式转换不稳定问题时按需增量补齐。
+
 ## 2. 当前主线项
 
 ### 2.1 plugin surface 更强类型化
@@ -136,5 +143,7 @@
 - SSR/hydration cookbook sample / 回归已补；
 - Pinia root lifecycle (`setActivePinia` / `setActivePinia(undefined)` / `getActivePinia` / `disposePinia`) 回归与 consumer 验证已补；
 - `@pinia/testing` 的 `stubActions: string[]` 合同已补；
+- `mapState()` / `mapGetters()` object-form mapper 已补 `PiniaStateMapValue<TStore>.From(...)`；
+- `@pinia/testing` 对象初始化器已补 `TestingStubActions.From(...)` / `TestingStubActions<TStore>.From(...)` 稳定 union factory；
 - consumer 侧真实组件挂载与 DOM 断言已补第一轮；
 - 下一阶段更适合转向 testing/plugin 更长尾组合面，以及更复杂的 consumer 生命周期/跨组件验证。
