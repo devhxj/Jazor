@@ -45,6 +45,21 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 
 Users today should target the **Working** tier. The Long-term items have extensive design documents and milestone code but are not ready for external consumption.
 
+### By the Numbers
+
+| Metric | Value |
+|--------|-------|
+| Solution projects | 29 |
+| Test projects | 11 |
+| Production code | ~122K LoC |
+| Test code | ~164K LoC |
+| Total tests | ~3,000 |
+| Compiler tests | 1,848 |
+| Jolt tests | 774 |
+| CLR tests | 70 |
+| RazorVue tests | 64+ |
+| Emit tests | 84 |
+
 ---
 
 ## Getting Started
