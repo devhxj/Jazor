@@ -953,6 +953,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private UniqueNameSession? _uniqueNameSession;
 
+    public SemanticWalkerHost? Host { get; set; }
+
     public SemanticWalker()
     {
         _whiteListCompiles = [];

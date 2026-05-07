@@ -2229,6 +2229,9 @@ private bool TryExpandEcmascriptParamsArgument(
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitLocalReference(ILocalReferenceOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteLocalReference(operation, argument) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
+
 		return WithOrigin(new Identifier(operation.Local.Name), operation);
 	}
 
@@ -2245,6 +2248,9 @@ private bool TryExpandEcmascriptParamsArgument(
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitParameterReference(IParameterReferenceOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteParameterReference(operation, argument) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
+
 		return WithOrigin(new Identifier(operation.Parameter.Name), operation);
 	}
 
@@ -2269,6 +2275,9 @@ private bool TryExpandEcmascriptParamsArgument(
 				operation,
 				$"Base field access '{operation.Field.Name}' is not supported because member-class fields lower to instance-owned state rather than prototype members. Use a property or method seam instead.");
 		}
+
+		if (Host?.RewriteFieldReference(operation, argument, instance) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
 
 		// 检查白名单映射
 		// 字段没有 GetMethod/SetMethod，直接使用字段符号进行白名单查询
@@ -2366,6 +2375,9 @@ private bool TryExpandEcmascriptParamsArgument(
 				: argument;
 			arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
 		}
+
+		if (Host?.RewritePropertyReference(operation, argument, instance, arguments) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
 
 		// 检查白名单映射。索引器 getter 也必须先走这里，
 		// 否则会绕过运行时 helper，丢失越界/缺键等 CLR 语义。
@@ -2475,6 +2487,8 @@ private bool TryExpandEcmascriptParamsArgument(
 			RejectUnsupportedRuntimeFallback(operation, whiteListMethod, "method reference", operation.Instance?.Type ?? operation.Method.ContainingType);
 
 		var instance = Translate<Expression>(operation.Instance, argument, null);
+		if (Host?.RewriteMethodReference(operation, argument, instance) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(operation.Method) : alias;
 		var initializations = new List<Expression>();
 		if (instance is not null)
@@ -2595,6 +2609,9 @@ private bool TryExpandEcmascriptParamsArgument(
 		if (IsBaseInstanceReference(operation))
 			return WithOrigin(new Super(), operation);
 
+		if (Host?.RewriteInstanceReference(operation, argument) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
+
 		if (operation.ReferenceKind == InstanceReferenceKind.ContainingTypeInstance)
 			return new ThisExpression();
 
@@ -2621,6 +2638,9 @@ private bool TryExpandEcmascriptParamsArgument(
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitInvocation(IInvocationOperation operation, SenseArgument argument)
 	{
+		if (Host?.RewriteInvocationPreorder(operation, argument) is Expression preorderHostExpression)
+			return WithOriginIfMissing(preorderHostExpression, operation);
+
 		// 处理方法调用的实例对象
 		var instance = Translate<Expression>(operation.Instance, argument, null);
 		var refParas = new List<Expression>();
@@ -2654,6 +2674,10 @@ private bool TryExpandEcmascriptParamsArgument(
 			// 当作普通参数传入
 			arguments.Add(right);
 		}
+
+		if (Host?.RewriteInvocation(operation, argument, instance, arguments) is Expression hostExpression)
+			return WithOriginIfMissing(hostExpression, operation);
+
 		var callExpr = BuildMethodCallExpression(
 			operation,
 			operation.TargetMethod,
