@@ -231,6 +231,10 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 .AppendLine(";");
             return fieldBuilder.ToString();
         }
+        catch (RazorVueCompilationIssueException)
+        {
+            throw;
+        }
         catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
         {
             throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
@@ -262,7 +266,12 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
 
         try
         {
-            var expression = expressionEmitter.EmitSetupExpression(operation);
+            var expression = ContainsExplicitParentheses(expressionSyntax)
+                ? BuildSetupExpressionPreservingExplicitParentheses(expressionSyntax, semanticModel, expressionEmitter)
+                : expressionEmitter.EmitSetupExpression(operation);
+            if (RequiresWholeReturnParentheses(expressionSyntax) && !expression.StartsWith("(", StringComparison.Ordinal))
+                expression = "(" + expression + ")";
+            var normalizedReturnExpression = NormalizeSetupMethodReturnExpression(expression);
             var methodBuilder = new StringBuilder();
             methodBuilder.Append(indent)
                 .Append("function ")
@@ -272,10 +281,14 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 .AppendLine(") {");
             methodBuilder.Append(indent)
                 .Append("  return ")
-                .Append(expression)
+                .Append(normalizedReturnExpression)
                 .AppendLine(";");
             methodBuilder.Append(indent).AppendLine("}");
             return methodBuilder.ToString();
+        }
+        catch (RazorVueCompilationIssueException)
+        {
+            throw;
         }
         catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
         {
@@ -1023,6 +1036,119 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, symbol.ContainingType?.ToDisplayString() ?? string.Empty, origin);
     }
+
+    private static string NormalizeSetupMethodReturnExpression(string expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression))
+            return expression;
+
+        if (expression[0] == '(')
+            return expression;
+
+        if (char.IsLetter(expression[0]) || expression[0] == '_' || expression[0] == '"' || expression[0] == '\'' || char.IsDigit(expression[0]))
+            return expression;
+
+        return "(" + expression + ")";
+    }
+
+    private static bool ContainsExplicitParentheses(ExpressionSyntax syntax)
+        => syntax.DescendantNodesAndSelf().Any(static node => node is ParenthesizedExpressionSyntax);
+
+    private static string BuildSetupExpressionPreservingExplicitParentheses(
+        ExpressionSyntax syntax,
+        SemanticModel semanticModel,
+        RazorVueExpressionEmitter expressionEmitter)
+    {
+        switch (syntax)
+        {
+            case ParenthesizedExpressionSyntax parenthesized:
+                return "(" + BuildSetupExpressionPreservingExplicitParentheses(parenthesized.Expression, semanticModel, expressionEmitter) + ")";
+
+            case BinaryExpressionSyntax binary:
+                return BuildSetupExpressionPreservingExplicitParentheses(binary.Left, semanticModel, expressionEmitter) +
+                       " " + MapBinaryOperator(binary.OperatorToken.Kind()) + " " +
+                       BuildSetupExpressionPreservingExplicitParentheses(binary.Right, semanticModel, expressionEmitter);
+
+            case InvocationExpressionSyntax invocation when invocation.Expression is MemberAccessExpressionSyntax memberAccess:
+                return BuildSetupMemberAccessTarget(memberAccess, semanticModel, expressionEmitter) +
+                       "(" + string.Join(", ", invocation.ArgumentList.Arguments.Select(argument =>
+                           BuildSetupExpressionPreservingExplicitParentheses(argument.Expression, semanticModel, expressionEmitter))) + ")";
+
+            case MemberAccessExpressionSyntax memberAccess:
+                return BuildSetupMemberAccessTarget(memberAccess, semanticModel, expressionEmitter);
+
+            default:
+                var operation = semanticModel.GetOperation(syntax);
+                if (operation is null)
+                    throw new NotSupportedException("RazorVue setup expression syntax could not be resolved for parentheses-preserving lowering.");
+
+                return expressionEmitter.EmitSetupExpression(operation);
+        }
+    }
+
+    private static string BuildSetupMemberAccessTarget(
+        MemberAccessExpressionSyntax memberAccess,
+        SemanticModel semanticModel,
+        RazorVueExpressionEmitter expressionEmitter)
+    {
+        var receiver = BuildSetupExpressionPreservingExplicitParentheses(memberAccess.Expression, semanticModel, expressionEmitter);
+        var memberName = string.Equals(memberAccess.Name.Identifier.ValueText, "ToString", StringComparison.Ordinal)
+            ? "toString"
+            : memberAccess.Name.Identifier.ValueText;
+
+        if (string.Equals(memberName, "toString", StringComparison.Ordinal) &&
+            RequiresAdditionalJsMemberTargetParentheses(memberAccess.Expression))
+        {
+            receiver = "(" + receiver + ")";
+        }
+
+        return receiver + "." + memberName;
+    }
+
+    private static bool RequiresAdditionalJsMemberTargetParentheses(ExpressionSyntax syntax)
+    {
+        syntax = UnwrapParenthesizedSyntax(syntax);
+        return syntax is BinaryExpressionSyntax or ConditionalExpressionSyntax;
+    }
+
+    private static bool RequiresWholeReturnParentheses(ExpressionSyntax syntax)
+    {
+        syntax = UnwrapParenthesizedSyntax(syntax);
+        return syntax is BinaryExpressionSyntax or ConditionalExpressionSyntax;
+    }
+
+    private static ExpressionSyntax UnwrapParenthesizedSyntax(ExpressionSyntax syntax)
+    {
+        while (syntax is ParenthesizedExpressionSyntax parenthesized)
+            syntax = parenthesized.Expression;
+
+        return syntax;
+    }
+
+    private static string MapBinaryOperator(SyntaxKind kind)
+        => kind switch
+        {
+            SyntaxKind.PlusToken => "+",
+            SyntaxKind.MinusToken => "-",
+            SyntaxKind.AsteriskToken => "*",
+            SyntaxKind.SlashToken => "/",
+            SyntaxKind.PercentToken => "%",
+            SyntaxKind.EqualsEqualsToken => "===",
+            SyntaxKind.ExclamationEqualsToken => "!==",
+            SyntaxKind.LessThanToken => "<",
+            SyntaxKind.LessThanEqualsToken => "<=",
+            SyntaxKind.GreaterThanToken => ">",
+            SyntaxKind.GreaterThanEqualsToken => ">=",
+            SyntaxKind.AmpersandAmpersandToken => "&&",
+            SyntaxKind.BarBarToken => "||",
+            SyntaxKind.AmpersandToken => "&",
+            SyntaxKind.BarToken => "|",
+            SyntaxKind.CaretToken => "^",
+            SyntaxKind.LessThanLessThanToken => "<<",
+            SyntaxKind.GreaterThanGreaterThanToken => ">>",
+            SyntaxKind.GreaterThanGreaterThanGreaterThanToken => ">>>",
+            _ => throw new NotSupportedException($"RazorVue setup lowering does not support explicit-parentheses binary operator '{kind}'.")
+        };
 
     private static string ToJavaScriptString(string value)
         => "\"" + (value ?? string.Empty)

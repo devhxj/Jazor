@@ -7758,6 +7758,201 @@ export function render() {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueComponentOptionsTypedAssignments_GeneratesDirectAssignmentsWithoutHelperWrapping()
+    {
+        var code = """
+            using System;
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            namespace Demo
+            {
+                public sealed record ThemeOptions : VueProps
+                {
+                    [Description("@#dark")]
+                    public bool Dark { get; init; }
+                }
+
+                [ECMAScriptModule("components/typed-panel.mjs")]
+                public static class PanelModule
+                {
+                    private static readonly VueInjectionKey<int> CountKey = Global.SymbolFn("count");
+
+                    public static IVueComponent Component = Vue3.DefineComponent(new VueComponentOptions
+                    {
+                        Name = "TypedPanel",
+                        Provide = BuildProvide(),
+                        Inject = BuildInject(),
+                        Computed = BuildComputed(),
+                        Watch = BuildWatch(),
+                        Components = BuildComponents(),
+                        Render = Render
+                    });
+
+                    private static VueProps BuildProvide()
+                    {
+                        VueProps theme = new ThemeOptions
+                        {
+                            Dark = true
+                        };
+
+                        return theme;
+                    }
+
+                    private static VueInjectRegistry<int> BuildInject()
+                    {
+                        VueInjectOptions<int> optionalCount = new VueInjectOptions<int>
+                        {
+                            From = CountKey,
+                            Default = 2
+                        };
+
+                        return new VueInjectRegistry<int>
+                        {
+                            ["count"] = CountKey,
+                            ["optionalCount"] = optionalCount
+                        };
+                    }
+
+                    private static VueComputedRegistry<int> BuildComputed()
+                    {
+                        Func<int> doubled = ReadDoubled;
+                        VueWritableComputedOptions<int> plusOne = new VueWritableComputedOptions<int>
+                        {
+                            Get = ReadPlusOne,
+                            Set = WritePlusOne
+                        };
+
+                        return new VueComputedRegistry<int>
+                        {
+                            ["doubled"] = doubled,
+                            ["plusOne"] = plusOne
+                        };
+                    }
+
+                    private static VueWatchRegistry<int> BuildWatch()
+                    {
+                        Action<int, int> countChanged = OnCountChanged;
+                        VueWatchHandlerOptions<int> totalChanged = new VueWatchHandlerOptions<int>
+                        {
+                            Immediate = true,
+                            Handler = OnTotalChanged
+                        };
+
+                        return new VueWatchRegistry<int>
+                        {
+                            ["count"] = countChanged,
+                            ["total"] = totalChanged
+                        };
+                    }
+
+                    private static VueComponentRegistry BuildComponents()
+                    {
+                        ECMAScript.VueContract.IVueComponent child = Vue3.DefineComponent(new VueComponentOptions
+                        {
+                            Name = "ChildView"
+                        });
+
+                        return new VueComponentRegistry
+                        {
+                            ["ChildView"] = child
+                        };
+                    }
+
+                    public static IVNode Render()
+                        => H("section", "ready");
+
+                    private static int ReadDoubled()
+                        => 2;
+
+                    private static int ReadPlusOne()
+                        => 3;
+
+                    private static void WritePlusOne(int value)
+                    {
+                    }
+
+                    private static void OnCountChanged(int value, int oldValue)
+                    {
+                    }
+
+                    private static void OnTotalChanged(int value, int oldValue)
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PanelModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PanelModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"import { defineComponent, h } from ""npm:vue@3"";
+let countKey = Symbol(""count"");
+export let component = defineComponent({
+  name: ""TypedPanel"",
+  provide: buildProvide(),
+  inject: buildInject(),
+  computed: buildComputed(),
+  watch: buildWatch(),
+  components: buildComponents(),
+  render: render
+});
+function buildProvide() {
+  let theme = { dark: true };
+  return theme;
+}
+function buildInject() {
+  let optionalCount = { from: countKey, default: 2 };
+  return { count: countKey, optionalCount: optionalCount };
+}
+function buildComputed() {
+  let doubled = readDoubled;
+  let plusOne = { get: readPlusOne, set: writePlusOne };
+  return { doubled: doubled, plusOne: plusOne };
+}
+function buildWatch() {
+  let countChanged = onCountChanged;
+  let totalChanged = { immediate: true, handler: onTotalChanged };
+  return { count: countChanged, total: totalChanged };
+}
+function buildComponents() {
+  let child = defineComponent({ name: ""ChildView"" });
+  return { ChildView: child };
+}
+export function render() {
+  return h(""section"", ""ready"");
+}
+function readDoubled() {
+  return 2;
+}
+function readPlusOne() {
+  return 3;
+}
+function writePlusOne(value) { }
+function onCountChanged(value, oldValue) { }
+function onTotalChanged(value, oldValue) { }
+", script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueComponentOptionsProvideFactory_GeneratesFunctionFormProvide()
     {
         var code = """

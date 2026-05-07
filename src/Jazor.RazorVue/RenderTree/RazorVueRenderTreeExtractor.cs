@@ -46,10 +46,10 @@ internal sealed class RazorVueRenderTreeExtractor
                     : null;
 
             if (operation is IBlockOperation block)
-                return new Parser(snapshot, context.Symbols, builderParameters).Parse(block.Operations);
+                return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters).Parse(block.Operations);
 
             if (operation is not null)
-                return new Parser(snapshot, context.Symbols, builderParameters).Parse([operation]);
+                return new Parser(snapshot, context.Compilation, context.Symbols, builderParameters).Parse([operation]);
         }
 
         return RazorVueRenderFragment.Empty;
@@ -58,19 +58,32 @@ internal sealed class RazorVueRenderTreeExtractor
     private sealed class Parser
     {
         private readonly RazorVueSemanticSnapshot _snapshot;
+        private readonly Compilation _compilation;
         private readonly RazorVueCompilationSymbols _symbols;
-        private readonly ImmutableHashSet<IParameterSymbol> _builderParameters;
+        private ImmutableHashSet<IParameterSymbol> _builderParameters;
+        private readonly HashSet<ILocalSymbol> _builderAliases;
+        private readonly HashSet<IMethodSymbol> _activeRenderHelperMethods;
         private readonly List<RazorVueRenderNode> _rootChildren = [];
         private readonly Stack<OpenFrame> _openFrames = new();
 
         public Parser(
             RazorVueSemanticSnapshot snapshot,
+            Compilation compilation,
             RazorVueCompilationSymbols symbols,
-            ImmutableHashSet<IParameterSymbol> builderParameters)
+            ImmutableHashSet<IParameterSymbol> builderParameters,
+            IEnumerable<ILocalSymbol>? builderAliases = null,
+            IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null)
         {
             _snapshot = snapshot;
+            _compilation = compilation;
             _symbols = symbols;
             _builderParameters = builderParameters;
+            _builderAliases = builderAliases is null
+                ? new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default)
+                : new HashSet<ILocalSymbol>(builderAliases, SymbolEqualityComparer.Default);
+            _activeRenderHelperMethods = activeRenderHelperMethods is null
+                ? new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default)
+                : new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
         }
 
         public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
@@ -116,7 +129,8 @@ internal sealed class RazorVueRenderTreeExtractor
                     foreach (var child in block.Operations)
                         ParseOperation(child);
                     break;
-                case IVariableDeclarationGroupOperation:
+                case IVariableDeclarationGroupOperation variableDeclarationGroup:
+                    RegisterBuilderAliases(variableDeclarationGroup);
                     break;
                 default:
                     break;
@@ -125,11 +139,31 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private void ParseExpressionStatement(IExpressionStatementOperation expressionStatement)
         {
-            if (Unwrap(expressionStatement.Operation) is not IInvocationOperation invocation)
+            var statementOperation = Unwrap(expressionStatement.Operation);
+            if (statementOperation is ISimpleAssignmentOperation assignment)
+            {
+                RegisterBuilderAliasAssignment(assignment);
+                return;
+            }
+
+            if (statementOperation is not IInvocationOperation invocation)
+                return;
+
+            if (TryParseCurrentComponentRenderHelperInvocation(invocation))
                 return;
 
             if (!IsRenderTreeBuilderInvocation(invocation))
+            {
+                if (IsRenderTreeBuilderMethod(invocation.TargetMethod))
+                {
+                    throw CreateUnsupportedBuilderCall(
+                        invocation,
+                        $"BuildRenderTree call '{GetBuilderCallDisplayName(invocation)}' uses a RenderTreeBuilder receiver that RazorVue cannot track in component '{_snapshot.Descriptor.FullName}'. " +
+                        "Use the active builder parameter or a direct local alias of that parameter.");
+                }
+
                 return;
+            }
 
             switch (invocation.TargetMethod.Name)
             {
@@ -432,8 +466,8 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return current switch
             {
-                IBlockOperation block => new Parser(_snapshot, _symbols, _builderParameters).Parse(block.Operations),
-                _ => new Parser(_snapshot, _symbols, _builderParameters).Parse([current])
+                IBlockOperation block => new Parser(_snapshot, _compilation, _symbols, _builderParameters, _builderAliases, _activeRenderHelperMethods).Parse(block.Operations),
+                _ => new Parser(_snapshot, _compilation, _symbols, _builderParameters, _builderAliases, _activeRenderHelperMethods).Parse([current])
             };
         }
 
@@ -468,8 +502,209 @@ internal sealed class RazorVueRenderTreeExtractor
             if (_builderParameters.Count == 0)
                 return false;
 
-            return invocation.Instance is IParameterReferenceOperation parameterReference &&
-                   _builderParameters.Contains(parameterReference.Parameter);
+            return IsKnownBuilderReference(invocation.Instance);
+        }
+
+        private bool TryParseCurrentComponentRenderHelperInvocation(IInvocationOperation invocation)
+        {
+            if (!IsCurrentComponentRenderHelperCandidate(invocation.TargetMethod, invocation.Instance))
+                return false;
+
+            if (!TryGetSupportedRenderHelperBuilderParameter(invocation.TargetMethod, out var builderParameter, out var failureMessage))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    failureMessage);
+            }
+
+            if (invocation.Arguments.Length != 1)
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must be invoked with exactly one RenderTreeBuilder argument in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            if (!IsKnownBuilderReference(invocation.Arguments[0].Value))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must receive the active RenderTreeBuilder parameter or a direct local alias in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            ParseRenderHelperBody(invocation, builderParameter);
+            return true;
+        }
+
+        private bool IsKnownBuilderReference(IOperation? operation)
+        {
+            return Unwrap(operation) switch
+            {
+                IParameterReferenceOperation parameterReference => _builderParameters.Contains(parameterReference.Parameter),
+                ILocalReferenceOperation localReference => _builderAliases.Contains(localReference.Local),
+                _ => false
+            };
+        }
+
+        private void RegisterBuilderAliases(IVariableDeclarationGroupOperation declarationGroup)
+        {
+            foreach (var declaration in declarationGroup.Declarations)
+            {
+                foreach (var declarator in declaration.Declarators)
+                    SetBuilderAlias(declarator.Symbol, declarator.Initializer?.Value);
+            }
+        }
+
+        private void RegisterBuilderAliasAssignment(ISimpleAssignmentOperation assignment)
+        {
+            if (assignment.Target is not ILocalReferenceOperation localReference)
+                return;
+
+            SetBuilderAlias(localReference.Local, assignment.Value);
+        }
+
+        private void SetBuilderAlias(ILocalSymbol localSymbol, IOperation? value)
+        {
+            if (IsRenderTreeBuilderType(localSymbol.Type) && IsKnownBuilderReference(value))
+            {
+                _builderAliases.Add(localSymbol);
+                return;
+            }
+
+            _builderAliases.Remove(localSymbol);
+        }
+
+        private bool IsCurrentComponentRenderHelperCandidate(IMethodSymbol method, IOperation? instance)
+        {
+            if (!ContainsRenderTreeBuilderParameter(method))
+                return false;
+
+            return IsCurrentComponentMethod(method, instance);
+        }
+
+        private bool TryGetSupportedRenderHelperBuilderParameter(
+            IMethodSymbol method,
+            out IParameterSymbol builderParameter,
+            out string failureMessage)
+        {
+            builderParameter = default!;
+            failureMessage = string.Empty;
+
+            if (!method.ReturnsVoid)
+            {
+                failureMessage =
+                    $"BuildRenderTree helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' must return void in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            if (method.IsGenericMethod)
+            {
+                failureMessage =
+                    $"BuildRenderTree helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' must not be generic in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            var builderParameters = method.Parameters
+                .Where(static parameter => IsRenderTreeBuilderType(parameter.Type))
+                .ToArray();
+
+            if (builderParameters.Length != 1)
+            {
+                failureMessage =
+                    $"BuildRenderTree helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' must declare exactly one RenderTreeBuilder parameter in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            if (method.Parameters.Length != 1)
+            {
+                failureMessage =
+                    $"BuildRenderTree helper method '{method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}' must not declare extra non-RenderTreeBuilder parameters in component '{_snapshot.Descriptor.FullName}'.";
+                return false;
+            }
+
+            builderParameter = builderParameters[0];
+            return true;
+        }
+
+        private void ParseRenderHelperBody(IInvocationOperation invocation, IParameterSymbol builderParameter)
+        {
+            if (!_activeRenderHelperMethods.Add(invocation.TargetMethod))
+            {
+                throw CreateUnsupportedBuilderCall(
+                    invocation,
+                    $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' is recursive; RazorVue does not support recursive render helpers in component '{_snapshot.Descriptor.FullName}'.");
+            }
+
+            try
+            {
+                var operations = GetRenderHelperOperations(invocation);
+                ExecuteWithBuilderScope(
+                    ImmutableHashSet.Create<IParameterSymbol>(SymbolEqualityComparer.Default, builderParameter),
+                    () =>
+                    {
+                        foreach (var operation in operations)
+                            ParseOperation(operation);
+                    });
+            }
+            finally
+            {
+                _activeRenderHelperMethods.Remove(invocation.TargetMethod);
+            }
+        }
+
+        private ImmutableArray<IOperation> GetRenderHelperOperations(IInvocationOperation invocation)
+        {
+            foreach (var syntaxReference in invocation.TargetMethod.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxReference.GetSyntax();
+                var semanticModel = _compilation.GetSemanticModel(syntax.SyntaxTree);
+                var operation = syntax switch
+                {
+                    MethodDeclarationSyntax methodDeclaration => methodDeclaration.Body is not null
+                        ? semanticModel.GetOperation(methodDeclaration.Body)
+                        : methodDeclaration.ExpressionBody is not null
+                            ? semanticModel.GetOperation(methodDeclaration.ExpressionBody.Expression)
+                            : null,
+                    LocalFunctionStatementSyntax localFunction => localFunction.Body is not null
+                        ? semanticModel.GetOperation(localFunction.Body)
+                        : localFunction.ExpressionBody is not null
+                            ? semanticModel.GetOperation(localFunction.ExpressionBody.Expression)
+                            : null,
+                    _ => null
+                };
+
+                if (operation is IBlockOperation block)
+                    return block.Operations;
+
+                if (operation is not null)
+                    return ImmutableArray.Create(operation);
+            }
+
+            throw CreateUnsupportedBuilderCall(
+                invocation,
+                $"BuildRenderTree helper method '{GetBuilderCallDisplayName(invocation)}' must be source-authored with an analyzable body in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        private void ExecuteWithBuilderScope(
+            ImmutableHashSet<IParameterSymbol> builderParameters,
+            Action action)
+        {
+            var previousBuilderParameters = _builderParameters;
+            var previousBuilderAliases = _builderAliases.ToArray();
+
+            _builderParameters = builderParameters;
+            _builderAliases.Clear();
+
+            try
+            {
+                action();
+            }
+            finally
+            {
+                _builderParameters = previousBuilderParameters;
+                _builderAliases.Clear();
+                foreach (var alias in previousBuilderAliases)
+                    _builderAliases.Add(alias);
+            }
         }
 
         private bool TryResolveSlotOutlet(IOperation operation, out string slotName)
@@ -494,6 +729,29 @@ internal sealed class RazorVueRenderTreeExtractor
             => typeSymbol is INamedTypeSymbol namedType &&
                ((_symbols.RenderFragment is not null && SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, _symbols.RenderFragment)) ||
                 (_symbols.RenderFragmentOfT is not null && SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, _symbols.RenderFragmentOfT)));
+
+        private bool IsCurrentComponentMethod(IMethodSymbol method, IOperation? instance)
+        {
+            for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(method.ContainingType, current))
+                    return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
+            }
+
+            return false;
+        }
+
+        private static bool ContainsRenderTreeBuilderParameter(IMethodSymbol method)
+            => method.Parameters.Any(static parameter => IsRenderTreeBuilderType(parameter.Type));
+
+        private static bool IsRenderTreeBuilderMethod(IMethodSymbol method)
+            => IsRenderTreeBuilderType(method.ContainingType);
+
+        private static bool IsRenderTreeBuilderType(ITypeSymbol? typeSymbol)
+            => string.Equals(
+                typeSymbol?.ToDisplayString(),
+                "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
+                StringComparison.Ordinal);
 
         private bool IsCurrentComponentMember(ISymbol symbol, IOperation? instance)
         {
@@ -742,9 +1000,9 @@ internal sealed class RazorVueRenderTreeExtractor
                 return RazorVueRenderFragment.Empty;
 
             if (body is IBlockOperation block)
-                return new Parser(_snapshot, _symbols, builderParameters).Parse(block.Operations);
+                return new Parser(_snapshot, _compilation, _symbols, builderParameters, activeRenderHelperMethods: _activeRenderHelperMethods).Parse(block.Operations);
 
-            return new Parser(_snapshot, _symbols, builderParameters).Parse([body]);
+            return new Parser(_snapshot, _compilation, _symbols, builderParameters, activeRenderHelperMethods: _activeRenderHelperMethods).Parse([body]);
         }
 
         private static bool TryGetAnonymousFunction(

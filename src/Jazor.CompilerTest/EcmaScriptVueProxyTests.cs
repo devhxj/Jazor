@@ -1921,6 +1921,76 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
+    public void Vue_AuthoringSurface_PrefersDirectTypedAssignments_AndUsesHelpersOnlyForLanguageBoundaries()
+    {
+        var computedUnionType = typeof(VueComputedValue<int>);
+        var watchDeclarationType = typeof(VueWatchDeclaration<int>);
+        var injectFromType = typeof(VueInjectFrom<int>);
+        var propDeclarationType = typeof(VuePropDeclaration<int>);
+        var computedImplicitSources = computedUnionType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VueComputedValue<int>))
+            .Select(static method => method.GetParameters().Single().ParameterType)
+            .ToArray();
+        var watchImplicitSources = watchDeclarationType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VueWatchDeclaration<int>))
+            .Select(static method => method.GetParameters().Single().ParameterType)
+            .ToArray();
+        var injectImplicitSources = injectFromType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VueInjectFrom<int>))
+            .Select(static method => method.GetParameters().Single().ParameterType)
+            .ToArray();
+        var propImplicitSources = propDeclarationType
+            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VuePropDeclaration<int>))
+            .Select(static method => method.GetParameters().Single().ParameterType)
+            .ToArray();
+        var componentRegistryIndexer = typeof(VueComponentRegistry).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var eventHandlersIndexer = typeof(VueEventHandlers).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
+        var typedEventHandlersIndexer = typeof(VueEventHandlers<>)
+            .MakeGenericType(typeof(MouseEvent))
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Single(static property =>
+                property.Name == "Item" &&
+                property.GetIndexParameters().Select(static parameter => parameter.ParameterType).SequenceEqual(new[] { typeof(string) }) &&
+                property.PropertyType.UnwrapNullable() == typeof(VueEventHandler<MouseEvent>));
+
+        CollectionAssert.AreEquivalent(
+            new[] { typeof(Func<int>), typeof(VueWritableComputedOptions<int>) },
+            computedImplicitSources);
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                typeof(string),
+                typeof(Action<int, int>),
+                typeof(VueWatchCleanupCallback<int>),
+                typeof(VueWatchHandlerOptions<int>),
+                typeof(VueWatchCleanupHandlerOptions<int>),
+                typeof(VueWatchNamedHandlerOptions),
+                typeof(VueWatchEntries<int>)
+            },
+            watchImplicitSources);
+        CollectionAssert.AreEquivalent(
+            new[] { typeof(string), typeof(VueInjectionKey<int>), typeof(Symbol) },
+            injectImplicitSources);
+        CollectionAssert.AreEquivalent(
+            new[] { typeof(VuePropType), typeof(VuePropType[]), typeof(VuePropOptions<int>) },
+            propImplicitSources);
+
+        Assert.IsNotNull(componentRegistryIndexer);
+        Assert.IsNotNull(eventHandlersIndexer);
+        Assert.IsNotNull(typedEventHandlersIndexer);
+        Assert.AreEqual(typeof(ECMAScript.VueContract.IVueComponent), componentRegistryIndexer!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(Action), eventHandlersIndexer!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VueEventHandler<MouseEvent>), typedEventHandlersIndexer!.PropertyType.UnwrapNullable());
+        CollectionAssert.AreEqual(new[] { typeof(string) }, componentRegistryIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        CollectionAssert.AreEqual(new[] { typeof(string) }, eventHandlersIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+        CollectionAssert.AreEqual(new[] { typeof(string) }, typedEventHandlersIndexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
+    }
+
+    [TestMethod]
     public void Vue_AppConfig_ExposeTypedConfigurationSurface()
     {
         var appConfigType = typeof(VueAppConfig);

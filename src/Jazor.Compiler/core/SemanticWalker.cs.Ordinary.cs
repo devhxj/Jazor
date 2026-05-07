@@ -1444,7 +1444,7 @@ public partial class SemanticWalker
 	public override Node? VisitParenthesized(IParenthesizedOperation operation, SenseArgument argument)
 	{
 		var exp = Translate<Expression>(operation.Operand, argument);
-		return new SequenceExpression(NodeList.From(exp));
+		return new ParenthesizedExpression(exp);
 	}
 
 	/// <summary>

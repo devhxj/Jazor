@@ -387,6 +387,9 @@ internal sealed partial class RazorVueExpressionEmitter
             if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
+            if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
+                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
+
             _requiredSetupMethods.Add(invocation.TargetMethod);
             return ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
                    string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
@@ -427,6 +430,9 @@ internal sealed partial class RazorVueExpressionEmitter
             if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
+            if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
+                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
+
             _requiredSetupMethods.Add(invocation.TargetMethod);
             expression = ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
                          string.Join(", ", invocation.Arguments.Select(item => EmitExpression(item.Value, argument))) + ")";
@@ -455,6 +461,9 @@ internal sealed partial class RazorVueExpressionEmitter
         if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
         {
             if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
+                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
+
+            if (IsUnsupportedSetupHelperMethod(invocation.TargetMethod))
                 throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
 
             _requiredSetupMethods.Add(invocation.TargetMethod);
@@ -496,12 +505,34 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private static bool RequiresParenthesizedMemberTarget(IOperation instance)
-        => Unwrap(instance) is IBinaryOperation or IConditionalOperation;
+    {
+        var current = instance;
+        while (current is IParenthesizedOperation parenthesized)
+            current = parenthesized.Operand;
+
+        return Unwrap(current) is IBinaryOperation or IConditionalOperation;
+    }
 
     private static string GetEmittedMethodName(IMethodSymbol method)
         => method.Name == "ToString" && method.Parameters.Length == 0 && method.MethodKind == MethodKind.Ordinary
             ? "toString"
             : method.Name;
+
+    private static bool IsUnsupportedSetupHelperMethod(IMethodSymbol method)
+    {
+        if (method.IsAsync)
+            return true;
+
+        var returnType = method.ReturnType;
+        if (returnType is not INamedTypeSymbol namedType)
+            return false;
+
+        var displayName = namedType.OriginalDefinition.ToDisplayString();
+        return string.Equals(displayName, "System.Threading.Tasks.Task", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Threading.Tasks.Task<TResult>", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Threading.Tasks.ValueTask", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Threading.Tasks.ValueTask<TResult>", StringComparison.Ordinal);
+    }
 
     private RazorVueCompilationIssueException CreateUnsupportedSetupLogicException(IMethodSymbol method)
         => CreateUnsupportedSetupLogicException(
