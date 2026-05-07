@@ -1067,10 +1067,53 @@ public sealed class EcmaScriptVueRouteProxyTests
     public void VueRoute_ReactiveRefContracts_PreserveOfficialComputedAndShallowRefSemantics()
     {
         var vue3Type = typeof(Vue3);
-        var computedGetter = vue3Type.GetMethod(nameof(Vue3.Computed), BindingFlags.Public | BindingFlags.Static, binder: null, types: new[] { typeof(Func<bool>) }, modifiers: null);
-        var shallowRef = vue3Type.GetMethod(nameof(Vue3.ShallowRef), BindingFlags.Public | BindingFlags.Static)?.MakeGenericMethod(typeof(RouteLocationNormalizedLoaded));
-        var triggerRef = vue3Type.GetMethod(nameof(Vue3.TriggerRef), BindingFlags.Public | BindingFlags.Static)?.MakeGenericMethod(typeof(RouteLocationNormalizedLoaded));
-        var toRefGetter = vue3Type.GetMethod(nameof(Vue3.ToRef), BindingFlags.Public | BindingFlags.Static, binder: null, types: new[] { typeof(Func<RouteLocationAsRelative>) }, modifiers: null);
+        var computedGetter = RequiredStatic(
+                vue3Type.GetMethods(BindingFlags.Public | BindingFlags.Static),
+                nameof(Vue3.Computed),
+                static method =>
+                    method.IsGenericMethodDefinition &&
+                    method.GetGenericArguments().Length == 1 &&
+                    method.ReturnType.IsGenericType &&
+                    method.ReturnType.GetGenericTypeDefinition() == typeof(Vue3.VueComputedRef<>) &&
+                    method.GetParameters() is var parameters &&
+                    parameters.Length == 1 &&
+                    parameters[0].ParameterType.IsGenericType &&
+                    parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<>))
+            .MakeGenericMethod(typeof(bool));
+        var shallowRef = RequiredStatic(
+                vue3Type.GetMethods(BindingFlags.Public | BindingFlags.Static),
+                nameof(Vue3.ShallowRef),
+                static method =>
+                    method.IsGenericMethodDefinition &&
+                    method.GetGenericArguments().Length == 1 &&
+                    method.GetParameters() is var parameters &&
+                    parameters.Length == 1 &&
+                    parameters[0].ParameterType.IsGenericParameter)
+            .MakeGenericMethod(typeof(RouteLocationNormalizedLoaded));
+        var triggerRef = RequiredStatic(
+                vue3Type.GetMethods(BindingFlags.Public | BindingFlags.Static),
+                nameof(Vue3.TriggerRef),
+                static method =>
+                    method.IsGenericMethodDefinition &&
+                    method.GetGenericArguments().Length == 1 &&
+                    method.GetParameters() is var parameters &&
+                    parameters.Length == 1 &&
+                    parameters[0].ParameterType.IsGenericType &&
+                    parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Vue3.VueShallowRef<>))
+            .MakeGenericMethod(typeof(RouteLocationNormalizedLoaded));
+        var toRefGetter = RequiredStatic(
+                vue3Type.GetMethods(BindingFlags.Public | BindingFlags.Static),
+                nameof(Vue3.ToRef),
+                static method =>
+                    method.IsGenericMethodDefinition &&
+                    method.GetGenericArguments().Length == 1 &&
+                    method.ReturnType.IsGenericType &&
+                    method.ReturnType.GetGenericTypeDefinition() == typeof(Vue3.VueComputedRef<>) &&
+                    method.GetParameters() is var parameters &&
+                    parameters.Length == 1 &&
+                    parameters[0].ParameterType.IsGenericType &&
+                    parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<>))
+            .MakeGenericMethod(typeof(RouteLocationAsRelative));
         var useLinkHref = typeof(UseLinkReturn).GetProperty(nameof(UseLinkReturn.Href), BindingFlags.Public | BindingFlags.Instance);
         var useLinkIsActive = typeof(UseLinkReturn).GetProperty(nameof(UseLinkReturn.IsActive), BindingFlags.Public | BindingFlags.Instance);
         var useLinkIsExactActive = typeof(UseLinkReturn).GetProperty(nameof(UseLinkReturn.IsExactActive), BindingFlags.Public | BindingFlags.Instance);

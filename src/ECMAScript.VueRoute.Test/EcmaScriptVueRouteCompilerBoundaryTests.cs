@@ -2574,6 +2574,97 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_InjectionAndReactiveContracts_Compile_WithTypedInjectionKeysAndLoadRouteLocation()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static string Build(
+                    Router router,
+                    RouteLocation routeLocation,
+                    RouteLocationNormalized normalized,
+                    VueShallowRef<RouteLocationNormalizedLoaded> routeRef)
+                {
+                    VueComputedRef<RouteRecordNormalized?> matched = Computed(() => normalized.Matched[0]);
+
+                    Provide(VueRoute.RouterKey, router);
+                    Provide(VueRoute.RouteLocationKey, UseRoute());
+                    Provide(VueRoute.RouterViewLocationKey, routeRef);
+                    Provide(VueRoute.MatchedRouteKey, matched);
+                    Provide(VueRoute.ViewDepthKey, 1);
+
+                    var injectedRouter = Inject(VueRoute.RouterKey)!;
+                    var injectedRoute = Inject(VueRoute.RouteLocationKey)!;
+                    var injectedRouteRef = Inject(VueRoute.RouterViewLocationKey)!;
+                    var injectedMatched = Inject(VueRoute.MatchedRouteKey)!;
+                    var injectedDepth = Inject(VueRoute.ViewDepthKey)!;
+
+                    var loadedFromLocation = LoadRouteLocation(routeLocation);
+                    var loadedFromNormalized = LoadRouteLocation(normalized);
+                    var link = UseLink(new UseLinkOptions
+                    {
+                        To = ToRef(() => new RouteLocationAsRelative
+                        {
+                            Name = injectedRoute.Name!
+                        }),
+                        Replace = Computed(() => true)
+                    });
+
+                    TriggerRef(routeRef);
+                    return injectedRouter.CurrentRoute.Value.Path
+                        + injectedRoute.Path
+                        + injectedRouteRef.Value.Path
+                        + injectedMatched.Value!.Path
+                        + injectedDepth.AsNumber!.ToString()
+                        + link.Href.Value
+                        + link.Route.Value.Href
+                        + loadedFromLocation.ToString()
+                        + loadedFromNormalized.ToString();
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let matched = computed(() => {");
+        StringAssert.Contains(script, "provide(routerKey, router);");
+        StringAssert.Contains(script, "provide(routeLocationKey, useRoute());");
+        StringAssert.Contains(script, "provide(routerViewLocationKey, routeRef);");
+        StringAssert.Contains(script, "provide(matchedRouteKey, matched);");
+        StringAssert.Contains(script, "provide(viewDepthKey, 1);");
+        StringAssert.Contains(script, "let injectedRouter = inject(routerKey);");
+        StringAssert.Contains(script, "let injectedRoute = inject(routeLocationKey);");
+        StringAssert.Contains(script, "let injectedRouteRef = inject(routerViewLocationKey);");
+        StringAssert.Contains(script, "let injectedMatched = inject(matchedRouteKey);");
+        StringAssert.Contains(script, "let injectedDepth = inject(viewDepthKey);");
+        StringAssert.Contains(script, "let loadedFromLocation = loadRouteLocation(routeLocation);");
+        StringAssert.Contains(script, "let loadedFromNormalized = loadRouteLocation(normalized);");
+        StringAssert.Contains(script, "let link = useLink({");
+        StringAssert.Contains(script, "triggerRef(routeRef);");
+        StringAssert.Contains(script, "injectedRouter.currentRoute.value.path");
+        StringAssert.Contains(script, "injectedRoute.path");
+        StringAssert.Contains(script, "injectedRouteRef.value.path");
+        StringAssert.Contains(script, "injectedMatched.value.path");
+        StringAssert.Contains(script, "injectedDepth.toString()");
+        StringAssert.Contains(script, "link.href.value");
+        StringAssert.Contains(script, "link.route.value.href");
+    }
+
+    [TestMethod]
     public async Task VueRoute_HistoryState_Compile_WithDirectTypedArrayAuthoring_ForRecursiveStateValues()
     {
         var code = """
