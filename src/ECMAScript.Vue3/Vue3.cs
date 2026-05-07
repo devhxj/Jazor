@@ -471,19 +471,4 @@ public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TVal
 [Description("@#")]
 public static partial class Vue3
 {
-	/// <summary>
-	/// RazorVue/Vue3 authoring component contract.
-	/// Components are expected to inherit <c>ComponentBase</c> and implement this marker.
-	/// </summary>
-	public interface IVueComponent : IUIComponent
-	{
-	}
-
-	/// <summary>
-	/// Marker for external Vue library component stubs that participate in
-	/// descriptor/registry flows without being treated as ordinary user components.
-	/// </summary>
-	public interface IVueLibraryComponent : IVueComponent
-	{
-	}
 }

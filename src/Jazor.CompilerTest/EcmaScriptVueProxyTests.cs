@@ -1127,7 +1127,7 @@ public sealed class EcmaScriptVueProxyTests
         RequiredStatic(staticMethods, nameof(Vue3.TriggerRef), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType == typeof(void) &&
-            method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IVueRef<>));
+            method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueShallowRef<>));
         RequiredStatic(staticMethods, nameof(Vue3.ShallowReactive), static method =>
             method.IsGenericMethodDefinition &&
             method.ReturnType.IsGenericParameter);
@@ -1598,7 +1598,7 @@ public sealed class EcmaScriptVueProxyTests
 
         RequiredStatic(staticMethods, nameof(Vue3.Computed), static method =>
             method.IsGenericMethodDefinition &&
-            method.ReturnType.GetGenericTypeDefinition() == typeof(IVueRef<>) &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(VueWritableComputedRef<>) &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueWritableComputedOptions<>));
         RequiredStatic(staticMethods, nameof(Vue3.Watch), static method =>
             method.IsGenericMethodDefinition &&
@@ -1696,7 +1696,7 @@ public sealed class EcmaScriptVueProxyTests
             method.IsGenericMethodDefinition &&
             method.GetGenericArguments().Length == 1 &&
             method.ReturnType.IsGenericType &&
-            method.ReturnType.GetGenericTypeDefinition() == typeof(VueReadonlyRef<>) &&
+            method.ReturnType.GetGenericTypeDefinition() == typeof(VueComputedRef<>) &&
             method.GetParameters().Length == 1 &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(Func<>));

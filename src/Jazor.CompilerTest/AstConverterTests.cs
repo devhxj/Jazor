@@ -42,6 +42,12 @@ public sealed class AstConverterTests
             references.AddRange(additionalReferences);
 
         if (ContainsVue3Reference(references) &&
+            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
+        {
+            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location));
+        }
+
+        if (ContainsVue3Reference(references) &&
             !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
             references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location));
