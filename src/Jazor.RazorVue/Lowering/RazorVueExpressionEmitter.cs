@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Acornima;
+using Acornima.Ast;
+using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
@@ -38,6 +41,9 @@ internal sealed partial class RazorVueExpressionEmitter
     private readonly ImmutableDictionary<string, ImmutableArray<VueLogicMethodDescriptor>> _logicMethodsByName;
     private readonly HashSet<IFieldSymbol> _requiredSetupFields;
     private readonly HashSet<IMethodSymbol> _requiredSetupMethods;
+    private readonly SenseArgument _compilerArgument;
+    private readonly SemanticWalker _semanticWalker;
+    private readonly List<RazorVueCompilerImportBinding> _compilerImports;
 
     public RazorVueExpressionEmitter(
         RazorVueSemanticSnapshot snapshot,
@@ -78,6 +84,12 @@ internal sealed partial class RazorVueExpressionEmitter
                 StringComparer.Ordinal);
         _requiredSetupFields = new HashSet<IFieldSymbol>(SymbolEqualityComparer.Default);
         _requiredSetupMethods = new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+        _compilerArgument = new SenseArgument(Sense.Any, UseImportAliases: true);
+        _semanticWalker = new SemanticWalker(snapshot.ComponentSymbol, moduleDeclaredNames: new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default))
+        {
+            Host = new RazorVueCompilerHost(this)
+        };
+        _compilerImports = new List<RazorVueCompilerImportBinding>();
     }
 
     internal static LifecyclePayloadEmission EmitLifecyclePayload(IMethodSymbol method, IOperation operation, bool allowFirstRenderPayload)
@@ -119,6 +131,149 @@ internal sealed partial class RazorVueExpressionEmitter
         var builder = new StringBuilder();
         AppendFragmentShape(builder, fragment);
         return builder.ToString();
+    }
+
+    internal ImmutableArray<RazorVueCompilerImportBinding> FlushCompilerImports()
+    {
+        foreach (var pair in _compilerArgument.FlushImportSpecifiers())
+        {
+            foreach (var specifier in pair.Value)
+            {
+                switch (specifier)
+                {
+                    case ImportDefaultSpecifier defaultSpecifier:
+                        _compilerImports.Add(new RazorVueCompilerImportBinding(
+                            pair.Key,
+                            RazorVueCompilerImportKind.Default,
+                            defaultSpecifier.Local.Name,
+                            ImportedName: null));
+                        break;
+                    case ImportNamespaceSpecifier namespaceSpecifier:
+                        _compilerImports.Add(new RazorVueCompilerImportBinding(
+                            pair.Key,
+                            RazorVueCompilerImportKind.Namespace,
+                            namespaceSpecifier.Local.Name,
+                            ImportedName: null));
+                        break;
+                    case ImportSpecifier namedSpecifier:
+                        var importedName = namedSpecifier.Imported.ToECMAScript();
+                        var localName = namedSpecifier.Local.Name;
+                        _compilerImports.Add(new RazorVueCompilerImportBinding(
+                            pair.Key,
+                            RazorVueCompilerImportKind.Named,
+                            localName,
+                            ImportedName: importedName));
+                        break;
+                }
+            }
+        }
+
+        return _compilerImports.Distinct().ToImmutableArray();
+    }
+
+    private string EmitCompilerLoweredExpression(IOperation operation, SenseArgument? compilerArgument = null)
+    {
+        var argument = compilerArgument ?? _compilerArgument;
+
+        if (TryEmitCompilerOwnedExpression(operation, argument, out var directExpression))
+            return NormalizeTopLevelExpressionText(operation, directExpression);
+
+        var node = _semanticWalker.Visit(operation, argument);
+        if (node is not Expression expression)
+        {
+            throw new NotSupportedException(
+                $"RazorVue render currently does not support expression '{operation.Kind}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        return NormalizeTopLevelExpressionText(operation, MaterializeCompilerExpression(expression, argument));
+    }
+
+    private string MaterializeCompilerExpression(Expression expression, SenseArgument argument)
+    {
+        if (!argument.HasVarDeclarator)
+            return expression.ToKnRECMAScript();
+
+        var statements = new List<Statement>();
+        var declarators = argument.FlushVarDeclarator();
+        if (declarators.Count > 0)
+            statements.Add(new VariableDeclaration(VariableDeclarationKind.Let, declarators));
+        statements.Add(new ReturnStatement(expression));
+
+        var functionBody = new FunctionBody(NodeList.From(statements), strict: true);
+        var arrowFunction = new ArrowFunctionExpression(
+            NodeList.From<Node>(),
+            functionBody,
+            expression: false,
+            async: false);
+        return new CallExpression(arrowFunction, NodeList.Empty<Expression>(), optional: false).ToKnRECMAScript();
+    }
+
+    private bool TryEmitCompilerOwnedExpression(IOperation operation, SenseArgument argument, out string expression)
+    {
+        expression = string.Empty;
+        var current = Unwrap(operation);
+        if (current is null)
+            return false;
+
+        if (current is IInvocationOperation invocation && IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
+            return false;
+
+        if (current is IMethodReferenceOperation methodReference && IsCurrentComponentMember(methodReference.Method, methodReference.Instance))
+            return false;
+
+        if (current is IFieldReferenceOperation fieldReference && IsCurrentComponentMember(fieldReference.Field, fieldReference.Instance))
+            return false;
+
+        if (current is IPropertyReferenceOperation propertyReference &&
+            IsCurrentComponentMember(propertyReference.Property, propertyReference.Instance) &&
+            !_propsByPublicName.ContainsKey(propertyReference.Property.Name) &&
+            !_slotsByPublicName.ContainsKey(propertyReference.Property.Name) &&
+            !_emitsByRazorAlias.ContainsKey(propertyReference.Property.Name))
+        {
+            return false;
+        }
+
+        if (current is IInvocationOperation invocationOperation &&
+            TryRewriteInvocation(invocationOperation, argument, out expression))
+        {
+            return true;
+        }
+
+        if (current is IPropertyReferenceOperation property &&
+            TryRewritePropertyReference(property, argument, out expression))
+        {
+            return true;
+        }
+
+        if (current is IFieldReferenceOperation field &&
+            TryRewriteFieldReference(field, argument, out expression))
+        {
+            return true;
+        }
+
+        if (current is IMethodReferenceOperation methodReferenceOperation &&
+            TryRewriteMethodReference(methodReferenceOperation, argument, out expression))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static string NormalizeTopLevelExpressionText(IOperation operation, string expressionText)
+    {
+        var current = Unwrap(operation);
+        if (current is IBinaryOperation or IConditionalOperation)
+            return "(" + expressionText + ")";
+
+        return expressionText;
+    }
+
+    private static Expression ParseJavaScriptExpression(string expressionText)
+    {
+        var module = new Parser().ParseModule("const __j = " + expressionText + ";");
+        var declaration = (VariableDeclaration)module.Body[0];
+        return (Expression)declaration.Declarations[0].Init!;
     }
 
     public IEnumerable<RazorVueSourceOrigin> CollectOrigins(RazorVueRenderFragment fragment)
@@ -180,5 +335,54 @@ internal sealed partial class RazorVueExpressionEmitter
                     yield return childOrigin;
                 break;
         }
+    }
+
+    private sealed class RazorVueCompilerHost : SemanticWalkerHost
+    {
+        private readonly RazorVueExpressionEmitter _emitter;
+
+        public RazorVueCompilerHost(RazorVueExpressionEmitter emitter)
+        {
+            _emitter = emitter ?? throw new ArgumentNullException(nameof(emitter));
+        }
+
+        public override Expression? RewriteInvocationPreorder(IInvocationOperation operation, SenseArgument argument)
+            => _emitter.TryRewriteInvocation(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteFieldReference(
+            IFieldReferenceOperation operation,
+            SenseArgument argument,
+            Expression? instance)
+            => _emitter.TryRewriteFieldReference(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewritePropertyReference(
+            IPropertyReferenceOperation operation,
+            SenseArgument argument,
+            Expression? instance,
+            IReadOnlyList<Expression> arguments)
+            => _emitter.TryRewritePropertyReference(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteMethodReference(
+            IMethodReferenceOperation operation,
+            SenseArgument argument,
+            Expression? instance)
+            => _emitter.TryRewriteMethodReference(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
+
+        public override Expression? RewriteInvocation(
+            IInvocationOperation operation,
+            SenseArgument argument,
+            Expression? instance,
+            IReadOnlyList<Expression> arguments)
+            => _emitter.TryRewriteInvocation(operation, argument, out var expression)
+                ? ParseJavaScriptExpression(expression)
+                : null;
     }
 }

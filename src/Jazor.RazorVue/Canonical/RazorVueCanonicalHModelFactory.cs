@@ -43,11 +43,12 @@ internal sealed class RazorVueCanonicalHModelFactory
             throw new ArgumentNullException(nameof(snapshot));
 
         var resolvedComponents = ResolveComponents(context, snapshot, renderTree);
-        var imports = BuildImports(resolvedComponents);
-        var styles = BuildStyles(snapshot.Descriptor, resolvedComponents);
-        var pluginRequirements = BuildPluginRequirements(snapshot.Descriptor, resolvedComponents);
         var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
         var template = CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, renderTree);
+        var compilerImports = expressionEmitter.FlushCompilerImports();
+        var imports = BuildImports(resolvedComponents, compilerImports);
+        var styles = BuildStyles(snapshot.Descriptor, resolvedComponents);
+        var pluginRequirements = BuildPluginRequirements(snapshot.Descriptor, resolvedComponents);
         var sourceOrigins = snapshot.Origins.AddRange(expressionEmitter.CollectOrigins(renderTree));
         var hints = BuildHints(snapshot, renderTree);
 
@@ -57,6 +58,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             RelativeComponentPath: NormalizeRelativePath(snapshot.Descriptor.ImportSpecifier),
             Descriptor: snapshot.Descriptor,
             Imports: imports,
+            CompilerImports: compilerImports,
             Styles: styles,
             PluginRequirements: pluginRequirements,
             Hints: hints,
@@ -796,8 +798,10 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueRenderFragment renderTree)
         => RazorVueArtifactFactory.ResolveComponentsForCanonicalization(context, snapshot, renderTree);
 
-    private static ImmutableArray<string> BuildImports(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
-        => RazorVueArtifactFactory.BuildImportsForCanonicalization(resolvedComponents);
+    private static ImmutableArray<string> BuildImports(
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
+        => RazorVueArtifactFactory.BuildImportsForCanonicalization(resolvedComponents, compilerImports);
 
     private static ImmutableArray<string> BuildStyles(
         VueComponentDescriptor descriptor,

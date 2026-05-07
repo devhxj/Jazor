@@ -6,8 +6,10 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueArtifactFactory
 {
-    internal static ImmutableArray<string> BuildImportsForCanonicalization(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
-        => BuildImports(resolvedComponents);
+    internal static ImmutableArray<string> BuildImportsForCanonicalization(
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
+        => BuildImports(resolvedComponents, compilerImports);
 
     internal static ImmutableArray<string> BuildStylesForCanonicalization(
         VueComponentDescriptor descriptor,
@@ -22,18 +24,22 @@ internal sealed partial class RazorVueArtifactFactory
     internal static string NormalizeRelativePathForCanonicalization(string relativePath)
         => NormalizeRelativePath(relativePath);
 
-    private static ImmutableArray<string> BuildImports(ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+    private static ImmutableArray<string> BuildImports(
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
     {
-        if (resolvedComponents.IsEmpty)
-            return ImmutableArray.Create("vue");
+        var builder = ImmutableArray.CreateBuilder<string>();
+        builder.Add("vue");
+        builder.AddRange(RazorVueCompilerImportFormatter.CollectImportSources(compilerImports));
 
         // Host-facing artifacts should carry declared dependency specifiers rather
         // than local alias names generated during lowering.
-        return ImmutableArray.Create("vue").AddRange(
+        builder.AddRange(
             resolvedComponents.Values
                 .Select(static descriptor => descriptor.ImportSpecifier)
                 .Where(static importSpecifier => !string.Equals(importSpecifier, "vue", StringComparison.Ordinal))
                 .Distinct(StringComparer.Ordinal));
+        return builder.Distinct(StringComparer.Ordinal).ToImmutableArray();
     }
 
     private static ImmutableArray<string> BuildStyles(

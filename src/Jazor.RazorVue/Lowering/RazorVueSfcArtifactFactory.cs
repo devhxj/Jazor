@@ -566,6 +566,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         if (vueImports.Length > 0)
             builder.Append("import { ").Append(string.Join(", ", vueImports)).AppendLine(" } from \"vue\";");
 
+        RazorVueCompilerImportFormatter.AppendImportStatements(builder, semantic.CompilerImports);
         AppendComponentImports(builder, semantic);
 
         if (builder.Length > 0)

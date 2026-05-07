@@ -297,6 +297,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
             RelativeComponentPath: "components/broken-card.mjs",
             Descriptor: descriptor,
             Imports: ImmutableArray<string>.Empty,
+            CompilerImports: ImmutableArray<RazorVueCompilerImportBinding>.Empty,
             Styles: ImmutableArray<string>.Empty,
             PluginRequirements: ImmutableArray<string>.Empty,
             Hints: new VueRuntimeHints(true, false, true, false, false, false),

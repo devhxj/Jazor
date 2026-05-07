@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
+using Jazor.RazorVue;
 
 namespace Jazor.RazorVue.Canonical;
 
@@ -11,6 +12,7 @@ internal sealed record RazorVueCanonicalHComponentModel(
     string RelativeComponentPath,
     VueComponentDescriptor Descriptor,
     ImmutableArray<string> Imports,
+    ImmutableArray<RazorVueCompilerImportBinding> CompilerImports,
     ImmutableArray<string> Styles,
     ImmutableArray<string> PluginRequirements,
     VueRuntimeHints Hints,

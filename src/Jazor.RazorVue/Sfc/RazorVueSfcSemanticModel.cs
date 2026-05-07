@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue;
 
 namespace Jazor.RazorVue.Sfc;
 
@@ -11,6 +12,7 @@ internal sealed record RazorVueSfcSemanticModel(
     string RelativeSfcPath,
     VueComponentDescriptor Descriptor,
     ImmutableArray<string> Imports,
+    ImmutableArray<RazorVueCompilerImportBinding> CompilerImports,
     ImmutableArray<RazorVueSfcComponentImport> ComponentImports,
     ImmutableArray<string> Styles,
     ImmutableArray<string> PluginRequirements,

@@ -16,27 +16,33 @@ internal sealed partial class RazorVueArtifactFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueRenderFragment renderTree,
         RazorVueExpressionEmitter expressionEmitter,
-        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        out ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
     {
         var descriptor = snapshot.Descriptor;
-        var builder = new StringBuilder();
         var renderExpression = expressionEmitter.EmitFragment(renderTree);
         var requiresAttributeMergeHelper = RazorVueAttributeMergeHelper.ContainsInvocation(renderExpression);
-        AppendVueImports(builder, snapshot, resolvedComponents);
+        var setupBodyBuilder = new StringBuilder();
+        setupBodyBuilder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
+        if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
+            RazorVueForLoopLoweringSupport.AppendForRangeHelper(setupBodyBuilder, "    ");
+        if (requiresAttributeMergeHelper)
+            RazorVueAttributeMergeHelper.AppendHelper(setupBodyBuilder, "    ");
+        AppendLifecycleLowering(setupBodyBuilder, snapshot);
+        AppendSetupLogicLowering(setupBodyBuilder, snapshot, expressionEmitter);
+        setupBodyBuilder.Append("    return () => ").Append(renderExpression).AppendLine(";");
+        setupBodyBuilder.AppendLine("  }");
+
+        compilerImports = expressionEmitter.FlushCompilerImports();
+
+        var builder = new StringBuilder();
+        AppendVueImports(builder, snapshot, resolvedComponents, compilerImports);
         builder.AppendLine();
         builder.AppendLine("export default defineComponent({");
         builder.Append("  name: \"").Append(descriptor.Name).AppendLine("\",");
         builder.Append("  props: ").Append(FormatStringArray(descriptor.Props.Select(static prop => prop.Name))).AppendLine(",");
         builder.Append("  emits: ").Append(FormatStringArray(descriptor.Emits.Select(static emit => emit.Name))).AppendLine(",");
-        builder.AppendLine("  setup(props, { emit, slots, expose, attrs }) {");
-        if (RazorVueForLoopLoweringSupport.ContainsForLoop(renderTree))
-            RazorVueForLoopLoweringSupport.AppendForRangeHelper(builder, "    ");
-        if (requiresAttributeMergeHelper)
-            RazorVueAttributeMergeHelper.AppendHelper(builder, "    ");
-        AppendLifecycleLowering(builder, snapshot);
-        AppendSetupLogicLowering(builder, snapshot, expressionEmitter);
-        builder.Append("    return () => ").Append(renderExpression).AppendLine(";");
-        builder.AppendLine("  }");
+        builder.Append(setupBodyBuilder);
         builder.AppendLine("});");
         return builder.ToString();
     }
@@ -44,7 +50,8 @@ internal sealed partial class RazorVueArtifactFactory
     private static void AppendVueImports(
         StringBuilder builder,
         RazorVueSemanticSnapshot snapshot,
-        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents)
+        ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
     {
         var vueImports = new List<string> { "defineComponent", "h" };
         vueImports.AddRange(RazorVueSetupAndLifecycleLoweringSupport.CollectVueRuntimeImports(snapshot));
@@ -52,6 +59,7 @@ internal sealed partial class RazorVueArtifactFactory
         builder.Append("import { ")
             .Append(string.Join(", ", vueImports.Distinct(StringComparer.Ordinal)))
             .AppendLine(" } from \"vue\";");
+        RazorVueCompilerImportFormatter.AppendImportStatements(builder, compilerImports);
         AppendComponentImports(builder, resolvedComponents);
     }
 

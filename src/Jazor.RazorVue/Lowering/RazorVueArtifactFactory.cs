@@ -86,14 +86,14 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             componentReferences,
             resolvedComponents,
             componentEmitsByRazorAlias);
-        var moduleCode = BuildModuleCode(snapshot, renderTree, expressionEmitter, resolvedComponents);
+        var moduleCode = BuildModuleCode(snapshot, renderTree, expressionEmitter, resolvedComponents, out var compilerImports);
         var sourceOrigins = snapshot.Origins.AddRange(expressionEmitter.CollectOrigins(renderTree));
 
         return new VueCompiledArtifact(
             ComponentName: descriptor.Name,
             RelativeModulePath: relativeModulePath,
             ModuleCode: moduleCode,
-            Imports: BuildImports(resolvedComponents),
+            Imports: BuildImports(resolvedComponents, compilerImports),
             Styles: BuildStyles(descriptor, resolvedComponents),
             PluginRequirements: BuildPluginRequirements(descriptor, resolvedComponents),
             Identity: BuildIdentity(context, snapshot, renderTree, expressionEmitter, relativeModulePath),

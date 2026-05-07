@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
@@ -11,63 +12,22 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueExpressionEmitter
 {
-    private string EmitExpression(IOperation operation)
+    private string EmitExpression(IOperation operation, SenseArgument? compilerArgument = null)
     {
         var current = Unwrap(operation);
         if (current is null)
             return "undefined";
 
-        return current switch
-        {
-            ILiteralOperation literal => EmitLiteral(literal),
-            ILocalReferenceOperation local => local.Local.Name,
-            IParameterReferenceOperation parameter => parameter.Parameter.Name,
-            IPropertyReferenceOperation property => EmitPropertyReference(property),
-            IFieldReferenceOperation field => EmitFieldReference(field),
-            IBinaryOperation binary => "(" + EmitExpression(binary.LeftOperand) + " " +
-                                       GetBinaryOperator(binary.OperatorKind) + " " +
-                                       EmitExpression(binary.RightOperand) + ")",
-            IUnaryOperation unary => GetUnaryOperator(unary.OperatorKind) + EmitExpression(unary.Operand),
-            IInvocationOperation invocation => EmitInvocation(invocation),
-            IInterpolatedStringOperation interpolated => EmitInterpolatedString(interpolated),
-            IConditionalOperation conditional when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
-                "(" + EmitExpression(conditional.Condition) + " ? " +
-                EmitExpression(conditional.WhenTrue) + " : " +
-                EmitExpression(conditional.WhenFalse) + ")",
-            IObjectCreationOperation creation when creation.Arguments.Length == 0 => "{}",
-            IDefaultValueOperation => "null",
-            _ => throw new NotSupportedException(
-                $"RazorVue render currently does not support expression '{current.Kind}' in component '{_snapshot.Descriptor.FullName}'.")
-        };
+        return EmitCompilerLoweredExpression(current, compilerArgument);
     }
 
-    internal string EmitSetupExpression(IOperation operation)
+    internal string EmitSetupExpression(IOperation operation, SenseArgument? compilerArgument = null)
     {
         var current = Unwrap(operation);
         if (current is null)
             return "undefined";
 
-        return current switch
-        {
-            ILiteralOperation literal => EmitLiteral(literal),
-            ILocalReferenceOperation local => local.Local.Name,
-            IParameterReferenceOperation parameter => parameter.Parameter.Name,
-            IPropertyReferenceOperation property => EmitSetupPropertyReference(property),
-            IFieldReferenceOperation field => EmitSetupFieldReference(field),
-            IBinaryOperation binary => "(" + EmitSetupExpression(binary.LeftOperand) + " " +
-                                       GetBinaryOperator(binary.OperatorKind) + " " +
-                                       EmitSetupExpression(binary.RightOperand) + ")",
-            IUnaryOperation unary => GetUnaryOperator(unary.OperatorKind) + EmitSetupExpression(unary.Operand),
-            IInvocationOperation invocation => EmitSetupInvocation(invocation),
-            IInterpolatedStringOperation interpolated => EmitSetupInterpolatedString(interpolated),
-            IConditionalOperation conditional when conditional.WhenTrue is not null && conditional.WhenFalse is not null =>
-                "(" + EmitSetupExpression(conditional.Condition) + " ? " +
-                EmitSetupExpression(conditional.WhenTrue) + " : " +
-                EmitSetupExpression(conditional.WhenFalse) + ")",
-            IDefaultValueOperation => "null",
-            _ => throw new NotSupportedException(
-                $"RazorVue setup-side logic does not support expression '{current.Kind}' in component '{_snapshot.Descriptor.FullName}'.")
-        };
+        return EmitCompilerLoweredExpression(current, compilerArgument);
     }
 
     private static LifecyclePayloadEmission EmitLifecyclePayloadCore(
@@ -173,7 +133,7 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private string EmitPropertyReference(IPropertyReferenceOperation property)
     {
-        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: false, out var alias))
+        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: false, compilerArgument: null, out var alias))
             return alias;
 
         if (IsCurrentComponentMember(property.Property, property.Instance))
@@ -199,9 +159,44 @@ internal sealed partial class RazorVueExpressionEmitter
         return EmitMemberTarget(property.Instance) + "." + property.Property.Name;
     }
 
+    internal bool TryRewritePropertyReference(IPropertyReferenceOperation property, SenseArgument argument, out string expression)
+    {
+        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: false, argument, out expression))
+            return true;
+
+        if (IsCurrentComponentMember(property.Property, property.Instance))
+        {
+            if (_propsByPublicName.TryGetValue(property.Property.Name, out var prop))
+            {
+                expression = "props." + prop.Name;
+                return true;
+            }
+
+            if (_slotsByPublicName.TryGetValue(property.Property.Name, out var slot))
+            {
+                expression = slot.IsDefault
+                    ? "slots.default ? slots.default() : null"
+                    : "props." + ToLowerCamelCase(property.Property.Name);
+                return true;
+            }
+
+            if (_emitsByRazorAlias.ContainsKey(property.Property.Name))
+            {
+                expression = EmitCurrentComponentCallbackReference(property.Property);
+                return true;
+            }
+
+            throw new NotSupportedException(
+                $"RazorVue render currently only supports parameter properties in template expressions. Unsupported member: '{property.Property.Name}'.");
+        }
+
+        expression = string.Empty;
+        return false;
+    }
+
     private string EmitSetupPropertyReference(IPropertyReferenceOperation property)
     {
-        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: true, out var alias))
+        if (TryEmitKnownAliasedProperty(property, useSetupEmitter: true, compilerArgument: null, out var alias))
             return alias;
 
         if (IsCurrentComponentMember(property.Property, property.Instance))
@@ -223,6 +218,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private bool TryEmitKnownAliasedProperty(
         IPropertyReferenceOperation property,
         bool useSetupEmitter,
+        SenseArgument? compilerArgument,
         out string expression)
     {
         expression = string.Empty;
@@ -236,8 +232,8 @@ internal sealed partial class RazorVueExpressionEmitter
             return false;
 
         expression = (useSetupEmitter
-            ? EmitSetupExpression(property.Instance)
-            : EmitExpression(property.Instance)) + ".length";
+            ? EmitSetupExpression(property.Instance, compilerArgument)
+            : EmitExpression(property.Instance, compilerArgument)) + ".length";
         return true;
     }
 
@@ -268,6 +264,25 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         return EmitMemberTarget(field.Instance) + "." + field.Field.Name;
+    }
+
+    internal bool TryRewriteFieldReference(IFieldReferenceOperation field, SenseArgument argument, out string expression)
+    {
+        if (IsCurrentComponentMember(field.Field, field.Instance))
+        {
+            if (_logicFieldsByName.ContainsKey(field.Field.Name))
+            {
+                _requiredSetupFields.Add(field.Field);
+                expression = ToLowerCamelCase(field.Field.Name);
+                return true;
+            }
+
+            throw new NotSupportedException(
+                $"RazorVue render currently does not support component field '{field.Field.Name}' in component '{_snapshot.Descriptor.FullName}'.");
+        }
+
+        expression = string.Empty;
+        return false;
     }
 
     private string EmitSetupFieldReference(IFieldReferenceOperation field)
@@ -385,6 +400,43 @@ internal sealed partial class RazorVueExpressionEmitter
         return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitExpression(argument.Value))) + ")";
     }
 
+    internal bool TryRewriteInvocation(IInvocationOperation invocation, SenseArgument argument, out string expression)
+    {
+        var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
+        if (normalizedCallbackFactory.Length != 0)
+        {
+            expression = normalizedCallbackFactory;
+            return true;
+        }
+
+        if (TryNormalizeRazorInferredEventCallback(invocation, out var normalizedInferredCallback))
+        {
+            expression = normalizedInferredCallback;
+            return true;
+        }
+
+        if (invocation.Instance is not null && invocation.TargetMethod.Name == "Invoke")
+        {
+            expression = EmitExpression(invocation.Instance, argument) + "(" +
+                         string.Join(", ", invocation.Arguments.Select(item => EmitExpression(item.Value, argument))) + ")";
+            return true;
+        }
+
+        if (IsCurrentComponentMember(invocation.TargetMethod, invocation.Instance))
+        {
+            if (invocation.Arguments.Length != invocation.TargetMethod.Parameters.Length)
+                throw CreateUnsupportedSetupLogicException(invocation.TargetMethod);
+
+            _requiredSetupMethods.Add(invocation.TargetMethod);
+            expression = ToLowerCamelCase(invocation.TargetMethod.Name) + "(" +
+                         string.Join(", ", invocation.Arguments.Select(item => EmitExpression(item.Value, argument))) + ")";
+            return true;
+        }
+
+        expression = string.Empty;
+        return false;
+    }
+
     private string EmitSetupInvocation(IInvocationOperation invocation)
     {
         var normalizedCallbackFactory = TryNormalizeRazorGeneratedCallbackFactory(invocation);
@@ -416,6 +468,19 @@ internal sealed partial class RazorVueExpressionEmitter
             : targetMethodName;
 
         return target + "(" + string.Join(", ", invocation.Arguments.Select(argument => EmitSetupExpression(argument.Value))) + ")";
+    }
+
+    internal bool TryRewriteMethodReference(IMethodReferenceOperation operation, SenseArgument argument, out string expression)
+    {
+        if (IsCurrentComponentMember(operation.Method, operation.Instance))
+        {
+            _requiredSetupMethods.Add(operation.Method);
+            expression = ToLowerCamelCase(operation.Method.Name);
+            return true;
+        }
+
+        expression = string.Empty;
+        return false;
     }
 
     private string EmitMemberInvocationTarget(IOperation instance, string targetMethodName, bool useSetupEmitter)

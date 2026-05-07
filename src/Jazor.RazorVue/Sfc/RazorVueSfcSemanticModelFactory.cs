@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
 using System.Linq;
+using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue;
 
 namespace Jazor.RazorVue.Sfc;
 
@@ -23,7 +25,8 @@ internal sealed class RazorVueSfcSemanticModelFactory
             ComponentFullName: canonicalModel.ComponentFullName,
             RelativeSfcPath: ownerRelativeSfcPath,
             Descriptor: canonicalModel.Descriptor,
-            Imports: CollectImports(componentImports),
+            Imports: CollectImports(componentImports, canonicalModel.CompilerImports),
+            CompilerImports: canonicalModel.CompilerImports,
             ComponentImports: componentImports,
             Styles: canonicalModel.Styles,
             PluginRequirements: canonicalModel.PluginRequirements,
@@ -38,10 +41,13 @@ internal sealed class RazorVueSfcSemanticModelFactory
             CustomBlocks: ImmutableArray<RazorVueSfcCustomBlockModel>.Empty);
     }
 
-    private static ImmutableArray<string> CollectImports(ImmutableArray<RazorVueSfcComponentImport> componentImports)
+    private static ImmutableArray<string> CollectImports(
+        ImmutableArray<RazorVueSfcComponentImport> componentImports,
+        ImmutableArray<RazorVueCompilerImportBinding> compilerImports)
     {
         var builder = ImmutableArray.CreateBuilder<string>();
         builder.Add("vue");
+        builder.AddRange(RazorVueCompilerImportFormatter.CollectImportSources(compilerImports));
 
         foreach (var import in componentImports)
         {

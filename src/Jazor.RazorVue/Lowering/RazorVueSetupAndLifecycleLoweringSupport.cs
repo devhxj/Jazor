@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
@@ -230,7 +231,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
                 .AppendLine(";");
             return fieldBuilder.ToString();
         }
-        catch (NotSupportedException)
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
         {
             throw CreateUnsupportedSetupLoweringException(field.FieldSymbol);
         }
@@ -276,7 +277,7 @@ internal static class RazorVueSetupAndLifecycleLoweringSupport
             methodBuilder.Append(indent).AppendLine("}");
             return methodBuilder.ToString();
         }
-        catch (NotSupportedException)
+        catch (Exception ex) when (ex is NotSupportedException or OperationTransformationException)
         {
             throw CreateUnsupportedSetupLoweringException(method.MethodSymbol);
         }
