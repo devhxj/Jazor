@@ -12156,6 +12156,54 @@ public sealed class RazorVuePipelineTests
             => context ?? throw new InvalidOperationException("The test frontend expected a valid RazorVue compilation context.");
     }
 
+    [TestMethod]
+    public void RazorVue_Pipeline_RejectsLoopBodyComponentLocalVariableInTemplate()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/local-loop-card")]
+                public class LocalLoopCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public IEnumerable<string>? Items { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        foreach (var item in Items!)
+                        {
+                            var decorated = item + "!";
+                            builder.OpenElement(0, "span");
+                            builder.AddContent(1, decorated);
+                            builder.CloseElement();
+                        }
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnsupportedTemplateEncoding, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "decorated");
+    }
+
     private sealed class FixedTemplateFrontend(RazorVueRenderFragment renderTree) : IRazorVueTemplateFrontend
     {
         public string Name => "Jazor.RazorVue.Test.FixedTemplateFrontend";

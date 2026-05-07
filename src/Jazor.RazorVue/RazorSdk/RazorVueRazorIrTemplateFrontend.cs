@@ -337,6 +337,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     ParameterName: childContent.IsParameterized
                         ? childContent.ParameterName
                         : null,
+                    ParameterSymbol: null,
                     Children: slotFragment,
                     Origins: CreateOrigins(childContent.Source ?? node.Source ?? node.StartTagSpan)));
             }
@@ -672,6 +673,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             index = bodyEnd;
             loopNode = new RazorVueForEachNode(
                 resolvedLoop.Operation.Locals.Length > 0 ? resolvedLoop.Operation.Locals[0].Name : "item",
+                resolvedLoop.Operation.Locals.Length > 0 ? resolvedLoop.Operation.Locals[0] : null,
                 Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(resolvedLoop.Operation.Collection) ?? resolvedLoop.Operation.Collection,
                 body,
                 CreateOrigins(sourceSpan));
@@ -710,6 +712,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             index = bodyEnd;
             loopNode = new RazorVueForNode(
                 analysis.VariableName,
+                resolvedLoop.Operation.Locals.Length > 0 ? resolvedLoop.Operation.Locals[0] : null,
                 analysis.InitialValue,
                 analysis.ConditionKind,
                 analysis.LimitValue,

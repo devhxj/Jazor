@@ -13,6 +13,10 @@ namespace Jazor.RazorVue.Canonical;
 internal sealed class RazorVueCanonicalHModelFactory
 {
     private readonly IRazorVueTemplateFrontend _templateFrontend;
+    private static readonly ImmutableHashSet<ILocalSymbol> EmptyLocalScope =
+        ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default);
+    private static readonly ImmutableHashSet<IParameterSymbol> EmptyParameterScope =
+        ImmutableHashSet<IParameterSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default);
 
     public RazorVueCanonicalHModelFactory(IRazorVueTemplateFrontend templateFrontend)
     {
@@ -44,7 +48,13 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var resolvedComponents = ResolveComponents(context, snapshot, renderTree);
         var expressionEmitter = CreateExpressionEmitter(snapshot, resolvedComponents);
-        var template = CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, renderTree);
+        var template = CreateTemplateFragment(
+            snapshot,
+            expressionEmitter,
+            resolvedComponents,
+            renderTree,
+            EmptyLocalScope,
+            EmptyParameterScope);
         var compilerImports = expressionEmitter.FlushCompilerImports();
         var imports = BuildImports(resolvedComponents, compilerImports);
         var styles = BuildStyles(snapshot.Descriptor, resolvedComponents);
@@ -76,14 +86,22 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
-        RazorVueRenderFragment fragment)
+        RazorVueRenderFragment fragment,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (fragment.Children.IsDefaultOrEmpty)
             return RazorVueCanonicalTemplateFragment.Empty;
 
         return new RazorVueCanonicalTemplateFragment(
             fragment.Children
-                .Select(node => CreateTemplateNode(snapshot, expressionEmitter, resolvedComponents, node))
+                .Select(node => CreateTemplateNode(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    node,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols))
                 .ToImmutableArray());
     }
 
@@ -91,57 +109,118 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
-        RazorVueRenderNode node)
+        RazorVueRenderNode node,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => node switch
         {
             RazorVueElementNode element => new RazorVueCanonicalElementNode(
                 TagName: element.TagName,
-                Attributes: CreateHtmlAttributeBindings(snapshot, expressionEmitter, element.Attributes),
-                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, element.Children),
+                Attributes: CreateHtmlAttributeBindings(snapshot, expressionEmitter, element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
+                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, element.Children, allowedLocalSymbols, allowedParameterSymbols),
                 TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
                 SideEffectClassification: RazorVueSideEffectClassification.None,
                 SourceOrigins: element.Origins),
-            RazorVueComponentNode component => CreateComponentNode(snapshot, expressionEmitter, resolvedComponents, component),
+            RazorVueComponentNode component => CreateComponentNode(
+                snapshot,
+                expressionEmitter,
+                resolvedComponents,
+                component,
+                allowedLocalSymbols,
+                allowedParameterSymbols),
             RazorVueTextNode text => new RazorVueCanonicalTextNode(
                 Text: text.Text,
                 TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
                 SideEffectClassification: RazorVueSideEffectClassification.None,
                 SourceOrigins: text.Origins),
-            RazorVueExpressionNode expression => CreateInterpolationNode(snapshot, expressionEmitter, expression),
+            RazorVueExpressionNode expression => CreateInterpolationNode(
+                snapshot,
+                expressionEmitter,
+                expression,
+                allowedLocalSymbols,
+                allowedParameterSymbols),
             RazorVueSlotOutletNode slot => new RazorVueCanonicalSlotOutletNode(
                 SlotName: slot.SlotName,
-                ArgumentExpressionText: slot.Argument is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, slot.Argument),
+                ArgumentExpressionText: slot.Argument is null
+                    ? null
+                    : EmitTemplateExpression(snapshot, expressionEmitter, slot.Argument, allowedLocalSymbols, allowedParameterSymbols),
                 BindingKind: ClassifyBindingKind(snapshot, slot.Argument),
                 TemplateEncodability: ClassifyTemplateEncodability(slot.Argument),
                 SideEffectClassification: ClassifySideEffects(slot.Argument),
                 SourceOrigins: slot.Origins),
             RazorVueConditionalNode conditional => new RazorVueCanonicalConditionalNode(
-                ConditionExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, conditional.Condition),
+                ConditionExpressionText: EmitTemplateExpression(
+                    snapshot,
+                    expressionEmitter,
+                    conditional.Condition,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
                 BindingKind: ClassifyBindingKind(snapshot, conditional.Condition),
-                WhenTrue: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, conditional.WhenTrue),
-                WhenFalse: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, conditional.WhenFalse),
+                WhenTrue: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    conditional.WhenTrue,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
+                WhenFalse: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    conditional.WhenFalse,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
                 TemplateEncodability: RazorVueTemplateEncodability.TemplateViaSetupBinding,
                 SideEffectClassification: ClassifySideEffects(conditional.Condition),
                 SourceOrigins: conditional.Origins),
             RazorVueForEachNode loop => new RazorVueCanonicalForEachNode(
                 ItemName: loop.ItemName,
-                SourceExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, loop.Source),
+                SourceExpressionText: EmitTemplateExpression(
+                    snapshot,
+                    expressionEmitter,
+                    loop.Source,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
                 BindingKind: ClassifyBindingKind(snapshot, loop.Source),
-                Body: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, loop.Body),
+                Body: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    loop.Body,
+                    RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.ItemSymbol),
+                    allowedParameterSymbols),
                 TemplateEncodability: RazorVueTemplateEncodability.TemplateViaSetupBinding,
                 SideEffectClassification: ClassifySideEffects(loop.Source),
                 SourceOrigins: loop.Origins),
             RazorVueForNode loop => new RazorVueCanonicalForNode(
                 VariableName: loop.VariableName,
-                InitialValueExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, loop.InitialValue),
+                InitialValueExpressionText: EmitTemplateExpression(
+                    snapshot,
+                    expressionEmitter,
+                    loop.InitialValue,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
                 InitialValueBindingKind: ClassifyBindingKind(snapshot, loop.InitialValue),
                 ConditionKind: loop.ConditionKind,
-                LimitValueExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, loop.LimitValue),
+                LimitValueExpressionText: EmitTemplateExpression(
+                    snapshot,
+                    expressionEmitter,
+                    loop.LimitValue,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
                 LimitValueBindingKind: ClassifyBindingKind(snapshot, loop.LimitValue),
                 StepKind: loop.StepKind,
-                StepValueExpressionText: loop.StepValue is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, loop.StepValue),
+                StepValueExpressionText: loop.StepValue is null
+                    ? null
+                    : EmitTemplateExpression(snapshot, expressionEmitter, loop.StepValue, allowedLocalSymbols, allowedParameterSymbols),
                 StepValueBindingKind: ClassifyBindingKind(snapshot, loop.StepValue),
-                Body: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, loop.Body),
+                Body: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    loop.Body,
+                    RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.VariableSymbol),
+                    allowedParameterSymbols),
                 TemplateEncodability: RazorVueTemplateEncodability.TemplateViaSetupBinding,
                 SideEffectClassification: CombineSideEffectClassifications(
                     ClassifySideEffects(loop.InitialValue),
@@ -155,14 +234,29 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
-        RazorVueComponentNode component)
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         resolvedComponents.TryGetValue(component.ComponentName, out var resolvedDescriptor);
         if (resolvedDescriptor is null)
             throw CreateUnsupportedCanonicalizationException(snapshot, component.ComponentName, component.Origins);
 
-        var slotBindings = CreateComponentSlotBindings(snapshot, expressionEmitter, component, resolvedDescriptor);
-        slotBindings = slotBindings.AddRange(CreateComponentSlotTemplateBindings(snapshot, expressionEmitter, resolvedComponents, component, resolvedDescriptor));
+        var slotBindings = CreateComponentSlotBindings(
+            snapshot,
+            expressionEmitter,
+            component,
+            resolvedDescriptor,
+            allowedLocalSymbols,
+            allowedParameterSymbols);
+        slotBindings = slotBindings.AddRange(CreateComponentSlotTemplateBindings(
+            snapshot,
+            expressionEmitter,
+            resolvedComponents,
+            component,
+            resolvedDescriptor,
+            allowedLocalSymbols,
+            allowedParameterSymbols));
         if (!component.Children.Children.IsDefaultOrEmpty)
         {
             slotBindings = slotBindings.Add(new RazorVueCanonicalSlotBinding(
@@ -174,7 +268,13 @@ internal sealed class RazorVueCanonicalHModelFactory
                 ForwardedSlotName: null,
                 BindingKind: RazorVueExpressionBindingKind.None,
                 TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
-                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, component.Children),
+                Children: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    component.Children,
+                    allowedLocalSymbols,
+                    allowedParameterSymbols),
                 SourceOrigins: component.Children.Children
                     .SelectMany(static child => child.Origins)
                     .ToImmutableArray()));
@@ -185,7 +285,13 @@ internal sealed class RazorVueCanonicalHModelFactory
             ComponentFullName: component.ComponentFullName,
             ResolutionName: component.ResolutionName,
             ResolvedDescriptor: resolvedDescriptor,
-            Attributes: CreateComponentAttributeBindings(snapshot, expressionEmitter, component, resolvedDescriptor),
+            Attributes: CreateComponentAttributeBindings(
+                snapshot,
+                expressionEmitter,
+                component,
+                resolvedDescriptor,
+                allowedLocalSymbols,
+                allowedParameterSymbols),
             Slots: slotBindings,
             Children: RazorVueCanonicalTemplateFragment.Empty,
             TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
@@ -196,9 +302,16 @@ internal sealed class RazorVueCanonicalHModelFactory
     private static RazorVueCanonicalInterpolationNode CreateInterpolationNode(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
-        RazorVueExpressionNode expression)
+        RazorVueExpressionNode expression,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
-        var expressionText = EmitTemplateExpression(snapshot, expressionEmitter, expression.Expression);
+        var expressionText = EmitTemplateExpression(
+            snapshot,
+            expressionEmitter,
+            expression.Expression,
+            allowedLocalSymbols,
+            allowedParameterSymbols);
         return new RazorVueCanonicalInterpolationNode(
             ExpressionText: expressionText,
             BindingKind: ClassifyBindingKind(snapshot, expression.Expression),
@@ -210,7 +323,9 @@ internal sealed class RazorVueCanonicalHModelFactory
     private static ImmutableArray<RazorVueCanonicalAttributeEntry> CreateHtmlAttributeBindings(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
-        ImmutableArray<RazorVueAttributeEntry> attributes)
+        ImmutableArray<RazorVueAttributeEntry> attributes,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (attributes.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalAttributeEntry>.Empty;
@@ -223,7 +338,9 @@ internal sealed class RazorVueCanonicalHModelFactory
                 case RazorVueAttributeNode attribute:
                     builder.Add(new RazorVueCanonicalAttributeBinding(
                         Name: attribute.Name,
-                        ExpressionText: attribute.Value is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value),
+                        ExpressionText: attribute.Value is null
+                            ? null
+                            : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
                         AttributeKind: RazorVueCanonicalAttributeKind.HtmlAttribute,
                         BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
                         TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
@@ -231,7 +348,12 @@ internal sealed class RazorVueCanonicalHModelFactory
                     break;
                 case RazorVueAttributeSpreadNode spread:
                     builder.Add(new RazorVueCanonicalAttributeSpreadBinding(
-                        ExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, spread.Expression),
+                        ExpressionText: EmitTemplateExpression(
+                            snapshot,
+                            expressionEmitter,
+                            spread.Expression,
+                            allowedLocalSymbols,
+                            allowedParameterSymbols),
                         BindingKind: ClassifyBindingKind(snapshot, spread.Expression),
                         TemplateEncodability: ClassifyTemplateEncodability(spread.Expression),
                         SourceOrigins: spread.Origins));
@@ -248,7 +370,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
         RazorVueComponentNode component,
-        VueComponentDescriptor descriptor)
+        VueComponentDescriptor descriptor,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (component.Attributes.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalAttributeEntry>.Empty;
@@ -270,7 +394,12 @@ internal sealed class RazorVueCanonicalHModelFactory
                     throw CreateUnsupportedComponentSpreadException(snapshot, descriptor, spread);
 
                 builder.Add(new RazorVueCanonicalAttributeSpreadBinding(
-                    ExpressionText: EmitTemplateExpression(snapshot, expressionEmitter, spread.Expression),
+                    ExpressionText: EmitTemplateExpression(
+                        snapshot,
+                        expressionEmitter,
+                        spread.Expression,
+                        allowedLocalSymbols,
+                        allowedParameterSymbols),
                     BindingKind: ClassifyBindingKind(snapshot, spread.Expression),
                     TemplateEncodability: ClassifyTemplateEncodability(spread.Expression),
                     SourceOrigins: spread.Origins));
@@ -287,7 +416,9 @@ internal sealed class RazorVueCanonicalHModelFactory
             {
                 builder.Add(new RazorVueCanonicalAttributeBinding(
                     Name: emitDescriptor.Name,
-                    ExpressionText: attribute.Value is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value),
+                    ExpressionText: attribute.Value is null
+                        ? null
+                        : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentEvent,
                     BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
                     TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
@@ -299,7 +430,9 @@ internal sealed class RazorVueCanonicalHModelFactory
             {
                 builder.Add(new RazorVueCanonicalAttributeBinding(
                     Name: propDescriptor.Name,
-                    ExpressionText: attribute.Value is null ? null : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value),
+                    ExpressionText: attribute.Value is null
+                        ? null
+                        : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentProp,
                     BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
                     TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
@@ -317,7 +450,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
         RazorVueComponentNode component,
-        VueComponentDescriptor descriptor)
+        VueComponentDescriptor descriptor,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (component.Attributes.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalSlotBinding>.Empty;
@@ -343,7 +478,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             var valueKind = ClassifySlotValueKind(snapshot, attribute.Value, slotDescriptor);
             var valueExpressionText = valueKind == RazorVueCanonicalSlotValueKind.ForwardedSlot || attribute.Value is null
                 ? null
-                : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value);
+                : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols);
             var forwardedSlotName = valueKind == RazorVueCanonicalSlotValueKind.ForwardedSlot
                 ? GetForwardedSlotName(snapshot, attribute.Value!, slotDescriptor)
                 : null;
@@ -369,7 +504,9 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueExpressionEmitter expressionEmitter,
         ImmutableDictionary<string, VueComponentDescriptor> resolvedComponents,
         RazorVueComponentNode component,
-        VueComponentDescriptor descriptor)
+        VueComponentDescriptor descriptor,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (component.SlotTemplates.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalSlotBinding>.Empty;
@@ -417,6 +554,9 @@ internal sealed class RazorVueCanonicalHModelFactory
                     new RazorVueAttributeNode(slotTemplate.PublicName, null, slotTemplate.Origins));
             }
 
+            var slotParameterScope = string.IsNullOrWhiteSpace(slotTemplate.ParameterName)
+                ? allowedParameterSymbols
+                : RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, slotTemplate.ParameterSymbol);
             builder.Add(new RazorVueCanonicalSlotBinding(
                 SlotName: slotDescriptor.Name,
                 IsDefault: slotDescriptor.IsDefault,
@@ -426,7 +566,13 @@ internal sealed class RazorVueCanonicalHModelFactory
                 ForwardedSlotName: null,
                 BindingKind: RazorVueExpressionBindingKind.None,
                 TemplateEncodability: RazorVueTemplateEncodability.DirectTemplate,
-                Children: CreateTemplateFragment(snapshot, expressionEmitter, resolvedComponents, slotTemplate.Children),
+                Children: CreateTemplateFragment(
+                    snapshot,
+                    expressionEmitter,
+                    resolvedComponents,
+                    slotTemplate.Children,
+                    allowedLocalSymbols,
+                    slotParameterScope),
                 SourceOrigins: slotTemplate.Origins));
         }
 
@@ -545,8 +691,11 @@ internal sealed class RazorVueCanonicalHModelFactory
     private static string EmitTemplateExpression(
         RazorVueSemanticSnapshot snapshot,
         RazorVueExpressionEmitter expressionEmitter,
-        IOperation expression)
+        IOperation expression,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
+        RazorVueTemplateExpressionScopeValidator.Validate(snapshot, expression, allowedLocalSymbols, allowedParameterSymbols);
         try
         {
             return expressionEmitter.EmitTemplateExpression(expression);
@@ -585,6 +734,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : origins[0]);
     }
+
 
     private static RazorVueCompilationIssueException CreateUnknownComponentAttributeException(
         RazorVueSemanticSnapshot snapshot,

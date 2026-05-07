@@ -33,6 +33,7 @@ internal sealed record RazorVueComponentSlotTemplateNode(
     string PublicName,
     string SlotName,
     string? ParameterName,
+    IParameterSymbol? ParameterSymbol,
     RazorVueRenderFragment Children,
     ImmutableArray<RazorVueSourceOrigin> Origins);
 
@@ -57,12 +58,14 @@ internal sealed record RazorVueConditionalNode(
 
 internal sealed record RazorVueForEachNode(
     string ItemName,
+    ILocalSymbol? ItemSymbol,
     IOperation Source,
     RazorVueRenderFragment Body,
     ImmutableArray<RazorVueSourceOrigin> Origins) : RazorVueRenderNode(Origins);
 
 internal sealed record RazorVueForNode(
     string VariableName,
+    ILocalSymbol? VariableSymbol,
     IOperation InitialValue,
     RazorVueForConditionKind ConditionKind,
     IOperation LimitValue,

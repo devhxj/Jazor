@@ -118,6 +118,7 @@ internal sealed class RazorVueRenderTreeExtractor
                 case IForEachLoopOperation foreachLoop:
                     AddNode(new RazorVueForEachNode(
                         foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0].Name : "item",
+                        foreachLoop.Locals.Length > 0 ? foreachLoop.Locals[0] : null,
                         foreachLoop.Collection,
                         ParseNestedBranch(foreachLoop.Body),
                         CreateOrigins(current, RazorVueOriginKind.Template)));
@@ -480,6 +481,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             return new RazorVueForNode(
                 analyzedLoop.VariableName,
+                loop.Locals.Length > 0 ? loop.Locals[0] : null,
                 analyzedLoop.InitialValue,
                 analyzedLoop.ConditionKind,
                 analyzedLoop.LimitValue,
@@ -886,6 +888,7 @@ internal sealed class RazorVueRenderTreeExtractor
                     ? "default"
                     : ToLowerCamelCase(name),
                 ParameterName: slotTemplate.ParameterName,
+                ParameterSymbol: slotTemplate.ParameterSymbol,
                 Children: slotTemplate.Children,
                 Origins: CreateOrigins(invocation, RazorVueOriginKind.Template)));
             return true;
@@ -944,6 +947,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             slotTemplate = new ParsedSlotTemplate(
                 ParameterName: null,
+                ParameterSymbol: null,
                 Children: ParseAnonymousFunctionBody(anonymousFunction));
             return true;
         }
@@ -986,6 +990,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             slotTemplate = new ParsedSlotTemplate(
                 ParameterName: slotContextParameter.Name,
+                ParameterSymbol: slotContextParameter,
                 Children: ParseAnonymousFunctionBody(builderAnonymousFunction));
             return true;
         }
@@ -1181,6 +1186,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
         private readonly record struct ParsedSlotTemplate(
             string? ParameterName,
+            IParameterSymbol? ParameterSymbol,
             RazorVueRenderFragment Children);
 
     }

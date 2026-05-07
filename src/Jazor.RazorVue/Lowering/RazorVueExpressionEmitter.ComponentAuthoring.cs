@@ -11,29 +11,46 @@ namespace Jazor.RazorVue.Lowering;
 
 internal sealed partial class RazorVueExpressionEmitter
 {
+    private static readonly ImmutableHashSet<ILocalSymbol> EmptyLocalScope =
+        ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default);
+    private static readonly ImmutableHashSet<IParameterSymbol> EmptyParameterScope =
+        ImmutableHashSet<IParameterSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default);
+
     private string EmitNode(RazorVueRenderNode node)
+        => EmitNode(node, EmptyLocalScope, EmptyParameterScope);
+
+    private string EmitNode(
+        RazorVueRenderNode node,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => node switch
         {
-            RazorVueElementNode element => EmitElementNode(element),
-            RazorVueComponentNode component => EmitComponentNode(component),
+            RazorVueElementNode element => EmitElementNode(element, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueComponentNode component => EmitComponentNode(component, allowedLocalSymbols, allowedParameterSymbols),
             RazorVueTextNode text => ToJavaScriptString(text.Text),
-            RazorVueExpressionNode expression => EmitExpression(expression.Expression),
-            RazorVueSlotOutletNode slot => EmitSlotOutlet(slot),
-            RazorVueConditionalNode conditional => "(" + EmitExpression(conditional.Condition) + " ? " +
-                                                  EmitFragment(conditional.WhenTrue) + " : " +
-                                                  EmitFragment(conditional.WhenFalse) + ")",
-            RazorVueForEachNode loop => EmitLoop(loop),
-            RazorVueForNode loop => EmitForLoop(loop),
+            RazorVueExpressionNode expression => EmitScopedExpression(expression.Expression, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueSlotOutletNode slot => EmitSlotOutlet(slot, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueConditionalNode conditional => "(" + EmitScopedExpression(conditional.Condition, allowedLocalSymbols, allowedParameterSymbols) + " ? " +
+                                                  EmitFragment(conditional.WhenTrue, allowedLocalSymbols, allowedParameterSymbols) + " : " +
+                                                  EmitFragment(conditional.WhenFalse, allowedLocalSymbols, allowedParameterSymbols) + ")",
+            RazorVueForEachNode loop => EmitLoop(loop, allowedLocalSymbols, allowedParameterSymbols),
+            RazorVueForNode loop => EmitForLoop(loop, allowedLocalSymbols, allowedParameterSymbols),
             _ => throw new NotSupportedException($"Unsupported RazorVue render node: {node.GetType().Name}.")
         };
 
-    private string EmitElementNode(RazorVueElementNode element)
+    private string EmitElementNode(
+        RazorVueElementNode element,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => EmitVNodeCall(
             ToJavaScriptString(element.TagName),
-            EmitAttributesArgument(element.Attributes),
-            EmitFragmentArgument(element.Children));
+            EmitAttributesArgument(element.Attributes, allowedLocalSymbols, allowedParameterSymbols),
+            EmitFragmentArgument(element.Children, allowedLocalSymbols, allowedParameterSymbols));
 
-    private string EmitComponentNode(RazorVueComponentNode component)
+    private string EmitComponentNode(
+        RazorVueComponentNode component,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
@@ -45,10 +62,10 @@ internal sealed partial class RazorVueExpressionEmitter
 
         var slotEntries = new List<string>();
         if (!component.Children.Children.IsDefaultOrEmpty)
-            slotEntries.Add("default: () => " + EmitFragment(component.Children));
-        AppendExplicitSlotTemplates(component, descriptor, slotsByPublicName, slotEntries);
+            slotEntries.Add("default: () => " + EmitFragment(component.Children, allowedLocalSymbols, allowedParameterSymbols));
+        AppendExplicitSlotTemplates(component, descriptor, slotsByPublicName, slotEntries, allowedLocalSymbols, allowedParameterSymbols);
 
-        var attributes = EmitAttributesArgument(component.Attributes, component, slotEntries);
+        var attributes = EmitAttributesArgument(component.Attributes, component, slotEntries, allowedLocalSymbols, allowedParameterSymbols);
         var slots = slotEntries.Count == 0
             ? OptionalJsArgument.Missing
             : new OptionalJsArgument("{ " + string.Join(", ", slotEntries) + " }", true);
@@ -145,27 +162,47 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
-    private string EmitSlotOutlet(RazorVueSlotOutletNode slot)
+    private string EmitSlotOutlet(
+        RazorVueSlotOutletNode slot,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (slot.Argument is null)
             return "slots." + slot.SlotName + " ? slots." + slot.SlotName + "() : null";
 
-        return "slots." + slot.SlotName + " ? slots." + slot.SlotName + "(" + EmitExpression(slot.Argument) + ") : null";
+        return "slots." + slot.SlotName + " ? slots." + slot.SlotName + "(" + EmitScopedExpression(slot.Argument, allowedLocalSymbols, allowedParameterSymbols) + ") : null";
     }
 
-    private string EmitLoop(RazorVueForEachNode loop)
-        => EmitExpression(loop.Source) + ".map((" + loop.ItemName + ") => " + EmitFragment(loop.Body) + ")";
+    private string EmitLoop(
+        RazorVueForEachNode loop,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => EmitScopedExpression(loop.Source, allowedLocalSymbols, allowedParameterSymbols) + ".map((" + loop.ItemName + ") => " +
+           EmitFragment(
+               loop.Body,
+               RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.ItemSymbol),
+               allowedParameterSymbols) + ")";
 
-    private string EmitForLoop(RazorVueForNode loop)
-        => EmitForRangeInvocation(loop) + ".map((" + loop.VariableName + ") => " + EmitFragment(loop.Body) + ")";
+    private string EmitForLoop(
+        RazorVueForNode loop,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => EmitForRangeInvocation(loop, allowedLocalSymbols, allowedParameterSymbols) + ".map((" + loop.VariableName + ") => " +
+           EmitFragment(
+               loop.Body,
+               RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedLocalSymbols, loop.VariableSymbol),
+               allowedParameterSymbols) + ")";
 
-    private string EmitForRangeInvocation(RazorVueForNode loop)
+    private string EmitForRangeInvocation(
+        RazorVueForNode loop,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
         => "__jazorVueForRange(" +
-           EmitExpression(loop.InitialValue) + ", " +
-           EmitExpression(loop.LimitValue) + ", " +
+           EmitScopedExpression(loop.InitialValue, allowedLocalSymbols, allowedParameterSymbols) + ", " +
+           EmitScopedExpression(loop.LimitValue, allowedLocalSymbols, allowedParameterSymbols) + ", " +
            ToJavaScriptString(RazorVueForLoopLoweringSupport.GetForConditionOperator(loop.ConditionKind)) + ", " +
            ToJavaScriptString(RazorVueForLoopLoweringSupport.GetForStepOperator(loop.StepKind)) + ", " +
-           (loop.StepValue is null ? "null" : EmitExpression(loop.StepValue)) + ")";
+           (loop.StepValue is null ? "null" : EmitScopedExpression(loop.StepValue, allowedLocalSymbols, allowedParameterSymbols)) + ")";
 
     private static string EmitVNodeCall(
         string target,
@@ -184,7 +221,10 @@ internal sealed partial class RazorVueExpressionEmitter
         return "h(" + target + ", " + props.Expression + ", " + children.Expression + ")";
     }
 
-    private OptionalJsArgument EmitAttributesArgument(ImmutableArray<RazorVueAttributeEntry> attributes)
+    private OptionalJsArgument EmitAttributesArgument(
+        ImmutableArray<RazorVueAttributeEntry> attributes,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (attributes.IsDefaultOrEmpty)
             return OptionalJsArgument.Missing;
@@ -197,12 +237,12 @@ internal sealed partial class RazorVueExpressionEmitter
             switch (attributeEntry)
             {
                 case RazorVueAttributeNode attribute:
-                    objectEntries.Add(ToJavaScriptString(attribute.Name) + ": " + (attribute.Value is null ? "true" : EmitExpression(attribute.Value!)));
+                    objectEntries.Add(ToJavaScriptString(attribute.Name) + ": " + (attribute.Value is null ? "true" : EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols)));
                     break;
                 case RazorVueAttributeSpreadNode spread:
                     containsSpread = true;
                     FlushObjectEntries(segments, objectEntries);
-                    segments.Add(EmitExpression(spread.Expression));
+                    segments.Add(EmitScopedExpression(spread.Expression, allowedLocalSymbols, allowedParameterSymbols));
                     break;
             }
         }
@@ -214,7 +254,9 @@ internal sealed partial class RazorVueExpressionEmitter
     private OptionalJsArgument EmitAttributesArgument(
         ImmutableArray<RazorVueAttributeEntry> attributes,
         RazorVueComponentNode component,
-        List<string> slotEntries)
+        List<string> slotEntries,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (attributes.IsDefaultOrEmpty)
             return OptionalJsArgument.Missing;
@@ -239,7 +281,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 containsSpread = true;
                 FlushObjectEntries(segments, objectEntries);
                 ValidateComponentSpreadTarget(component, resolvedDescriptor, propsByPublicName, spread);
-                segments.Add(EmitExpression(spread.Expression));
+                segments.Add(EmitScopedExpression(spread.Expression, allowedLocalSymbols, allowedParameterSymbols));
                 continue;
             }
 
@@ -256,7 +298,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 }
 
                 var slotName = slotDescriptor.Name;
-                var slotExpression = EmitExpression(attribute.Value!);
+                var slotExpression = EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols);
                 if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
                     !IsCallableSlotValue(attribute.Value!))
                 {
@@ -287,7 +329,7 @@ internal sealed partial class RazorVueExpressionEmitter
             else if (propsByPublicName is not null && propsByPublicName.TryGetValue(name, out var propDescriptor))
                 name = propDescriptor.Name;
 
-            objectEntries.Add(ToJavaScriptString(name) + ": " + (attribute.Value is null ? "true" : EmitExpression(attribute.Value!)));
+            objectEntries.Add(ToJavaScriptString(name) + ": " + (attribute.Value is null ? "true" : EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols)));
         }
 
         FlushObjectEntries(segments, objectEntries);
@@ -521,7 +563,9 @@ internal sealed partial class RazorVueExpressionEmitter
         RazorVueComponentNode component,
         VueComponentDescriptor? descriptor,
         ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName,
-        List<string> slotEntries)
+        List<string> slotEntries,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (component.SlotTemplates.IsDefaultOrEmpty)
             return;
@@ -534,12 +578,16 @@ internal sealed partial class RazorVueExpressionEmitter
             {
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty)
                 {
-                    slotEntries.Add(slotDescriptor.Name + ": () => " + EmitFragment(slotTemplate.Children));
+                    slotEntries.Add(slotDescriptor.Name + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
                 }
                 else
                 {
                     var slotParameterName = slotTemplate.ParameterName ?? slotDescriptor.Parameters[0].Name;
-                    slotEntries.Add(slotDescriptor.Name + ": (" + slotParameterName + ") => " + EmitFragment(slotTemplate.Children));
+                    slotEntries.Add(slotDescriptor.Name + ": (" + slotParameterName + ") => " +
+                                    EmitFragment(
+                                        slotTemplate.Children,
+                                        allowedLocalSymbols,
+                                        RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, slotTemplate.ParameterSymbol)));
                 }
 
                 continue;
@@ -549,10 +597,23 @@ internal sealed partial class RazorVueExpressionEmitter
                 ? "default"
                 : char.ToLowerInvariant(slotTemplate.PublicName[0]) + slotTemplate.PublicName.Substring(1);
             if (string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
-                slotEntries.Add(slotName + ": () => " + EmitFragment(slotTemplate.Children));
+                slotEntries.Add(slotName + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
             else
-                slotEntries.Add(slotName + ": (" + slotTemplate.ParameterName + ") => " + EmitFragment(slotTemplate.Children));
+                slotEntries.Add(slotName + ": (" + slotTemplate.ParameterName + ") => " +
+                                EmitFragment(
+                                    slotTemplate.Children,
+                                    allowedLocalSymbols,
+                                    RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, slotTemplate.ParameterSymbol)));
         }
+    }
+
+    private string EmitScopedExpression(
+        IOperation operation,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        RazorVueTemplateExpressionScopeValidator.Validate(_snapshot, operation, allowedLocalSymbols, allowedParameterSymbols);
+        return EmitExpression(operation);
     }
 
     private bool IsCallableSlotValue(IOperation operation)
