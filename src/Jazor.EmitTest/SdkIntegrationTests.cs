@@ -29,6 +29,8 @@ public sealed class SdkIntegrationTests
                 "lib/net10.0/ECMAScript.pdb",
                 "lib/net10.0/ECMAScript.Pinia.dll",
                 "lib/net10.0/ECMAScript.Pinia.pdb",
+                "lib/net10.0/ECMAScript.Pinia.Testing.dll",
+                "lib/net10.0/ECMAScript.Pinia.Testing.pdb",
                 "lib/net10.0/ECMAScript.VueRoute.dll",
                 "lib/net10.0/ECMAScript.VueRoute.pdb",
                 "lib/net10.0/ECMAScript.Contract.dll",

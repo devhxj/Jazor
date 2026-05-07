@@ -551,7 +551,15 @@ namespace Jazor.EmitTest
         }
 
         private static CSharpCompilation CreateRazorVueCompilation(string assemblyName, string source, string sourcePath)
-            => CreateCompilation(assemblyName, source, sourcePath, CreateRazorVueReferences());
+            => CSharpCompilation.Create(
+                assemblyName: assemblyName,
+                syntaxTrees:
+                [
+                    CSharpSyntaxTree.ParseText(CreateRazorVueGlobalUsingsSource(), path: "__RazorVueGlobalUsings.g.cs"),
+                    CSharpSyntaxTree.ParseText(source, path: sourcePath)
+                ],
+                references: CreateRazorVueReferences(),
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         private static CSharpCompilation CreateCompilation(string assemblyName, string source, string sourcePath, IEnumerable<MetadataReference> references)
             => CSharpCompilation.Create(
@@ -599,9 +607,17 @@ namespace Jazor.EmitTest
 		private static IEnumerable<MetadataReference> CreateRazorVueReferences()
 			=> CreateBaseReferences().Concat([
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+				MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]);
+
+        private static string CreateRazorVueGlobalUsingsSource()
+            => """
+               global using ECMAScript.VueContract;
+               global using IVueComponent = ECMAScript.Vue3.IVueComponent;
+               global using IVueLibraryComponent = ECMAScript.Vue3.IVueLibraryComponent;
+               """;
 
         private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
         {

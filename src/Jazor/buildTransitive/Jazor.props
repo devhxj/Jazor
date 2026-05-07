@@ -13,5 +13,9 @@
 
   <ItemGroup>
     <CompilerVisibleProperty Include="JazorRazorVueOutputMode" />
+    <!-- Preserve the historical RazorVue authoring markers without globally importing
+         the entire Vue3 API surface into every Jazor consumer project. -->
+    <Using Include="ECMAScript.Vue3.IVueComponent" Alias="IVueComponent" />
+    <Using Include="ECMAScript.Vue3.IVueLibraryComponent" Alias="IVueLibraryComponent" />
   </ItemGroup>
 </Project>

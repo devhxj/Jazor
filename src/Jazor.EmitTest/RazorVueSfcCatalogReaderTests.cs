@@ -344,13 +344,24 @@ public sealed class RazorVueSfcCatalogReaderTests
     private static CSharpCompilation CreateRazorVueCompilation(string assemblyName, string source, string sourcePath)
         => CSharpCompilation.Create(
             assemblyName,
-            [CSharpSyntaxTree.ParseText(source, path: sourcePath)],
+            [
+                CSharpSyntaxTree.ParseText(CreateRazorVueGlobalUsingsSource(), path: "__RazorVueGlobalUsings.g.cs"),
+                CSharpSyntaxTree.ParseText(source, path: sourcePath)
+            ],
             Net100.References.All.Cast<MetadataReference>().Concat([
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ComponentBase).Assembly.Location)
             ]),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+    private static string CreateRazorVueGlobalUsingsSource()
+        => """
+           global using ECMAScript.VueContract;
+           global using IVueComponent = ECMAScript.Vue3.IVueComponent;
+           global using IVueLibraryComponent = ECMAScript.Vue3.IVueLibraryComponent;
+           """;
 
     private static Assembly CompileRazorVueGeneratedAssembly(Compilation compilation, string razorVueOutputMode)
     {

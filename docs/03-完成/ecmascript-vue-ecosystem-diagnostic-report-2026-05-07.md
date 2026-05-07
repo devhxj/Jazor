@@ -17,7 +17,7 @@
 | `ECMAScript.Pinia.Testing` | 约 90% | 可随 Pinia 主包一起进入候选 | 独立构建通过，39 个测试全绿，sample smoke 覆盖 `@pinia/testing` runtime 路径 |
 | `ECMAScript.VueRoute` | 高频 API 切片约 80-85% | 可作为 covered API beta，不能宣称全量生产 | 独立构建通过，94 个测试全绿；但缺少真实前端 runtime/package smoke，也缺少 `docs/03-完成/ecmascript.vueroute/status.md` |
 
-当前最大风险已经从“Vue3/Pinia 基础合同测试红灯”转为**跨线生产回归还没跑完**。Pinia sample 已经证明一条真实消费链路可以跑通，Vue3/Pinia 的专项目录测试也已收口；下一步的生产标准重点应转到 RazorVue/emit/Jolt 联动、外部 consumer、以及 VueRoute 真实 runtime smoke。
+当前最大风险已经从“Vue3/Pinia 基础合同测试红灯”转为**生产边界说明与剩余生态回归覆盖**。Pinia sample、Vue3/Pinia 专项测试，以及 RazorVue/Emit/SDK 的生产链路过滤回归都已经收口；下一步的生产标准重点应转到 VueRoute 真实 runtime smoke、Jolt 联动、以及作者契约文档显式化。
 
 ## 已完成能力
 
@@ -103,6 +103,35 @@ error CS0234: 命名空间“ECMAScript”中不存在类型或命名空间名�
 
 这部分不再是当前生产阻断项。
 
+### 已收口：RazorVue / Emit / SDK 生产链路作者契约漂移
+
+此前 RazorVue/Emit/SDK 生产回归失败的主因，不再是 Vue3/Pinia 核心 API，而是**真实 consumer 的作者入口和当前包 surface 没有完全对齐**：
+
+- 一部分内存编译测试仍显式 `using ECMAScript.VueContract;` 后裸用 `IVueComponent`
+- 一部分真实 sample / SDK consumer 则直接裸用 `IVueComponent`，但没有稳定导入来源
+- `Jazor` 包本身没有给消费项目提供受控的组件 marker 导入入口
+
+本轮已完成的收口动作：
+
+- 在 `src/Jazor/buildTransitive/Jazor.props` 中新增受控全局 alias：
+  - `IVueComponent = ECMAScript.Vue3.IVueComponent`
+  - `IVueLibraryComponent = ECMAScript.Vue3.IVueLibraryComponent`
+- 保持兼容范围仅限两个 RazorVue 作者 marker，不把整套 `Vue3` API 全局注入到 consumer 项目
+- 为 `src/Jazor.EmitTest/RazorVueCatalogReaderTests.cs` 与 `src/Jazor.EmitTest/RazorVueSfcCatalogReaderTests.cs` 的内存 Roslyn 编译路径补齐模拟作者环境：
+  - `ECMAScript.VueContract` metadata reference
+  - `IVueComponent` / `IVueLibraryComponent` 全局 alias source
+- 更新 `src/Jazor.EmitTest/SdkIntegrationTests.cs` 的包内容断言，纳入当前真实产物中的 `ECMAScript.Pinia.Testing.dll/.pdb`
+
+生产回归验证结果：
+
+```powershell
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal -p:UseSharedCompilation=false
+```
+
+结果：43 通过，0 失败，0 跳过。
+
+这说明 RazorVue catalog reader、SFC catalog reader、本地 Jazor package、source-referenced sample、packaged custom authoring library、Vuetify authoring package、manifest/sidecar/update-plan 这条生产链路当前已经收口。
+
 ### P1：Vue authoring namespace 合同仍需进一步显式化
 
 同一个问题同时出现在 Vue3 compiler 测试、Pinia 主测试，以及此前 RazorVue 评审里的 SDK/sample 集成失败：旧代码路径仍依赖 `ECMAScript.VueContract` 或裸 `IVueComponent`，而当前真实类型解析主要落在 `ECMAScript.Vue3` / `using static ECMAScript.Vue3`。
@@ -112,7 +141,7 @@ error CS0234: 命名空间“ECMAScript”中不存在类型或命名空间名�
 - 固定新合同：官方 authoring 必须显式 `using static ECMAScript.Vue3;`，并清理所有 `ECMAScript.VueContract` 旧 using、测试源码、sample、README。
 - 提供兼容入口：让旧的 `ECMAScript.VueContract` / 裸 `IVueComponent` 在普通 consumer 中稳定可用，并把兼容层纳入 package 与测试。
 
-这一层当前已不再阻断 Vue3/Pinia 专项测试，但仍然影响更大范围的 RazorVue/sample/SDK 文档一致性。它应该作为下一轮跨线生产收口项，而不是继续留成隐含假设。
+这一层当前已不再阻断 Vue3/Pinia 专项测试，也不再阻断 RazorVue/Emit/SDK 生产回归，但仍然影响 README、sample authoring 指南和外部 consumer 文档一致性。它应从“隐含实现兼容”升级为“正式写清楚的 authoring contract”。
 
 ### P1：Pinia 功能链路强，现已进入跨线验证阶段
 
@@ -214,6 +243,12 @@ pwsh samples/ECMAScript.Pinia.Counter/verify-smoke.ps1
 
 结果：通过。本地 package pack、sample host rebuild、generated module 断言、Vite build、Vitest runtime/DOM 全部通过；Vitest 结果为 3 个 test files、23 个 tests 全绿。
 
+```powershell
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal -p:UseSharedCompilation=false
+```
+
+结果：43 通过，0 失败，0 跳过。
+
 ## 离上生产还差什么
 
 ### 必须完成
@@ -223,7 +258,7 @@ pwsh samples/ECMAScript.Pinia.Counter/verify-smoke.ps1
 3. 重新跑 Pinia sample smoke，并确保执行后 `git status` 不产生 sample generated manifest 脏改。
 4. 给 VueRoute 增加真实 package/consumer smoke，至少覆盖 Vite build、router creation、navigation、guard、`RouterLink` / `RouterView` runtime DOM 断言。
 5. 为 VueRoute 补 `docs/03-完成/ecmascript.vueroute/status.md`，并把覆盖矩阵中的“部分覆盖/暂不覆盖”同步到生产边界说明。
-6. 跑覆盖 Vue3/Pinia/Pinia Testing/VueRoute/RazorVue/emit 的跨线发布回归，确认这次合同修复没有把问题转移到 RazorVue/emit 端。
+6. 在后续更大范围发布前，补 Jolt / VueRoute / 外部 consumer smoke，当前 RazorVue/emit 端的生产链路过滤回归已通过，不再是主要阻断项。
 
 ### 应该完成
 
