@@ -15,7 +15,7 @@
 | `ECMAScript.Vue3` | 核心绑定约 80-85% | `production candidate`，但仍需更广回归 | 独立构建通过，Vue3 专项 compiler 测试 57/57 已收口；`Vue3.cs` 分层边界与 reactivity surface 断言已对齐 |
 | `ECMAScript.Pinia` | 功能链路约 85-90% | `production candidate`，但仍需样例与跨线回归 | 独立构建通过，sample 端到端 smoke 通过，主测试工程 62/62 已收口 |
 | `ECMAScript.Pinia.Testing` | 约 90% | 可随 Pinia 主包一起进入候选 | 独立构建通过，39 个测试全绿，sample smoke 覆盖 `@pinia/testing` runtime 路径 |
-| `ECMAScript.VueRoute` | 高频 API 切片约 80-85% | 可作为 covered API beta，不能宣称全量生产 | 独立构建通过，94 个测试全绿；但缺少真实前端 runtime/package smoke，也缺少 `docs/03-完成/ecmascript.vueroute/status.md` |
+| `ECMAScript.VueRoute` | 高频 API 切片约 85-90% | `production candidate`，但生产声明边界仍需克制 | 独立构建通过，94 个测试全绿；真实 Vite/Vitest consumer smoke 已通过，且已有 `docs/03-完成/ecmascript.vueroute/status.md` |
 
 当前最大风险已经从“Vue3/Pinia 基础合同测试红灯”转为**生产边界说明与剩余生态回归覆盖**。Pinia sample、Vue3/Pinia 专项测试，以及 RazorVue/Emit/SDK 的生产链路过滤回归都已经收口；下一步的生产标准重点应转到 VueRoute 真实 runtime smoke、Jolt 联动、以及作者契约文档显式化。
 
@@ -155,15 +155,40 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 
 这说明 Pinia 已经不再停留在“sample 强、单测红”的状态，而是可以进入生产候选。但工程发布仍不能只看 sample smoke；还需要更大范围的 solution/emit/RazorVue 联动验证。
 
-### P1：VueRoute 只完成高频切片，缺少真实 runtime/package smoke
+### 已收口：VueRoute 真实 runtime/package smoke 已建立
 
-VueRoute 当前测试全绿，但验证层级仍偏 compiler/import/proxy/layout：
+VueRoute 当前不再只有 compiler/import/proxy/layout 级验证。仓库内已经存在并通过真实 consumer smoke：
 
-- 没有类似 `samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 的 VueRoute 真实前端 sample smoke。
-- 没有证明生成的 router module 可被 Vite/Vue Router runtime 消费并完成 navigation/guard/RouterLink/RouterView DOM 断言。
-- 覆盖矩阵明确 typed routes、route props 全细分、redirect callback typing、async component typing 仍是部分覆盖。
+- `samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.ps1`
+- `samples/ECMAScript.VueRoute.MemorySmoke/vueroute-consumer/`
+- `docs/03-完成/ecmascript.vueroute/status.md`
 
-结论应写成“Vue Router 高频 API 绑定 beta 可用”，而不是“VueRoute 全量生产可用”。
+本轮复核结果：
+
+```powershell
+pwsh .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.ps1 -Configuration Debug
+```
+
+结果：通过。
+
+这条 smoke 已验证：
+
+- 本地 `Jazor` package pack
+- `VueRoute.MemorySmoke.Host` rebuild
+- 隔离 generated output
+- generated router/component/testing/host modules lowering 断言
+- Vite production build
+- Vitest runtime 场景
+- Vitest DOM 场景
+- smoke 运行后 `git status` 不产生样例脏改
+
+当前真正剩余的问题不是“有没有真实 smoke”，而是**高频生产声明之外的长尾边界尚未纳入 production candidate 承诺**：
+
+- typed routes 等高级类型玩法
+- 更细粒度 scroll / matcher / alias / advanced guard 组合
+- `RouterView` scoped-slot 的独立真实 consumer 声明
+
+结论应写成“Vue Router 高频 API 绑定已进入 `production candidate`”，但仍不能宣称“VueRoute 全量生产可用”。
 
 ### P1：状态文档需要按当前验证结果更新
 
@@ -171,7 +196,7 @@ VueRoute 当前测试全绿，但验证层级仍偏 compiler/import/proxy/layout
 
 - `docs/03-完成/ecmascript.vue3/status.md` 应更新为 Vue3 专项 compiler 测试 57/57 已通过，并记录 `Vue3.cs` 分层边界已恢复。
 - `docs/03-完成/ecmascript.pinia/status.md` 应更新为 Pinia 主测试 62/62 已通过，并说明失败根因是动态编译测试引用闭包缺失而不是主包功能回退。
-- `docs/03-完成/ecmascript.vueroute/status.md` 当前不存在，VueRoute 只有目标文档和覆盖矩阵，缺少完成状态快照。
+- `docs/03-完成/ecmascript.vueroute/status.md` 已存在，但应继续和后续 smoke/coverage 结果同步更新。
 
 建议尽快把这三个状态页补齐/更新，否则文档会继续落后于当前真实基线。
 
@@ -244,6 +269,12 @@ pwsh samples/ECMAScript.Pinia.Counter/verify-smoke.ps1
 结果：通过。本地 package pack、sample host rebuild、generated module 断言、Vite build、Vitest runtime/DOM 全部通过；Vitest 结果为 3 个 test files、23 个 tests 全绿。
 
 ```powershell
+pwsh .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.ps1 -Configuration Debug
+```
+
+结果：通过。本地 package pack、sample host rebuild、generated router/component/testing/host module 断言、Vite build、Vitest runtime/DOM 全部通过；Vitest 结果为 2 个 test files、6 个 tests 全绿。
+
+```powershell
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal -p:UseSharedCompilation=false
 ```
 
@@ -256,9 +287,9 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 1. 把 `ECMAScript.VueContract`、`ECMAScript.Vue3`、`using static ECMAScript.Vue3`、`IVueComponent` / `IVueLibraryComponent` 的 authoring 合同写入正式 README/status，而不是只存在于实现与测试。
 2. 同步更新 Vue3、Pinia、RazorVue 相关 sample、README、SDK 集成样例，避免旧命名空间继续出现在真实消费代码里。
 3. 重新跑 Pinia sample smoke，并确保执行后 `git status` 不产生 sample generated manifest 脏改。
-4. 给 VueRoute 增加真实 package/consumer smoke，至少覆盖 Vite build、router creation、navigation、guard、`RouterLink` / `RouterView` runtime DOM 断言。
-5. 为 VueRoute 补 `docs/03-完成/ecmascript.vueroute/status.md`，并把覆盖矩阵中的“部分覆盖/暂不覆盖”同步到生产边界说明。
-6. 在后续更大范围发布前，补 Jolt / VueRoute / 外部 consumer smoke，当前 RazorVue/emit 端的生产链路过滤回归已通过，不再是主要阻断项。
+4. 继续扩 VueRoute 长尾生产边界说明，把 typed routes、advanced guard 组合、`RouterView` scoped-slot runtime 声明和当前“不承诺”的部分写清楚。
+5. 继续同步 `docs/03-完成/ecmascript.vueroute/status.md` 与覆盖矩阵，保持 smoke 结论、状态页、主诊断报告三处一致。
+6. 在后续更大范围发布前，补 Jolt / 外部 consumer 联动；当前 RazorVue/emit 端和 VueRoute sample smoke 都已通过，不再是主要阻断项。
 
 ### 应该完成
 
@@ -277,7 +308,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 | `ECMAScript.Vue3` | `production candidate` | 专项构建与测试已收口，下一步看跨线回归与外部 consumer |
 | `ECMAScript.Pinia` | `production candidate` | sample、主测试都已收口，下一步看更大范围集成回归 |
 | `ECMAScript.Pinia.Testing` | `preview candidate` | 独立测试和 sample smoke 均通过，但应随 Pinia 主包一起验收 |
-| `ECMAScript.VueRoute` | `covered API beta` | 高频 API 测试全绿，但缺少前端 runtime smoke 和完成状态文档 |
+| `ECMAScript.VueRoute` | `production candidate` | 高频 API 测试和真实 consumer smoke 已通过，但长尾边界仍未纳入生产承诺 |
 
 下一轮评审的最低通过门槛：
 
@@ -286,5 +317,5 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 3. `dotnet test src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj` 全绿。
 4. `dotnet test src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj` 全绿。
 5. `samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 全绿且不留下工作区脏改。
-6. 新增 VueRoute sample smoke 全绿。
+6. `samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.ps1` 持续全绿且不留下工作区脏改。
 7. 三条线的 `docs/03-完成` 状态文档与真实测试结果一致。

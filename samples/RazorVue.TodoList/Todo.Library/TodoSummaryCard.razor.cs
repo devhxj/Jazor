@@ -1,4 +1,5 @@
 using ECMAScript;
+using static ECMAScript.Vue3;
 using Jazor.RazorVue;
 using Microsoft.AspNetCore.Components;
 

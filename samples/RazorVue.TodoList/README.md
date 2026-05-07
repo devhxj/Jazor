@@ -13,6 +13,14 @@ The sample is split into:
 - `Todo.Host`: build host that turns on `JazorEmit` and writes generated artifacts to `wwwroot/jazor/`
 - `todo-consumer`: a minimal Vite + Vue + Vuetify app that imports the generated `.vue` component
 
+`Todo.Library` follows the explicit authoring contract. Component marker types are brought in with:
+
+```csharp
+using static ECMAScript.Vue3;
+```
+
+The sample does not rely on package-level global aliases for `IVueComponent` / `IVueLibraryComponent`.
+
 ## Build from this repository
 
 Use the helper script to build the local package inputs, pack `Jazor` and `ECMAScript.Vuetify`, and rebuild the host:
