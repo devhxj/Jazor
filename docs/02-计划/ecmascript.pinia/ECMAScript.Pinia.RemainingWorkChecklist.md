@@ -1,7 +1,7 @@
 # ECMAScript.Pinia 剩余完善清单
 
 > Status: 初始落地后的活跃清单  
-> Updated: 2026-05-06  
+> Updated: 2026-05-07  
 > Positioning: 基于 `docs/01-目标/ecmascript.pinia/` 的设计边界、`src/ECMAScript.Pinia/` 真实代码状态与 `src/ECMAScript.Pinia.Test/` 验证基线整理的下一阶段工作清单。  
 > Scope: 当前已完成独立项目、独立测试工程、核心 runtime/helper 绑定；本清单只列增量补齐项，不重复把已落地的基础项目拆分当作待办。
 
@@ -36,8 +36,8 @@
 
 剩余问题：
 
-- 如何为常见 plugin authoring 给出推荐 projection / record 模式；
-- 如何把 plugin-added custom state 的消费写法沉淀成统一示例；
+- 如何继续把 cookbook 模式抽象成更可复用的 sample 体系；
+- 是否要为 plugin-added custom state 再补更专门的 SSR/hydration 示例；
 - 在不引入“module augmentation 等价物”的前提下，继续提升 authoring 可读性。
 
 ### 2.2 API 覆盖矩阵驱动补齐
@@ -45,7 +45,7 @@
 当前已覆盖最常见 authoring path，但还有几类缺口：
 
 - 更长尾 helper
-- `@pinia/testing`
+- `@pinia/testing` 更长尾配置
 
 推荐原则：
 
@@ -89,8 +89,8 @@
 
 后续剩余工作不再是“要不要拆”，而是：
 
-- 是否继续补更长尾 testing options
-- 是否需要补 sample / cookbook 场景
+- 是否继续补更长尾 testing options / alias surface
+- 是否需要补更专门的 sample / cookbook 场景
 - 是否需要为 testing root 和 plugin 联动追加更多组合回归
 
 ### 3.3 组件实例 `this` 的强类型 helper 回调
@@ -118,15 +118,23 @@
 
 后续仍可按需求追加：
 
-- `mapStores()` / `mapState()` / `mapActions()` 的更偏 Options API sample
-- `$subscribe()` mutation subtype 的更完整 sample
-- HMR 专门场景 sample
+- 更复杂的 consumer 侧跨组件断言、卸载/重挂载与资源清理场景
+- 是否需要把 hydration cookbook 再扩到更复杂的 setup-store SSR 恢复案例
 
 ## 5. 推荐推进顺序
 
 建议按以下顺序继续推进：
 
-1. plugin merge 属性收口模式
-2. plugin projection 的真实消费示例或 sample
-3. 视需求决定是否引入更长尾 helper
-4. 继续完善 `ECMAScript.Pinia.Testing` 的 sample / 组合回归 / 文档
+1. 视需求决定是否引入更长尾 helper
+2. 扩展 consumer 侧更复杂的跨组件/重复挂载/资源清理场景
+3. 继续扩展 testing/plugin 组合面的长尾 cookbook
+
+当前状态更新：
+
+- HMR cookbook sample / 回归已补；
+- consumer 侧真实 `import.meta.hot.accept(...)` 宿主桥接已补；
+- SSR/hydration cookbook sample / 回归已补；
+- Pinia root lifecycle (`setActivePinia` / `setActivePinia(undefined)` / `getActivePinia` / `disposePinia`) 回归与 consumer 验证已补；
+- `@pinia/testing` 的 `stubActions: string[]` 合同已补；
+- consumer 侧真实组件挂载与 DOM 断言已补第一轮；
+- 下一阶段更适合转向 testing/plugin 更长尾组合面，以及更复杂的 consumer 生命周期/跨组件验证。

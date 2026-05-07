@@ -1,5 +1,8 @@
+using System;
+using System.ComponentModel;
 using ECMAScript;
 using ECMAScript.VueContract;
+using static ECMAScript.Pinia;
 using static ECMAScript.Vue3;
 
 namespace Pinia.Counter.Host;

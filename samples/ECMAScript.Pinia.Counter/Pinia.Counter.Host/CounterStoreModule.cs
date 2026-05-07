@@ -31,6 +31,20 @@ public abstract class CounterStore : Store<CounterState>
 
 [ECMAScript]
 [Description("@#")]
+public sealed record CounterPluginExtensions : Vue3.VueProps
+{
+    public string AuditTag { get; init; } = "";
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed record CounterPluginState : PiniaStateTree
+{
+    public string PersistedAt { get; set; } = "";
+}
+
+[ECMAScript]
+[Description("@#")]
 public abstract class CounterStoreRefs : StoreRefs<CounterStore>
 {
     public extern Vue3.IVueRef<int> Count { get; }
@@ -59,10 +73,11 @@ public record CounterActions : Vue3.VueProps
 [ECMAScriptModule("stores/counter-store.mjs")]
 public static class CounterStoreModule
 {
+    private const string CounterStoreId = "counter";
     private const int SeedCount = 2;
 
     public static StoreDefinition<CounterStore> UseCounterStore = DefineStore<CounterStore, CounterState>(
-        "counter",
+        CounterStoreId,
         new DefineStoreOptions<CounterState>
         {
             State = CreateState,
@@ -77,8 +92,33 @@ public static class CounterStoreModule
             }
         });
 
+    public static ProjectedStoreDefinition<CounterStore, CounterPluginExtensions, CounterPluginState> UseProjectedCounterStore
+        = ProjectStoreDefinition<CounterStore, CounterPluginExtensions, CounterPluginState>(UseCounterStore);
+
     public static CounterStoreRefs UseCounterStoreRefs(CounterStore store)
         => StoreToRefs<CounterStoreRefs, CounterStore>(store);
+
+    public static StoreRefs<ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState>> UseProjectedCounterStoreRefs(
+        ProjectedStore<CounterStore, CounterPluginExtensions, CounterPluginState> store)
+        => StoreToRefs(store);
+
+    public static Vue3.VueProps? InstallAuditPlugin(PiniaPluginContext context)
+    {
+        if (context.Store.Id != CounterStoreId)
+        {
+            return null;
+        }
+
+        var projectedStore = ProjectStore<CounterStore, CounterPluginExtensions, CounterPluginState>((CounterStore)context.Store);
+        var customState = projectedStore.AsCustomState();
+
+        customState.PersistedAt = "plugin:" + context.Store.Id;
+
+        return new CounterPluginExtensions
+        {
+            AuditTag = context.Store.Id + ":audited"
+        };
+    }
 
     private static CounterState CreateState()
         => new()

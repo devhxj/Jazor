@@ -9,7 +9,7 @@
 | 类别 | 官方 API / 概念 | 当前 C# surface | 状态 | 说明 |
 |------|-----------------|----------------|------|------|
 | Root lifecycle | `createPinia()` | `Pinia.CreatePinia()` | 已覆盖 | 返回 `PiniaInstance`，同时兼容 Vue plugin 安装路径 |
-| Root lifecycle | `getActivePinia()` / `setActivePinia()` | `GetActivePinia()` / `SetActivePinia(...)` | 已覆盖 | 直接映射 |
+| Root lifecycle | `getActivePinia()` / `setActivePinia()` / `setActivePinia(undefined)` | `GetActivePinia()` / `SetActivePinia(...)` / `ClearActivePinia()` | 已覆盖 | 激活具体 root 直接映射；清空 active root 使用显式 helper 发出 `setActivePinia(undefined)` |
 | Root lifecycle | `disposePinia()` | `DisposePinia(...)` | 已覆盖 | 直接映射 |
 | Store definition | option store `defineStore(id, options)` | `DefineStore<TState>(...)` / `DefineStore<TStore, TState>(...)` | 已覆盖 | 支持默认 `Store<TState>` 投影与用户自定义 store 投影 |
 | Store definition | setup store `defineStore(id, setup, options?)` | `DefineStore<TStore>(string, Func<TStore>)` / `DefineStore<TStore>(string, PiniaSetupStoreFactory<TStore>)` / `DefineSetupStoreOptions` | 已覆盖 | 同时支持 parameterless 与 helper-aware setup callback；`actions` options contract 已建模 |
@@ -18,8 +18,8 @@
 | Store runtime | `$state` | `Store<TState>.State` | 已覆盖 | 强类型状态投影 |
 | Store runtime | `$patch(object)` / `$patch(fn)` | `Patch(PiniaStatePatch<TState>)` / `Patch(PiniaStatePatchCallback<TState>)` | 已覆盖 | object patch 改为显式 patch contract，不再误建模为完整状态对象 |
 | Store runtime | `$reset()` | `Reset()` | 已覆盖 | option store 主路径 |
-| Store runtime | `$subscribe(...)` | `Subscribe(...)` + `SubscribeOptions` + mutation subtype family | 已覆盖 | `flush` / `detached` 与 `Direct` / `PatchFunction` / `PatchObject` mutation 形状已建模 |
-| Store runtime | `$onAction(...)` | `OnAction(...)` / `OnAction<TStore>(...)` + action context | 已覆盖 | 支持 untyped 与 typed listener proxy，参数/结果使用 `PiniaValue` 桥接 |
+| Store runtime | `$subscribe(...)` | `Subscribe(...)` + `SubscribeOptions` + mutation subtype family | 已覆盖 | `SubscribeOptions` 已覆盖 `detached + WatchOptions`，包括 `flush` / `immediate` / `deep` / `once` / `onTrack` / `onTrigger`，同时 mutation 形状已建模 |
+| Store runtime | `$onAction(...)` | `OnAction(...)` / `OnAction<TStore>(...)` + action context | 已覆盖 | 支持 untyped 与 typed listener proxy；`After(...)` 同时支持无结果、`PiniaValue` 桥接和显式结果类型投影；`onError(...)` 同时覆盖 `Error` 便利层、`OnAnyError(PiniaValue?)` unknown-like 层和显式泛型错误投影；补充 `ProjectActionContext<TStore, TActionName, TArgs>(...)`、`TryProjectActionContext<TStore, TActionName, TArgs>(..., expectedActionName)` 与 `ActionArgsView` / `ActionArgsView<T...>` 作为显式 action-name / args 投影入口；对泛型方法组通常需显式写类型参数 |
 | Store runtime | `$dispose()` | `Dispose()` | 已覆盖 | 直接映射 |
 | Refs / hydration / HMR | `storeToRefs()` | `StoreToRefs(...)` | 已覆盖 | 支持默认 refs bag 和用户自定义 typed refs |
 | Refs / hydration / HMR | `skipHydrate()` / `shouldHydrate()` | `SkipHydrate(...)` / `ShouldHydrate(...)` | 已覆盖 | 直接映射 |
@@ -33,7 +33,7 @@
 | Plugin surface | `pinia.use(...)` / `PiniaPluginContext` | `PiniaInstance.Use(...)` / `PiniaPluginContext` / `PiniaPluginContext<TStore, TOptions>` / `PiniaPluginContext<TStore, TOptions, ...>` / `DefineStoreOptionsInPlugin` | 已覆盖 | 支持 untyped、typed、以及 chained-plugin projected context/options 投影 |
 | Plugin surface | plugin-added custom properties / custom state typed propagation | `ProjectStore(...)` / `ProjectStoreDefinition(...)` + `ProjectedStore<...>` / `ProjectedStoreDefinition<...>` | 已覆盖 | 使用显式 identity 投影承接 store / store.$state 的 plugin 扩展，不做 TS module augmentation 等价物 |
 | TS utility types | `_Spread` / `_MapStateReturn` / `MapStoresCustomization` 等 | 无 | 暂不覆盖 | C# 不追求镜像 Pinia 的全部类型级工具 |
-| Testing package | `@pinia/testing` / `createTestingPinia()` | `ECMAScript.Pinia.Testing` / `PiniaTesting.CreateTestingPinia(...)` / `TestingOptions` | 已覆盖 | 作为独立外部库与独立测试工程落地，不混入 `ECMAScript.Pinia` 主包 |
+| Testing package | `@pinia/testing` / `createTestingPinia()` | `ECMAScript.Pinia.Testing` / `PiniaTesting.CreateTestingPinia(...)` / `TestingPinia` / `TestingOptions` / `TestingOptions<TDelegate>` / `ProjectPlugin(...)` | 已覆盖 | 作为独立外部库与独立测试工程落地，不混入 `ECMAScript.Pinia` 主包；`stubActions` 已覆盖 `bool | string[] | predicate`，`createSpy` 同时支持非泛型与显式 typed delegate authoring，typed/projected plugin 可通过显式 identity 投影复用到 testing root |
 
 ## 关键差异
 
@@ -45,6 +45,8 @@ Pinia 官方 setup store 允许 `storeSetup(helpers)`。
 - `Func<TStore>`
 - `PiniaSetupStoreFactory<TStore>`
 - `SetupStoreHelpers.Action(fn, name?)`
+  说明：当前已把 `Action` / `Func` 委托族覆盖到 .NET 标准上限（16 输入参数），不再停留在低参数子集。
+- 对 4 参数及以上的方法组，C# 通常需要显式 generic 参数或先赋给委托局部变量；这是语言推断边界，不是 host binding 缺口。
 - `DefineSetupStoreOptions` / `DefineSetupStoreOptions<TActions>`
 
 这条 authoring path 不再停留在“无参 callback”的简化模型。
@@ -83,6 +85,52 @@ Pinia plugin 现在已经支持：
 
 对链式 plugin authoring，`PiniaInstance.Use(...)` 还提供更高阶 typed overload，允许 plugin callback 在 `context.store` 上直接读取前置插件加进来的 custom properties / custom state，而不是回退到手写混合 store 类型。
 
+### `$onAction()` 的 action-specific typing
+
+Pinia 官方 TypeScript 类型把 `$onAction()` 的 context 建模成按 action name 分发的 union，`name` 与 `args` 会随 action 分支一起收窄。  
+`ECMAScript.Pinia` 不尝试在 C# 里伪造同等 union/type-level 魔法，而是改成显式投影路线：
+
+- `ProjectActionContext<TStore, TActionName, TArgs>(...)`
+- `TryProjectActionContext<TStore, TActionName, TArgs>(..., expectedActionName)`
+- `ProjectedActionContext<TStore, TActionName, TArgs>.ActionName`
+- `ProjectedActionContext<TStore, TActionName, TArgs>.ActionArgs`
+- `ActionArgsView`
+- `ActionArgsView<T...>`
+
+其中：
+
+- `ProjectActionContext(...)` 只做类型级 identity 投影；
+- `TryProjectActionContext(..., expectedActionName)` 会额外发出显式 runtime name guard，只有 `context.name === expectedActionName` 时才返回非空投影。
+
+这些 helper 不创建新的 runtime context，也不改变 Pinia 原始 `context.name` / `context.args[]` 结构。  
+当前 `ActionArgsView` / `ActionArgsView<T...>` 采用稳定的数组槽位语义，并提供逐层扩展的 arity family，当前已补到 16 槽位上限；适合在生产代码里把高频 action 的参数面显式收口为可读的命名 contract，而不是继续在业务层散落 `PiniaValue[]`。
+
+### `@pinia/testing` 独立边界
+
+`ECMAScript.Pinia.Testing` 当前已覆盖：
+
+- `createTestingPinia()`
+- `TestingPinia`
+- `TestingPinia.App`
+- `TestingOptions`
+- `TestingInitialState`
+- `TestingStubActions`（`bool | string[] | predicate`）
+- `PiniaTestingSpyFactory`
+- `TestingOptions<TDelegate>`（typed `createSpy` authoring，不改变 runtime `createSpy` field shape）
+- `ProjectPlugin(...)`（typed / projected Pinia plugin 到 testing `plugins` 列表的显式 identity 投影）
+- `writableComputed` / `stubPatch` / `stubReset` / `fakeApp` / `plugins`
+
+同时已补 cookbook 级 lowering 回归，覆盖：
+
+- object-form `initialState`
+- plugin install list
+- named-action `stubActions`
+- predicate-style `stubActions`
+- `writableComputed`
+- testing root sample module
+- `fakeApp` + `TestingPinia.app` runtime seam
+- consumer-side Vitest smoke example against generated testing/store modules
+
 ### `$subscribe()` mutation shape
 
 Pinia 官方 subscription callback 不是一个单薄对象，而是：
@@ -106,6 +154,8 @@ Pinia 把 `defineStore()` 返回值设计为函数对象。
 - `StoreDefinition<TStore>.Use(pinia, hot)`
 
 这是当前最重要的 authoring surface 取舍之一。
+
+其中 `Use(pinia, hot)` 已进入 cookbook/回归覆盖，用于承接真实 HMR host 在热更新过程中把旧热态 store 重新解析回 typed store 的路径。
 
 ## 结论
 

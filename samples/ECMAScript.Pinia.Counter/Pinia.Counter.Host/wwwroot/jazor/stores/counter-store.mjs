@@ -1,4 +1,5 @@
 import { defineStore, storeToRefs } from "pinia";
+const counterStoreId = "counter";
 const seedCount = 2;
 export let useCounterStore = defineStore("counter", {
   state: createState,
@@ -11,8 +12,21 @@ export let useCounterStore = defineStore("counter", {
     return __cb(this, ...arguments);
   })(decrement) }
 });
+export let useProjectedCounterStore = useCounterStore;
 export function useCounterStoreRefs(store) {
   return storeToRefs(store);
+}
+export function useProjectedCounterStoreRefs(store) {
+  return storeToRefs(store);
+}
+export function installAuditPlugin(context) {
+  if (context.store.$id !== "counter") {
+    return null;
+  }
+  let projectedStore = context.store;
+  let customState = projectedStore.$state;
+  customState.persistedAt = "plugin:" + context.store.$id;
+  return { auditTag: context.store.$id + ":audited" };
 }
 function createState() {
   return { count: 2, status: "Store seeded through defineStore()." };
