@@ -42,6 +42,10 @@
   - `watchEffect` -> `WatchEffect`
   - `onMounted` -> `OnMounted`
 - 命名 `[ECMAScriptUnion]` 类型用于真实 union 桥接；方法边界优先 overload 体验。
+- authoring 默认规则是“能直接赋值就直接赋值”：
+  - 如果调用点已经持有强类型委托变量、类实例变量、typed record、或可直接命中的 union 分支值，应直接赋给目标宿主成员或参数；
+  - 只有在 C# 语言本身无法把作者想写的字面量 / lambda / interface-typed source 形式直接绑定到目标 contract 时，才补显式 helper、命名 union bridge 或 collection-initializer `Add(...)` 入口；
+  - 不要为了统一表面写法，把本来可以自然直赋的场景再机械包一层 helper。
 - props/object 字面量遵循通用 record lowering，不额外引入 Vue 专用 compiler 特路。
 - `VueObject` 承载 Vue 核心 props 与一组高频原生 HTML convenience attrs；长尾属性继续通过 `Attrs` / indexer / typed props bag 表达。
 - `UseModel(...)` 返回 `VueModelRef<TValue>`，`.Value` 对应 `model.value`，modifiers 通过 `GetModifiers()` / `GetModifiers<T>()` 读取；named model 可通过 `VueModelName<TProps,TValue>` + `ModelName/ModelPropName/ModelUpdateEventName` helper 复用同一 typed contract，`setup(context)` 侧可直接 `context.Emit(model, value)` 发出对应 `update:*` 事件。

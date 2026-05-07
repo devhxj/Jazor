@@ -7,4 +7,24 @@
     <Net100AssembliesVersion>1.8.5</Net100AssembliesVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
   </PropertyGroup>
+
+  <!--
+    Isolated build roots are evaluated inside each project so referenced projects
+    get their own stable bin/obj locations. Avoid composing $(MSBuildProjectName)
+    or $(TargetFramework) directly in command-line global properties because those
+    tokens do not rebind reliably across project-to-project builds.
+  -->
+  <PropertyGroup Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">
+    <BaseOutputPath>$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))$(MSBuildProjectName)\bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(JazorIsolatedBaseIntermediateOutputRoot)' != ''">
+    <BaseIntermediateOutputPath>$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseIntermediateOutputRoot)'))$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+    <ProjectExtensionsPath>$(BaseIntermediateOutputPath)</ProjectExtensionsPath>
+    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(JazorIsolatedBaseOutputRoot)' != '' or '$(JazorIsolatedBaseIntermediateOutputRoot)' != ''">
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**</DefaultItemExcludes>
+  </PropertyGroup>
 </Project>

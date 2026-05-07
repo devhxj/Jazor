@@ -24,6 +24,10 @@ Vue3 映射不是把 Vue 文档示例逐字镜像成 C# API，而是在 C# autho
 - compiler 不应该知道 `Dataset` 需要加 `data-` 前缀，也不应该知道某个第三方库的属性格式。
 - active public surface 不再以泛型 union wrapper 作为主路径；需要 bridge 时使用具名 contract。
 - 外部扩展库不应依赖新的 Jazor compiler 特性来完成语义 lowering；语义应通过 `ECMAScript.Vue3` 暴露的公共 C# 合同表达。
+- authoring 默认优先“直接赋值”而不是“helper 仪式化”：
+  - 如果值已经是强类型委托变量、类实例变量、typed record、typed readonly bag，或能直接命中目标 union 的一个真实分支，则应直接赋值；
+  - helper / 命名 union / collection-initializer `Add(...)` 只用于补 C# 语言边界，不用于包裹本可自然绑定的值；
+  - 文档、sample 与测试都应把这种“直赋优先”视为 canonical authoring，而不是把 helper 写法当默认范式。
 
 ## 2. Compiler 参与边界
 
@@ -413,6 +417,12 @@ public sealed record LabelPropOptions : VueProps
 `VueEmitRegistry` / `VueEmitRegistry<T0...T3>` 覆盖 0 到 4 个 payload 的 object-form validator。超过 4 个 payload 时再按真实需求增加 overload，不使用 `object[]`。
 
 `Props` / `Emits` 的 canonical public surface 通过 `VueNamesOrOptions` bridge 同时覆盖 array-form 与 object-form，并保留 `Props = ["title"]` / `Emits = ["save"]` 这类 collection-expression authoring。
+
+这里的 authoring 取舍要保持一致：
+
+- 已经是 `VueProps` record、`string[]`、validator delegate 变量、或 object-form registry value 的场景，优先直接赋值；
+- 只有当 collection initializer / indexer / lambda 字面量本身触发 C# 绑定限制时，才补 `Add(...)` 桥接或具名 union bridge；
+- 不要把“helper 可用”误升级为“helper 必写”。
 
 ### 6.3 Host-Level `[Props]` / `[Emits]`
 

@@ -1,0 +1,147 @@
+name: Pinia Verify
+
+on:
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - 'src/ECMAScript.Pinia/**'
+      - 'src/ECMAScript.Pinia.Test/**'
+      - 'src/ECMAScript.Pinia.Testing/**'
+      - 'src/ECMAScript.Pinia.Testing.Test/**'
+      - 'src/ECMAScript.Vue3/**'
+      - 'src/ECMAScript.VueRoute/**'
+      - 'src/ECMAScript/**'
+      - 'src/Jazor/**'
+      - 'src/Jazor.Analyzer/**'
+      - 'src/Jazor.Common/**'
+      - 'src/Jazor.Compiler/**'
+      - 'src/Jazor.Emit/**'
+      - 'src/Jazor.RazorVue/**'
+      - 'samples/ECMAScript.Pinia.Counter/**'
+      - 'scripts/publish-nuget.ps1'
+      - 'scripts/test-dotnet.ps1'
+      - 'Jazor.slnx'
+      - 'global.json'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/ECMAScript.Pinia/**'
+      - 'src/ECMAScript.Pinia.Test/**'
+      - 'src/ECMAScript.Pinia.Testing/**'
+      - 'src/ECMAScript.Pinia.Testing.Test/**'
+      - 'src/ECMAScript.Vue3/**'
+      - 'src/ECMAScript.VueRoute/**'
+      - 'src/ECMAScript/**'
+      - 'src/Jazor/**'
+      - 'src/Jazor.Analyzer/**'
+      - 'src/Jazor.Common/**'
+      - 'src/Jazor.Compiler/**'
+      - 'src/Jazor.Emit/**'
+      - 'src/Jazor.RazorVue/**'
+      - 'samples/ECMAScript.Pinia.Counter/**'
+      - 'scripts/publish-nuget.ps1'
+      - 'scripts/test-dotnet.ps1'
+      - 'Jazor.slnx'
+      - 'global.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Verify ECMAScript.Pinia
+        shell: pwsh
+        run: |
+          ./scripts/test-dotnet.ps1 `
+            -Project pinia `
+            -Configuration Release `
+            -BaseOutputPath 'artifacts/out/pinia/' `
+            -BaseIntermediateOutputPath 'artifacts/obj/pinia/'
+
+      - name: Verify ECMAScript.Pinia.Testing
+        shell: pwsh
+        run: |
+          ./scripts/test-dotnet.ps1 `
+            -Project pinia-testing `
+            -Configuration Release `
+            -BaseOutputPath 'artifacts/out/pinia-testing/' `
+            -BaseIntermediateOutputPath 'artifacts/obj/pinia-testing/'
+
+  sample-smoke:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: samples/ECMAScript.Pinia.Counter/pinia-consumer/package-lock.json
+
+      - name: Verify sample smoke
+        shell: pwsh
+        run: |
+          ./samples/ECMAScript.Pinia.Counter/verify-smoke.ps1 `
+            -Configuration Release `
+            -BaseOutputPath 'artifacts/out/pinia-sample/' `
+            -BaseIntermediateOutputPath 'artifacts/obj/pinia-sample/'
+
+  package-dry-run:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Pack Jazor
+        shell: pwsh
+        run: |
+          ./scripts/publish-nuget.ps1 `
+            -Configuration Release `
+            -OutputDirectory artifacts/packages `
+            -SkipPush `
+            -BaseOutputPath 'artifacts/out/pinia-pack/' `
+            -BaseIntermediateOutputPath 'artifacts/obj/pinia-pack/'
+
+      - name: Pack Jazor (NoBuild fast path)
+        shell: pwsh
+        run: |
+          ./scripts/publish-nuget.ps1 `
+            -Configuration Release `
+            -OutputDirectory artifacts/packages-nobuild `
+            -SkipPush `
+            -NoBuild `
+            -BaseOutputPath 'artifacts/out/pinia-pack/' `
+            -BaseIntermediateOutputPath 'artifacts/obj/pinia-pack/'
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pinia-jazor-packages
+          path: |
+            artifacts/packages/*
+            artifacts/packages-nobuild/*
+          if-no-files-found: error

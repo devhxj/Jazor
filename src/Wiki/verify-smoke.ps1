@@ -1,6 +1,8 @@
 param(
     [int]$Port = 4173,
     [string]$Configuration = "Debug",
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = "",
     [switch]$Build,
     [switch]$BuildLocal,
     [switch]$Publish,
@@ -251,6 +253,8 @@ $browserAssetChecks = @(
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
 
 if ($Publish -and ($Build -or $BuildLocal)) {
     throw "-Publish already performs its own publish build. Do not combine it with -Build or -BuildLocal."
@@ -262,6 +266,17 @@ if ($Publish -and -not $PSBoundParameters.ContainsKey("Configuration")) {
 
 function Invoke-DotNet {
     param([string[]]$DotNetArgs)
+
+    if ($baseOutputPathWasExplicit) {
+        $DotNetArgs += "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath"
+    }
+
+    if ($baseIntermediateOutputPathWasExplicit) {
+        $DotNetArgs += "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath"
+    }
+
+    $DotNetArgs += "/nr:false"
+    $DotNetArgs += "-p:UseSharedCompilation=false"
 
     dotnet @DotNetArgs
     if ($LASTEXITCODE -ne 0) {
@@ -435,7 +450,15 @@ if ($Publish) {
 }
 elseif ($BuildLocal) {
     $buildScript = Join-Path $sampleRoot "build-local.ps1"
-    Invoke-Script -Path $buildScript -Args @("-Configuration", $Configuration)
+    $buildLocalArgs = @("-Configuration", $Configuration)
+    if ($baseOutputPathWasExplicit) {
+        $buildLocalArgs += @("-BaseOutputPath", $BaseOutputPath)
+    }
+    if ($baseIntermediateOutputPathWasExplicit) {
+        $buildLocalArgs += @("-BaseIntermediateOutputPath", $BaseIntermediateOutputPath)
+    }
+
+    Invoke-Script -Path $buildScript -Args $buildLocalArgs
 }
 elseif ($Build) {
     Invoke-DotNet @("build", $hostProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")

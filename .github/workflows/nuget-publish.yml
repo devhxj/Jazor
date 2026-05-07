@@ -18,7 +18,11 @@ permissions:
   packages: write
 
 jobs:
+  verify-pinia:
+    uses: ./.github/workflows/pinia-verify.yml
+
   publish:
+    needs: verify-pinia
     runs-on: windows-latest
     env:
       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

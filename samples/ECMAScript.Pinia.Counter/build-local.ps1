@@ -1,5 +1,7 @@
 param(
-    [string]$Configuration = "Debug"
+    [string]$Configuration = "Debug",
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +14,8 @@ $hostProject = Join-Path $sampleRoot "Pinia.Counter.Host\Pinia.Counter.Host.cspr
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
 
 [xml]$sdkProject = Get-Content (Join-Path $repoRoot "src\Jazor\Jazor.csproj")
 $packageVersion = $sdkProject.Project.PropertyGroup.Version
@@ -44,6 +48,7 @@ $restorePackagesPath = Join-Path $repoRoot ".tmp\nuget-sample-packages\$packageV
 $buildArgs = @(
     "build",
     $hostProject,
+    "-c", $Configuration,
     "-t:Rebuild",
     "/m:1",
     "/p:BuildInParallel=false",
@@ -52,5 +57,16 @@ $buildArgs = @(
     "-p:RestoreForce=true",
     "-p:JazorPackageVersion=$packageVersion"
 )
+
+if ($baseOutputPathWasExplicit) {
+    $buildArgs += "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath"
+}
+
+if ($baseIntermediateOutputPathWasExplicit) {
+    $buildArgs += "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath"
+}
+
+$buildArgs += "/nr:false"
+$buildArgs += "-p:UseSharedCompilation=false"
 
 Invoke-DotNet $buildArgs

@@ -39,6 +39,20 @@ You should see:
 - `host/app.mjs`
 - `jazor-manifest.json`
 
+Run the end-to-end smoke verification from the repository root or sample directory:
+
+```powershell
+.\verify-smoke.ps1 -Configuration Release
+```
+
+This validates the production-oriented consumer path:
+
+- pack `Jazor` from the current repository state
+- rebuild `Pinia.Counter.Host` against the freshly packed local NuGet
+- assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
+- run the Vite build
+- run the frontend Vitest runtime/DOM suites
+
 ## Run the frontend consumer
 
 After `.\build-local.ps1` succeeds:

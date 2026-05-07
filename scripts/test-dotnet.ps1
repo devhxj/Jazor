@@ -2,7 +2,9 @@ param(
     [ValidateSet("all", "compiler", "clr", "pinia", "pinia-testing", "vueroute", "razorvue", "jolt", "jolt-build", "emit", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish")]
     [string]$Project = "all",
     [string]$Configuration = "Debug",
-    [string]$Filter = ""
+    [string]$Filter = "",
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +13,8 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 $configurationWasExplicit = $PSBoundParameters.ContainsKey("Configuration")
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
 
 $compilerTestProject = Join-Path $repoRoot "src\Jazor.CompilerTest\Jazor.CompilerTest.csproj"
 $clrTestProject = Join-Path $repoRoot "src\Jazor.CLR.Test\Jazor.CLR.Test.csproj"
@@ -41,6 +45,12 @@ function Invoke-WikiVerification {
 
     $scriptArgs = @{
         Configuration = $effectiveWikiConfiguration
+    }
+    if ($baseOutputPathWasExplicit) {
+        $scriptArgs.BaseOutputPath = $BaseOutputPath
+    }
+    if ($baseIntermediateOutputPathWasExplicit) {
+        $scriptArgs.BaseIntermediateOutputPath = $BaseIntermediateOutputPath
     }
     if ($Publish) {
         $scriptArgs.Publish = $true
@@ -74,6 +84,47 @@ switch ($Project) {
     }
 }
 
+function Get-SharedBuildPathArguments {
+    $arguments = @()
+
+    if ($baseOutputPathWasExplicit) {
+        $isolatedOutputRoot = Get-IsolatedBuildRoot -Path $BaseOutputPath
+        $arguments += "-p:JazorIsolatedBaseOutputRoot=$isolatedOutputRoot"
+    }
+
+    if ($baseIntermediateOutputPathWasExplicit) {
+        $isolatedIntermediateRoot = Get-IsolatedBuildRoot -Path $BaseIntermediateOutputPath
+        $arguments += "-p:JazorIsolatedBaseIntermediateOutputRoot=$isolatedIntermediateRoot"
+    }
+
+    $arguments += "/nr:false"
+    $arguments += "-p:UseSharedCompilation=false"
+
+    return $arguments
+}
+
+function Get-IsolatedBuildRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $resolvedPath = $Path
+    if (-not $resolvedPath.Contains('$(', [StringComparison]::Ordinal)) {
+        if (-not [System.IO.Path]::IsPathRooted($resolvedPath)) {
+            $resolvedPath = Join-Path $repoRoot $resolvedPath
+        }
+
+        $resolvedPath = [System.IO.Path]::GetFullPath($resolvedPath)
+    }
+
+    if (-not $resolvedPath.EndsWith('\', [StringComparison]::Ordinal)) {
+        $resolvedPath += '\'
+    }
+
+    return $resolvedPath
+}
+
 $joltBuildFilter = @(
     "FullyQualifiedName~JoltBuildTests",
     "FullyQualifiedName~JoltStaticAssetHandlerTests",
@@ -105,15 +156,18 @@ $buildTarget = if ($testTargets.Count -gt 1) {
     $testTargets[0]
 }
 
-dotnet build $buildTarget -c $Configuration /m:1 /p:BuildInParallel=false -v minimal
+$buildArgs = @("build", $buildTarget, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false", "-v", "minimal") + (Get-SharedBuildPathArguments)
+
+dotnet @buildArgs
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet build failed for '$buildTarget' with exit code $LASTEXITCODE."
 }
 
 foreach ($testProject in $testTargets) {
-    $testArgs = @("test", $testProject, "-c", $Configuration, "--no-build", "--no-restore", "-v", "minimal")
+    $testArgs = @("test", $testProject, "-c", $Configuration, "--no-build", "--no-restore", "-v", "minimal") + (Get-SharedBuildPathArguments)
     if (-not [string]::IsNullOrWhiteSpace($effectiveFilter)) {
-        $testArgs += @("--filter", $effectiveFilter)
+        $testArgs += "--filter"
+        $testArgs += $effectiveFilter
     }
 
     dotnet @testArgs

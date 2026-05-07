@@ -3,6 +3,8 @@ param(
     [string]$OutputDirectory = ".artifacts\packages",
     [string]$Source = "https://api.nuget.org/v3/index.json",
     [string]$ApiKey = "",
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = "",
     [switch]$SkipPush,
     [switch]$NoBuild
 )
@@ -13,6 +15,8 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $packageProject = Join-Path $repoRoot "src\Jazor\Jazor.csproj"
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
 
 if (-not (Test-Path $packageProject)) {
     throw "Package project not found: $packageProject"
@@ -24,7 +28,17 @@ function Invoke-DotNet {
         [string[]]$Arguments
     )
 
-    dotnet @Arguments
+    $effectiveArguments = [System.Collections.Generic.List[string]]::new()
+    $effectiveArguments.AddRange($Arguments)
+    if ($baseOutputPathWasExplicit) {
+        $effectiveArguments.Add("-p:JazorIsolatedBaseOutputRoot=$(Get-IsolatedBuildRoot -Path $BaseOutputPath)")
+    }
+    if ($baseIntermediateOutputPathWasExplicit) {
+        $isolatedIntermediateRoot = Get-IsolatedBuildRoot -Path $BaseIntermediateOutputPath
+        $effectiveArguments.Add("-p:JazorIsolatedBaseIntermediateOutputRoot=$isolatedIntermediateRoot")
+    }
+
+    dotnet @effectiveArguments
     if ($LASTEXITCODE -ne 0) {
         throw "dotnet $($Arguments[0]) failed with exit code $LASTEXITCODE."
     }
@@ -48,6 +62,28 @@ function Get-ProjectPropertyValue {
     return ""
 }
 
+function Get-IsolatedBuildRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $resolvedPath = $Path
+    if (-not $resolvedPath.Contains('$(', [StringComparison]::Ordinal)) {
+        if (-not [System.IO.Path]::IsPathRooted($resolvedPath)) {
+            $resolvedPath = Join-Path $repoRoot $resolvedPath
+        }
+
+        $resolvedPath = [System.IO.Path]::GetFullPath($resolvedPath)
+    }
+
+    if (-not $resolvedPath.EndsWith('\', [StringComparison]::Ordinal)) {
+        $resolvedPath += '\'
+    }
+
+    return $resolvedPath
+}
+
 function Resolve-LocalPackInputPath {
     param(
         [Parameter(Mandatory = $true)]
@@ -55,11 +91,14 @@ function Resolve-LocalPackInputPath {
         [Parameter(Mandatory = $true)]
         [string]$Include,
         [Parameter(Mandatory = $true)]
-        [string]$Configuration
+        [string]$Configuration,
+        [Parameter(Mandatory = $true)]
+        [string]$PackageBuildOutputRoot
     )
 
     $resolved = $Include.Replace('$(Configuration)', $Configuration)
     $resolved = $resolved.Replace('$(MSBuildThisFileDirectory)', "$ProjectDirectory\")
+    $resolved = $resolved.Replace('$(JazorPackageBuildOutputRoot)', $PackageBuildOutputRoot)
 
     if ([System.IO.Path]::IsPathRooted($resolved)) {
         return $resolved
@@ -80,19 +119,28 @@ function Assert-NoBuildPackInputsExist {
 
     $projectDirectory = Split-Path -Parent $PackageProjectPath
     $missingInputs = New-Object System.Collections.Generic.List[string]
+    $packageBuildOutputRoot = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\"))
 
     foreach ($itemGroup in $Project.Project.ItemGroup) {
         foreach ($noneItem in $itemGroup.None) {
             $include = [string]$noneItem.Include
-            if ([string]::IsNullOrWhiteSpace($include) -or -not $include.StartsWith("..\", [StringComparison]::Ordinal)) {
+            if ([string]::IsNullOrWhiteSpace($include)) {
                 continue
             }
 
-            if ($include.Contains("$(NuGetPackageRoot)", [StringComparison]::Ordinal)) {
+            if ($include.Contains('$([', [StringComparison]::Ordinal)) {
                 continue
             }
 
-            $resolvedPath = Resolve-LocalPackInputPath -ProjectDirectory $projectDirectory -Include $include -Configuration $Configuration
+            if ($include.Contains('$(NuGetPackageRoot)', [StringComparison]::Ordinal)) {
+                continue
+            }
+
+            if ((-not $include.StartsWith("..\", [StringComparison]::Ordinal)) -and (-not $include.Contains('$(JazorPackageBuildOutputRoot)', [StringComparison]::Ordinal))) {
+                continue
+            }
+
+            $resolvedPath = Resolve-LocalPackInputPath -ProjectDirectory $projectDirectory -Include $include -Configuration $Configuration -PackageBuildOutputRoot $packageBuildOutputRoot
             if (-not (Test-Path -LiteralPath $resolvedPath)) {
                 $missingInputs.Add($resolvedPath)
             }
@@ -148,6 +196,12 @@ $packArgs = @(
 
 if ($NoBuild) {
     Assert-NoBuildPackInputsExist -PackageProjectPath $packageProject -Project $projectXml -Configuration $Configuration
+    $restoreArgs = @(
+        "restore",
+        $packageProject,
+        "-v", "minimal"
+    )
+    Invoke-DotNet -Arguments $restoreArgs
     $packArgs += "--no-build"
     $packArgs += "-p:JazorPreparePackageArtifacts=false"
 }
