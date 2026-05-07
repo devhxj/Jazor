@@ -35,6 +35,7 @@
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.Common/Jazor.Common.csproj" />
   <Project Path="src/Wiki/Wiki.csproj" />
+  <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />
   <Project Path="src/Jolt/Jolt.csproj" />
 </Solution>
