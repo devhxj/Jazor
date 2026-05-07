@@ -255,11 +255,8 @@ public abstract class RouteLocation
 
 [ECMAScript]
 [Description("@#")]
-public record RouteLocationAsPath : RouteLocationOptions
+public abstract record RouteLocationPathRawBase : RouteLocationOptions
 {
-	[Description("@#path")]
-	public string Path { get; init; } = default!;
-
 	[Description("@#query")]
 	public LocationQueryRaw? Query { get; init; }
 
@@ -269,7 +266,34 @@ public record RouteLocationAsPath : RouteLocationOptions
 
 [ECMAScript]
 [Description("@#")]
-public record RouteLocationAsRelative : RouteLocationOptions
+public record RouteLocationAsPath : RouteLocationPathRawBase
+{
+	[Description("@#path")]
+	public string Path { get; init; } = default!;
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract record RouteQueryAndHash : Vue3.VueProps
+{
+	[Description("@#query")]
+	public LocationQueryRaw? Query { get; init; }
+
+	[Description("@#hash")]
+	public string? Hash { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteLocationPathRaw : RouteLocationPathRawBase
+{
+	[Description("@#path")]
+	public string Path { get; init; } = default!;
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract record LocationAsRelativeRaw : RouteLocationOptions
 {
 	[Description("@#name")]
 	public RouteRecordName? Name { get; init; }
@@ -282,6 +306,118 @@ public record RouteLocationAsRelative : RouteLocationOptions
 
 	[Description("@#hash")]
 	public string? Hash { get; init; }
+
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteLocationAsRelative : LocationAsRelativeRaw
+{
+}
+
+[ECMAScript]
+[Description("@#")]
+public record RouteLocationNamedRaw : LocationAsRelativeRaw
+{
+}
+
+[ECMAScript]
+[Description("@#")]
+public record PathParserOptions : Vue3.VueProps
+{
+	[Description("@#sensitive")]
+	public bool? Sensitive { get; init; }
+
+	[Description("@#strict")]
+	public bool? Strict { get; init; }
+
+	[Description("@#end")]
+	public bool? End { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record PathParserKey : Vue3.VueProps
+{
+	[Description("@#name")]
+	public string Name { get; init; } = default!;
+
+	[Description("@#repeatable")]
+	public bool Repeatable { get; init; }
+
+	[Description("@#optional")]
+	public bool Optional { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class PathParser
+{
+	protected PathParser()
+	{
+	}
+
+	[Description("@#re")]
+	public extern RegExp Re { get; }
+
+	[Description("@#score")]
+	public extern Array<Array<Number>> Score { get; }
+
+	[Description("@#keys")]
+	public extern PathParserKey[] Keys { get; }
+
+	[Description("@#parse")]
+	public extern RouteParams? Parse(string path);
+
+	[Description("@#stringify")]
+	public extern string Stringify(RouteParams routeParams);
+}
+
+[ECMAScript]
+[Description("@#")]
+public record MatcherLocationAsPath : Vue3.VueProps
+{
+	[Description("@#path")]
+	public string Path { get; init; } = default!;
+}
+
+[ECMAScript]
+[Description("@#")]
+public record MatcherLocationAsRelative : Vue3.VueProps
+{
+	[Description("@#params")]
+	public RouteParams? Params { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record MatcherLocationAsName : Vue3.VueProps
+{
+	[Description("@#name")]
+	public RouteRecordName Name { get; init; } = default!;
+
+	[Description("@#params")]
+	public RouteParams? Params { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public record MatcherLocation : Vue3.VueProps
+{
+	[Description("@#name")]
+	public RouteRecordName? Name { get; init; }
+
+	[Description("@#path")]
+	public string Path { get; init; } = default!;
+
+	[Description("@#params")]
+	public RouteParams Params { get; init; } = default!;
+
+	[Description("@#meta")]
+	public RouteMeta Meta { get; init; } = default!;
+
+	[Description("@#matched")]
+	public RouteRecordNormalized[] Matched { get; init; } = default!;
 }
 
 [ECMAScript]
@@ -345,6 +481,27 @@ public abstract class RouteLocationMatched : RouteRecordNormalized
 
 	[Description("@#components")]
 	public extern new RouteComponents? Components { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class RouteRecordMatcher : PathParser
+{
+	protected RouteRecordMatcher()
+	{
+	}
+
+	[Description("@#record")]
+	public extern RouteRecordNormalized Record { get; }
+
+	[Description("@#parent")]
+	public extern RouteRecordMatcher? Parent { get; }
+
+	[Description("@#children")]
+	public extern RouteRecordMatcher[] Children { get; }
+
+	[Description("@#alias")]
+	public extern RouteRecordMatcher[] Alias { get; }
 }
 
 [ECMAScript]
@@ -519,7 +676,7 @@ public abstract record Router : Vue3.VuePlugin
 	[Description("@#beforeEach")]
 	public extern Action BeforeEach(RouteNavigationGuard guard);
 
-	[Description("@#beforeResolve")]
+	[Description("@#beforeEach")]
 	public extern Action BeforeEach(AsyncRouteNavigationGuard guard);
 
 	[Description("@#beforeEach")]
@@ -550,6 +707,9 @@ public abstract record Router : Vue3.VuePlugin
 	public extern Action OnError(NavigationFailureRouterErrorHandler handler);
 
 	[Description("@#onError")]
+	public extern Action OnError(NavigationRedirectRouterErrorHandler handler);
+
+	[Description("@#onError")]
 	public extern Action OnError(StringRouterErrorHandler handler);
 
 	[Description("@#onError")]
@@ -576,6 +736,39 @@ public abstract record Router : Vue3.VuePlugin
 
 [ECMAScript]
 [Description("@#")]
+public abstract class RouterMatcher
+{
+	protected RouterMatcher()
+	{
+	}
+
+	[Description("@#addRoute")]
+	public extern Action AddRoute(RouteRecordRaw record);
+
+	[Description("@#addRoute")]
+	public extern Action AddRoute(RouteRecordRaw record, RouteRecordMatcher parent);
+
+	[Description("@#removeRoute")]
+	public extern void RemoveRoute(RouteRecordMatcher matcher);
+
+	[Description("@#removeRoute")]
+	public extern void RemoveRoute(RouteRecordName name);
+
+	[Description("@#clearRoutes")]
+	public extern void ClearRoutes();
+
+	[Description("@#getRoutes")]
+	public extern RouteRecordMatcher[] GetRoutes();
+
+	[Description("@#getRecordMatcher")]
+	public extern RouteRecordMatcher? GetRecordMatcher(RouteRecordName name);
+
+	[Description("@#resolve")]
+	public extern MatcherLocation Resolve(MatcherLocationRaw location, MatcherLocation currentLocation);
+}
+
+[ECMAScript]
+[Description("@#")]
 public abstract class NavigationFailure : Error
 {
 	protected NavigationFailure()
@@ -587,6 +780,24 @@ public abstract class NavigationFailure : Error
 
 	[Description("@#to")]
 	public extern RouteLocationNormalized To { get; }
+
+	[Description("@#from")]
+	public extern RouteLocationNormalized From { get; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public abstract class NavigationRedirectError : Error
+{
+	protected NavigationRedirectError()
+	{
+	}
+
+	[Description("@#type")]
+	public extern ErrorTypes Type { get; }
+
+	[Description("@#to")]
+	public extern RouteLocationRaw To { get; }
 
 	[Description("@#from")]
 	public extern RouteLocationNormalized From { get; }

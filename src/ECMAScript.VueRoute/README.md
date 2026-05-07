@@ -6,6 +6,7 @@
 
 - `createRouter()` / `createWebHistory()` / `createWebHashHistory()` / `createMemoryHistory()`
 - `useRouter()` / `useRoute()` / `useLink()`
+- 官方公开注入 key：`routerKey` / `routeLocationKey` / `routerViewLocationKey` / `matchedRouteKey` / `viewDepthKey`
 - `RouterLink` / `RouterView`
 - 路由记录、路由位置、基础查询参数/路由参数对象
 - 常用导航 API：`push` / `replace` / `resolve` / `beforeEach` / `beforeResolve` / `afterEach`
@@ -156,6 +157,28 @@ var options = new RouterOptions
 ```
 
 不要把 `From(...)` 当成默认习惯用法。只有在 C# 不能直接绑定字面量 authoring 形式时，才把它当作语言边界补位。
+
+## Injection Keys
+
+Vue Router 官方公开的注入 key 当前已经以强类型形式暴露：
+
+- `VueRoute.RouterKey`
+- `VueRoute.RouteLocationKey`
+- `VueRoute.RouterViewLocationKey`
+- `VueRoute.MatchedRouteKey`
+- `VueRoute.ViewDepthKey`
+
+其中 `ViewDepthKey` 对应的值面不是弱化成 `object` 或裸 `Symbol`，而是建模为专门的 `RouterViewDepthValue`：
+
+- 普通数字可直接赋值
+- `IVueRef<TNumber>` 因 C# 接口源转换限制，使用显式 `RouterViewDepthValue.From(...)`
+
+```csharp
+Vue3.Provide(VueRoute.ViewDepthKey, 1);
+
+var depth = Ref(1);
+Vue3.Provide(VueRoute.ViewDepthKey, RouterViewDepthValue.From(depth));
+```
 
 ## Collection Initializer Preference
 

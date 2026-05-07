@@ -24,17 +24,23 @@ public delegate IPromise<IVueComponent> RouteComponentLoader();
 
 public delegate RouteLocationRaw RouteRedirectCallback(RouteLocation to, RouteLocationNormalizedLoaded from);
 
+[Obsolete("Vue Router 4 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
 public delegate void NavigationGuardNextCallback(Vue3.VueComponentPublicInstance instance);
 
+[Obsolete("Vue Router 4 recommends return-based navigation guards. Use bool/RouteLocationRaw/Error returns instead of next(...).")]
 public delegate void NavigationGuardNext(NavigationGuardNextArgument? value = default);
 
+[Obsolete("Vue Router 4 keeps the third next parameter for backward compatibility only. Prefer RouteNavigationGuard return values.")]
 public delegate NavigationGuardReturn? LegacyRouteNavigationGuard(RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next);
 
+[Obsolete("Vue Router 4 keeps the third next parameter for backward compatibility only. Prefer AsyncRouteNavigationGuard return values.")]
 public delegate IPromise<NavigationGuardReturn?> LegacyAsyncRouteNavigationGuard(RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next);
 
 public delegate void ErrorRouterErrorHandler(Error error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
 public delegate void NavigationFailureRouterErrorHandler(NavigationFailure error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
+
+public delegate void NavigationRedirectRouterErrorHandler(NavigationRedirectError error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
 public delegate void StringRouterErrorHandler(string error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from);
 
@@ -92,6 +98,29 @@ public enum NavigationFailureType
 
 	[Description("@#duplicated")]
 	Duplicated = 16
+}
+
+/// <summary>
+/// Internal Vue Router error categories also surfaced by the official public API docs.
+/// These flags back navigation failure discrimination and matcher/runtime redirect errors.
+/// </summary>
+[Flags]
+public enum ErrorTypes
+{
+	[Description("@#MATCHER_NOT_FOUND")]
+	MATCHER_NOT_FOUND = 1,
+
+	[Description("@#NAVIGATION_GUARD_REDIRECT")]
+	NAVIGATION_GUARD_REDIRECT = 2,
+
+	[Description("@#NAVIGATION_ABORTED")]
+	NAVIGATION_ABORTED = 4,
+
+	[Description("@#NAVIGATION_CANCELLED")]
+	NAVIGATION_CANCELLED = 8,
+
+	[Description("@#NAVIGATION_DUPLICATED")]
+	NAVIGATION_DUPLICATED = 16
 }
 
 [ECMAScript("npm:vue-router@4")]

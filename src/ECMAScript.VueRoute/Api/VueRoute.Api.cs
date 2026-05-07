@@ -11,6 +11,12 @@ public static partial class VueRoute
 	public extern static Router CreateRouter(RouterOptions options);
 
 	/// <summary>
+	/// Creates a low-level route matcher with the supplied route table and global path-parser options.
+	/// </summary>
+	[Description("@#createRouterMatcher")]
+	public extern static RouterMatcher CreateRouterMatcher(RouteRecordRaw[] routes, PathParserOptions globalOptions);
+
+	/// <summary>
 	/// Creates an HTML5 history implementation using the browser History API.
 	/// </summary>
 	[Description("@#createWebHistory")]
@@ -125,6 +131,12 @@ public static partial class VueRoute
 	public extern static bool IsNavigationFailure(Error error, NavigationFailureType type);
 
 	/// <summary>
+	/// Determines whether the supplied error is a specific Vue Router internal error category.
+	/// </summary>
+	[Description("@#isNavigationFailure")]
+	public extern static bool IsNavigationFailure(Error error, ErrorTypes type);
+
+	/// <summary>
 	/// Parses a query string into Vue Router's normalized query object shape.
 	/// </summary>
 	[Description("@#parseQuery")]
@@ -153,6 +165,36 @@ public static partial class VueRoute
 	/// </summary>
 	[Description("@#START_LOCATION")]
 	public extern static RouteLocationNormalizedLoaded START_LOCATION { get; }
+
+	/// <summary>
+	/// Typed injection key for the active router instance provided by Vue Router.
+	/// </summary>
+	[Description("@#routerKey")]
+	public extern static Vue3.VueInjectionKey<Router> RouterKey { get; }
+
+	/// <summary>
+	/// Typed injection key for the current loaded route exposed to composition consumers.
+	/// </summary>
+	[Description("@#routeLocationKey")]
+	public extern static Vue3.VueInjectionKey<RouteLocationNormalizedLoaded> RouteLocationKey { get; }
+
+	/// <summary>
+	/// Typed injection key for the reactive route location source consumed by <c>RouterView</c>.
+	/// </summary>
+	[Description("@#routerViewLocationKey")]
+	public extern static Vue3.VueInjectionKey<Vue3.IVueRef<RouteLocationNormalizedLoaded>> RouterViewLocationKey { get; }
+
+	/// <summary>
+	/// Typed injection key for the matched route record currently rendered by the nearest router view.
+	/// </summary>
+	[Description("@#matchedRouteKey")]
+	public extern static Vue3.VueInjectionKey<Vue3.VueReadonlyRef<RouteRecordNormalized?>> MatchedRouteKey { get; }
+
+	/// <summary>
+	/// Typed injection key for the current router-view nesting depth.
+	/// </summary>
+	[Description("@#viewDepthKey")]
+	public extern static Vue3.VueInjectionKey<RouterViewDepthValue> ViewDepthKey { get; }
 
 	/// <summary>
 	/// Built-in component that renders a typed router link.

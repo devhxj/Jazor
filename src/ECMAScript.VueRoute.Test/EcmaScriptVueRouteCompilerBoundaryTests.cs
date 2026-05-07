@@ -68,6 +68,135 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_RouterMatcherSurface_Compiles_WithStronglyTypedMatcherLocations_AndRouteManipulation()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static MatcherLocation BuildMatcherResult(RawRouteComponent component)
+                {
+                    var root = new RouteRecordSingleView
+                    {
+                        Path = "/users/:id",
+                        Name = "user",
+                        Component = component
+                    };
+                    var matcher = CreateRouterMatcher(
+                    [
+                        root
+                    ], new PathParserOptions
+                    {
+                        Strict = true,
+                        Sensitive = false,
+                        End = true
+                    });
+
+                    var current = matcher.Resolve(
+                        new MatcherLocationAsPath
+                        {
+                            Path = "/users/current"
+                        },
+                        new MatcherLocation
+                        {
+                        });
+
+                    var resolved = matcher.Resolve(
+                        new MatcherLocationAsName
+                        {
+                            Name = "user",
+                            Params = new RouteParams
+                            {
+                                { "id", "42" }
+                            }
+                        },
+                        current);
+
+                    var remove = matcher.AddRoute(new RouteRecordRedirect
+                    {
+                        Path = "/legacy",
+                        Redirect = "/users/42"
+                    });
+                    remove();
+                    matcher.GetRoutes();
+                    matcher.GetRecordMatcher("user");
+
+                    return resolved;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let matcher = createRouterMatcher([");
+        StringAssert.Contains(script, "strict: true");
+        StringAssert.Contains(script, "sensitive: false");
+        StringAssert.Contains(script, "end: true");
+        StringAssert.Contains(script, "let current = matcher.resolve({ path: \"/users/current\" }, {});");
+        StringAssert.Contains(script, "let resolved = matcher.resolve({ name: \"user\", params: { id: \"42\" } }, current);");
+        StringAssert.Contains(script, "let remove = matcher.addRoute({ path: \"/legacy\", redirect: \"/users/42\" });");
+        StringAssert.Contains(script, "remove();");
+        StringAssert.Contains(script, "matcher.getRoutes();");
+        StringAssert.Contains(script, "matcher.getRecordMatcher(\"user\");");
+        StringAssert.Contains(script, "return resolved;");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_PathParserSurface_Compiles_WithTypedParamsRoundTrip()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static string BuildPath(PathParser parser)
+                {
+                    var parsed = parser.Parse("/users/42");
+                    if (parsed is null)
+                        return "";
+
+                    var cloned = new RouteParams
+                    {
+                        { "id", parsed["id"] ?? "" }
+                    };
+                    return parser.Stringify(cloned);
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let parsed = parser.parse(\"/users/42\");");
+        StringAssert.Contains(script, "if (parsed === null)");
+        StringAssert.Contains(script, "let cloned = { id: parsed[\"id\"] ?? \"\" };");
+        StringAssert.Contains(script, "return parser.stringify(cloned);");
+    }
+
+    [TestMethod]
     public async Task VueRoute_RedirectCallbacks_Compile_AgainstRouteLocationSurface_AndGuardsCanReturnError()
     {
         var code = """
@@ -120,6 +249,156 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "force: to.force");
         StringAssert.Contains(script, "state: to.state");
         StringAssert.Contains(script, "return new Error(to.fullPath + from.fullPath);");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_OfficialNamedRawPathRawAndRedirectOption_Surfaces_Compile_WithoutWeakFallbacks()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static RouteLocationNamedRaw BuildNamed()
+                {
+                    return new RouteLocationNamedRaw
+                    {
+                        Name = "user",
+                        Params = new RouteParamsRaw
+                        {
+                            { "id", "42" }
+                        },
+                        Query = new LocationQueryRaw
+                        {
+                            { "tab", "profile" }
+                        },
+                        Hash = "#bio",
+                        Replace = true
+                    };
+                }
+
+                public static RouteLocationPathRaw BuildPath()
+                {
+                    return new RouteLocationPathRaw
+                    {
+                        Path = "/users/42",
+                        Query = new LocationQueryRaw
+                        {
+                            { "from", "search" }
+                        },
+                        Hash = "#top",
+                        Force = true
+                    };
+                }
+
+                public static RouteRecordRedirect BuildRedirect()
+                {
+                    RouteRecordRedirectOption redirect = new RouteLocationNamedRaw
+                    {
+                        Name = "user",
+                        Params = new RouteParamsRaw
+                        {
+                            { "id", "7" }
+                        }
+                    };
+
+                    return new RouteRecordRedirect
+                    {
+                        Path = "/legacy",
+                        Redirect = (RouteRedirectOption)redirect
+                    };
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "name: \"user\"");
+        StringAssert.Contains(script, "params: { id: \"42\" }");
+        StringAssert.Contains(script, "query: { tab: \"profile\" }");
+        StringAssert.Contains(script, "hash: \"#bio\"");
+        StringAssert.Contains(script, "replace: true");
+        StringAssert.Contains(script, "path: \"/users/42\"");
+        StringAssert.Contains(script, "query: { from: \"search\" }");
+        StringAssert.Contains(script, "hash: \"#top\"");
+        StringAssert.Contains(script, "force: true");
+        StringAssert.Contains(script, "let redirect = { name: \"user\", params: { id: \"7\" } };");
+        StringAssert.Contains(script, "return { path: \"/legacy\", redirect: redirect };");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_IntermediateLocationContracts_Compile_AsReusableStronglyTypedAuthoringShapes()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static LocationAsRelativeRaw BuildRelative()
+                {
+                    return new RouteLocationAsRelative
+                    {
+                        Name = "user",
+                        Params = new RouteParamsRaw
+                        {
+                            { "id", "42" }
+                        },
+                        Query = new LocationQueryRaw
+                        {
+                            { "from", "search" }
+                        },
+                        Hash = "#top"
+                    };
+                }
+
+                public static RouteLocationPathRawBase BuildPath()
+                {
+                    return new RouteLocationPathRaw
+                    {
+                        Path = "/users/42",
+                        Query = new LocationQueryRaw
+                        {
+                            { "preview", "1" }
+                        },
+                        Hash = "#section",
+                        Replace = true
+                    };
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "export function buildRelative()");
+        StringAssert.Contains(script, "name: \"user\"");
+        StringAssert.Contains(script, "params: { id: \"42\" }");
+        StringAssert.Contains(script, "query: { from: \"search\" }");
+        StringAssert.Contains(script, "hash: \"#top\"");
+        StringAssert.Contains(script, "export function buildPath()");
+        StringAssert.Contains(script, "path: \"/users/42\"");
+        StringAssert.Contains(script, "query: { preview: \"1\" }");
+        StringAssert.Contains(script, "hash: \"#section\"");
+        StringAssert.Contains(script, "replace: true");
     }
 
     [TestMethod]
@@ -1141,6 +1420,13 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                         _ = error.To.Path;
                         _ = error.From.Path;
                     });
+                    var stopRedirect = router.OnError((NavigationRedirectError error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from) =>
+                    {
+                        _ = error.Type;
+                        _ = error.To.AsString;
+                        _ = error.To.AsPath?.Path;
+                        _ = error.From.Path;
+                    });
                     var stopString = router.OnError((string error, RouteLocationNormalized to, RouteLocationNormalizedLoaded from) =>
                     {
                         _ = error.Length;
@@ -1199,6 +1485,8 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "error.type");
         StringAssert.Contains(script, "error.to.path");
         StringAssert.Contains(script, "error.from.path");
+        StringAssert.Contains(script, "let stopRedirect = router.onError((error, to, from) => {");
+        StringAssert.Contains(script, "error.to");
         StringAssert.Contains(script, "error.length");
         StringAssert.Contains(script, "error.description");
         StringAssert.Contains(script, "error[\"code\"]");
@@ -1207,6 +1495,48 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "first?.message");
         StringAssert.Contains(script, "first?.[\"detail\"]");
         StringAssert.Contains(script, "first?.[0]");
+        StringAssert.Contains(script, "return \"ok\";");
+    }
+
+    [TestMethod]
+    public async Task VueRoute_RouterBeforeEach_AsyncGuard_Compiles_ToBeforeEach_NotBeforeResolve()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static string Register(Router router)
+                {
+                    var stop = router.BeforeEach((RouteLocationNormalized to, RouteLocationNormalizedLoaded from) =>
+                    {
+                        _ = to.FullPath;
+                        _ = from.FullPath;
+                        return Promise<NavigationGuardReturn?>.Resolve(true);
+                    });
+
+                    stop();
+                    return "ok";
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let stop = router.beforeEach((to, from) => {");
+        Assert.IsFalse(script.Contains("router.beforeResolve((to, from) => {"), script);
+        StringAssert.Contains(script, "return Promise.resolve(true);");
+        StringAssert.Contains(script, "stop();");
         StringAssert.Contains(script, "return \"ok\";");
     }
 

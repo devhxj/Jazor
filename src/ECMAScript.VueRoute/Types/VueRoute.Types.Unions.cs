@@ -121,6 +121,29 @@ public readonly struct RouteLocationRaw
 
 	public static implicit operator RouteLocationRaw(RouteLocationAsRelative value)
 		=> new(value);
+
+	public static implicit operator RouteLocationRaw(RouteLocationPathRaw value)
+		=> new(new RouteLocationAsPath
+		{
+			Path = value.Path,
+			Query = value.Query,
+			Hash = value.Hash,
+			Replace = value.Replace,
+			Force = value.Force,
+			State = value.State
+		});
+
+	public static implicit operator RouteLocationRaw(RouteLocationNamedRaw value)
+		=> new(new RouteLocationAsRelative
+		{
+			Name = value.Name,
+			Params = value.Params,
+			Query = value.Query,
+			Hash = value.Hash,
+			Replace = value.Replace,
+			Force = value.Force,
+			State = value.State
+		});
 }
 
 [ECMAScript]
@@ -383,6 +406,94 @@ public readonly struct RouteBooleanMaybeRef
 
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteBooleanMaybeRef From(Vue3.VueReadonlyRef<bool> value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouterViewDepthValue
+{
+	private readonly byte _kind;
+	private readonly Number? _number;
+	private readonly Vue3.IVueRef<Number>? _ref;
+
+	private RouterViewDepthValue(Number value)
+	{
+		_kind = 1;
+		_number = value;
+		_ref = default;
+	}
+
+	private RouterViewDepthValue(Vue3.IVueRef<Number> value)
+	{
+		_kind = 2;
+		_number = default;
+		_ref = value;
+	}
+
+	public Number? AsNumber => _kind == 1 ? _number : default;
+
+	public Vue3.IVueRef<Number>? AsRef => _kind == 2 ? _ref : default;
+
+	public static implicit operator RouterViewDepthValue(Number value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(byte value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(sbyte value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(short value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(ushort value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(int value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(uint value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(float value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(double value)
+		=> new(value);
+
+	public static implicit operator RouterViewDepthValue(decimal value)
+		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<Number> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<byte> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<sbyte> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<short> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<ushort> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<int> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<uint> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<float> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<double> value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouterViewDepthValue From(Vue3.IVueRef<decimal> value);
 }
 
 [ECMAScript]
@@ -1157,14 +1268,85 @@ public readonly struct RouteRedirectOption
 	public static implicit operator RouteRedirectOption(RouteLocationAsRelative value)
 		=> new(value);
 
+	public static implicit operator RouteRedirectOption(RouteLocationPathRaw value)
+		=> new((RouteLocationRaw)value);
+
+	public static implicit operator RouteRedirectOption(RouteLocationNamedRaw value)
+		=> new((RouteLocationRaw)value);
+
 	public static implicit operator RouteRedirectOption(RouteRedirectCallback value)
 		=> new(value);
+
+	public static implicit operator RouteRedirectOption(RouteRecordRedirectOption value)
+		=> value.AsCallback is RouteRedirectCallback callback
+			? new(callback)
+			: value.AsLocation is RouteLocationRaw location
+				? new(location)
+				: throw new InvalidOperationException("RouteRecordRedirectOption must contain either a location or a callback.");
 
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteRedirectOption From(RouteLocationRaw value);
 
 	[ECMAScriptInline("__arg1")]
 	public extern static RouteRedirectOption From(RouteRedirectCallback value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRedirectOption From(RouteRecordRedirectOption value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct RouteRecordRedirectOption
+{
+	private readonly byte _kind;
+	private readonly RouteLocationRaw? _location;
+	private readonly RouteRedirectCallback? _callback;
+
+	private RouteRecordRedirectOption(RouteLocationRaw value)
+	{
+		_kind = 1;
+		_location = value;
+		_callback = default;
+	}
+
+	private RouteRecordRedirectOption(RouteRedirectCallback value)
+	{
+		_kind = 2;
+		_location = default;
+		_callback = value;
+	}
+
+	public RouteLocationRaw? AsLocation => _kind == 1 ? _location : default;
+
+	public RouteRedirectCallback? AsCallback => _kind == 2 ? _callback : default;
+
+	public static implicit operator RouteRecordRedirectOption(RouteLocationRaw value)
+		=> new(value);
+
+	public static implicit operator RouteRecordRedirectOption(string value)
+		=> new(value);
+
+	public static implicit operator RouteRecordRedirectOption(RouteLocationAsPath value)
+		=> new(value);
+
+	public static implicit operator RouteRecordRedirectOption(RouteLocationAsRelative value)
+		=> new(value);
+
+	public static implicit operator RouteRecordRedirectOption(RouteLocationPathRaw value)
+		=> new(value);
+
+	public static implicit operator RouteRecordRedirectOption(RouteLocationNamedRaw value)
+		=> new(value);
+
+	public static implicit operator RouteRecordRedirectOption(RouteRedirectCallback value)
+		=> new(value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordRedirectOption From(RouteLocationRaw value);
+
+	[ECMAScriptInline("__arg1")]
+	public extern static RouteRecordRedirectOption From(RouteRedirectCallback value);
 }
 
 [ECMAScript]
@@ -1252,6 +1434,56 @@ public readonly struct RouteRecordRaw
 		=> new(value);
 
 	public static implicit operator RouteRecordRaw(RouteRecordRedirect value)
+		=> new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct MatcherLocationRaw
+{
+	private readonly byte _kind;
+	private readonly MatcherLocationAsPath? _path;
+	private readonly MatcherLocationAsName? _named;
+	private readonly MatcherLocationAsRelative? _relative;
+
+	private MatcherLocationRaw(MatcherLocationAsPath value)
+	{
+		_kind = 1;
+		_path = value;
+		_named = default;
+		_relative = default;
+	}
+
+	private MatcherLocationRaw(MatcherLocationAsName value)
+	{
+		_kind = 2;
+		_path = default;
+		_named = value;
+		_relative = default;
+	}
+
+	private MatcherLocationRaw(MatcherLocationAsRelative value)
+	{
+		_kind = 3;
+		_path = default;
+		_named = default;
+		_relative = value;
+	}
+
+	public MatcherLocationAsPath? AsPath => _kind == 1 ? _path : default;
+
+	public MatcherLocationAsName? AsNamed => _kind == 2 ? _named : default;
+
+	public MatcherLocationAsRelative? AsRelative => _kind == 3 ? _relative : default;
+
+	public static implicit operator MatcherLocationRaw(MatcherLocationAsPath value)
+		=> new(value);
+
+	public static implicit operator MatcherLocationRaw(MatcherLocationAsName value)
+		=> new(value);
+
+	public static implicit operator MatcherLocationRaw(MatcherLocationAsRelative value)
 		=> new(value);
 }
 

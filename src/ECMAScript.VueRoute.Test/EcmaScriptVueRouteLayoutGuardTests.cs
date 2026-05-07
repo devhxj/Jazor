@@ -93,9 +93,10 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var projectPath = System.IO.Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
         var source = System.IO.File.ReadAllText(projectPath);
 
-        StringAssert.Contains(source, "..\\ECMAScript.VueRoute\\bin\\$(Configuration)\\net10.0\\ECMAScript.VueRoute.dll");
-        StringAssert.Contains(source, "..\\ECMAScript.VueRoute\\bin\\$(Configuration)\\net10.0\\ECMAScript.VueRoute.pdb");
+        StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\\bin\\$(Configuration)\\net10.0\\ECMAScript.VueRoute.dll");
+        StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\\bin\\$(Configuration)\\net10.0\\ECMAScript.VueRoute.pdb");
         StringAssert.Contains(source, "..\\ECMAScript.VueRoute\\ECMAScript.VueRoute.csproj");
+        StringAssert.Contains(source, "<JazorPackageBuildOutputRoot");
     }
 
     [TestMethod]

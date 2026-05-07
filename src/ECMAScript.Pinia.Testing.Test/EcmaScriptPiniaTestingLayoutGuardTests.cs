@@ -94,9 +94,12 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		var projectPath = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
 		var source = System.IO.File.ReadAllText(projectPath);
 
-		StringAssert.Contains(source, "..\\ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net10.0\\ECMAScript.Pinia.Testing.dll");
-		StringAssert.Contains(source, "..\\ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net10.0\\ECMAScript.Pinia.Testing.pdb");
+		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net10.0\\ECMAScript.Pinia.Testing.dll");
+		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net10.0\\ECMAScript.Pinia.Testing.pdb");
 		StringAssert.Contains(source, "..\\ECMAScript.Pinia.Testing\\ECMAScript.Pinia.Testing.csproj");
+		StringAssert.Contains(source, "<JazorPackageBuildOutputRoot Condition=\"'$(JazorPackageBuildOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''\">");
+		StringAssert.Contains(source, "<JazorPackageArtifactBuildProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactBuildProperties>");
+		StringAssert.Contains(source, "BuildInParallel=\"false\"");
 	}
 
 	[TestMethod]
@@ -117,6 +120,41 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		StringAssert.Contains(readme, "pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing");
 		StringAssert.Contains(coverlet, "<LineMinimum>85</LineMinimum>");
 		StringAssert.Contains(coverlet, "<BranchMinimum>80</BranchMinimum>");
+	}
+
+	[TestMethod]
+	public void PiniaTesting_SampleSmokeAndWorkflow_KeepTestingLaneInProductionVerification()
+	{
+		var repoRoot = ResolveRepositoryRoot();
+		var sampleSmokePath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1");
+		var workflowPath = Path.Combine(repoRoot, ".github", "workflows", "pinia-verify.yml");
+		var sampleSmoke = System.IO.File.ReadAllText(sampleSmokePath);
+		var workflow = System.IO.File.ReadAllText(workflowPath);
+
+		StringAssert.Contains(sampleSmoke, "@pinia/testing");
+		StringAssert.Contains(sampleSmoke, "generated testing module");
+		StringAssert.Contains(sampleSmoke, "createTestingPinia({");
+		StringAssert.Contains(workflow, "./scripts/test-dotnet.ps1 `");
+		StringAssert.Contains(workflow, "-Project pinia-testing `");
+		StringAssert.Contains(workflow, "./samples/ECMAScript.Pinia.Counter/verify-smoke.ps1 `");
+	}
+
+	[TestMethod]
+	public void PiniaTesting_WikiVerificationScripts_AlsoSupportIsolatedBuildOutputs()
+	{
+		var repoRoot = ResolveRepositoryRoot();
+		var wikiSmoke = System.IO.File.ReadAllText(Path.Combine(repoRoot, "src", "Wiki", "verify-smoke.ps1"));
+		var wikiBrowser = System.IO.File.ReadAllText(Path.Combine(repoRoot, "src", "Wiki", "verify-browser.ps1"));
+
+		foreach (var source in new[] { wikiSmoke, wikiBrowser })
+		{
+			StringAssert.Contains(source, "[string]$BaseOutputPath = \"\"");
+			StringAssert.Contains(source, "[string]$BaseIntermediateOutputPath = \"\"");
+			StringAssert.Contains(source, "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath");
+			StringAssert.Contains(source, "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath");
+			StringAssert.Contains(source, "/nr:false");
+			StringAssert.Contains(source, "-p:UseSharedCompilation=false");
+		}
 	}
 
 	private static string ResolveRepositoryRoot()
