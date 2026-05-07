@@ -410,9 +410,13 @@ public sealed class EcmaScriptVueRouteProxyTests
     [TestMethod]
     public void VueRoute_QueryValueUnions_SupportNullableArrayPayloads_ForOfficialQuerySemantics()
     {
+        var nullability = new NullabilityInfoContext();
         var locationQueryValueArray = typeof(LocationQueryValue).GetProperty(nameof(LocationQueryValue.AsArray), BindingFlags.Public | BindingFlags.Instance);
         var locationQueryRawArray = typeof(LocationQueryValueRaw).GetProperty(nameof(LocationQueryValueRaw.AsArray), BindingFlags.Public | BindingFlags.Instance);
         var locationQueryValueArrayOperator = typeof(LocationQueryValue)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .SingleOrDefault(static method => method.Name == "op_Implicit" && method.GetParameters().Single().ParameterType == typeof(string[]));
+        var locationQueryValueRawNullableStringArrayOperator = typeof(LocationQueryValueRaw)
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
             .SingleOrDefault(static method => method.Name == "op_Implicit" && method.GetParameters().Single().ParameterType == typeof(string[]));
         var locationQueryValueRawMixedArrayOperator = typeof(LocationQueryValueRaw)
@@ -422,11 +426,15 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNotNull(locationQueryValueArray);
         Assert.IsNotNull(locationQueryRawArray);
         Assert.IsNotNull(locationQueryValueArrayOperator);
+        Assert.IsNotNull(locationQueryValueRawNullableStringArrayOperator);
         Assert.IsNotNull(locationQueryValueRawMixedArrayOperator);
         Assert.AreEqual(typeof(Array<string?>), locationQueryValueArray!.PropertyType);
         Assert.AreEqual(typeof(Array<LocationQueryValueRaw?>), locationQueryRawArray!.PropertyType);
         Assert.AreEqual(typeof(LocationQueryValue), locationQueryValueArrayOperator!.ReturnType);
+        Assert.AreEqual(typeof(LocationQueryValueRaw), locationQueryValueRawNullableStringArrayOperator!.ReturnType);
         Assert.AreEqual(typeof(LocationQueryValueRaw), locationQueryValueRawMixedArrayOperator!.ReturnType);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(locationQueryValueArrayOperator.GetParameters()[0]).ElementType!.ReadState);
+        Assert.AreEqual(NullabilityState.Nullable, nullability.Create(locationQueryValueRawNullableStringArrayOperator.GetParameters()[0]).ElementType!.ReadState);
     }
 
     [TestMethod]
@@ -876,6 +884,11 @@ public sealed class EcmaScriptVueRouteProxyTests
         var redirectInvoke = typeof(RouteRedirectCallback).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var nextInvoke = typeof(NavigationGuardNext).GetMethod("Invoke", BindingFlags.Public | BindingFlags.Instance);
         var nextCallbackFactory = typeof(NavigationGuardNextArgument).GetMethod(nameof(NavigationGuardNextArgument.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(NavigationGuardNextCallback) });
+        var nextObsolete = typeof(NavigationGuardNext).GetCustomAttribute<ObsoleteAttribute>();
+        var nextCallbackObsolete = typeof(NavigationGuardNextCallback).GetCustomAttribute<ObsoleteAttribute>();
+        var legacyGuardObsolete = typeof(LegacyRouteNavigationGuard).GetCustomAttribute<ObsoleteAttribute>();
+        var legacyAsyncGuardObsolete = typeof(LegacyAsyncRouteNavigationGuard).GetCustomAttribute<ObsoleteAttribute>();
+        var nextCallbackFactoryObsolete = nextCallbackFactory?.GetCustomAttribute<ObsoleteAttribute>();
         var guardReturnType = typeof(NavigationGuardReturn);
         var guardReturnOperators = guardReturnType
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -888,9 +901,19 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNotNull(redirectInvoke);
         Assert.IsNotNull(nextInvoke);
         Assert.IsNotNull(nextCallbackFactory);
+        Assert.IsNotNull(nextObsolete);
+        Assert.IsNotNull(nextCallbackObsolete);
+        Assert.IsNotNull(legacyGuardObsolete);
+        Assert.IsNotNull(legacyAsyncGuardObsolete);
+        Assert.IsNotNull(nextCallbackFactoryObsolete);
         Assert.IsNotNull(errorReturn);
         Assert.IsNull(nextCallbackReturn);
         Assert.IsNull(guardAsCallback);
+        StringAssert.Contains(nextObsolete!.Message, "return-based navigation guards");
+        StringAssert.Contains(nextCallbackObsolete!.Message, "return-based navigation guards");
+        StringAssert.Contains(legacyGuardObsolete!.Message, "backward compatibility");
+        StringAssert.Contains(legacyAsyncGuardObsolete!.Message, "backward compatibility");
+        StringAssert.Contains(nextCallbackFactoryObsolete!.Message, "beforeRouteEnter");
         CollectionAssert.AreEqual(
             new[] { typeof(RouteLocation), typeof(RouteLocationNormalizedLoaded) },
             redirectInvoke!.GetParameters().Select(static parameter => parameter.ParameterType).ToArray());

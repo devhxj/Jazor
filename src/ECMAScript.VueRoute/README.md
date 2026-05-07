@@ -68,12 +68,22 @@ BeforeEnter = RouteRecordBeforeEnter.From(guards);
 
 - legacy `next(...)` callback 分支
 
+这是兼容旧式 Vue Router authoring 的保留入口，不是当前推荐模式。
+在 C# 层会收到弃用警告；生产代码优先使用 return-based guard：
+
+- 放行：`return true;`
+- 中断：`return false;`
+- 重定向：`return new RouteLocationAsPath { ... };`
+- 抛错：`return new Error(...);`
+
 ```csharp
 next(NavigationGuardNextArgument.From((Vue3.VueComponentPublicInstance instance) =>
 {
     _ = instance;
 }));
 ```
+
+`next(vm => ...)` 只对 `beforeRouteEnter` 风格组件守卫真正有意义；当前 `ECMAScript.VueRoute` 并不把它作为推荐 authoring surface。
 
 - `props` / `redirect` / `meta` callback 值
 

@@ -1226,6 +1226,49 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_QueryContracts_Compile_WithDirectNullableStringArrayAuthoring()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static string BuildQuery()
+                {
+                    LocationQueryValue normalized = new string?[] { "a", null, "b" };
+                    LocationQueryValueRaw rawValue = new string?[] { "x", null, "y" };
+                    var raw = new LocationQueryRaw
+                    {
+                        ["tags"] = new string?[] { "a", null, "b" },
+                        ["filter"] = rawValue
+                    };
+
+                    return StringifyQuery(raw) + normalized.AsArray;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let normalized = [\"a\", null, \"b\"];");
+        StringAssert.Contains(script, "let rawValue = [\"x\", null, \"y\"];");
+        StringAssert.Contains(script, "tags: [\"a\", null, \"b\"]");
+        StringAssert.Contains(script, "filter: rawValue");
+        StringAssert.Contains(script, "stringifyQuery(raw)");
+    }
+
+    [TestMethod]
     public async Task VueRoute_RouteMeta_Compile_WithNullableRecursiveValues_AndPropertyKeyAuthoring()
     {
         var code = """
@@ -1576,6 +1619,67 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
         Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "CS0121"),
             string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    [TestMethod]
+    public void VueRoute_LegacyNextGuardSurface_Compile_EmitsObsoleteWarnings_ButStaysCompatible()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static void Register(Router router, RawRouteComponent component)
+                {
+                    var legacy = new LegacyRouteNavigationGuard((RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next) =>
+                    {
+                        next(NavigationGuardNextArgument.From((Vue3.VueComponentPublicInstance instance) =>
+                        {
+                            _ = instance;
+                        }));
+                        return true;
+                    });
+
+                    router.BeforeEach(legacy);
+                    router.BeforeResolve((RouteLocationNormalized to, RouteLocationNormalizedLoaded from, NavigationGuardNext next) =>
+                    {
+                        next();
+                        return true;
+                    });
+
+                    _ = new RouteRecordSingleView
+                    {
+                        Path = "/users",
+                        Component = component,
+                        BeforeEnter = RouteRecordBeforeEnter.From(legacy)
+                    };
+                }
+            }
+            """;
+
+        var compilation = CSharpCompilation.Create(
+            "ECMAScript.VueRoute.Test.Assembly.LegacyNextWarnings",
+            BuildSyntaxTrees(code),
+            BuildCompilationReferences(new[]
+            {
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
+            }),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        var warnings = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Warning)
+            .ToArray();
+
+        Assert.IsFalse(errors.Length > 0, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+        Assert.IsTrue(warnings.Any(static diagnostic => diagnostic.Id == "CS0618"),
+            string.Join(Environment.NewLine, warnings.Select(static diagnostic => diagnostic.ToString())));
+        Assert.IsTrue(warnings.Any(static diagnostic => diagnostic.GetMessage().Contains("return-based navigation guards", StringComparison.Ordinal)));
+        Assert.IsTrue(warnings.Any(static diagnostic => diagnostic.GetMessage().Contains("beforeRouteEnter", StringComparison.Ordinal)));
     }
 
     [TestMethod]

@@ -1003,6 +1003,7 @@ public readonly struct NavigationGuardNextArgument
 		=> new(value);
 
 	[ECMAScriptInline("__arg1")]
+	[Obsolete("next(vm => ...) is only meaningful for beforeRouteEnter-style component guards. This VueRoute surface does not expose that guard as a recommended authoring path.")]
 	public extern static NavigationGuardNextArgument From(NavigationGuardNextCallback value);
 }
 
@@ -1610,7 +1611,7 @@ public readonly struct LocationQueryValue
 	public static implicit operator LocationQueryValue(string value)
 		=> new(value);
 
-	public static implicit operator LocationQueryValue(string[] value)
+	public static implicit operator LocationQueryValue(string?[] value)
 		=> new((Array<string?>)value);
 
 	public static implicit operator LocationQueryValue(Array<string?> value)
@@ -1660,8 +1661,8 @@ public readonly struct LocationQueryValueRaw
 	public static implicit operator LocationQueryValueRaw(string value)
 		=> new(value);
 
-	public static implicit operator LocationQueryValueRaw(string[] value)
-		=> new((Array<LocationQueryValueRaw?>)value.Select(static item => (LocationQueryValueRaw?)item).ToArray());
+	public static implicit operator LocationQueryValueRaw(string?[] value)
+		=> new((Array<LocationQueryValueRaw?>)value.Select(static item => item is null ? null : (LocationQueryValueRaw?)item).ToArray());
 
 	public static implicit operator LocationQueryValueRaw(Number value)
 		=> new(value);

@@ -9,7 +9,7 @@
     <Description>Vue Router 4 host bindings for ECMAScript runtime authoring.</Description>
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
-    <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
+    <NoWarn>CS0618,CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
