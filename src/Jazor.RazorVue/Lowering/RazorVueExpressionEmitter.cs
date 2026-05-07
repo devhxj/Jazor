@@ -108,10 +108,27 @@ internal sealed partial class RazorVueExpressionEmitter
         return emission.HasValue ? emission.Expression : "null";
     }
 
+    private string EmitFragment(
+        RazorVueRenderFragment fragment,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var emission = EmitFragmentArgument(fragment, allowedLocalSymbols, allowedParameterSymbols);
+        return emission.HasValue ? emission.Expression : "null";
+    }
+
     internal string EmitTemplateExpression(IOperation operation)
         => EmitExpression(operation);
 
     private OptionalJsArgument EmitFragmentArgument(RazorVueRenderFragment fragment)
+    {
+        return EmitFragmentArgument(fragment, EmptyLocalScope, EmptyParameterScope);
+    }
+
+    private OptionalJsArgument EmitFragmentArgument(
+        RazorVueRenderFragment fragment,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
     {
         if (fragment.Children.IsDefaultOrEmpty)
         {
@@ -121,9 +138,11 @@ internal sealed partial class RazorVueExpressionEmitter
         }
 
         if (fragment.Children.Length == 1)
-            return new OptionalJsArgument(EmitNode(fragment.Children[0]), true);
+            return new OptionalJsArgument(EmitNode(fragment.Children[0], allowedLocalSymbols, allowedParameterSymbols), true);
 
-        return new OptionalJsArgument("[" + string.Join(", ", fragment.Children.Select(EmitNode)) + "]", true);
+        return new OptionalJsArgument(
+            "[" + string.Join(", ", fragment.Children.Select(child => EmitNode(child, allowedLocalSymbols, allowedParameterSymbols))) + "]",
+            true);
     }
 
     public string DescribeFragment(RazorVueRenderFragment fragment)

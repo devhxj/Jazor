@@ -19,8 +19,10 @@ internal static class RazorVueTemplateExpressionScopeValidator
         ImmutableHashSet<ILocalSymbol>? allowedLocalSymbols = null,
         ImmutableHashSet<IParameterSymbol>? allowedParameterSymbols = null)
     {
-        ArgumentNullException.ThrowIfNull(snapshot);
-        ArgumentNullException.ThrowIfNull(expression);
+        if (snapshot is null)
+            throw new ArgumentNullException(nameof(snapshot));
+        if (expression is null)
+            throw new ArgumentNullException(nameof(expression));
 
         var localScope = allowedLocalSymbols ?? EmptyLocalScope;
         var parameterScope = allowedParameterSymbols ?? EmptyParameterScope;
@@ -75,7 +77,7 @@ internal static class RazorVueTemplateExpressionScopeValidator
         var issue = new RazorVueCompilationIssue(
             RazorVueIssueCode.UnsupportedTemplateEncoding,
             RazorVueIssueSeverity.Error,
-            $"RazorVue template expression cannot capture component-local expression '{symbolName}' in component '{snapshot.Descriptor.FullName}'. Promote it to a supported field/property/helper result or keep the expression within template scope.",
+            $"RazorVue template expression cannot hoist component-local expression '{symbolName}' in component '{snapshot.Descriptor.FullName}'. Promote it to a supported field/property/helper result or keep the expression within template scope.",
             ImmutableArray<string>.Empty);
         return new RazorVueCompilationIssueException(issue, snapshot.Descriptor.FullName, origin);
     }
