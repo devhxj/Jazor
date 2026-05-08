@@ -14,6 +14,7 @@
 - [RazorVue.ImplementationChecklist.md](./RazorVue.ImplementationChecklist.md)
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
 - [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
+- [RazorVue.RazorSg.MainlineIrInjection.DecisionRecord.md](./RazorVue.RazorSg.MainlineIrInjection.DecisionRecord.md)
 - [zazzy-whistling-lemon.md](../../../03-完成/razorvue/zazzy-whistling-lemon.md)
 
 ## 1. 迁移目标

@@ -16,6 +16,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 
 namespace Jazor.RazorVue.Test;
@@ -1032,14 +1033,11 @@ public sealed class ESGeneratorTests
         var generator = new RazorVueGenerator(
             legacyPipelineFactory: static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()),
             sfcPipelineFactory: static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()));
+        compilation = (CSharpCompilation)InjectCarrierCompilation(compilation, documentPath.Replace('\\', '/'), razorDocumentText);
         var (_, runResult) = RunAllGeneratorsWithResult(
             compilation,
             razorVueOutputMode: "legacy",
-            razorVueGenerator: generator,
-            additionalTexts:
-            [
-                new TestAdditionalText(documentPath.Replace('\\', '/'), razorDocumentText)
-            ]);
+            razorVueGenerator: generator);
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
 
         StringAssert.Contains(generatedSource, "@page");
@@ -1048,7 +1046,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAlignedRazorAdditionalText_DefaultGenerator_PrefersRazorIrForLegacyOutput()
+    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_PrefersRazorIrForLegacyOutput()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1072,13 +1070,10 @@ public sealed class ESGeneratorTests
             """,
             rootNamespace: "Demo.Pages");
 
+        compilation = InjectCarrierCompilation(compilation, normalizedDocumentPath, razorDocumentText);
         var (_, runResult) = RunAllGeneratorsWithResult(
             compilation,
-            razorVueOutputMode: "legacy",
-            additionalTexts:
-            [
-                new TestAdditionalText(normalizedDocumentPath, razorDocumentText)
-            ]);
+            razorVueOutputMode: "legacy");
         var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
         var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
 
@@ -1092,7 +1087,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoAdditionalText_DefaultGenerator_ReportsJAZORVGA001()
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_DefaultGenerator_ReportsJAZORVGA001()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1125,11 +1120,11 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "requires a bound Razor document");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAlignedRazorAdditionalText_DefaultGenerator_PrefersRazorIrForSfcOutput()
+    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_PrefersRazorIrForSfcOutput()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1153,13 +1148,10 @@ public sealed class ESGeneratorTests
             """,
             rootNamespace: "Demo.Pages");
 
+        compilation = InjectCarrierCompilation(compilation, normalizedDocumentPath, razorDocumentText);
         var (_, runResult) = RunAllGeneratorsWithResult(
             compilation,
-            razorVueOutputMode: "sfc",
-            additionalTexts:
-            [
-                new TestAdditionalText(normalizedDocumentPath, razorDocumentText)
-            ]);
+            razorVueOutputMode: "sfc");
         var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
         var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
         var artifactHint = hints.Single(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal));
@@ -1175,7 +1167,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoAdditionalText_SfcOutput_ReportsJAZORVGA001()
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_SfcOutput_ReportsJAZORVGA001()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1208,7 +1200,7 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "requires a bound Razor document");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
     }
 
     [TestMethod]
@@ -10774,6 +10766,38 @@ public sealed class ESGeneratorTests
         return compilation;
     }
 
+    private static Compilation InjectCarrierCompilation(Compilation compilation, string documentPath, string documentText)
+    {
+        var componentTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath.EndsWith(".razor.cs", StringComparison.Ordinal));
+        var updatedSource = InjectCarrierAttribute(componentTree.ToString(), documentPath, documentText);
+        return compilation.ReplaceSyntaxTree(
+            componentTree,
+            CSharpSyntaxTree.ParseText(
+                updatedSource,
+                options: (CSharpParseOptions?)componentTree.Options,
+                path: componentTree.FilePath));
+    }
+
+    private static string InjectCarrierAttribute(string componentSource, string documentPath, string documentText)
+    {
+        if (componentSource.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
+            return componentSource;
+
+        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
+        var replacement = string.Join(
+            Environment.NewLine,
+            marker,
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(JsonSerializer.Serialize(Array.Empty<object>())) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]");
+
+        return componentSource.Replace(marker, replacement, StringComparison.Ordinal);
+    }
+
+    private static string ToVerbatimLiteral(string text)
+        => "@\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
+
     private static Compilation RunGenerator(Compilation compilation, out string generatedSource)
     {
         var (outputCompilation, runResult) = RunGeneratorWithResult(compilation);
@@ -10806,8 +10830,7 @@ public sealed class ESGeneratorTests
     private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(
         Compilation compilation,
         string? razorVueOutputMode = "legacy",
-        RazorVueGenerator? razorVueGenerator = null,
-        AdditionalText[]? additionalTexts = null)
+        RazorVueGenerator? razorVueGenerator = null)
     {
         ISourceGenerator[] generators =
         [
@@ -10817,7 +10840,6 @@ public sealed class ESGeneratorTests
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators,
-            additionalTexts: additionalTexts,
             parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options,
             optionsProvider: CreateAnalyzerConfigOptionsProvider(razorVueOutputMode),
             driverOptions: default);
@@ -10857,26 +10879,16 @@ public sealed class ESGeneratorTests
             => _values.TryGetValue(key, out value!);
     }
 
-    private sealed class TestAdditionalText(string path, string text) : AdditionalText
-    {
-        private readonly SourceText _text = SourceText.From(text);
-
-        public override string Path { get; } = path;
-
-        public override SourceText GetText(CancellationToken cancellationToken = default)
-            => _text;
-    }
-
     private sealed class RazorDocumentEchoTemplateFrontend : IRazorVueTemplateFrontend
     {
         public string Name => "Jazor.RazorVue.Test.ESGeneratorTests.RazorDocumentEchoTemplateFrontend";
 
         public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
         {
-            Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var document));
+            Assert.IsNotNull(snapshot.RazorIrCarrier);
             return new RazorVueRenderFragment(
                 ImmutableArray.Create<RazorVueRenderNode>(
-                    new RazorVueTextNode(document.Text.ToString().Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
+                    new RazorVueTextNode(snapshot.RazorIrCarrier.DocumentText.Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
         }
     }
 }

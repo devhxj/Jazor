@@ -27,12 +27,19 @@ internal sealed class RazorVueRazorCodeDocumentProvider
             throw new ArgumentNullException(nameof(snapshot));
 
         handle = default!;
-        if (!context.TryGetPrimaryRazorDocument(snapshot, out var document))
+        if (snapshot.RazorIrCarrier is not { } carrier)
         {
             return false;
         }
 
-        var importDocuments = context.GetRazorImportDocuments(snapshot);
+        var document = new Jazor.RazorVue.RazorVueRazorDocument(
+            carrier.DocumentPath,
+            Microsoft.CodeAnalysis.Text.SourceText.From(carrier.DocumentText));
+        var importDocuments = carrier.Imports
+            .Select(static item => new Jazor.RazorVue.RazorVueRazorDocument(
+                item.Path,
+                Microsoft.CodeAnalysis.Text.SourceText.From(item.Text)))
+            .ToImmutableArray();
         var projectEngine = CreateProjectEngine(
             document.Path,
             GetParseOptions(context.Compilation),

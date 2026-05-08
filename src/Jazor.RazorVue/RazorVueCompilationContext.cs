@@ -11,29 +11,23 @@ internal sealed class RazorVueCompilationContext
 {
     public RazorVueCompilationContext(
         Compilation compilation,
-        RazorVueCompilationSymbols symbols,
-        RazorVueRazorDocumentSet? razorDocuments = null)
+        RazorVueCompilationSymbols symbols)
     {
         Compilation = compilation ?? throw new ArgumentNullException(nameof(compilation));
         Symbols = symbols ?? throw new ArgumentNullException(nameof(symbols));
-        RazorDocuments = razorDocuments ?? RazorVueRazorDocumentSet.Empty;
     }
 
     public Compilation Compilation { get; }
 
     public RazorVueCompilationSymbols Symbols { get; }
 
-    public RazorVueRazorDocumentSet RazorDocuments { get; }
-
-    public static RazorVueCompilationContext? TryCreate(
-        Compilation compilation,
-        RazorVueRazorDocumentSet? razorDocuments = null)
+    public static RazorVueCompilationContext? TryCreate(Compilation compilation)
     {
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
 
         var symbols = RazorVueCompilationSymbols.TryCreate(compilation);
-        return symbols is null ? null : new RazorVueCompilationContext(compilation, symbols, razorDocuments);
+        return symbols is null ? null : new RazorVueCompilationContext(compilation, symbols);
     }
 
     public RazorVueEntryKind ClassifyEntry(INamedTypeSymbol symbol)
@@ -81,12 +75,11 @@ internal sealed class RazorVueCompilationContext
     }
 
     public RazorVueSemanticSnapshot CreateSemanticSnapshot(RazorVueComponentCandidate candidate)
-        => CreateSemanticSnapshot(candidate, razorDocumentPath: null, razorImportDocumentPaths: ImmutableArray<string>.Empty);
+        => CreateSemanticSnapshot(candidate, razorIrCarrier: null);
 
     internal RazorVueSemanticSnapshot CreateSemanticSnapshot(
         RazorVueComponentCandidate candidate,
-        string? razorDocumentPath,
-        ImmutableArray<string> razorImportDocumentPaths)
+        RazorSdk.RazorVueRazorIrCarrier? razorIrCarrier)
     {
         if (candidate is null)
             throw new ArgumentNullException(nameof(candidate));
@@ -138,8 +131,7 @@ internal sealed class RazorVueCompilationContext
             Compilation,
             candidate.ComponentSymbol,
             candidate.BuildRenderTreeMethod,
-            razorDocumentPath,
-            razorImportDocumentPaths,
+            razorIrCarrier,
             lifecycle,
             logic,
             descriptor,
@@ -189,35 +181,6 @@ internal sealed class RazorVueCompilationContext
             discoveredLibraryComponents = MergeLibraryComponents(discoveredLibraryComponents, libraryComponents);
 
         return VueComponentRegistry.Create(CreateSemanticSnapshots(), discoveredLibraryComponents);
-    }
-
-    public bool TryGetRazorDocument(string? path, out RazorVueRazorDocument document)
-        => RazorDocuments.TryGetDocument(path, out document!);
-
-    public bool TryGetPrimaryRazorDocument(RazorVueSemanticSnapshot snapshot, out RazorVueRazorDocument document)
-    {
-        if (snapshot is null)
-            throw new ArgumentNullException(nameof(snapshot));
-
-        return TryGetRazorDocument(snapshot.RazorDocumentPath, out document!);
-    }
-
-    public ImmutableArray<RazorVueRazorDocument> GetRazorImportDocuments(RazorVueSemanticSnapshot snapshot)
-    {
-        if (snapshot is null)
-            throw new ArgumentNullException(nameof(snapshot));
-
-        if (snapshot.RazorImportDocumentPaths.IsDefaultOrEmpty || RazorDocuments.IsEmpty)
-            return ImmutableArray<RazorVueRazorDocument>.Empty;
-
-        var builder = ImmutableArray.CreateBuilder<RazorVueRazorDocument>();
-        foreach (var path in snapshot.RazorImportDocumentPaths)
-        {
-            if (TryGetRazorDocument(path, out var document))
-                builder.Add(document);
-        }
-
-        return builder.ToImmutable();
     }
 
     private static ImmutableArray<VueComponentDescriptor> MergeLibraryComponents(

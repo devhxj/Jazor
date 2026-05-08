@@ -221,12 +221,12 @@ public sealed class RazorVueTemplateFrontendParityTests
         var context = CreateGeneratedRazorContextWithoutBoundDocuments();
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
 
-        Assert.IsFalse(string.IsNullOrWhiteSpace(snapshot.RazorDocumentPath));
+        Assert.IsNull(snapshot.RazorIrCarrier);
 
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => RazorVuePreferredTemplateFrontend.Instance.CreateRenderTree(context, snapshot));
 
-        StringAssert.Contains(exception.Message, "requires a bound Razor document");
+        StringAssert.Contains(exception.Message, "only falls back to BuildRenderTree for source-authored components");
     }
 
     private static void AssertParity(
@@ -243,12 +243,14 @@ public sealed class RazorVueTemplateFrontendParityTests
             DescribeStructure(actualTree),
             "Template frontend render tree diverged.");
 
+        var primaryRazorPath = snapshot.RazorIrCarrier?.DocumentPath;
+
         Assert.AreEqual(CountOrigins(expectedTree), CountOrigins(actualTree), "Template origin entry count diverged.");
         Assert.IsTrue(
-            EnumerateOrigins(actualTree).All(origin => string.Equals(origin.SourceFilePath, snapshot.RazorDocumentPath, StringComparison.OrdinalIgnoreCase) ||
-                                                     string.IsNullOrWhiteSpace(snapshot.RazorDocumentPath)),
+            EnumerateOrigins(actualTree).All(origin => string.Equals(origin.SourceFilePath, primaryRazorPath, StringComparison.OrdinalIgnoreCase) ||
+                                                     string.IsNullOrWhiteSpace(primaryRazorPath)),
             "Template frontend emitted a non-primary Razor document path in template origins.");
-        if (!string.IsNullOrWhiteSpace(snapshot.RazorDocumentPath))
+        if (!string.IsNullOrWhiteSpace(primaryRazorPath))
         {
             Assert.IsTrue(
                 EnumerateOrigins(actualTree).All(origin => origin.MappingQuality == RazorVueMappingQuality.ExactSource),
@@ -266,7 +268,7 @@ public sealed class RazorVueTemplateFrontendParityTests
         Assert.AreEqual(expectedArtifact.Identity.LogicHash, actualArtifact.Identity.LogicHash, "LogicHash diverged.");
         Assert.AreEqual(expectedArtifact.Identity.HmrBoundaryKind, actualArtifact.Identity.HmrBoundaryKind, "HMR boundary diverged.");
 
-        if (!string.IsNullOrWhiteSpace(snapshot.RazorDocumentPath))
+        if (!string.IsNullOrWhiteSpace(primaryRazorPath))
         {
             Assert.IsTrue(
                 actualArtifact.SourceOrigins.Any(origin => origin.MappingQuality == RazorVueMappingQuality.ExactSource),
@@ -415,7 +417,7 @@ public sealed class RazorVueTemplateFrontendParityTests
             .ToArray();
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
 
-        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation, Jazor.RazorVue.RazorVueRazorDocumentSet.Empty);
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
         return context;
     }

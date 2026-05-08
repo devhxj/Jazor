@@ -4,6 +4,7 @@ using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System.Text.Json;
 
 namespace Jazor.RazorVue.Test;
 
@@ -848,13 +849,18 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
 
+        compilation = (CSharpCompilation)InjectCarrierCompilation(compilation, documentPath, importsPath, "<section>Hello</section>", "@using Demo.Shared");
+        context = RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
+
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
-        Assert.AreEqual(documentPath, snapshot.RazorDocumentPath);
-        CollectionAssert.AreEqual(new[] { importsPath }, snapshot.RazorImportDocumentPaths.ToArray());
+        Assert.IsNotNull(snapshot.RazorIrCarrier);
+        Assert.AreEqual(documentPath, snapshot.RazorIrCarrier.DocumentPath);
+        CollectionAssert.AreEqual(new[] { importsPath }, snapshot.RazorIrCarrier.ImportDocumentPaths.ToArray());
     }
 
     [TestMethod]
-    public void RazorVue_Context_ResolvesPrimaryAndImportRazorDocuments_FromIndexedAdditionalTexts()
+    public void RazorVue_Context_ResolvesPrimaryAndImportRazorDocuments_FromCarrier()
     {
         const string importsPath = @"D:\repo\Demo\_Imports.razor";
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -925,22 +931,20 @@ public sealed class RazorVueDescriptorExtractionTests
             references: RazorVueMetadataReferences.Create(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var context = RazorVueCompilationContext.TryCreate(
+        compilation = (CSharpCompilation)InjectCarrierCompilation(
             compilation,
-            RazorVueRazorDocumentSet.Create(
-            [
-                new RazorVueRazorDocument(importsPath.Replace('\\', '/'), SourceText.From(importsText)),
-                new RazorVueRazorDocument(documentPath.Replace('\\', '/'), SourceText.From(documentText))
-            ]));
+            documentPath.Replace('\\', '/'),
+            importsPath.Replace('\\', '/'),
+            documentText,
+            importsText);
+        var context = RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
 
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
-        Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var primaryDocument));
-        Assert.AreEqual(documentText, primaryDocument.Text.ToString());
-
-        var importDocuments = context.GetRazorImportDocuments(snapshot);
-        Assert.AreEqual(1, importDocuments.Length);
-        Assert.AreEqual(importsText, importDocuments[0].Text.ToString());
+        Assert.IsNotNull(snapshot.RazorIrCarrier);
+        Assert.AreEqual(documentText, snapshot.RazorIrCarrier.DocumentText);
+        Assert.AreEqual(1, snapshot.RazorIrCarrier.Imports.Length);
+        Assert.AreEqual(importsText, snapshot.RazorIrCarrier.Imports[0].Text);
     }
 
     [TestMethod]
@@ -973,8 +977,7 @@ public sealed class RazorVueDescriptorExtractionTests
             }
             """);
 
-        Assert.IsNull(snapshot.RazorDocumentPath);
-        Assert.IsTrue(snapshot.RazorImportDocumentPaths.IsDefaultOrEmpty);
+        Assert.IsNull(snapshot.RazorIrCarrier);
     }
 
     private static RazorVueCompilationContext CreateContext(string source)
@@ -1008,4 +1011,46 @@ public sealed class RazorVueDescriptorExtractionTests
             references: references,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
+
+    private static Compilation InjectCarrierCompilation(
+        Compilation compilation,
+        string documentPath,
+        string importsPath,
+        string documentText,
+        string importsText)
+    {
+        var componentTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath.EndsWith(".razor.cs", StringComparison.Ordinal));
+        var importsJson = JsonSerializer.Serialize(new[]
+        {
+            new
+            {
+                Path = importsPath,
+                Text = importsText
+            }
+        });
+        var updatedSource = InjectCarrierAttribute(componentTree.ToString(), documentPath, importsJson, documentText);
+        return compilation.ReplaceSyntaxTree(
+            componentTree,
+            CSharpSyntaxTree.ParseText(updatedSource, path: componentTree.FilePath));
+    }
+
+    private static string InjectCarrierAttribute(string componentSource, string documentPath, string importsJson, string documentText)
+    {
+        if (componentSource.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
+            return componentSource;
+
+        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
+        var replacement = string.Join(
+            Environment.NewLine,
+            marker,
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(importsJson) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]");
+
+        return componentSource.Replace(marker, replacement, StringComparison.Ordinal);
+    }
+
+    private static string ToVerbatimLiteral(string text)
+        => "@\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 }

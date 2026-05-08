@@ -7,6 +7,7 @@ using Jazor.RazorVue.RenderTree;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Text.Json;
 
 namespace Jazor.RazorVue.Test;
 
@@ -273,11 +274,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var context = CreateContext(
-            compilation,
-            RazorVueRazorDocumentSet.Create(
-            [
-                new RazorVueRazorDocument(documentPath.Replace('\\', '/'), SourceText.From(razorDocumentText))
-            ]));
+            InjectCarrierCompilation(
+                compilation,
+                documentPath.Replace('\\', '/'),
+                razorDocumentText));
 
         var artifact = new RazorVueSfcPipeline(new RazorDocumentEchoTemplateFrontend()).Execute(context).Artifacts.Single();
 
@@ -1609,16 +1609,14 @@ public sealed class RazorVueSfcArtifactFactoryTests
         return context;
     }
 
-    private static RazorVueCompilationContext CreateContext(
-        Compilation compilation,
-        RazorVueRazorDocumentSet? razorDocuments)
+    private static RazorVueCompilationContext CreateContext(Compilation compilation)
     {
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
 
-        var context = RazorVueCompilationContext.TryCreate(compilation, razorDocuments);
+        var context = RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
         return context;
     }
@@ -1641,12 +1639,41 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
         public RazorVueRenderFragment CreateRenderTree(RazorVueCompilationContext context, RazorVueSemanticSnapshot snapshot)
         {
-            Assert.IsTrue(context.TryGetPrimaryRazorDocument(snapshot, out var document));
+            Assert.IsNotNull(snapshot.RazorIrCarrier);
             return new RazorVueRenderFragment(
                 ImmutableArray.Create<RazorVueRenderNode>(
-                    new RazorVueTextNode(document.Text.ToString().Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
+                    new RazorVueTextNode(snapshot.RazorIrCarrier.DocumentText.Trim(), ImmutableArray<RazorVueSourceOrigin>.Empty)));
         }
     }
+
+    private static Compilation InjectCarrierCompilation(Compilation compilation, string documentPath, string documentText)
+    {
+        var componentTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath.EndsWith(".razor.cs", StringComparison.Ordinal));
+        var updatedSource = InjectCarrierAttribute(componentTree.ToString(), documentPath, documentText);
+        return compilation.ReplaceSyntaxTree(
+            componentTree,
+            CSharpSyntaxTree.ParseText(updatedSource, path: componentTree.FilePath));
+    }
+
+    private static string InjectCarrierAttribute(string componentSource, string documentPath, string documentText)
+    {
+        if (componentSource.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
+            return componentSource;
+
+        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
+        var replacement = string.Join(
+            Environment.NewLine,
+            marker,
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(JsonSerializer.Serialize(Array.Empty<object>())) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]");
+
+        return componentSource.Replace(marker, replacement, StringComparison.Ordinal);
+    }
+
+    private static string ToVerbatimLiteral(string text)
+        => "@\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 
     private static RazorVueRenderFragment CreateInjectedSectionTree(string text)
         => new(

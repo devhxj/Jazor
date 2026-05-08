@@ -178,10 +178,6 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             transform: static (syntaxContext, _) => CreateCandidate(syntaxContext))
             .Where(static candidate => candidate is not null);
 
-        var razorDocuments = context.AdditionalTextsProvider
-            .Where(static text => RazorVueRazorDocumentSet.IsRazorDocumentPath(text.Path))
-            .Collect();
-
         var outputMode = context.AnalyzerConfigOptionsProvider
             .Select(static (optionsProvider, _) =>
                 optionsProvider.GlobalOptions.TryGetValue(RazorVueOutputModePropertyName, out var value)
@@ -190,20 +186,18 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
         var combined = context.CompilationProvider
             .Combine(componentCandidates.Collect())
-            .Combine(outputMode)
-            .Combine(razorDocuments);
+            .Combine(outputMode);
 
         var legacyPipelineFactory = _legacyPipelineFactory;
         var sfcPipelineFactory = _sfcPipelineFactory;
 
         context.RegisterSourceOutput(combined, (outputContext, source) =>
         {
-            var (((compilation, candidates), outputModeText), razorDocuments) = source;
+            var ((compilation, candidates), outputModeText) = source;
             EmitRazorVueCatalog(
                 outputContext,
                 compilation,
                 candidates,
-                razorDocuments,
                 outputModeText,
                 legacyPipelineFactory,
                 sfcPipelineFactory);
@@ -225,7 +219,6 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         SourceProductionContext context,
         Compilation compilation,
         ImmutableArray<ModuleCandidate?> candidates,
-        ImmutableArray<AdditionalText> razorDocuments,
         string? outputModeText,
         Func<RazorVuePipeline> legacyPipelineFactory,
         Func<RazorVueSfcPipeline> sfcPipelineFactory)
@@ -233,7 +226,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         if (!candidates.Any(static candidate => candidate is not null))
             return;
 
-        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation, CreateRazorDocumentSet(context, razorDocuments));
+        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
         if (razorVueContext is null)
             return;
 
@@ -300,26 +293,6 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 typeName,
                 ex.Message));
         }
-    }
-
-    private static RazorVueRazorDocumentSet CreateRazorDocumentSet(
-        SourceProductionContext context,
-        ImmutableArray<AdditionalText> razorDocuments)
-    {
-        if (razorDocuments.IsDefaultOrEmpty)
-            return RazorVueRazorDocumentSet.Empty;
-
-        var builder = ImmutableArray.CreateBuilder<RazorVueRazorDocument>(razorDocuments.Length);
-        foreach (var razorDocument in razorDocuments)
-        {
-            var sourceText = razorDocument.GetText(context.CancellationToken);
-            if (sourceText is null)
-                continue;
-
-            builder.Add(new RazorVueRazorDocument(razorDocument.Path, sourceText));
-        }
-
-        return RazorVueRazorDocumentSet.Create(builder.ToImmutable());
     }
 
     private static Diagnostic CreateCompilationIssueDiagnostic(

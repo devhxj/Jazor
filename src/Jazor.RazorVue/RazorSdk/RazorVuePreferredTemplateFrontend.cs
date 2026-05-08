@@ -27,7 +27,7 @@ internal sealed class RazorVuePreferredTemplateFrontend : IRazorVueTemplateFront
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
 
-        if (!string.IsNullOrWhiteSpace(snapshot.RazorDocumentPath))
+        if (snapshot.RazorIrCarrier is not null)
             return _razorIrFrontend.CreateRenderTree(context, snapshot);
 
         if (snapshot.BuildRenderTreeMethod is null)

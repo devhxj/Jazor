@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Jazor.Emit;
 
 internal static class RazorVueSfcManifestFactory

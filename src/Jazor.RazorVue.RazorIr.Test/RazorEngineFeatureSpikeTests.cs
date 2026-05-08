@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using System.Text.Json;
 
 namespace Jazor.RazorVue.RazorIr.Test;
 
@@ -129,16 +130,16 @@ public sealed class RazorEngineFeatureSpikeTests
                 csharpDocument.Text,
                 options: parseOptions,
                 path: Path.GetFileName(documentPath) + ".g.cs"));
-        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(
-            compilation,
-            Jazor.RazorVue.RazorVueRazorDocumentSet.Create(
-            [
-                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))
-            ]));
+        var componentTree = compilation.SyntaxTrees.Single(static tree => tree.FilePath.EndsWith("TodoApp.razor.cs", StringComparison.Ordinal));
+        var updatedSource = InjectCarrierAttribute(componentTree.ToString(), documentPath, documentText);
+        compilation = compilation.ReplaceSyntaxTree(
+            componentTree,
+            CSharpSyntaxTree.ParseText(updatedSource, options: parseOptions, path: componentTree.FilePath));
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
 
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single(static item => item.Descriptor.Name == "TodoApp");
-        TestContext.WriteLine("Resolved RazorDocumentPath: " + (snapshot.RazorDocumentPath ?? "<null>"));
+        TestContext.WriteLine("Resolved RazorDocumentPath: " + (snapshot.RazorIrCarrier?.DocumentPath ?? "<null>"));
 
         Assert.IsNotNull(snapshot.BuildRenderTreeMethod);
         foreach (var syntaxReference in snapshot.BuildRenderTreeMethod.DeclaringSyntaxReferences)
@@ -1128,4 +1129,24 @@ public sealed class RazorEngineFeatureSpikeTests
             TestContext.WriteLine("  " + metadataName + " => " + present);
         }
     }
+
+    private static string InjectCarrierAttribute(string componentSource, string documentPath, string documentText)
+    {
+        if (componentSource.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
+            return componentSource;
+
+        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
+        var replacement = string.Join(
+            Environment.NewLine,
+            marker,
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(JsonSerializer.Serialize(Array.Empty<object>())) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]");
+
+        return componentSource.Replace(marker, replacement, StringComparison.Ordinal);
+    }
+
+    private static string ToVerbatimLiteral(string text)
+        => "@\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 }

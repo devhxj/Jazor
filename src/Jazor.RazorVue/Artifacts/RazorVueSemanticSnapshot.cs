@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Jazor.RazorVue.Descriptor;
+using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 
 namespace Jazor.RazorVue.Artifacts;
@@ -17,8 +18,7 @@ internal sealed record RazorVueSemanticSnapshot(
     Compilation Compilation,
     INamedTypeSymbol ComponentSymbol,
     IMethodSymbol? BuildRenderTreeMethod,
-    string? RazorDocumentPath,
-    ImmutableArray<string> RazorImportDocumentPaths,
+    RazorVueRazorIrCarrier? RazorIrCarrier,
     VueLifecycleDescriptor Lifecycle,
     VueLogicDescriptor Logic,
     VueComponentDescriptor Descriptor,

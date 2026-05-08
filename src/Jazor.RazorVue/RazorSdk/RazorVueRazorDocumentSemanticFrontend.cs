@@ -29,10 +29,14 @@ internal sealed class RazorVueRazorDocumentSemanticFrontend : IRazorSemanticFron
 
         foreach (var candidate in requiredContext.DiscoverComponentCandidates())
         {
-            builder.Add(requiredContext.CreateSemanticSnapshot(
-                candidate,
-                RazorVueRazorDocumentLocator.TryResolvePrimaryDocumentPath(candidate),
-                RazorVueRazorDocumentLocator.ResolveImportDocumentPaths(candidate)));
+            var componentSymbol = candidate.ComponentSymbol;
+            if (RazorVueRazorIrCarrier.TryResolve(componentSymbol, out var carrier))
+            {
+                builder.Add(requiredContext.CreateSemanticSnapshot(candidate, carrier));
+                continue;
+            }
+
+            builder.Add(requiredContext.CreateSemanticSnapshot(candidate));
         }
 
         return builder.ToImmutable();

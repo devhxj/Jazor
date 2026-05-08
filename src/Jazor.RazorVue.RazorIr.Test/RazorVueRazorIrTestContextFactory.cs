@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System.Text.Json;
 
 namespace Jazor.RazorVue.RazorIr.Test;
 
@@ -48,6 +49,7 @@ internal static class RazorVueRazorIrTestContextFactory
         bool requireSdkAlignedGeneratedSource)
     {
         var importsPath = Path.Combine(Path.GetDirectoryName(documentPath)!, "_Imports.razor");
+        componentSource = InjectCarrierAttribute(componentSource, documentPath, importsPath, documentText, importsText);
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var baseCompilation = CSharpCompilation.Create(
             assemblyName,
@@ -110,17 +112,7 @@ internal static class RazorVueRazorIrTestContextFactory
                 path: Path.GetFileName(documentPath) + ".g.cs"));
         AssertCompilationHasNoErrors(compilation, csharpDocument.Text.ToString());
 
-        var razorDocuments = string.IsNullOrWhiteSpace(importsText)
-            ? Jazor.RazorVue.RazorVueRazorDocumentSet.Create(
-            [
-                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))
-            ])
-            : Jazor.RazorVue.RazorVueRazorDocumentSet.Create(
-            [
-                new Jazor.RazorVue.RazorVueRazorDocument(importsPath, SourceText.From(importsText)),
-                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))
-            ]);
-        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation, razorDocuments);
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
 
         Assert.IsNotNull(context);
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single(static item => item.Descriptor.Name == "TodoApp");
@@ -215,4 +207,40 @@ internal static class RazorVueRazorIrTestContextFactory
             + Environment.NewLine
             + razorText);
     }
+
+    private static string InjectCarrierAttribute(
+        string componentSource,
+        string documentPath,
+        string importsPath,
+        string documentText,
+        string? importsText)
+    {
+        if (componentSource.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
+            return componentSource;
+
+        var importsJson = string.IsNullOrWhiteSpace(importsText)
+            ? "[]"
+            : JsonSerializer.Serialize(new[]
+            {
+                new
+                {
+                    Path = importsPath,
+                    Text = importsText
+                }
+            });
+
+        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
+        var replacement = string.Join(
+            Environment.NewLine,
+            marker,
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(importsJson) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]");
+
+        return componentSource.Replace(marker, replacement, StringComparison.Ordinal);
+    }
+
+    private static string ToVerbatimLiteral(string text)
+        => "@\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
 }

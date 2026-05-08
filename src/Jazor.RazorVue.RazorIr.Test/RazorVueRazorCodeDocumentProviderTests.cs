@@ -2,6 +2,7 @@ using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System.Text.Json;
 
 namespace Jazor.RazorVue.RazorIr.Test;
 
@@ -19,12 +20,13 @@ public sealed class RazorVueRazorCodeDocumentProviderTests
             <section><h1>@Title</h1><p>Hello</p></section>
             """;
 
-        var context = CreateContext(
-            CreateRazorGeneratedCompilation(documentPath, importsPath),
-            importsPath,
-            importsText,
-            documentPath,
-            documentText);
+        var compilation = CreateCarrierBackedCompilation(documentPath, importsPath, documentText, importsText);
+        var errors = compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
+        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
 
         var provider = new RazorVueRazorCodeDocumentProvider();
@@ -49,85 +51,71 @@ public sealed class RazorVueRazorCodeDocumentProviderTests
             </ChildCard>
             """;
 
-        var compilation = CSharpCompilation.Create(
-            assemblyName: "RazorVue.RazorSdk.Provider.TagHelpers.Tests",
-            syntaxTrees:
-            [
-                CSharpSyntaxTree.ParseText(
-                    """
-                    global using static ECMAScript.Vue3;
-                    global using ECMAScript.VueContract;
-                    global using Microsoft.AspNetCore.Components;
-                    """,
-                    path: "RazorVueTestGlobalUsings.g.cs"),
-                CSharpSyntaxTree.ParseText(
-                    """
-                    using System;
-
-                    namespace ECMAScript
-                    {
-                        [AttributeUsage(AttributeTargets.Class, Inherited = false)]
-                        public sealed class ECMAScriptModuleAttribute : Attribute
-                        {
-                            public ECMAScriptModuleAttribute() { }
-                            public ECMAScriptModuleAttribute(string import) { }
-                        }
-                    }
-
-                    namespace Demo.Pages
-                    {
-                        [ECMAScript.ECMAScriptModule("./components/child-card")]
-                        public partial class ChildCard : ComponentBase, IVueComponent
-                        {
-                            [Parameter]
-                            public string? Title { get; set; }
-                        }
-
-                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
-                        public partial class TodoApp : ComponentBase, IVueComponent
-                        {
-                            [Parameter]
-                            public string? Title { get; set; }
-                        }
-                    }
-                    """,
-                    path: "TodoApp.razor.cs"),
-                CSharpSyntaxTree.ParseText(
-                    $$"""
-                    #line 1 "{{importsPath}}"
-                    using System;
-                    #line default
-                    #line hidden
-                    using Microsoft.AspNetCore.Components.Rendering;
-
-                    namespace Demo.Pages
-                    {
-                        public partial class TodoApp
-                        {
-                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
-                            {
-                    #line 1 "{{documentPath}}"
-                                __builder.OpenComponent<ChildCard>(0);
-                                __builder.AddAttribute(1, "Title", Title);
-                                __builder.CloseComponent();
-                    #line default
-                    #line hidden
-                            }
-                        }
-                    }
-                    """,
-                    path: "TodoApp.razor.g.cs")
-            ],
-            references: RazorIrTestHost.CreateMetadataReferences(),
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var context = CreateContext(
-            compilation,
-            importsPath,
-            importsText,
+        var compilation = CreateCarrierBackedCompilation(
             documentPath,
-            documentText);
+            importsPath,
+            documentText,
+            importsText,
+            componentSource:
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/child-card")]
+                public partial class ChildCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            generatedBuildRenderTreeSource:
+            $$"""
+            #line 1 "{{importsPath}}"
+            using System;
+            #line default
+            #line hidden
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                public partial class TodoApp
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                    {
+            #line 1 "{{documentPath}}"
+                        __builder.OpenComponent<ChildCard>(0);
+                        __builder.AddAttribute(1, "Title", Title);
+                        __builder.CloseComponent();
+            #line default
+            #line hidden
+                    }
+                }
+            }
+            """);
+
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
+        Assert.IsNotNull(context);
         var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single(static item => item.Descriptor.Name == "TodoApp");
+        Assert.IsNotNull(snapshot.RazorIrCarrier);
 
         var provider = new RazorVueRazorCodeDocumentProvider();
         var created = provider.TryCreate(context, snapshot, out var handle);
@@ -177,7 +165,7 @@ public sealed class RazorVueRazorCodeDocumentProviderTests
             references: RazorIrTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation, Jazor.RazorVue.RazorVueRazorDocumentSet.Empty);
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
         var snapshot = context.CreateSemanticSnapshots().Single();
 
@@ -187,32 +175,103 @@ public sealed class RazorVueRazorCodeDocumentProviderTests
         Assert.IsFalse(created);
     }
 
-    private static Jazor.RazorVue.RazorVueCompilationContext CreateContext(
-        Compilation compilation,
-        string importsPath,
-        string importsText,
-        string documentPath,
-        string documentText)
+    [TestMethod]
+    public void TryCreate_ForCarrierBackedRazorSnapshot_DoesNotRequireAdditionalRazorDocuments()
     {
+        const string importsPath = @"D:\repo\Demo\_Imports.razor";
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string importsText = "@using Demo.Shared";
+        const string documentText = """
+            @page "/todo"
+            <section><h1>@Title</h1><p>Hello</p></section>
+            """;
+
+        var compilation = CreateCarrierBackedCompilation(documentPath, importsPath, documentText, importsText);
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
-
-        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(
-            compilation,
-            Jazor.RazorVue.RazorVueRazorDocumentSet.Create(
-            [
-                new Jazor.RazorVue.RazorVueRazorDocument(importsPath, SourceText.From(importsText)),
-                new Jazor.RazorVue.RazorVueRazorDocument(documentPath, SourceText.From(documentText))
-            ]));
+        var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
-        return context;
+
+        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single();
+        Assert.IsNotNull(snapshot.RazorIrCarrier);
+
+        var provider = new RazorVueRazorCodeDocumentProvider();
+        var created = provider.TryCreate(context, snapshot, out var handle);
+
+        Assert.IsTrue(created);
+        Assert.AreEqual(documentPath, handle.PrimaryDocument.Path);
+        Assert.AreEqual(documentText, handle.PrimaryDocument.Text.ToString());
+        Assert.AreEqual(1, handle.ImportDocuments.Length);
+        Assert.AreEqual(importsPath, handle.ImportDocuments[0].Path);
+        Assert.AreEqual(importsText, handle.ImportDocuments[0].Text.ToString());
     }
 
-    private static CSharpCompilation CreateRazorGeneratedCompilation(string documentPath, string importsPath)
-        => CSharpCompilation.Create(
-            assemblyName: "RazorVue.RazorSdk.Provider.Tests",
+    private static CSharpCompilation CreateCarrierBackedCompilation(
+        string documentPath,
+        string importsPath,
+        string documentText,
+        string importsText,
+        string? componentSource = null,
+        string? generatedBuildRenderTreeSource = null)
+    {
+        var importsJson = JsonSerializer.Serialize(new[]
+        {
+            new
+            {
+                Path = importsPath,
+                Text = importsText
+            }
+        });
+        componentSource ??= string.Join(
+            Environment.NewLine,
+            "namespace Demo.Pages",
+            "{",
+            "    [ECMAScript.ECMAScriptModule(\"./components/todo-app\")]",
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(importsJson) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]",
+            "    public partial class TodoApp : ComponentBase, IVueComponent",
+            "    {",
+            "        [Parameter]",
+            "        public string? Title { get; set; }",
+            "    }",
+            "}");
+        componentSource = InjectCarrierAttribute(componentSource, documentPath, importsJson, documentText);
+        generatedBuildRenderTreeSource ??=
+            $$"""
+            #line 1 "{{importsPath}}"
+            using System;
+            #line default
+            #line hidden
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace Demo.Pages
+            {
+                public partial class TodoApp
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder __builder)
+                    {
+            #line 1 "{{documentPath}}"
+                        __builder.OpenElement(0, "section");
+                        __builder.OpenElement(1, "h1");
+                        __builder.AddContent(2, Title);
+                        __builder.CloseElement();
+                        __builder.OpenElement(3, "p");
+                        __builder.AddContent(4, "Hello");
+                        __builder.CloseElement();
+                        __builder.CloseElement();
+            #line default
+            #line hidden
+                    }
+                }
+            }
+            """;
+
+        return CSharpCompilation.Create(
+            assemblyName: "RazorVue.RazorSdk.Provider.Carrier.Tests",
             syntaxTrees:
             [
                 CSharpSyntaxTree.ParseText(
@@ -235,49 +294,42 @@ public sealed class RazorVueRazorCodeDocumentProviderTests
                             public ECMAScriptModuleAttribute(string import) { }
                         }
                     }
-
-                    namespace Demo.Pages
-                    {
-                        [ECMAScript.ECMAScriptModule("./components/todo-app")]
-                        public partial class TodoApp : ComponentBase, IVueComponent
-                        {
-                            [Parameter]
-                            public string? Title { get; set; }
-                        }
-                    }
                     """,
+                    path: "ECMAScriptModuleAttribute.cs"),
+                CSharpSyntaxTree.ParseText(
+                    componentSource,
                     path: "TodoApp.razor.cs"),
                 CSharpSyntaxTree.ParseText(
-                    $$"""
-                    #line 1 "{{importsPath}}"
-                    using System;
-                    #line default
-                    #line hidden
-                    using Microsoft.AspNetCore.Components.Rendering;
-
-                    namespace Demo.Pages
-                    {
-                        public partial class TodoApp
-                        {
-                            protected override void BuildRenderTree(RenderTreeBuilder __builder)
-                            {
-                    #line 1 "{{documentPath}}"
-                                __builder.OpenElement(0, "section");
-                                __builder.OpenElement(1, "h1");
-                                __builder.AddContent(2, Title);
-                                __builder.CloseElement();
-                                __builder.OpenElement(3, "p");
-                                __builder.AddContent(4, "Hello");
-                                __builder.CloseElement();
-                                __builder.CloseElement();
-                    #line default
-                    #line hidden
-                            }
-                        }
-                    }
-                    """,
+                    generatedBuildRenderTreeSource,
                     path: "TodoApp.razor.g.cs")
             ],
             references: RazorIrTestHost.CreateMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    }
+
+    private static string ToVerbatimLiteral(string text)
+        => "@\"" + text.Replace("\"", "\"\"", StringComparison.Ordinal) + "\"";
+
+    private static string InjectCarrierAttribute(
+        string source,
+        string documentPath,
+        string importsJson,
+        string documentText)
+    {
+        if (source.Contains("RazorVueRazorIrCarrierAttribute", StringComparison.Ordinal))
+            return source;
+
+        const string marker = "[ECMAScript.ECMAScriptModule(\"./components/todo-app\")]";
+        var carrierAttribute = string.Join(
+            Environment.NewLine,
+            marker,
+            "    [Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute(",
+            "        " + ToVerbatimLiteral(documentPath) + ",",
+            "        " + ToVerbatimLiteral(importsJson) + ",",
+            "        " + ToVerbatimLiteral(documentText) + ")]");
+
+        return source.Contains(marker, StringComparison.Ordinal)
+            ? source.Replace(marker, carrierAttribute, StringComparison.Ordinal)
+            : source;
+    }
 }
