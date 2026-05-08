@@ -32,6 +32,8 @@
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
   <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />
   <Project Path="src/Jazor.Compiler/Jazor.Compiler.csproj" />
+  <Project Path="src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
+  <Project Path="src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.Common/Jazor.Common.csproj" />
   <Project Path="src/Wiki/Wiki.csproj" />

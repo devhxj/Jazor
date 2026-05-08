@@ -39,6 +39,10 @@ public sealed class SdkIntegrationTests
                 "lib/net10.0/ECMAScript.VueContract.pdb",
                 "lib/net10.0/ECMAScript.Vue3.dll",
                 "lib/net10.0/ECMAScript.Vue3.pdb",
+                "lib/net10.0/Jazor.AspNetCore.dll",
+                "lib/net10.0/Jazor.AspNetCore.pdb",
+                "lib/net10.0/Jazor.AspNetCore.Dev.dll",
+                "lib/net10.0/Jazor.AspNetCore.Dev.pdb",
                 "lib/net10.0/Jazor.Compiler.dll",
                 "lib/net10.0/Jazor.Compiler.pdb",
                 "lib/net10.0/Jazor.Common.dll",
@@ -349,6 +353,9 @@ public sealed class SdkIntegrationTests
         var publishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "host", "app.mjs.map")));
+        var devModule = await File.ReadAllTextAsync(Path.Combine(devJazorRoot, "host", "app.mjs"));
+        StringAssert.Contains(devModule, "sourceMappingURL=app.mjs.map");
         Assert.IsFalse(Directory.Exists(publishJazorRoot), $"Build should not materialize publish assets under '{publishJazorRoot}'.");
     }
 
@@ -383,7 +390,57 @@ public sealed class SdkIntegrationTests
         var publishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "host", "app.mjs.map")));
+        var publishedStaticHostModule = await File.ReadAllTextAsync(Path.Combine(publishJazorRoot, "host", "app.mjs"));
+        StringAssert.Contains(publishedStaticHostModule, "sourceMappingURL=app.mjs.map");
         Assert.IsFalse(Directory.Exists(devJazorRoot), $"Publish should not fall back to the development output root '{devJazorRoot}'.");
+    }
+
+    [TestMethod]
+    public async Task Publish_LocalJazorPackage_WebSdkHost_MaterializesJazorAssetsIntoPublishOutput()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "WebSdkPublishSample");
+        var publishOutputRoot = Path.Combine(workspace.RootPath, "publish-output");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateDefaultOutputWebHostProject(projectRoot);
+
+        var publish = await RunDotNetAsync(
+            package.RepoRoot,
+            [
+                "publish",
+                projectPath,
+                "-c",
+                "Debug",
+                "-o",
+                publishOutputRoot,
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, publish.ExitCode, publish.ToString());
+
+        var sourcePublishJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var publishedJazorRoot = Path.Combine(publishOutputRoot, "wwwroot", "jazor");
+        var publishedShadowJazorRoot = Path.Combine(publishOutputRoot, "jazor");
+
+        Assert.IsTrue(File.Exists(Path.Combine(sourcePublishJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourcePublishJazorRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(sourcePublishJazorRoot, "host", "app.mjs.map")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "jazor-manifest.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs")));
+        Assert.IsTrue(File.Exists(Path.Combine(publishedJazorRoot, "host", "app.mjs.map")));
+        var publishedWebHostModule = await File.ReadAllTextAsync(Path.Combine(publishedJazorRoot, "host", "app.mjs"));
+        StringAssert.Contains(publishedWebHostModule, "sourceMappingURL=app.mjs.map");
+        Assert.IsFalse(
+            Directory.Exists(publishedShadowJazorRoot),
+            $"Publish output must not leak a shadow root jazor directory at '{publishedShadowJazorRoot}'.");
     }
 
     [TestMethod]
@@ -2079,6 +2136,54 @@ public sealed class SdkIntegrationTests
                     builder.AddAttribute(3, nameof(VTextField.ModelValueChanged), NameChanged);
                     builder.CloseComponent();
                 }
+            }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateDefaultOutputWebHostProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+        var projectPath = Path.Combine(projectRoot, "WebHostDefaultOutput.csproj");
+
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Web">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <JazorEmit>true</JazorEmit>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            var builder = WebApplication.CreateBuilder(args);
+            var app = builder.Build();
+            app.MapGet("/", () => "ready");
+            app.Run();
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace WebHostDefaultOutput;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "ready";
             }
             """);
 

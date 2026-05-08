@@ -58,6 +58,10 @@
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net10.0\Jazor.AspNetCore.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net10.0\Jazor.AspNetCore.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net10.0\Jazor.AspNetCore.Dev.dll" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net10.0\Jazor.AspNetCore.Dev.pdb" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="lib\net10.0\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="lib\net10.0\" />
   </ItemGroup>
@@ -89,6 +93,8 @@
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.RazorVue\Jazor.RazorVue.csproj" />

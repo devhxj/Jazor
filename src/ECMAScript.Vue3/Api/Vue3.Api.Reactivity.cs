@@ -175,6 +175,16 @@ public static partial class Vue3
 	public extern static T Unref<T>(IVueRef<T> value);
 
 	/// <summary>
+	/// 将 Vue shallow ref 解包为其当前值。
+	/// Unwraps a Vue shallow ref to its current value.
+	/// </summary>
+	/// <typeparam name="T">shallow ref 值的类型。The shallow ref value type.</typeparam>
+	/// <param name="value">要解包的 shallow ref。The shallow ref to unwrap.</param>
+	/// <returns>shallow ref 的当前值。The current shallow ref value.</returns>
+	[Description("@#unref")]
+	public extern static T Unref<T>(VueShallowRef<T> value);
+
+	/// <summary>
 	/// 将普通值规范化为 ref。
 	/// Normalizes a plain value into a ref.
 	/// </summary>
