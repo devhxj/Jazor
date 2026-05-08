@@ -1,12 +1,34 @@
 const baseUrl = process.argv[2];
 const cdpPort = Number(process.argv[3]);
+const verificationMode = process.argv[4] || "development";
 
-if (!baseUrl || !Number.isFinite(cdpPort)) {
-  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort>");
+if (!baseUrl || !Number.isFinite(cdpPort) || !["development", "production"].includes(verificationMode)) {
+  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort> <development|production>");
 }
+
+const isDevelopmentVerification = verificationMode === "development";
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function reverseFind(values, predicate) {
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    if (predicate(values[index])) {
+      return values[index];
+    }
+  }
+
+  return null;
+}
+
+function toAbsoluteUrl(url, relativeTo = baseUrl) {
+  return new URL(url, relativeTo).toString();
+}
+
+function toPathAndSearch(url, relativeTo = baseUrl) {
+  const parsed = new URL(url, relativeTo);
+  return `${parsed.pathname}${parsed.search}`;
 }
 
 function formatRemoteArg(arg) {
@@ -45,8 +67,11 @@ async function main() {
   const consoleErrors = [];
   const exceptions = [];
   const networkFailures = [];
+  const scriptParsedEvents = [];
+  const webSocketCreatedEvents = [];
   let loadResolvers = [];
   let withinDocumentResolvers = [];
+  let mainFrameId = null;
 
   ws.addEventListener("message", event => {
     const message = JSON.parse(event.data);
@@ -86,6 +111,22 @@ async function main() {
       });
     }
 
+    if (message.method === "Network.webSocketCreated") {
+      webSocketCreatedEvents.push({
+        requestId: message.params?.requestId || "",
+        url: message.params?.url || ""
+      });
+    }
+
+    if (message.method === "Debugger.scriptParsed") {
+      scriptParsedEvents.push({
+        scriptId: message.params?.scriptId || "",
+        url: message.params?.url || "",
+        sourceMapURL: message.params?.sourceMapURL || "",
+        isModule: message.params?.isModule === true
+      });
+    }
+
     if (message.method === "Page.loadEventFired") {
       const resolvers = loadResolvers;
       loadResolvers = [];
@@ -99,6 +140,13 @@ async function main() {
       withinDocumentResolvers = [];
       for (const resolve of resolvers) {
         resolve(message.params?.url || "");
+      }
+    }
+
+    if (message.method === "Page.frameNavigated") {
+      const frame = message.params?.frame;
+      if (frame && !frame.parentId && frame.id) {
+        mainFrameId = frame.id;
       }
     }
   });
@@ -165,9 +213,74 @@ async function main() {
     throw new Error(`Timed out waiting for condition: ${expression}`);
   }
 
+  async function waitForState(getValue, description, timeoutMs = 8000, intervalMs = 100) {
+    const started = Date.now();
+    while (Date.now() - started < timeoutMs) {
+      const value = getValue();
+      if (value) {
+        return value;
+      }
+
+      await delay(intervalMs);
+    }
+
+    throw new Error(`Timed out waiting for ${description}.`);
+  }
+
+  function findLatestScriptParsedByPath(scriptPath) {
+    const expectedUrl = toAbsoluteUrl(scriptPath);
+    return reverseFind(
+      scriptParsedEvents,
+      entry => toAbsoluteUrl(entry.url) === expectedUrl);
+  }
+
+  async function inspectSourceMap(check) {
+    const script = await waitForState(
+      () => {
+        const candidate = findLatestScriptParsedByPath(check.scriptPath);
+        return candidate && candidate.sourceMapURL ? candidate : null;
+      },
+      `Debugger.scriptParsed for ${check.scriptPath}`);
+    const resolvedSourceMapUrl = toAbsoluteUrl(script.sourceMapURL, script.url);
+    const response = await fetch(resolvedSourceMapUrl, { cache: "no-store" });
+    const responseText = await response.text();
+    let sourceMap = null;
+    let parseError = "";
+
+    try {
+      sourceMap = JSON.parse(responseText);
+    } catch (error) {
+      parseError = error && error.message ? error.message : String(error);
+    }
+
+    const sources = Array.isArray(sourceMap?.sources) ? sourceMap.sources : [];
+    const sourcesContent = Array.isArray(sourceMap?.sourcesContent) ? sourceMap.sourcesContent : [];
+
+    return {
+      label: check.label,
+      scriptUrl: script.url,
+      isModule: script.isModule,
+      scriptId: script.scriptId,
+      sourceMapURL: script.sourceMapURL,
+      resolvedSourceMapUrl,
+      sourceMapPath: toPathAndSearch(resolvedSourceMapUrl),
+      httpStatus: response.status,
+      httpContentType: response.headers.get("content-type") || "",
+      parseError,
+      mapFile: sourceMap?.file || "",
+      sourceCount: sources.length,
+      sourcesContentCount: sourcesContent.length,
+      missingSources: check.expectedSources.filter(source => !sources.includes(source)),
+      missingSourceContentMarkers: check.expectedSourceContentMarkers.filter(
+        marker => !sourcesContent.some(sourceText => typeof sourceText === "string" && sourceText.includes(marker)))
+    };
+  }
+
   await send("Page.enable");
   await send("Runtime.enable");
   await send("Network.enable");
+  await send("Network.setCacheDisabled", { cacheDisabled: true });
+  await send("Debugger.enable");
   await send("Emulation.setDeviceMetricsOverride", {
     width: 1440,
     height: 1024,
@@ -179,8 +292,141 @@ async function main() {
   const failures = [];
 
   await navigate(baseUrl + "/");
+  report.runtime = {
+    verificationMode
+  };
+  const reloadClientUrl = toAbsoluteUrl("/@jazor/client");
+  const reloadSocketUrl = `${new URL(baseUrl).protocol === "https:" ? "wss" : "ws"}://${new URL(baseUrl).host}/@jazor/reload`;
+  const reloadClientResponse = await fetch(reloadClientUrl, { cache: "no-store" });
+  const reloadClientText = reloadClientResponse.ok ? await reloadClientResponse.text() : "";
+  report.runtime.reloadClientInjected = await evaluate(`(function(){
+    const script = document.querySelector('script[src="/@jazor/client"]');
+    return !!script;
+  })()`);
+  report.runtime.reloadClientStatus = reloadClientResponse.status;
+  report.runtime.reloadClientContentType = reloadClientResponse.headers.get("content-type") || "";
+  report.runtime.reloadClientHasSocketPath = reloadClientText.includes('"/@jazor/reload"');
+  report.runtime.reloadSocketObserved = false;
+
+  if (isDevelopmentVerification) {
+    const reloadSocketConnection = await waitForState(
+      () => reverseFind(webSocketCreatedEvents, entry => entry.url === reloadSocketUrl),
+      `development reload websocket ${reloadSocketUrl}`,
+      10000,
+      100).catch(() => null);
+    report.runtime.reloadSocketObserved = reloadSocketConnection !== null;
+
+    if (!report.runtime.reloadClientInjected) {
+      failures.push("Development verification did not inject the /@jazor/client script into the served HTML.");
+    }
+    if (report.runtime.reloadClientStatus !== 200) {
+      failures.push(`Development verification expected /@jazor/client to return HTTP 200 but received ${report.runtime.reloadClientStatus}.`);
+    }
+    if (!report.runtime.reloadClientContentType.includes("text/javascript")) {
+      failures.push(`Development verification expected /@jazor/client to be JavaScript but received '${report.runtime.reloadClientContentType}'.`);
+    }
+    if (!report.runtime.reloadClientHasSocketPath) {
+      failures.push("Development reload client script did not contain the expected /@jazor/reload socket path.");
+    }
+    if (!report.runtime.reloadSocketObserved) {
+      failures.push("Development verification did not observe the /@jazor/reload websocket connection from the injected browser client.");
+    }
+  } else {
+    report.runtime.reloadSocketObserved = webSocketCreatedEvents.some(entry => entry.url === reloadSocketUrl);
+
+    if (report.runtime.reloadClientInjected) {
+      failures.push("Production verification unexpectedly injected the /@jazor/client development script.");
+    }
+    if (report.runtime.reloadClientStatus !== 404) {
+      failures.push(`Production verification expected /@jazor/client to stay unavailable but received HTTP ${report.runtime.reloadClientStatus}.`);
+    }
+    if (report.runtime.reloadSocketObserved) {
+      failures.push("Production verification unexpectedly observed a /@jazor/reload websocket connection.");
+    }
+  }
+
+  report.debugger = {
+    sourceMaps: []
+  };
+  for (const check of [
+    {
+      label: "main",
+      scriptPath: "/jazor/main.mjs",
+      sourceMapPath: "/jazor/main.mjs.map",
+      moduleFile: "main.mjs",
+      expectedSources: [
+        "AppModule.cs"
+      ],
+      expectedSourceContentMarkers: [
+        "[ECMAScriptModule(\"main.mjs\")]",
+        "public static class AppModule",
+        "app.Mount(\"#app\")"
+      ]
+    },
+    {
+      label: "wiki-home",
+      scriptPath: "/jazor/components/wiki-home.mjs",
+      sourceMapPath: "/jazor/components/wiki-home.mjs.map",
+      moduleFile: "components/wiki-home.mjs",
+      expectedSources: [
+        "WikiHomeModule.cs",
+        "WikiHomeModule.GettingStarted.cs",
+        "WikiHomeModule.Overview.cs"
+      ],
+      expectedSourceContentMarkers: [
+        "public static partial class WikiHomeModule",
+        "private const string GettingStartedPath = \"/guides/getting-started\";",
+        "private static IVNode OverviewBody()",
+        "private static IVNode GettingStartedBody()"
+      ]
+    }
+  ]) {
+    const inspectedSourceMap = await inspectSourceMap(check);
+    report.debugger.sourceMaps.push(inspectedSourceMap);
+
+    if (!inspectedSourceMap.isModule) {
+      failures.push(`Debugger parsed ${check.scriptPath} without module semantics.`);
+    }
+    if (inspectedSourceMap.sourceMapPath !== check.sourceMapPath) {
+      failures.push(`Debugger resolved ${check.scriptPath} to unexpected source map path: ${inspectedSourceMap.sourceMapPath}`);
+    }
+    if (inspectedSourceMap.httpStatus !== 200) {
+      failures.push(`Source map ${check.sourceMapPath} returned HTTP ${inspectedSourceMap.httpStatus}.`);
+    }
+    if (!inspectedSourceMap.httpContentType.includes("application/json")) {
+      failures.push(`Source map ${check.sourceMapPath} returned unexpected content type '${inspectedSourceMap.httpContentType}'.`);
+    }
+    if (inspectedSourceMap.parseError) {
+      failures.push(`Source map ${check.sourceMapPath} could not be parsed as JSON: ${inspectedSourceMap.parseError}`);
+    }
+    if (inspectedSourceMap.mapFile !== check.moduleFile) {
+      failures.push(`Source map ${check.sourceMapPath} declared unexpected file '${inspectedSourceMap.mapFile}'.`);
+    }
+    if (inspectedSourceMap.missingSources.length > 0) {
+      failures.push(`Source map ${check.sourceMapPath} did not retain the expected original C# sources: ${inspectedSourceMap.missingSources.join(", ")}`);
+    }
+    if (inspectedSourceMap.sourcesContentCount < inspectedSourceMap.sourceCount) {
+      failures.push(`Source map ${check.sourceMapPath} did not carry sourcesContent for every original source.`);
+    }
+    if (inspectedSourceMap.missingSourceContentMarkers.length > 0) {
+      failures.push(`Source map ${check.sourceMapPath} did not retain the expected C# source content markers: ${inspectedSourceMap.missingSourceContentMarkers.join(", ")}`);
+    }
+  }
+
   report.home = {
     title: await evaluate("document.title || ''"),
+    description: await evaluate(`(function(){
+      const element = document.querySelector('meta[name="description"]');
+      return element ? (element.getAttribute('content') || '') : '';
+    })()`),
+    robots: await evaluate(`(function(){
+      const element = document.querySelector('meta[name="robots"]');
+      return element ? (element.getAttribute('content') || '') : '';
+    })()`),
+    canonical: await evaluate(`(function(){
+      const element = document.querySelector('link[rel="canonical"]');
+      return element ? (element.getAttribute('href') || '') : '';
+    })()`),
     mounted: await evaluate("document.querySelector('#app') ? document.querySelector('#app').textContent.includes('Production Docs Built with Vue 3 H Functions') : false"),
     emptyShell: await evaluate(`(function(){
       const element = document.querySelector('#app');
@@ -199,6 +445,18 @@ async function main() {
   }
   if (report.home.gettingStartedLinkCount < 1) {
     failures.push("Home page did not render a Getting Started route link.");
+  }
+  if (report.home.title !== "Overview | jazor.wiki") {
+    failures.push(`Home page title was unexpected before SPA navigation: ${report.home.title}`);
+  }
+  if (report.home.description !== "A production-oriented docs shell for Jazor, authored entirely with ECMAScript.Vue3 H functions.") {
+    failures.push(`Home page description was unexpected before SPA navigation: ${report.home.description}`);
+  }
+  if (report.home.robots !== "index, follow") {
+    failures.push(`Home page robots directive was unexpected before SPA navigation: ${report.home.robots}`);
+  }
+  if (!report.home.canonical.endsWith("/")) {
+    failures.push(`Home page canonical URL was unexpected before SPA navigation: ${report.home.canonical}`);
   }
 
   report.home.clickedGettingStarted = await evaluate(`(function(){
@@ -414,6 +672,18 @@ async function main() {
   await navigate(baseUrl + "/search?q=compiler");
   report.search = {
     title: await evaluate("document.title || ''"),
+    description: await evaluate(`(function(){
+      const element = document.querySelector('meta[name="description"]');
+      return element ? (element.getAttribute('content') || '') : '';
+    })()`),
+    robots: await evaluate(`(function(){
+      const element = document.querySelector('meta[name="robots"]');
+      return element ? (element.getAttribute('content') || '') : '';
+    })()`),
+    canonical: await evaluate(`(function(){
+      const element = document.querySelector('link[rel="canonical"]');
+      return element ? (element.getAttribute('href') || '') : '';
+    })()`),
     inputValue: await evaluate("document.querySelector('#wiki-search-input') ? document.querySelector('#wiki-search-input').value : ''"),
     resultCount: await evaluate("document.querySelectorAll('.search-result-card').length"),
     markCount: await evaluate("document.querySelectorAll('.search-mark').length")
@@ -427,6 +697,18 @@ async function main() {
   }
   if (report.search.markCount < 1) {
     failures.push("Search route rendered no highlighted matches.");
+  }
+  if (report.search.title !== "Search: compiler | jazor.wiki") {
+    failures.push(`Search title was unexpected after query hydration: ${report.search.title}`);
+  }
+  if (report.search.description !== 'Search results for "compiler" across route metadata, tags, curated page body text, and section titles.') {
+    failures.push(`Search description was unexpected after query hydration: ${report.search.description}`);
+  }
+  if (report.search.robots !== "noindex, nofollow") {
+    failures.push(`Search robots directive was unexpected after query hydration: ${report.search.robots}`);
+  }
+  if (!report.search.canonical.endsWith("/search?q=compiler")) {
+    failures.push(`Search canonical URL was unexpected after query hydration: ${report.search.canonical}`);
   }
 
   report.search.clearClicked = await evaluate(`(function(){
@@ -452,6 +734,18 @@ async function main() {
   await navigate(baseUrl + "/guides/missing-page");
   report.notFound = {
     title: await evaluate("document.title || ''"),
+    description: await evaluate(`(function(){
+      const element = document.querySelector('meta[name="description"]');
+      return element ? (element.getAttribute('content') || '') : '';
+    })()`),
+    robots: await evaluate(`(function(){
+      const element = document.querySelector('meta[name="robots"]');
+      return element ? (element.getAttribute('content') || '') : '';
+    })()`),
+    canonical: await evaluate(`(function(){
+      const element = document.querySelector('link[rel="canonical"]');
+      return element ? (element.getAttribute('href') || '') : '';
+    })()`),
     hasHeading: await evaluate("Array.from(document.querySelectorAll('h1,h2,h3')).some(node => (node.textContent || '').includes('Page Not Found'))"),
     suggestionCount: await evaluate("document.querySelectorAll('.route-card').length"),
     requestedPathShown: await evaluate("document.body.textContent.includes('/guides/missing-page')")
@@ -465,6 +759,18 @@ async function main() {
   }
   if (!report.notFound.requestedPathShown) {
     failures.push("Not-found route did not show the requested path.");
+  }
+  if (report.notFound.title !== "Page Not Found | jazor.wiki") {
+    failures.push(`Not-found title was unexpected: ${report.notFound.title}`);
+  }
+  if (report.notFound.description !== "The current path is not registered in the Wiki page catalog.") {
+    failures.push(`Not-found description was unexpected: ${report.notFound.description}`);
+  }
+  if (report.notFound.robots !== "noindex, nofollow") {
+    failures.push(`Not-found robots directive was unexpected: ${report.notFound.robots}`);
+  }
+  if (!report.notFound.canonical.endsWith("/guides/missing-page")) {
+    failures.push(`Not-found canonical URL was unexpected: ${report.notFound.canonical}`);
   }
 
   report.notFound.recoveryClicked = await evaluate(`(function(){
@@ -598,7 +904,19 @@ async function main() {
     failures.push("Mobile TOC drawer remained open after selecting a section link.");
   }
 
-  const actionableNetworkFailures = networkFailures.filter(entry => !entry.canceled && entry.errorText !== "net::ERR_ABORTED");
+  const actionableNetworkFailures = networkFailures.filter(entry => {
+    if (entry.canceled || entry.errorText === "net::ERR_ABORTED") {
+      return false;
+    }
+
+    // Some Edge/CDP runs emit empty loadingFailed stylesheet events during document swaps.
+    // Ignore those placeholders and only fail on attributable network errors.
+    if (!entry.url && !entry.errorText) {
+      return false;
+    }
+
+    return true;
+  });
   if (actionableNetworkFailures.length > 0) {
     failures.push(`Network failures observed: ${actionableNetworkFailures.map(entry => `${entry.type}:${entry.errorText}:${entry.url}`).join(" | ")}`);
   }
@@ -613,7 +931,9 @@ async function main() {
     report,
     consoleErrors,
     exceptions,
-    networkFailures: actionableNetworkFailures
+    networkFailures: actionableNetworkFailures,
+    scriptParsedCount: scriptParsedEvents.length,
+    webSocketCount: webSocketCreatedEvents.length
   }, null, 2));
 
   ws.close();

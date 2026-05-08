@@ -21,7 +21,9 @@ $hostRoot = $sampleRoot
 $jazorRoot = Join-Path $sampleRoot "jazor"
 $publishShadowJazorRoot = $null
 $mainModulePath = Join-Path $jazorRoot "main.mjs"
+$mainSourceMapPath = Join-Path $jazorRoot "main.mjs.map"
 $componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
+$componentSourceMapPath = Join-Path $jazorRoot "components\wiki-home.mjs.map"
 $browserScriptPath = Join-Path $sampleRoot "verify-browser.mjs"
 $stdoutLog = Join-Path $sampleRoot ".wiki-browser-$PID.stdout.log"
 $stderrLog = Join-Path $sampleRoot ".wiki-browser-$PID.stderr.log"
@@ -147,6 +149,20 @@ function Remove-PathWithRetry {
     }
 }
 
+function Restore-EnvironmentVariable {
+    param(
+        [string]$Name,
+        [AllowNull()][string]$Value
+    )
+
+    if ($null -eq $Value) {
+        Remove-Item -Path ("Env:" + $Name) -ErrorAction SilentlyContinue
+        return
+    }
+
+    Set-Item -Path ("Env:" + $Name) -Value $Value
+}
+
 function Wait-ForHttpOk {
     param(
         [string]$Url,
@@ -217,7 +233,9 @@ if ($Publish) {
     $jazorRoot = Join-Path $hostRoot "wwwroot\jazor"
     $publishShadowJazorRoot = Join-Path $hostRoot "jazor"
     $mainModulePath = Join-Path $jazorRoot "main.mjs"
+    $mainSourceMapPath = Join-Path $jazorRoot "main.mjs.map"
     $componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
+    $componentSourceMapPath = Join-Path $jazorRoot "components\wiki-home.mjs.map"
 }
 elseif ($BuildLocal) {
     $buildScript = Join-Path $sampleRoot "build-local.ps1"
@@ -240,9 +258,13 @@ if ($Publish -and $publishShadowJazorRoot -and (Test-Path $publishShadowJazorRoo
 }
 
 Assert-PathExists -Path $mainModulePath -Description "emitted main module"
+Assert-PathExists -Path $mainSourceMapPath -Description "emitted main source map"
 Assert-PathExists -Path $componentModulePath -Description "emitted wiki component module"
+Assert-PathExists -Path $componentSourceMapPath -Description "emitted wiki component source map"
 
-$previousAspNetCoreUrls = $env:ASPNETCORE_URLS
+$previousAspNetCoreUrls = [Environment]::GetEnvironmentVariable("ASPNETCORE_URLS")
+$previousAspNetCoreEnvironment = [Environment]::GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+$previousDotNetEnvironment = [Environment]::GetEnvironmentVariable("DOTNET_ENVIRONMENT")
 $hostProcess = $null
 $edgeProcess = $null
 $keepLogs = $false
@@ -255,9 +277,13 @@ try {
     if ($Publish) {
         $hostStartArgumentList = @("Wiki.dll", "--urls", $rootUrl)
         $hostStartWorkingDirectory = $hostRoot
+        $env:ASPNETCORE_ENVIRONMENT = "Production"
+        $env:DOTNET_ENVIRONMENT = "Production"
     }
     else {
         $env:ASPNETCORE_URLS = $rootUrl
+        $env:ASPNETCORE_ENVIRONMENT = "Development"
+        $env:DOTNET_ENVIRONMENT = "Development"
     }
 
     $hostProcess = Start-Process `
@@ -299,18 +325,19 @@ try {
 
     Wait-ForCdpReady -Port $CdpPort -Process $edgeProcess -TimeoutSeconds $BrowserStartupTimeoutSeconds
 
-    node $browserScriptPath $rootUrl $CdpPort
+    $verificationMode = if ($Publish) { "production" } else { "development" }
+    node $browserScriptPath $rootUrl $CdpPort $verificationMode
     if ($LASTEXITCODE -ne 0) {
         throw "Wiki browser verification failed."
     }
 
     if ($Publish) {
         Write-Host "Wiki publish browser verification passed."
-        Write-Host "Verified: published wwwroot/jazor runtime mount, SPA navigation, search/not-found recovery, persisted shell state, section/hash routing, copy affordances, mobile drawers, and clean browser runtime."
+        Write-Host "Verified: published wwwroot/jazor runtime mount, no development reload injection, debugger-visible source maps for compiled modules, SPA navigation, search/not-found recovery, persisted shell state, section/hash routing, copy affordances, mobile drawers, and clean browser runtime."
     }
     else {
         Write-Host "Wiki browser verification passed."
-        Write-Host "Verified: local jazor runtime mount, SPA navigation, search/not-found recovery, persisted shell state, section/hash routing, copy affordances, mobile drawers, and clean browser runtime."
+        Write-Host "Verified: Development-mode local jazor runtime mount, dev reload client and websocket, debugger-visible source maps for compiled modules, SPA navigation, search/not-found recovery, persisted shell state, section/hash routing, copy affordances, mobile drawers, and clean browser runtime."
     }
 }
 catch {
@@ -328,7 +355,9 @@ finally {
         Wait-Process -Id $hostProcess.Id -Timeout 5 -ErrorAction SilentlyContinue
     }
 
-    $env:ASPNETCORE_URLS = $previousAspNetCoreUrls
+    Restore-EnvironmentVariable -Name "ASPNETCORE_URLS" -Value $previousAspNetCoreUrls
+    Restore-EnvironmentVariable -Name "ASPNETCORE_ENVIRONMENT" -Value $previousAspNetCoreEnvironment
+    Restore-EnvironmentVariable -Name "DOTNET_ENVIRONMENT" -Value $previousDotNetEnvironment
 
     if (-not $keepLogs) {
         foreach ($logPath in @($stdoutLog, $stderrLog, $edgeStdoutLog, $edgeStderrLog)) {

@@ -418,6 +418,7 @@ CLAUDE.md
 .artifacts/
 .artifacts*/
 .tmp/
+.tmp*/
 .vs/
 .tmp-webidl-out/
 .test-obj/
@@ -434,3 +435,8 @@ src/Wiki/.devtools-*
 !.github/workflows/*.yml
 cnblogs/
 cnblog/
+-SkipPush/
+.isolated*/
+.tmp-rzc-*.csproj
+.tmp-sg-*.cs
+.wiki-browser-edge-profile*/

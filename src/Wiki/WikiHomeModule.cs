@@ -909,30 +909,14 @@ public static partial class WikiHomeModule
 
     private static void SyncDocumentState(string currentPath, string currentSearchQuery)
     {
-        var pageTitle = "Page Not Found";
-        var pageSummary = "The current path is not registered in the Wiki page catalog.";
-        var canonicalPath = currentPath;
-
-        if (currentPath == SearchPath)
-        {
-            pageTitle = currentSearchQuery.Length == 0
-                ? "Search"
-                : "Search: " + currentSearchQuery;
-            pageSummary = currentSearchQuery.Length == 0
-                ? "Search the full Wiki corpus by subsystem, route fragment, workflow, or tag."
-                : "Search results for \"" + currentSearchQuery + "\" across route metadata, tags, curated page body text, and section titles.";
-        }
-        else if (IsKnownPage(currentPath))
-        {
-            pageTitle = GetPageTitle(currentPath);
-            pageSummary = GetPageSummary(currentPath);
-        }
-
+        var pageTitle = GetDocumentPageTitle(currentPath, currentSearchQuery);
+        var pageSummary = GetDocumentPageSummary(currentPath, currentSearchQuery);
+        var robotsDirective = GetDocumentRobotsDirective(currentPath);
         ECMAScript.Global.Document.Title = pageTitle + " | jazor.wiki";
-        UpdateDocumentMeta(pageTitle, pageSummary, BuildUrl(canonicalPath, "", currentSearchQuery));
+        UpdateDocumentMeta(pageTitle, pageSummary, robotsDirective, BuildUrl(currentPath, "", currentSearchQuery));
     }
 
-    private static void UpdateDocumentMeta(string pageTitle, string pageSummary, string relativeUrl)
+    private static void UpdateDocumentMeta(string pageTitle, string pageSummary, string robotsDirective, string relativeUrl)
     {
         var location = ECMAScript.Global.Document.Location;
         var absoluteUrl = relativeUrl;
@@ -945,6 +929,7 @@ public static partial class WikiHomeModule
         SetMetaContent("meta[property=\"og:url\"]", absoluteUrl);
         SetMetaContent("meta[name=\"twitter:title\"]", pageTitle + " | jazor.wiki");
         SetMetaContent("meta[name=\"twitter:description\"]", pageSummary);
+        SetMetaContent("meta[name=\"robots\"]", robotsDirective);
         SetLinkHref("link[rel=\"canonical\"]", absoluteUrl);
     }
 

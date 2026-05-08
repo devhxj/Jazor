@@ -40,8 +40,11 @@ The following invariants are enforced by `verify-smoke.ps1 -Publish`:
 3. `main.mjs` and `components/wiki-home.mjs` must exist under `wwwroot/jazor/`
 4. `<deploy-dir>/jazor/` (shadow root) must not exist after publish
 5. `/vendor/vue@3.5.16.mjs` must exist and be servable
-6. All SPA routes resolve through `MapFallbackToFile("index.html")`
-7. `index.html` must not reference any external CDN URL
+6. Registered docs routes must return HTTP 200 with route-correct first-response metadata and the SPA shell
+7. Search routes are utility surfaces, so they must emit `noindex, nofollow` and must not appear in `sitemap.xml`
+8. Unknown docs routes must return HTTP 404 with the recoverable shell and `X-Robots-Tag: noindex, nofollow`
+9. HTML responses must carry `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY`
+10. `index.html` must not reference any external CDN URL
 
 ## Verification
 
@@ -49,9 +52,10 @@ Run before every deployment:
 
 ```powershell
 .\src\Wiki\verify-smoke.ps1 -Publish
+.\src\Wiki\verify-browser.ps1 -Publish
 ```
 
-This checks all structural invariants, all 24 registered docs routes, browser asset resolution, and emitted module markers.
+This checks structural invariants, discovery docs, route metadata and headers, all registered docs routes, the search/404 indexing contract, browser asset resolution, emitted module markers, and real browser runtime behavior.
 
 ## Rollback Procedure
 

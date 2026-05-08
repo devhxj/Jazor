@@ -1,37 +1,53 @@
+using Jazor.AspNetCore;
+using Jazor.AspNetCore.Dev;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddJazorDevelopmentReload(options =>
+{
+    options.WatchRootPaths.Clear();
+    options.WatchRootPaths.Add("jazor");
+    options.WatchRootPaths.Add("wwwroot");
+});
 Wiki.WikiCatalogGuard.ValidateOrThrow();
 var app = builder.Build();
 
-var projectJazorRoot = Path.Combine(app.Environment.ContentRootPath, "jazor");
-var localJazorEntryPath = Path.Combine(projectJazorRoot, "main.mjs");
-
-app.UseDefaultFiles();
-
-if (File.Exists(localJazorEntryPath))
+app.UseJazorDevelopmentAssets(options =>
 {
-    // Keep /jazor bound to the live emit directory during local development.
-    app.UseStaticFiles(new StaticFileOptions
+    options.OnPrepareResponse = Wiki.WikiHostShell.ApplyStaticAssetHeaders;
+});
+app.UseJazorDevelopmentReload();
+
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
     {
-        FileProvider = new PhysicalFileProvider(projectJazorRoot),
-        RequestPath = "/jazor"
+        Wiki.WikiHostShell.ApplySecurityHeaders(context.Response.Headers);
+        return Task.CompletedTask;
     });
 
-    app.Use(async (context, next) =>
-    {
-        if (context.Request.Path.StartsWithSegments("/jazor"))
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return;
-        }
+    if (await Wiki.WikiHostShell.TryHandleHtmlRequestAsync(context, context.RequestAborted))
+        return;
 
-        await next();
-    });
-}
+    await next();
+});
 
-app.UseStaticFiles();
-app.MapGet("/health", () => Results.Ok("ok"));
-app.MapFallbackToFile("index.html");
+app.UseJazorStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = Wiki.WikiHostShell.ApplyStaticAssetHeaders
+});
+app.MapGet("/health", (HttpContext context) =>
+{
+    context.Response.Headers["Cache-Control"] = "no-store";
+    return Results.Ok("ok");
+});
+app.MapMethods("/robots.txt", ["GET", "HEAD"], async (HttpContext context) =>
+{
+    await Wiki.WikiHostDiscoveryDocuments.TryHandleAsync(context, context.RequestAborted);
+});
+app.MapMethods("/sitemap.xml", ["GET", "HEAD"], async (HttpContext context) =>
+{
+    await Wiki.WikiHostDiscoveryDocuments.TryHandleAsync(context, context.RequestAborted);
+});
 
 app.Run();

@@ -14,6 +14,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <ProjectReference Include="..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <ProjectReference Include="..\Jazor.CLR\Jazor.CLR.csproj" />
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

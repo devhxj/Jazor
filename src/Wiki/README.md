@@ -26,9 +26,10 @@ Current product boundary:
 - each code block now exposes a direct copy action with visible copied / unavailable feedback instead of forcing manual selection
 - docs search now supports keyboard focus shortcuts: `/` and `Ctrl/Cmd+K` jump to search, `Escape` clears or exits the field
 - left-rail page discovery includes client-side filtering over routes, group labels, titles, statuses, and summaries
-- `/search` is now a real route with `?q=` query support, result highlighting, section-level matches, and shareable search URLs
+- `/search` is now a real route with `?q=` query support, result highlighting, section-level matches, and shareable search URLs, but it is intentionally treated as a non-indexable tool surface instead of a canonical content page
 - theme preference and page feedback are now persisted in browser `localStorage`, and mobile nav / TOC drawers are first-class shell behaviors
-- unknown docs routes now recover into a real not-found document that shows the requested path plus suggested registered pages instead of a dead-end shell
+- unknown docs routes now recover into a real not-found document that shows the requested path plus suggested registered pages instead of a dead-end shell, while the host still returns HTTP 404 and `noindex`
+- the host now emits route-correct robots directives on first response, and `sitemap.xml` contains canonical content pages only instead of utility/search URLs
 - this is a real docs-site MVP, not a CMS and not an editable wiki backend
 
 ## Project Layout
@@ -39,7 +40,7 @@ Current product boundary:
 - `Program.cs`: ASP.NET Core host with `/health`, route fallback, and an explicit `/jazor` mount for the local emit directory when present.
 - `build-local.ps1`: local build entry that verifies emitted Wiki artifacts exist after build.
 - `serve.ps1`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
-- `verify-smoke.ps1`: focused smoke verification for build output, `/health`, all registered docs routes, and unknown-route fallback.
+- `verify-smoke.ps1`: focused smoke verification for build output, `/health`, route-specific HTML metadata, robots/sitemap discovery docs, response headers, all registered docs routes, and unknown-route fallback.
 - `verify-browser.ps1` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
 - `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
 - `wwwroot/`: static entry (`index.html`, `site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
@@ -159,7 +160,11 @@ The smoke check verifies:
 - `/health` returns HTTP 200 with `ok`
 - every registered docs route returns HTTP 200 and still contains `#app` plus `/jazor/main.mjs`
 - every registered docs route still carries the CLR runtime import-map prefix `"System/": "/jazor/System/"`
-- an unknown docs route still returns the frontend shell through fallback
+- every served docs HTML response carries the expected route-specific `<title>`, description, robots directive, canonical URL, Open Graph tags, and Twitter tags on first response
+- every served docs HTML response carries `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY`
+- `/robots.txt` and `/sitemap.xml` resolve with the expected cache and security headers, and `sitemap.xml` excludes `/search`
+- `/search?q=...` returns the expected search metadata but also carries `noindex, nofollow` in both HTML and `X-Robots-Tag`
+- an unknown docs route still returns the frontend shell through fallback, but now with HTTP 404 plus `X-Robots-Tag: noindex, nofollow`
 - browser-served assets such as `/jazor/main.mjs`, `/jazor/System/StringModule.js`, `/site.css`, `/favicon.svg`, and `/vendor/vue@3.5.16.mjs` resolve successfully
 - `wwwroot/index.html` references the vendored Vue module and contains no external CDN URLs
 - emitted `wiki-home.mjs` still contains the client-side navigation contract (`replaceState`, `pushState`, `popstate`, click interception, and session-local scroll restoration)
@@ -168,7 +173,7 @@ The smoke check verifies:
 - emitted `wiki-home.mjs` still contains the code-block copy contract (`Copy code`, copied/unavailable state labels, and code-copy button styling markers)
 - emitted `wiki-home.mjs` still contains the page-discovery filter contract (`Search docs pages`, keyboard focus shortcuts, filter-empty state, and left-rail search styling markers)
 - emitted `wiki-home.mjs` still contains the product-shell contract for theme toggle, page metadata cards, source/report actions, page feedback, mobile drawers, and search-route results
-- `wwwroot/index.html` still carries the base description, canonical, and social metadata placeholders that the shell updates at runtime
+- `wwwroot/index.html` still carries the metadata token contract that the host resolves per route before the shell mounts, and the shell keeps those values synchronized after SPA navigation
 - `wwwroot/site.css` still carries the shell selectors for skip link, breadcrumbs, metadata cards, feedback actions, search results, drawers, and light-theme overrides
 - emitted `wiki-home.mjs` still contains the registered docs-route markers, page-title labels, and section-anchor contract markers
 - host startup now rejects route-catalog drift such as mismatched page-array lengths, duplicate page paths, duplicate section ids, empty metadata entries, or related links that point at unknown pages
@@ -199,10 +204,13 @@ pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser-publish
 
 The browser check verifies:
 
+- local browser verification runs the host in `Development`, injects `/@jazor/client`, opens the `@jazor/reload` websocket, and confirms those development-only endpoints stay absent from production-shape publish verification
+- CDP `Debugger` sees `sourceMapURL` for `/jazor/main.mjs` and `/jazor/components/wiki-home.mjs`, and their served `.mjs.map` payloads still point back to the expected original C# source files
 - the home route mounts the real shell instead of an empty app root
 - SPA navigation from home reaches `Getting Started`, focuses `#wiki-main-content`, and announces the route change through the live region
 - search query hydration, highlighted results, and clear-button query reset work on `/search?q=compiler`
 - unknown routes render the not-found document and recover through suggested route cards
+- the first HTML response for home, search, and not-found routes already contains the expected title, description, robots directive, and canonical metadata before SPA hydration
 - theme preference and page feedback persist through `localStorage` and rehydrate after a full reload
 - page permalink, section permalink, and code-copy actions expose copied/fallback feedback instead of silent failure
 - back navigation restores scroll position on hash-free reading routes
@@ -241,6 +249,9 @@ Summary of invariants enforced by `verify-smoke.ps1 -Publish`:
 - `main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json` exist under `wwwroot/jazor/`
 - `/vendor/vue@3.5.16.mjs` is servable (Vue 3 vendored locally, no CDN dependency)
 - All 24 registered docs routes return HTTP 200 with the SPA shell
+- Search routes are intentionally non-indexable and are excluded from `sitemap.xml`
+- Unknown docs routes return the same recoverable shell with HTTP 404 and `X-Robots-Tag: noindex, nofollow`
+- Route HTML is metadata-correct on first response, not only after client-side hydration
 - `index.html` contains no external CDN URLs
 
 ## Positioning
