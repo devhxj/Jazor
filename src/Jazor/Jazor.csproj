@@ -69,16 +69,16 @@
   <ItemGroup>
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />

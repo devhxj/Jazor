@@ -8,8 +8,6 @@ using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.RenderTree;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -17,8 +15,6 @@ namespace Jazor.RazorVue.RazorSdk;
 
 internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFrontend
 {
-    private readonly RazorVueRazorCodeDocumentProvider _provider = new();
-
     public string Name => "Jazor.RazorVue.RazorSdk.RazorVueRazorIrTemplateFrontend";
 
     public RazorVueRenderFragment CreateRenderTree(
@@ -50,30 +46,32 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             throw new ArgumentNullException(nameof(snapshot));
 
         renderTree = RazorVueRenderFragment.Empty;
-        if (snapshot.RazorSourceGeneratorDocument is { } sourceGeneratorDocument)
-        {
-            renderTree = CreateRenderTreeCore(
-                context,
-                snapshot,
-                CreateHandle(sourceGeneratorDocument));
-            return true;
-        }
-
-        if (!_provider.TryCreate(context, snapshot, out var handle))
+        if (snapshot.RazorSourceGeneratorDocument is not { } sourceGeneratorDocument)
             return false;
 
-        renderTree = CreateRenderTreeCore(context, snapshot, handle);
+        renderTree = CreateRenderTreeCore(context, snapshot, sourceGeneratorDocument);
         return true;
     }
 
-    internal static RazorVueSourceOrigin? CreateSourceOrigin(SourceSpan? sourceSpan, RazorVueOriginKind originKind)
+    private static RazorVueRenderFragment CreateRenderTreeCore(
+        Jazor.RazorVue.RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRazorSourceGeneratorDocument document)
+    {
+        var resolver = new RazorVueRazorIrOperationResolver(context, snapshot, document);
+        var converter = new Converter(context, snapshot, resolver);
+        return converter.Convert(document.DocumentNode);
+    }
+
+    internal static RazorVueSourceOrigin? CreateSourceOrigin(RazorVueRazorSourceSpan? sourceSpan, RazorVueOriginKind originKind)
     {
         if (sourceSpan is null || string.IsNullOrWhiteSpace(sourceSpan.Value.FilePath))
             return null;
 
+        var sourceFilePath = sourceSpan.Value.FilePath!;
         return new RazorVueSourceOrigin(
             OriginKind: originKind,
-            SourceFilePath: sourceSpan.Value.FilePath,
+            SourceFilePath: sourceFilePath,
             SourceSpanStart: sourceSpan.Value.AbsoluteIndex,
             SourceSpanLength: sourceSpan.Value.Length,
             StartLine: sourceSpan.Value.LineIndex + 1,
@@ -83,39 +81,6 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             GeneratedSpanLength: null,
             MappingQuality: RazorVueMappingQuality.ExactSource,
             Provenance: RazorVueOriginProvenance.RazorSourceMap);
-    }
-
-    private static RazorVueRenderFragment CreateRenderTreeCore(
-        Jazor.RazorVue.RazorVueCompilationContext context,
-        RazorVueSemanticSnapshot snapshot,
-        RazorVueRazorCodeDocumentHandle handle)
-    {
-        var resolver = new RazorVueRazorIrOperationResolver(context, snapshot, handle);
-        var converter = new Converter(context, snapshot, resolver);
-        return converter.Convert(handle.DocumentNode);
-    }
-
-    private static RazorVueRazorCodeDocumentHandle CreateHandle(
-        RazorVueRazorSourceGeneratorDocument sourceGeneratorDocument)
-    {
-        var primarySource = sourceGeneratorDocument.CodeDocument.Source;
-        var primaryDocument = new Jazor.RazorVue.RazorVueRazorDocument(
-            primarySource.FilePath ?? sourceGeneratorDocument.HintName,
-            primarySource.Text);
-        var importDocuments = sourceGeneratorDocument.CodeDocument.Imports
-            .Select(static item => new Jazor.RazorVue.RazorVueRazorDocument(
-                item.FilePath ?? item.RelativePath ?? string.Empty,
-                item.Text))
-            .ToImmutableArray();
-
-        return new RazorVueRazorCodeDocumentHandle(
-            primaryDocument,
-            importDocuments,
-            sourceGeneratorDocument.TagHelpers,
-            sourceGeneratorDocument.CodeDocument,
-            sourceGeneratorDocument.CSharpDocument,
-            sourceGeneratorDocument.SourceMappings,
-            sourceGeneratorDocument.DocumentNode);
     }
 
     private sealed class Converter(
@@ -146,7 +111,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private readonly RazorVueRazorIrOperationResolver _resolver = resolver;
         private readonly Dictionary<string, IOperation> _literalStringOperationCache = new(StringComparer.Ordinal);
 
-        public RazorVueRenderFragment Convert(DocumentIntermediateNode document)
+        public RazorVueRenderFragment Convert(RazorVueRazorIrNode document)
         {
             if (document is null)
                 throw new ArgumentNullException(nameof(document));
@@ -154,7 +119,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return ConvertLooseNodes(document.Children, insideTemplate: false);
         }
 
-        private RazorVueRenderFragment ConvertLooseNodes(IEnumerable<IntermediateNode> nodes, bool insideTemplate)
+        private RazorVueRenderFragment ConvertLooseNodes(IEnumerable<RazorVueRazorIrNode> nodes, bool insideTemplate)
         {
             if (insideTemplate)
                 return ConvertTemplateMethodBody(nodes);
@@ -163,50 +128,50 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             foreach (var node in nodes)
             {
-                switch (node)
+                switch (node.Kind)
                 {
-                    case MarkupElementIntermediateNode element:
-                        builder.Add(ConvertElement(element));
+                    case RazorVueRazorIrNodeKind.MarkupElement:
+                        builder.Add(ConvertElement(node));
                         break;
-                    case ComponentIntermediateNode component:
-                        builder.Add(ConvertComponent(component));
+                    case RazorVueRazorIrNodeKind.Component:
+                        builder.Add(ConvertComponent(node));
                         break;
-                    case HtmlContentIntermediateNode html:
-                        AppendHtmlContent(builder, html);
+                    case RazorVueRazorIrNodeKind.HtmlContent:
+                        AppendHtmlContent(builder, node);
                         break;
-                    case CSharpExpressionIntermediateNode expression:
-                        builder.Add(ConvertExpressionOrSlotOutlet(expression));
+                    case RazorVueRazorIrNodeKind.CSharpExpression:
+                        builder.Add(ConvertExpressionOrSlotOutlet(node));
                         break;
-                    case DocumentIntermediateNode document:
-                        builder.AddRange(ConvertLooseNodes(document.Children, insideTemplate).Children);
+                    case RazorVueRazorIrNodeKind.Document:
+                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate).Children);
                         break;
-                    case NamespaceDeclarationIntermediateNode namespaceDeclaration:
-                        builder.AddRange(ConvertLooseNodes(namespaceDeclaration.Children, insideTemplate).Children);
+                    case RazorVueRazorIrNodeKind.NamespaceDeclaration:
+                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate).Children);
                         break;
-                    case ClassDeclarationIntermediateNode classDeclaration:
-                        builder.AddRange(ConvertLooseNodes(classDeclaration.Children, insideTemplate).Children);
+                    case RazorVueRazorIrNodeKind.ClassDeclaration:
+                        builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate).Children);
                         break;
-                    case MethodDeclarationIntermediateNode methodDeclaration:
-                        builder.AddRange(ConvertMethodDeclaration(methodDeclaration).Children);
+                    case RazorVueRazorIrNodeKind.MethodDeclaration:
+                        builder.AddRange(ConvertMethodDeclaration(node).Children);
                         break;
-                    case MarkupBlockIntermediateNode markupBlock:
-                        AppendMarkupBlock(builder, markupBlock);
+                    case RazorVueRazorIrNodeKind.MarkupBlock:
+                        AppendMarkupBlock(builder, node);
                         break;
-                    case TagHelperBodyIntermediateNode tagHelperBody:
-                        builder.AddRange(ConvertTemplateMethodBody(tagHelperBody.Children).Children);
+                    case RazorVueRazorIrNodeKind.TagHelperBody:
+                        builder.AddRange(ConvertTemplateMethodBody(node.Children).Children);
                         break;
-                    case CSharpCodeIntermediateNode:
-                    case FieldDeclarationIntermediateNode:
-                    case PropertyDeclarationIntermediateNode:
-                    case UsingDirectiveIntermediateNode:
-                    case DirectiveIntermediateNode:
-                    case MalformedDirectiveIntermediateNode:
-                    case ExtensionIntermediateNode:
+                    case RazorVueRazorIrNodeKind.CSharpCode:
+                    case RazorVueRazorIrNodeKind.FieldDeclaration:
+                    case RazorVueRazorIrNodeKind.PropertyDeclaration:
+                    case RazorVueRazorIrNodeKind.UsingDirective:
+                    case RazorVueRazorIrNodeKind.Directive:
+                    case RazorVueRazorIrNodeKind.MalformedDirective:
+                    case RazorVueRazorIrNodeKind.Extension:
                         break;
-                    case TagHelperIntermediateNode tagHelper:
-                        throw CreateUnsupportedNodeException(tagHelper, "TagHelperIntermediateNode");
+                    case RazorVueRazorIrNodeKind.TagHelper:
+                        throw CreateUnsupportedNodeException(node, "TagHelperIntermediateNode");
                     default:
-                        if (node.Children.Count > 0)
+                        if (node.Children.Length > 0)
                         {
                             builder.AddRange(ConvertLooseNodes(node.Children, insideTemplate).Children);
                             break;
@@ -219,7 +184,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new RazorVueRenderFragment(builder.ToImmutable());
         }
 
-        private RazorVueRenderFragment ConvertMethodDeclaration(MethodDeclarationIntermediateNode node)
+        private RazorVueRenderFragment ConvertMethodDeclaration(RazorVueRazorIrNode node)
         {
             if (node is null)
                 throw new ArgumentNullException(nameof(node));
@@ -230,7 +195,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return ConvertTemplateMethodBody(node.Children);
         }
 
-        private RazorVueRenderFragment ConvertTemplateMethodBody(IEnumerable<IntermediateNode> nodes)
+        private RazorVueRenderFragment ConvertTemplateMethodBody(IEnumerable<RazorVueRazorIrNode> nodes)
         {
             var bufferedNodes = nodes.ToList();
             if (bufferedNodes.Count == 0)
@@ -259,49 +224,49 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     continue;
                 }
 
-                switch (node)
+                switch (node.Kind)
                 {
-                    case MarkupElementIntermediateNode element:
-                        builder.Add(ConvertElement(element));
+                    case RazorVueRazorIrNodeKind.MarkupElement:
+                        builder.Add(ConvertElement(node));
                         index++;
                         break;
-                    case ComponentIntermediateNode component:
-                        builder.Add(ConvertComponent(component));
+                    case RazorVueRazorIrNodeKind.Component:
+                        builder.Add(ConvertComponent(node));
                         index++;
                         break;
-                    case HtmlContentIntermediateNode html:
-                        AppendHtmlContent(builder, html);
+                    case RazorVueRazorIrNodeKind.HtmlContent:
+                        AppendHtmlContent(builder, node);
                         index++;
                         break;
-                    case CSharpExpressionIntermediateNode expression:
-                        builder.Add(ConvertExpressionOrSlotOutlet(expression));
+                    case RazorVueRazorIrNodeKind.CSharpExpression:
+                        builder.Add(ConvertExpressionOrSlotOutlet(node));
                         index++;
                         break;
-                    case MarkupBlockIntermediateNode markupBlock:
-                        AppendMarkupBlock(builder, markupBlock);
+                    case RazorVueRazorIrNodeKind.MarkupBlock:
+                        AppendMarkupBlock(builder, node);
                         index++;
                         break;
-                    case TagHelperBodyIntermediateNode tagHelperBody:
-                        builder.AddRange(ConvertTemplateMethodBody(tagHelperBody.Children).Children);
+                    case RazorVueRazorIrNodeKind.TagHelperBody:
+                        builder.AddRange(ConvertTemplateMethodBody(node.Children).Children);
                         index++;
                         break;
-                    case CSharpCodeIntermediateNode:
-                        if (!IsIgnorableTemplateCodeNode((CSharpCodeIntermediateNode)node))
-                            throw CreateUnsupportedNodeException((CSharpCodeIntermediateNode)node, "unbound template CSharpCodeIntermediateNode");
+                    case RazorVueRazorIrNodeKind.CSharpCode:
+                        if (!IsIgnorableTemplateCodeNode(node))
+                            throw CreateUnsupportedNodeException(node, "unbound template CSharpCodeIntermediateNode");
                         index++;
                         break;
-                    case FieldDeclarationIntermediateNode:
-                    case PropertyDeclarationIntermediateNode:
-                    case UsingDirectiveIntermediateNode:
-                    case DirectiveIntermediateNode:
-                    case MalformedDirectiveIntermediateNode:
-                    case ExtensionIntermediateNode:
+                    case RazorVueRazorIrNodeKind.FieldDeclaration:
+                    case RazorVueRazorIrNodeKind.PropertyDeclaration:
+                    case RazorVueRazorIrNodeKind.UsingDirective:
+                    case RazorVueRazorIrNodeKind.Directive:
+                    case RazorVueRazorIrNodeKind.MalformedDirective:
+                    case RazorVueRazorIrNodeKind.Extension:
                         index++;
                         break;
-                    case TagHelperIntermediateNode tagHelper:
-                        throw CreateUnsupportedNodeException(tagHelper, "TagHelperIntermediateNode");
+                    case RazorVueRazorIrNodeKind.TagHelper:
+                        throw CreateUnsupportedNodeException(node, "TagHelperIntermediateNode");
                     default:
-                        if (node.Children.Count > 0)
+                        if (node.Children.Length > 0)
                         {
                             builder.AddRange(ConvertTemplateMethodBody(node.Children).Children);
                         }
@@ -314,32 +279,32 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new RazorVueRenderFragment(builder.ToImmutable());
         }
 
-        private RazorVueElementNode ConvertElement(MarkupElementIntermediateNode node)
+        private RazorVueElementNode ConvertElement(RazorVueRazorIrNode node)
         {
-            RejectElementExtensions(node.Captures, "ReferenceCaptureIntermediateNode");
-            RejectElementExtensions(node.SetKeys, "SetKeyIntermediateNode");
+            RejectElementExtensions(node.CapturesOrEmpty, "ReferenceCaptureIntermediateNode");
+            RejectElementExtensions(node.SetKeysOrEmpty, "SetKeyIntermediateNode");
 
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
-            foreach (var attribute in node.Attributes)
+            foreach (var attribute in node.AttributesOrEmpty)
                 attributes.Add(ConvertHtmlAttributeEntry(attribute));
-            foreach (var splat in node.Body.OfType<SplatIntermediateNode>())
+            foreach (var splat in node.BodyOrEmpty.Where(static child => child.Kind == RazorVueRazorIrNodeKind.Splat))
                 attributes.Add(ConvertSplatAttribute(splat));
-            var children = ConvertTemplateMethodBody(node.Body);
+            var children = ConvertTemplateMethodBody(node.BodyOrEmpty);
 
             return new RazorVueElementNode(
-                node.TagName,
+                node.TagName ?? string.Empty,
                 attributes.ToImmutable(),
                 children,
                 CreateOrigins(node.Source));
         }
 
-        private RazorVueComponentNode ConvertComponent(ComponentIntermediateNode node)
+        private RazorVueComponentNode ConvertComponent(RazorVueRazorIrNode node)
         {
-            RejectComponentExtensions(node.Captures, "ReferenceCaptureIntermediateNode");
-            RejectComponentExtensions(node.SetKeys, "SetKeyIntermediateNode");
+            RejectComponentExtensions(node.CapturesOrEmpty, "ReferenceCaptureIntermediateNode");
+            RejectComponentExtensions(node.SetKeysOrEmpty, "SetKeyIntermediateNode");
 
             var attributes = ImmutableArray.CreateBuilder<RazorVueAttributeEntry>();
-            foreach (var attribute in node.Attributes)
+            foreach (var attribute in node.AttributesOrEmpty)
             {
                 if (attribute.IsDesignTimePropertyAccessHelper)
                     continue;
@@ -348,23 +313,24 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
                 attributes.Add(ConvertComponentAttribute(attribute));
             }
-            foreach (var splat in node.Splats)
+            foreach (var splat in node.SplatsOrEmpty)
                 attributes.Add(ConvertSplatAttribute(splat));
 
             var children = ImmutableArray.CreateBuilder<RazorVueRenderNode>();
             var slotTemplates = ImmutableArray.CreateBuilder<RazorVueComponentSlotTemplateNode>();
-            foreach (var childContent in node.ChildContents)
+            foreach (var childContent in node.ChildContentsOrEmpty)
             {
                 var slotFragment = ConvertTemplateMethodBody(childContent.Children);
-                if (string.Equals(childContent.AttributeName, "ChildContent", StringComparison.Ordinal))
+                var attributeName = childContent.AttributeName ?? string.Empty;
+                if (string.Equals(attributeName, "ChildContent", StringComparison.Ordinal))
                 {
                     children.AddRange(slotFragment.Children);
                     continue;
                 }
 
-                var slotName = ToLowerCamelCase(childContent.AttributeName);
+                var slotName = ToLowerCamelCase(attributeName);
                 slotTemplates.Add(new RazorVueComponentSlotTemplateNode(
-                    PublicName: childContent.AttributeName,
+                    PublicName: attributeName,
                     SlotName: slotName,
                     ParameterName: childContent.IsParameterized
                         ? childContent.ParameterName
@@ -377,14 +343,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new RazorVueComponentNode(
                 GetComponentName(node),
                 NormalizeTypeName(node.TypeName),
-                string.IsNullOrWhiteSpace(node.TagName) ? GetComponentName(node) : node.TagName,
+                string.IsNullOrWhiteSpace(node.TagName) ? GetComponentName(node) : node.TagName!,
                 attributes.ToImmutable(),
                 slotTemplates.ToImmutable(),
                 new RazorVueRenderFragment(children.ToImmutable()),
                 CreateOrigins(node.Source is null ? node.StartTagSpan : node.Source));
         }
 
-        private RazorVueExpressionNode ConvertExpression(CSharpExpressionIntermediateNode node)
+        private RazorVueExpressionNode ConvertExpression(RazorVueRazorIrNode node)
         {
             var sourceSpan = GetRequiredSourceSpan(node, "CSharpExpressionIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR body expression");
@@ -393,7 +359,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private void AppendHtmlContent(
             ImmutableArray<RazorVueRenderNode>.Builder builder,
-            HtmlContentIntermediateNode node)
+            RazorVueRazorIrNode node)
         {
             var text = GetNodeText(node);
             if (string.IsNullOrEmpty(text))
@@ -404,9 +370,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private void AppendMarkupBlock(
             ImmutableArray<RazorVueRenderNode>.Builder builder,
-            MarkupBlockIntermediateNode node)
+            RazorVueRazorIrNode node)
         {
-            if (node.Children.Count > 0)
+            if (node.Children.Length > 0)
             {
                 builder.AddRange(ConvertTemplateMethodBody(node.Children).Children);
                 return;
@@ -421,23 +387,25 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             builder.AddRange(ParseStaticMarkupFragment(markup, CreateOrigins(GetBestSourceSpan(node))));
         }
 
-        private RazorVueAttributeNode ConvertHtmlAttribute(HtmlAttributeIntermediateNode node)
+        private RazorVueAttributeNode ConvertHtmlAttribute(RazorVueRazorIrNode node)
         {
-            if (node.AttributeNameExpression is not null)
+            if (node.HasAttributeNameExpression)
                 throw CreateUnsupportedNodeException(node, "dynamic HtmlAttributeIntermediateNode.AttributeNameExpression");
 
-            var value = ResolveAttributeValue(node.AttributeName, node.Children, node.Source);
+            var attributeName = node.AttributeName ?? string.Empty;
+            var value = ResolveAttributeValue(attributeName, node.Children, node.Source);
             return new RazorVueAttributeNode(
-                node.AttributeName,
+                attributeName,
                 value,
                 CreateOrigins(node.Source));
         }
 
-        private RazorVueAttributeEntry ConvertHtmlAttributeEntry(HtmlAttributeIntermediateNode node)
+        private RazorVueAttributeEntry ConvertHtmlAttributeEntry(RazorVueRazorIrNode node)
         {
-            if (string.Equals(node.AttributeName, "@attributes", StringComparison.Ordinal))
+            var attributeName = node.AttributeName ?? string.Empty;
+            if (string.Equals(attributeName, "@attributes", StringComparison.Ordinal))
             {
-                var value = ResolveAttributeValue(node.AttributeName, node.Children, node.Source)
+                var value = ResolveAttributeValue(attributeName, node.Children, node.Source)
                     ?? throw CreateUnsupportedAttributeException(
                         node.Source,
                         $"RazorVue Razor IR frontend requires an expression value for '@attributes' in component '{_snapshot.Descriptor.FullName}'.");
@@ -449,16 +417,17 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return ConvertHtmlAttribute(node);
         }
 
-        private RazorVueAttributeNode ConvertComponentAttribute(ComponentAttributeIntermediateNode node)
+        private RazorVueAttributeNode ConvertComponentAttribute(RazorVueRazorIrNode node)
         {
-            var value = ResolveAttributeValue(node.AttributeName, node.Children, node.Source, node);
+            var attributeName = node.AttributeName ?? string.Empty;
+            var value = ResolveAttributeValue(attributeName, node.Children, node.Source, node);
             return new RazorVueAttributeNode(
-                node.AttributeName,
+                attributeName,
                 value,
                 CreateOrigins(node.Source));
         }
 
-        private RazorVueAttributeSpreadNode ConvertSplatAttribute(SplatIntermediateNode node)
+        private RazorVueAttributeSpreadNode ConvertSplatAttribute(RazorVueRazorIrNode node)
         {
             var sourceSpan = GetRequiredSourceSpan(node, "SplatIntermediateNode");
             var operation = _resolver.ResolveRequiredOperation(sourceSpan, "Razor IR splat attribute");
@@ -469,48 +438,48 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private IOperation? ResolveAttributeValue(
             string attributeName,
-            IntermediateNodeCollection children,
-            SourceSpan? fallbackSource,
-            IntermediateNode? ownerNode = null)
+            ImmutableArray<RazorVueRazorIrNode> children,
+            RazorVueRazorSourceSpan? fallbackSource,
+            RazorVueRazorIrNode? ownerNode = null)
         {
-            if (children.Count == 0)
+            if (children.Length == 0)
                 return fallbackSource is null
                     ? null
                     : _resolver.ResolveRequiredOperation(fallbackSource, $"Razor IR attribute '{attributeName}'");
 
-            if (children.Count != 1)
+            if (children.Length != 1)
             {
                 throw CreateUnsupportedAttributeException(
                     fallbackSource,
                     $"RazorVue Razor IR frontend does not yet support mixed attribute content for '{attributeName}' in component '{_snapshot.Descriptor.FullName}'.");
             }
 
-            return children[0] switch
+            return children[0].Kind switch
             {
-                HtmlContentIntermediateNode html => ResolveLiteralAttributeValue(html),
-                CSharpExpressionIntermediateNode expressionNode => ResolveExpressionAttributeOperation(
+                RazorVueRazorIrNodeKind.HtmlContent => ResolveLiteralAttributeValue(children[0]),
+                RazorVueRazorIrNodeKind.CSharpExpression => ResolveExpressionAttributeOperation(
                     attributeName,
-                    expressionNode,
+                    children[0],
                     fallbackSource,
                     ownerNode),
-                CSharpExpressionAttributeValueIntermediateNode expression => ResolveExpressionAttributeOperation(
+                RazorVueRazorIrNodeKind.CSharpExpressionAttributeValue => ResolveExpressionAttributeOperation(
                     attributeName,
-                    expression,
+                    children[0],
                     fallbackSource,
                     ownerNode),
-                CSharpCodeAttributeValueIntermediateNode code => throw CreateUnsupportedNodeException(
-                    code,
+                RazorVueRazorIrNodeKind.CSharpCodeAttributeValue => throw CreateUnsupportedNodeException(
+                    children[0],
                     $"CSharpCodeAttributeValueIntermediateNode '{attributeName}'"),
-                HtmlAttributeValueIntermediateNode htmlValue => ResolveLiteralAttributeValue(htmlValue),
-                _ => throw CreateUnsupportedNodeException(children[0], $"{children[0].GetType().Name} '{attributeName}'")
+                RazorVueRazorIrNodeKind.HtmlAttributeValue => ResolveLiteralAttributeValue(children[0]),
+                _ => throw CreateUnsupportedNodeException(children[0], $"{children[0].RuntimeTypeName} '{attributeName}'")
             };
         }
 
         private IOperation ResolveExpressionAttributeOperation(
             string attributeName,
-            IntermediateNode expressionNode,
-            SourceSpan? fallbackSource,
-            IntermediateNode? ownerNode)
+            RazorVueRazorIrNode expressionNode,
+            RazorVueRazorSourceSpan? fallbackSource,
+            RazorVueRazorIrNode? ownerNode)
         {
             var generatedExpressionText = GetNodeText(expressionNode);
             var sourceSpan = GetBestSourceSpan(expressionNode) ??
@@ -530,7 +499,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 $"Razor IR expression attribute '{attributeName}'");
         }
 
-        private IOperation ResolveLiteralAttributeValue(IntermediateNode node)
+        private IOperation ResolveLiteralAttributeValue(RazorVueRazorIrNode node)
         {
             var text = GetNodeText(node);
             if (string.IsNullOrEmpty(text))
@@ -539,28 +508,26 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return CreateLiteralStringOperation(NormalizeLiteralAttributeText(text));
         }
 
-        private void RejectElementExtensions<TNode>(IEnumerable<TNode> nodes, string detail)
-            where TNode : IntermediateNode
+        private void RejectElementExtensions(IEnumerable<RazorVueRazorIrNode> nodes, string detail)
         {
             var first = nodes.FirstOrDefault();
             if (first is not null)
                 throw CreateUnsupportedNodeException(first, detail);
         }
 
-        private void RejectComponentExtensions<TNode>(IEnumerable<TNode> nodes, string detail)
-            where TNode : IntermediateNode
+        private void RejectComponentExtensions(IEnumerable<RazorVueRazorIrNode> nodes, string detail)
         {
             var first = nodes.FirstOrDefault();
             if (first is not null)
                 throw CreateUnsupportedNodeException(first, detail);
         }
 
-        private RazorVueCompilationIssueException CreateUnsupportedNodeException(IntermediateNode node, string detail)
+        private RazorVueCompilationIssueException CreateUnsupportedNodeException(RazorVueRazorIrNode node, string detail)
             => CreateUnsupportedAttributeException(
                 node.Source,
                 $"RazorVue Razor IR frontend does not yet support {detail} in component '{_snapshot.Descriptor.FullName}'.");
 
-        private RazorVueCompilationIssueException CreateUnsupportedAttributeException(SourceSpan? sourceSpan, string message)
+        private RazorVueCompilationIssueException CreateUnsupportedAttributeException(RazorVueRazorSourceSpan? sourceSpan, string message)
         {
             var issue = new RazorVueCompilationIssue(
                 RazorVueIssueCode.CanonicalizationFailed,
@@ -608,7 +575,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                    Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(instance) is IInstanceReferenceOperation;
         }
 
-        private RazorVueRenderNode ConvertExpressionOrSlotOutlet(CSharpExpressionIntermediateNode node)
+        private RazorVueRenderNode ConvertExpressionOrSlotOutlet(RazorVueRazorIrNode node)
         {
             var expression = ConvertExpression(node);
             if (TryResolveSlotOutlet(expression.Expression, out var slotName))
@@ -618,14 +585,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         }
 
         private bool TryConvertConditional(
-            IReadOnlyList<IntermediateNode> nodes,
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
             ref int index,
             out RazorVueConditionalNode conditionalNode)
         {
             conditionalNode = default!;
-            if (nodes[index] is not CSharpCodeIntermediateNode codeNode)
+            if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
                 return false;
 
+            var codeNode = nodes[index];
             var codeText = GetNodeText(codeNode);
             var normalizedCodeText = NormalizeTemplateCodeText(codeText);
             if (!StartsWithControlKeyword(codeText, "if") &&
@@ -648,8 +616,8 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var coveredNodes = isElseIfHeader
                 ? nodes.Skip(index + 1).ToList()
                 : nodes.Skip(index + 1).Take(bodyEnd - index - 1).ToList();
-            List<IntermediateNode> whenTrueNodes;
-            List<IntermediateNode> whenFalseNodes;
+            List<RazorVueRazorIrNode> whenTrueNodes;
+            List<RazorVueRazorIrNode> whenFalseNodes;
             if (isElseIfHeader)
             {
                 whenTrueNodes = TakeLeadingBranchNodesUntilTopLevelElseBoundary(coveredNodes, sourceSpan, "if-true");
@@ -678,14 +646,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         }
 
         private bool TryConvertForEach(
-            IReadOnlyList<IntermediateNode> nodes,
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
             ref int index,
             out RazorVueForEachNode loopNode)
         {
             loopNode = default!;
-            if (nodes[index] is not CSharpCodeIntermediateNode codeNode)
+            if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
                 return false;
 
+            var codeNode = nodes[index];
             if (!StartsWithControlKeyword(GetNodeText(codeNode), "foreach"))
                 return false;
 
@@ -713,14 +682,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         }
 
         private bool TryConvertFor(
-            IReadOnlyList<IntermediateNode> nodes,
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
             ref int index,
             out RazorVueForNode loopNode)
         {
             loopNode = default!;
-            if (nodes[index] is not CSharpCodeIntermediateNode codeNode)
+            if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
                 return false;
 
+            var codeNode = nodes[index];
             if (!StartsWithControlKeyword(GetNodeText(codeNode), "for"))
                 return false;
 
@@ -756,10 +726,10 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         }
 
         private int FindControlStatementEndIndex(
-            IReadOnlyList<IntermediateNode> nodes,
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
             int startIndex,
             RazorVueRazorIrOperationResolver.SourceRange statementRange,
-            SourceSpan sourceSpan,
+            RazorVueRazorSourceSpan sourceSpan,
             string detail)
         {
             var matchingEndIndex = -1;
@@ -789,14 +759,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return matchingEndIndex;
         }
 
-        private List<IntermediateNode> SliceNodesByRange(
-            IReadOnlyList<IntermediateNode> nodes,
+        private List<RazorVueRazorIrNode> SliceNodesByRange(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
             RazorVueRazorIrOperationResolver.SourceRange range,
-            SourceSpan sourceSpan,
+            RazorVueRazorSourceSpan sourceSpan,
             string detail,
             bool trimLeadingControlNode)
         {
-            var selected = new List<IntermediateNode>();
+            var selected = new List<RazorVueRazorIrNode>();
             foreach (var node in nodes)
             {
                 var nodeRange = TryGetNodeSourceRange(node);
@@ -813,25 +783,25 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             while (selected.Count > 0 &&
-                   selected[0] is CSharpCodeIntermediateNode leadingBoundaryCodeNode &&
-                   IsIgnorableTemplateCodeNode(leadingBoundaryCodeNode))
+                   selected[0].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsIgnorableTemplateCodeNode(selected[0]))
             {
                 selected.RemoveAt(0);
             }
 
             while (selected.Count > 0 &&
-                   selected[selected.Count - 1] is CSharpCodeIntermediateNode trailingBoundaryCodeNode &&
-                   IsIgnorableTemplateCodeNode(trailingBoundaryCodeNode))
+                   selected[selected.Count - 1].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsIgnorableTemplateCodeNode(selected[selected.Count - 1]))
             {
                 selected.RemoveAt(selected.Count - 1);
             }
 
             if (trimLeadingControlNode &&
                 selected.Count > 0 &&
-                selected[0] is CSharpCodeIntermediateNode leadingCodeNode &&
-                !StartsWithControlKeyword(GetNodeText(leadingCodeNode), "if") &&
-                !StartsWithControlKeyword(GetNodeText(leadingCodeNode), "foreach") &&
-                !StartsWithControlKeyword(GetNodeText(leadingCodeNode), "for"))
+                selected[0].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                !StartsWithControlKeyword(GetNodeText(selected[0]), "if") &&
+                !StartsWithControlKeyword(GetNodeText(selected[0]), "foreach") &&
+                !StartsWithControlKeyword(GetNodeText(selected[0]), "for"))
             {
                 selected.RemoveAt(0);
             }
@@ -846,28 +816,28 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return selected;
         }
 
-        private List<IntermediateNode> TakeLeadingBranchNodesUntilTopLevelElseBoundary(
-            IReadOnlyList<IntermediateNode> nodes,
-            SourceSpan sourceSpan,
+        private List<RazorVueRazorIrNode> TakeLeadingBranchNodesUntilTopLevelElseBoundary(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
+            RazorVueRazorSourceSpan sourceSpan,
             string detail)
         {
-            var selected = new List<IntermediateNode>();
+            var selected = new List<RazorVueRazorIrNode>();
             var nestedControlDepth = 0;
 
             foreach (var node in nodes)
             {
-                if (node is CSharpCodeIntermediateNode codeNode)
+                if (node.Kind == RazorVueRazorIrNodeKind.CSharpCode)
                 {
-                    var normalized = NormalizeTemplateCodeText(GetNodeText(codeNode));
+                    var normalized = NormalizeTemplateCodeText(GetNodeText(node));
                     if (nestedControlDepth == 0 &&
                         (IsElseBoundaryCodeNode(normalized) || IsElseIfBoundaryCodeNode(normalized)))
                     {
                         break;
                     }
 
-                    if (StartsWithControlKeyword(GetNodeText(codeNode), "if") ||
-                        StartsWithControlKeyword(GetNodeText(codeNode), "foreach") ||
-                        StartsWithControlKeyword(GetNodeText(codeNode), "for"))
+                    if (StartsWithControlKeyword(GetNodeText(node), "if") ||
+                        StartsWithControlKeyword(GetNodeText(node), "foreach") ||
+                        StartsWithControlKeyword(GetNodeText(node), "for"))
                     {
                         selected.Add(node);
                         nestedControlDepth++;
@@ -899,17 +869,18 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return selected;
         }
 
-        private List<IntermediateNode> TryTakeTrailingNodesAfterTopLevelElseBoundary(
-            IReadOnlyList<IntermediateNode> nodes,
-            SourceSpan sourceSpan,
+        private List<RazorVueRazorIrNode> TryTakeTrailingNodesAfterTopLevelElseBoundary(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
+            RazorVueRazorSourceSpan sourceSpan,
             string detail)
         {
             var nestedControlDepth = 0;
             for (var index = 0; index < nodes.Count; index++)
             {
-                if (nodes[index] is not CSharpCodeIntermediateNode codeNode)
+                if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
                     continue;
 
+                var codeNode = nodes[index];
                 var normalized = NormalizeTemplateCodeText(GetNodeText(codeNode));
                 if (nestedControlDepth == 0 &&
                     (IsElseBoundaryCodeNode(normalized) || IsElseIfBoundaryCodeNode(normalized)))
@@ -936,33 +907,33 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return [];
         }
 
-        private (List<IntermediateNode> WhenTrue, List<IntermediateNode> WhenFalse) SplitConditionalBranchesByStructure(
-            IReadOnlyList<IntermediateNode> nodes,
-            SourceSpan sourceSpan)
+        private (List<RazorVueRazorIrNode> WhenTrue, List<RazorVueRazorIrNode> WhenFalse) SplitConditionalBranchesByStructure(
+            IReadOnlyList<RazorVueRazorIrNode> nodes,
+            RazorVueRazorSourceSpan sourceSpan)
         {
-            var whenTrue = new List<IntermediateNode>();
-            var whenFalse = new List<IntermediateNode>();
+            var whenTrue = new List<RazorVueRazorIrNode>();
+            var whenFalse = new List<RazorVueRazorIrNode>();
             var current = whenTrue;
             var nestedControlDepth = 0;
             var sawTopLevelElseBoundary = false;
 
             foreach (var node in nodes)
             {
-                if (node is CSharpCodeIntermediateNode codeNode)
+                if (node.Kind == RazorVueRazorIrNodeKind.CSharpCode)
                 {
-                    var normalized = NormalizeTemplateCodeText(GetNodeText(codeNode));
+                    var normalized = NormalizeTemplateCodeText(GetNodeText(node));
                     if (IsElseIfBoundaryCodeNode(normalized))
                     {
                         if (nestedControlDepth == 0)
                         {
                             sawTopLevelElseBoundary = true;
                             current = whenFalse;
-                            current.Add(codeNode);
+                            current.Add(node);
                             nestedControlDepth = 1;
                             continue;
                         }
 
-                        current.Add(codeNode);
+                        current.Add(node);
                         continue;
                     }
 
@@ -986,9 +957,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                         continue;
                     }
 
-                    if (StartsWithControlKeyword(GetNodeText(codeNode), "if") ||
-                        StartsWithControlKeyword(GetNodeText(codeNode), "foreach") ||
-                        StartsWithControlKeyword(GetNodeText(codeNode), "for"))
+                    if (StartsWithControlKeyword(GetNodeText(node), "if") ||
+                        StartsWithControlKeyword(GetNodeText(node), "foreach") ||
+                        StartsWithControlKeyword(GetNodeText(node), "for"))
                     {
                         current.Add(node);
                         nestedControlDepth++;
@@ -1029,24 +1000,24 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return (whenTrue, whenFalse);
         }
 
-        private static void TrimIgnorableBoundaryCodeNodes(List<IntermediateNode> nodes)
+        private static void TrimIgnorableBoundaryCodeNodes(List<RazorVueRazorIrNode> nodes)
         {
             while (nodes.Count > 0 &&
-                   nodes[0] is CSharpCodeIntermediateNode leadingBoundaryCodeNode &&
-                   IsIgnorableTemplateCodeNode(leadingBoundaryCodeNode))
+                   nodes[0].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsIgnorableTemplateCodeNode(nodes[0]))
             {
                 nodes.RemoveAt(0);
             }
 
             while (nodes.Count > 0 &&
-                   nodes[nodes.Count - 1] is CSharpCodeIntermediateNode trailingBoundaryCodeNode &&
-                   IsIgnorableTemplateCodeNode(trailingBoundaryCodeNode))
+                   nodes[nodes.Count - 1].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsIgnorableTemplateCodeNode(nodes[nodes.Count - 1]))
             {
                 nodes.RemoveAt(nodes.Count - 1);
             }
         }
 
-        private static bool IsIgnorableTemplateCodeNode(CSharpCodeIntermediateNode node)
+        private static bool IsIgnorableTemplateCodeNode(RazorVueRazorIrNode node)
         {
             var normalized = NormalizeTemplateCodeText(GetNodeText(node));
             return normalized.Length == 0 ||
@@ -1087,7 +1058,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return new string(text.Where(static character => !char.IsWhiteSpace(character)).ToArray());
         }
 
-        private static string GetComponentName(ComponentIntermediateNode node)
+        private static string GetComponentName(RazorVueRazorIrNode node)
         {
             var normalizedTypeName = NormalizeTypeName(node.TypeName);
             if (!string.IsNullOrWhiteSpace(normalizedTypeName))
@@ -1096,7 +1067,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 return lastDot >= 0 ? normalizedTypeName.Substring(lastDot + 1) : normalizedTypeName;
             }
 
-            return string.IsNullOrWhiteSpace(node.TagName) ? "Component" : node.TagName;
+            return string.IsNullOrWhiteSpace(node.TagName) ? "Component" : node.TagName!;
         }
 
         private static string NormalizeTypeName(string? typeName)
@@ -1110,7 +1081,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 : current;
         }
 
-        private static SourceSpan? GetBestSourceSpan(IntermediateNode node)
+        private static RazorVueRazorSourceSpan? GetBestSourceSpan(RazorVueRazorIrNode node)
         {
             foreach (var token in EnumerateTokens(node))
             {
@@ -1121,11 +1092,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             return node.Source;
         }
 
-        private static SourceSpan GetRequiredSourceSpan(IntermediateNode node, string detail)
+        private static RazorVueRazorSourceSpan GetRequiredSourceSpan(RazorVueRazorIrNode node, string detail)
             => GetBestSourceSpan(node)
                ?? throw new InvalidOperationException($"The Razor IR node '{detail}' did not expose a source span.");
 
-        private static RazorVueRazorIrOperationResolver.SourceRange? TryGetNodeSourceRange(IntermediateNode node)
+        private static RazorVueRazorIrOperationResolver.SourceRange? TryGetNodeSourceRange(RazorVueRazorIrNode node)
         {
             var sourceSpan = GetBestSourceSpan(node);
             if (sourceSpan is null || string.IsNullOrWhiteSpace(sourceSpan.Value.FilePath))
@@ -1137,14 +1108,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 sourceSpan.Value.AbsoluteIndex + sourceSpan.Value.Length);
         }
 
-        private static string GetNodeText(IntermediateNode node)
+        private static string GetNodeText(RazorVueRazorIrNode node)
             => string.Concat(EnumerateTokens(node).Select(static token => token.Content));
 
-        private static string GetNodeContent(IntermediateNode node)
-        {
-            var property = node.GetType().GetProperty("Content");
-            return property?.GetValue(node) as string ?? string.Empty;
-        }
+        private static string GetNodeContent(RazorVueRazorIrNode node)
+            => node.Content ?? string.Empty;
 
         private static bool PathsEqual(string? left, string? right)
             => PathComparer.Equals(NormalizeComparablePath(left), NormalizeComparablePath(right));
@@ -1176,29 +1144,22 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
         }
 
-        private static string? GetMethodDeclarationName(MethodDeclarationIntermediateNode node)
-        {
-            var nodeType = node.GetType();
-            var property = nodeType.GetProperty("MethodName") ?? nodeType.GetProperty("Name");
-            return property?.GetValue(node) as string;
-        }
+        private static string? GetMethodDeclarationName(RazorVueRazorIrNode node)
+            => node.MethodName;
 
-        private static IEnumerable<IntermediateToken> EnumerateTokens(IntermediateNode node)
+        private static IEnumerable<RazorVueRazorIrToken> EnumerateTokens(RazorVueRazorIrNode node)
         {
+            foreach (var token in node.Tokens)
+                yield return token;
+
             foreach (var child in node.Children)
             {
-                if (child is IntermediateToken token)
-                {
-                    yield return token;
-                    continue;
-                }
-
                 foreach (var nested in EnumerateTokens(child))
                     yield return nested;
             }
         }
 
-        private static ImmutableArray<RazorVueSourceOrigin> CreateOrigins(SourceSpan? sourceSpan)
+        private static ImmutableArray<RazorVueSourceOrigin> CreateOrigins(RazorVueRazorSourceSpan? sourceSpan)
         {
             var origin = CreateSourceOrigin(sourceSpan, RazorVueOriginKind.Template);
             return origin is null

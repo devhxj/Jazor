@@ -1,13 +1,9 @@
 using System.Collections;
 using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Text;
 
 namespace Jazor.RazorVue.RazorSdk;
 
@@ -69,112 +65,17 @@ internal static class RazorVueRazorSourceGeneratorTailBridge
         document = null;
         failure = null;
 
-        if (input.CodeDocument is RazorCodeDocument codeDocument &&
-            input.CSharpDocument is RazorCSharpDocument csharpDocument)
-        {
-            document = CreateDocument(input.HintName, codeDocument, csharpDocument);
-            return true;
-        }
-
-        return TryCreateLocalDocument(compilation, input, out document, out failure);
-    }
-
-    private static RazorVueRazorSourceGeneratorDocument CreateDocument(
-        string hintName,
-        RazorCodeDocument codeDocument,
-        RazorCSharpDocument csharpDocument)
-        => new(
-            hintName,
-            codeDocument,
-            csharpDocument,
-            GetTagHelpers(codeDocument),
-            RazorVueRazorCodeDocumentProvider.GetDocumentNode(codeDocument),
-            RazorVueRazorCodeDocumentProvider.GetSourceMappings(csharpDocument));
-
-    private static bool TryCreateLocalDocument(
-        Compilation compilation,
-        RazorVueRazorSourceGeneratorDocumentInput input,
-        out RazorVueRazorSourceGeneratorDocument? document,
-        out string? failure)
-    {
-        document = null;
-        failure = null;
-
-        var source = GetPropertyValue(input.CodeDocument, "Source");
-        if (source is null)
-        {
-            failure = "RazorCodeDocument.Source was not available from the official Razor SG output.";
-            return false;
-        }
-
-        var documentPath = ReadSourcePath(source) ?? input.HintName;
-        var documentText = ReadSourceText(source);
-        if (documentText is null)
-        {
-            failure = "RazorCodeDocument.Source.Text was not readable from the official Razor SG output.";
-            return false;
-        }
-
-        var parseOptions = compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions
-                           ?? CSharpParseOptions.Default;
-        var projectEngine = RazorVueRazorCodeDocumentProvider.CreateProjectEngine(
-            documentPath,
-            parseOptions,
-            TryReadGeneratedNamespace(input.CSharpDocument));
-        var primaryDocument = new Jazor.RazorVue.RazorVueRazorDocument(
-            documentPath,
-            SourceText.From(documentText));
-        var importDocuments = ReadImports(input.CodeDocument)
-            .Select(static item => RazorVueRazorCodeDocumentProvider.CreateSourceDocument(item))
-            .ToImmutableArray();
-        var tagHelpers = RazorVueRazorCodeDocumentProvider.DiscoverTagHelpers(projectEngine, compilation);
-
-        var codeDocument = projectEngine.Process(
-            RazorVueRazorCodeDocumentProvider.CreateSourceDocument(primaryDocument),
-            RazorFileKind.Component,
-            importDocuments,
-            tagHelpers.Length == 0 ? null : TagHelperCollection.Create(tagHelpers));
-        var csharpDocument = RazorVueRazorCodeDocumentProvider.GetRequiredCSharpDocument(codeDocument);
-        document = CreateDocument(input.HintName, codeDocument, csharpDocument);
-        return true;
-    }
-
-    private static ImmutableArray<TagHelperDescriptor> GetTagHelpers(RazorCodeDocument codeDocument)
-    {
-        var method = typeof(RazorCodeDocument).GetMethod(
-            "GetRequiredTagHelpers",
-            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-        if (method?.Invoke(codeDocument, null) is not IEnumerable tagHelpers)
-            return ImmutableArray<TagHelperDescriptor>.Empty;
-
-        return tagHelpers.OfType<TagHelperDescriptor>().ToImmutableArray();
-    }
-
-    private static ImmutableArray<Jazor.RazorVue.RazorVueRazorDocument> ReadImports(object codeDocument)
-    {
-        if (GetPropertyValue(codeDocument, "Imports") is not IEnumerable imports)
-            return ImmutableArray<Jazor.RazorVue.RazorVueRazorDocument>.Empty;
-
-        var builder = ImmutableArray.CreateBuilder<Jazor.RazorVue.RazorVueRazorDocument>();
-        foreach (var import in imports)
-        {
-            if (import is null)
-                continue;
-
-            var importPath = ReadSourcePath(import);
-            var importText = ReadSourceText(import);
-            if (string.IsNullOrWhiteSpace(importPath) || importText is null)
-                continue;
-
-            builder.Add(new Jazor.RazorVue.RazorVueRazorDocument(importPath!, SourceText.From(importText)));
-        }
-
-        return builder.ToImmutable();
+        return RazorVueReflectedRazorIrReader.TryCreateDocument(
+            input.HintName,
+            input.CodeDocument,
+            input.CSharpDocument,
+            out document,
+            out failure);
     }
 
     private static string? TryReadGeneratedNamespace(object? csharpDocument)
     {
-        var text = ReadCSharpText(csharpDocument);
+        var text = csharpDocument?.ToString();
         if (string.IsNullOrWhiteSpace(text))
             return null;
 
@@ -184,45 +85,6 @@ internal static class RazorVueRazorSourceGeneratorTailBridge
             .FirstOrDefault()
             ?.Name
             .ToString();
-    }
-
-    private static string? ReadCSharpText(object? csharpDocument)
-    {
-        if (csharpDocument is null)
-            return null;
-
-        var textValue = GetPropertyValue(csharpDocument, "Text");
-        return textValue?.ToString();
-    }
-
-    private static string? ReadSourcePath(object sourceDocument)
-        => GetPropertyValue(sourceDocument, "FilePath") as string
-           ?? GetPropertyValue(sourceDocument, "RelativePath") as string;
-
-    private static string? ReadSourceText(object sourceDocument)
-    {
-        var textValue = GetPropertyValue(sourceDocument, "Text");
-        if (textValue is not null)
-            return textValue.ToString() ?? string.Empty;
-
-        var lengthValue = GetPropertyValue(sourceDocument, "Length");
-        if (lengthValue is not int length || length <= 0)
-            return string.Empty;
-
-        var copyTo = sourceDocument.GetType().GetMethod(
-            "CopyTo",
-            System.Reflection.BindingFlags.Instance |
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.NonPublic,
-            binder: null,
-            types: [typeof(int), typeof(char[]), typeof(int), typeof(int)],
-            modifiers: null);
-        if (copyTo is null)
-            return null;
-
-        var buffer = new char[length];
-        copyTo.Invoke(sourceDocument, [0, buffer, 0, length]);
-        return new string(buffer);
     }
 
     private static object? GetPropertyValue(object value, string name)

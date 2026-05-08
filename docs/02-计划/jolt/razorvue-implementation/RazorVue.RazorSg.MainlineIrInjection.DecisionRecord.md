@@ -2,7 +2,7 @@
 
 > Status: 活跃决策记录
 > Date: 2026-05-08
-> Scope: RazorVue 正式上线前，Razor 组件如何在当前 SDK Razor Source Generator 主线上稳定产出可消费的 IR carrier。
+> Scope: RazorVue 正式上线前，Razor 组件如何在当前 SDK Razor Source Generator 主线上稳定产出可消费的 RazorVue SFC catalog/artifact。
 
 本文档只记录已经确认的事实、被否定的路线、当前锁定的实现方向和下一步执行顺序。
 
@@ -21,8 +21,8 @@
 
 当前唯一主问题是：
 
-1. 在当前 SDK Razor Source Generator 主线上，为 Razor 组件正式产出 Razor IR carrier。
-2. 让 `Jazor.Analyzer` / `RazorVueGenerator` 在正式构建中只消费 carrier，而不是重新猜测 Razor 文档来源。
+1. 在当前 SDK Razor Source Generator 主线上，为 Razor 组件正式产出 RazorVue SFC catalog/artifact。
+2. 让 `Jazor.Analyzer` / `RazorVueGenerator` 在正式构建中只消费官方 Razor SG 已产生的内存结果，而不是重新猜测 Razor 文档来源。
 3. 保持 Razor 组件始终走 IR 语义，不回退到错误路线。
 
 ## 2. 已锁定的硬约束
@@ -33,7 +33,7 @@
 2. 注入点是 Roslyn / Razor IR 渠道，不是文件系统回读渠道。
 3. `path` 最多只能作为 identity metadata，不能变成主输入契约。
 4. 手写 `.cs` / 手写 `IComponent` / source-authored `BuildRenderTree` 可以作为显式 fallback。
-5. Razor 组件没有 carrier 时必须报错，不能静默弥合。
+5. Razor 组件没有 Razor IR document 输入时必须报错，不能静默弥合。
 
 ## 3. 明确禁止的路线
 
@@ -50,26 +50,26 @@
 
 ## 4. 已完成且不能回滚的改动
 
-当前消费侧已经切到 carrier-only 模型，以下改动属于正确方向，不应回退：
+当前消费侧已经切到“必须有 Razor IR 输入”的模型，以下改动属于正确方向，不应回退：
 
-1. 新增 Razor IR carrier 模型：
+1. 新增 Razor IR carrier 模型，作为旧消费侧过渡输入：
    - `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrCarrier.cs`
    - `src/Jazor.RazorVue/RazorSdk/RazorVueRazorIrCarrierMetadata.cs`
    - `Jazor.RazorVue.Runtime.RazorVueRazorIrCarrierAttribute`
 2. `RazorVueSemanticSnapshot` 去掉旧 path/import-path 主输入。
 3. `RazorVueCompilationContext` 去掉 `RazorVueRazorDocumentSet` 主输入以及主文档查找逻辑。
-4. `RazorVueRazorDocumentSemanticFrontend` 收紧为 carrier-only。
+4. `RazorVueRazorDocumentSemanticFrontend` 收紧为 carrier / Razor SG document 优先，不再回读 `.razor`。
 5. 删除 `src/Jazor.RazorVue/RazorSdk/RazorVueRazorDocumentLocator.cs`。
 6. `RazorVueRazorCodeDocumentProvider` 只认 `snapshot.RazorIrCarrier`。
 7. `RazorVuePreferredTemplateFrontend` 改成：
-   - 有 carrier 则走 Razor IR frontend。
-   - 无 carrier 且 `BuildRenderTree` 为源码手写时允许 fallback。
-   - 无 carrier 且属于 Razor 生成组件时明确报错。
+   - 有 carrier 或 Razor SG document 则走 Razor IR frontend。
+   - 无 Razor IR document 输入且 `BuildRenderTree` 为源码手写时允许 fallback。
+   - 无 Razor IR document 输入且属于 Razor 生成组件时明确报错。
 8. `src/Jazor.Analyzer/RazorVue/Generation/RazorVueGenerator.cs` 已去掉对 `AdditionalTextsProvider` 的主依赖。
 
 ## 5. 已验证通过的聚焦测试
 
-以下 focused tests 已通过，证明“消费侧切 carrier-only”当前是稳定的：
+以下 focused tests 已通过，证明“消费侧要求 Razor IR 输入”当前是稳定的：
 
 ```powershell
 dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~RazorVueRazorCodeDocumentProviderTests|FullyQualifiedName~RazorVueTemplateFrontendParityTests" -v minimal
@@ -83,7 +83,7 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 结果：406/406 通过。
 
-这说明当前问题主要不在消费侧，而在正式 carrier 注入链。
+这说明当前问题主要不在消费侧，而在正式 Razor SG tail 注入链。
 
 ## 6. SDK 主线调查结论
 
@@ -143,7 +143,8 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 1. 主线使用公开 Roslyn driver / generator 输入输出能力。
 2. 对少量不可见 internal 点收口在很小的 bridge 层。
-3. 如确有必要，可评估 `UnsafeAccessor` 或旧平台下的 IL weaving，但它们只能是窄桥接手段，不能成为主架构。
+3. bridge 层不强引用 Razor Compiler，而是按 object shape 读取官方内存对象并投影到 Jazor 自有中立 IR DTO。
+4. 如确有必要，可评估 `UnsafeAccessor` 或旧平台下的 IL weaving，但它们只能服务于窄尾部注入，不能成为主架构，也不能重新引入 Razor Compiler 发布依赖。
 
 ## 8. 本轮新增确认事实
 
@@ -195,9 +196,29 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 1. 不需要读 `.razor` 原文回建文档
 2. 不需要回到 classic Razor codegen
-3. 可以直接站在当前 SDK Razor SG 已生成的 code document / IR 结果上继续产出 carrier
+3. 可以直接站在当前 SDK Razor SG 已生成的 code document / IR 结果上继续产出 RazorVue SFC catalog/artifact
 
-### 8.4 不能依赖 `SuppressRazorSourceGenerator=true` 让手工实例化的 Razor SG 自停机
+### 8.4 外部编译存在 Razor 类型身份隔离
+
+真实 `dotnet build` 外部编译进一步证明：
+
+1. 官方 Razor SG tail 输出中的对象 full name 是 `Microsoft.AspNetCore.Razor.Language.RazorCodeDocument` / `RazorCSharpDocument`。
+2. 这些对象的 assembly path 指向当前 SDK 的 `Microsoft.CodeAnalysis.Razor.Compiler.dll`。
+3. 即使 full name 与 path 相同，在 analyzer 载体内部做 `is RazorCodeDocument` 仍可能失败。
+4. 根因是 analyzer load context 与官方 Razor SG load context 之间存在类型身份隔离。
+
+因此当前实现边界已经调整为：
+
+1. `Jazor.Analyzer` 不再引用或复制 `Microsoft.CodeAnalysis.Razor.Compiler.dll`。
+2. `Jazor.RazorVue` 生产代码也不再引用或复制 `Microsoft.CodeAnalysis.Razor.Compiler.dll`。
+3. Analyzer tail hook 只按 tuple field shape 与 full name 识别官方对象。
+4. Analyzer 以 `object` 将官方 Razor SG document 传给 `Jazor.RazorVue`。
+5. `Jazor.RazorVue` 通过 `RazorVueReflectedRazorIrReader` 反射读取官方对象，并投影到 `RazorVueRazorSourceGeneratorDocument` / `RazorVueRazorIrNode` / `RazorVueRazorSourceSpan` 等中立 DTO。
+6. 生产路径不强转 `RazorCodeDocument`，不重建本地 `RazorCodeDocument`，不私跑 Razor SG。
+
+这条桥接不是 `.razor` 文件回读，不是 `AdditionalTexts` 补偿，也不是 production nested Razor SG run。
+
+### 8.5 不能依赖 `SuppressRazorSourceGenerator=true` 让手工实例化的 Razor SG 自停机
 
 本轮曾尝试验证“外层 companion generator 手工驱动 Razor SG 时，是否可以靠 `build_property.SuppressRazorSourceGenerator=true` 避免重复执行官方 Razor SG”。
 
@@ -211,7 +232,7 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 1. companion / double-run 最多只能作为验证手段
 2. 最终生产实现必须回到单次处理，而不是依赖自抑制假设
 
-### 8.5 旧 `Jazor.RazorVue.RazorExtension` 路线在当前 SDK API 面下已不成立
+### 8.6 旧 `Jazor.RazorVue.RazorExtension` 路线在当前 SDK API 面下已不成立
 
 对 `src/Jazor.RazorVue.RazorExtension/` 的再验证表明：
 
@@ -227,13 +248,13 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 因此：
 
 1. 旧 initializer/classic extension 不再作为主线候选
-2. 不要再把实现资源投入到 `src/Jazor.RazorVue.RazorExtension/`
+2. `src/Jazor.RazorVue.RazorExtension/` 已删除，避免继续保留 Razor Compiler 强引用和错误路线入口
 
 ## 9. 当前锁定的正式实现方向
 
 经过 SDK Razor SG 源码阅读、Roslyn 同轮可见性 focused test、HostOutput focused test 以及实际 bridge 验证，当前正式实现方向已经锁定为：
 
-**官方 Razor SG 原样运行，通过受控 IL 尾部注入复用官方增量数据流，额外注册 RazorVue carrier source output。**
+**官方 Razor SG 原样运行，通过受控 IL 尾部注入复用官方增量数据流，额外注册 RazorVue source output。**
 
 详细执行指导见 [RazorVue.RazorSg.TailInjection.Guidance.md](./RazorVue.RazorSg.TailInjection.Guidance.md)。
 
@@ -252,15 +273,15 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 1. companion generator 同轮读取官方 Razor SG 新生成的 source / partial / attribute。
 2. 外层 generator 以相同 Roslyn 输入 nested run 一次 SDK `RazorSourceGenerator`。
-3. wrapper / fork 替换官方 Razor SG 后再产出 carrier。
-4. 只依赖 `HostOutput` 回调产出 carrier source。
+3. wrapper / fork 替换官方 Razor SG 后再产出 RazorVue source。
+4. 只依赖 `HostOutput` 回调产出 RazorVue source。
 
 排除原因：
 
 1. 同轮 generator 之间不能看到彼此新增的 partial / attribute。
 2. nested run 会重复执行 Razor SG，且不能靠 `SuppressRazorSourceGenerator=true` 让手工实例化的 SDK Razor SG 自停机。
 3. wrapper / fork 更容易引入用户项目 Razor 编译主线和 analyzer assembly 版本冲突风险。
-4. `HostOutput` 是宿主输出，不是 compilation source output，不能把 carrier partial 放进 final compilation。
+4. `HostOutput` 是宿主输出，不是 compilation source output，不能把 RazorVue generated sources 放进 final compilation。
 
 ### 9.3 锁定方案形态
 
@@ -270,8 +291,8 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 2. 保留官方 `RegisterImplementationSourceOutput(...)` 产 `.razor.g.cs` 的逻辑。
 3. 保留官方 `RegisterHostOutput(...)` 发布 `RazorGeneratorResult` 的逻辑。
 4. 在官方最终 Razor/C# document 增量数据流形成后，新增一个并列 RazorVue source output。
-5. RazorVue source output 复用同一条官方数据流，生成 RazorVue IR carrier partial。
-6. carrier partial 进入同一轮 final compilation，供 RazorVue carrier-only 消费侧使用。
+5. RazorVue source output 复用同一条官方数据流，生成 RazorVue SFC artifact source 与 catalog source。
+6. RazorVue generated sources 进入同一轮 final compilation，供 emit 后续读取。
 
 另一个现在已经由 focused test 锁定的关键点是安装时序：
 
@@ -284,9 +305,17 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 
 1. 证明官方 Razor SG 末端拥有完整 `RazorGeneratorResult` / `RazorCodeDocument`。
 2. 作为定位末端数据流和验证 bridge 的锚点。
-3. 不是 carrier partial 的源码产出通道。
+3. 不是 RazorVue generated sources 的源码产出通道。
 
-carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilation。
+RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进入 compilation。
+
+当前实装还增加了 analyzer/Razor SDK 分层边界：
+
+1. `Jazor.Analyzer` 负责模块初始化、Harmony patch、Roslyn `_outputNodes` 扫描、source output 注册和对象 shape 读取。
+2. `Jazor.Analyzer` 不携带 `Microsoft.CodeAnalysis.Razor.Compiler.dll`，避免和官方 Razor SG 产生第二份 Razor 类型身份。
+3. `Jazor.RazorVue` 生产代码不携带 `Microsoft.CodeAnalysis.Razor.Compiler.dll`，避免把 SDK internal 类型身份固化进 Jazor 发布包。
+4. `Jazor.RazorVue` 负责反射读取官方内存对象、投影中立 Razor IR DTO、运行 SFC pipeline。
+5. 测试项目可以引用 SDK Razor Compiler 构造真实 `RazorCodeDocument` / `RazorCSharpDocument`，但生产路径只接受 object shape，不接受强类型 Razor Compiler surface。
 
 ### 9.4 实现硬边界
 
@@ -298,6 +327,8 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 4. 生产环境双跑 SDK Razor SG
 5. 改写官方 `.razor.g.cs`
 6. 改写官方 Razor parser / engine passes / tag helper discovery
+7. 在 `Jazor.Analyzer` 中强引用或打包 `Microsoft.CodeAnalysis.Razor.Compiler.dll`
+8. 在 `Jazor.RazorVue` 生产代码中强引用或打包 `Microsoft.CodeAnalysis.Razor.Compiler.dll`
 
 ### 9.5 注入失败策略
 
@@ -305,9 +336,10 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 
 1. 绑定 `RazorSourceGenerator.Initialize(...)` IL 指纹与 declared method surface。
 2. assembly path / version / MVID 只作为测试和排查观测信息，不作为正式兼容门。
-3. 校验失败时，如果 RazorVue 已启用，则报告明确诊断并停止 carrier 生成。
+3. 校验失败时，如果 RazorVue 已启用，则报告明确诊断并停止 RazorVue tail output 生成。
 4. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
 5. SDK 升级必须先更新指纹和 focused tests。
+6. Tail bridge 失败时报告 `JAZORVGA020`，而不是静默丢失 RazorVue artifact。
 
 失败时禁止自动退回 `.razor` 原文回读、`BuildRenderTree` 反推、classic codegen 或 production nested run。
 
@@ -319,7 +351,7 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 2. 通过路径或 `AdditionalText.GetText()` 自己重组一套“伪 SG”主线。
 3. wrapper / fork 替换官方 Razor SG 主线。
 4. production nested run SDK `RazorSourceGenerator`。
-5. 只在 `HostOutput` 回调内尝试产 carrier source。
+5. 只在 `HostOutput` 回调内尝试产 RazorVue source。
 
 这些路线最多只能作为测试探针或失败对照，不得作为 RazorVue 正式上线实现。
 
@@ -334,12 +366,13 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 架构方向已锁定，后续还需要完成以下实现工作：
 
 1. Razor SG `Initialize(...)` IL shape 探针与指纹校验。
-2. 最小 RazorVue carrier source output delegate。
-3. 注入后同轮 `.razor.g.cs` 与 carrier partial 产出验证。
-4. `RazorGeneratorResult` / `RazorCodeDocument` bridge 的最小 internal 访问面收口。
+2. 最小 RazorVue source output delegate。
+3. 注入后同轮 `.razor.g.cs` 与 RazorVue artifact/catalog 产出验证。
+4. `RazorGeneratorResult` / `RazorCodeDocument` bridge 的反射 object-shape 访问面收口。
 5. RazorVue 启用 / 未启用行为分流。
 6. `Jazor` NuGet analyzer/generator 载体中的依赖打包与加载验证。
 7. SDK 指纹不匹配时的明确 diagnostic。
+8. 生产项目不得引用 Razor Compiler 的防回归测试保持通过。
 
 ## 12. 接下来执行顺序
 
@@ -360,10 +393,10 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 
 1. 通过 IL 尾部注入新增并列 source output。
 2. 官方 `.razor.g.cs` 仍正常产出。
-3. RazorVue carrier partial 同轮产出并进入 final compilation。
+3. RazorVue SFC artifact/catalog 同轮产出并进入 final compilation。
 4. RazorVue 未启用时 no-op。
 
-### 第三步：carrier 数据面补齐
+### 第三步：Razor SG document 数据面补齐
 
 目标：
 
@@ -389,12 +422,23 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 3. `src/Jazor.RazorVue.RazorIr.Test`
 4. `src/Jazor.RazorVue.Test`
 
-以下方向当前不要继续投入：
+以下方向当前不要继续投入或恢复：
 
-1. `src/Jazor.RazorVue.RazorExtension/`
+1. `src/Jazor.RazorVue.RazorExtension/`（已删除）
 2. Jolt 主线
 3. 无关 Wiki / Vue3 / Pinia / VueRoute 脏改动
 
-## 14. 一句话结论
+## 14. 当前打包与引用收口验证
 
-RazorVue 当前已经把消费侧改对了，且本轮已证实 SDK Razor SG 单轮能够同时产出 generated source 与 `HostOutputs -> RazorGeneratorResult -> RazorCodeDocument`；经过源码阅读和实际测试，当前最优解已经锁定为：HostOutput 用作 Razor SG 末端 IR 结果锚点，受控 IL 尾部注入新增并列 source output，用同一条官方 Razor SG 数据流生成 RazorVue carrier。
+本轮已完成生产引用边界验证：
+
+1. `src/Jazor.Analyzer/Jazor.Analyzer.csproj` 不引用 Razor Compiler。
+2. `src/Jazor.RazorVue/Jazor.RazorVue.csproj` 不引用 Razor Compiler。
+3. `src/Jazor/Jazor.csproj` 不打包 Razor Compiler / Razor Utilities Shared。
+4. `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 已成功。
+5. `Jazor.0.1.17.nupkg` 的 `analyzers/dotnet/cs/` 与 `lib/net10.0/` payload 未包含 `Microsoft.CodeAnalysis.Razor.Compiler.dll` 或 `Microsoft.AspNetCore.Razor.Utilities.Shared.dll`。
+6. `ProductionRazorCompilerReferenceTests` 已加入，防止生产项目重新引入 Razor Compiler 强引用，并防止旧 `Jazor.RazorVue.RazorExtension` 项目恢复。
+
+## 15. 一句话结论
+
+RazorVue 当前已经把消费侧改对了，且本轮已证实 SDK Razor SG 单轮能够同时产出 generated source 与 `HostOutputs -> RazorGeneratorResult -> RazorCodeDocument`；经过源码阅读和实际测试，当前最优解已经锁定为：HostOutput 用作 Razor SG 末端 IR 结果锚点，受控 IL 尾部注入新增并列 source output，用同一条官方 Razor SG 数据流生成 RazorVue SFC artifact/catalog。

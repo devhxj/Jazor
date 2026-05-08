@@ -1,4 +1,7 @@
 using Jazor.Analyzer.RazorVue.Generation;
+using Microsoft.CodeAnalysis;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Jazor.RazorVue.RazorIr.Test;
 
@@ -49,5 +52,34 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
         }
     }
 
+    [TestMethod]
+    public void ValidateAssemblyForPatch_ForUnsupportedRazorSourceGeneratorShape_FailsBeforePatch()
+    {
+        var assembly = CreateUnsupportedRazorCompilerAssembly();
+
+        var validation = RazorSourceGeneratorInitializeHookInstaller.ValidateAssemblyForPatch(assembly);
+
+        Assert.IsFalse(validation.Success, "Unsupported Razor SG shape must not be accepted for tail injection patching.");
+        StringAssert.Contains(validation.Failure ?? string.Empty, "Initialize(...) IL SHA-256 mismatch");
+    }
+
     public TestContext TestContext { get; set; } = default!;
+
+    private static Assembly CreateUnsupportedRazorCompilerAssembly()
+    {
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(
+            new AssemblyName("Microsoft.CodeAnalysis.Razor.Compiler"),
+            AssemblyBuilderAccess.Run);
+        var moduleBuilder = assemblyBuilder.DefineDynamicModule("FakeRazorCompiler");
+        var typeBuilder = moduleBuilder.DefineType(
+            "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator",
+            TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
+        var initialize = typeBuilder.DefineMethod(
+            "Initialize",
+            MethodAttributes.Public,
+            typeof(void),
+            [typeof(IncrementalGeneratorInitializationContext)]);
+        initialize.GetILGenerator().Emit(OpCodes.Ret);
+        return typeBuilder.CreateTypeInfo()!.Assembly;
+    }
 }

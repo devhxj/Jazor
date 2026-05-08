@@ -1048,14 +1048,14 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_PrefersRazorIrForLegacyOutput()
+    public void GenerateCatalog_WithOfficialRazorSgDocument_TailBridge_LowersRazorIrForSfcOutput()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
         var normalizedDocumentPath = documentPath.Replace('\\', '/');
 
-        var compilation = CreateAlignedRazorComponentCompilation(
-            assemblyName: "RazorVue.Generator.PreferredFrontend.Legacy.Tests",
+        var (compilation, input) = CreateRazorSgTailBridgeInput(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.TailBridge.Tests",
             documentPath: normalizedDocumentPath,
             documentText: razorDocumentText,
             componentSource:
@@ -1072,20 +1072,19 @@ public sealed class ESGeneratorTests
             """,
             rootNamespace: "Demo.Pages");
 
-        compilation = InjectCarrierCompilation(compilation, normalizedDocumentPath, razorDocumentText);
-        var (_, runResult) = RunAllGeneratorsWithResult(
+        var result = RazorVueRazorSourceGeneratorTailBridge.ExecuteSfcPipeline(
             compilation,
-            razorVueOutputMode: "legacy");
-        var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
-        var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
+            ImmutableArray.Create(input));
 
-        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
-        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
-        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
-        StringAssert.Contains(generatedSource, "h(\\\"section\\\", [");
-        StringAssert.Contains(generatedSource, "h(\\\"h1\\\", props.title)");
-        StringAssert.Contains(generatedSource, "h(\\\"p\\\", \\\"Hello\\\")");
-        Assert.IsFalse(generatedSource.Contains("\\\"<p>Hello</p>\\\"", StringComparison.Ordinal), generatedSource);
+        Assert.IsTrue(result.Success, result.Failure);
+        Assert.AreEqual(1, result.GeneratorDocumentCount);
+        var artifact = result.Catalog.Artifacts.Single();
+        StringAssert.Contains(artifact.ScriptSetupText, "defineProps");
+        StringAssert.Contains(artifact.TemplateText, "<section>");
+        StringAssert.Contains(artifact.TemplateText, "{{ props.title }}");
+        StringAssert.Contains(artifact.TemplateText, "<p>");
+        StringAssert.Contains(artifact.TemplateText, "Hello");
+        Assert.IsFalse(artifact.TemplateText.Contains("&lt;p&gt;Hello&lt;/p&gt;", StringComparison.Ordinal), artifact.TemplateText);
     }
 
     [TestMethod]
@@ -1126,7 +1125,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_PrefersRazorIrForSfcOutput()
+    public void GenerateCatalog_WithAlignedRazorCarrier_DefaultGenerator_ReportsMissingFormalSgDocument()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1154,18 +1153,15 @@ public sealed class ESGeneratorTests
         var (_, runResult) = RunAllGeneratorsWithResult(
             compilation,
             razorVueOutputMode: "sfc");
-        var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
         var hints = runResult.Results.SelectMany(static result => result.GeneratedSources).Select(static source => source.HintName).ToArray();
-        var artifactHint = hints.Single(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal));
-        var artifactSource = GetGeneratedSource(runResult, artifactHint);
 
-        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
-        StringAssert.Contains(artifactSource, "<section>");
-        StringAssert.Contains(artifactSource, "{{ props.title }}");
-        StringAssert.Contains(artifactSource, "<p>");
-        StringAssert.Contains(artifactSource, "Hello");
-        StringAssert.Contains(artifactSource, "</p>");
-        Assert.IsFalse(artifactSource.Contains("&lt;p&gt;Hello&lt;/p&gt;", StringComparison.Ordinal), artifactSource);
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
+        Assert.IsFalse(hints.Any(static hint => hint.StartsWith("Jazor.Generated.RazorVue.Artifact_", StringComparison.Ordinal)));
     }
 
     [TestMethod]
@@ -1245,7 +1241,7 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, genericDiagnostics.Length, string.Join("\n", genericDiagnostics.Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "no injected Razor IR carrier was produced");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "no RazorVue tail output was produced");
         StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
     }
 
@@ -1305,7 +1301,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithAlignedRazorCarrier_AndEnabledRazorSgIntegration_DoesNotRequireInjection()
+    public void GenerateCatalog_WithAlignedRazorCarrier_AndEnabledRazorSgIntegration_DoesNotEmitFromNormalGenerator()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1341,11 +1337,13 @@ public sealed class ESGeneratorTests
             razorVueGenerator: generator,
             enableRazorSgIntegration: true);
         var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
-        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
-        StringAssert.Contains(generatedSource, "h(\\\"section\\\", [");
-        StringAssert.Contains(generatedSource, "h(\\\"h1\\\", props.title)");
+        CollectionAssert.DoesNotContain(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
     }
 
     [TestMethod]
@@ -10835,6 +10833,28 @@ public sealed class ESGeneratorTests
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
     }
 
+    private static (Compilation Compilation, RazorVueRazorSourceGeneratorDocumentInput Input) CreateRazorSgTailBridgeInput(
+        string assemblyName,
+        string documentPath,
+        string documentText,
+        string componentSource,
+        string rootNamespace,
+        string? importsText = null)
+    {
+        var (compilation, _, codeDocument, csharpDocument) = CreateAlignedRazorComponentCompilationCore(
+            assemblyName,
+            documentPath,
+            documentText,
+            componentSource,
+            rootNamespace,
+            importsText);
+
+        return (compilation, new RazorVueRazorSourceGeneratorDocumentInput(
+            Path.GetFileName(documentPath) + ".g.cs",
+            codeDocument,
+            csharpDocument));
+    }
+
     private static Compilation CreateAlignedRazorComponentCompilation(
         string assemblyName,
         string documentPath,
@@ -10842,6 +10862,26 @@ public sealed class ESGeneratorTests
         string componentSource,
         string rootNamespace,
         string? importsText = null)
+        => CreateAlignedRazorComponentCompilationCore(
+                assemblyName,
+                documentPath,
+                documentText,
+                componentSource,
+                rootNamespace,
+                importsText)
+            .Compilation;
+
+    private static (
+        Compilation Compilation,
+        CSharpParseOptions ParseOptions,
+        RazorCodeDocument CodeDocument,
+        RazorCSharpDocument CSharpDocument) CreateAlignedRazorComponentCompilationCore(
+        string assemblyName,
+        string documentPath,
+        string documentText,
+        string componentSource,
+        string rootNamespace,
+        string? importsText)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var baseCompilation = CSharpCompilation.Create(
@@ -10908,7 +10948,7 @@ public sealed class ESGeneratorTests
             .ToArray();
         Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
 
-        return compilation;
+        return (compilation, parseOptions, codeDocument, csharpDocument);
     }
 
     private static Compilation InjectCarrierCompilation(Compilation compilation, string documentPath, string documentText)

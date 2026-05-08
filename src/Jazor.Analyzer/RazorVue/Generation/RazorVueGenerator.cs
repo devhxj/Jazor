@@ -163,7 +163,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private static readonly DiagnosticDescriptor RazorVueRazorSgIntegrationNotActive = new(
         id: "JAZORVGA018",
         title: "RazorVue Razor SG integration is not active",
-        messageFormat: "RazorVue Razor SG integration is enabled, but no injected Razor IR carrier was produced for Razor component '{0}'. The official Razor source generator did not run with RazorVue tail injection.",
+        messageFormat: "RazorVue Razor SG integration is enabled, but no RazorVue tail output was produced for Razor component '{0}'. The official Razor source generator did not run with RazorVue tail injection.",
         category: "Jazor.RazorVue.Analysis",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -354,6 +354,32 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         out Diagnostic diagnostic)
     {
         diagnostic = default!;
+        var requiresTailInjection = false;
+        foreach (var snapshot in RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context))
+        {
+            if (snapshot.RazorIrCarrier is not null ||
+                snapshot.RazorSourceGeneratorDocument is not null ||
+                snapshot.BuildRenderTreeMethod is null)
+            {
+                continue;
+            }
+
+            if (RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
+                continue;
+
+            requiresTailInjection = true;
+            diagnostic = Diagnostic.Create(
+                RazorVueRazorSgIntegrationNotActive,
+                GetComponentLocation(snapshot.ComponentSymbol),
+                snapshot.ComponentSymbol.ToDisplayString());
+            break;
+        }
+
+        if (!requiresTailInjection)
+        {
+            return false;
+        }
+
         var compatibilityProbe = compatibilityProbeFactory();
         var validation = RazorSourceGeneratorCompatibilityGuard.Validate(
             compatibilityProbe ?? throw new InvalidOperationException("Razor source generator compatibility probe was not loaded."));
@@ -366,22 +392,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return true;
         }
 
-        foreach (var snapshot in RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context))
-        {
-            if (snapshot.RazorIrCarrier is not null || snapshot.BuildRenderTreeMethod is null)
-                continue;
-
-            if (RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
-                continue;
-
-            diagnostic = Diagnostic.Create(
-                RazorVueRazorSgIntegrationNotActive,
-                GetComponentLocation(snapshot.ComponentSymbol),
-                snapshot.ComponentSymbol.ToDisplayString());
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     private static Diagnostic CreateCompilationIssueDiagnostic(

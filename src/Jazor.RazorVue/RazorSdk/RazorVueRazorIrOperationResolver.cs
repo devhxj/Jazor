@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
@@ -42,28 +41,28 @@ internal sealed class RazorVueRazorIrOperationResolver
     private readonly SyntaxNode _generatedRoot;
     private readonly SemanticModel _semanticModel;
     private readonly SourceText _generatedText;
-    private readonly ImmutableArray<SourceMapping> _sourceMappings;
+    private readonly ImmutableArray<RazorVueRazorSourceMapping> _sourceMappings;
 
     public RazorVueRazorIrOperationResolver(
         Jazor.RazorVue.RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot,
-        RazorVueRazorCodeDocumentHandle handle)
+        RazorVueRazorSourceGeneratorDocument document)
     {
         if (context is null)
             throw new ArgumentNullException(nameof(context));
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
-        if (handle is null)
-            throw new ArgumentNullException(nameof(handle));
+        if (document is null)
+            throw new ArgumentNullException(nameof(document));
 
         _snapshot = snapshot;
         var buildRenderTreeSyntax = GetBuildRenderTreeSyntax(snapshot);
         _generatedRoot = buildRenderTreeSyntax.SyntaxTree.GetRoot();
         _semanticModel = context.Compilation.GetSemanticModel(buildRenderTreeSyntax.SyntaxTree);
         _generatedText = buildRenderTreeSyntax.SyntaxTree.GetText();
-        _sourceMappings = handle.SourceMappings;
+        _sourceMappings = document.SourceMappings;
 
-        if (!_generatedText.ContentEquals(handle.CSharpDocument.Text))
+        if (!_generatedText.ContentEquals(document.CSharpText))
         {
             throw new InvalidOperationException(
                 $"The compiled Razor generated source for component '{snapshot.Descriptor.FullName}' diverged from RazorCodeDocument C# output. " +
@@ -71,7 +70,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         }
     }
 
-    public IOperation ResolveRequiredOperation(SourceSpan? sourceSpan, string detail)
+    public IOperation ResolveRequiredOperation(RazorVueRazorSourceSpan? sourceSpan, string detail)
     {
         if (TryResolveOperation(sourceSpan, out var operation))
             return operation;
@@ -79,7 +78,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         throw CreateUnsupportedMappingException(sourceSpan, detail);
     }
 
-    public bool TryResolveOperation(SourceSpan? sourceSpan, out IOperation operation)
+    public bool TryResolveOperation(RazorVueRazorSourceSpan? sourceSpan, out IOperation operation)
     {
         operation = default!;
         if (sourceSpan is null)
@@ -98,7 +97,7 @@ internal sealed class RazorVueRazorIrOperationResolver
 
     public bool TryResolveGeneratedExpression(
         string expressionText,
-        SourceSpan? sourceSpan,
+        RazorVueRazorSourceSpan? sourceSpan,
         out IOperation operation)
     {
         operation = default!;
@@ -144,7 +143,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         return false;
     }
 
-    public bool TryResolveConditional(SourceSpan? sourceSpan, out ResolvedConditional conditional)
+    public bool TryResolveConditional(RazorVueRazorSourceSpan? sourceSpan, out ResolvedConditional conditional)
     {
         conditional = default;
         if (!TryResolveBestIfStatement(sourceSpan, out var syntax))
@@ -172,7 +171,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         return true;
     }
 
-    public bool TryResolveForEach(SourceSpan? sourceSpan, out ResolvedForEach loop)
+    public bool TryResolveForEach(RazorVueRazorSourceSpan? sourceSpan, out ResolvedForEach loop)
     {
         loop = default;
         if (!TryResolveStatement(sourceSpan, out ForEachStatementSyntax? syntax))
@@ -191,7 +190,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         return true;
     }
 
-    public bool TryResolveFor(SourceSpan? sourceSpan, out ResolvedFor loop)
+    public bool TryResolveFor(RazorVueRazorSourceSpan? sourceSpan, out ResolvedFor loop)
     {
         loop = default;
         if (!TryResolveStatement(sourceSpan, out ForStatementSyntax? syntax))
@@ -228,7 +227,7 @@ internal sealed class RazorVueRazorIrOperationResolver
             $"BuildRenderTree syntax could not be located for component '{snapshot.Descriptor.FullName}'.");
     }
 
-    private bool TryMapToGeneratedSpan(SourceSpan sourceSpan, out TextSpan generatedSpan)
+    private bool TryMapToGeneratedSpan(RazorVueRazorSourceSpan sourceSpan, out TextSpan generatedSpan)
     {
         generatedSpan = default;
         if (string.IsNullOrWhiteSpace(sourceSpan.FilePath) || _sourceMappings.IsDefaultOrEmpty)
@@ -360,7 +359,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         return 0;
     }
 
-    private bool TryResolveStatement<TStatementSyntax>(SourceSpan? sourceSpan, out TStatementSyntax? syntax)
+    private bool TryResolveStatement<TStatementSyntax>(RazorVueRazorSourceSpan? sourceSpan, out TStatementSyntax? syntax)
         where TStatementSyntax : SyntaxNode
     {
         syntax = null;
@@ -378,7 +377,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         return syntax is not null;
     }
 
-    private bool TryResolveBestIfStatement(SourceSpan? sourceSpan, out IfStatementSyntax? syntax)
+    private bool TryResolveBestIfStatement(RazorVueRazorSourceSpan? sourceSpan, out IfStatementSyntax? syntax)
     {
         syntax = null;
         if (sourceSpan is null)
@@ -404,7 +403,7 @@ internal sealed class RazorVueRazorIrOperationResolver
         return true;
     }
 
-    private RazorVueCompilationIssueException CreateUnsupportedMappingException(SourceSpan? sourceSpan, string detail)
+    private RazorVueCompilationIssueException CreateUnsupportedMappingException(RazorVueRazorSourceSpan? sourceSpan, string detail)
     {
         var issue = new RazorVueCompilationIssue(
             RazorVueIssueCode.CanonicalizationFailed,

@@ -136,22 +136,23 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
-    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBind_CurrentlyFailsFast()
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_ForElementBind_PreservesRawBindAttribute()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<input @bind="Title" />""";
 
-        var (context, _) = RazorVueRazorIrTestContextFactory.CreateContext(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateContext(
             "RazorVue.RazorIr.TemplateFrontend.ElementBind.Pipeline.Tests",
             documentPath,
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        var exception = Assert.ThrowsExactly<InvalidOperationException>(() =>
-            new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
-                .Execute(context));
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+        var input = renderTree.Children[0] as RazorVueElementNode;
 
-        StringAssert.Contains(exception.Message, "requires a bound Razor document");
+        Assert.IsNotNull(input);
+        Assert.AreEqual("input", input!.TagName);
+        Assert.IsTrue(input.Attributes.OfType<RazorVueAttributeNode>().Any(static item => item.Name == "@bind"));
     }
 
     [TestMethod]
@@ -396,13 +397,13 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string documentText = """<section><h1>@Title</h1></section>""";
 
-        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.Pipeline.Tests",
             documentPath,
             documentText,
             RazorVueRazorIrTestContextFactory.CreateParentComponentSource());
 
-        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
             .Execute(context)
             .Artifacts
             .Single();
@@ -542,7 +543,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """;
 
-        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.ControlFlow.Pipeline.Tests",
             documentPath,
             documentText,
@@ -560,7 +561,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """);
 
-        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
             .Execute(context)
             .Artifacts
             .Single();
@@ -636,7 +637,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """;
 
-        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.IfElse.Pipeline.Tests",
             documentPath,
             documentText,
@@ -652,7 +653,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """);
 
-        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
             .Execute(context)
             .Artifacts
             .Single();
@@ -740,7 +741,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """;
 
-        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.IfElseForeach.Pipeline.Tests",
             documentPath,
             documentText,
@@ -761,7 +762,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """);
 
-        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
             .Execute(context)
             .Artifacts
             .Single();
@@ -853,7 +854,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """;
 
-        var (context, _) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
             "RazorVue.RazorIr.TemplateFrontend.ElseIf.Pipeline.Tests",
             documentPath,
             documentText,
@@ -872,7 +873,7 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
             }
             """);
 
-        var artifact = new Jazor.RazorVue.RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorVueRazorIrTemplateFrontend())
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
             .Execute(context)
             .Artifacts
             .Single();

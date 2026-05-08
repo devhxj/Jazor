@@ -82,7 +82,7 @@ internal sealed class RazorVueRazorDocumentSemanticFrontend : IRazorSemanticFron
         out string typeName)
     {
         typeName = string.Empty;
-        var root = CSharpSyntaxTree.ParseText(document.CSharpDocument.Text).GetRoot();
+        var root = CSharpSyntaxTree.ParseText(document.CSharpText).GetRoot();
         var classDeclaration = root.DescendantNodes().OfType<ClassDeclarationSyntax>().FirstOrDefault();
         if (classDeclaration is null)
             return false;

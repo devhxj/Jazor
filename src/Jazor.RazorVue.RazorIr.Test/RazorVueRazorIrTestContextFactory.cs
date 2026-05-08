@@ -40,6 +40,18 @@ internal static class RazorVueRazorIrTestContextFactory
             importsText,
             requireSdkAlignedGeneratedSource: false);
 
+    public static Jazor.RazorVue.RazorVuePipeline CreateSgPipeline(RazorVueSemanticSnapshot snapshot)
+    {
+        if (snapshot is null)
+            throw new ArgumentNullException(nameof(snapshot));
+        if (snapshot.RazorSourceGeneratorDocument is null)
+            throw new InvalidOperationException("The RazorVue Razor IR test pipeline requires a bound Razor source generator document.");
+
+        return new Jazor.RazorVue.RazorVuePipeline(
+            new RazorVueRazorSourceGeneratorSemanticFrontend(ImmutableArray.Create(snapshot.RazorSourceGeneratorDocument)),
+            new RazorVueRazorIrTemplateFrontend());
+    }
+
     private static (Jazor.RazorVue.RazorVueCompilationContext Context, RazorVueSemanticSnapshot Snapshot) CreateContextCore(
         string assemblyName,
         string documentPath,
@@ -115,7 +127,17 @@ internal static class RazorVueRazorIrTestContextFactory
         var context = Jazor.RazorVue.RazorVueCompilationContext.TryCreate(compilation);
 
         Assert.IsNotNull(context);
-        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context).Single(static item => item.Descriptor.Name == "TodoApp");
+        Assert.IsTrue(
+            RazorVueReflectedRazorIrReader.TryCreateDocument(
+                Path.GetFileName(documentPath) + ".g.cs",
+                codeDocument,
+                csharpDocument,
+                out var sourceGeneratorDocument,
+                out var failure),
+            failure);
+        var snapshot = RazorVueRazorDocumentSemanticFrontend.Instance
+            .CreateSemanticSnapshots(context, ImmutableArray.Create(sourceGeneratorDocument))
+            .Single(static item => item.Descriptor.Name == "TodoApp");
         if (requireSdkAlignedGeneratedSource)
             AssertSdkAlignedGeneratedSource(context, snapshot);
         return (context, snapshot);
@@ -158,9 +180,8 @@ internal static class RazorVueRazorIrTestContextFactory
         Jazor.RazorVue.RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot)
     {
-        var provider = new RazorVueRazorCodeDocumentProvider();
-        Assert.IsTrue(provider.TryCreate(context, snapshot, out var handle));
-        return RazorIrTestHost.DumpIntermediateNodeTree(handle.DocumentNode);
+        Assert.IsNotNull(snapshot.RazorSourceGeneratorDocument);
+        return DumpNeutralIrNodeTree(snapshot.RazorSourceGeneratorDocument.DocumentNode);
     }
 
     private static void AssertCompilationHasNoErrors(Compilation compilation, string? generatedCode = null)
@@ -183,8 +204,7 @@ internal static class RazorVueRazorIrTestContextFactory
         Jazor.RazorVue.RazorVueCompilationContext context,
         RazorVueSemanticSnapshot snapshot)
     {
-        var provider = new RazorVueRazorCodeDocumentProvider();
-        Assert.IsTrue(provider.TryCreate(context, snapshot, out var handle));
+        Assert.IsNotNull(snapshot.RazorSourceGeneratorDocument);
         Assert.IsNotNull(snapshot.BuildRenderTreeMethod);
 
         var syntax = snapshot.BuildRenderTreeMethod.DeclaringSyntaxReferences
@@ -192,7 +212,7 @@ internal static class RazorVueRazorIrTestContextFactory
             .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
             .Single();
         var compiledText = syntax.SyntaxTree.GetText().ToString();
-        var razorText = handle.CSharpDocument.Text.ToString();
+        var razorText = snapshot.RazorSourceGeneratorDocument.CSharpText.ToString();
 
         Assert.AreEqual(
             compiledText,
@@ -206,6 +226,29 @@ internal static class RazorVueRazorIrTestContextFactory
             + "Provider C#:"
             + Environment.NewLine
             + razorText);
+    }
+
+    private static string DumpNeutralIrNodeTree(RazorVueRazorIrNode root)
+    {
+        var builder = new System.Text.StringBuilder();
+        Append(root, depth: 0);
+        return builder.ToString();
+
+        void Append(RazorVueRazorIrNode node, int depth)
+        {
+            builder.Append(' ', depth * 2);
+            builder.Append(node.RuntimeTypeName);
+            if (!string.IsNullOrWhiteSpace(node.TagName))
+                builder.Append(" TagName=\"").Append(node.TagName).Append('"');
+            if (!string.IsNullOrWhiteSpace(node.AttributeName))
+                builder.Append(" AttributeName=\"").Append(node.AttributeName).Append('"');
+            if (!string.IsNullOrWhiteSpace(node.TypeName))
+                builder.Append(" TypeName=\"").Append(node.TypeName).Append('"');
+            builder.AppendLine();
+
+            foreach (var child in node.Children)
+                Append(child, depth + 1);
+        }
     }
 
     private static string InjectCarrierAttribute(
