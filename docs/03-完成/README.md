@@ -17,6 +17,7 @@
 | `sourcemap/` | `src/Jazor.Common/SourceMaps/` + `src/Jazor.Emit/SourceMaps/` | SourceMap 状态快照 |
 | `ecmascript.vue3/` | `src/ECMAScript.Vue3/` | 外部库 Vue3 线的状态快照 |
 | `ecmascript.pinia/` | `src/ECMAScript.Pinia/` | 外部库 Pinia 线的状态快照 |
+| `wiki/` | `src/Wiki/` | 传统 ASP.NET Core 宿主线的状态快照 |
 
 ## 推荐入口
 
@@ -25,3 +26,4 @@
 - emit 当前状态 → [emit/status.md](./emit/status.md)
 - ECMAScript.Vue3 当前状态 → [ecmascript.vue3/status.md](./ecmascript.vue3/status.md)
 - ECMAScript.Pinia 当前状态 → [ecmascript.pinia/status.md](./ecmascript.pinia/status.md)
+- Wiki 当前状态 → [wiki/status.md](./wiki/status.md)

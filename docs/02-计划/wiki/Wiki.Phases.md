@@ -1,8 +1,8 @@
 # Wiki 阶段计划
 
-> Status: Phase 1–4 已完成
-> Updated: 2026-05-05
-> Positioning: `src/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 24 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化和部署契约。
+> Status: Phase 1–5 已完成
+> Updated: 2026-05-08
+> Positioning: `src/Wiki/` 当前是已完成的生产级文档站，基于 C# + `ECMAScript.Vue3` H 函数 authoring 构建，包含 24 个注册页面、全文搜索、导航壳层、完整验证管线、本地化依赖、CI 自动化、部署契约，以及 ASP.NET Core `PathBase` / 开发重载链路收口。
 
 ## 1. 当前定位
 
@@ -23,23 +23,25 @@
 
 当前已具备的完整文档站闭环：
 
-- ASP.NET Core 静态宿主、`/health`、`MapFallbackToFile` 前端路由；
+- ASP.NET Core 静态宿主、`/health`、host-rendered HTML shell fallback；
 - `AppModule.cs` 负责 Vue bootstrap；
 - `WikiHomeModule.cs` 及 26 个 partial 文件负责站点壳层和 24 个页面内容；
 - `WikiCatalogGuard.cs` 启动校验全部路由目录完整性；
 - `Wiki.csproj` 已开启 `JazorEmit`，输出到 `wwwroot/jazor`；
 - `main.mjs`、`components/wiki-home.mjs` 与 manifest（48 模块）已稳定产出；
-- `serve.ps1` / `build-local.ps1` / `verify-smoke.ps1` / `verify-browser.ps1` 构建与验证闭环。
+- `serve.ps1` / `build-local.ps1` / `verify-smoke.ps1` / `verify-browser.ps1` 构建与验证闭环；
+- `Wiki:PathBase` / `Wiki__PathBase` 子路径部署支持已打通；
+- 开发时 injected client、reload websocket、静态资源 URL、discovery documents、SourceMap 服务链路都已在根路径和 `/docs` 子路径下通过验证。
 
 因此 `src/Wiki/` 当前应视为：
 
-- **Phase 1–3 complete**
+- **Phase 1–5 complete**
 - **Docs-site MVP**
-- **Verified (HTTP smoke + headless browser)**
+- **Verified (HTTP smoke + headless browser, root-path + PathBase)**
 
 ## 3. 阶段总路线
 
-建议把 `src/Wiki/` 拆成四个阶段，避免“样例站”和“产品 wiki”混成一条线。
+建议把 `src/Wiki/` 拆成五个阶段，避免“样例站”和“产品 wiki”混成一条线，并把传统 ASP.NET Core 宿主硬化单独收口。
 
 ### Phase 0: Baseline（已完成）
 
@@ -91,6 +93,16 @@
 
 - 已完成。Vue 3 已本地化到 `wwwroot/vendor/`，站点完全离线可用；GitHub Actions CI workflow 在 PR/push 时自动运行 smoke + publish-smoke 验证；`DEPLOY.md` 文档化了发布命令、目录结构契约、关键不变量和回滚程序；`verify-smoke.ps1` 包含漂移检测和 vendor 断言。
 
+### Phase 5: ASP.NET Core Hosting Hardening（已完成）
+
+目标：
+
+- 让 `Wiki` 从“站点可运行”推进到“传统 ASP.NET Core 宿主可按生产标准部署和调试”。
+
+当前状态：
+
+- 已完成。`Wiki:PathBase` / `Wiki__PathBase` 已支持反向代理子路径部署；`wwwroot/index.html` 已改为 host-rendered token shell；开发重载注入脚本和 websocket 已支持 path base；`verify-smoke.ps1` 与 `verify-browser.ps1` 已覆盖根路径和 `/docs` 子路径；浏览器验证已覆盖 `main.mjs` / `wiki-home.mjs` 的 `sourceMapURL` 与 `.mjs.map` 服务链路。
+
 ## 4. 推荐推进路径
 
 ### 路径 A：长期作为 sample
@@ -115,59 +127,62 @@
 
 ## 5. 当前推荐动作
 
-Phase 1–3 已全部完成。最合理的下一步是 **Phase 4: Productization**。
+Phase 1–5 已全部完成。当前不再建议把 `Wiki` 当成“待 productize 的 sample”；更合理的定位是把它作为已收口的传统宿主参考实现持续维护。
 
 推荐切片如下：
 
-### Task 1: CDN 依赖策略
+### Task 1: 自动化补齐子路径发布验证
 
 目标：
 
-- 锁定或本地化 CDN 依赖，消除运行时外部依赖不确定性。
+- 把 `/docs` 子路径的 publish smoke/browser 验证固定进入仓库级自动化。
 
 验收标准：
 
-- Vue 3 CDN 资源锁版本或提供本地 fallback；
-- import map 有明确策略文档。
+- CI 稳定运行 `verify-smoke.ps1 -Publish -PathBase /docs`；
+- CI 稳定运行 `verify-browser.ps1 -Publish -PathBase /docs`。
 
-### Task 2: 持续集成与自动化
+### Task 2: 复用 ASP.NET Core 宿主基元
 
 目标：
 
-- 将 smoke/browser verification 纳入 CI 管线。
+- 让未来 ASP.NET Core 宿主消费者复用 `Jazor.AspNetCore` / `Jazor.AspNetCore.Dev`，避免各项目重复实现 path-base shell 与开发重载拼接。
 
 验收标准：
 
-- PR 触发自动 build + smoke 验证；
-- 文档更新与 sample 更新有 drift 检测。
+- 新宿主复用公共 middleware / helper；
+- 不再出现项目内重复的 reload client/path-base 注入实现。
 
-### Task 3: 部署约束与运维边界
+### Task 3: 宿主线职责边界文档化维持
 
 目标：
 
-- 稳定构建、静态资源、入口模块和部署目录结构。
+- 持续防止 `Wiki` / `Jolt` / `Jazor.Emit` 三者职责重新混淆。
 
 验收标准：
 
-- 发布流程有文档化的步骤和回滚方案；
-- 构建产物结构有稳定约束，不允许无声漂移。
+- `Wiki` 文档继续明确“不做 HMR、不做 LSP/dev host”；
+- 新增宿主相关状态页或 ADR 时保持边界措辞一致。
 
 ## 6. 进入条件
 
-进入 Phase 4 前至少满足：
+Phase 5 的进入条件已经全部满足并完成收口：
 
 - Phase 1–3 已闭环（当前已满足）；
 - 已有可用的多页面 MVP（当前已满足：24 个页面）；
 - 已有最小自动化验证（当前已满足：HTTP smoke + headless browser）；
-- 依赖与部署策略已定（待确认）。
+- 依赖与部署策略已定（当前已满足）；
+- ASP.NET Core 子路径部署与开发重载链路已验证（当前已满足）。
 
 ## 7. 非当前目标
 
-在 Phase 4 中，以下事项不应混入：
+在当前 `Wiki` 宿主线中，以下事项不应混入：
 
 - 后台内容管理、用户系统、权限、评论、编辑器；
 - 引入 markdown 管线或数据库（除非产品决策明确）；
-- 为 Wiki 反向新增 sample-only compiler 特路。
+- 为 Wiki 反向新增 sample-only compiler 特路；
+- 在 `Wiki` 内实现 HMR、LSP、`.jazor` 开发时宿主或 `Jolt` 级调试职责；
+- 把 `Jazor.Emit` 演进成开发服务器。
 
 ## 8. 参考
 
@@ -184,3 +199,4 @@ Phase 1–3 已全部完成。最合理的下一步是 **Phase 4: Productization
 - `src/Wiki/serve.ps1`
 - `src/Wiki/verify-smoke.ps1`
 - `src/Wiki/verify-browser.ps1`
+- `docs/03-完成/wiki/status.md`

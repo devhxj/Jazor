@@ -4,6 +4,7 @@ param(
     [string]$Configuration = "Debug",
     [string]$BaseOutputPath = "",
     [string]$BaseIntermediateOutputPath = "",
+    [string]$PathBase = "",
     [switch]$Build,
     [switch]$BuildLocal,
     [switch]$Publish,
@@ -31,7 +32,41 @@ $edgeStdoutLog = Join-Path $sampleRoot ".wiki-browser-edge-$PID.stdout.log"
 $edgeStderrLog = Join-Path $sampleRoot ".wiki-browser-edge-$PID.stderr.log"
 $edgeUserDataRoot = Join-Path $sampleRoot ".wiki-browser-edge-profile-$PID"
 $rootUrl = "http://localhost:$Port"
-$healthUrl = "$rootUrl/health"
+$normalizedPathBase = if ([string]::IsNullOrWhiteSpace($PathBase) -or $PathBase -eq "/") {
+    ""
+}
+else {
+    if (-not $PathBase.StartsWith("/")) {
+        throw "-PathBase must start with '/'."
+    }
+
+    if ($PathBase.Length -gt 1 -and $PathBase.EndsWith("/")) {
+        $PathBase.Substring(0, $PathBase.Length - 1)
+    }
+    else {
+        $PathBase
+    }
+}
+
+function Get-ExternalPath {
+    param([string]$LogicalPath)
+
+    if (-not $LogicalPath.StartsWith("/")) {
+        throw "Logical path must start with '/': $LogicalPath"
+    }
+
+    if ([string]::IsNullOrEmpty($normalizedPathBase)) {
+        return $LogicalPath
+    }
+
+    if ($LogicalPath -eq "/") {
+        return $normalizedPathBase + "/"
+    }
+
+    return $normalizedPathBase + $LogicalPath
+}
+
+$healthUrl = $rootUrl + (Get-ExternalPath "/health")
 $edgeExecutable = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
@@ -265,6 +300,7 @@ Assert-PathExists -Path $componentSourceMapPath -Description "emitted wiki compo
 $previousAspNetCoreUrls = [Environment]::GetEnvironmentVariable("ASPNETCORE_URLS")
 $previousAspNetCoreEnvironment = [Environment]::GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
 $previousDotNetEnvironment = [Environment]::GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+$previousWikiPathBase = [Environment]::GetEnvironmentVariable("Wiki__PathBase")
 $hostProcess = $null
 $edgeProcess = $null
 $keepLogs = $false
@@ -285,6 +321,7 @@ try {
         $env:ASPNETCORE_ENVIRONMENT = "Development"
         $env:DOTNET_ENVIRONMENT = "Development"
     }
+    $env:Wiki__PathBase = $normalizedPathBase
 
     $hostProcess = Start-Process `
         -FilePath $hostStartFilePath `
@@ -326,7 +363,7 @@ try {
     Wait-ForCdpReady -Port $CdpPort -Process $edgeProcess -TimeoutSeconds $BrowserStartupTimeoutSeconds
 
     $verificationMode = if ($Publish) { "production" } else { "development" }
-    node $browserScriptPath $rootUrl $CdpPort $verificationMode
+    node $browserScriptPath $rootUrl $CdpPort $verificationMode $normalizedPathBase
     if ($LASTEXITCODE -ne 0) {
         throw "Wiki browser verification failed."
     }
@@ -358,6 +395,7 @@ finally {
     Restore-EnvironmentVariable -Name "ASPNETCORE_URLS" -Value $previousAspNetCoreUrls
     Restore-EnvironmentVariable -Name "ASPNETCORE_ENVIRONMENT" -Value $previousAspNetCoreEnvironment
     Restore-EnvironmentVariable -Name "DOTNET_ENVIRONMENT" -Value $previousDotNetEnvironment
+    Restore-EnvironmentVariable -Name "Wiki__PathBase" -Value $previousWikiPathBase
 
     if (-not $keepLogs) {
         foreach ($logPath in @($stdoutLog, $stderrLog, $edgeStdoutLog, $edgeStderrLog)) {

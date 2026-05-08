@@ -54,6 +54,7 @@
 | `03-完成/emit/` | `src/Jazor.Emit/` |
 | `03-完成/ecmascript.vue3/` | `src/ECMAScript.Vue3/` |
 | `03-完成/ecmascript.pinia/` | `src/ECMAScript.Pinia/` |
+| `03-完成/wiki/` | `src/Wiki/` |
 
 ## 快速入口
 
@@ -69,6 +70,7 @@
 - ECMAScript Vue3 落地计划 → [02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md](./02-计划/ecmascript.vue3/ECMAScript.Vue3.Authoring.ImplementationPlan.md)
 - ECMAScript Vue3 当前状态 → [03-完成/ecmascript.vue3/status.md](./03-完成/ecmascript.vue3/status.md)
 - Wiki 阶段计划 → [02-计划/wiki/Wiki.Phases.md](./02-计划/wiki/Wiki.Phases.md)
+- Wiki 当前状态 → [03-完成/wiki/status.md](./03-完成/wiki/status.md)
 - 编译器实现原则 → [../src/Jazor.Compiler/ImplementationPrinciples.md](../src/Jazor.Compiler/ImplementationPrinciples.md)
 - 编译器状态快照 → [03-完成/compiler/status.md](./03-完成/compiler/status.md)
 - RazorVue 设计入口 → [01-目标/razorvue/README.md](./01-目标/razorvue/README.md)

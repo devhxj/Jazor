@@ -18,6 +18,7 @@ public static partial class WikiHomeModule
     private const string RepositoryRootUrl = "https://github.com/devhxj/Jazor";
     private const string RepositoryBlobBaseUrl = RepositoryRootUrl + "/blob/main/";
     private const string RepositoryIssueBaseUrl = RepositoryRootUrl + "/issues/new?title=";
+    private const string PathBaseAttributeName = "data-wiki-path-base";
 
     private const string OverviewPath = "/";
     private const string SearchPath = "/search";
@@ -84,12 +85,12 @@ public static partial class WikiHomeModule
         var location = ECMAScript.Global.Document.Location;
         if (location != null)
         {
-            requestedPath = NormalizePath(location.Pathname);
+            requestedPath = NormalizeBrowserPath(location.Pathname);
             requestedHash = NormalizeHash(location.Hash);
             requestedSearchQuery = GetSearchQueryFromLocation(location, requestedPath);
 
-            var requestedUrl = BuildUrl(requestedPath, requestedHash, requestedSearchQuery);
-            if (requestedPath != location.Pathname ||
+            var requestedUrl = BuildBrowserUrl(requestedPath, requestedHash, requestedSearchQuery);
+            if (requestedUrl != BuildCurrentBrowserUrl(location) ||
                 GetHashFragment(requestedHash) != location.Hash ||
                 GetSearchFragment(requestedPath, requestedSearchQuery) != location.Search)
             {
@@ -323,7 +324,7 @@ public static partial class WikiHomeModule
             H("a", new VueObject
             {
                 Class = "utility-link",
-                Href = SearchPath,
+                Href = BuildBrowserUrl(SearchPath, "", ""),
                 Events = CreateRouteClickEvents()
             }, "Search")
         ]);
@@ -703,13 +704,13 @@ public static partial class WikiHomeModule
                     H("a", new VueObject
                     {
                         Class = "hero-action-link",
-                        Href = SearchPath,
+                        Href = BuildBrowserUrl(SearchPath, "", ""),
                         Events = CreateRouteClickEvents()
                     }, "Open Search"),
                     H("a", new VueObject
                     {
                         Class = "hero-action-link",
-                        Href = TopicIndexPath,
+                        Href = BuildBrowserUrl(TopicIndexPath, "", ""),
                         Events = CreateRouteClickEvents()
                     }, "Open Topic Index")
                 ])
@@ -826,6 +827,9 @@ public static partial class WikiHomeModule
         return normalized;
     }
 
+    private static string NormalizeBrowserPath(string pathname)
+        => NormalizePath(TrimPathBase(pathname));
+
     private static string NormalizeHash(string hash)
     {
         if (hash.Length == 0)
@@ -863,8 +867,11 @@ public static partial class WikiHomeModule
     private static string BuildUrl(string path, string hash, string searchQuery)
         => path + GetSearchFragment(path, searchQuery) + GetHashFragment(hash);
 
+    private static string BuildBrowserUrl(string path, string hash, string searchQuery)
+        => ApplyPathBase(BuildUrl(path, hash, searchQuery));
+
     private static string BuildSearchRoute(string query)
-        => BuildUrl(SearchPath, "", query);
+        => BuildBrowserUrl(SearchPath, "", query);
 
     private static string GetSearchQueryFromLocation(Location location, string normalizedPath)
     {
@@ -896,7 +903,7 @@ public static partial class WikiHomeModule
         if (location == null)
             return false;
 
-        var normalizedBrowserPath = NormalizePath(location.Pathname);
+        var normalizedBrowserPath = NormalizeBrowserPath(location.Pathname);
         var normalizedBrowserHash = NormalizeHash(location.Hash);
         var normalizedBrowserSearchQuery = normalizedBrowserPath == SearchPath
             ? GetSearchQueryFromLocation(location, normalizedBrowserPath)
@@ -913,15 +920,15 @@ public static partial class WikiHomeModule
         var pageSummary = GetDocumentPageSummary(currentPath, currentSearchQuery);
         var robotsDirective = GetDocumentRobotsDirective(currentPath);
         ECMAScript.Global.Document.Title = pageTitle + " | jazor.wiki";
-        UpdateDocumentMeta(pageTitle, pageSummary, robotsDirective, BuildUrl(currentPath, "", currentSearchQuery));
+        UpdateDocumentMeta(pageTitle, pageSummary, robotsDirective, BuildBrowserUrl(currentPath, "", currentSearchQuery));
     }
 
-    private static void UpdateDocumentMeta(string pageTitle, string pageSummary, string robotsDirective, string relativeUrl)
+    private static void UpdateDocumentMeta(string pageTitle, string pageSummary, string robotsDirective, string browserRelativeUrl)
     {
         var location = ECMAScript.Global.Document.Location;
-        var absoluteUrl = relativeUrl;
+        var absoluteUrl = browserRelativeUrl;
         if (location != null)
-            absoluteUrl = location.Origin + relativeUrl;
+            absoluteUrl = location.Origin + browserRelativeUrl;
 
         SetMetaContent("meta[name=\"description\"]", pageSummary);
         SetMetaContent("meta[property=\"og:title\"]", pageTitle + " | jazor.wiki");
@@ -1019,7 +1026,7 @@ public static partial class WikiHomeModule
 
         if (updateLocation && currentPath.Value == SearchPath)
         {
-            var url = BuildUrl(currentPath.Value, currentHash.Value, normalizedQuery);
+            var url = BuildBrowserUrl(currentPath.Value, currentHash.Value, normalizedQuery);
             ECMAScript.Global.Window.History.ReplaceState(url, "", url);
             SyncDocumentState(currentPath.Value, normalizedQuery);
         }
@@ -1538,7 +1545,7 @@ public static partial class WikiHomeModule
 
         RememberScrollPosition(currentPath.Value, currentSearchQuery.Value, ECMAScript.Global.Window.PageYOffset);
 
-        var normalizedPath = NormalizePath(path);
+        var normalizedPath = NormalizeBrowserPath(path);
         var normalizedHash = NormalizeHash(hash);
         var normalizedSearchQuery = normalizedPath == SearchPath
             ? NormalizeSearchQuery(searchQuery)
@@ -1553,7 +1560,7 @@ public static partial class WikiHomeModule
         {
             if (updateHistory && !browserLocationSynchronized)
             {
-                var url = BuildUrl(normalizedPath, normalizedHash, normalizedSearchQuery);
+                var url = BuildBrowserUrl(normalizedPath, normalizedHash, normalizedSearchQuery);
                 ECMAScript.Global.Window.History.PushState(url, "", url);
             }
 
@@ -1577,7 +1584,7 @@ public static partial class WikiHomeModule
 
         if (updateHistory)
         {
-            var url = BuildUrl(normalizedPath, normalizedHash, normalizedSearchQuery);
+            var url = BuildBrowserUrl(normalizedPath, normalizedHash, normalizedSearchQuery);
             ECMAScript.Global.Window.History.PushState(url, "", url);
         }
 
@@ -1610,7 +1617,7 @@ public static partial class WikiHomeModule
 
         RememberScrollPosition(currentPath.Value, currentSearchQuery.Value, ECMAScript.Global.Window.PageYOffset);
 
-        var normalizedPath = NormalizePath(location.Pathname);
+        var normalizedPath = NormalizeBrowserPath(location.Pathname);
         var normalizedHash = NormalizeHash(location.Hash);
         var normalizedSearchQuery = GetSearchQueryFromLocation(location, normalizedPath);
         var primaryRouteChanged = currentPath.Value != normalizedPath ||
@@ -1648,7 +1655,8 @@ public static partial class WikiHomeModule
             return;
 
         mouseEvent.PreventDefault();
-        NavigateTo(anchor.Pathname, "", GetSearchQueryFromSearchString(anchor.Search, NormalizePath(anchor.Pathname)), updateHistory: true, resetScroll: true);
+        var normalizedPath = NormalizeBrowserPath(anchor.Pathname);
+        NavigateTo(anchor.Pathname, "", GetSearchQueryFromSearchString(anchor.Search, normalizedPath), updateHistory: true, resetScroll: true);
     }
 
     private static void OnTocClick(MouseEvent mouseEvent)
@@ -1661,7 +1669,8 @@ public static partial class WikiHomeModule
 
         mouseEvent.PreventDefault();
         CloseDrawers();
-        NavigateTo(anchor.Pathname, anchor.Hash, GetSearchQueryFromSearchString(anchor.Search, NormalizePath(anchor.Pathname)), updateHistory: true, resetScroll: true);
+        var normalizedPath = NormalizeBrowserPath(anchor.Pathname);
+        NavigateTo(anchor.Pathname, anchor.Hash, GetSearchQueryFromSearchString(anchor.Search, normalizedPath), updateHistory: true, resetScroll: true);
     }
 
     private static void OnSectionPermalinkClick(MouseEvent mouseEvent)
@@ -1684,7 +1693,7 @@ public static partial class WikiHomeModule
         NavigateTo(currentPath.Value, sectionId, currentSearchQuery.Value, updateHistory: true, resetScroll: true);
 
         var location = ECMAScript.Global.Document.Location;
-        var sectionUrl = BuildUrl(currentPath.Value, sectionId, currentSearchQuery.Value);
+        var sectionUrl = BuildBrowserUrl(currentPath.Value, sectionId, currentSearchQuery.Value);
         var sectionShareUrl = sectionUrl;
         if (location != null)
             sectionShareUrl = location.Origin + sectionUrl;
@@ -1724,7 +1733,7 @@ public static partial class WikiHomeModule
         ResetPageLinkFeedback();
 
         var location = ECMAScript.Global.Document.Location;
-        var pageUrl = BuildUrl(targetPath, "", currentSearchQuery.Value);
+        var pageUrl = BuildBrowserUrl(targetPath, "", currentSearchQuery.Value);
         var shareUrl = pageUrl;
         if (location != null)
             shareUrl = location.Origin + pageUrl;
@@ -1746,6 +1755,58 @@ public static partial class WikiHomeModule
         {
             ShowPageLinkReady(targetPath);
         }
+    }
+
+    private static string BuildCurrentBrowserUrl(Location location)
+        => (location.Pathname ?? "") + (location.Search ?? "") + (location.Hash ?? "");
+
+    private static string ApplyPathBase(string logicalUrl)
+    {
+        var pathBase = GetPathBase();
+        return pathBase.Length == 0
+            ? logicalUrl
+            : pathBase + logicalUrl;
+    }
+
+    private static string TrimPathBase(string pathname)
+    {
+        var normalizedPathname = NormalizeRawPath(pathname);
+        var pathBase = GetPathBase();
+        if (pathBase.Length == 0)
+            return normalizedPathname;
+
+        if (string.Equals(normalizedPathname, pathBase, StringComparison.Ordinal))
+            return OverviewPath;
+
+        if (normalizedPathname.StartsWith(pathBase + "/", StringComparison.Ordinal))
+            return normalizedPathname.Substring(pathBase.Length);
+
+        return normalizedPathname;
+    }
+
+    private static string NormalizeRawPath(string pathname)
+    {
+        if (pathname.Length == 0)
+            return OverviewPath;
+
+        if (pathname.Length > 1 && pathname.EndsWith("/"))
+            return pathname.Substring(0, pathname.Length - 1);
+
+        return pathname;
+    }
+
+    private static string GetPathBase()
+    {
+        if (ECMAScript.Global.Document.DocumentElement is not Element documentElement)
+            return "";
+
+        var pathBase = documentElement.GetAttribute(PathBaseAttributeName) ?? "";
+        if (pathBase.Length == 0 || pathBase == "/")
+            return "";
+
+        return pathBase.EndsWith("/")
+            ? pathBase.Substring(0, pathBase.Length - 1)
+            : pathBase;
     }
 
     private static void OnCodeBlockCopyClick(MouseEvent mouseEvent)

@@ -11,6 +11,18 @@ builder.Services.AddJazorDevelopmentReload(options =>
 });
 Wiki.WikiCatalogGuard.ValidateOrThrow();
 var app = builder.Build();
+var configuredPathBase = builder.Configuration["Wiki:PathBase"];
+
+if (!string.IsNullOrWhiteSpace(configuredPathBase))
+{
+    if (!configuredPathBase.StartsWith("/", StringComparison.Ordinal))
+        throw new InvalidOperationException("Wiki:PathBase must start with '/'.");
+
+    if (configuredPathBase.Length > 1 && configuredPathBase.EndsWith("/", StringComparison.Ordinal))
+        configuredPathBase = configuredPathBase[..^1];
+
+    app.UsePathBase(configuredPathBase);
+}
 
 app.UseJazorDevelopmentAssets(options =>
 {

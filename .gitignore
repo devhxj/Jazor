@@ -437,6 +437,8 @@ cnblogs/
 cnblog/
 -SkipPush/
 .isolated*/
-.tmp-rzc-*.csproj
-.tmp-sg-*.cs
+.tmp-*.csproj
+.tmp-*.cs
+.tmp-*.log
+.tmp-*.json
 .wiki-browser-edge-profile*/

@@ -1,12 +1,32 @@
 const baseUrl = process.argv[2];
 const cdpPort = Number(process.argv[3]);
 const verificationMode = process.argv[4] || "development";
+const configuredPathBase = process.argv[5] || "";
 
 if (!baseUrl || !Number.isFinite(cdpPort) || !["development", "production"].includes(verificationMode)) {
-  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort> <development|production>");
+  throw new Error("Usage: node verify-browser.mjs <baseUrl> <cdpPort> <development|production> [pathBase]");
 }
 
 const isDevelopmentVerification = verificationMode === "development";
+const pathBase = configuredPathBase && configuredPathBase !== "/"
+  ? (configuredPathBase.endsWith("/") ? configuredPathBase.slice(0, -1) : configuredPathBase)
+  : "";
+
+function externalPath(logicalPath) {
+  if (!logicalPath.startsWith("/")) {
+    throw new Error(`Logical path must start with '/': ${logicalPath}`);
+  }
+
+  if (!pathBase) {
+    return logicalPath;
+  }
+
+  if (logicalPath === "/") {
+    return `${pathBase}/`;
+  }
+
+  return `${pathBase}${logicalPath}`;
+}
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -291,21 +311,24 @@ async function main() {
   const report = {};
   const failures = [];
 
-  await navigate(baseUrl + "/");
+  await navigate(baseUrl + externalPath("/"));
   report.runtime = {
-    verificationMode
+    verificationMode,
+    pathBase
   };
-  const reloadClientUrl = toAbsoluteUrl("/@jazor/client");
-  const reloadSocketUrl = `${new URL(baseUrl).protocol === "https:" ? "wss" : "ws"}://${new URL(baseUrl).host}/@jazor/reload`;
+  const reloadClientPath = externalPath("/@jazor/client");
+  const reloadSocketPath = externalPath("/@jazor/reload");
+  const reloadClientUrl = toAbsoluteUrl(reloadClientPath);
+  const reloadSocketUrl = `${new URL(baseUrl).protocol === "https:" ? "wss" : "ws"}://${new URL(baseUrl).host}${reloadSocketPath}`;
   const reloadClientResponse = await fetch(reloadClientUrl, { cache: "no-store" });
   const reloadClientText = reloadClientResponse.ok ? await reloadClientResponse.text() : "";
   report.runtime.reloadClientInjected = await evaluate(`(function(){
-    const script = document.querySelector('script[src="/@jazor/client"]');
+    const script = document.querySelector('script[src="${reloadClientPath}"]');
     return !!script;
   })()`);
   report.runtime.reloadClientStatus = reloadClientResponse.status;
   report.runtime.reloadClientContentType = reloadClientResponse.headers.get("content-type") || "";
-  report.runtime.reloadClientHasSocketPath = reloadClientText.includes('"/@jazor/reload"');
+  report.runtime.reloadClientHasSocketPath = reloadClientText.includes('const socketPath = "/@jazor/reload";');
   report.runtime.reloadSocketObserved = false;
 
   if (isDevelopmentVerification) {
@@ -351,8 +374,8 @@ async function main() {
   for (const check of [
     {
       label: "main",
-      scriptPath: "/jazor/main.mjs",
-      sourceMapPath: "/jazor/main.mjs.map",
+      scriptPath: externalPath("/jazor/main.mjs"),
+      sourceMapPath: externalPath("/jazor/main.mjs.map"),
       moduleFile: "main.mjs",
       expectedSources: [
         "AppModule.cs"
@@ -365,8 +388,8 @@ async function main() {
     },
     {
       label: "wiki-home",
-      scriptPath: "/jazor/components/wiki-home.mjs",
-      sourceMapPath: "/jazor/components/wiki-home.mjs.map",
+      scriptPath: externalPath("/jazor/components/wiki-home.mjs"),
+      sourceMapPath: externalPath("/jazor/components/wiki-home.mjs.map"),
       moduleFile: "components/wiki-home.mjs",
       expectedSources: [
         "WikiHomeModule.cs",
@@ -434,7 +457,7 @@ async function main() {
       const html = (element.innerHTML || '').trim();
       return html === '' || html === '<!---->';
     })()`),
-    gettingStartedLinkCount: await evaluate("Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '/guides/getting-started').length")
+    gettingStartedLinkCount: await evaluate(`Array.from(document.querySelectorAll('a')).filter(node => node.getAttribute('href') === '${externalPath("/guides/getting-started")}').length`)
   };
 
   if (!report.home.mounted) {
@@ -455,12 +478,12 @@ async function main() {
   if (report.home.robots !== "index, follow") {
     failures.push(`Home page robots directive was unexpected before SPA navigation: ${report.home.robots}`);
   }
-  if (!report.home.canonical.endsWith("/")) {
+  if (!report.home.canonical.endsWith(externalPath("/"))) {
     failures.push(`Home page canonical URL was unexpected before SPA navigation: ${report.home.canonical}`);
   }
 
   report.home.clickedGettingStarted = await evaluate(`(function(){
-    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '/guides/getting-started');
+    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '${externalPath("/guides/getting-started")}');
     if (!link) return false;
     link.click();
     return true;
@@ -469,7 +492,7 @@ async function main() {
   if (!report.home.clickedGettingStarted) {
     failures.push("Could not click the Getting Started link from the mounted home page.");
   } else {
-    await waitUntil("location.pathname === '/guides/getting-started'");
+    await waitUntil(`location.pathname === '${externalPath("/guides/getting-started")}'`);
     await delay(800);
 
     report.home.pathAfterClick = await evaluate("location.pathname || ''");
@@ -479,7 +502,7 @@ async function main() {
       return element ? (element.textContent || '').trim() : '';
     })()`);
 
-    if (report.home.pathAfterClick !== "/guides/getting-started") {
+    if (report.home.pathAfterClick !== externalPath("/guides/getting-started")) {
       failures.push(`SPA navigation from home did not reach Getting Started: ${report.home.pathAfterClick}`);
     }
     if (report.home.activeElementId !== "wiki-main-content") {
@@ -613,7 +636,7 @@ async function main() {
     failures.push("Section permalink did not update location hash.");
   }
 
-  await navigate(baseUrl + "/guides/getting-started");
+  await navigate(baseUrl + externalPath("/guides/getting-started"));
   report.gettingStarted.persistedAfterReload = {
     theme: await evaluate("document.documentElement.getAttribute('data-theme') || ''"),
     storedTheme: await evaluate("localStorage.getItem('jazor.wiki.theme') || ''"),
@@ -641,7 +664,7 @@ async function main() {
   };
 
   report.scrollRestore.projectLinesClicked = await evaluate(`(function(){
-    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '/guides/project-lines');
+    const link = Array.from(document.querySelectorAll('a')).find(node => node.getAttribute('href') === '${externalPath("/guides/project-lines")}');
     if (!link) return false;
     link.click();
     return true;
@@ -649,16 +672,16 @@ async function main() {
   if (!report.scrollRestore.projectLinesClicked) {
     failures.push("Could not find the Project Lines link for scroll restoration verification.");
   } else {
-    await waitUntil("location.pathname === '/guides/project-lines'");
+    await waitUntil(`location.pathname === '${externalPath("/guides/project-lines")}'`);
     await evaluate("history.back(); true");
-    await waitUntil("location.pathname === '/guides/getting-started'");
+    await waitUntil(`location.pathname === '${externalPath("/guides/getting-started")}'`);
     await delay(1000);
 
     report.scrollRestore.pathAfterBack = await evaluate("location.pathname || ''");
     report.scrollRestore.hashAfterBack = await evaluate("location.hash || ''");
     report.scrollRestore.scrollAfterBack = await evaluate("window.pageYOffset || 0");
 
-    if (report.scrollRestore.pathAfterBack !== "/guides/getting-started") {
+    if (report.scrollRestore.pathAfterBack !== externalPath("/guides/getting-started")) {
       failures.push(`Back navigation did not return to Getting Started: ${report.scrollRestore.pathAfterBack}`);
     }
     if (report.scrollRestore.hashAfterBack !== "") {
@@ -669,7 +692,7 @@ async function main() {
     }
   }
 
-  await navigate(baseUrl + "/search?q=compiler");
+  await navigate(baseUrl + externalPath("/search") + "?q=compiler");
   report.search = {
     title: await evaluate("document.title || ''"),
     description: await evaluate(`(function(){
@@ -707,7 +730,7 @@ async function main() {
   if (report.search.robots !== "noindex, nofollow") {
     failures.push(`Search robots directive was unexpected after query hydration: ${report.search.robots}`);
   }
-  if (!report.search.canonical.endsWith("/search?q=compiler")) {
+  if (!report.search.canonical.endsWith(`${externalPath("/search")}?q=compiler`)) {
     failures.push(`Search canonical URL was unexpected after query hydration: ${report.search.canonical}`);
   }
 
@@ -731,7 +754,7 @@ async function main() {
     failures.push(`Search clear did not remove the query string: ${report.search.searchAfterClear}`);
   }
 
-  await navigate(baseUrl + "/guides/missing-page");
+  await navigate(baseUrl + externalPath("/guides/missing-page"));
   report.notFound = {
     title: await evaluate("document.title || ''"),
     description: await evaluate(`(function(){
@@ -769,7 +792,7 @@ async function main() {
   if (report.notFound.robots !== "noindex, nofollow") {
     failures.push(`Not-found robots directive was unexpected: ${report.notFound.robots}`);
   }
-  if (!report.notFound.canonical.endsWith("/guides/missing-page")) {
+  if (!report.notFound.canonical.endsWith(externalPath("/guides/missing-page"))) {
     failures.push(`Not-found canonical URL was unexpected: ${report.notFound.canonical}`);
   }
 
@@ -782,14 +805,14 @@ async function main() {
   if (!report.notFound.recoveryClicked) {
     failures.push("Not-found recovery card was not found.");
   } else {
-    await waitUntil("location.pathname !== '/guides/missing-page'");
+    await waitUntil(`location.pathname !== '${externalPath("/guides/missing-page")}'`);
     report.notFound.recoveredPath = await evaluate("location.pathname || ''");
-    if (report.notFound.recoveredPath === "/guides/missing-page") {
+    if (report.notFound.recoveredPath === externalPath("/guides/missing-page")) {
       failures.push("Not-found recovery card did not navigate away from the missing route.");
     }
   }
 
-  await navigate(baseUrl + "/guides/getting-started#boot-the-site");
+  await navigate(baseUrl + externalPath("/guides/getting-started") + "#boot-the-site");
   report.hashNavigation = {
     locationHash: await evaluate("location.hash || ''"),
     tocActiveCount: await evaluate("document.querySelectorAll('.toc-link-active').length"),

@@ -94,7 +94,7 @@ public static partial class WikiHomeModule
         => H("a", new VueObject
         {
             Class = "header-link",
-            Href = path,
+            Href = BuildBrowserUrl(path, "", ""),
             Events = CreateRouteClickEvents()
         }, label);
 
@@ -135,7 +135,7 @@ public static partial class WikiHomeModule
         return H("a", new VueObject
         {
             Class = className,
-            Href = path,
+            Href = BuildBrowserUrl(path, "", ""),
             Events = CreateRouteClickEvents(),
             Raw = raw
         },
@@ -227,7 +227,7 @@ public static partial class WikiHomeModule
         return H("a", new VueObject
         {
             Class = className,
-            Href = path + "#" + id,
+            Href = BuildBrowserUrl(path, id, ""),
             Events = CreateTocClickEvents(),
             Raw = raw
         }, title);
@@ -237,7 +237,7 @@ public static partial class WikiHomeModule
         => H("a", new VueObject
         {
             Class = "pager-link",
-            Href = path,
+            Href = BuildBrowserUrl(path, "", ""),
             Events = CreateRouteClickEvents()
         },
         [
@@ -257,7 +257,7 @@ public static partial class WikiHomeModule
             routeCards.Add(H("a", new VueObject
             {
                 Class = "route-card",
-                Href = path,
+                Href = BuildBrowserUrl(path, "", ""),
                 Events = CreateRouteClickEvents()
             },
             [

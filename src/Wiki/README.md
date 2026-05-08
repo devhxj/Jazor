@@ -233,7 +233,17 @@ Requirements:
 
 The Wiki shell has **no runtime external CDN dependencies**. Vue 3 is served from `wwwroot/vendor/` alongside site-local CSS and emitted Jazor modules, making the site fully deployable offline.
 
-The browser entry and static assets are rooted with absolute paths (`/jazor/main.mjs`, `/site.css`, `/favicon.svg`) so direct refreshes on nested docs URLs keep resolving against the site root instead of the current route segment.
+The host renders browser entry and static asset URLs per request, so direct refreshes on nested docs URLs still resolve correctly at the site root, and the same shell also supports ASP.NET Core `PathBase` / reverse-proxy subpath deployment such as `/docs`.
+
+Subpath preview and verification:
+
+```powershell
+.\src\Wiki\serve.ps1 -Build -PathBase /docs
+.\src\Wiki\verify-smoke.ps1 -Build -PathBase /docs
+.\src\Wiki\verify-browser.ps1 -Build -PathBase /docs
+```
+
+The host reads `Wiki__PathBase` / `Wiki:PathBase` and applies `UsePathBase(...)` before static hosting, HTML shell fallback, and discovery documents.
 
 In development, the host serves `/jazor/*` from the project-local `src/Wiki/jazor/` emit directory. During publish, the same artifacts are copied into `wwwroot/jazor/` so production still uses standard web-root static hosting.
 

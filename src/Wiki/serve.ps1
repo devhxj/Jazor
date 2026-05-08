@@ -1,6 +1,7 @@
 param(
     [int]$Port = 4173,
     [string]$Configuration = "Debug",
+    [string]$PathBase = "",
     [switch]$Build,
     [switch]$BuildLocal,
     [switch]$Publish,
@@ -23,6 +24,39 @@ $componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$normalizedPathBase = if ([string]::IsNullOrWhiteSpace($PathBase) -or $PathBase -eq "/") {
+    ""
+}
+else {
+    if (-not $PathBase.StartsWith("/")) {
+        throw "-PathBase must start with '/'."
+    }
+
+    if ($PathBase.Length -gt 1 -and $PathBase.EndsWith("/")) {
+        $PathBase.Substring(0, $PathBase.Length - 1)
+    }
+    else {
+        $PathBase
+    }
+}
+
+function Get-ExternalPath {
+    param([string]$LogicalPath)
+
+    if (-not $LogicalPath.StartsWith("/")) {
+        throw "Logical path must start with '/': $LogicalPath"
+    }
+
+    if ([string]::IsNullOrEmpty($normalizedPathBase)) {
+        return $LogicalPath
+    }
+
+    if ($LogicalPath -eq "/") {
+        return $normalizedPathBase + "/"
+    }
+
+    return $normalizedPathBase + $LogicalPath
+}
 
 if ($Publish -and ($Build -or $BuildLocal)) {
     throw "-Publish already performs its own publish build. Do not combine it with -Build or -BuildLocal."
@@ -115,23 +149,23 @@ elseif ($BuildLocal) {
 
 Assert-EmittedArtifacts
 
-$url = "http://localhost:$Port/"
+$url = "http://localhost:$Port$(Get-ExternalPath '/')"
 $rootUrl = "http://localhost:$Port"
 $routeUrls = @(
     $url,
-    "http://localhost:$Port/guides/getting-started",
-    "http://localhost:$Port/guides/content-model",
-    "http://localhost:$Port/guides/navigation-discovery",
-    "http://localhost:$Port/guides/information-architecture",
-    "http://localhost:$Port/engineering/h-function-authoring",
-    "http://localhost:$Port/engineering/compiler-support-boundary",
-    "http://localhost:$Port/engineering/route-catalog-contract",
-    "http://localhost:$Port/engineering/host-semantic-seams",
-    "http://localhost:$Port/engineering/import-emit-contract",
-    "http://localhost:$Port/engineering/runtime-catalog",
-    "http://localhost:$Port/operations/content-governance",
-    "http://localhost:$Port/operations/deployment",
-    "http://localhost:$Port/operations/testing-verification"
+    "$rootUrl$(Get-ExternalPath '/guides/getting-started')",
+    "$rootUrl$(Get-ExternalPath '/guides/content-model')",
+    "$rootUrl$(Get-ExternalPath '/guides/navigation-discovery')",
+    "$rootUrl$(Get-ExternalPath '/guides/information-architecture')",
+    "$rootUrl$(Get-ExternalPath '/engineering/h-function-authoring')",
+    "$rootUrl$(Get-ExternalPath '/engineering/compiler-support-boundary')",
+    "$rootUrl$(Get-ExternalPath '/engineering/route-catalog-contract')",
+    "$rootUrl$(Get-ExternalPath '/engineering/host-semantic-seams')",
+    "$rootUrl$(Get-ExternalPath '/engineering/import-emit-contract')",
+    "$rootUrl$(Get-ExternalPath '/engineering/runtime-catalog')",
+    "$rootUrl$(Get-ExternalPath '/operations/content-governance')",
+    "$rootUrl$(Get-ExternalPath '/operations/deployment')",
+    "$rootUrl$(Get-ExternalPath '/operations/testing-verification')"
 )
 if ($Publish) {
     Write-Host "Serving published jazor.wiki from: $webRoot"
@@ -145,6 +179,9 @@ else {
 Write-Host "Open routes:"
 foreach ($routeUrl in $routeUrls) {
     Write-Host " - $routeUrl"
+}
+if ($normalizedPathBase.Length -gt 0) {
+    Write-Host "PathBase: $normalizedPathBase"
 }
 
 if ($DryRun) {
@@ -160,9 +197,12 @@ if ($DryRun) {
 if ($Publish) {
     Push-Location $hostRoot
     try {
+        $previousWikiPathBase = $env:Wiki__PathBase
+        $env:Wiki__PathBase = $normalizedPathBase
         Invoke-DotNet @("Wiki.dll", "--urls", $rootUrl)
     }
     finally {
+        $env:Wiki__PathBase = $previousWikiPathBase
         Pop-Location
     }
 }
@@ -178,6 +218,15 @@ else {
         $runArgs += @("--no-build", "--no-restore")
     }
 
-    $env:ASPNETCORE_URLS = $rootUrl
-    Invoke-DotNet $runArgs
+    $previousAspNetCoreUrls = $env:ASPNETCORE_URLS
+    $previousWikiPathBase = $env:Wiki__PathBase
+    try {
+        $env:ASPNETCORE_URLS = $rootUrl
+        $env:Wiki__PathBase = $normalizedPathBase
+        Invoke-DotNet $runArgs
+    }
+    finally {
+        $env:ASPNETCORE_URLS = $previousAspNetCoreUrls
+        $env:Wiki__PathBase = $previousWikiPathBase
+    }
 }

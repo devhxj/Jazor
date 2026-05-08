@@ -3,6 +3,7 @@ param(
     [string]$Configuration = "Debug",
     [string]$BaseOutputPath = "",
     [string]$BaseIntermediateOutputPath = "",
+    [string]$PathBase = "",
     [switch]$Build,
     [switch]$BuildLocal,
     [switch]$Publish,
@@ -28,42 +29,80 @@ $faviconPath = Join-Path $webRoot "favicon.svg"
 $stdoutLog = Join-Path $sampleRoot ".wiki-smoke-$PID.stdout.log"
 $stderrLog = Join-Path $sampleRoot ".wiki-smoke-$PID.stderr.log"
 $rootUrl = "http://localhost:$Port"
-$healthUrl = "$rootUrl/health"
-$homeUrl = "$rootUrl/"
+$normalizedPathBase = if ([string]::IsNullOrWhiteSpace($PathBase) -or $PathBase -eq "/") {
+    ""
+}
+else {
+    if (-not $PathBase.StartsWith("/")) {
+        throw "-PathBase must start with '/'."
+    }
+
+    if ($PathBase.Length -gt 1 -and $PathBase.EndsWith("/")) {
+        $PathBase.Substring(0, $PathBase.Length - 1)
+    }
+    else {
+        $PathBase
+    }
+}
+
+function Get-ExternalPath {
+    param([string]$LogicalPath)
+
+    if ([string]::IsNullOrWhiteSpace($LogicalPath)) {
+        throw "Logical path is required."
+    }
+
+    if (-not $LogicalPath.StartsWith("/")) {
+        throw "Logical path must start with '/': $LogicalPath"
+    }
+
+    if ([string]::IsNullOrEmpty($normalizedPathBase)) {
+        return $LogicalPath
+    }
+
+    if ($LogicalPath -eq "/") {
+        return $normalizedPathBase + "/"
+    }
+
+    return $normalizedPathBase + $LogicalPath
+}
+
+$healthUrl = $rootUrl + (Get-ExternalPath "/health")
+$homeUrl = $rootUrl + (Get-ExternalPath "/")
 $docsRoutes = @(
     @{ Url = $homeUrl; Path = "/"; Title = "Overview | jazor.wiki"; Description = "A production-oriented docs shell for Jazor, authored entirely with ECMAScript.Vue3 H functions."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/search"; Path = "/search"; Title = "Search | jazor.wiki"; Description = "Search the full Wiki corpus by subsystem, route fragment, workflow, or tag."; Robots = "noindex, nofollow" },
-    @{ Url = "$rootUrl/guides/getting-started"; Path = "/guides/getting-started"; Title = "Getting Started | jazor.wiki"; Description = "Run the site locally, understand the route model, and validate the emitted Wiki host end to end."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/project-lines"; Path = "/guides/project-lines"; Title = "Project Lines | jazor.wiki"; Description = "Understand the two active Jazor lines, when to choose them, and which shared compiler foundations they consume."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/content-model"; Path = "/guides/content-model"; Title = "Content Model | jazor.wiki"; Description = "Code-first page metadata, explicit sections, and a navigation contract that stays readable in C#."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/navigation-discovery"; Path = "/guides/navigation-discovery"; Title = "Navigation and Discovery | jazor.wiki"; Description = "How readers move through the docs shell with grouped navigation, section TOCs, related pages, and not-found recovery."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/information-architecture"; Path = "/guides/information-architecture"; Title = "Information Architecture | jazor.wiki"; Description = "How routes, concern groups, page order, and naming rules keep the docs surface coherent as it grows."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/topic-index"; Path = "/guides/topic-index"; Title = "Topic Index | jazor.wiki"; Description = "Use a route-first index to jump into Jazor topics by concern instead of memorizing exact URLs."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/glossary"; Path = "/guides/glossary"; Title = "Glossary | jazor.wiki"; Description = "Shared vocabulary for compiler, runtime, host, and documentation terms used across the repository."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/faq"; Path = "/guides/faq"; Title = "FAQ | jazor.wiki"; Description = "Short answers to the questions that recur most often when contributors first touch Jazor or Wiki."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/guides/troubleshooting"; Path = "/guides/troubleshooting"; Title = "Troubleshooting | jazor.wiki"; Description = "Recover from the most common local Wiki, runtime-module, and compiler-boundary failures."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/h-function-authoring"; Path = "/engineering/h-function-authoring"; Title = "H-Function Authoring | jazor.wiki"; Description = "Why H functions are the production authoring surface for this Wiki, and the conventions that keep it maintainable."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/compiler-overview"; Path = "/engineering/compiler-overview"; Title = "Compiler Overview | jazor.wiki"; Description = "A high-level view of the compiler pipeline, active contracts, and where to read deeper."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/compiler-support-boundary"; Path = "/engineering/compiler-support-boundary"; Title = "Compiler Support Boundary | jazor.wiki"; Description = "The active compiler contract for controlled input, usage-site validation, semantic erasure, and explicit failure boundaries."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/route-catalog-contract"; Path = "/engineering/route-catalog-contract"; Title = "Route Catalog Contract | jazor.wiki"; Description = 'Why `WikiHomeModule.RouteContract.cs` is the single registration surface for route metadata, body dispatch, TOC anchors, and adjacent-page flow.'; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/host-semantic-seams"; Path = "/engineering/host-semantic-seams"; Title = "Host Semantic Seams | jazor.wiki"; Description = "How WhiteList, Alias, Inline, Import, and Compile divide responsibility across the supported host semantic surface."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/import-emit-contract"; Path = "/engineering/import-emit-contract"; Title = "Import and Emit Contract | jazor.wiki"; Description = "The stable boundary between import discovery, module AST assembly, generated catalogs, and host-facing file materialization."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/runtime-catalog"; Path = "/engineering/runtime-catalog"; Title = "CLR Runtime Catalog | jazor.wiki"; Description = 'How CLR import helpers become browser-ready `System/*` runtime modules, and what guarantees keep that catalog safe to ship.'; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/jolt-host"; Path = "/engineering/jolt-host"; Title = "Jolt Host | jazor.wiki"; Description = 'The full-featured `.jazor` development host for editing, preview, build, and debug workflows.'; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/razorvue-library-mode"; Path = "/engineering/razorvue-library-mode"; Title = "RazorVue Library Mode | jazor.wiki"; Description = "The build-time library mode for compiling Razor components into JavaScript artifacts without a full development host."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/engineering/vueroute-bindings"; Path = "/engineering/vueroute-bindings"; Title = "VueRoute Bindings | jazor.wiki"; Description = "The standalone Vue Router binding library, its host-surface scope, and the split verification path that keeps tests out of the compiler suite."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/operations/content-governance"; Path = "/operations/content-governance"; Title = "Content Governance | jazor.wiki"; Description = "How code-first docs content is owned, edited, reviewed, and released without drifting away from the emitted product shell."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/operations/deployment"; Path = "/operations/deployment"; Title = "Deployment | jazor.wiki"; Description = "Build outputs, fallback routing, smoke verification, and the static delivery contract for Wiki."; Robots = "index, follow" },
-    @{ Url = "$rootUrl/operations/testing-verification"; Path = "/operations/testing-verification"; Title = "Testing and Verification | jazor.wiki"; Description = "How compiler, emit, and operational smoke checks fit together to protect the production docs surface."; Robots = "index, follow" }
+    @{ Url = $rootUrl + (Get-ExternalPath "/search"); Path = "/search"; Title = "Search | jazor.wiki"; Description = "Search the full Wiki corpus by subsystem, route fragment, workflow, or tag."; Robots = "noindex, nofollow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/getting-started"); Path = "/guides/getting-started"; Title = "Getting Started | jazor.wiki"; Description = "Run the site locally, understand the route model, and validate the emitted Wiki host end to end."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/project-lines"); Path = "/guides/project-lines"; Title = "Project Lines | jazor.wiki"; Description = "Understand the two active Jazor lines, when to choose them, and which shared compiler foundations they consume."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/content-model"); Path = "/guides/content-model"; Title = "Content Model | jazor.wiki"; Description = "Code-first page metadata, explicit sections, and a navigation contract that stays readable in C#."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/navigation-discovery"); Path = "/guides/navigation-discovery"; Title = "Navigation and Discovery | jazor.wiki"; Description = "How readers move through the docs shell with grouped navigation, section TOCs, related pages, and not-found recovery."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/information-architecture"); Path = "/guides/information-architecture"; Title = "Information Architecture | jazor.wiki"; Description = "How routes, concern groups, page order, and naming rules keep the docs surface coherent as it grows."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/topic-index"); Path = "/guides/topic-index"; Title = "Topic Index | jazor.wiki"; Description = "Use a route-first index to jump into Jazor topics by concern instead of memorizing exact URLs."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/glossary"); Path = "/guides/glossary"; Title = "Glossary | jazor.wiki"; Description = "Shared vocabulary for compiler, runtime, host, and documentation terms used across the repository."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/faq"); Path = "/guides/faq"; Title = "FAQ | jazor.wiki"; Description = "Short answers to the questions that recur most often when contributors first touch Jazor or Wiki."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/guides/troubleshooting"); Path = "/guides/troubleshooting"; Title = "Troubleshooting | jazor.wiki"; Description = "Recover from the most common local Wiki, runtime-module, and compiler-boundary failures."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/h-function-authoring"); Path = "/engineering/h-function-authoring"; Title = "H-Function Authoring | jazor.wiki"; Description = "Why H functions are the production authoring surface for this Wiki, and the conventions that keep it maintainable."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/compiler-overview"); Path = "/engineering/compiler-overview"; Title = "Compiler Overview | jazor.wiki"; Description = "A high-level view of the compiler pipeline, active contracts, and where to read deeper."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/compiler-support-boundary"); Path = "/engineering/compiler-support-boundary"; Title = "Compiler Support Boundary | jazor.wiki"; Description = "The active compiler contract for controlled input, usage-site validation, semantic erasure, and explicit failure boundaries."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/route-catalog-contract"); Path = "/engineering/route-catalog-contract"; Title = "Route Catalog Contract | jazor.wiki"; Description = 'Why `WikiHomeModule.RouteContract.cs` is the single registration surface for route metadata, body dispatch, TOC anchors, and adjacent-page flow.'; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/host-semantic-seams"); Path = "/engineering/host-semantic-seams"; Title = "Host Semantic Seams | jazor.wiki"; Description = "How WhiteList, Alias, Inline, Import, and Compile divide responsibility across the supported host semantic surface."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/import-emit-contract"); Path = "/engineering/import-emit-contract"; Title = "Import and Emit Contract | jazor.wiki"; Description = "The stable boundary between import discovery, module AST assembly, generated catalogs, and host-facing file materialization."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/runtime-catalog"); Path = "/engineering/runtime-catalog"; Title = "CLR Runtime Catalog | jazor.wiki"; Description = 'How CLR import helpers become browser-ready `System/*` runtime modules, and what guarantees keep that catalog safe to ship.'; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/jolt-host"); Path = "/engineering/jolt-host"; Title = "Jolt Host | jazor.wiki"; Description = 'The full-featured `.jazor` development host for editing, preview, build, and debug workflows.'; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/razorvue-library-mode"); Path = "/engineering/razorvue-library-mode"; Title = "RazorVue Library Mode | jazor.wiki"; Description = "The build-time library mode for compiling Razor components into JavaScript artifacts without a full development host."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/engineering/vueroute-bindings"); Path = "/engineering/vueroute-bindings"; Title = "VueRoute Bindings | jazor.wiki"; Description = "The standalone Vue Router binding library, its host-surface scope, and the split verification path that keeps tests out of the compiler suite."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/operations/content-governance"); Path = "/operations/content-governance"; Title = "Content Governance | jazor.wiki"; Description = "How code-first docs content is owned, edited, reviewed, and released without drifting away from the emitted product shell."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/operations/deployment"); Path = "/operations/deployment"; Title = "Deployment | jazor.wiki"; Description = "Build outputs, fallback routing, smoke verification, and the static delivery contract for Wiki."; Robots = "index, follow" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/operations/testing-verification"); Path = "/operations/testing-verification"; Title = "Testing and Verification | jazor.wiki"; Description = "How compiler, emit, and operational smoke checks fit together to protect the production docs surface."; Robots = "index, follow" }
 )
 $searchQueryRoute = @{
-    Url = "$rootUrl/search?q=compiler"
+    Url = $rootUrl + (Get-ExternalPath "/search") + "?q=compiler"
     Path = "/search?q=compiler"
     Title = "Search: compiler | jazor.wiki"
     Description = 'Search results for "compiler" across route metadata, tags, curated page body text, and section titles.'
 }
 $unknownRoute = @{
-    Url = "$rootUrl/guides/missing-page"
+    Url = $rootUrl + (Get-ExternalPath "/guides/missing-page")
     Path = "/guides/missing-page"
     Title = "Page Not Found | jazor.wiki"
     Description = "The current path is not registered in the Wiki page catalog."
@@ -247,24 +286,24 @@ $forbiddenBrowserEntryMarkers = @(
     'materialdesignicons'
 )
 $vendorLocalMarkers = @(
-    '/vendor/vue@3.5.16.mjs'
+    '__WIKI_VENDOR_VUE_URL__'
 )
 $forbiddenCdnMarkers = @(
     'unpkg.com'
 )
 $browserAssetChecks = @(
-    @{ Url = "$rootUrl/jazor/main.mjs"; Path = "/jazor/main.mjs"; Snippet = 'createApp(' },
-    @{ Url = "$rootUrl/jazor/main.mjs.map"; Path = "/jazor/main.mjs.map"; Snippet = '"file":"main.mjs"'; ContentType = "application/json"; ExtraSnippets = @('AppModule.cs', '"sourcesContent"') },
-    @{ Url = "$rootUrl/jazor/components/wiki-home.mjs"; Path = "/jazor/components/wiki-home.mjs"; Snippet = 'Search docs pages' },
-    @{ Url = "$rootUrl/jazor/components/wiki-home.mjs.map"; Path = "/jazor/components/wiki-home.mjs.map"; Snippet = '"file":"components/wiki-home.mjs"'; ContentType = "application/json"; ExtraSnippets = @('WikiHomeModule.cs', 'WikiHomeModule.DocumentContract.cs', '"sourcesContent"') },
-    @{ Url = "$rootUrl/jazor/System/StringModule.js"; Path = "/jazor/System/StringModule.js"; Snippet = 'export' },
-    @{ Url = "$rootUrl/site.css"; Path = "/site.css"; Snippet = '.wiki-shell' },
-    @{ Url = "$rootUrl/favicon.svg"; Path = "/favicon.svg"; Snippet = '<svg' },
-    @{ Url = "$rootUrl/vendor/vue@3.5.16.mjs"; Path = "/vendor/vue@3.5.16.mjs"; Snippet = 'createApp(' }
+    @{ Url = $rootUrl + (Get-ExternalPath "/jazor/main.mjs"); Path = "/jazor/main.mjs"; Snippet = 'createApp(' },
+    @{ Url = $rootUrl + (Get-ExternalPath "/jazor/main.mjs.map"); Path = "/jazor/main.mjs.map"; Snippet = '"file":"main.mjs"'; ContentType = "application/json"; ExtraSnippets = @('AppModule.cs', '"sourcesContent"') },
+    @{ Url = $rootUrl + (Get-ExternalPath "/jazor/components/wiki-home.mjs"); Path = "/jazor/components/wiki-home.mjs"; Snippet = 'Search docs pages' },
+    @{ Url = $rootUrl + (Get-ExternalPath "/jazor/components/wiki-home.mjs.map"); Path = "/jazor/components/wiki-home.mjs.map"; Snippet = '"file":"components/wiki-home.mjs"'; ContentType = "application/json"; ExtraSnippets = @('WikiHomeModule.cs', 'WikiHomeModule.DocumentContract.cs', '"sourcesContent"') },
+    @{ Url = $rootUrl + (Get-ExternalPath "/jazor/System/StringModule.js"); Path = "/jazor/System/StringModule.js"; Snippet = 'export' },
+    @{ Url = $rootUrl + (Get-ExternalPath "/site.css"); Path = "/site.css"; Snippet = '.wiki-shell' },
+    @{ Url = $rootUrl + (Get-ExternalPath "/favicon.svg"); Path = "/favicon.svg"; Snippet = '<svg' },
+    @{ Url = $rootUrl + (Get-ExternalPath "/vendor/vue@3.5.16.mjs"); Path = "/vendor/vue@3.5.16.mjs"; Snippet = 'createApp(' }
 )
 $discoveryDocumentChecks = @(
-    @{ Url = "$rootUrl/robots.txt"; Path = "/robots.txt"; Snippet = "Sitemap: $rootUrl/sitemap.xml"; MissingSnippet = ""; ContentType = "text/plain; charset=utf-8"; CacheControl = "public, max-age=300, must-revalidate" },
-    @{ Url = "$rootUrl/sitemap.xml"; Path = "/sitemap.xml"; Snippet = "<loc>$rootUrl/</loc>"; MissingSnippet = "<loc>$rootUrl/search</loc>"; ContentType = "application/xml; charset=utf-8"; CacheControl = "public, max-age=300, must-revalidate" }
+    @{ Url = $rootUrl + (Get-ExternalPath "/robots.txt"); Path = "/robots.txt"; Snippet = "Sitemap: $rootUrl$(Get-ExternalPath '/sitemap.xml')"; MissingSnippet = ""; ContentType = "text/plain; charset=utf-8"; CacheControl = "public, max-age=300, must-revalidate" },
+    @{ Url = $rootUrl + (Get-ExternalPath "/sitemap.xml"); Path = "/sitemap.xml"; Snippet = "<loc>$rootUrl$(Get-ExternalPath '/')</loc>"; MissingSnippet = "<loc>$rootUrl$(Get-ExternalPath '/search')</loc>"; ContentType = "application/xml; charset=utf-8"; CacheControl = "public, max-age=300, must-revalidate" }
 )
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
@@ -575,10 +614,11 @@ Assert-PathExists -Path $moduleTextPath -Description "emitted docs shell module"
 
 $indexContent = Get-Content $indexPath -Raw
 Assert-Contains -Text $indexContent -Snippet 'id="app"' -Description "Vue mount root in index.html"
-Assert-Contains -Text $indexContent -Snippet '/site.css' -Description "root stylesheet entry in index.html"
-Assert-Contains -Text $indexContent -Snippet '/favicon.svg' -Description "favicon entry in index.html"
-Assert-Contains -Text $indexContent -Snippet '/jazor/main.mjs' -Description "root main module entry in index.html"
-Assert-Contains -Text $indexContent -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in index.html"
+Assert-Contains -Text $indexContent -Snippet '__WIKI_SITE_CSS_URL__' -Description "stylesheet token in index.html"
+Assert-Contains -Text $indexContent -Snippet '__WIKI_FAVICON_URL__' -Description "favicon token in index.html"
+Assert-Contains -Text $indexContent -Snippet '__WIKI_MAIN_MODULE_URL__' -Description "main module token in index.html"
+Assert-Contains -Text $indexContent -Snippet '"System/": "__WIKI_SYSTEM_IMPORT_BASE__"' -Description "CLR runtime import-map token in index.html"
+Assert-Contains -Text $indexContent -Snippet 'data-wiki-path-base="__WIKI_PATH_BASE__"' -Description "path-base token in index.html"
 foreach ($indexMetaMarker in $indexMetaMarkers) {
     Assert-Contains -Text $indexContent -Snippet $indexMetaMarker -Description "meta contract marker in index.html"
 }
@@ -688,7 +728,9 @@ if ($extraOnDisk.Count -gt 0) {
 }
 
 $previousAspNetCoreUrls = $env:ASPNETCORE_URLS
+$previousWikiPathBase = $env:Wiki__PathBase
 $env:ASPNETCORE_URLS = $rootUrl
+$env:Wiki__PathBase = $normalizedPathBase
 $process = $null
 $keepLogs = $false
 
@@ -769,9 +811,10 @@ try {
         }
 
         Assert-Contains -Text $response.Content -Snippet 'id="app"' -Description "Vue mount root in served route $($route.Path)"
-        Assert-Contains -Text $response.Content -Snippet '/jazor/main.mjs' -Description "root main module entry in served route $($route.Path)"
-        Assert-Contains -Text $response.Content -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in served route $($route.Path)"
-        Assert-RouteMetadata -Html $response.Content -Expected $expectedMetadata -ExpectedAbsoluteUrl ($rootUrl + $route.Path) -Description "served route $($route.Path)"
+        Assert-Contains -Text $response.Content -Snippet (Get-ExternalPath "/jazor/main.mjs") -Description "main module entry in served route $($route.Path)"
+        Assert-Contains -Text $response.Content -Snippet ('"System/": "' + (Get-ExternalPath "/jazor/System/") + '"') -Description "CLR runtime import-map entry in served route $($route.Path)"
+        Assert-Contains -Text $response.Content -Snippet ('data-wiki-path-base="' + $normalizedPathBase + '"') -Description "path-base marker in served route $($route.Path)"
+        Assert-RouteMetadata -Html $response.Content -Expected $expectedMetadata -ExpectedAbsoluteUrl $route.Url -Description "served route $($route.Path)"
         Assert-HeaderEquals -Response $response -HeaderName "Referrer-Policy" -ExpectedValue "strict-origin-when-cross-origin" -Description "Referrer-Policy for served route $($route.Path)"
         Assert-HeaderEquals -Response $response -HeaderName "X-Content-Type-Options" -ExpectedValue "nosniff" -Description "X-Content-Type-Options for served route $($route.Path)"
         Assert-HeaderEquals -Response $response -HeaderName "X-Frame-Options" -ExpectedValue "DENY" -Description "X-Frame-Options for served route $($route.Path)"
@@ -793,8 +836,8 @@ try {
     }
 
     Assert-Contains -Text $searchQueryResponse.Content -Snippet 'id="app"' -Description "Vue mount root in served route $($searchQueryRoute.Path)"
-    Assert-Contains -Text $searchQueryResponse.Content -Snippet '/jazor/main.mjs' -Description "root main module entry in served route $($searchQueryRoute.Path)"
-    Assert-Contains -Text $searchQueryResponse.Content -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in served route $($searchQueryRoute.Path)"
+    Assert-Contains -Text $searchQueryResponse.Content -Snippet (Get-ExternalPath "/jazor/main.mjs") -Description "main module entry in served route $($searchQueryRoute.Path)"
+    Assert-Contains -Text $searchQueryResponse.Content -Snippet ('"System/": "' + (Get-ExternalPath "/jazor/System/") + '"') -Description "CLR runtime import-map entry in served route $($searchQueryRoute.Path)"
     $expectedSearchMetadata = New-ExpectedRouteMetadata -Title $searchQueryRoute.Title -Description $searchQueryRoute.Description -Robots "noindex, nofollow"
     Assert-RouteMetadata -Html $searchQueryResponse.Content -Expected $expectedSearchMetadata -ExpectedAbsoluteUrl $searchQueryRoute.Url -Description "served route $($searchQueryRoute.Path)"
     Assert-HeaderEquals -Response $searchQueryResponse -HeaderName "Referrer-Policy" -ExpectedValue "strict-origin-when-cross-origin" -Description "Referrer-Policy for served route $($searchQueryRoute.Path)"
@@ -811,8 +854,8 @@ try {
     }
 
     Assert-Contains -Text $unknownRouteResponse.Content -Snippet 'id="app"' -Description "Vue mount root in served unknown route $($unknownRoute.Path)"
-    Assert-Contains -Text $unknownRouteResponse.Content -Snippet '/jazor/main.mjs' -Description "root main module entry in served unknown route $($unknownRoute.Path)"
-    Assert-Contains -Text $unknownRouteResponse.Content -Snippet '"System/": "/jazor/System/"' -Description "CLR runtime import-map entry in served unknown route $($unknownRoute.Path)"
+    Assert-Contains -Text $unknownRouteResponse.Content -Snippet (Get-ExternalPath "/jazor/main.mjs") -Description "main module entry in served unknown route $($unknownRoute.Path)"
+    Assert-Contains -Text $unknownRouteResponse.Content -Snippet ('"System/": "' + (Get-ExternalPath "/jazor/System/") + '"') -Description "CLR runtime import-map entry in served unknown route $($unknownRoute.Path)"
     $expectedNotFoundMetadata = New-ExpectedRouteMetadata -Title $unknownRoute.Title -Description $unknownRoute.Description -Robots "noindex, nofollow" -Registered:$false
     Assert-RouteMetadata -Html $unknownRouteResponse.Content -Expected $expectedNotFoundMetadata -ExpectedAbsoluteUrl $unknownRoute.Url -Description "served unknown route $($unknownRoute.Path)"
     Assert-HeaderEquals -Response $unknownRouteResponse -HeaderName "Referrer-Policy" -ExpectedValue "strict-origin-when-cross-origin" -Description "Referrer-Policy for served unknown route $($unknownRoute.Path)"
@@ -843,6 +886,7 @@ finally {
     }
 
     $env:ASPNETCORE_URLS = $previousAspNetCoreUrls
+    $env:Wiki__PathBase = $previousWikiPathBase
 
     if (-not $keepLogs) {
         if (Test-Path $stdoutLog) {

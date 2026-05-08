@@ -141,7 +141,7 @@ public static partial class WikiHomeModule
             results.Add(H("a", new VueObject
             {
                 Class = "search-result-card",
-                Href = path,
+                Href = BuildBrowserUrl(path, "", ""),
                 Events = CreateRouteClickEvents()
             },
             [
@@ -184,7 +184,7 @@ public static partial class WikiHomeModule
                 results.Add(H("a", new VueObject
                 {
                     Class = "search-result-card search-result-card-section",
-                    Href = path + "#" + sectionId,
+                    Href = BuildBrowserUrl(path, sectionId, ""),
                     Events = CreateTocClickEvents()
                 },
                 [

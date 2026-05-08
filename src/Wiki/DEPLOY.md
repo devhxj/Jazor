@@ -6,6 +6,15 @@
 dotnet publish src/Wiki/Wiki.csproj -c Release -o <deploy-dir>
 ```
 
+Optional subpath deployment:
+
+```powershell
+$env:Wiki__PathBase = "/docs"
+dotnet <deploy-dir>\Wiki.dll --urls http://0.0.0.0:8080
+```
+
+`Wiki__PathBase` / `Wiki:PathBase` enables ASP.NET Core `UsePathBase(...)` so the same publish output can be mounted below a reverse-proxy prefix such as `/docs`.
+
 ## Directory Structure Contract
 
 Published output must follow this layout:
@@ -45,6 +54,7 @@ The following invariants are enforced by `verify-smoke.ps1 -Publish`:
 8. Unknown docs routes must return HTTP 404 with the recoverable shell and `X-Robots-Tag: noindex, nofollow`
 9. HTML responses must carry `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: DENY`
 10. `index.html` must not reference any external CDN URL
+11. When `Wiki__PathBase` / `Wiki:PathBase` is configured, first-response HTML, discovery documents, static assets, and SPA navigation must all stay correct beneath that subpath
 
 ## Verification
 
@@ -53,6 +63,8 @@ Run before every deployment:
 ```powershell
 .\src\Wiki\verify-smoke.ps1 -Publish
 .\src\Wiki\verify-browser.ps1 -Publish
+.\src\Wiki\verify-smoke.ps1 -Publish -PathBase /docs
+.\src\Wiki\verify-browser.ps1 -Publish -PathBase /docs
 ```
 
 This checks structural invariants, discovery docs, route metadata and headers, all registered docs routes, the search/404 indexing contract, browser asset resolution, emitted module markers, and real browser runtime behavior.
