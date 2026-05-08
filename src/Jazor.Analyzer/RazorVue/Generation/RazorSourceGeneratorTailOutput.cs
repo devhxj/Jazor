@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Immutable;
 using Jazor.RazorVue.Analysis;
+using Jazor.RazorVue;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 
@@ -34,13 +35,18 @@ internal static class RazorSourceGeneratorTailOutput
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
 
+        var requiresTailOutput = CompilationRequiresRazorVueTailOutput(compilation);
         if (!TryReadInput(source, out var documents, out var suppressed))
         {
+            ReportTailFailureIfRequired(
+                context,
+                requiresTailOutput,
+                "RazorVue could not read the Razor SG tail output input.");
             EmitTraceIfEnabled(context, options, 0, 0, 0, "input-unreadable");
             return;
         }
 
-        EmitCore(context, compilation, documents, suppressed, options);
+        EmitCore(context, compilation, documents, suppressed, options, requiresTailOutput);
     }
 
     internal static void Emit<TDocument>(
@@ -52,8 +58,13 @@ internal static class RazorSourceGeneratorTailOutput
         if (compilation is null)
             throw new ArgumentNullException(nameof(compilation));
 
+        var requiresTailOutput = CompilationRequiresRazorVueTailOutput(compilation);
         if (source.IsDefaultOrEmpty)
         {
+            ReportTailFailureIfRequired(
+                context,
+                requiresTailOutput,
+                "RazorVue tail output did not receive any Razor source generator documents.");
             EmitTraceIfEnabled(
                 context,
                 options,
@@ -107,6 +118,12 @@ internal static class RazorSourceGeneratorTailOutput
         var collectedDocuments = documents.ToImmutable();
         if (collectedDocuments.IsDefaultOrEmpty)
         {
+            ReportTailFailureIfRequired(
+                context,
+                requiresTailOutput,
+                suppressedCount > 0
+                    ? "RazorVue tail output received only suppressed Razor source generator documents."
+                    : "RazorVue tail output did not receive any readable Razor source generator documents.");
             EmitTraceIfEnabled(
                 context,
                 options,
@@ -127,7 +144,8 @@ internal static class RazorSourceGeneratorTailOutput
             compilation,
             collectedDocuments,
             suppressed: false,
-            options);
+            options,
+            requiresTailOutput);
     }
 
     private static void EmitCore(
@@ -135,17 +153,38 @@ internal static class RazorSourceGeneratorTailOutput
         Compilation compilation,
         ImmutableArray<ReflectedRazorSourceGeneratorDocument> documents,
         bool suppressed,
-        RazorSourceGeneratorTailOutputOptions options)
+        RazorSourceGeneratorTailOutputOptions options,
+        bool requiresTailOutput)
     {
         if (suppressed)
         {
+            ReportTailFailureIfRequired(
+                context,
+                requiresTailOutput,
+                "RazorVue tail output received a suppressed Razor source generator document set.");
             EmitTraceIfEnabled(context, options, documents.Length, 0, 0, "suppressed");
             return;
         }
 
         if (documents.IsDefaultOrEmpty)
         {
+            ReportTailFailureIfRequired(
+                context,
+                requiresTailOutput,
+                "RazorVue tail output did not receive any Razor source generator documents.");
             EmitTraceIfEnabled(context, options, 0, 0, 0, "no-generator-documents");
+            return;
+        }
+
+        if (!requiresTailOutput)
+        {
+            EmitTraceIfEnabled(
+                context,
+                options,
+                documents.Length,
+                0,
+                0,
+                "no-razorvue-candidates");
             return;
         }
 
@@ -218,6 +257,22 @@ internal static class RazorSourceGeneratorTailOutput
             result.GeneratorDocumentCount,
             catalog.Artifacts.Length,
             "emitted");
+    }
+
+    private static bool CompilationRequiresRazorVueTailOutput(Compilation compilation)
+    {
+        var razorVueContext = RazorVueCompilationContext.TryCreate(compilation);
+        return razorVueContext is not null &&
+               !razorVueContext.DiscoverComponentCandidates().IsDefaultOrEmpty;
+    }
+
+    private static void ReportTailFailureIfRequired(
+        SourceProductionContext context,
+        bool required,
+        string failure)
+    {
+        if (required)
+            ReportTailFailure(context, failure);
     }
 
     private static void ReportTailFailure(SourceProductionContext context, string failure)

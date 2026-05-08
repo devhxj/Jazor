@@ -157,9 +157,18 @@
   - `RazorVueReflectedRazorIrReaderTests` 覆盖官方对象到中立 IR 的投影，包括 static markup 无 source mappings、generated span `FilePath` nullable、token base-type 识别
   - `ProductionRazorCompilerReferenceTests` 覆盖 `Jazor.Analyzer` / `Jazor.RazorVue` / `Jazor` 包装项目不得引用或打包 Razor Compiler / Razor Utilities Shared
   - `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 已成功，生成包的 analyzer/lib payload 未包含 Razor Compiler / Razor Utilities Shared
+- 本轮 fail-fast 边界进一步收口：
+  - `RazorSourceGeneratorInitializeHookInstaller` 在 Harmony patch 官方 Razor SG 前先执行 `Initialize(...)` IL hash 与 declared method surface 校验
+  - assembly path / version / MVID 只保留为观测信息，不作为正式兼容门
+  - unsupported SDK shape 会在 patch 前被拒绝，并通过 bootstrap trace 记录 failure
+  - tail output 启用且当前 compilation 存在 RazorVue component candidate 时，如果读不懂官方 output shape、没有收到 Razor SG document 或只收到 suppressed document，必须报告 `JAZORVGA020`
+  - tail output 启用但当前 compilation 没有 RazorVue component candidate 时必须 no-op，避免普通 Razor 或未使用 RazorVue 组件的项目被误报
+  - 普通 `RazorVueGenerator` 在 integration 启用后不再尝试自己产出 catalog/artifact；它只负责对 bootstrap patch failed、tail 未注册等未接管状态给出 `JAZORVGA019` / `JAZORVGA018`
 - 当前聚焦验证已通过：
   - `RazorSourceGeneratorBootstrapPatchTests` 3/3 通过，证明官方 `.razor.g.cs` 保持生成，RazorVue tail output 同轮生成 SFC catalog/artifact，禁用 integration 时 no-op
   - HostOutput / Bridge / Compatibility 相关 focused tests 5/5 通过
+  - `RazorSourceGeneratorTailOutputTests` 4/4 通过，证明 enabled tail output 在有 RazorVue candidate 时缺失输入不静默成功，在无 candidate 时不误报
+  - `ESGeneratorTests` 新增 3 个 integration bootstrap 诊断回归，证明 tail 未注册不静默成功、patch failed 不被误判为 not-active、tail 已注册后普通 generator 不误报
   - `Jazor.Analyzer` build 0 warning / 0 error，输出目录不再包含 `Microsoft.CodeAnalysis.Razor.Compiler.dll`
   - `Jazor.RazorVue` build 0 warning / 0 error，生产输出不依赖 Razor Compiler
 
@@ -446,6 +455,7 @@
 | Razor SG IL shape 随 SDK 升级变化 | 高 | 绑定 `Initialize(...)` IL 指纹和 declared method surface；assembly path/version/MVID 仅作观测，不匹配时 RazorVue 启用场景 fail-fast |
 | Analyzer 与官方 Razor SG load context 类型身份隔离 | 高 | Analyzer 与 RazorVue 生产代码均不引用/打包 Razor Compiler；按 object shape 读取官方输出；投影到 Jazor 中立 IR DTO |
 | Razor Compiler 被重新引入生产项目 | 高 | `ProductionRazorCompilerReferenceTests` 锁定 Analyzer/RazorVue/Jazor 包装项目不得引用或打包 Razor Compiler / Razor Utilities Shared；旧 RazorExtension 项目已删除 |
+| Tail output 静默丢失 catalog/artifact | 高 | enabled + RazorVue candidate 场景下输入不可读、无 Razor SG document、suppressed-only、bridge failed 均报告 `JAZORVGA020`；无 candidate 场景 no-op 防误报 |
 | IR 形状与预期不一致 | 高 | 先做节点盘点和样例归档，再做正式映射 |
 | 新前端破坏 setup/lifecycle/source-origin | 高 | 迁移只替换 template frontend，保留下游主链，强制 parity 测试 |
 | 切换后回归难定位 | 中 | 建双跑 parity 报告，并把 fallback 严格限制为手写 `BuildRenderTree` authoring |

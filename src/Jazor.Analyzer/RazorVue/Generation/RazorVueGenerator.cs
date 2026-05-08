@@ -23,6 +23,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private readonly Func<RazorVuePipeline> _legacyPipelineFactory;
     private readonly Func<RazorVueSfcPipeline> _sfcPipelineFactory;
     private readonly Func<RazorSourceGeneratorCompatibilityProbeResult> _compatibilityProbeFactory;
+    private readonly Func<RazorSourceGeneratorBootstrapTrace> _bootstrapTraceFactory;
 
     private static readonly DiagnosticDescriptor RazorVueGenerationFailed = new(
         id: "JAZORVGA001",
@@ -180,7 +181,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         : this(
             static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
             static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent())
+            static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent(),
+            static () => RazorSourceGeneratorBootstrapState.CreateTrace())
     {
     }
 
@@ -188,10 +190,24 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         Func<RazorVuePipeline> legacyPipelineFactory,
         Func<RazorVueSfcPipeline> sfcPipelineFactory,
         Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory)
+        : this(
+            legacyPipelineFactory,
+            sfcPipelineFactory,
+            compatibilityProbeFactory,
+            static () => RazorSourceGeneratorBootstrapState.CreateTrace())
+    {
+    }
+
+    internal RazorVueGenerator(
+        Func<RazorVuePipeline> legacyPipelineFactory,
+        Func<RazorVueSfcPipeline> sfcPipelineFactory,
+        Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
+        Func<RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory)
     {
         _legacyPipelineFactory = legacyPipelineFactory ?? throw new ArgumentNullException(nameof(legacyPipelineFactory));
         _sfcPipelineFactory = sfcPipelineFactory ?? throw new ArgumentNullException(nameof(sfcPipelineFactory));
         _compatibilityProbeFactory = compatibilityProbeFactory ?? throw new ArgumentNullException(nameof(compatibilityProbeFactory));
+        _bootstrapTraceFactory = bootstrapTraceFactory ?? throw new ArgumentNullException(nameof(bootstrapTraceFactory));
     }
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -226,6 +242,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         var legacyPipelineFactory = _legacyPipelineFactory;
         var sfcPipelineFactory = _sfcPipelineFactory;
         var compatibilityProbeFactory = _compatibilityProbeFactory;
+        var bootstrapTraceFactory = _bootstrapTraceFactory;
 
         context.RegisterSourceOutput(combined, (outputContext, source) =>
         {
@@ -237,7 +254,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 generatorOptions,
                 legacyPipelineFactory,
                 sfcPipelineFactory,
-                compatibilityProbeFactory);
+                compatibilityProbeFactory,
+                bootstrapTraceFactory);
         });
     }
 
@@ -259,7 +277,8 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         RazorVueGeneratorOptions generatorOptions,
         Func<RazorVuePipeline> legacyPipelineFactory,
         Func<RazorVueSfcPipeline> sfcPipelineFactory,
-        Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory)
+        Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
+        Func<RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory)
     {
         if (!candidates.Any(static candidate => candidate is not null))
             return;
@@ -277,6 +296,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                     razorVueContext,
                     candidate,
                     compatibilityProbeFactory,
+                    bootstrapTraceFactory,
                     out var integrationDiagnostic))
             {
                 context.ReportDiagnostic(integrationDiagnostic);
@@ -351,34 +371,34 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         RazorVueCompilationContext context,
         ModuleCandidate? candidate,
         Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
+        Func<RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory,
         out Diagnostic diagnostic)
     {
         diagnostic = default!;
-        var requiresTailInjection = false;
-        foreach (var snapshot in RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context))
-        {
-            if (snapshot.RazorIrCarrier is not null ||
-                snapshot.RazorSourceGeneratorDocument is not null ||
-                snapshot.BuildRenderTreeMethod is null)
-            {
-                continue;
-            }
-
-            if (RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
-                continue;
-
-            requiresTailInjection = true;
-            diagnostic = Diagnostic.Create(
-                RazorVueRazorSgIntegrationNotActive,
-                GetComponentLocation(snapshot.ComponentSymbol),
-                snapshot.ComponentSymbol.ToDisplayString());
-            break;
-        }
+        var snapshots = RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context);
+        var requiresTailInjection = snapshots.Any(static snapshot =>
+            snapshot.RazorIrCarrier is null &&
+            snapshot.RazorSourceGeneratorDocument is null &&
+            (snapshot.BuildRenderTreeMethod is null ||
+             !RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot)));
 
         if (!requiresTailInjection)
         {
             return false;
         }
+
+        var bootstrapTrace = bootstrapTraceFactory();
+        if (bootstrapTrace.PatchFailed)
+        {
+            diagnostic = Diagnostic.Create(
+                RazorVueRazorSgIntegrationIncompatible,
+                candidate?.Location ?? Location.None,
+                string.IsNullOrWhiteSpace(bootstrapTrace.Failure) ? "RazorVue Razor SG bootstrap patch failed." : bootstrapTrace.Failure);
+            return true;
+        }
+
+        if (bootstrapTrace.TailOutputRegistered)
+            return false;
 
         var compatibilityProbe = compatibilityProbeFactory();
         var validation = RazorSourceGeneratorCompatibilityGuard.Validate(
@@ -392,6 +412,15 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return true;
         }
 
+        var firstRequiredSnapshot = snapshots.First(static snapshot =>
+            snapshot.RazorIrCarrier is null &&
+            snapshot.RazorSourceGeneratorDocument is null &&
+            (snapshot.BuildRenderTreeMethod is null ||
+             !RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot)));
+        diagnostic = Diagnostic.Create(
+            RazorVueRazorSgIntegrationNotActive,
+            GetComponentLocation(firstRequiredSnapshot.ComponentSymbol),
+            firstRequiredSnapshot.ComponentSymbol.ToDisplayString());
         return true;
     }
 

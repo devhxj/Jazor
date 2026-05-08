@@ -336,10 +336,14 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 
 1. 绑定 `RazorSourceGenerator.Initialize(...)` IL 指纹与 declared method surface。
 2. assembly path / version / MVID 只作为测试和排查观测信息，不作为正式兼容门。
-3. 校验失败时，如果 RazorVue 已启用，则报告明确诊断并停止 RazorVue tail output 生成。
-4. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
-5. SDK 升级必须先更新指纹和 focused tests。
-6. Tail bridge 失败时报告 `JAZORVGA020`，而不是静默丢失 RazorVue artifact。
+3. Harmony patch 安装前必须执行同一套兼容校验；校验失败时不 patch 官方 Razor SG，并记录 bootstrap failure。
+4. 校验失败时，如果 RazorVue 已启用，则报告明确诊断并停止 RazorVue tail output 生成。
+5. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
+6. SDK 升级必须先更新指纹和 focused tests。
+7. 当前 compilation 存在 RazorVue component candidate 时，Tail bridge 失败必须报告 `JAZORVGA020`，而不是静默丢失 RazorVue artifact。
+8. 当前 compilation 存在 RazorVue component candidate 时，Tail output 在启用后如果读不懂官方 output shape、未收到 Razor SG document 或只收到 suppressed document，也必须报告 `JAZORVGA020`。
+9. 当前 compilation 没有 RazorVue component candidate 时，Tail output 允许 no-op，避免启用包但未使用 RazorVue 组件的普通项目被误报。
+10. 普通 `RazorVueGenerator` 在 integration 启用后只做守门：bootstrap patch failed 报 `JAZORVGA019`，tail 未注册且确实需要 RazorVue tail output 报 `JAZORVGA018`，tail 已注册时让路给 injected source output。
 
 失败时禁止自动退回 `.razor` 原文回读、`BuildRenderTree` 反推、classic codegen 或 production nested run。
 
@@ -373,6 +377,7 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 6. `Jazor` NuGet analyzer/generator 载体中的依赖打包与加载验证。
 7. SDK 指纹不匹配时的明确 diagnostic。
 8. 生产项目不得引用 Razor Compiler 的防回归测试保持通过。
+9. Tail output 输入缺失、shape 不可读、suppressed-only 等 enabled + RazorVue candidate 场景必须 fail-fast；无 candidate 场景必须 no-op。
 
 ## 12. 接下来执行顺序
 
@@ -438,6 +443,9 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 4. `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 已成功。
 5. `Jazor.0.1.17.nupkg` 的 `analyzers/dotnet/cs/` 与 `lib/net10.0/` payload 未包含 `Microsoft.CodeAnalysis.Razor.Compiler.dll` 或 `Microsoft.AspNetCore.Razor.Utilities.Shared.dll`。
 6. `ProductionRazorCompilerReferenceTests` 已加入，防止生产项目重新引入 Razor Compiler 强引用，并防止旧 `Jazor.RazorVue.RazorExtension` 项目恢复。
+7. `RazorSourceGeneratorCompatibilityProbeTests` 已覆盖 unsupported SDK shape patch 前拒绝。
+8. `RazorSourceGeneratorTailOutputTests` 已覆盖 enabled tail output 在有 RazorVue candidate 时输入不可读/无文档报 `JAZORVGA020`，在无 candidate 时 no-op。
+9. `ESGeneratorTests` 已覆盖 integration 启用后 partial-only RazorVue 组件在 tail 未注册时报 `JAZORVGA018`，bootstrap patch 失败时报 `JAZORVGA019`，tail 已注册时普通 generator 不误报。
 
 ## 15. 一句话结论
 

@@ -1246,6 +1246,153 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithoutTailRegistration_ReportsJAZORVGA018()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generator.IntegrationEnabled.PartialOnly.Tests",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: false,
+                tailOutputRegistered: false),
+            compatibilityProbeFactory: CreateSupportedRazorSgCompatibilityProbe);
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA018")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithTailRegistration_DoesNotReportBootstrapDiagnostic()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generator.IntegrationEnabled.PartialOnly.TailRegistered.Tests",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: true,
+                tailOutputRegistered: true),
+            compatibilityProbeFactory: static () => RazorSourceGeneratorCompatibilityProbeResult.Fail("Should not be queried after tail output registration."));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id is "JAZORVGA018" or "JAZORVGA019")
+            .ToArray();
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndFailedBootstrapPatch_ReportsJAZORVGA019()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generator.IntegrationEnabled.PartialOnly.PatchFailed.Tests",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: false,
+                tailOutputRegistered: false,
+                patchFailed: true,
+                failure: "forced bootstrap failure"));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA019")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "forced bootstrap failure");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndIncompatibleRazorSgShape_ReportsJAZORVGA019()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -11034,6 +11181,51 @@ public sealed class ESGeneratorTests
         var runResult = driver.GetRunResult();
         return (outputCompilation, runResult);
     }
+
+    private static RazorVueGenerator CreateRazorSgIntegrationTestGenerator(
+        RazorSourceGeneratorBootstrapTrace bootstrapTrace,
+        Func<RazorSourceGeneratorCompatibilityProbeResult>? compatibilityProbeFactory = null)
+        => new(
+            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            compatibilityProbeFactory ?? (static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent()),
+            () => bootstrapTrace);
+
+    private static RazorSourceGeneratorBootstrapTrace CreateBootstrapTrace(
+        bool hasAttempted,
+        bool isInstalled,
+        bool tailOutputRegistered,
+        bool patchFailed = false,
+        string? failure = null)
+        => new(
+            HasAttempted: hasAttempted,
+            IsInstalled: isInstalled,
+            RazorAssemblyObserved: isInstalled || patchFailed,
+            PatchAttempted: isInstalled || patchFailed,
+            GeneratorTypeFound: isInstalled,
+            InitializeMethodFound: isInstalled,
+            PostfixMethodFound: isInstalled,
+            PatchSucceeded: isInstalled,
+            PatchFailed: patchFailed,
+            PostfixInvoked: tailOutputRegistered,
+            HostOutputHookInstalled: tailOutputRegistered,
+            HostOutputObserved: tailOutputRegistered,
+            TailOutputRegistered: tailOutputRegistered,
+            TestHookObserved: false,
+            Failure: failure);
+
+    private static RazorSourceGeneratorCompatibilityProbeResult CreateSupportedRazorSgCompatibilityProbe()
+        => RazorSourceGeneratorCompatibilityProbeResult.Succeed(new RazorSourceGeneratorCompatibilityShape(
+            AssemblyPath: "ignored",
+            AssemblyVersion: "10.0.0.0",
+            ModuleVersionId: "ignored",
+            TypeFullName: "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator",
+            ImplementsIncrementalGenerator: true,
+            InitializeMethodName: "Initialize",
+            InitializeContextParameterType: "Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext",
+            InitializeMethodIlLength: 1,
+            InitializeMethodIlSha256: RazorSourceGeneratorCompatibilityGuard.ExpectedInitializeMethodIlSha256,
+            DeclaredMethodNames: ["ComputeRazorSourceGeneratorOptions", "Initialize"]));
 
     private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string? razorVueOutputMode, bool enableRazorSgIntegration)
     {

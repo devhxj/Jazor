@@ -152,9 +152,29 @@ IL 注入必须保持窄边界：
 
 1. 绑定 `RazorSourceGenerator.Initialize(...)` 的 IL 指纹和 declared method surface。
 2. 把 assembly path / version / MVID 仅作为测试观测信息，不作为正式兼容门。
-3. 校验失败时，在 RazorVue 启用场景下给出明确诊断并停止 RazorVue tail output 生成。
-4. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
-5. SDK 升级必须先更新指纹和 focused tests，再允许进入生产路径。
+3. Harmony patch 安装前必须先运行同一套兼容校验；校验失败时不 patch 官方 Razor SG，并记录 bootstrap failure。
+4. 校验失败时，在 RazorVue 启用场景下给出明确诊断并停止 RazorVue tail output 生成。
+5. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
+6. SDK 升级必须先更新指纹和 focused tests，再允许进入生产路径。
+
+当前实现用 `RazorSourceGeneratorInitializeHookInstaller.ValidateAssemblyForPatch(...)` 将 guard 接入 patch 前置路径。`Assembly.Location`、assembly version 和 MVID 仍只作为 trace/排查信息；动态或特殊 load context 下没有 assembly path 不应单独导致兼容失败。
+
+RazorVue SG integration 启用后，且当前 compilation 存在 RazorVue component candidate 时，tail output 的输入异常必须 fail-fast：
+
+1. 读不懂官方 Razor SG output shape。
+2. 未收到任何 Razor SG document。
+3. 只收到 suppressed document。
+4. bridge 无法把官方对象投影为 Jazor 中立 IR。
+
+这些场景必须报告 `JAZORVGA020`，不能只写 test trace 或静默不产 catalog/artifact。
+如果当前 compilation 没有 RazorVue component candidate，则 tail output 允许 no-op；这覆盖“项目引用/启用 RazorVue 包但当前编译单元没有 RazorVue 组件”的合法场景，不能误伤普通 Razor 或非组件项目。
+
+普通 `RazorVueGenerator` 在 integration 启用后只负责诊断守门和让路：
+
+1. 如果 bootstrap patch 已失败，报告 `JAZORVGA019`，并带出 bootstrap failure。
+2. 如果 tail output 已注册，普通 generator 不再产 catalog/artifact，也不重复跑兼容 probe。
+3. 如果当前 compilation 需要 RazorVue tail output，但 tail output 没有注册且 SDK shape 兼容，报告 `JAZORVGA018`。
+4. 如果当前 compilation 不需要 RazorVue tail output，不报告 integration 诊断。
 
 失败时禁止自动回退到：
 
@@ -186,11 +206,14 @@ IL 注入必须保持窄边界：
 1. 官方 `.razor.g.cs` 仍正常生成。
 2. RazorVue catalog/artifact source 在同一 generator run 中生成并进入 final compilation。
 3. RazorVue 消费侧能从官方 Razor SG 内存结果 / Razor IR 模型完成模板前端。
-4. 普通 Razor 项目未启用 RazorVue 时不产生额外 source、diagnostic 或 build 行为变化。
+4. 普通 Razor 项目未启用 RazorVue 时不产生额外 source、diagnostic 或 build 行为变化；启用但没有 RazorVue component candidate 时也不得因为缺少 RazorVue artifact 输入误报。
 5. SDK 指纹不匹配时 diagnostic 清晰，可定位到 RazorVue SG injection 版本不匹配。
 6. focused tests 覆盖成功注入、未启用 no-op、指纹不匹配 fail-fast、RazorVue source 产出和官方 generated source parity。
 7. `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 成功，且 `.nupkg` 的 analyzer/lib payload 不包含 Razor Compiler / Razor Utilities Shared。
 8. `ProductionRazorCompilerReferenceTests` 保证生产项目和旧桥接项目不会回退到 Razor Compiler 强引用路线。
+9. `RazorSourceGeneratorCompatibilityProbeTests` 覆盖 unsupported SDK shape patch 前拒绝。
+10. `RazorSourceGeneratorTailOutputTests` 覆盖 enabled tail output 在有 RazorVue candidate 时输入缺失/不可读报 `JAZORVGA020`，在无 candidate 时 no-op。
+11. `ESGeneratorTests` 覆盖 integration 启用后 tail 未注册报 `JAZORVGA018`、bootstrap patch 失败报 `JAZORVGA019`、tail 已注册时普通 generator 不误报也不接管输出。
 
 ## 10. 后续执行顺序
 

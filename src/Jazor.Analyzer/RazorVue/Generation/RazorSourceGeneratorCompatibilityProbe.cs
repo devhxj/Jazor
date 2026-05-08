@@ -40,11 +40,7 @@ internal static class RazorSourceGeneratorCompatibilityProbe
                     RazorSourceGeneratorTypeName + " was not found in " + assembly.FullName + ".");
             }
 
-            var assemblyPath = assembly.Location;
-            if (string.IsNullOrWhiteSpace(assemblyPath))
-            {
-                return RazorSourceGeneratorCompatibilityProbeResult.Fail("The loaded Razor source generator assembly path was unavailable.");
-            }
+            var assemblyPath = assembly.Location ?? string.Empty;
 
             var initializeMethod = generatorType.GetMethod(
                 "Initialize",

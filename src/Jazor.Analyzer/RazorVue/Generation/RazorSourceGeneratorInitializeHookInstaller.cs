@@ -66,6 +66,14 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         {
             RazorSourceGeneratorBootstrapState.MarkPatchAttempted();
 
+            var compatibility = ValidateAssemblyForPatch(assembly);
+            if (!compatibility.Success)
+            {
+                RazorSourceGeneratorBootstrapState.MarkPatchFailed(
+                    compatibility.Failure ?? "RazorSourceGenerator compatibility validation failed.");
+                return false;
+            }
+
             var generatorType = assembly.GetType("Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", throwOnError: false);
             if (generatorType is not null)
             {
@@ -118,6 +126,15 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
             RazorSourceGeneratorBootstrapState.MarkPatchFailed(ex.GetType().FullName + ": " + ex.Message);
             return false;
         }
+    }
+
+    internal static RazorSourceGeneratorCompatibilityValidationResult ValidateAssemblyForPatch(Assembly assembly)
+    {
+        if (assembly is null)
+            throw new ArgumentNullException(nameof(assembly));
+
+        return RazorSourceGeneratorCompatibilityGuard.Validate(
+            RazorSourceGeneratorCompatibilityProbe.Collect(assembly));
     }
 
     private static void InitializePostfix(ref IncrementalGeneratorInitializationContext __0)
