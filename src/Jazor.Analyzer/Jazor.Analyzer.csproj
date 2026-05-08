@@ -5,8 +5,9 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <JazorAnalyzerRazorSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</JazorAnalyzerRazorSdkPath>
-    <JazorAnalyzerRazorSdkPath Condition="'$(JazorAnalyzerRazorSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</JazorAnalyzerRazorSdkPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(DOTNET_CLI_HOME)' != ''">$([System.IO.Path]::Combine('$(DOTNET_CLI_HOME)', '.nuget', 'packages'))\</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(UserProfile)' != ''">$([System.IO.Path]::Combine('$(UserProfile)', '.nuget', 'packages'))\</NuGetPackageRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,10 +21,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <Reference Include="Microsoft.CodeAnalysis.Razor.Compiler">
-      <HintPath>$(JazorAnalyzerRazorSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
-      <Private>true</Private>
-    </Reference>
+    <PackageReference Include="Lib.Harmony" Version="2.4.2" GeneratePathProperty="true" />
+    <None Include="$(PkgLib_Harmony)\lib\net10.0\0Harmony.dll" CopyToOutputDirectory="PreserveNewest" Link="0Harmony.dll" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

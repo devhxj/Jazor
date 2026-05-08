@@ -1,13 +1,16 @@
+using Jazor.Analyzer.RazorVue.Generation;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RazorSdk;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 
 namespace Jazor.RazorVue.Analysis;
 
@@ -16,8 +19,10 @@ namespace Jazor.RazorVue.Analysis;
 public sealed class RazorVueGenerator : IIncrementalGenerator
 {
     private const string RazorVueOutputModePropertyName = "build_property.JazorRazorVueOutputMode";
+    private const string RazorVueEnableRazorSgIntegrationPropertyName = "build_property.JazorRazorVueEnableRazorSgIntegration";
     private readonly Func<RazorVuePipeline> _legacyPipelineFactory;
     private readonly Func<RazorVueSfcPipeline> _sfcPipelineFactory;
+    private readonly Func<RazorSourceGeneratorCompatibilityProbeResult> _compatibilityProbeFactory;
 
     private static readonly DiagnosticDescriptor RazorVueGenerationFailed = new(
         id: "JAZORVGA001",
@@ -155,52 +160,84 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor RazorVueRazorSgIntegrationNotActive = new(
+        id: "JAZORVGA018",
+        title: "RazorVue Razor SG integration is not active",
+        messageFormat: "RazorVue Razor SG integration is enabled, but no injected Razor IR carrier was produced for Razor component '{0}'. The official Razor source generator did not run with RazorVue tail injection.",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly DiagnosticDescriptor RazorVueRazorSgIntegrationIncompatible = new(
+        id: "JAZORVGA019",
+        title: "RazorVue Razor SG integration is incompatible with the current SDK",
+        messageFormat: "RazorVue Razor SG integration is enabled, but the current Razor source generator shape is unsupported: {0}",
+        category: "Jazor.RazorVue.Analysis",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public RazorVueGenerator()
         : this(
             static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance))
+            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent())
     {
     }
 
     internal RazorVueGenerator(
         Func<RazorVuePipeline> legacyPipelineFactory,
-        Func<RazorVueSfcPipeline> sfcPipelineFactory)
+        Func<RazorVueSfcPipeline> sfcPipelineFactory,
+        Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory)
     {
         _legacyPipelineFactory = legacyPipelineFactory ?? throw new ArgumentNullException(nameof(legacyPipelineFactory));
         _sfcPipelineFactory = sfcPipelineFactory ?? throw new ArgumentNullException(nameof(sfcPipelineFactory));
+        _compatibilityProbeFactory = compatibilityProbeFactory ?? throw new ArgumentNullException(nameof(compatibilityProbeFactory));
     }
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        RazorSourceGeneratorBootstrap.Initialize();
+
+        var testHookEnabled = context.AnalyzerConfigOptionsProvider.Select(
+            static (optionsProvider, _) => RazorSourceGeneratorHostOutputHookOptions.IsTestHookEnabled(optionsProvider));
+        context.RegisterSourceOutput(testHookEnabled, static (outputContext, enabled) =>
+        {
+            if (!enabled)
+                return;
+
+            outputContext.AddSource(
+                "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs",
+                BuildRazorSgBootstrapTraceSource(RazorSourceGeneratorBootstrapState.CreateTrace()));
+        });
+
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
             fullyQualifiedMetadataName: "ECMAScript.ECMAScriptModuleAttribute",
             predicate: static (node, _) => node is ClassDeclarationSyntax,
             transform: static (syntaxContext, _) => CreateCandidate(syntaxContext))
             .Where(static candidate => candidate is not null);
 
-        var outputMode = context.AnalyzerConfigOptionsProvider
-            .Select(static (optionsProvider, _) =>
-                optionsProvider.GlobalOptions.TryGetValue(RazorVueOutputModePropertyName, out var value)
-                    ? value
-                    : null);
+        var generatorOptions = context.AnalyzerConfigOptionsProvider
+            .Select(static (optionsProvider, _) => RazorVueGeneratorOptions.Create(optionsProvider.GlobalOptions));
 
         var combined = context.CompilationProvider
             .Combine(componentCandidates.Collect())
-            .Combine(outputMode);
+            .Combine(generatorOptions);
 
         var legacyPipelineFactory = _legacyPipelineFactory;
         var sfcPipelineFactory = _sfcPipelineFactory;
+        var compatibilityProbeFactory = _compatibilityProbeFactory;
 
         context.RegisterSourceOutput(combined, (outputContext, source) =>
         {
-            var ((compilation, candidates), outputModeText) = source;
+            var ((compilation, candidates), generatorOptions) = source;
             EmitRazorVueCatalog(
                 outputContext,
                 compilation,
                 candidates,
-                outputModeText,
+                generatorOptions,
                 legacyPipelineFactory,
-                sfcPipelineFactory);
+                sfcPipelineFactory,
+                compatibilityProbeFactory);
         });
     }
 
@@ -219,9 +256,10 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         SourceProductionContext context,
         Compilation compilation,
         ImmutableArray<ModuleCandidate?> candidates,
-        string? outputModeText,
+        RazorVueGeneratorOptions generatorOptions,
         Func<RazorVuePipeline> legacyPipelineFactory,
-        Func<RazorVueSfcPipeline> sfcPipelineFactory)
+        Func<RazorVueSfcPipeline> sfcPipelineFactory,
+        Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory)
     {
         if (!candidates.Any(static candidate => candidate is not null))
             return;
@@ -234,10 +272,24 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
         try
         {
+            if (generatorOptions.EnableRazorSgIntegration &&
+                TryCreateRazorSgIntegrationDiagnostic(
+                    razorVueContext,
+                    candidate,
+                    compatibilityProbeFactory,
+                    out var integrationDiagnostic))
+            {
+                context.ReportDiagnostic(integrationDiagnostic);
+                return;
+            }
+
+            if (generatorOptions.EnableRazorSgIntegration)
+                return;
+
             // Keep generator diagnostics aligned with the analyzer by validating
             // descriptor-only library stubs before any consuming component resolves them.
             _ = razorVueContext.DiscoverLibraryComponents();
-            switch (ResolveOutputMode(outputModeText))
+            switch (ResolveOutputMode(generatorOptions.OutputModeText))
             {
                 case RazorVueGeneratorOutputMode.Legacy:
                 {
@@ -293,6 +345,43 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 typeName,
                 ex.Message));
         }
+    }
+
+    private static bool TryCreateRazorSgIntegrationDiagnostic(
+        RazorVueCompilationContext context,
+        ModuleCandidate? candidate,
+        Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
+        out Diagnostic diagnostic)
+    {
+        diagnostic = default!;
+        var compatibilityProbe = compatibilityProbeFactory();
+        var validation = RazorSourceGeneratorCompatibilityGuard.Validate(
+            compatibilityProbe ?? throw new InvalidOperationException("Razor source generator compatibility probe was not loaded."));
+        if (!validation.Success)
+        {
+            diagnostic = Diagnostic.Create(
+                RazorVueRazorSgIntegrationIncompatible,
+                candidate?.Location ?? Location.None,
+                validation.Failure ?? "Unknown Razor source generator compatibility failure.");
+            return true;
+        }
+
+        foreach (var snapshot in RazorVueRazorDocumentSemanticFrontend.Instance.CreateSemanticSnapshots(context))
+        {
+            if (snapshot.RazorIrCarrier is not null || snapshot.BuildRenderTreeMethod is null)
+                continue;
+
+            if (RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
+                continue;
+
+            diagnostic = Diagnostic.Create(
+                RazorVueRazorSgIntegrationNotActive,
+                GetComponentLocation(snapshot.ComponentSymbol),
+                snapshot.ComponentSymbol.ToDisplayString());
+            return true;
+        }
+
+        return false;
     }
 
     private static Diagnostic CreateCompilationIssueDiagnostic(
@@ -402,6 +491,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             new TextSpan(Math.Max(origin.SourceSpanStart, 0), Math.Max(origin.SourceSpanLength, 0)),
             new LinePositionSpan(start, end));
     }
+
+    private static Location GetComponentLocation(INamedTypeSymbol symbol)
+        => symbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? Location.None;
 
     private static string BuildRazorVueCatalogSource(RazorVueCatalog catalog)
     {
@@ -576,7 +668,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string BuildRazorVueSfcArtifactSource(VueSfcArtifact artifact)
+    internal static string BuildRazorVueSfcArtifactSource(VueSfcArtifact artifact)
     {
         var builder = new StringBuilder();
         var methodName = CreateRazorVueSfcArtifactMethodName(artifact);
@@ -622,7 +714,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string BuildRazorVueSfcCatalogSource(RazorVueSfcCatalog catalog)
+    internal static string BuildRazorVueSfcCatalogSource(RazorVueSfcCatalog catalog)
     {
         var builder = new StringBuilder();
         builder.AppendLine("// <auto-generated/>");
@@ -1026,7 +1118,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static string CreateRazorVueSfcArtifactHintName(VueSfcArtifact artifact)
+    internal static string CreateRazorVueSfcArtifactHintName(VueSfcArtifact artifact)
         => "Jazor.Generated.RazorVue.Artifact_" + CreateRazorVueSfcArtifactKey(artifact) + ".g.cs";
 
     private static string CreateRazorVueSfcArtifactMethodName(VueSfcArtifact artifact)
@@ -1065,6 +1157,35 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
     private static string ToCSharpBool(bool value)
         => value ? "true" : "false";
+
+    private static string BuildRazorSgBootstrapTraceSource(RazorSourceGeneratorBootstrapTrace trace)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine("namespace Jazor.Generated");
+        builder.AppendLine("{");
+        builder.AppendLine("    [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        builder.AppendLine("    internal static class RazorSgBootstrapTrace");
+        builder.AppendLine("    {");
+        builder.Append("        internal const bool HasAttempted = ").Append(ToCSharpBool(trace.HasAttempted)).AppendLine(";");
+        builder.Append("        internal const bool IsInstalled = ").Append(ToCSharpBool(trace.IsInstalled)).AppendLine(";");
+        builder.Append("        internal const bool RazorAssemblyObserved = ").Append(ToCSharpBool(trace.RazorAssemblyObserved)).AppendLine(";");
+        builder.Append("        internal const bool PatchAttempted = ").Append(ToCSharpBool(trace.PatchAttempted)).AppendLine(";");
+        builder.Append("        internal const bool GeneratorTypeFound = ").Append(ToCSharpBool(trace.GeneratorTypeFound)).AppendLine(";");
+        builder.Append("        internal const bool InitializeMethodFound = ").Append(ToCSharpBool(trace.InitializeMethodFound)).AppendLine(";");
+        builder.Append("        internal const bool PostfixMethodFound = ").Append(ToCSharpBool(trace.PostfixMethodFound)).AppendLine(";");
+        builder.Append("        internal const bool PatchSucceeded = ").Append(ToCSharpBool(trace.PatchSucceeded)).AppendLine(";");
+        builder.Append("        internal const bool PatchFailed = ").Append(ToCSharpBool(trace.PatchFailed)).AppendLine(";");
+        builder.Append("        internal const bool PostfixInvoked = ").Append(ToCSharpBool(trace.PostfixInvoked)).AppendLine(";");
+        builder.Append("        internal const bool HostOutputHookInstalled = ").Append(ToCSharpBool(trace.HostOutputHookInstalled)).AppendLine(";");
+        builder.Append("        internal const bool HostOutputObserved = ").Append(ToCSharpBool(trace.HostOutputObserved)).AppendLine(";");
+        builder.Append("        internal const bool TailOutputRegistered = ").Append(ToCSharpBool(trace.TailOutputRegistered)).AppendLine(";");
+        builder.Append("        internal const bool TestHookObserved = ").Append(ToCSharpBool(trace.TestHookObserved)).AppendLine(";");
+        builder.Append("        internal const string? Failure = ").Append(EscapeNullableCSharpString(trace.Failure)).AppendLine(";");
+        builder.AppendLine("    }");
+        builder.AppendLine("}");
+        return builder.ToString();
+    }
 
     private static string ComputeSha256Hex(string content)
     {
@@ -1111,6 +1232,27 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private sealed record ModuleCandidate(
         INamedTypeSymbol ClassSymbol,
         Location Location);
+
+    private readonly record struct RazorVueGeneratorOptions(
+        string? OutputModeText,
+        bool EnableRazorSgIntegration)
+    {
+        public static RazorVueGeneratorOptions Create(AnalyzerConfigOptions options)
+        {
+            if (options is null)
+                throw new ArgumentNullException(nameof(options));
+
+            options.TryGetValue(RazorVueOutputModePropertyName, out var outputModeText);
+            return new RazorVueGeneratorOptions(
+                outputModeText,
+                TryGetBooleanOption(options, RazorVueEnableRazorSgIntegrationPropertyName));
+        }
+
+        private static bool TryGetBooleanOption(AnalyzerConfigOptions options, string key)
+            => options.TryGetValue(key, out var value) &&
+               bool.TryParse(value, out var parsed) &&
+               parsed;
+    }
 
     private enum RazorVueGeneratorOutputMode
     {

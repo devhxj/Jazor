@@ -4,6 +4,7 @@
     <JazorEmit Condition="'$(JazorEmit)' == '' and '$(OutputType)' == 'Exe'">true</JazorEmit>
     <JazorEmit Condition="'$(JazorEmit)' == '' and '$(OutputType)' != 'Exe'">false</JazorEmit>
     <JazorRazorVueOutputMode Condition="'$(JazorRazorVueOutputMode)' == ''">sfc</JazorRazorVueOutputMode>
+    <JazorRazorVueEnableRazorSgIntegration Condition="'$(JazorRazorVueEnableRazorSgIntegration)' == ''">false</JazorRazorVueEnableRazorSgIntegration>
     <JazorDevOutDir Condition="'$(JazorDevOutDir)' == ''">$(MSBuildProjectDirectory)\jazor\</JazorDevOutDir>
     <JazorPublishOutDir Condition="'$(JazorPublishOutDir)' == ''">$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorPublishOutDir>
     <JazorOutDir Condition="'$(JazorOutDir)' == ''">$(JazorDevOutDir)</JazorOutDir>
@@ -15,5 +16,6 @@
 
   <ItemGroup>
     <CompilerVisibleProperty Include="JazorRazorVueOutputMode" />
+    <CompilerVisibleProperty Include="JazorRazorVueEnableRazorSgIntegration" />
   </ItemGroup>
 </Project>

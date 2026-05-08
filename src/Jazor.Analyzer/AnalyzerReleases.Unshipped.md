@@ -41,3 +41,6 @@ JAZORVGA014 | Jazor.RazorVue.Analysis | Error | RazorVue library plugin requirem
 JAZORVGA015 | Jazor.RazorVue.Analysis | Error | RazorVue child content parameter value is missing
 JAZORVGA016 | Jazor.RazorVue.Analysis | Error | RazorVue output mode is invalid
 JAZORVGA017 | Jazor.RazorVue.Analysis | Error | RazorVue component declaration is invalid
+JAZORVGA018 | Jazor.RazorVue.Analysis | Error | RazorVue Razor SG integration is not active
+JAZORVGA019 | Jazor.RazorVue.Analysis | Error | RazorVue Razor SG integration is incompatible with the current SDK
+JAZORVGA020 | Jazor.RazorVue.Analysis | Error | RazorVue Razor SG tail output failed

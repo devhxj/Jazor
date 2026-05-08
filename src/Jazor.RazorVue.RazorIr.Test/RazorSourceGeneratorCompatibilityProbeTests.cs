@@ -16,13 +16,23 @@ public sealed class RazorSourceGeneratorCompatibilityProbeTests
         var shape = result.Shape!;
         Assert.IsFalse(string.IsNullOrWhiteSpace(shape.AssemblyPath), "Assembly path was empty.");
         Assert.IsFalse(string.IsNullOrWhiteSpace(shape.AssemblyVersion), "Assembly version was empty.");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(shape.ModuleVersionId), "ModuleVersionId was empty.");
-        Assert.IsFalse(string.IsNullOrWhiteSpace(shape.InitializeMethodIlSha256), "Initialize IL SHA-256 was empty.");
         Assert.IsTrue(shape.InitializeMethodIlLength > 0, "Initialize method IL length must be positive.");
         Assert.AreEqual("Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", shape.TypeFullName);
         Assert.AreEqual("Initialize", shape.InitializeMethodName);
         Assert.AreEqual("Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext", shape.InitializeContextParameterType);
         Assert.IsTrue(shape.ImplementsIncrementalGenerator, "The Razor source generator no longer implements IIncrementalGenerator.");
+        Assert.AreEqual(RazorSourceGeneratorCompatibilityGuard.ExpectedInitializeMethodIlSha256, shape.InitializeMethodIlSha256);
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                "ComputeRazorSourceGeneratorOptions",
+                "Initialize"
+            },
+            shape.DeclaredMethodNames.ToArray());
+
+        var validation = RazorSourceGeneratorCompatibilityGuard.Validate(result);
+        Assert.IsTrue(validation.Success, validation.Failure ?? "The Razor source generator compatibility validation did not succeed.");
+
         var fileSha256 = RazorIrTestHost.ComputeFileSha256(shape.AssemblyPath);
         Assert.IsFalse(string.IsNullOrWhiteSpace(fileSha256), "File SHA-256 was empty.");
 

@@ -273,6 +273,13 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 5. RazorVue source output 复用同一条官方数据流，生成 RazorVue IR carrier partial。
 6. carrier partial 进入同一轮 final compilation，供 RazorVue carrier-only 消费侧使用。
 
+另一个现在已经由 focused test 锁定的关键点是安装时序：
+
+1. `Jazor.Analyzer` 作为 analyzer 载荷进入编译器进程时，模块初始化器可以早于 `Microsoft.CodeAnalysis.Razor.Compiler` 程序集装载执行。
+2. 我们自己的 generator `Initialize(...)` 已经晚于 Razor compiler assembly 装载。
+3. 因此真正的 patch 安装入口必须落在 analyzer assembly 装载期，而不是落在 `RazorVueGenerator.Initialize(...)`。
+4. 这进一步排除了“等我们的 generator 开始跑时再动态挂钩官方 Razor SG”的变体。
+
 其中 `HostOutput` 的角色是：
 
 1. 证明官方 Razor SG 末端拥有完整 `RazorGeneratorResult` / `RazorCodeDocument`。
@@ -296,8 +303,8 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 
 由于该方案依赖 SDK internal / IL shape，必须显式 fail-fast：
 
-1. 绑定目标 Razor compiler assembly 版本、MVID 或 IL 指纹。
-2. 校验 `RazorSourceGenerator.Initialize(...)` 方法签名和关键增量数据流 shape。
+1. 绑定 `RazorSourceGenerator.Initialize(...)` IL 指纹与 declared method surface。
+2. assembly path / version / MVID 只作为测试和排查观测信息，不作为正式兼容门。
 3. 校验失败时，如果 RazorVue 已启用，则报告明确诊断并停止 carrier 生成。
 4. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
 5. SDK 升级必须先更新指纹和 focused tests。
@@ -344,7 +351,7 @@ carrier partial 必须通过 source output 的 `AddSource(...)` 进入 compilati
 
 1. 读取当前 SDK Razor compiler assembly。
 2. 定位 `RazorSourceGenerator.Initialize(...)`。
-3. 输出版本、MVID、方法签名和关键 IL 指纹。
+3. 输出 `Initialize(...)` IL 指纹与 declared method surface，并把 assembly path / version / MVID 保留为观测信息。
 4. 证明当前 SDK 下可以定位最终 Razor/C# document 增量数据流。
 
 ### 第二步：最小尾部注入验证

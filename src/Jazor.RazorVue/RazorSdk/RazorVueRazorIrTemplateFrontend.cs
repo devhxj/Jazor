@@ -50,6 +50,15 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             throw new ArgumentNullException(nameof(snapshot));
 
         renderTree = RazorVueRenderFragment.Empty;
+        if (snapshot.RazorSourceGeneratorDocument is { } sourceGeneratorDocument)
+        {
+            renderTree = CreateRenderTreeCore(
+                context,
+                snapshot,
+                CreateHandle(sourceGeneratorDocument));
+            return true;
+        }
+
         if (!_provider.TryCreate(context, snapshot, out var handle))
             return false;
 
@@ -84,6 +93,29 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         var resolver = new RazorVueRazorIrOperationResolver(context, snapshot, handle);
         var converter = new Converter(context, snapshot, resolver);
         return converter.Convert(handle.DocumentNode);
+    }
+
+    private static RazorVueRazorCodeDocumentHandle CreateHandle(
+        RazorVueRazorSourceGeneratorDocument sourceGeneratorDocument)
+    {
+        var primarySource = sourceGeneratorDocument.CodeDocument.Source;
+        var primaryDocument = new Jazor.RazorVue.RazorVueRazorDocument(
+            primarySource.FilePath ?? sourceGeneratorDocument.HintName,
+            primarySource.Text);
+        var importDocuments = sourceGeneratorDocument.CodeDocument.Imports
+            .Select(static item => new Jazor.RazorVue.RazorVueRazorDocument(
+                item.FilePath ?? item.RelativePath ?? string.Empty,
+                item.Text))
+            .ToImmutableArray();
+
+        return new RazorVueRazorCodeDocumentHandle(
+            primaryDocument,
+            importDocuments,
+            sourceGeneratorDocument.TagHelpers,
+            sourceGeneratorDocument.CodeDocument,
+            sourceGeneratorDocument.CSharpDocument,
+            sourceGeneratorDocument.SourceMappings,
+            sourceGeneratorDocument.DocumentNode);
     }
 
     private sealed class Converter(

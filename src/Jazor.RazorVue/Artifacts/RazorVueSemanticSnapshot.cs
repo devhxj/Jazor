@@ -19,6 +19,7 @@ internal sealed record RazorVueSemanticSnapshot(
     INamedTypeSymbol ComponentSymbol,
     IMethodSymbol? BuildRenderTreeMethod,
     RazorVueRazorIrCarrier? RazorIrCarrier,
+    RazorVueRazorSourceGeneratorDocument? RazorSourceGeneratorDocument,
     VueLifecycleDescriptor Lifecycle,
     VueLogicDescriptor Logic,
     VueComponentDescriptor Descriptor,

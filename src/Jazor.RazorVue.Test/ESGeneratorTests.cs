@@ -1,5 +1,6 @@
 using ECMAScript.Contract;
 using ECMAScript.Vuetify;
+using Jazor.Analyzer.RazorVue.Generation;
 using Jazor.Compiler;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Analysis;
@@ -1032,7 +1033,8 @@ public sealed class ESGeneratorTests
 
         var generator = new RazorVueGenerator(
             legacyPipelineFactory: static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()),
-            sfcPipelineFactory: static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()));
+            sfcPipelineFactory: static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, new RazorDocumentEchoTemplateFrontend()),
+            compatibilityProbeFactory: static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent());
         compilation = (CSharpCompilation)InjectCarrierCompilation(compilation, documentPath.Replace('\\', '/'), razorDocumentText);
         var (_, runResult) = RunAllGeneratorsWithResult(
             compilation,
@@ -1201,6 +1203,149 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         StringAssert.Contains(diagnostics[0].GetMessage(), "only falls back to BuildRenderTree for source-authored components");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndEnabledRazorSgIntegration_ReportsJAZORVGA018()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.MissingDocs.IntegrationEnabled.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA018")
+            .ToArray();
+        var genericDiagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, genericDiagnostics.Length, string.Join("\n", genericDiagnostics.Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "no injected Razor IR carrier was produced");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndIncompatibleRazorSgShape_ReportsJAZORVGA019()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.MissingDocs.IncompatibleSdk.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        var generator = new RazorVueGenerator(
+            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => RazorSourceGeneratorCompatibilityProbeResult.Succeed(
+                new RazorSourceGeneratorCompatibilityShape(
+                    AssemblyPath: "ignored",
+                    AssemblyVersion: "10.0.0.0",
+                    ModuleVersionId: "ignored",
+                    TypeFullName: "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator",
+                    ImplementsIncrementalGenerator: true,
+                    InitializeMethodName: "Initialize",
+                    InitializeContextParameterType: "Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext",
+                    InitializeMethodIlLength: 1,
+                    InitializeMethodIlSha256: "BAD",
+                    DeclaredMethodNames: ["Initialize"])));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA019")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Initialize(...) IL SHA-256 mismatch");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithAlignedRazorCarrier_AndEnabledRazorSgIntegration_DoesNotRequireInjection()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var compilation = CreateAlignedRazorComponentCompilation(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.IntegrationEnabled.WithCarrier.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+
+        compilation = InjectCarrierCompilation(compilation, normalizedDocumentPath, razorDocumentText);
+        var generator = new RazorVueGenerator(
+            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
+            static () => RazorSourceGeneratorCompatibilityProbeResult.Fail("Should not be queried when carrier already exists."));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: "legacy",
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results.SelectMany(static result => result.Diagnostics).ToArray();
+        var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+        StringAssert.Contains(generatedSource, "h(\\\"section\\\", [");
+        StringAssert.Contains(generatedSource, "h(\\\"h1\\\", props.title)");
     }
 
     [TestMethod]
@@ -10830,7 +10975,8 @@ public sealed class ESGeneratorTests
     private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunAllGeneratorsWithResult(
         Compilation compilation,
         string? razorVueOutputMode = "legacy",
-        RazorVueGenerator? razorVueGenerator = null)
+        RazorVueGenerator? razorVueGenerator = null,
+        bool enableRazorSgIntegration = false)
     {
         ISourceGenerator[] generators =
         [
@@ -10841,7 +10987,7 @@ public sealed class ESGeneratorTests
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators,
             parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options,
-            optionsProvider: CreateAnalyzerConfigOptionsProvider(razorVueOutputMode),
+            optionsProvider: CreateAnalyzerConfigOptionsProvider(razorVueOutputMode, enableRazorSgIntegration),
             driverOptions: default);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
 
@@ -10849,13 +10995,21 @@ public sealed class ESGeneratorTests
         return (outputCompilation, runResult);
     }
 
-    private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string? razorVueOutputMode)
-        => new TestAnalyzerConfigOptionsProvider(razorVueOutputMode is null
-            ? new Dictionary<string, string>(StringComparer.Ordinal)
-            : new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["build_property.JazorRazorVueOutputMode"] = razorVueOutputMode
-            });
+    private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string? razorVueOutputMode, bool enableRazorSgIntegration)
+    {
+        var options = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (razorVueOutputMode is not null)
+        {
+            options["build_property.JazorRazorVueOutputMode"] = razorVueOutputMode;
+        }
+
+        if (enableRazorSgIntegration)
+        {
+            options["build_property.JazorRazorVueEnableRazorSgIntegration"] = "true";
+        }
+
+        return new TestAnalyzerConfigOptionsProvider(options);
+    }
 
     private sealed class TestAnalyzerConfigOptionsProvider(IReadOnlyDictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
     {

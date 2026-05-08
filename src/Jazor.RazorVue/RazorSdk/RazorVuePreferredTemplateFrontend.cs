@@ -27,67 +27,17 @@ internal sealed class RazorVuePreferredTemplateFrontend : IRazorVueTemplateFront
         if (snapshot is null)
             throw new ArgumentNullException(nameof(snapshot));
 
-        if (snapshot.RazorIrCarrier is not null)
+        if (snapshot.RazorIrCarrier is not null || snapshot.RazorSourceGeneratorDocument is not null)
             return _razorIrFrontend.CreateRenderTree(context, snapshot);
 
         if (snapshot.BuildRenderTreeMethod is null)
             return RazorVueRenderFragment.Empty;
 
-        if (IsHandwrittenBuildRenderTree(snapshot))
+        if (RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot))
             return BuildRenderTreeTemplateFrontend.Instance.CreateRenderTree(context, snapshot);
 
         throw new InvalidOperationException(
             $"RazorVue preferred template frontend only falls back to BuildRenderTree for source-authored components. " +
             $"Component '{snapshot.Descriptor.FullName}' did not resolve a Razor document and was not classified as handwritten BuildRenderTree authoring.");
-    }
-
-    private static bool IsHandwrittenBuildRenderTree(RazorVueSemanticSnapshot snapshot)
-    {
-        foreach (var syntaxReference in snapshot.BuildRenderTreeMethod!.DeclaringSyntaxReferences)
-        {
-            if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
-                continue;
-
-            if (HasMappedRazorPath(methodSyntax))
-                return false;
-
-            if (IsGeneratedSourcePath(methodSyntax.SyntaxTree.FilePath))
-                continue;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool HasMappedRazorPath(MethodDeclarationSyntax methodSyntax)
-    {
-        foreach (var nodeOrToken in methodSyntax.DescendantNodesAndTokensAndSelf())
-        {
-            var location = nodeOrToken.GetLocation();
-            if (location is null || !location.IsInSource)
-                continue;
-
-            var mappedSpan = location.GetMappedLineSpan();
-            if (!mappedSpan.HasMappedPath || string.IsNullOrWhiteSpace(mappedSpan.Path))
-                continue;
-
-            if (mappedSpan.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        return false;
-    }
-
-    private static bool IsGeneratedSourcePath(string? path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return false;
-
-        var currentPath = path!;
-        return currentPath.EndsWith(".razor.g.cs", StringComparison.OrdinalIgnoreCase) ||
-               currentPath.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
-               currentPath.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
-               currentPath.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase);
     }
 }

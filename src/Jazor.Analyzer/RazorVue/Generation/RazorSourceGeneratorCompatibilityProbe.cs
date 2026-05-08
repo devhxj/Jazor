@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.CodeAnalysis;
-using Microsoft.NET.Sdk.Razor.SourceGenerators;
 
 namespace Jazor.Analyzer.RazorVue.Generation;
 
@@ -12,10 +11,35 @@ internal static class RazorSourceGeneratorCompatibilityProbe
 
     public static RazorSourceGeneratorCompatibilityProbeResult CollectCurrent()
     {
+        var assembly = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .FirstOrDefault(static item => string.Equals(
+                item.GetName().Name,
+                "Microsoft.CodeAnalysis.Razor.Compiler",
+                StringComparison.Ordinal));
+        if (assembly is null)
+        {
+            return RazorSourceGeneratorCompatibilityProbeResult.Fail(
+                "Microsoft.CodeAnalysis.Razor.Compiler is not loaded in the current analyzer process.");
+        }
+
+        return Collect(assembly);
+    }
+
+    public static RazorSourceGeneratorCompatibilityProbeResult Collect(Assembly assembly)
+    {
         try
         {
-            var generatorType = typeof(RazorSourceGenerator);
-            var assembly = generatorType.Assembly;
+            if (assembly is null)
+                throw new ArgumentNullException(nameof(assembly));
+
+            var generatorType = assembly.GetType(RazorSourceGeneratorTypeName, throwOnError: false);
+            if (generatorType is null)
+            {
+                return RazorSourceGeneratorCompatibilityProbeResult.Fail(
+                    RazorSourceGeneratorTypeName + " was not found in " + assembly.FullName + ".");
+            }
+
             var assemblyPath = assembly.Location;
             if (string.IsNullOrWhiteSpace(assemblyPath))
             {
@@ -62,10 +86,7 @@ internal static class RazorSourceGeneratorCompatibilityProbe
                 InitializeContextParameterType: initializeParameterType?.FullName ?? string.Empty,
                 InitializeMethodIlLength: ilBytes.Length,
                 InitializeMethodIlSha256: ComputeSha256Hex(ilBytes),
-                DeclaredMethodNames: declaredMethodNames,
-                HasGetGenerationProjectEngineMethod: HasDeclaredMethod(generatorType, "GetGenerationProjectEngine"),
-                HasComputeProjectItemsMethod: HasDeclaredMethod(generatorType, "ComputeProjectItems"),
-                HasComputeRazorSourceGeneratorOptionsMethod: HasDeclaredMethod(generatorType, "ComputeRazorSourceGeneratorOptions"));
+                DeclaredMethodNames: declaredMethodNames);
 
             return RazorSourceGeneratorCompatibilityProbeResult.Succeed(shape);
         }
@@ -74,10 +95,6 @@ internal static class RazorSourceGeneratorCompatibilityProbe
             return RazorSourceGeneratorCompatibilityProbeResult.Fail(ex.GetType().Name + ": " + ex.Message);
         }
     }
-
-    private static bool HasDeclaredMethod(Type generatorType, string methodName)
-        => generatorType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
-            .Any(method => string.Equals(method.Name, methodName, StringComparison.Ordinal));
 
     private static string ComputeSha256Hex(byte[] bytes)
     {
@@ -119,7 +136,4 @@ internal sealed record RazorSourceGeneratorCompatibilityShape(
     string InitializeContextParameterType,
     int InitializeMethodIlLength,
     string InitializeMethodIlSha256,
-    IReadOnlyList<string> DeclaredMethodNames,
-    bool HasGetGenerationProjectEngineMethod,
-    bool HasComputeProjectItemsMethod,
-    bool HasComputeRazorSourceGeneratorOptionsMethod);
+    IReadOnlyList<string> DeclaredMethodNames);

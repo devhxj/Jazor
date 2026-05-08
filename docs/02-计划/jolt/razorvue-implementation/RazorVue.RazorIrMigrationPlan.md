@@ -140,6 +140,10 @@
 - 本轮对旧 `src/Jazor.RazorVue.RazorExtension/` 的校验也表明：
   - `ProvideRazorExtensionInitializerAttribute` / `RazorExtensionInitializer` 等旧 classic extension API 面在当前 SDK 10.0.203 引用下已不成立
   - 这条路线不再属于正式接入候选
+- 本轮新增真实外部编译时序探针也已确认：
+  - analyzer assembly 的模块初始化器可以早于 `Microsoft.CodeAnalysis.Razor.Compiler` 程序集装载事件执行
+  - 我们自己的 generator `Initialize(...)` 观察到 Razor compiler assembly 时已经是已装载状态
+  - 因此若要在官方 Razor SG 初始化前安装 hook，必须使用 analyzer assembly 装载期入口，而不是 generator `Initialize(...)`
 
 ## 5. 阶段 2. IR 节点盘点与支持边界
 
@@ -341,7 +345,7 @@
 包含：
 
 - `RazorSourceGenerator.Initialize(...)` IL shape 探针
-- 目标 SDK 版本、MVID、方法签名和关键 IL 指纹
+- `Initialize(...)` IL 指纹和 declared method surface 兼容门
 - 指纹不匹配 fail-fast diagnostic 设计
 - RazorVue 未启用 no-op 行为设计
 
@@ -420,7 +424,7 @@
 |------|------|------|
 | Razor SDK/toolset 接线不稳定 | 高 | 将接线隔离在专门宿主层，不把私有访问扩散到核心主链 |
 | Roslyn 同轮 generator 不可见导致串联 generator 架构失效 | 高 | 已通过 focused test 锁定；正式路线改为受控 IL 尾部注入新增并列 source output |
-| Razor SG IL shape 随 SDK 升级变化 | 高 | 绑定版本、MVID、方法签名和关键 IL 指纹；不匹配时 RazorVue 启用场景 fail-fast |
+| Razor SG IL shape 随 SDK 升级变化 | 高 | 绑定 `Initialize(...)` IL 指纹和 declared method surface；assembly path/version/MVID 仅作观测，不匹配时 RazorVue 启用场景 fail-fast |
 | IR 形状与预期不一致 | 高 | 先做节点盘点和样例归档，再做正式映射 |
 | 新前端破坏 setup/lifecycle/source-origin | 高 | 迁移只替换 template frontend，保留下游主链，强制 parity 测试 |
 | 切换后回归难定位 | 中 | 建双跑 parity 报告，并把 fallback 严格限制为手写 `BuildRenderTree` authoring |

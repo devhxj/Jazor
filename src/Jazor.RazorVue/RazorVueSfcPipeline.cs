@@ -63,4 +63,5 @@ internal sealed class RazorVueSfcPipeline
 
         return _catalogBuilder.Build(context.Compilation.AssemblyName ?? "Jazor.Assembly", artifacts);
     }
+
 }

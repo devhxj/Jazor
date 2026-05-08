@@ -75,11 +75,17 @@ internal sealed class RazorVueCompilationContext
     }
 
     public RazorVueSemanticSnapshot CreateSemanticSnapshot(RazorVueComponentCandidate candidate)
-        => CreateSemanticSnapshot(candidate, razorIrCarrier: null);
+        => CreateSemanticSnapshot(candidate, razorIrCarrier: null, razorSourceGeneratorDocument: null);
 
     internal RazorVueSemanticSnapshot CreateSemanticSnapshot(
         RazorVueComponentCandidate candidate,
         RazorSdk.RazorVueRazorIrCarrier? razorIrCarrier)
+        => CreateSemanticSnapshot(candidate, razorIrCarrier, razorSourceGeneratorDocument: null);
+
+    internal RazorVueSemanticSnapshot CreateSemanticSnapshot(
+        RazorVueComponentCandidate candidate,
+        RazorSdk.RazorVueRazorIrCarrier? razorIrCarrier,
+        RazorSdk.RazorVueRazorSourceGeneratorDocument? razorSourceGeneratorDocument)
     {
         if (candidate is null)
             throw new ArgumentNullException(nameof(candidate));
@@ -132,6 +138,7 @@ internal sealed class RazorVueCompilationContext
             candidate.ComponentSymbol,
             candidate.BuildRenderTreeMethod,
             razorIrCarrier,
+            razorSourceGeneratorDocument,
             lifecycle,
             logic,
             descriptor,

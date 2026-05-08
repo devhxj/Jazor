@@ -19,7 +19,7 @@
     <PackageReference Include="System.Text.Json" Version="$(JsonNetVersion)" />
     <Reference Include="Microsoft.CodeAnalysis.Razor.Compiler">
       <HintPath>$(RazorVueRazorSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
-      <Private>true</Private>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
 

@@ -62,14 +62,17 @@ official RazorSourceGenerator.Initialize(context)
 3. 可以通过受控 bridge 从 `RazorGeneratorResult.GetCodeDocument(string physicalPath)` 取回对应 `RazorCodeDocument`。
 4. Roslyn 同一轮 generator 之间不能看到彼此新生成的 partial / attribute。
 5. 第二轮 compilation 才能看到上一轮 generator 输出。
+6. 在真实 `dotnet build` 编译进程内，`Jazor.Analyzer` 这类 analyzer assembly 的模块初始化器会早于 `Microsoft.CodeAnalysis.Razor.Compiler` 程序集装载事件执行，而我们自己的 generator `Initialize(...)` 已经晚于 Razor compiler assembly 装载。
 
 对应测试：
 
 1. `src/Jazor.RazorVue.RazorIr.Test/RazorSourceGeneratorHostOutputTests.cs`
 2. `src/Jazor.RazorVue.RazorIr.Test/RazorSourceGeneratorCarrierBridgeTests.cs`
 3. `src/Jazor.RazorVue.RazorIr.Test/RoslynGeneratorVisibilityTests.cs`
+4. `src/Jazor.RazorVue.RazorIr.Test/RazorSourceGeneratorLoadTimingTests.cs`
 
 这些事实共同排除了 companion generator 同轮消费官方 Razor SG 输出的方案，也排除了 production nested run。
+同时它们把“抢在官方 Razor SG 前执行挂钩”的可用早期入口收敛为：**analyzer assembly 装载期的模块初始化/等价早期静态入口**，而不是我们自己的 generator `Initialize(...)`。
 
 ## 4. HostOutput 的定位
 
@@ -100,6 +103,12 @@ IL 注入必须保持窄边界：
 
 注入点优先选择已经形成最终 `csharpDocuments` 的位置。
 
+但注入动作本身的安装时机必须更早：
+
+1. 不能依赖我们自己的 generator `Initialize(...)` 再去安装 patch。
+2. 当前 focused test 已证实 generator `Initialize(...)` 时 `Microsoft.CodeAnalysis.Razor.Compiler` 已经装载。
+3. 因此 patch 安装入口必须前移到 `Jazor.Analyzer` analyzer assembly 装载期，例如模块初始化器或等价的最早静态引导点。
+
 如果当前 SDK 版本下无法稳定拿到 `csharpDocuments` 数据流，则该 SDK 版本应 fail-fast，而不是退回 nested run、classic codegen 或 `.razor` 原文重建。
 
 ## 6. Carrier 生成职责
@@ -124,8 +133,8 @@ IL 注入必须保持窄边界：
 
 由于这是 internal / IL 层面的尾部注入，必须把技术风险显式收口：
 
-1. 绑定目标 Razor compiler assembly 版本、MVID 或 IL 指纹。
-2. 校验目标方法签名和关键局部数据流 shape。
+1. 绑定 `RazorSourceGenerator.Initialize(...)` 的 IL 指纹和 declared method surface。
+2. 把 assembly path / version / MVID 仅作为测试观测信息，不作为正式兼容门。
 3. 校验失败时，在 RazorVue 启用场景下给出明确诊断并停止 carrier 生成。
 4. RazorVue 未启用时，不注入、不影响普通 Razor 项目。
 5. SDK 升级必须先更新指纹和 focused tests，再允许进入生产路径。
@@ -164,6 +173,7 @@ IL 注入必须保持窄边界：
 ## 10. 后续执行顺序
 
 1. 建立 Razor SG `Initialize(...)` IL shape 探针，输出目标 SDK 的关键指纹。
+   关键指纹当前只以 `Initialize(...)` IL SHA-256 和 declared method surface 为正式兼容条件。
 2. 设计最小 `RazorVueCarrierSourceOutput` delegate，先只产最小 carrier partial。
 3. 在测试环境中 patch Razor SG 并验证官方 `.razor.g.cs` 与 carrier 同轮产出。
 4. 接入 RazorVue carrier-only 消费侧，跑 RazorVue focused suites。
