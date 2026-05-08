@@ -415,6 +415,11 @@ public static partial class Pinia
 		private readonly Vue3.VueDebuggerEvent? _event;
 		private readonly Vue3.VueDebuggerEvent[]? _batch;
 
+		/// <summary>
+		/// 从单个调试事件初始化。
+		/// Initializes from a single debugger event.
+		/// </summary>
+		/// <param name="value">Vue 调试器事件。Vue debugger event.</param>
 		private SubscriptionMutationEvents(Vue3.VueDebuggerEvent value)
 		{
 			_kind = 1;
@@ -422,6 +427,11 @@ public static partial class Pinia
 			_batch = default;
 		}
 
+		/// <summary>
+		/// 从调试事件批次初始化。
+		/// Initializes from a debugger event batch.
+		/// </summary>
+		/// <param name="value">Vue 调试器事件数组。Vue debugger event array.</param>
 		private SubscriptionMutationEvents(Vue3.VueDebuggerEvent[] value)
 		{
 			_kind = 2;
@@ -429,13 +439,31 @@ public static partial class Pinia
 			_batch = value;
 		}
 
+		/// <summary>
+		/// 以单个事件形式返回调试事件，如果不是该变体则返回 default。
+		/// Returns the debugger event as a single event, or default if not this variant.
+		/// </summary>
 		public Vue3.VueDebuggerEvent? AsEvent => _kind == 1 ? _event : default;
 
+		/// <summary>
+		/// 以事件批次形式返回调试事件，如果不是该变体则返回 default。
+		/// Returns the debugger events as a batch, or default if not this variant.
+		/// </summary>
 		public Vue3.VueDebuggerEvent[]? AsBatch => _kind == 2 ? _batch : default;
 
+		/// <summary>
+		/// 从单个调试器事件隐式转换为 <see cref="SubscriptionMutationEvents"/>。
+		/// Implicitly converts a single debugger event to a <see cref="SubscriptionMutationEvents"/>.
+		/// </summary>
+		/// <param name="value">Vue 调试器事件。Vue debugger event.</param>
 		public static implicit operator SubscriptionMutationEvents(Vue3.VueDebuggerEvent value)
 			=> new(value);
 
+		/// <summary>
+		/// 从调试器事件数组隐式转换为 <see cref="SubscriptionMutationEvents"/>。
+		/// Implicitly converts a debugger event array to a <see cref="SubscriptionMutationEvents"/>.
+		/// </summary>
+		/// <param name="value">Vue 调试器事件数组。Vue debugger event array.</param>
 		public static implicit operator SubscriptionMutationEvents(Vue3.VueDebuggerEvent[] value)
 			=> new(value);
 	}
@@ -767,6 +795,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第三个运行时参数。
+		/// The third runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[2]")]
 		public extern TArg2 Arg2 { get; }
 	}
@@ -783,6 +815,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第四个运行时参数。
+		/// The fourth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[3]")]
 		public extern TArg3 Arg3 { get; }
 	}
@@ -799,6 +835,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第五个运行时参数。
+		/// The fifth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[4]")]
 		public extern TArg4 Arg4 { get; }
 	}
@@ -815,6 +855,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第六个运行时参数。
+		/// The sixth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[5]")]
 		public extern TArg5 Arg5 { get; }
 	}
@@ -831,6 +875,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第七个运行时参数。
+		/// The seventh runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[6]")]
 		public extern TArg6 Arg6 { get; }
 	}
@@ -847,6 +895,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第八个运行时参数。
+		/// The eighth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[7]")]
 		public extern TArg7 Arg7 { get; }
 	}
@@ -863,6 +915,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第九个运行时参数。
+		/// The ninth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[8]")]
 		public extern TArg8 Arg8 { get; }
 	}
@@ -879,6 +935,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十个运行时参数。
+		/// The tenth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[9]")]
 		public extern TArg9 Arg9 { get; }
 	}
@@ -895,6 +955,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十一个运行时参数。
+		/// The eleventh runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[10]")]
 		public extern TArg10 Arg10 { get; }
 	}
@@ -911,6 +975,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十二个运行时参数。
+		/// The twelfth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[11]")]
 		public extern TArg11 Arg11 { get; }
 	}
@@ -927,6 +995,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十三个运行时参数。
+		/// The thirteenth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[12]")]
 		public extern TArg12 Arg12 { get; }
 	}
@@ -943,6 +1015,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十四个运行时参数。
+		/// The fourteenth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[13]")]
 		public extern TArg13 Arg13 { get; }
 	}
@@ -959,6 +1035,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十五个运行时参数。
+		/// The fifteenth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[14]")]
 		public extern TArg14 Arg14 { get; }
 	}
@@ -975,6 +1055,10 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 投影到更强的用户声明类型的第十六个运行时参数。
+		/// The sixteenth runtime argument projected to a stronger user-declared type.
+		/// </summary>
 		[Description("@#[15]")]
 		public extern TArg15 Arg15 { get; }
 	}

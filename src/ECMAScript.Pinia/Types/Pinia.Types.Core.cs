@@ -147,105 +147,359 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 将回调函数标记为可追踪的 store action。
+		/// Marks the callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action Action(global::System.Action callback, string? name = null);
 
+		/// <summary>
+		/// 将带一个参数的回调函数标记为可追踪的 store action。
+		/// Marks the single-parameter callback as a tracked store action.
+		/// </summary>
+		/// <typeparam name="T1">回调参数类型。The callback parameter type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1> Action<T1>(global::System.Action<T1> callback, string? name = null);
 
+		/// <summary>
+		/// 将带两个参数的回调函数标记为可追踪的 store action。
+		/// Marks the two-parameter callback as a tracked store action.
+		/// </summary>
+		/// <typeparam name="T1">第一个回调参数类型。The first callback parameter type.</typeparam>
+		/// <typeparam name="T2">第二个回调参数类型。The second callback parameter type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2> Action<T1, T2>(global::System.Action<T1, T2> callback, string? name = null);
 
+		/// <summary>
+		/// 将带三个参数的回调函数标记为可追踪的 store action。
+		/// Marks the three-parameter callback as a tracked store action.
+		/// </summary>
+		/// <typeparam name="T1">第一个回调参数类型。The first callback parameter type.</typeparam>
+		/// <typeparam name="T2">第二个回调参数类型。The second callback parameter type.</typeparam>
+		/// <typeparam name="T3">第三个回调参数类型。The third callback parameter type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3> Action<T1, T2, T3>(global::System.Action<T1, T2, T3> callback, string? name = null);
 
+		/// <summary>
+		/// 将带四个参数的回调函数标记为可追踪的 store action。
+		/// Marks the four-parameter callback as a tracked store action.
+		/// </summary>
+		/// <typeparam name="T1">第一个回调参数类型。The first callback parameter type.</typeparam>
+		/// <typeparam name="T2">第二个回调参数类型。The second callback parameter type.</typeparam>
+		/// <typeparam name="T3">第三个回调参数类型。The third callback parameter type.</typeparam>
+		/// <typeparam name="T4">第四个回调参数类型。The fourth callback parameter type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4> Action<T1, T2, T3, T4>(global::System.Action<T1, T2, T3, T4> callback, string? name = null);
 
+		/// <summary>
+		/// 将带五个参数的回调函数标记为可追踪的 store action。
+		/// Marks the five-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5> Action<T1, T2, T3, T4, T5>(global::System.Action<T1, T2, T3, T4, T5> callback, string? name = null);
 
+		/// <summary>
+		/// 将带六个参数的回调函数标记为可追踪的 store action。
+		/// Marks the six-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6> Action<T1, T2, T3, T4, T5, T6>(global::System.Action<T1, T2, T3, T4, T5, T6> callback, string? name = null);
 
+		/// <summary>
+		/// 将带七个参数的回调函数标记为可追踪的 store action。
+		/// Marks the seven-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7> Action<T1, T2, T3, T4, T5, T6, T7>(global::System.Action<T1, T2, T3, T4, T5, T6, T7> callback, string? name = null);
 
+		/// <summary>
+		/// 将带八个参数的回调函数标记为可追踪的 store action。
+		/// Marks the eight-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8> Action<T1, T2, T3, T4, T5, T6, T7, T8>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8> callback, string? name = null);
 
+		/// <summary>
+		/// 将带九个参数的回调函数标记为可追踪的 store action。
+		/// Marks the nine-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十个参数的回调函数标记为可追踪的 store action。
+		/// Marks the ten-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十一个参数的回调函数标记为可追踪的 store action。
+		/// Marks the eleven-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十二个参数的回调函数标记为可追踪的 store action。
+		/// Marks the twelve-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十三个参数的回调函数标记为可追踪的 store action。
+		/// Marks the thirteen-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十四个参数的回调函数标记为可追踪的 store action。
+		/// Marks the fourteen-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十五个参数的回调函数标记为可追踪的 store action。
+		/// Marks the fifteen-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十六个参数的回调函数标记为可追踪的 store action。
+		/// Marks the sixteen-parameter callback as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(global::System.Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> callback, string? name = null);
 
+		/// <summary>
+		/// 将无参数带返回值的回调函数标记为可追踪的 store action。
+		/// Marks the parameterless callback with return value as a tracked store action.
+		/// </summary>
+		/// <typeparam name="TResult">回调返回值类型。The callback return type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<TResult> Action<TResult>(global::System.Func<TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带一个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the single-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <typeparam name="T1">回调参数类型。The callback parameter type.</typeparam>
+		/// <typeparam name="TResult">回调返回值类型。The callback return type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, TResult> Action<T1, TResult>(global::System.Func<T1, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带两个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the two-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <typeparam name="T1">第一个回调参数类型。The first callback parameter type.</typeparam>
+		/// <typeparam name="T2">第二个回调参数类型。The second callback parameter type.</typeparam>
+		/// <typeparam name="TResult">回调返回值类型。The callback return type.</typeparam>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, TResult> Action<T1, T2, TResult>(global::System.Func<T1, T2, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带三个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the three-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, TResult> Action<T1, T2, T3, TResult>(global::System.Func<T1, T2, T3, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带四个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the four-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, TResult> Action<T1, T2, T3, T4, TResult>(global::System.Func<T1, T2, T3, T4, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带五个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the five-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, TResult> Action<T1, T2, T3, T4, T5, TResult>(global::System.Func<T1, T2, T3, T4, T5, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带六个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the six-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, TResult> Action<T1, T2, T3, T4, T5, T6, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带七个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the seven-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, TResult> Action<T1, T2, T3, T4, T5, T6, T7, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带八个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the eight-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带九个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the nine-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the ten-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十一个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the eleven-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十二个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the twelve-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十三个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the thirteen-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十四个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the fourteen-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十五个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the fifteen-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TResult> callback, string? name = null);
 
+		/// <summary>
+		/// 将带十六个参数和返回值的回调函数标记为可追踪的 store action。
+		/// Marks the sixteen-parameter callback with return value as a tracked store action.
+		/// </summary>
+		/// <param name="callback">要包装的回调函数。The callback to wrap.</param>
+		/// <param name="name">可选的 action 名称。Optional action name.</param>
+		/// <returns>包装后的 action。The wrapped action.</returns>
 		[Description("@#action")]
 		public extern global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(global::System.Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> callback, string? name = null);
 	}
@@ -327,42 +581,137 @@ public static partial class Pinia
 		{
 		}
 
+		/// <summary>
+		/// 从字符串隐式转换为 Pinia 值。
+		/// Implicitly converts a string to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的字符串值。The string value to convert.</param>
 		public extern static implicit operator PiniaValue(string value);
 
+		/// <summary>
+		/// 从布尔值隐式转换为 Pinia 值。
+		/// Implicitly converts a bool to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的布尔值。The bool value to convert.</param>
 		public extern static implicit operator PiniaValue(bool value);
 
+		/// <summary>
+		/// 从 Number 隐式转换为 Pinia 值。
+		/// Implicitly converts a Number to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 Number 值。The Number value to convert.</param>
 		public extern static implicit operator PiniaValue(Number value);
 
+		/// <summary>
+		/// 从 BigInt 隐式转换为 Pinia 值。
+		/// Implicitly converts a BigInt to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 BigInt 值。The BigInt value to convert.</param>
 		public extern static implicit operator PiniaValue(BigInt value);
 
+		/// <summary>
+		/// 从字符隐式转换为 Pinia 值。
+		/// Implicitly converts a char to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的字符值。The char value to convert.</param>
 		public extern static implicit operator PiniaValue(char value);
 
+		/// <summary>
+		/// 从 double 隐式转换为 Pinia 值。
+		/// Implicitly converts a double to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的双精度浮点值。The double value to convert.</param>
 		public extern static implicit operator PiniaValue(double value);
 
+		/// <summary>
+		/// 从 float 隐式转换为 Pinia 值。
+		/// Implicitly converts a float to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的单精度浮点值。The float value to convert.</param>
 		public extern static implicit operator PiniaValue(float value);
 
+		/// <summary>
+		/// 从 int 隐式转换为 Pinia 值。
+		/// Implicitly converts an int to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 32 位整数值。The int value to convert.</param>
 		public extern static implicit operator PiniaValue(int value);
 
+		/// <summary>
+		/// 从 long 隐式转换为 Pinia 值。
+		/// Implicitly converts a long to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 64 位整数值。The long value to convert.</param>
 		public extern static implicit operator PiniaValue(long value);
 
+		/// <summary>
+		/// 从 short 隐式转换为 Pinia 值。
+		/// Implicitly converts a short to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 16 位整数值。The short value to convert.</param>
 		public extern static implicit operator PiniaValue(short value);
 
+		/// <summary>
+		/// 从 ushort 隐式转换为 Pinia 值。
+		/// Implicitly converts a ushort to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的无符号 16 位整数值。The ushort value to convert.</param>
 		public extern static implicit operator PiniaValue(ushort value);
 
+		/// <summary>
+		/// 从 byte 隐式转换为 Pinia 值。
+		/// Implicitly converts a byte to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的无符号 8 位整数值。The byte value to convert.</param>
 		public extern static implicit operator PiniaValue(byte value);
 
+		/// <summary>
+		/// 从 sbyte 隐式转换为 Pinia 值。
+		/// Implicitly converts an sbyte to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的有符号 8 位整数值。The sbyte value to convert.</param>
 		public extern static implicit operator PiniaValue(sbyte value);
 
+		/// <summary>
+		/// 从 uint 隐式转换为 Pinia 值。
+		/// Implicitly converts a uint to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的无符号 32 位整数值。The uint value to convert.</param>
 		public extern static implicit operator PiniaValue(uint value);
 
+		/// <summary>
+		/// 从 ulong 隐式转换为 Pinia 值。
+		/// Implicitly converts a ulong to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的无符号 64 位整数值。The ulong value to convert.</param>
 		public extern static implicit operator PiniaValue(ulong value);
 
+		/// <summary>
+		/// 从 decimal 隐式转换为 Pinia 值。
+		/// Implicitly converts a decimal to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 decimal 值。The decimal value to convert.</param>
 		public extern static implicit operator PiniaValue(decimal value);
 
+		/// <summary>
+		/// 从 Error 隐式转换为 Pinia 值。
+		/// Implicitly converts an Error to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 Error 值。The Error value to convert.</param>
 		public extern static implicit operator PiniaValue(Error value);
 
+		/// <summary>
+		/// 从 VueProps 隐式转换为 Pinia 值。
+		/// Implicitly converts a VueProps to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 VueProps 值。The VueProps value to convert.</param>
 		public extern static implicit operator PiniaValue(Vue3.VueProps value);
 
+		/// <summary>
+		/// 从 PiniaValue 数组隐式转换为 Pinia 值。
+		/// Implicitly converts a PiniaValue array to a Pinia value.
+		/// </summary>
+		/// <param name="value">要转换的 PiniaValue 数组。The PiniaValue array to convert.</param>
 		public extern static implicit operator PiniaValue(PiniaValue[] value);
 	}
 
