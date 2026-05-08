@@ -5,6 +5,8 @@
     <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <JazorAnalyzerRazorSdkPath Condition="$([System.IO.Directory]::Exists('$(MSBuildSDKsPath)\Microsoft.NET.Sdk.Razor'))">$(MSBuildSDKsPath)</JazorAnalyzerRazorSdkPath>
+    <JazorAnalyzerRazorSdkPath Condition="'$(JazorAnalyzerRazorSdkPath)' == '' And '$(NETCoreSdkVersion)' != ''">$([System.IO.Path]::GetFullPath('$(ProgramFiles)\dotnet\sdk\$(NETCoreSdkVersion)\Sdks'))</JazorAnalyzerRazorSdkPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +20,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <Reference Include="Microsoft.CodeAnalysis.Razor.Compiler">
+      <HintPath>$(JazorAnalyzerRazorSdkPath)\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

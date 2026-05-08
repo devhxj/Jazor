@@ -15,6 +15,7 @@
 - [RazorVue.ImplementationSkeleton.md](./RazorVue.ImplementationSkeleton.md)
 - [RazorVue.Hmr.Design.md](./RazorVue.Hmr.Design.md)
 - [RazorVue.RazorSg.MainlineIrInjection.DecisionRecord.md](./RazorVue.RazorSg.MainlineIrInjection.DecisionRecord.md)
+- [RazorVue.RazorSg.TailInjection.Guidance.md](./RazorVue.RazorSg.TailInjection.Guidance.md)
 - [zazzy-whistling-lemon.md](../../../03-完成/razorvue/zazzy-whistling-lemon.md)
 
 ## 1. 迁移目标
@@ -36,7 +37,7 @@
 本迁移默认不做以下事情：
 
 1. 不把 `@code` 文本直接拼进 `<script setup>`
-2. 不把 `Jazor.Analyzer` 变成 Razor SDK phase 宿主
+2. 不把 `Jazor.Analyzer` 变成脱离当前 SDK Razor SG 主线的“自建 RazorCompile/classic phase 宿主”
 3. 不因为引入 IR 就同步删除 canonical / SFC / artifact lowering
 4. 不在第一步就承诺覆盖所有 Razor 语法形状
 5. 不把“不确定如何映射”的节点静默降级成看起来合理的模板字符串
@@ -123,6 +124,22 @@
   - 走完整的 source-generator 对齐路径 `CompilerFeatures.Register(builder) + RazorExtensions.Register(builder)` 时，除了 component descriptors，还能返回 probe classic tag helper `Probe.TagHelpers.DemoCardTagHelper` 的 descriptor
 - 这意味着“`ProcessDesignTime` + 手搓 `Compilation` + 直接 discovery”本身并不是根本错误；先前失败的真正原因是独立宿主缺少 Razor 官方的初始化注册切片
 - 因此下一阶段的重点已经从“还能不能发现 descriptor”切换为“RazorVue 生产实现到底放在哪个 Razor SDK 对齐宿主层，以及如何在保留 `BuildRenderTree` 正常生成的同时并行产出 Vue SFC catalog”
+- 本轮进一步通过 `RazorSourceGeneratorHostOutputTests` 与 `RazorSourceGeneratorCarrierBridgeTests` 证实：
+  - 公开 `Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator` 在单次 driver run 中即可同时产出标准 Razor generated source 与 `HostOutputs`
+  - `HostOutputs` 中存在 internal `RazorGeneratorResult`
+  - 可通过受控 bridge 从 `RazorGeneratorResult.GetCodeDocument(string physicalPath)` 取回对应 `RazorCodeDocument`
+- 本轮还确认：
+  - `build_metadata.AdditionalFiles.TargetPath` 的真实输入契约是 UTF-8 Base64 后的 Razor 相对路径，而不是纯文本路径
+  - 不能依赖 `SuppressRazorSourceGenerator=true` 让手工实例化运行的 SDK Razor SG 自停机
+  - 因此 “外层 companion generator 再跑一次 Razor SG + 依赖 SDK 自抑制” 不能作为最终生产架构，只能作为验证手段
+- 基于源码阅读和实际测试，当前 RazorVue 正式 SG 接入方案已经锁定为受控 IL 尾部注入：
+  - HostOutput 只作为 Razor SG 末端 IR 结果锚点和验证点
+  - carrier partial 必须通过并列 source output 的 `AddSource(...)` 进入 compilation
+  - 官方 `.razor.g.cs` 生成、官方 HostOutput 发布、Razor parser / engine passes / tag helper discovery 均保持原样
+  - RazorVue 未启用时不注入；目标 SDK IL shape 不匹配时 fail-fast，不退回 `.razor` 回读或 `BuildRenderTree` 反推
+- 本轮对旧 `src/Jazor.RazorVue.RazorExtension/` 的校验也表明：
+  - `ProvideRazorExtensionInitializerAttribute` / `RazorExtensionInitializer` 等旧 classic extension API 面在当前 SDK 10.0.203 引用下已不成立
+  - 这条路线不再属于正式接入候选
 
 ## 5. 阶段 2. IR 节点盘点与支持边界
 
@@ -171,6 +188,9 @@
   - `TryGetDiscoverer(...)` 目前直接返回 `False`
   - 而显式注入官方 producer factories 后，`TryGetDiscoverer(...)` 可以变成 `True`
   - 因此独立 spike 缺少的是“官方 producer factory 装配所在的 Razor SDK 初始化切片”，而不只是某个 descriptor 输入细节
+- 但当前迁移已不应再把“独立 `RazorProjectEngine.Process(...)` 重建主文档”当成正式上线目标；
+  - 它更适合用于 IR 形状盘点和辅助验证
+  - 正式生产主线需要继续收敛到当前 SDK Razor source generator 已持有的 `RazorCodeDocument` / IR 结果上
 
 ## 6. 阶段 3. IR 到模板中间模型映射
 
@@ -270,6 +290,14 @@
 - 该前端负责把 Roslyn component candidate 绑定到 `.razor` / `_Imports.razor` 路径
 - `Jazor.Common` 中的 `DefaultRazorSemanticFrontend` 已退回 Roslyn-only 语义前端，不再隐式承担 Razor 文档定位策略
 - 这使 `Jazor.Common` 保持“通用编排 + 显式依赖注入”，而 Razor SDK 文档绑定继续留在 `src/Jazor.RazorVue/RazorSdk/`
+- 当前默认切换前新增的架构门已经通过 focused test 锁定：
+  - 一个 generator 生成的 carrier partial 不能被同轮另一个 generator 的 `CompilationProvider` / symbol 查询看到
+  - 第二轮 compilation 才能观察上一轮 generator 输出
+  - 因此正式生产实现不能采用“一个 generator 产 carrier，另一个 generator 同轮读 carrier”的串联结构
+- 正式接入已经收敛为受控 IL 尾部注入：
+  - 复用官方 Razor SG 的最终 document 增量数据流
+  - 新增并列 source output 产出 carrier partial
+  - 保持官方 `.razor.g.cs` 与 HostOutput 行为原样
 
 ## 9. 阶段 6. 旧前端清理
 
@@ -299,15 +327,34 @@
 
 ## 10. 推荐的 PR 顺序
 
-### PR1. `RazorCodeDocument` 获取 spike
+### PR1. Razor SG 主线桥接事实固化
 
 包含：
 
-- 宿主接线
-- 最小实验测试
+- HostOutput focused tests
+- `RazorGeneratorResult -> RazorCodeDocument` bridge 测试
+- 决策与迁移文档更新
 - 不触及主 pipeline 默认路径
 
-### PR2. IR 节点盘点与最小映射
+### PR2. Razor SG 尾部注入 shape 探针
+
+包含：
+
+- `RazorSourceGenerator.Initialize(...)` IL shape 探针
+- 目标 SDK 版本、MVID、方法签名和关键 IL 指纹
+- 指纹不匹配 fail-fast diagnostic 设计
+- RazorVue 未启用 no-op 行为设计
+
+### PR3. 最小 carrier source output 注入
+
+包含：
+
+- 受控 IL 尾部注入新增并列 source output
+- 官方 `.razor.g.cs` parity 验证
+- 最小 carrier partial 同轮进入 final compilation
+- package / analyzer 装载最小验证
+
+### PR4. IR 节点盘点与最小映射
 
 包含：
 
@@ -315,7 +362,7 @@
 - 最小 template 中间模型映射
 - 单元测试
 
-### PR3. parity 测试框架
+### PR5. parity 测试框架
 
 包含：
 
@@ -323,7 +370,7 @@
 - 差异报告
 - 已支持子集基线
 
-### PR4. 默认前端切换
+### PR6. 默认前端切换
 
 包含：
 
@@ -331,7 +378,7 @@
 - 仅限手写 `BuildRenderTree` 的 fallback
 - 主测试面验证
 
-### PR5. 旧前端清理
+### PR7. 旧前端清理
 
 包含：
 
@@ -349,6 +396,7 @@
 4. 新旧前端 parity 测试
 5. 默认切换测试
 6. 旧前端清理后的回归测试
+7. Razor SG tail injection 指纹与 fail-fast 测试
 
 建议的早期测试名称：
 
@@ -360,12 +408,19 @@
 - `RazorVue_TemplateFrontend_DefaultsToRazorIr_WhenParityGatePasses`
 - `RazorVue_TemplateFrontend_FallsBackOnlyForHandwrittenBuildRenderTree`
 - `RazorVue_TemplateFrontend_RazorGeneratedComponentWithoutBoundDocument_FailsFast`
+- `RazorVue_Generator_SameDriverRun_DoesNotSeeCarrierPartialFromAnotherGenerator`
+- `RazorVue_RazorSourceGenerator_HostOutput_ExposesCodeDocument_ForPhysicalPath`
+- `RazorVue_RazorSourceGenerator_TailInjection_AddsCarrierSourceOutput`
+- `RazorVue_RazorSourceGenerator_TailInjection_NoOps_WhenRazorVueDisabled`
+- `RazorVue_RazorSourceGenerator_TailInjection_FailsFast_WhenSdkShapeMismatches`
 
 ## 12. 风险与缓解
 
 | 风险 | 影响 | 缓解 |
 |------|------|------|
 | Razor SDK/toolset 接线不稳定 | 高 | 将接线隔离在专门宿主层，不把私有访问扩散到核心主链 |
+| Roslyn 同轮 generator 不可见导致串联 generator 架构失效 | 高 | 已通过 focused test 锁定；正式路线改为受控 IL 尾部注入新增并列 source output |
+| Razor SG IL shape 随 SDK 升级变化 | 高 | 绑定版本、MVID、方法签名和关键 IL 指纹；不匹配时 RazorVue 启用场景 fail-fast |
 | IR 形状与预期不一致 | 高 | 先做节点盘点和样例归档，再做正式映射 |
 | 新前端破坏 setup/lifecycle/source-origin | 高 | 迁移只替换 template frontend，保留下游主链，强制 parity 测试 |
 | 切换后回归难定位 | 中 | 建双跑 parity 报告，并把 fallback 严格限制为手写 `BuildRenderTree` authoring |
@@ -389,8 +444,9 @@ Razor IR 模板前端迁移仅在以下条件全部满足时才算完成：
 正确吸收当前补充方案的方式是：
 
 1. 接受 `RazorCodeDocument` / Razor IR 取代 `BuildRenderTree` 作为长期 template frontend
-2. 接受“先证明 SDK/toolset 宿主与发现上下文，再做正式映射”的阶段顺序
-3. 不接受“直接从 IR 拼最终 SFC 文本，并把 `@code` 文本直接并入 `<script setup>`，同时绕过现有 descriptor / lifecycle / setup / artifact 主链”的一步到位切法
+2. 接受“通过当前 SDK Razor SG 已持有的 `RazorCodeDocument` / IR 结果接入，而不是自建 classic / path 回读主线”
+3. 接受“受控 IL 尾部注入 + 并列 source output”作为当前源码阅读和实际测试后的正式 SG 接入方案
+4. 不接受“直接从 IR 拼最终 SFC 文本，并把 `@code` 文本直接并入 `<script setup>`，同时绕过现有 descriptor / lifecycle / setup / artifact 主链”的一步到位切法
 
 因此，正确的做法不是直接跳到“从 IR 拼 SFC 文本并删除旧链”，
-而是把 template frontend 迁移当成一个有宿主接线、发现上下文、结构映射、parity 验证和默认切换门的独立工程任务。
+而是把 template frontend 迁移当成一个有 Razor SG 尾部注入、IR carrier、结构映射、parity 验证和默认切换门的独立工程任务。
