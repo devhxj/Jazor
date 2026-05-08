@@ -32,6 +32,17 @@ public sealed class AstConverterTests
         return $"$ctor_{Format.HashName(constructor.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
     }
 
+    private static string ConstructorHelperName(INamedTypeSymbol containingType, params string[] parameterTypes)
+    {
+        var constructor = containingType.InstanceConstructors
+            .Single(ctor =>
+                !ctor.IsImplicitlyDeclared &&
+                ctor.Parameters
+                    .Select(static parameter => parameter.Type.ToDisplayString(Format.NameFormat))
+                    .SequenceEqual(parameterTypes));
+        return $"$ctor_{Format.HashName(constructor.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
+    }
+
     private static bool ContainsVue3Reference(IEnumerable<MetadataReference> references)
         => references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue3).Assembly.Location, StringComparison.OrdinalIgnoreCase));
 
@@ -794,12 +805,13 @@ $@"export class NestedClass {{
   value;
   constructor() {{
     let $args = arguments;
-    if ($args.length === 0) {{
+    let $ctor = $args[0];
+    if ($ctor === ""{ctor0}"") {{
       this.{ctor0}();
       return;
     }}
-    if ($args.length === 1) {{
-      let value = $args[0];
+    if ($ctor === ""{ctor1}"") {{
+      let value = $args[1];
       this.{ctor1}(value);
       return;
     }}
@@ -814,63 +826,139 @@ $@"export class NestedClass {{
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedClassConstructorOverloadsWithSameArity_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedClassConstructorOverloadsWithSameArity_GeneratesSelectorDispatcher()
     {
         var code = """
             public static class TestClass
             {
                 public class NestedClass
                 {
+                    public string Value;
+
                     public NestedClass(int value)
                     {
+                        Value = "int";
                     }
 
                     public NestedClass(string value)
                     {
+                        Value = value;
                     }
+                }
+
+                public static NestedClass CreateInt()
+                {
+                    return new NestedClass(1);
+                }
+
+                public static NestedClass CreateString()
+                {
+                    return new NestedClass("text");
                 }
             }
             """;
 
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var ctorInt = ConstructorHelperName(nestedClass, "int");
+        var ctorString = ConstructorHelperName(nestedClass, "string");
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
-        StringAssert.Contains(exception.Message, "Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.");
-        StringAssert.Contains(exception.Message, "Conflict at argument count 1");
-        StringAssert.Contains(exception.Message, "NestedClass(int value) [args:1]");
-        StringAssert.Contains(exception.Message, "NestedClass(string value) [args:1]");
+AssertScriptEqual(
+$@"export class NestedClass {{
+  value;
+  constructor() {{
+    let $args = arguments;
+    let $ctor = $args[0];
+    if ($ctor === ""{ctorInt}"") {{
+      let value = $args[1];
+      this.{ctorInt}(value);
+      return;
+    }}
+    if ($ctor === ""{ctorString}"") {{
+      let value = $args[1];
+      this.{ctorString}(value);
+      return;
+    }}
+    throw new Error(""No matching constructor overload for NestedClass."");
+  }}
+  {ctorInt}(value) {{
+    this.value = ""int"";
+  }}
+  {ctorString}(value) {{
+    this.value = value;
+  }}
+}}
+export function createInt() {{
+  return new NestedClass(""{ctorInt}"", 1);
+}}
+export function createString() {{
+  return new NestedClass(""{ctorString}"", ""text"");
+}}
+", script);
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithNestedClassConstructorOverloadsWithOptionalParameterOverlap_ThrowsNotSupportedException()
+    public async Task Convert_ClassWithNestedClassConstructorOverloadsWithOptionalParameterOverlap_GeneratesSelectorDefaults()
     {
         var code = """
             public static class TestClass
             {
                 public class NestedClass
                 {
+                    public int Value;
+
                     public NestedClass(int value)
                     {
+                        Value = value;
                     }
 
                     public NestedClass(int value, int increment = 1)
                     {
+                        Value = value + increment;
                     }
                 }
             }
             """;
 
         var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var nestedClass = classSymbol.GetTypeMembers("NestedClass").Single();
+        var ctor1 = ConstructorHelperName(nestedClass, 1);
+        var ctor2 = ConstructorHelperName(nestedClass, 2);
         var converter = new AstConverter(classSymbol, semanticModel);
 
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(converter.Convert);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
 
-        StringAssert.Contains(exception.Message, "Jazor member class constructor overloads are not uniquely dispatchable by argument count NestedClass.");
-        StringAssert.Contains(exception.Message, "Conflict at argument count 1");
-        StringAssert.Contains(exception.Message, "NestedClass(int value) [args:1]");
-        StringAssert.Contains(exception.Message, "NestedClass(int value, int increment = <default>) [args:1..2]");
+AssertScriptEqual(
+$@"export class NestedClass {{
+  value;
+  constructor() {{
+    let $args = arguments;
+    let $ctor = $args[0];
+    if ($ctor === ""{ctor1}"") {{
+      let value = $args[1];
+      this.{ctor1}(value);
+      return;
+    }}
+    if ($ctor === ""{ctor2}"") {{
+      let value = $args[1], increment = $args.length > 2 ? $args[2] : 1;
+      this.{ctor2}(value, increment);
+      return;
+    }}
+    throw new Error(""No matching constructor overload for NestedClass."");
+  }}
+  {ctor1}(value) {{
+    this.value = value;
+  }}
+  {ctor2}(value, increment) {{
+    this.value = value + increment;
+  }}
+}}
+", script);
     }
 
     [TestMethod]
@@ -1073,13 +1161,14 @@ $@"export class BaseClass {{
 export class NestedClass extends BaseClass {{
   constructor() {{
     let $args = arguments;
-    if ($args.length === 0) {{
+    let $ctor = $args[0];
+    if ($ctor === ""{ctor0}"") {{
       super(1);
       this.{ctor0}();
       return;
     }}
-    if ($args.length === 1) {{
-      let value = $args[0];
+    if ($ctor === ""{ctor1}"") {{
+      let value = $args[1];
       super(value + 1);
       this.{ctor1}(value);
       return;
@@ -1089,6 +1178,146 @@ export class NestedClass extends BaseClass {{
   {ctor0}() {{ }}
   {ctor1}(value) {{
     this.field = value * 2;
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithNestedClassBaseConstructorOverloadsWithSameArity_GeneratesSuperSelector()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public string Field;
+
+                    public BaseClass(int value)
+                    {
+                        Field = "int";
+                    }
+
+                    public BaseClass(string value)
+                    {
+                        Field = value;
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                    public NestedClass() : base("text")
+                    {
+                    }
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var baseClass = classSymbol.GetTypeMembers("BaseClass").Single();
+        var baseCtorInt = ConstructorHelperName(baseClass, "int");
+        var baseCtorString = ConstructorHelperName(baseClass, "string");
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+AssertScriptEqual(
+$@"export class BaseClass {{
+  field;
+  constructor() {{
+    let $args = arguments;
+    let $ctor = $args[0];
+    if ($ctor === ""{baseCtorInt}"") {{
+      let value = $args[1];
+      this.{baseCtorInt}(value);
+      return;
+    }}
+    if ($ctor === ""{baseCtorString}"") {{
+      let value = $args[1];
+      this.{baseCtorString}(value);
+      return;
+    }}
+    throw new Error(""No matching constructor overload for BaseClass."");
+  }}
+  {baseCtorInt}(value) {{
+    this.field = ""int"";
+  }}
+  {baseCtorString}(value) {{
+    this.field = value;
+  }}
+}}
+export class NestedClass extends BaseClass {{
+  constructor() {{
+    super(""{baseCtorString}"", ""text"");
+  }}
+}}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassWithImplicitDerivedConstructorAndBaseOverloads_GeneratesSuperSelector()
+    {
+        var code = """
+            public static class TestClass
+            {
+                public class BaseClass
+                {
+                    public int Field;
+
+                    public BaseClass()
+                    {
+                        Field = 1;
+                    }
+
+                    public BaseClass(int value)
+                    {
+                        Field = value;
+                    }
+                }
+
+                public class NestedClass : BaseClass
+                {
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(code);
+        var baseClass = classSymbol.GetTypeMembers("BaseClass").Single();
+        var baseCtor0 = ConstructorHelperName(baseClass, 0);
+        var baseCtor1 = ConstructorHelperName(baseClass, 1);
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+AssertScriptEqual(
+$@"export class BaseClass {{
+  field;
+  constructor() {{
+    let $args = arguments;
+    let $ctor = $args[0];
+    if ($ctor === ""{baseCtor0}"") {{
+      this.{baseCtor0}();
+      return;
+    }}
+    if ($ctor === ""{baseCtor1}"") {{
+      let value = $args[1];
+      this.{baseCtor1}(value);
+      return;
+    }}
+    throw new Error(""No matching constructor overload for BaseClass."");
+  }}
+  {baseCtor0}() {{
+    this.field = 1;
+  }}
+  {baseCtor1}(value) {{
+    this.field = value;
+  }}
+}}
+export class NestedClass extends BaseClass {{
+  constructor() {{
+    super(""{baseCtor0}"");
   }}
 }}
 ", script);
@@ -13277,7 +13506,7 @@ function installPlugin(app, options) {
                 [ECMAScriptModule("app/main.mjs")]
                 public static class AppModule
                 {
-                    public static IVNode Boot(IVueComponent component, IVNode vnode, VueProps props, VueObject attrs, IVueRef<int> count)
+                    public static IVNode Boot(IVueComponent component, IVNode vnode, VueProps props, VueObject attrs, VueShallowRef<int> count)
                     {
                         var app = Vue3.CreateApp(component);
                         var runtimeVersion = Vue3.Version;
@@ -15126,7 +15355,7 @@ export function create() {{
         Assert.IsFalse(script.Contains("import {", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("export const RuntimeModule = {", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "this.items = materializeArray(collection);");
-        StringAssert.Contains(script, "return new JQueue;");
+        StringAssert.Contains(script, "return new JQueue(\"$ctor_");
     }
 
     [TestMethod]

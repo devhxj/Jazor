@@ -218,6 +218,9 @@ public static class Util
         return AppendMethodOverloadSuffixIfNeeded(symbol, fallbackName);
     }
 
+    public static string GetMemberConstructorHelperName(IMethodSymbol symbol)
+        => $"$ctor_{Format.HashName(symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
+
     private static bool ShouldUseJsMemberNamingFallback(ISymbol symbol)
         => symbol switch
         {

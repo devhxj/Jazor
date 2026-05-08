@@ -63,7 +63,7 @@ flowchart TD
 - `record` 不发射 runtime declaration，统一保留 structural lowering 语义
 - 模块导出只支持 named export；若导出名解析为 `default`，必须显式失败
 - 成员类继承支持同模块 JS-compatible 子集：`extends` / `super(...)` / `super.member`
-- 成员类构造函数重载走单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher
+- 成员类构造函数重载走单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher
 
 ### 3.3 SemanticWalker
 

@@ -423,7 +423,7 @@ JS 的 `super.Field` 查找的是基类原型链，不会自然命中这类实�
 
 也就是说，如果某个成员类声明了非 `object` 基类，但当前场景不在上述已支持子集内，就必须直接失败，而不是生成 `superClass: null`、省略 `super(...)`、或者把 `base` 悄悄变成 `this` 的错误 class shape。
 
-### 8.5 成员类构造函数重载：单 `constructor` + 稳定 helper + 按参数个数分派
+### 8.5 成员类构造函数重载：单 `constructor` + 稳定 helper + selector 分派
 
 成员类构造函数重载不能照搬普通方法重载路线。  
 原因不是“签名 hash 不够”，而是 JavaScript class runtime shape 只允许一个真实 `constructor`。
@@ -433,23 +433,23 @@ JS 的 `super.Field` 查找的是基类原型链，不会自然命中这类实�
 - 运行时始终只发射一个真实 `constructor`；
 - 每个 C# 实例构造函数 body 下降为一个稳定命名的 helper method，例如 `$ctor_<hash>`；
 - 真实 `constructor` 负责分派，不直接承载多套 body；
-- 分派键当前限定为 `arguments.length`；
+- Jazor 编译出来的 `new C(...)` / `super(...)` 在需要重载分派时把已绑定构造函数的 `$ctor_<hash>` 作为第一个内部 selector 参数传入；
+- 真实 `constructor` 只按 selector 分派，不保留 `arguments.length` fallback；
 - optional parameter 的省略值在命中分支后按该 overload 自身的默认值补齐；
 - 对派生类，每个分支各自先执行对应的 `super(...)`，再进入 helper body；
 - helper / dispatcher 的插入位置保持稳定，跟随源码中第一处显式构造函数的位置，不额外把构造函数重排到 class 顶部。
 
 这条路线支持的子集必须收紧为：
 
-- overload 集合按“可接受参数个数区间”两两不重叠；
-- 也就是每个 overload 的 `[requiredCount, totalCount]` 区间并集必须无冲突；
-- 同 arity 重载直接失败；
-- optional parameter 导致的区间重叠同样直接失败。
+- overload 集合按 Roslyn 已绑定的构造函数符号确定目标 helper；
+- 同 arity 重载和 optional parameter 区间重叠允许存在，因为选择发生在 C# 绑定阶段；
+- 没有 selector 的外部直接 `new C(...)` 不属于成员类构造函数重载协议，运行时应命中“No matching constructor overload”失败路径。
 
 当前必须继续显式拒绝的路径是：
 
 - `this(...)` 构造函数链；
 - `ref/out/in/params` 参与的构造函数重载分派；
-- 需要按类型、命名参数或其他 CLR 规则进一步判别的 overload 集合；
+- 命名 `base(...)` 构造函数初始值设定项；
 - 外部基类上的构造函数协议模拟。
 
 这条设计的重点不是“尽量像手写 JS”，而是：

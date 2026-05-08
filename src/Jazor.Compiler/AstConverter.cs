@@ -35,10 +35,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private sealed record MemberConstructorLowering(
         IMethodSymbol Symbol,
         ConstructorInitializerSyntax? InitializerSyntax,
+        IMethodSymbol? BaseConstructorSymbol,
         FunctionBody Body,
-        string HelperName,
-        int RequiredParameterCount,
-        int TotalParameterCount);
+        string HelperName);
 
     private readonly INamedTypeSymbol _classSymbol = classSymbol;
     private readonly SemanticModel _classModel = classModel;
@@ -796,7 +795,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var body = baseType is null
             ? lowering.Body
-            : PrependSuperConstructorCall(lowering.Body, lowering.InitializerSyntax, cancellationToken);
+            : PrependSuperConstructorCall(lowering.Body, lowering.InitializerSyntax, lowering.BaseConstructorSymbol, cancellationToken);
 
         return new MethodDefinition(
             PropertyKind.Method,
@@ -821,41 +820,49 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         cancellationToken.ThrowIfCancellationRequested();
 
         var argsIdentifier = new Identifier("$args");
-        var argsLength = new MemberExpression(argsIdentifier, new Identifier("length"), computed: false, optional: false);
+        var ctorIdentifier = new Identifier("$ctor");
         var statements = new List<Statement>
         {
             new VariableDeclaration(
                 VariableDeclarationKind.Let,
-                NodeList.From(new VariableDeclarator(argsIdentifier, new Identifier("arguments"))))
+                NodeList.From(new VariableDeclarator(argsIdentifier, new Identifier("arguments")))),
+            new VariableDeclaration(
+                VariableDeclarationKind.Let,
+                NodeList.From(new VariableDeclarator(
+                    ctorIdentifier,
+                    new MemberExpression(
+                        argsIdentifier,
+                        new NumericLiteral(0, "0"),
+                        computed: true,
+                        optional: false))))
         };
 
-        var dispatchByArity = BuildConstructorDispatchByArgumentCount(containingType, lowerings);
-        foreach (var dispatch in dispatchByArity.OrderBy(static entry => entry.Key))
+        foreach (var lowering in lowerings)
         {
             var branchStatements = new List<Statement>();
 
-            foreach (var binding in BuildConstructorDispatcherParameterBindings(dispatch.Value, dispatch.Key, argsIdentifier))
+            foreach (var binding in BuildConstructorDispatcherParameterBindings(lowering, argsIdentifier))
                 branchStatements.Add(binding);
 
             if (baseType is not null)
-                branchStatements.Add(CreateSuperConstructorCallStatement(dispatch.Value.InitializerSyntax, cancellationToken));
+                branchStatements.Add(CreateSuperConstructorCallStatement(lowering.InitializerSyntax, lowering.BaseConstructorSymbol, cancellationToken));
 
             branchStatements.Add(new NonSpecialExpressionStatement(
                 new CallExpression(
                     new MemberExpression(
                         new ThisExpression(),
-                        new Identifier(dispatch.Value.HelperName),
+                        new Identifier(lowering.HelperName),
                         computed: false,
                         optional: false),
-                    NodeList.From<Expression>(dispatch.Value.Symbol.Parameters.Select(static parameter => new Identifier(parameter.Name))),
+                    NodeList.From<Expression>(lowering.Symbol.Parameters.Select(static parameter => new Identifier(parameter.Name))),
                     optional: false)));
             branchStatements.Add(new ReturnStatement(null));
 
             statements.Add(new IfStatement(
                 new NonLogicalBinaryExpression(
                     Operator.StrictEquality,
-                    argsLength,
-                    new NumericLiteral(dispatch.Key, dispatch.Key.ToString(CultureInfo.InvariantCulture))),
+                    ctorIdentifier,
+                    new StringLiteral(lowering.HelperName, $"\"{lowering.HelperName}\"")),
                 new NestedBlockStatement(NodeList.From(branchStatements)),
                 null));
         }
@@ -984,7 +991,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         if (baseType is not null && !hasExplicitConstructor)
-            nodes.Insert(0, CreateImplicitBaseConstructor());
+            nodes.Insert(0, CreateImplicitBaseConstructor(baseType));
 
         var className =
             symbol.ContainingType is not null &&
@@ -1030,7 +1037,6 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     parameter.RefKind is RefKind.Ref or RefKind.Out or RefKind.In || parameter.IsParams)))
             throw new NotSupportedException($"Jazor member class does not support constructor overload dispatch with ref/out/in/params parameters {symbol.Name}.");
 
-        _ = BuildConstructorDispatchByArgumentCount(symbol, lowerings);
         return lowerings;
     }
 
@@ -1046,6 +1052,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         IOperation? operation = null;
         ConstructorInitializerSyntax? initializerSyntax = null;
+        IMethodSymbol? baseConstructorSymbol = null;
         foreach (var reference in symbol.DeclaringSyntaxReferences)
         {
             if (reference.GetSyntax() is not ConstructorDeclarationSyntax ctorDecl)
@@ -1055,6 +1062,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             if (ctorDecl.Initializer is not null &&
                 (baseType is null || !ctorDecl.Initializer.ThisOrBaseKeyword.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.BaseKeyword)))
                 throw new NotSupportedException($"Jazor member class does not support constructor initializer on {symbol.Name}.");
+
+            if (ctorDecl.Initializer is not null)
+                baseConstructorSymbol = GetSemanticModel(ctorDecl.Initializer).GetSymbolInfo(ctorDecl.Initializer).Symbol as IMethodSymbol;
 
             if (ctorDecl.Body is not null)
             {
@@ -1078,75 +1088,38 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return new MemberConstructorLowering(
             Symbol: symbol,
             InitializerSyntax: initializerSyntax,
+            BaseConstructorSymbol: baseConstructorSymbol,
             Body: body,
-            HelperName: GetMemberConstructorHelperName(symbol),
-            RequiredParameterCount: symbol.Parameters.Count(static parameter => !parameter.HasExplicitDefaultValue),
-            TotalParameterCount: symbol.Parameters.Length);
-    }
-
-    private static Dictionary<int, MemberConstructorLowering> BuildConstructorDispatchByArgumentCount(
-        INamedTypeSymbol containingType,
-        IEnumerable<MemberConstructorLowering> lowerings)
-    {
-        var dispatch = new Dictionary<int, MemberConstructorLowering>();
-        foreach (var lowering in lowerings)
-        {
-            for (var argumentCount = lowering.RequiredParameterCount; argumentCount <= lowering.TotalParameterCount; argumentCount++)
-            {
-                if (dispatch.TryGetValue(argumentCount, out var existing))
-                {
-                    var existingSignature = DescribeConstructorDispatchSignature(existing);
-                    var incomingSignature = DescribeConstructorDispatchSignature(lowering);
-                    throw new NotSupportedException(
-                        $"Jazor member class constructor overloads are not uniquely dispatchable by argument count {containingType.Name}. " +
-                        $"Conflict at argument count {argumentCount}: '{existingSignature}' vs '{incomingSignature}'.");
-                }
-
-                dispatch.Add(argumentCount, lowering);
-            }
-        }
-
-        return dispatch;
-    }
-
-    private static string DescribeConstructorDispatchSignature(MemberConstructorLowering lowering)
-    {
-        var argumentRange = lowering.RequiredParameterCount == lowering.TotalParameterCount
-            ? lowering.RequiredParameterCount.ToString(CultureInfo.InvariantCulture)
-            : $"{lowering.RequiredParameterCount}..{lowering.TotalParameterCount}";
-
-        var parameters = string.Join(
-            ", ",
-            lowering.Symbol.Parameters.Select(parameter =>
-            {
-                var parameterType = parameter.Type.ToDisplayString(Format.NameFormat);
-                return parameter.HasExplicitDefaultValue
-                    ? $"{parameterType} {parameter.Name} = <default>"
-                    : $"{parameterType} {parameter.Name}";
-            }));
-
-        return $"{lowering.Symbol.ContainingType.Name}({parameters}) [args:{argumentRange}]";
+            HelperName: GetMemberConstructorHelperName(symbol));
     }
 
     private IEnumerable<Statement> BuildConstructorDispatcherParameterBindings(
         MemberConstructorLowering lowering,
-        int suppliedArgumentCount,
         Identifier argsIdentifier)
     {
         if (lowering.Symbol.Parameters.Length == 0)
             yield break;
 
+        var argsLength = new MemberExpression(argsIdentifier, new Identifier("length"), computed: false, optional: false);
         var declarators = new List<VariableDeclarator>(lowering.Symbol.Parameters.Length);
         for (var index = 0; index < lowering.Symbol.Parameters.Length; index++)
         {
             var parameter = lowering.Symbol.Parameters[index];
-            Expression value = suppliedArgumentCount > index
-                ? new MemberExpression(
-                    argsIdentifier,
-                    new NumericLiteral(index, index.ToString(CultureInfo.InvariantCulture)),
-                    computed: true,
-                    optional: false)
-                : CreateParameterDefaultValue(parameter);
+            var argumentIndex = index + 1;
+            Expression suppliedValue = new MemberExpression(
+                argsIdentifier,
+                new NumericLiteral(argumentIndex, argumentIndex.ToString(CultureInfo.InvariantCulture)),
+                computed: true,
+                optional: false);
+            Expression value = parameter.HasExplicitDefaultValue
+                ? new ConditionalExpression(
+                    new NonLogicalBinaryExpression(
+                        Operator.GreaterThan,
+                        argsLength,
+                        new NumericLiteral(argumentIndex, argumentIndex.ToString(CultureInfo.InvariantCulture))),
+                    suppliedValue,
+                    CreateParameterDefaultValue(parameter))
+                : suppliedValue;
             declarators.Add(new VariableDeclarator(new Identifier(parameter.Name), value));
         }
 
@@ -1155,17 +1128,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private Statement CreateSuperConstructorCallStatement(
         ConstructorInitializerSyntax? initializerSyntax,
+        IMethodSymbol? baseConstructorSymbol,
         CancellationToken cancellationToken)
         => new NonSpecialExpressionStatement(
             new CallExpression(
                 new Super(),
-                initializerSyntax?.ArgumentList is null
-                    ? NodeList.Empty<Expression>()
-                    : NodeList.From(initializerSyntax.ArgumentList.Arguments.Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken))),
+                CreateConstructorInitializerArguments(initializerSyntax, baseConstructorSymbol, cancellationToken),
                 optional: false));
 
     private static string GetMemberConstructorHelperName(IMethodSymbol symbol)
-        => $"$ctor_{Format.HashName(symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)).TrimStart('_')}";
+        => Util.GetMemberConstructorHelperName(symbol);
 
     private string GetMemberBackingFieldName(IPropertySymbol property)
     {
@@ -1249,15 +1221,24 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         return baseType;
     }
 
-    private static MethodDefinition CreateImplicitBaseConstructor()
+    private static MethodDefinition CreateImplicitBaseConstructor(INamedTypeSymbol baseType)
     {
+        var arguments = new List<Expression>();
+        var baseConstructor = ResolveImplicitBaseConstructor(baseType);
+        if (baseConstructor is not null &&
+            HasMultipleExplicitConstructors(baseType))
+        {
+            var helperName = GetMemberConstructorHelperName(baseConstructor);
+            arguments.Add(new StringLiteral(helperName, $"\"{helperName}\""));
+        }
+
         var body = new FunctionBody(
             strict: true,
             body: NodeList.From<Statement>(
                 new NonSpecialExpressionStatement(
                     new CallExpression(
                         new Super(),
-                        NodeList.Empty<Expression>(),
+                        NodeList.From(arguments),
                         optional: false))));
 
         return new MethodDefinition(
@@ -1277,25 +1258,51 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private FunctionBody PrependSuperConstructorCall(
         FunctionBody body,
         ConstructorInitializerSyntax? initializerSyntax,
+        IMethodSymbol? baseConstructorSymbol,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        var arguments = initializerSyntax?.ArgumentList is null
-            ? NodeList.Empty<Expression>()
-            : NodeList.From(initializerSyntax.ArgumentList.Arguments.Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken)));
 
         var statements = new List<Statement>
         {
             new NonSpecialExpressionStatement(
                 new CallExpression(
                     new Super(),
-                    arguments,
+                    CreateConstructorInitializerArguments(initializerSyntax, baseConstructorSymbol, cancellationToken),
                     optional: false))
         };
 
         statements.AddRange(body.Body);
         return new FunctionBody(NodeList.From(statements), body.Strict);
+    }
+
+    private NodeList<Expression> CreateConstructorInitializerArguments(
+        ConstructorInitializerSyntax? initializerSyntax,
+        IMethodSymbol? baseConstructorSymbol,
+        CancellationToken cancellationToken)
+    {
+        var arguments = initializerSyntax?.ArgumentList is null
+            ? []
+            : initializerSyntax.ArgumentList.Arguments
+                .Select(arg => ConvertConstructorInitializerArgument(arg, cancellationToken))
+                .ToList();
+
+        if (baseConstructorSymbol is not null && HasMultipleExplicitConstructors(baseConstructorSymbol.ContainingType))
+            arguments.Insert(0, new StringLiteral(GetMemberConstructorHelperName(baseConstructorSymbol), $"\"{GetMemberConstructorHelperName(baseConstructorSymbol)}\""));
+
+        return NodeList.From(arguments);
+    }
+
+    private static bool HasMultipleExplicitConstructors(INamedTypeSymbol? typeSymbol)
+        => typeSymbol?.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) > 1;
+
+    private static IMethodSymbol? ResolveImplicitBaseConstructor(INamedTypeSymbol baseType)
+    {
+        var explicitConstructors = baseType.InstanceConstructors
+            .Where(static ctor => !ctor.IsImplicitlyDeclared)
+            .ToList();
+        return explicitConstructors.FirstOrDefault(static ctor => ctor.Parameters.Length == 0) ??
+            explicitConstructors.SingleOrDefault(static ctor => ctor.Parameters.All(static parameter => parameter.HasExplicitDefaultValue));
     }
 
     private Expression ConvertConstructorInitializerArgument(ArgumentSyntax argumentSyntax, CancellationToken cancellationToken = default)

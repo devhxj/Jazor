@@ -112,7 +112,7 @@
 - 默认参数应转换为 JS 默认参数，或在构造函数 dispatcher 命中分支后按该 overload 自身的默认值补齐
 - `ref/out` 参数目前需要与 `SemanticWalker` 的调用约定保持一致
 - 普通方法重载必须在命名阶段稳定区分；当前通过 `Util.GetConfigOrSymbolName(...)` 仅在确有同名方法重载时追加稳定签名 hash
-- 成员类构造函数重载不走“多个 JS 名字”路线，而走“单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` 分派”
+- 成员类构造函数重载不走“多个 JS 名字”路线，而走“单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector 分派”
 
 ### 6.3 未来规则
 
@@ -203,22 +203,23 @@
 
 - 始终只发射一个真实 `constructor`
 - 每个显式实例构造函数 body 下降为一个稳定命名的 `$ctor_<hash>` helper method
-- `constructor` 内按 `arguments.length` 分派
+- Jazor 编译产物内部的 `new C(...)` / `super(...)` 在需要重载分派时传入 `$ctor_<hash>` selector
+- `constructor` 内按 selector 分派，不保留 `arguments.length` fallback
 - optional parameter 的默认值在命中分支后补齐
 - 派生类每个分支各自先执行对应的 `super(...)`，再进入 helper
 - dispatcher / helper 插入位置跟随第一处显式构造函数，不额外重排到 class 顶部
 
-当前支持的 overload 集必须满足：
+当前支持的 overload 集按 Roslyn 已绑定构造函数符号确定目标 helper：
 
-- 每个 overload 的可接受参数个数区间 `[requiredCount, totalCount]` 两两不重叠
-- 同 arity 重载直接失败
-- optional parameter 导致的区间重叠同样直接失败
+- 同 arity 重载允许存在
+- optional parameter 导致的可接受参数个数区间重叠允许存在
+- 没有 selector 的外部直接 `new C(...)` 不属于成员类构造函数重载协议
 
 当前继续显式拒绝：
 
 - `this(...)`
 - `ref/out/in/params` 参与的构造函数分派
-- 需要按参数类型、命名参数或其他 CLR 规则进一步判别的 overload 集
+- 命名 `base(...)` 构造函数初始值设定项
 - 外部基类上的构造函数协议模拟
 
 ## 8. Import 规范
@@ -270,4 +271,4 @@
 5. 是否补了对应的 `AstConverterTests`
 6. 若涉及导入，是否同步补了模块头输出链路
 7. 若涉及普通方法重载，是否保持稳定签名 hash 规则
-8. 若涉及构造函数重载，是否仍满足“单 `constructor` + 唯一 arity 分派”约束
+8. 若涉及构造函数重载，是否仍满足“单 `constructor` + 已绑定构造函数 selector 分派”约束

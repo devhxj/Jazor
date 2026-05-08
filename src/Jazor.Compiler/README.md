@@ -33,7 +33,7 @@
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式、解构都按结构属性键处理，不保 nominal runtime identity；若需要普通 runtime class 语义，必须显式写 `class`。
 - 成员类继承：当前支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`。
 - 普通方法重载：仅在确有同名 overload 时追加稳定签名 hash；ECMAScript runtime host API 默认跳过该后缀。
-- 成员类构造函数重载：固定为单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher。
+- 成员类构造函数重载：固定为单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher。
 - `Op.Import`：已完成“发现 -> 收集 -> 合并 -> 模块头输出”的闭环，后续重点是稳定性而不是接线。
 - `Op.Compile`：已接入主分发，但当前 contract 仍限于自包含表达式级钩子，不是完整 lowering 子系统。
 - 模块导出：只支持 named export，不支持 default export；任何成员若解析到导出名 `default` 都应显式失败。

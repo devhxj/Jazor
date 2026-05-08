@@ -81,6 +81,12 @@ public partial class SemanticWalker
 		// 用户代码中的成员类型会按声明侧规则折叠成运行时扁平名，
 		// ECMAScript 宿主绑定则保留必要的层级/导入语义。
 		var callee = BuildFullTypeName(operation.Type, argument) ?? new Identifier(typeName);
+		if (operation.Constructor is not null &&
+			ShouldEmitMemberConstructorSelector(operation.Constructor))
+		{
+			var helperName = Util.GetMemberConstructorHelperName(operation.Constructor);
+			arguments.Insert(0, new StringLiteral(helperName, $"\"{helperName}\""));
+		}
 
 		Expression expr = new NewExpression(callee, NodeList.From(arguments));
 		if (mapper == TypeMapper.BigInt)
@@ -119,6 +125,16 @@ public partial class SemanticWalker
 		}
 
 		return expr;
+	}
+
+	private bool ShouldEmitMemberConstructorSelector(IMethodSymbol constructor)
+	{
+		if (constructor.MethodKind != MethodKind.Constructor ||
+			constructor.ContainingType is not INamedTypeSymbol containingType)
+			return false;
+
+		return TryGetCurrentModuleDeclaredName(containingType, out _) &&
+			containingType.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) > 1;
 	}
 
 	private bool IsIntrinsicObjectCreationFallbackAllowed(IMethodSymbol constructor, ITypeSymbol constructedType)
@@ -294,7 +310,10 @@ public partial class SemanticWalker
 			return false;
 
 		if (orderSymbol is IPropertySymbol propertySymbol &&
-			TryGetSpreadAttribute(propertySymbol, out _))
+			(TryGetSpreadAttribute(propertySymbol, out _) ||
+			 propertySymbol.Parameters.Length == 0 &&
+			 propertySymbol.ContainingType is INamedTypeSymbol containingRecord &&
+			 ShouldLowerRecordStructurally(containingRecord)))
 		{
 			return true;
 		}

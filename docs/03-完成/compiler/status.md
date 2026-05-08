@@ -46,7 +46,7 @@
 - `record`：固定走 structural lowering；创建、`with`、位置/属性模式与解构都按结构属性键处理，不保 nominal runtime identity
 - 模块导出：固定只支持 named export；任何成员若解析到导出名 `default` 都应显式失败
 - 成员类继承：支持同模块成员类的 JS-compatible 子集，真实输出 `extends` / `super(...)` / `super.member`
-- 成员类构造函数重载：单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` dispatcher
+- 成员类构造函数重载：单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher
 
 这意味着 compiler 主线现在已经有一套更清晰的“什么必须保、什么可以擦除、什么必须显式失败”的规则，而不是继续在“尽量长得像手写 JS”上摇摆。
 

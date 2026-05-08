@@ -83,10 +83,12 @@ public sealed class SemanticWalkerInlineTemplateTest
             "InstantiateInlineTemplate",
             typeof(string),
             typeof(string),
-            typeof(IReadOnlyList<Expression>));
+            typeof(IReadOnlyList<Expression>),
+            typeof(string),
+            typeof(Identifier));
         var args = new List<Expression> { new Identifier("left") };
         var exception = AssertInlineInvalidOperation(() =>
-            instantiateMethod.Invoke(null, [NewSignature(), "__arg1 + __arg2", args]));
+            instantiateMethod.Invoke(null, [NewSignature(), "__arg1 + __arg2", args, null, null]));
 
         StringAssert.Contains(exception.Message, "expects at least 2 arguments");
         StringAssert.Contains(exception.Message, "received 1");
@@ -99,14 +101,16 @@ public sealed class SemanticWalkerInlineTemplateTest
             "InstantiateInlineTemplate",
             typeof(string),
             typeof(string),
-            typeof(IReadOnlyList<Expression>));
+            typeof(IReadOnlyList<Expression>),
+            typeof(string),
+            typeof(Identifier));
         var args = new List<Expression>
         {
             new Identifier("left"),
             new Identifier("right")
         };
         var exception = AssertInlineInvalidOperation(() =>
-            instantiateMethod.Invoke(null, [NewSignature(), "__arg3 + 1", args]));
+            instantiateMethod.Invoke(null, [NewSignature(), "__arg3 + 1", args, null, null]));
 
         StringAssert.Contains(exception.Message, "expects at least 3 arguments");
         StringAssert.Contains(exception.Message, "received 2");

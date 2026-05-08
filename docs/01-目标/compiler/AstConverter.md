@@ -111,7 +111,7 @@ INamedTypeSymbol + SemanticModel
 - 构造函数
 - 普通方法
 - 同模块成员类继承的受控子集：`extends`、显式 `: base(...)` 到 `super(...)`、无显式构造函数时合成 `super()`
-- 构造函数重载的受控子集：单真实 `constructor` + `$ctor_<hash>` helper + `arguments.length` 分派
+- 构造函数重载的受控子集：单真实 `constructor` + `$ctor_<hash>` helper + 已绑定构造函数 selector 分派
 
 这和旧文档里“不支持嵌套类扁平化”的说法也不同。当前实现不是扁平化，而是直接生成模块内类声明。
 
@@ -192,7 +192,8 @@ INamedTypeSymbol + SemanticModel
 
 - 一个真实 `constructor`
 - 零个或多个 `$ctor_<hash>` helper method
-- `constructor` 内按 `arguments.length` 分派
+- Jazor 编译产物内部的 `new C(...)` / `super(...)` 在需要重载分派时传入 `$ctor_<hash>` selector
+- `constructor` 内按 selector 分派，不保留 `arguments.length` fallback
 - 命中分支后补齐该 overload 自身的 optional 默认值
 - 派生类分支里先 `super(...)`，再调用 helper
 
@@ -209,7 +210,6 @@ INamedTypeSymbol + SemanticModel
 - 模块静态构造函数
 - 成员类静态构造函数
 - `this(...)` 构造函数链
-- 不能按参数个数唯一分派的构造函数 overload 集
 - `ref/out/in/params` 参与的构造函数分派
 - 外部基类上的构造函数协议模拟
 
@@ -290,12 +290,13 @@ export class NestedClass {
   Value;
   constructor() {
     let $args = arguments;
-    if ($args.length === 0) {
+    let $ctor = $args[0];
+    if ($ctor === "$ctor_<hash0>") {
       this.$ctor_<hash0>();
       return;
     }
-    if ($args.length === 1) {
-      let value = $args[0];
+    if ($ctor === "$ctor_<hash1>") {
+      let value = $args[1];
       this.$ctor_<hash1>(value);
       return;
     }
@@ -312,6 +313,7 @@ export class NestedClass {
 重点不是 helper 的外观，而是：
 
 - 真实 `constructor` 始终只有一个
+- `new` 调用点按 Roslyn 已绑定构造函数传 selector
 - helper 名稳定
 - overload 选择结果稳定
 - 默认值补齐与 `super(...)` 调用都留在明确分支里
@@ -403,7 +405,6 @@ export class NestedClass extends BaseClass {
 - `this(...)` 构造函数链
 - `base.Field`
 - 外部基类
-- 不能按参数个数唯一分派的构造函数 overload
 - `ref/out/in/params` 驱动的构造函数分派
 - 任何仍依赖 CLR metadata identity 的 class runtime 语义
 

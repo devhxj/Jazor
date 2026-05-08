@@ -355,7 +355,7 @@ Analyzer 的职责不是生成代码，而是收紧输入域。凡是 Analyzer �
 这里要单独区分两类重载：
 
 - 普通方法重载仍然走 `GetConfigOrSymbolName(...)` 路线，只在确有同名方法重载时追加稳定签名 hash
-- 成员类构造函数重载不走“多个 JS 名字”分裂，因为 JS class 只能有一个真实 `constructor`；它必须走 `$ctor_<hash>` helper + `arguments.length` dispatcher
+- 成员类构造函数重载不走“多个 JS 名字”分裂，因为 JS class 只能有一个真实 `constructor`；它必须走 `$ctor_<hash>` helper + 已绑定构造函数 selector dispatcher
 
 换言之，“重载需要稳定区分”不等于“所有重载都靠最终输出名字区分”。
 

@@ -1150,6 +1150,10 @@ public sealed class EcmaScriptVueProxyTests
             method.IsGenericMethodDefinition &&
             method.GetParameters()[0].ParameterType.IsGenericType &&
             method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(IVueRef<>));
+        RequiredStatic(staticMethods, nameof(Vue3.Unref), static method =>
+            method.IsGenericMethodDefinition &&
+            method.GetParameters()[0].ParameterType.IsGenericType &&
+            method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(VueShallowRef<>));
         RequiredStatic(staticMethods, nameof(Vue3.NextTick), static method =>
             method.ReturnType == typeof(PromiseResult) &&
             method.GetParameters().Length == 0);
