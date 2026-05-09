@@ -21,7 +21,8 @@
     <JazorPackageBuildOutputRoot Condition="'$(JazorPackageBuildOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorPackageBuildOutputRoot>
     <JazorEmitPublishOutputRoot Condition="'$(JazorEmitPublishOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''">$([System.IO.Path]::Combine('$([MSBuild]::EnsureTrailingSlash($(JazorIsolatedBaseOutputRoot)))', 'Jazor.Emit', 'bin', '$(Configuration)', 'net10.0', 'publish'))\</JazorEmitPublishOutputRoot>
     <JazorEmitPublishOutputRoot Condition="'$(JazorEmitPublishOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\Jazor.Emit\bin\$(Configuration)\net10.0\publish\</JazorEmitPublishOutputRoot>
-    <JazorPackageArtifactBuildProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactBuildProperties>
+    <JazorPackageArtifactRestoreProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactRestoreProperties>
+    <JazorPackageArtifactBuildProperties>$(JazorPackageArtifactRestoreProperties);BuildProjectReferences=false</JazorPackageArtifactBuildProperties>
   </PropertyGroup>
 
   <ItemGroup>
@@ -90,20 +91,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript\ECMAScript.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Pinia.Testing\ECMAScript.Pinia.Testing.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
-    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Common\Jazor.Common.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <_JazorEmitProject Include="$(MSBuildThisFileDirectory)..\Jazor.Emit\Jazor.Emit.csproj" />
   </ItemGroup>
 
@@ -113,26 +114,26 @@
     <MSBuild Projects="@(_JazorPackageBuildProject)"
              Targets="Restore"
              BuildInParallel="false"
-             Properties="$(JazorPackageArtifactBuildProperties)"
-             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             Properties="$(JazorPackageArtifactRestoreProperties)"
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
 
     <MSBuild Projects="@(_JazorEmitProject)"
              Targets="Restore"
              BuildInParallel="false"
-             Properties="$(JazorPackageArtifactBuildProperties);SelfContained=false"
-             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             Properties="$(JazorPackageArtifactRestoreProperties);SelfContained=false"
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
 
     <MSBuild Projects="@(_JazorPackageBuildProject)"
              Targets="Build"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties)"
-             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
 
     <MSBuild Projects="@(_JazorEmitProject)"
              Targets="Publish"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties);SelfContained=false"
-             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;ExcludeRestorePackageImports" />
   </Target>
 
   <Target Name="AddJazorEmitPublishOutputToPackage"
