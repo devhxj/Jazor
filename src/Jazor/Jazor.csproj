@@ -114,25 +114,25 @@
              Targets="Restore"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties)"
-             RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
 
     <MSBuild Projects="@(_JazorEmitProject)"
              Targets="Restore"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties);SelfContained=false"
-             RemoveProperties="TargetFramework;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
 
     <MSBuild Projects="@(_JazorPackageBuildProject)"
              Targets="Build"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties)"
-             RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
 
     <MSBuild Projects="@(_JazorEmitProject)"
              Targets="Publish"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties);SelfContained=false"
-             RemoveProperties="TargetFramework;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+             RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkProfile;TargetPlatformIdentifier;TargetPlatformVersion;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
   </Target>
 
   <Target Name="AddJazorEmitPublishOutputToPackage"
