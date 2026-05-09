@@ -44,24 +44,30 @@
 
 ## 2.1 当前进度快照
 
+本节按 **2026-05-09** 的当前仓库代码快照更新。
+
 仓库已经跨越了以下里程碑边界：
 
 - P0 基础和迁移边界
 - P1 发现和首批 Roslyn 诊断（`JAZORVUE001`、`JAZORVUE002`、`JAZORVUE004`、`JAZORVUE005`、`JAZORVUE006`）
 - P2 组件契约提取
-- 将 RazorVue 核心语义所有权移入 `Jazor.RazorVue` 并保持 `Jazor.RazorVue.Analysis` 为薄 Roslyn 宿主的分层重构
+- 将 RazorVue 核心语义所有权移入 `Jazor.RazorVue` 并保持 RazorVue analysis lane 为薄 Roslyn 宿主的分层重构；对外命名空间仍为 `Jazor.RazorVue.Analysis`，物理程序集当前并入 `Jazor.Analyzer`
 - 主要语义载体/编排路径：`RazorVueCompilationContext` -> `RazorVueSemanticSnapshot` -> `RazorVuePipeline` -> `RazorVueArtifactFactory` -> `RazorVueCatalog`
+- 默认模板前端切换：Razor 生成组件已优先走 `RazorCodeDocument` / Razor IR；`BuildRenderTree` 仅保留给源码中显式手写的 `BuildRenderTree` authoring
 - P6 产物发射
-- 发射侧物化和 `RazorVueCatalog` 的清单过渡
+- 发射侧物化和 `RazorVueCatalog` / `RazorVueSfcCatalog` 的清单过渡
+- P7 的宿主消费切片已部分落地：`Jolt` 已消费共享 `Documents/` / `Protocol/` 契约，并在 DevServer 中接入 RazorVue manifest diff 和 HMR boundary 分类
 
 仓库已部分完成：
 
-- P4 最小模板结构提取（当前以 `BuildRenderTree`/`IOperation` 过渡实现为主）
+- P4 最小模板结构提取与手写 `BuildRenderTree` authoring 前端
+- P4.5 `RazorCodeDocument` / Razor IR 模板前端迁移与默认前端切换
 - P5 Razor -> Vue lowering
 - 结构化生成器诊断（超越回退表面）
 
 当前已证明的 lowering 子集：
 
+- Razor 生成组件默认经过 `RazorCodeDocument` / Razor IR -> render tree -> artifact lowering；手写 `BuildRenderTree` authoring 继续走保留前端
 - HTML 元素
 - 组件正常路径与组件节点 lowering
 - props
@@ -83,12 +89,12 @@
 - 完整的组件实例语义
 - `Dispose*`、`ShouldRender` 和 `SetParametersAsync` 的运行时等效 lowering
 - 更广泛的控制流覆盖验证
-- `RazorCodeDocument` / Razor IR 前端替代当前 `BuildRenderTree` 过渡提取
+- 更广泛的 Razor IR 形状覆盖验证，以及旧 `BuildRenderTree` 过渡路径的最终受控清理
 - 全面的 Razor 语法覆盖验证
-- 最终的 `DenoHost` 端到端集成
+- 最终的 `DenoHost` 构建/运行时端到端闭环
 - 最终的 HMR/sourcemap 输出
 
-当前不支持的分析/lowering 形状的回退仍然是通常情况下来自 `RazorVueGenerator` 的 `JAZORVGA001`。当前薄的 `Jazor.RazorVue.Analysis` 宿主路径也为 `JAZORVGA002`（未找到组件）、`JAZORVGA003`（短组件名称歧义）、`JAZORVGA004`（保留的内部名称冲突）、`JAZORVGA005`（不支持的生命周期 lowering）和 `JAZORVGA006`（不支持的 setup 侧逻辑 lowering）投射结构化问题诊断。
+当前不支持的分析/lowering 形状的回退仍然是通常情况下来自 `RazorVueGenerator` 的 `JAZORVGA001`。当前 RazorVue analysis 宿主路径也为 `JAZORVGA002`（未找到组件）、`JAZORVGA003`（短组件名称歧义）、`JAZORVGA004`（保留的内部名称冲突）、`JAZORVGA005`（不支持的生命周期 lowering）和 `JAZORVGA006`（不支持的 setup 侧逻辑 lowering）投射结构化问题诊断；对外命名空间仍为 `Jazor.RazorVue.Analysis`，物理程序集当前位于 `Jazor.Analyzer`。
 
 ## 3. P0. 基础和约束
 
@@ -506,6 +512,7 @@
 
 > Positioning: 这是从当前 `BuildRenderTree` 过渡提取迁移到长期模板语义前端的正式阶段。
 > 它替换 template frontend，但默认保留现有 canonical / SFC / artifact / diagnostics / identity 主链，直到 parity 被证明。
+> Current snapshot (2026-05-09): Razor 生成组件的默认前端已经切到 `RazorCodeDocument` / Razor IR；`BuildRenderTree` 仅保留给源码中显式手写的 `BuildRenderTree` authoring。当前剩余工作是扩大 Razor IR 覆盖、补齐 parity 证明并完成旧过渡路径的受控清理。
 
 ### 8.1 证明可稳定获取 Razor IR
 
@@ -768,6 +775,8 @@
 - 模块输出、imports、哈希和元数据有回归保护
 
 ## 11. P7. `DenoHost` 集成
+
+> Current snapshot (2026-05-09): 宿主消费链已经部分落地在 `Jolt`，包括共享 `Documents/` / `Protocol/` 契约、DevServer 变更处理中的 RazorVue manifest diff，以及 HMR boundary 分类消费；但最终 `DenoHost` 构建/运行时闭环仍未在本清单中视为完成。
 
 ### 11.1 定义宿主清单契约
 
