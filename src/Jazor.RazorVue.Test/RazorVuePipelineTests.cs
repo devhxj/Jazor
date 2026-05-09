@@ -1173,6 +1173,184 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyPackageSecondWaveAdditionalAttributesAndExtendedProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-advanced-form")]
+                public class VuetifyAdvancedForm : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Role { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> RoleChanged { get; set; }
+
+                    [Parameter]
+                    public string? Query { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> QueryChanged { get; set; }
+
+                    [Parameter]
+                    public string? Preference { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> PreferenceChanged { get; set; }
+
+                    [Parameter]
+                    public bool? IsValid { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool?> IsValidChanged { get; set; }
+
+                    [Parameter]
+                    public bool DialogOpen { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> DialogOpenChanged { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        builder.OpenComponent<VForm>(1);
+                        builder.AddAttribute(2, nameof(VForm.FastFail), true);
+                        builder.AddAttribute(3, nameof(VForm.Readonly), true);
+                        builder.AddAttribute(4, nameof(VForm.ValidateOn), VuetifyValidateOn.BlurLazy);
+                        builder.AddAttribute(5, nameof(VForm.ModelValue), IsValid);
+                        builder.AddAttribute(6, nameof(VForm.ModelValueChanged), IsValidChanged);
+                        builder.AddMultipleAttributes(7, AdditionalAttributes);
+
+                        builder.OpenComponent<VSelect>(8);
+                        builder.AddAttribute(9, nameof(VSelect.Label), "Role");
+                        builder.AddAttribute(10, nameof(VSelect.Items), new object[] { "Admin", "User" });
+                        builder.AddAttribute(11, nameof(VSelect.ItemTitle), "title");
+                        builder.AddAttribute(12, nameof(VSelect.ItemValue), "value");
+                        builder.AddAttribute(13, nameof(VSelect.ReturnObject), true);
+                        builder.AddAttribute(14, nameof(VSelect.Chips), true);
+                        builder.AddAttribute(15, nameof(VSelect.Clearable), true);
+                        builder.AddAttribute(16, nameof(VSelect.Readonly), true);
+                        builder.AddAttribute(17, nameof(VSelect.MenuProps), new VueDictionary
+                        {
+                            ["closeOnContentClick"] = false,
+                            ["maxHeight"] = 320
+                        });
+                        builder.AddAttribute(18, nameof(VSelect.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(19, nameof(VSelect.Variant), VuetifyVariant.Outlined);
+                        builder.AddAttribute(20, nameof(VSelect.ModelValue), Role);
+                        builder.AddAttribute(21, nameof(VSelect.ModelValueChanged), RoleChanged);
+                        builder.AddMultipleAttributes(22, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VAutocomplete>(23);
+                        builder.AddAttribute(24, nameof(VAutocomplete.Label), "Search");
+                        builder.AddAttribute(25, nameof(VAutocomplete.Items), new object[] { "alpha", "beta" });
+                        builder.AddAttribute(26, nameof(VAutocomplete.ItemTitle), "title");
+                        builder.AddAttribute(27, nameof(VAutocomplete.ItemValue), "value");
+                        builder.AddAttribute(28, nameof(VAutocomplete.ReturnObject), true);
+                        builder.AddAttribute(29, nameof(VAutocomplete.Chips), true);
+                        builder.AddAttribute(30, nameof(VAutocomplete.Clearable), true);
+                        builder.AddAttribute(31, nameof(VAutocomplete.Readonly), true);
+                        builder.AddAttribute(32, nameof(VAutocomplete.MenuProps), new VueDictionary
+                        {
+                            ["closeOnContentClick"] = false,
+                            ["contentClass"] = "search-menu"
+                        });
+                        builder.AddAttribute(33, nameof(VAutocomplete.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(34, nameof(VAutocomplete.Variant), VuetifyVariant.Filled);
+                        builder.AddAttribute(35, nameof(VAutocomplete.NoDataText), "Nothing found");
+                        builder.AddAttribute(36, nameof(VAutocomplete.ModelValue), Query);
+                        builder.AddAttribute(37, nameof(VAutocomplete.ModelValueChanged), QueryChanged);
+                        builder.AddMultipleAttributes(38, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VRadioGroup>(39);
+                        builder.AddAttribute(40, nameof(VRadioGroup.Label), "Preference");
+                        builder.AddAttribute(41, nameof(VRadioGroup.Color), "primary");
+                        builder.AddAttribute(42, nameof(VRadioGroup.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(43, nameof(VRadioGroup.Readonly), true);
+                        builder.AddAttribute(44, nameof(VRadioGroup.HideDetails), VuetifyHideDetailsMode.Auto);
+                        builder.AddAttribute(45, nameof(VRadioGroup.Messages), new[] { "One choice required" });
+                        builder.AddAttribute(46, nameof(VRadioGroup.ModelValue), Preference);
+                        builder.AddAttribute(47, nameof(VRadioGroup.ModelValueChanged), PreferenceChanged);
+                        builder.AddMultipleAttributes(48, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VDialog>(49);
+                        builder.AddAttribute(50, nameof(VDialog.ModelValue), DialogOpen);
+                        builder.AddAttribute(51, nameof(VDialog.ModelValueChanged), DialogOpenChanged);
+                        builder.AddAttribute(52, nameof(VDialog.Persistent), true);
+                        builder.AddAttribute(53, nameof(VDialog.MaxWidth), 640);
+                        builder.AddAttribute(54, nameof(VDialog.Width), "80%");
+                        builder.AddAttribute(55, nameof(VDialog.ScrollStrategy), VuetifyScrollStrategy.Block);
+                        builder.AddAttribute(56, nameof(VDialog.Location), VuetifyLocation.TopCenter);
+                        builder.AddAttribute(57, nameof(VDialog.Transition), "dialog-transition");
+                        builder.AddMultipleAttributes(58, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.CloseComponent();
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { VAutocomplete as VAutocompleteComponent, VDialog as VDialogComponent, VForm as VFormComponent, VRadioGroup as VRadioGroupComponent, VSelect as VSelectComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.ModuleCode, "\"validateOn\": \"blur lazy\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"returnObject\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"menuProps\": { closeOnContentClick: false, maxHeight: 320 }");
+        StringAssert.Contains(artifact.ModuleCode, "\"menuProps\": { closeOnContentClick: false, contentClass: \"search-menu\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"outlined\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"filled\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"noDataText\": \"Nothing found\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"hideDetails\": \"auto\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"messages\": [\"One choice required\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"persistent\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 640");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"80%\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"scrollStrategy\": \"block\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"top center\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"dialog-transition\"");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:isValid\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:role\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:query\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:preference\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:dialogOpen\", __value)");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyDialogActivatorScopedSlot()
     {
         var context = CreateContext(

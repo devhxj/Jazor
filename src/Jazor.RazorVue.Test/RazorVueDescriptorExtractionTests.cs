@@ -360,6 +360,18 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.IsTrue(checkbox.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
 
         var dialog = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VDialog");
+        Assert.AreEqual("persistent", dialog.Props.Single(static prop => prop.PublicName == "Persistent").Name);
+        Assert.AreEqual("maxWidth", dialog.Props.Single(static prop => prop.PublicName == "MaxWidth").Name);
+        Assert.AreEqual("width", dialog.Props.Single(static prop => prop.PublicName == "Width").Name);
+        Assert.AreEqual("scrollStrategy", dialog.Props.Single(static prop => prop.PublicName == "ScrollStrategy").Name);
+        Assert.AreEqual("location", dialog.Props.Single(static prop => prop.PublicName == "Location").Name);
+        Assert.AreEqual("transition", dialog.Props.Single(static prop => prop.PublicName == "Transition").Name);
+        Assert.AreEqual("additionalAttributes", dialog.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(dialog.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", dialog.Props.Single(static prop => prop.PublicName == "MaxWidth").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", dialog.Props.Single(static prop => prop.PublicName == "Width").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyScrollStrategy?", dialog.Props.Single(static prop => prop.PublicName == "ScrollStrategy").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", dialog.Props.Single(static prop => prop.PublicName == "Location").TypeName);
         var activator = dialog.Slots.Single(static slot => slot.Name == "activator");
         Assert.HasCount(1, activator.Parameters);
         Assert.AreEqual("context", activator.Parameters[0].Name);
@@ -408,11 +420,41 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("modelValue", select.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
         Assert.AreEqual("update:modelValue", select.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
         Assert.AreEqual("multiple", select.Props.Single(static prop => prop.PublicName == "Multiple").Name);
+        Assert.AreEqual("items", select.Props.Single(static prop => prop.PublicName == "Items").Name);
+        Assert.AreEqual("itemTitle", select.Props.Single(static prop => prop.PublicName == "ItemTitle").Name);
+        Assert.AreEqual("itemValue", select.Props.Single(static prop => prop.PublicName == "ItemValue").Name);
+        Assert.AreEqual("returnObject", select.Props.Single(static prop => prop.PublicName == "ReturnObject").Name);
+        Assert.AreEqual("chips", select.Props.Single(static prop => prop.PublicName == "Chips").Name);
+        Assert.AreEqual("clearable", select.Props.Single(static prop => prop.PublicName == "Clearable").Name);
+        Assert.AreEqual("readonly", select.Props.Single(static prop => prop.PublicName == "Readonly").Name);
+        Assert.AreEqual("menuProps", select.Props.Single(static prop => prop.PublicName == "MenuProps").Name);
+        Assert.AreEqual("density", select.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.AreEqual("variant", select.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.AreEqual("additionalAttributes", select.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(select.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vue3.VueDictionary?", select.Props.Single(static prop => prop.PublicName == "MenuProps").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", select.Props.Single(static prop => prop.PublicName == "Density").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyVariant?", select.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
 
         var autocomplete = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VAutocomplete");
         Assert.AreEqual("modelValue", autocomplete.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
         Assert.AreEqual("update:modelValue", autocomplete.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
         Assert.AreEqual("chips", autocomplete.Props.Single(static prop => prop.PublicName == "Chips").Name);
+        Assert.AreEqual("items", autocomplete.Props.Single(static prop => prop.PublicName == "Items").Name);
+        Assert.AreEqual("itemTitle", autocomplete.Props.Single(static prop => prop.PublicName == "ItemTitle").Name);
+        Assert.AreEqual("itemValue", autocomplete.Props.Single(static prop => prop.PublicName == "ItemValue").Name);
+        Assert.AreEqual("returnObject", autocomplete.Props.Single(static prop => prop.PublicName == "ReturnObject").Name);
+        Assert.AreEqual("clearable", autocomplete.Props.Single(static prop => prop.PublicName == "Clearable").Name);
+        Assert.AreEqual("readonly", autocomplete.Props.Single(static prop => prop.PublicName == "Readonly").Name);
+        Assert.AreEqual("menuProps", autocomplete.Props.Single(static prop => prop.PublicName == "MenuProps").Name);
+        Assert.AreEqual("density", autocomplete.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.AreEqual("variant", autocomplete.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.AreEqual("noDataText", autocomplete.Props.Single(static prop => prop.PublicName == "NoDataText").Name);
+        Assert.AreEqual("additionalAttributes", autocomplete.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(autocomplete.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vue3.VueDictionary?", autocomplete.Props.Single(static prop => prop.PublicName == "MenuProps").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", autocomplete.Props.Single(static prop => prop.PublicName == "Density").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyVariant?", autocomplete.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
 
         var list = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VList");
         Assert.AreEqual("density", list.Props.Single(static prop => prop.PublicName == "Density").Name);
@@ -434,6 +476,13 @@ public sealed class RazorVueDescriptorExtractionTests
 
         var form = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VForm");
         Assert.AreEqual("fastFail", form.Props.Single(static prop => prop.PublicName == "FastFail").Name);
+        Assert.AreEqual("readonly", form.Props.Single(static prop => prop.PublicName == "Readonly").Name);
+        Assert.AreEqual("validateOn", form.Props.Single(static prop => prop.PublicName == "ValidateOn").Name);
+        Assert.AreEqual("modelValue", form.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", form.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("additionalAttributes", form.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(form.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyValidateOn?", form.Props.Single(static prop => prop.PublicName == "ValidateOn").TypeName);
 
         var breadcrumbs = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBreadcrumbs");
         Assert.AreEqual("items", breadcrumbs.Props.Single(static prop => prop.PublicName == "Items").Name);
@@ -478,6 +527,16 @@ public sealed class RazorVueDescriptorExtractionTests
         var radioGroup = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VRadioGroup");
         Assert.AreEqual("modelValue", radioGroup.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
         Assert.AreEqual("update:modelValue", radioGroup.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("color", radioGroup.Props.Single(static prop => prop.PublicName == "Color").Name);
+        Assert.AreEqual("density", radioGroup.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.AreEqual("readonly", radioGroup.Props.Single(static prop => prop.PublicName == "Readonly").Name);
+        Assert.AreEqual("hideDetails", radioGroup.Props.Single(static prop => prop.PublicName == "HideDetails").Name);
+        Assert.AreEqual("messages", radioGroup.Props.Single(static prop => prop.PublicName == "Messages").Name);
+        Assert.AreEqual("additionalAttributes", radioGroup.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(radioGroup.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", radioGroup.Props.Single(static prop => prop.PublicName == "Density").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyHideDetailsValue?", radioGroup.Props.Single(static prop => prop.PublicName == "HideDetails").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMessagesValue?", radioGroup.Props.Single(static prop => prop.PublicName == "Messages").TypeName);
         Assert.IsTrue(radioGroup.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var snackbar = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSnackbar");

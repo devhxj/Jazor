@@ -42,6 +42,15 @@ public sealed class RazorVueSampleBuildIsolationTests
         Assert.IsFalse(
             project.Contains("RemoveProperties=\"TargetFramework;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;JazorIsolatedBaseOutputRoot;JazorIsolatedBaseIntermediateOutputRoot\"", StringComparison.Ordinal),
             "Emit artifact publish must not remove isolated output properties from inner project builds.");
+
+        StringAssert.Contains(
+            project,
+            "ExcludeRestorePackageImports",
+            "Inner artifact restore/build/publish must strip ExcludeRestorePackageImports so NETStandard.Library targets are still imported during nested package builds.");
+        StringAssert.Contains(
+            project,
+            "BuildProjectReferences=false",
+            "Inner artifact build/publish must consume the explicitly prebuilt dependency graph instead of recursively rebuilding project references inside the pack host.");
     }
 
     private static string FindRepositoryRoot()
