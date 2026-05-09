@@ -1,8 +1,6 @@
 # ECMAScript.Vue3 映射细节设计
 
-> Status: active target
 > Updated: 2026-05-02
-> Positioning: 补足 [ECMAScript.Vue3 平衡式目标设计](./vue3-balanced-design.md) 的细节合同，明确 `src/ECMAScript.Vue3/Vue3.cs` 每类 authoring surface 应该映射到什么 JavaScript 形态，以及 compiler 允许参与到什么程度。
 
 ## 1. 设计基线
 
@@ -1350,7 +1348,7 @@ app.use(installFeature, { enabled: true });
 
 ## 18. 当前实现基线
 
-| 区域 | 当前状态 | 目标 |
+| 区域 | 状态 | 目标 |
 |------|----------|------|
 | `ChildrenToSlotIntrinsic` | 已从 `SemanticWalker.cs.Vue.cs` 迁出，基于 imported `h` 和同宿主 slot contract 识别 | 继续保持为最小 intrinsic；后续不要回到 Vue 命名空间特判 |
 | default slot sugar | literal child 直接生成值对象；其他 child 使用 single-evaluation IIFE；component/props/child 单次求值与顺序已由回归锁定 | 后续可继续扩大静态安全表达式集合，但不得改变求值时机、次数或变量快照语义 |

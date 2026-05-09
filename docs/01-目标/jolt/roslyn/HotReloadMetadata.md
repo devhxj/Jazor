@@ -1,11 +1,9 @@
 # Jazor Hot Reload 元数据提供器
 
-> Status: 活跃参考
-> Positioning: Jazor HMR 边界检测与签名生成核心服务
 
 ## 1. 文档定位
 
-本文档描述 `JazorHotReloadMetadataProvider` 的实现，这是 Jolt 项目中用于分析 Jazor 组件、生成 HMR（热模块替换）元数据的核心服务。该服务通过 Roslyn 投影提取组件的属性、状态、计算属性和方法，构建 SHA256 签名，并分类 HMR 边界类型。
+`JazorHotReloadMetadataProvider` 的实现，这是 Jolt 项目中用于分析 Jazor 组件、生成 HMR（热模块替换）元数据的核心服务。该服务通过 Roslyn 投影提取组件的属性、状态、计算属性和方法，构建 SHA256 签名，并分类 HMR 边界类型。
 
 **源文件位置**：
 - `src/Jolt/Roslyn/InProc/JazorHotReloadMetadataProvider.cs`（约 750 行）

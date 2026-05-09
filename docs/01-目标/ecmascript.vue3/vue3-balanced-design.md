@@ -1,8 +1,6 @@
 # ECMAScript.Vue3 平衡式目标设计
 
-> Status: active target
 > Updated: 2026-05-02
-> Positioning: 为 `src/ECMAScript.Vue3/Vue3.cs` 与相关 lowering 定义新的边界，让 Vue authoring 尽量走 C# 原生语义，compiler 只保留稳定且必要的特性硬编码。
 
 ## 1. 核心问题
 

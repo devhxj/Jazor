@@ -1,16 +1,12 @@
 # Jolt — 全功能开发模式
 
-> Status: 活跃参考
-> Positioning: `Jolt` 设计入口，描述当前唯一活跃的 `.jazor` 开发时宿主边界。
-> Note: split-host、Bun、旧 `Jazor.VueHost` 路线只保留为历史迁移上下文，不再是现行目标架构。
-
 > 对应源码：`src/Jolt/`
 
 ## 为什么需要
 
-库模式的 RazorVue 只解决“构建时生成产物”。应用开发还需要编辑器智能、预览、HMR、生产构建、源码级调试与工作区级导航。`Jolt` 就是这一整套开发时宿主。
+库模式的 RazorVue 只解决"构建时生成产物"。应用开发还需要编辑器智能、预览、HMR、生产构建、源码级调试与工作区级导航。`Jolt` 就是这一整套开发时宿主。
 
-## 当前设计原则
+## 设计原则
 
 1. **`.jazor` 是第一作者文档**：保持 Razor-first，不把虚拟 `.vue` 当作公开 authoring 面。
 2. **工作区是图，不是孤立文件**：邻近 `.vue`、`.ts`、`.js`、`.css`、`.html` 都参与同一工作区图。
@@ -30,7 +26,7 @@
 | Build | `Build/` | 构建、CSS、资产、import map |
 | RPC / Services / Workspace | `Rpc/`、`Services/`、`Workspace/` | 工作区、协议、热更新规划与 host 协调 |
 
-## 当前运行模式
+## 运行模式
 
 | 模式 | 用途 |
 |------|------|

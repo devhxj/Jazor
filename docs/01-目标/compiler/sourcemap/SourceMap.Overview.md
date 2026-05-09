@@ -1,8 +1,5 @@
 # Jazor SourceMap 文档总览
 
-> Status: 活跃参考
-> Positioning: 当前 compiler SourceMap 文档集的总入口。
-> Note: 本页服务于 broad compiler/source-origin/map 主线；若进入更窄的 Jolt 或 RazorVue active lane，应再结合对应状态页和执行计划判断。
 
 ## 1. 文档定位
 
@@ -14,7 +11,7 @@
 2. 各份文档分别解决什么问题
 3. 后续继续扩展与稳定化时建议按什么顺序阅读
 
-## 2. 当前状态
+## 2. 状态
 
 当前 sourcemap 在项目中的状态是：
 
@@ -27,12 +24,12 @@
 1. 不再把 sourcemap 描述成“尚未实现”，而是描述成“baseline 已有，后续继续巩固”
 2. 继续控制范围，优先稳住模块级 map、origin 传播和输出确定性
 3. broad compiler contract 仍以模块级 map 为主，不默认把 bundle chaining 提升成主线义务
-4. 若进入 RazorVue / bundle 相关活跃 lane，应以当前状态页和计划文档为准
+4. 若进入 RazorVue / bundle 相关活跃 lane，应以状态页和计划文档为准
 
 相关执行入口：
 
-- [Compiler 当前状态](../../../03-完成/compiler/status.md)
-- [Emit 当前状态](../../../03-完成/emit/status.md)
+- [Compiler 状态](../../../03-完成/compiler/status.md)
+- [Emit 状态](../../../03-完成/emit/status.md)
 - [SourceMap 实施清单](../../../02-计划/compiler/SourceMap.ImplementationChecklist.md)
 
 ## 3. 核心结论

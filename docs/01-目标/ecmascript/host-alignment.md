@@ -7,23 +7,23 @@
 公共 C# host 表面应尽可能接近 JavaScript runtime 形状。
 当差异不可避免时，优先选择最小的 host-language escape hatch，而不是发明一个新的概念层。
 
-实际上，这意味着：
+具体来说：
 
 - 优先使用 JavaScript runtime 名称和对象边界。
 - 接受 C# 命名约定所需的大小写差异。
-- 仅当 C# 名称解析否则会与现有类型或导入的符号冲突时，才使用尾随下划线 `_`。
-- 对于 JavaScript 可迭代输入，优先使用 `IEnumerable<T>``，包括 locale 列表，如 `IEnumerable<string>`，除非 runtime 语义需要更特定的 host 形状。
-- 对于基于条目的输入，如 `Object.fromEntries(...)` 或 `new Map(...)`，可以接受同时暴露 `IEnumerable<Array<object?>>` 和更广泛的 `IEnumerable<IEnumerable<object?>>` 重载，以便常见 C# 序列族仍然与 JavaScript 的 iterable-of-entry 模型对齐。
-- 当 ECMA-402 API 接受 JavaScript 数学值而不仅仅是 IEEE double 输入时，优先使用命名的 `[ECMAScriptUnion]` 公共类型，例如当前 Intl surface 上的 `IntlNumberInput`，而不是过早地将公共表面缩小到 `Number`。
-- 当 JavaScript API 允许省略前导参数但 C# 无法自然表达该省略时，优先使用直接重载，而不是强制调用者传递 CLR sentinel。一个常见情况是 Intl 构造函数允许省略 `locales` 同时仍然提供 `options`。
-- 对实例方法（如 `toLocaleString(...)` 或 `localeCompare(...)`）应用相同的规则，当 JavaScript 允许省略前导 `locales` 参数但仍然提供后续选项时。
-- 当 JavaScript APIs await 或采用 promise-like 输入时，在公共签名中保留类似 promise 的同化语义。
+- 仅当 C# 名称解析会与已有类型或导入符号冲突时，才使用尾随下划线 `_`。
+- 对于 JavaScript 可迭代输入，优先使用 `IEnumerable<T>`，包括 `IEnumerable<string>` 这类 locale 列表，除非 runtime 语义需要更特定的 host 形状。
+- 对于基于条目的输入，如 `Object.fromEntries(...)` 或 `new Map(...)`，可以同时暴露 `IEnumerable<Array<object?>>` 和 `IEnumerable<IEnumerable<object?>>` 重载，让常见 C# 序列族仍然与 JavaScript 的 iterable-of-entry 模型对齐。
+- 当 ECMA-402 API 接受 JavaScript 数学值而不仅仅是 IEEE double 输入时，优先使用命名的 `[ECMAScriptUnion]` 公共类型，例如 `IntlNumberInput`，而不是过早把公共表面缩小到 `Number`。
+- 当 JavaScript API 允许省略前导参数但 C# 无法自然表达该省略时，优先使用直接重载，而不是强制调用者传递 CLR sentinel。常见场景是 Intl 构造函数允许省略 `locales` 同时仍然提供 `options`。
+- 实例方法（如 `toLocaleString(...)` 或 `localeCompare(...)`）同理：当 JavaScript 允许省略前导 `locales` 参数但仍然提供后续选项时，使用直接重载。
+- 当 JavaScript APIs await 或接受 promise-like 输入时，在公共签名中保留类似 promise 的同化语义。
 
 ## Global Host
 
 `ECMAScript.Global` 是 JavaScript `globalThis` 的 host 投影。
 
-真正暴露在 `globalThis` 上的全局函数和值保持在那里，例如：
+真正暴露在 `globalThis` 上的全局函数和值保持在那里：
 
 - `parseInt`
 - `parseFloat`
@@ -42,7 +42,7 @@
 
 这保持了 runtime 形状可识别，同时避免了 `global using static ECMAScript.Global` 之后的 Roslyn 歧义。
 
-当 JavaScript 全局构造函数/函数接受任意 runtime 值时，C# 投影不应将其缩小到 CLR 特定的原始形状，除非 runtime 真的需要该更窄的形状。
+当 JavaScript 全局构造函数/函数接受任意 runtime 值时，C# 投影不应缩小到 CLR 特定的原始形状，除非 runtime 真的需要更窄的形状。
 例如，`Symbol_` 应该接受 `object?`，因为 JavaScript 在 runtime 将任何非 `undefined` 描述值字符串化。
 
 ## Object Host
@@ -51,7 +51,7 @@
 
 - `Global.extension(object obj)`
 
-这避免了创建额外的仅限 CLR 的 host，如 `JsObject`，这将增加 C# 和 JavaScript 之间的分裂。
+这避免了创建额外的仅限 CLR 的 host（如 `JsObject`），那只会增加 C# 和 JavaScript 之间的分裂。
 
 `IObject` 仍然保留为 JavaScript 类对象动态属性访问的狭窄公共形状。
 它有意不被纯 `object` 替换，因为 `object` 太宽泛，无法在公共 API 中传达"具有属性/索引访问的 JavaScript 对象"。
@@ -80,12 +80,12 @@
 映射不会尝试将 JavaScript 原型继承重新解释为 CLR 继承。
 当 JavaScript 语义是基于原型的时候，公共 API 应该直接说明这一点。
 
-静态构造函数 hosts 可能也会直接暴露其 `prototype` 对象，当这有助于保持公共表面与 JavaScript runtime 结构对齐时。
+静态构造函数 hosts 也可能直接暴露其 `prototype` 对象，当这有助于保持公共表面与 JavaScript runtime 结构对齐时。
 这比强制调用者通过类似反射的 helper 层或完全省略 host 成员更可取。
 
 ## Promise-Like Inputs
 
-当稳定的 JavaScript API 显式采用或 await promise-like 值时，C# 投影应该直接建模该形状。
+当稳定的 JavaScript API 显式接受或 await promise-like 值时，C# 投影应该直接建模该形状。
 
 - `Promise.resolve(...)` 应该通过 `IPromise` / `IPromise<T>` 重载保留 promise 同化，而不是将所有内容折叠到 `object`。
 - `Array.fromAsync(...)` 应该为 promise-like 源项和异步映射回调暴露重载，因为 JavaScript await 输入项和映射器结果。
@@ -105,13 +105,13 @@
 
 - 公共 API 不将 `undefined` 建模为第二个可见状态。
 - 当 JavaScript 返回 `undefined` 时，公共投影通常使用可空 C# 类型并将该 absence 映射到 `null`。
-- 内部编译器/runtime 层可能仍然在语义保真度需要时使用真实 JavaScript `undefined`。
+- 内部编译器/runtime 层可能在语义保真度需要时使用真实 JavaScript `undefined`。
 - 对于回调参数（如 `thisArg`），注释应该描述 JavaScript runtime 默认行为，而不暗示公共 C# 代码可以观察到单独的 `undefined` 值。
 
 ## Constructor Host `prototype`
 
 - 当手写映射将具体 JavaScript 构造函数 host 建模为非泛型 C# 类型时，直接在该 host 上暴露其 `prototype` 对象。
-- 使用带有 `[Description("@#prototype")]` 的 `Prototype` 成员，以便公共 API 仍然像 JavaScript runtime 一样读取，只受正常 C# 大小写规则约束。
+- 使用带有 `[Description("@#prototype")]` 的 `Prototype` 成员，让公共 API 像 JavaScript runtime 一样读取，只受正常 C# 大小写规则约束。
 - 不要将 `prototype` 强制到泛型 CLR 投影上，当这会错误暗示每个封闭泛型类型有单独的 runtime 构造函数时。
 
 参见 [ECMAScript-nullish-semantics.md](./nullish-semantics.md)。
@@ -123,6 +123,6 @@
 - `object` 上的 `Object.prototype.toString()`
   - C# 实例调度会在 `object` 上与 CLR `object.ToString()` 语义冲突。
 - 可调用 `Object(...)`
-  - JavaScript 可能返回 boxed wrapper 对象，其公共形状不能干净地映射到当前 C# host 模型。
+  - JavaScript 可能返回 boxed wrapper 对象，其公共形状不能干净地映射到 C# host 模型。
 
 在这些情况下，省略优于暴露误导性的 CLR-shaped API。

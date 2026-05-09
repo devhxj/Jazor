@@ -1,11 +1,9 @@
 # Razor 设计时代码投影服务
 
-> Status: 活跃参考
-> Positioning: Jazor 文件的 Razor 语法投影与源映射生成核心服务
 
 ## 1. 文档定位
 
-本文档描述 `RazorDesignTimeCodeProjectionService` 的实现，这是 Jolt 项目中用于将 Jazor 文件投影为 C# 代码的核心服务。该服务使用官方 Razor SDK 进行设计时代码生成，提取源映射，并提供多层回退策略确保鲁棒性。
+`RazorDesignTimeCodeProjectionService` 的实现，这是 Jolt 项目中用于将 Jazor 文件投影为 C# 代码的核心服务。该服务使用官方 Razor SDK 进行设计时代码生成，提取源映射，并提供多层回退策略确保鲁棒性。
 
 **源文件位置**：
 - `src/Jolt/Razor/InProc/RazorDesignTimeCodeProjectionService.cs`（约 437 行）

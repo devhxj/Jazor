@@ -23,7 +23,7 @@
 ## 说明
 这页只做仓库级桥接，不复制正文。
 
-当前仓库中与 compiler 相关的两类核心材料分别是：
+仓库中与 compiler 相关的两类核心材料分别是：
 
 - `docs/01-目标/compiler/`：仓库级架构、专题说明与阅读路径；
 - `src/Jazor.Compiler/ImplementationPrinciples.md`：项目内实现路线、边界、价值排序与扩展判据。

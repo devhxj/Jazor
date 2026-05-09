@@ -1,15 +1,10 @@
 # 内置扩展
 
-> Status: 活跃参考
-> Positioning: Jolt 核心功能扩展，无需清单和加载流程
+Jolt 核心功能扩展：组件代码操作、指令补全、结构诊断和工作区符号索引。内置扩展在编译时静态链接，无需 `extension.json` 清单，运行在主进程中，默认启用。核心实现在 `src/Jolt/Extensions/Builtin/` 目录。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 Jolt 扩展系统的内置扩展，包括组件代码操作、指令补全、结构诊断和工作区符号索引。内置扩展在编译时静态链接，无需 `extension.json` 清单，运行在主进程中，默认启用。核心实现在 `src/Jolt/Extensions/Builtin/` 目录。
-
-## 2. 核心类型
-
-### 2.1 BuiltinExtensionCatalog 内置扩展目录
+### BuiltinExtensionCatalog 内置扩展目录
 
 **文件位置**: `src/Jolt/Extensions/Builtin/BuiltinExtensionCatalog.cs`
 
@@ -31,9 +26,9 @@ internal static class BuiltinExtensionCatalog
 
 **加载时机**: Jolt 启动时通过 `ExtensionLoader.LoadBuiltinExtensionsAsync` 加载
 
-## 3. 核心扩展
+## 核心扩展
 
-### 3.1 ComponentCodeActionExtension 组件代码操作
+### ComponentCodeActionExtension 组件代码操作
 
 **文件位置**: `src/Jolt/Extensions/Builtin/ComponentCodeActionExtension.cs`
 
@@ -54,7 +49,7 @@ public int Priority => 200;
 
 **功能**: 为未解析的 Jazor/Vue 组件提供 `@module` 导入快速修复
 
-#### 3.1.1 诊断检测
+#### 诊断检测
 
 **触发条件**:
 ```csharp
@@ -75,7 +70,7 @@ private static bool IsMissingComponentDiagnostic(LspDiagnostic diagnostic)
 
 **诊断代码**: `JAZORVUEFRONTEND001`
 
-#### 3.1.2 组件名解析
+#### 组件名解析
 
 **解析策略 1: 模板标签匹配**:
 ```csharp
@@ -122,7 +117,7 @@ if (quotedComponentMatch.Success)
 }
 ```
 
-#### 3.1.3 导入路径解析
+#### 导入路径解析
 
 **文件路径解析** (`TryResolveImportPath`):
 ```csharp
@@ -148,7 +143,7 @@ private static bool TryResolveImportPath(
 
 **解析逻辑**: 搜索当前文档目录及父目录的 `{ComponentName}.vue` 文件
 
-#### 3.1.4 导入语句生成
+#### 导入语句生成
 
 **插入位置确定**:
 ```csharp
@@ -222,7 +217,7 @@ private static LspCodeAction CreateImportAction(
 </div>
 ```
 
-### 3.2 StructureDiagnosticExtension 结构诊断
+### StructureDiagnosticExtension 结构诊断
 
 **文件位置**: `src/Jolt/Extensions/Builtin/StructureDiagnosticExtension.cs`
 
@@ -248,7 +243,7 @@ public int Priority => 100;
 - 属性语法错误（`@bind="value"` 缺少 `value` 属性）
 - 指令语法错误（`@foreach` 缺少 `in` 关键字）
 
-### 3.3 DirectiveCompletionExtension 指令补全
+### DirectiveCompletionExtension 指令补全
 
 **文件位置**: `src/Jolt/Extensions/Builtin/DirectiveCompletionExtension.cs`
 
@@ -283,7 +278,7 @@ public int Priority => 1000;
 @functions { ... }
 ```
 
-### 3.4 WorkspaceSymbolExtension 工作区符号
+### WorkspaceSymbolExtension 工作区符号
 
 **文件位置**: `src/Jolt/Extensions/Builtin/WorkspaceSymbolExtension.cs`
 
@@ -450,11 +445,11 @@ private static string CreateFingerprint(DocumentSnapshot document)
 }
 ```
 
-## 4. Provider 接口汇总
+## Provider 接口汇总
 
 **文件位置**: `src/Jolt/Extensions/Lsp*.cs`（11 个文件）
 
-### 4.1 ILspDiagnosticProvider 诊断
+### ILspDiagnosticProvider 诊断
 
 ```csharp
 internal interface ILspDiagnosticProvider
@@ -474,7 +469,7 @@ internal sealed record LspDiagnosticProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.2 ILspCodeActionProvider 代码操作
+### ILspCodeActionProvider 代码操作
 
 ```csharp
 internal interface ILspCodeActionProvider
@@ -496,7 +491,7 @@ internal sealed record LspCodeActionProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.3 ILspHoverProvider 悬停提示
+### ILspHoverProvider 悬停提示
 
 ```csharp
 internal interface ILspHoverProvider
@@ -518,7 +513,7 @@ internal sealed record LspHoverProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.4 ILspCompletionProvider 补全
+### ILspCompletionProvider 补全
 
 ```csharp
 internal interface ILspCompletionProvider
@@ -541,7 +536,7 @@ internal sealed record LspCompletionProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.5 ILspDocumentSymbolProvider 文档符号
+### ILspDocumentSymbolProvider 文档符号
 
 ```csharp
 internal interface ILspDocumentSymbolProvider
@@ -561,7 +556,7 @@ internal sealed record LspDocumentSymbolProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.6 ILspSignatureHelpProvider 签名帮助
+### ILspSignatureHelpProvider 签名帮助
 
 ```csharp
 internal interface ILspSignatureHelpProvider
@@ -586,7 +581,7 @@ internal sealed record LspSignatureHelpProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.7 ILspInlayHintProvider 内联提示
+### ILspInlayHintProvider 内联提示
 
 ```csharp
 internal interface ILspInlayHintProvider
@@ -607,7 +602,7 @@ internal sealed record LspInlayHintProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.8 ILspWorkspaceSymbolProvider 工作区符号
+### ILspWorkspaceSymbolProvider 工作区符号
 
 ```csharp
 internal interface ILspWorkspaceSymbolProvider
@@ -630,7 +625,7 @@ internal sealed record LspWorkspaceSymbolProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.9 ILspFoldingRangeProvider 折叠范围
+### ILspFoldingRangeProvider 折叠范围
 
 ```csharp
 internal interface ILspFoldingRangeProvider
@@ -650,7 +645,7 @@ internal sealed record LspFoldingRangeProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.10 ILspReferenceProvider 引用查找
+### ILspReferenceProvider 引用查找
 
 ```csharp
 internal interface ILspReferenceProvider
@@ -673,7 +668,7 @@ internal sealed record LspReferenceProviderContext(
     CancellationToken CancellationToken);
 ```
 
-### 4.11 ILspRenameProvider 重命名
+### ILspRenameProvider 重命名
 
 ```csharp
 internal interface ILspRenameProvider
@@ -696,9 +691,9 @@ internal sealed record LspRenameProviderContext(
     CancellationToken CancellationToken);
 ```
 
-## 5. 线程安全模型
+## 线程安全模型
 
-### 5.1 WorkspaceSymbolIndex
+### WorkspaceSymbolIndex
 
 **锁策略**:
 ```csharp
@@ -713,30 +708,30 @@ private readonly Dictionary<string, IndexedDocumentSymbols> _symbolsByDocumentPa
 - 符号提取（纯函数）
 - 搜索过滤（返回新列表）
 
-### 5.2 其他内置扩展
+### 其他内置扩展
 
 **无状态设计**:
 - 所有内置扩展为无状态类
 - Provider 方法为纯函数（输入→输出）
 - 无共享状态，无锁需求
 
-## 6. 错误处理
+## 错误处理
 
-### 6.1 诊断提取失败
+### 诊断提取失败
 
 **ComponentCodeActionExtension**:
 - 正则表达式匹配失败 → 跳过诊断
 - 路径解析失败 → 跳过代码操作
 - 异常静默捕获 → 不影响其他诊断
 
-### 6.2 符号提取失败
+### 符号提取失败
 
 **WorkspaceSymbolExtension**:
 - 正则表达式抛出异常 → 返回空符号列表
 - 文档不可解析 → 跳过文档
 - 缓存更新失败 → 使用旧缓存
 
-## 7. 配置选项
+## 配置选项
 
 **内置扩展无配置选项**:
 - 硬编码优先级（`Priority`）
@@ -748,9 +743,9 @@ private readonly Dictionary<string, IndexedDocumentSymbols> _symbolsByDocumentPa
 - 支持配置文件覆盖优先级
 - 支持热重载内置扩展
 
-## 8. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 8.1 与 LSP 系统的交互
+### 与 LSP 系统的交互
 
 **Provider 调用链**:
 ```
@@ -765,22 +760,22 @@ LspSession → ExtensionRegistry.GetLspXxxProviders()
 - 同优先级按 `Name` 字典序排序
 - 内置扩展优先级通常为 100-1000
 
-### 8.2 与 Workspace 的交互
+### 与 Workspace 的交互
 
 **WorkspaceSymbolExtension 依赖**:
 - `JoltWorkspaceResolver.TryResolveNearbyVueComponent`（解析组件路径）
 - `JazorImportDirectiveLocator`（定位导入语句位置）
 
-### 8.3 与 DevServer 的交互
+### 与 DevServer 的交互
 
 **热重载支持**:
 - 内置扩展在主进程中，无法卸载
 - 配置变更需要重启 Jolt 进程
 - 未来可支持可收集加载上下文
 
-## 9. 设计权衡
+## 设计权衡
 
-### 9.1 内置扩展 vs 用户扩展
+### 内置扩展 vs 用户扩展
 
 **内置扩展优势**:
 - 零配置（无需清单）
@@ -801,7 +796,7 @@ LspSession → ExtensionRegistry.GetLspXxxProviders()
 - 核心功能内置（诊断、补全、代码操作）
 - 高级功能用户扩展（如 LSP 代理、自定义语言支持）
 
-### 9.2 正则表达式 vs AST 解析
+### 正则表达式 vs AST 解析
 
 **正则表达式优势**:
 - 简单快速（无需完整解析）
@@ -833,7 +828,7 @@ LspSession → ExtensionRegistry.GetLspXxxProviders()
 - AST 精确验证（需要时）
 - 缓存 AST 结果
 
-### 9.3 缓存策略：版本 vs 哈希
+### 缓存策略：版本 vs 哈希
 
 **版本号指纹**:
 ```csharp

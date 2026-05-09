@@ -1,11 +1,9 @@
 # 三车道架构 (Three-Lane Architecture)
 
-> Status: 活跃参考
-> Positioning: Jolt LSP 的多语言服务提供层
 
 ## 1. 文档定位
 
-本文档描述 Jolt LSP 的三车道架构，用于协调 Jazor、C# (Roslyn) 和 Vue (Volar) 三种语言服务的提供。
+Jolt LSP 的三车道架构，用于协调 Jazor、C# (Roslyn) 和 Vue (Volar) 三种语言服务的提供。
 
 ## 目录
 

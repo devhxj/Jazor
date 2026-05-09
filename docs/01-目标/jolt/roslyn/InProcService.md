@@ -1,11 +1,9 @@
 # InProc Roslyn 代码服务
 
-> Status: 活跃参考
-> Positioning: Jolt LSP 核心服务层，提供完整的 Roslyn 语义分析能力
 
 ## 1. 文档定位
 
-本文档描述 `InProcRoslynCodeService` 的实现，这是 Jolt 项目中用于提供 C# 代码智能感知的核心服务。该服务通过进程内 Roslyn API 为 Jazor 文件和 C# 文件提供 Hover、Completion、Go To Definition、Find References、Rename、Diagnostics 等 LSP 功能。
+`InProcRoslynCodeService` 的实现，这是 Jolt 项目中用于提供 C# 代码智能感知的核心服务。该服务通过进程内 Roslyn API 为 Jazor 文件和 C# 文件提供 Hover、Completion、Go To Definition、Find References、Rename、Diagnostics 等 LSP 功能。
 
 **源文件位置**：
 - `src/Jolt/Roslyn/InProc/InProcRoslynCodeService.cs`（主文件，约 989 行）

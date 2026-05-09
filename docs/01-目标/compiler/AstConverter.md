@@ -3,10 +3,10 @@
 ## 目录
 
 - [定位](#定位)
-- [当前职责](#当前职责)
-- [当前关键规则](#当前关键规则)
+- [职责](#职责)
+- [关键规则](#关键规则)
 - [现状与典型结果](#现状与典型结果)
-- [当前边界](#当前边界)
+- [边界](#边界)
 - [相关测试](#相关测试)
 - [延伸阅读](#延伸阅读)
 
@@ -30,7 +30,7 @@ INamedTypeSymbol + SemanticModel
 
 所以 `AstConverter` 不直接负责增量生成器生命周期，也不负责方法体内部细节 lowering；后者主要委托给 `SemanticWalker`。
 
-## 当前职责
+## 职责
 
 ### 1. 顶层模块类型转换
 
@@ -140,7 +140,7 @@ INamedTypeSymbol + SemanticModel
 
 这让 `AstConverter` 在“函数壳层”完成 `ref` / `out` 协议，而不是把这部分逻辑塞进 `SemanticWalker` 的每个调用点。
 
-## 当前关键规则
+## 关键规则
 
 ### 1. `Convert()` 产出的是 AST `Module`，不是最终文件
 
@@ -373,7 +373,7 @@ export class NestedClass extends BaseClass {
 - `SemanticWalker` 应承担 `E.A`、`default(E)`、比较、`switch`、`Flags` 位运算等使用点 lowering；
 - 任何依赖枚举名字语义的能力，例如 `System.Enum` 家族 API、按名字格式化、反射式取值，都必须显式建模，否则默认失败。
 
-## 当前边界
+## 边界
 
 这部分当前已经解决的是：
 

@@ -1,7 +1,5 @@
 # Jolt Solution / Project Scoping
 
-> Status: 活跃参考
-> Positioning: Jolt 的解决方案边界、项目归属和跨项目限制模型
 
 ## 1. 文档定位
 

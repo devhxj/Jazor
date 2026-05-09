@@ -17,7 +17,7 @@
 
 ## 定位
 
-这份文档只讨论 `Op.Compile` 在 `Jazor.Compiler` 里的消费契约。
+以下讨论 `Op.Compile` 在 `Jazor.Compiler` 里的消费契约。
 
 它回答的是：
 
@@ -72,7 +72,7 @@
 - `Inline`
 - `Import`
 
-所以当前状态是：
+所以状态是：
 
 - `Compile_*` 方法和字典都在
 - 主成员映射入口已经先尝试 `Compile`

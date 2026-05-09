@@ -3,10 +3,10 @@
 ## 目录
 
 - [定位](#定位)
-- [当前职责](#当前职责)
-- [当前关键规则](#当前关键规则)
+- [职责](#职责)
+- [关键规则](#关键规则)
 - [现状与典型用法](#现状与典型用法)
-- [当前边界](#当前边界)
+- [边界](#边界)
 - [与旧 WalkerArgument 的关系](#与旧-walkerargument-的关系)
 - [相关测试与使用面](#相关测试与使用面)
 - [延伸阅读](#延伸阅读)
@@ -23,7 +23,7 @@
 
 它不是旧文档里的独立 `WalkerArgument` 类，而是把旧的上下文传递和依赖收集职责直接内联进了新的语义上下文结构。
 
-## 当前职责
+## 职责
 
 `SenseArgument` 当前同时承担两类职责：
 
@@ -53,7 +53,7 @@
 
 换言之，它既是“语义上下文”，也是“依赖缓冲区”。
 
-## 当前关键规则
+## 关键规则
 
 ### 1. `WithNewScope()` 只隔离变量声明，不隔离 import
 
@@ -182,7 +182,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 - `MergeImports(...)`
 - 生成模块头 `ImportDeclaration`
 
-## 当前边界
+## 边界
 
 这部分当前已经解决的是：
 
@@ -206,7 +206,7 @@ argument.MergeImportSpecifier(modulePath, specifier)
 - 旧名字：`WalkerArgument`
 - 当前名字：`SenseArgument`
 - 旧职责：上下文 + 收集器
-- 当前状态：这些职责已合并到 `SenseArgument`
+- 状态：这些职责已合并到 `SenseArgument`
 
 换言之，现在不是“`WalkerArgument` 被另一个类型取代后废弃不用”，而是它的核心职责被直接吸收了。
 

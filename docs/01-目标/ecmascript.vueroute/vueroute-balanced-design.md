@@ -20,7 +20,7 @@
 - 不把 Jolt、RazorVue、应用级导航约定、文件路由约定塞进 `ECMAScript.VueRoute`。
 - 不为低频长尾 API 提前补满全部覆盖；优先主运行时和高频 authoring path。
 
-## 当前推荐边界
+## 推荐边界
 
 ### 1. 模块导入边界
 

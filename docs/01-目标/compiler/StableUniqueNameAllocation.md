@@ -16,7 +16,7 @@
 
 ## 目标边界
 
-这份文档只讨论 `Jazor.Compiler` 内部自动生成名称的分配规则，例如：
+以下讨论 `Jazor.Compiler` 内部自动生成名称的分配规则，例如：
 
 - tuple lowering 的中间缓存
 - pattern / switch lowering 的输入缓存

@@ -1,11 +1,9 @@
 # 标记桥接 (Markup Bridge)
 
-> Status: 活跃参考
-> Positioning: Jazor LSP 的 Razor/Vue 组件标签桥接服务
 
 ## 1. 文档定位
 
-本文档描述标记组件桥接服务，用于解析 Razor/Vue 组件标签到 Vue 文件，并提供跨文档的引用查找、重命名和补全功能。
+标记组件桥接服务，用于解析 Razor/Vue 组件标签到 Vue 文件，提供跨文档的引用查找、重命名和补全功能。
 
 ## 目录
 

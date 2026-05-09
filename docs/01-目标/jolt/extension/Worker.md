@@ -1,15 +1,10 @@
 # 扩展 Worker 进程
 
-> Status: 活跃参考
-> Positioning: 进程隔离扩展的 JSON-RPC 宿主服务器
+进程隔离扩展的 JSON-RPC 宿主服务器：worker 进程启动、stdio JSON-RPC 协议、Bootstrap/Invoke/Shutdown 消息处理、沙箱执行检查和超时控制。核心实现在 `src/Jolt/Extensions/ExtensionWorkerServer.cs`（约 1166 行）和 `src/Jolt/Extensions/OutOfProcessExtensionProxy.cs`（约 592 行）。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 Jolt 扩展系统的进程隔离机制，包括 worker 进程启动、stdio JSON-RPC 协议、Bootstrap/Invoke/Shutdown 消息处理、沙箱执行检查和超时控制。核心实现在 `src/Jolt/Extensions/ExtensionWorkerServer.cs`（约 1166 行）和 `src/Jolt/Extensions/OutOfProcessExtensionProxy.cs`（约 592 行）。
-
-## 2. 核心类型
-
-### 2.1 ExtensionWorkerServer Worker 宿主
+### ExtensionWorkerServer Worker 宿主
 
 **文件位置**: `src/Jolt/Extensions/ExtensionWorkerServer.cs`
 
@@ -20,7 +15,7 @@
 - 路由 provider 调用请求
 - 应用运行时沙箱策略（IO/网络验证）
 
-### 2.2 ExtensionWorkerClient Worker 客户端
+### ExtensionWorkerClient Worker 客户端
 
 **文件位置**: `src/Jolt/Extensions/ExtensionWorkerClient.cs`
 
@@ -30,7 +25,7 @@
 - 接收并解析 JSON-RPC 响应
 - 处理连接失败和超时
 
-### 2.3 OutOfProcessExtensionProxy 进程隔离代理
+### OutOfProcessExtensionProxy 进程隔离代理
 
 **文件位置**: `src/Jolt/Extensions/OutOfProcessExtensionProxy.cs`
 
@@ -40,9 +35,9 @@
 - 处理 worker 崩溃和自动重启
 - 断路器模式（Circuit Breaker）防止无限重启
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 Worker 启动流程
+### Worker 启动流程
 
 **方法**: `OutOfProcessExtensionProxy.CreateAsync`
 
@@ -104,7 +99,7 @@ export JOLT_EXTENSION_BOOTSTRAP_TIMEOUT_MS=60000  # 60 秒
 export JOLT_EXTENSION_INVOKE_TIMEOUT_MS=45000      # 45 秒
 ```
 
-### 3.2 JSON-RPC 协议
+### JSON-RPC 协议
 
 **请求信封** (`ExtensionWorkerRequestEnvelope`):
 ```json
@@ -136,7 +131,7 @@ export JOLT_EXTENSION_INVOKE_TIMEOUT_MS=45000      # 45 秒
 }
 ```
 
-### 3.3 Bootstrap 消息处理
+### Bootstrap 消息处理
 
 **方法**: `ExtensionWorkerServer.HandleBootstrapAsync`
 
@@ -218,7 +213,7 @@ export JOLT_EXTENSION_INVOKE_TIMEOUT_MS=45000      # 45 秒
    }
    ```
 
-### 3.4 Invoke 消息处理
+### Invoke 消息处理
 
 **方法**: `ExtensionWorkerServer.HandleInvokeAsync`
 
@@ -274,7 +269,7 @@ export JOLT_EXTENSION_INVOKE_TIMEOUT_MS=45000      # 45 秒
    }
    ```
 
-### 3.5 沙箱执行检查
+### 沙箱执行检查
 
 **检查时机**:
 - Provider 调用前：验证输入路径/URI
@@ -390,7 +385,7 @@ private static bool TryParseNetworkUri(string? value, out Uri? uri)
 }
 ```
 
-### 3.6 超时控制
+### 超时控制
 
 **Invoke 超时** (`JOLT_EXTENSION_INVOKE_TIMEOUT_MS`):
 ```csharp
@@ -430,7 +425,7 @@ private static CancellationTokenSource CreateOperationTimeoutTokenSource(
 }
 ```
 
-### 3.7 Shutdown 消息处理
+### Shutdown 消息处理
 
 **方法**: `ExtensionWorkerServer.ShutdownCoreAsync`
 
@@ -471,9 +466,9 @@ private static CancellationTokenSource CreateOperationTimeoutTokenSource(
    - Worker 进程退出（stdio 关闭）
    - 主进程检测到进程终止
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 ExtensionWorkerServer
+### ExtensionWorkerServer
 
 **状态保护**:
 ```csharp
@@ -491,7 +486,7 @@ private bool _bootstrapped;
 
 **假设**: 主进程不会并发调用同一个 `OutOfProcessExtensionProxy`
 
-### 4.2 OutOfProcessExtensionProxy
+### OutOfProcessExtensionProxy
 
 **锁策略**:
 ```csharp
@@ -513,9 +508,9 @@ if (Interlocked.Exchange(ref _deactivateInvoked, 1) != 0)
     return;  // 已停用
 ```
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 协议错误
+### 协议错误
 
 **错误码** (`ExtensionWorkerErrorCodes`):
 ```csharp
@@ -543,7 +538,7 @@ public const string InternalError = "InternalError";
 }
 ```
 
-### 5.2 Worker 崩溃恢复
+### Worker 崩溃恢复
 
 **崩溃检测**: `ExtensionWorkerConnectionException`
 
@@ -648,7 +643,7 @@ finally
 }
 ```
 
-### 5.3 超时错误
+### 超时错误
 
 **Bootstrap 超时**:
 ```csharp
@@ -663,16 +658,16 @@ throw new ExtensionWorkerProtocolException(
     $"extension capability '{capability}' timed out after {timeout.TotalSeconds:0.###} seconds.");
 ```
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 超时配置
+### 超时配置
 
 | 环境变量 | 默认值 | 说明 |
 |---------|--------|------|
 | `JOLT_EXTENSION_BOOTSTRAP_TIMEOUT_MS` | 30000 (30秒) | Worker 启动超时 |
 | `JOLT_EXTENSION_INVOKE_TIMEOUT_MS` | 30000 (30秒) | Provider 调用超时 |
 
-### 6.2 重启配置
+### 重启配置
 
 | 环境变量 | 默认值 | 说明 |
 |---------|--------|------|
@@ -680,7 +675,7 @@ throw new ExtensionWorkerProtocolException(
 | `JOLT_EXTENSION_WORKER_MAX_RESTARTS` | 3 | 窗口内最大重启次数 |
 | `JOLT_EXTENSION_WORKER_RESTART_BASE_DELAY_MS` | 250 | 指数退避基础延迟 |
 
-### 6.3 清单配置
+### 清单配置
 
 **进程隔离声明**:
 ```json
@@ -700,9 +695,9 @@ throw new ExtensionWorkerProtocolException(
 }
 ```
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 ExtensionLoader 的交互
+### 与 ExtensionLoader 的交互
 
 **进程隔离扩展加载**:
 1. `ExtensionLoader` 检测 `processIsolation: true`
@@ -711,7 +706,7 @@ throw new ExtensionWorkerProtocolException(
 4. 验证 provider 能力
 5. 注册 proxy 到 `ExtensionRegistry`
 
-### 7.2 与 ExtensionSecurityPolicy 的交互
+### 与 ExtensionSecurityPolicy 的交互
 
 **沙箱配置传递**:
 ```csharp
@@ -734,7 +729,7 @@ var proxy = await OutOfProcessExtensionProxy.CreateAsync(
 - Worker 服务器使用 `sandboxProfile` 验证所有 IO/网络操作
 - 违规时抛出 `ExtensionWorkerProtocolException`
 
-### 7.3 与 LSP 系统的交互
+### 与 LSP 系统的交互
 
 **Provider 调用转发**:
 ```csharp
@@ -755,9 +750,9 @@ async ValueTask<IReadOnlyList<LspCompletionItem>> ILspCompletionProvider.Provide
 - 通过 stdio 发送到 worker
 - Worker 反序列化并调用扩展
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 Stdio JSON-RPC vs Named Pipes / TCP
+### Stdio JSON-RPC vs Named Pipes / TCP
 
 **Stdio JSON-RPC 优势**:
 - 跨平台兼容（无需特定 IPC 机制）
@@ -774,7 +769,7 @@ async ValueTask<IReadOnlyList<LspCompletionItem>> ILspCompletionProvider.Provide
 - 简化实现（无需复杂 IPC 库）
 - 未来可升级到 gRPC/Named Pipes
 
-### 8.2 进程级隔离 vs AppDomain 隔离
+### 进程级隔离 vs AppDomain 隔离
 
 **进程隔离优势**:
 - 完全内存隔离（崩溃不影响主进程）
@@ -791,7 +786,7 @@ async ValueTask<IReadOnlyList<LspCompletionItem>> ILspCompletionProvider.Provide
 - 完全隔离保证
 - 符合云原生安全模型
 
-### 8.3 自动重启 vs 快速失败
+### 自动重启 vs 快速失败
 
 **自动重启优势**:
 - 容错性（临时崩溃自动恢复）
@@ -808,7 +803,7 @@ async ValueTask<IReadOnlyList<LspCompletionItem>> ILspCompletionProvider.Provide
 - 超过限制后快速失败
 - 指数退避延迟（250ms → 5s）
 
-### 8.4 同步 JSON-RPC vs 异步流式
+### 同步 JSON-RPC vs 异步流式
 
 **同步请求-响应**:
 - 一次请求 → 一次响应

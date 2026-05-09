@@ -1,15 +1,10 @@
 # 扩展生命周期管理
 
-> Status: 活跃参考
-> Positioning: Jolt 扩展系统的核心加载与注册机制
+Jolt 扩展系统的生命周期管理：发现、加载、激活、停用和清理机制。核心实现在 `src/Jolt/Extensions/ExtensionLoader.cs`（约 1240 行）和 `src/Jolt/Extensions/ExtensionRegistry.cs`（约 809 行）。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 Jolt 扩展系统的生命周期管理，包括扩展的发现、加载、激活、停用和清理机制。核心实现在 `src/Jolt/Extensions/ExtensionLoader.cs`（约 1240 行）和 `src/Jolt/Extensions/ExtensionRegistry.cs`（约 809 行）。
-
-## 2. 核心类型
-
-### 2.1 IExtension 接口
+### IExtension 接口
 
 **文件位置**: `src/Jolt/Extensions/IExtension.cs`
 
@@ -32,7 +27,7 @@ internal interface IExtension
 - `ActivateAsync`: 激活扩展（注册 provider 接口）
 - `DeactivateAsync`: 停用扩展（清理资源）
 
-### 2.2 ExtensionManifest 清单
+### ExtensionManifest 清单
 
 **文件位置**: `src/Jolt/Extensions/ExtensionManifest.cs`
 
@@ -65,7 +60,7 @@ internal sealed class ExtensionManifest
 - `Algorithm`: 签名算法（仅支持 RS256）
 - `Value`: Base64/Base64URL 编码的签名值
 
-### 2.3 ExtensionMetadata 元数据
+### ExtensionMetadata 元数据
 
 **文件位置**: `src/Jolt/Extensions/ExtensionMetadata.cs`
 
@@ -79,9 +74,9 @@ internal sealed record ExtensionMetadata(
     IReadOnlyList<string>? Dependencies = null);
 ```
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 内置扩展加载
+### 内置扩展加载
 
 **方法**: `ExtensionLoader.LoadBuiltinExtensionsAsync`
 
@@ -97,13 +92,13 @@ internal sealed record ExtensionMetadata(
 - 无需进程隔离（运行在主进程）
 - 无法卸载（非可收集加载上下文）
 
-### 3.2 用户扩展加载
+### 用户扩展加载
 
 **方法**: `ExtensionLoader.LoadUserExtensionsAsync`
 
 **流程**:
 
-#### 3.2.1 清单读取与验证
+#### 清单读取与验证
 
 1. **读取清单**: `TryReadManifest`
    - 解析 `extension.json`
@@ -125,7 +120,7 @@ internal sealed record ExtensionMetadata(
        return Rejected("extension id is not in trusted allow-list");
    ```
 
-#### 3.2.2 安全验证链
+#### 安全验证链
 
 1. **程序集路径限制** (`ResolveAssemblyPath`):
    - 必须在扩展目录内
@@ -151,7 +146,7 @@ internal sealed record ExtensionMetadata(
    - 检查网络能力是否超出主机限制
    - 验证进程隔离要求
 
-#### 3.2.3 加载路径选择
+#### 加载路径选择
 
 **进程隔离路径** (`Permissions.ProcessIsolation == true`):
 1. 创建 `OutOfProcessExtensionProxy`（启动独立 worker 进程）
@@ -164,7 +159,7 @@ internal sealed record ExtensionMetadata(
 3. 验证扩展类型实现 `IExtension`
 4. 验证元数据 ID 与清单 ID 匹配
 
-#### 3.2.4 激活与注册
+#### 激活与注册
 
 **方法**: `LoadExtensionCoreAsync`
 
@@ -182,7 +177,7 @@ registry.RegisterExtension(extension);
 TrackLoadedExtension(extension, ...);
 ```
 
-### 3.3 清单迁移（v0 → v1）
+### 清单迁移（v0 → v1）
 
 **方法**: `ExtensionLoader.MigrateLegacyManifest`
 
@@ -207,7 +202,7 @@ return root.Contains("main")
     || root.Contains("processIsolation");
 ```
 
-### 3.4 扩展清理
+### 扩展清理
 
 **方法**: `ExtensionLoader.DisposeAsync`
 
@@ -242,9 +237,9 @@ for (var cycle = 0; cycle < 5; cycle++)
 }
 ```
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 ExtensionLoader
+### ExtensionLoader
 
 **锁策略**:
 ```csharp
@@ -260,7 +255,7 @@ private readonly List<LoadedExtensionState> _loadedExtensions = [];
 - 扩展加载（每个扩展独立）
 - 注册表操作（`ExtensionRegistry` 自身有锁）
 
-### 4.2 ExtensionRegistry
+### ExtensionRegistry
 
 **锁策略**:
 ```csharp
@@ -279,9 +274,9 @@ private readonly List<ILspDiagnosticProvider> _lspDiagnosticProviders = [];
 - `GetLspDiagnosticProviders()` 返回快照副本（`ToArray()`）
 - 外部持有 iterator 不会阻塞注册
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 加载失败分类
+### 加载失败分类
 
 **Rejected（拒绝）**: 安全验证失败
 - 清单缺失/无效 JSON
@@ -300,7 +295,7 @@ private readonly List<ILspDiagnosticProvider> _lspDiagnosticProviders = [];
 - 初始化/激活异常
 - 停用异常（清理时的非致命错误）
 
-### 5.2 错误报告
+### 错误报告
 
 **方法**: `ExtensionLoader.ReportLoad`
 
@@ -319,7 +314,7 @@ _registry.ReportExtensionLoad(invocation);
 _loadEventSink?.Invoke(invocation);  // 可选的日志持久化
 ```
 
-### 5.3 异常处理原则
+### 异常处理原则
 
 **静默失败场景**:
 - 清理阶段的停用异常（`TryDeactivateSilentlyAsync`）
@@ -329,9 +324,9 @@ _loadEventSink?.Invoke(invocation);  // 可选的日志持久化
 - 内置扩展加载异常（抛出）
 - 注册时的 provider 冲突（抛出并回滚）
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 ExtensionHostOptions
+### ExtensionHostOptions
 
 **文件位置**: `src/Jolt/Extensions/ExtensionHostOptions.cs`
 
@@ -354,7 +349,7 @@ _loadEventSink?.Invoke(invocation);  // 可选的日志持久化
 | `ProviderLogFilePath` | string? | null | Provider 调用日志文件路径 |
 | `ProviderEventRetention` | int | 500 | Provider 事件保留数量（0-100000） |
 
-### 6.2 命令行选项覆盖
+### 命令行选项覆盖
 
 **解析器**: `ExtensionHostOptionsResolver.Resolve`
 
@@ -368,9 +363,9 @@ jolt --extensions-enabled=true \
      --extensions-require-signature=false
 ```
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 LSP 系统的交互
+### 与 LSP 系统的交互
 
 **Provider 注册**:
 - 11 种 LSP provider 接口（`ILspDiagnosticProvider`, `ILspCodeActionProvider`, 等）
@@ -382,23 +377,23 @@ jolt --extensions-enabled=true \
 - 依次调用每个 provider 的 `ProvideXxxAsync` 方法
 - 捕获异常并报告到 `ExtensionRegistry.ReportProviderInvocation`
 
-### 7.2 与 DevServer 的交互
+### 与 DevServer 的交互
 
 **热重载支持**:
 - 进程内扩展可卸载（`CollectibleExtensionLoadContext`）
 - 进程隔离扩展通过 worker 重启实现热重载
 - 配置变更时重新加载扩展目录
 
-### 7.3 与安全系统的交互
+### 与安全系统的交互
 
 **沙箱执行**:
 - 进程隔离扩展的 IO/网络请求在 `ExtensionWorkerServer` 中验证
 - 每个能力调用前检查路径/主机权限
 - 违反沙箱策略时抛出 `ExtensionWorkerProtocolException`
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 进程隔离 vs 进程内加载
+### 进程隔离 vs 进程内加载
 
 **进程隔离优势**:
 - 崩溃隔离（扩展崩溃不影响主进程）
@@ -415,7 +410,7 @@ jolt --extensions-enabled=true \
 - 用户扩展：进程内（默认，性能优先）
 - 敏感扩展：进程隔离（声明 `processIsolation: true` 或主机策略要求）
 
-### 8.2 可收集加载上下文 vs 标准加载
+### 可收集加载上下文 vs 标准加载
 
 **CollectibleAssemblyLoadContext 优势**:
 - 支持卸载（释放文件句柄）
@@ -431,7 +426,7 @@ jolt --extensions-enabled=true \
 - 未卸载警告（`WriteUnloadWarning`）
 - 进程隔离替代方案（进程终止保证释放）
 
-### 8.3 清单迁移 vs 强制升级
+### 清单迁移 vs 强制升级
 
 **支持 v0 清单的原因**:
 - 向后兼容（渐进式升级）
@@ -446,7 +441,7 @@ jolt --extensions-enabled=true \
 - 版本检测拒绝不支持的清单
 - 迁移后的清单仍需通过 v1 验证
 
-### 8.4 同步注册 vs 异步注册
+### 同步注册 vs 异步注册
 
 **当前实现**: 同步注册（`RegisterExtension` 为同步方法）
 

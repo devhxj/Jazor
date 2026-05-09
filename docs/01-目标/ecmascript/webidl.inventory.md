@@ -27,4 +27,4 @@
 ## 下一步
 
 此清单是 Deno 收集层与未来 C# 绑定发射器之间的稳定交换格式。
-预览发射器当前在 `webidl/` 下写入 typedef、enum、callback、callback interface、dictionary、interface 和 namespace 绑定。
+预览发射器在 `webidl/` 下写入 typedef、enum、callback、callback interface、dictionary、interface 和 namespace 绑定。

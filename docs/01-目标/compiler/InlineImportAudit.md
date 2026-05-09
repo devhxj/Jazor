@@ -11,7 +11,7 @@
 
 ## 目标
 
-这份文档只回答一个问题：
+
 
 > 在当前 Jazor 编译器实现下，哪些 `Op.Import` 其实应该降回 `Op.Inline`，哪些应该继续保留 `Import`，哪些更适合未来走 `Op.Compile`。
 
@@ -499,7 +499,7 @@
 - 收益直接
 - 规则示范性强
 
-当前状态：
+状态：
 
 - 已实现
 - 已重新运行 `Jazor.Compiler.Generator`
@@ -515,7 +515,7 @@
 3. `MaxMagnitude` / `MinMagnitude`
 4. `SinCos` / `SinCosPi`
 
-当前状态：
+状态：
 
 - `Op.Compile` 主分发已经接入
 - 第一阶段真实条目和测试已经落地

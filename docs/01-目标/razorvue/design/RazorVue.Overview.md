@@ -1,8 +1,5 @@
 # RazorVue 概述
 
-> Status: 活跃参考
-> Positioning: 活跃 RazorVue 文档集的主深层文档入口。
-> Note: 本页负责桥接长期设计文档与执行级实现计划；设计位于 `01-目标/razorvue/design/`，实施/HMR/评审切片位于 `02-计划/jolt/razorvue-implementation/`。
 
 ## 1. 文档定位
 
@@ -11,7 +8,7 @@
 ## 目录
 
 - [1-文档定位](#1-文档定位)
-- [2-当前状态](#2-当前状态)
+- [2-状态](#2-状态)
 - [3-核心结论](#3-核心结论)
 - [4-文档角色](#4-文档角色)
 - [5-推荐阅读顺序](#5-推荐阅读顺序)
@@ -25,20 +22,24 @@
 2. 每个 RazorVue 文档的用途
 3. 工作恢复时按什么顺序阅读它们
 
-## 2. 当前状态
+## 2. 状态
 
-RazorVue 的当前状态是：
+本节按 **2026-05-09** 的当前仓库代码快照更新。
 
-- 核心主管道里程碑已经落地
-- 当前阶段是围绕最小路径的阶段一关闭工作
+RazorVue 的状态是：
+
+- 核心主管道、artifact/catalog 主链和发射侧物化已经落地
+- 当前阶段更接近“阶段一收口 + 默认模板前端已迁到 Razor IR 后的保守扩展”，而不是早期概念验证
 - 阶段一范围仍然有意有限
-- HMR 和 sourcemap 保持元数据优先，保留给后续里程碑
-- 当前逻辑车道仍然是保守子集，但现在包括生命周期安全子集降低加上最小设置侧逻辑闭合，用于简单字段和辅助方法，其参数可以安全地降低到 `setup()`，包括固定深度两级辅助组合和超出该边界的显式 `JAZORVGA006` 拒绝
+- 默认模板前端规则已经切到 `RazorCodeDocument` / Razor IR 优先；`BuildRenderTree` 只保留给源码中显式手写的 `BuildRenderTree` authoring
+- HMR 和 sourcemap 仍然保持元数据优先；`Jolt` / `Jazor.Emit` 已经消费部分身份、diff 和边界分类契约，但最终运行时和端到端构建闭环仍保留给后续里程碑
+- 当前逻辑车道仍然是保守子集，但现在包括生命周期安全子集 lowering 加上最小 setup 侧逻辑闭合，用于简单字段和辅助方法，其参数可以安全地 lowering 到 `setup()`，包括固定深度两级辅助组合和超出该边界的显式 `JAZORVGA006` 拒绝
+- RazorVue analysis lane 对外仍保留 `Jazor.RazorVue.Analysis` 命名空间/宿主边界，但物理程序集已经并入 `Jazor.Analyzer`，当前仓库没有独立的 `Jazor.RazorVue.Analysis.csproj`
 
 截至当前实现车道，仓库已经有：
 
 - `[ECMAScriptModule]` 入口拆分为静态模块和 RazorVue 组件
-- `Jazor.Razor` / `Jazor.RazorVue` / `Jazor.RazorVue.Analysis` 拆分，`Jazor.RazorVue` 现在拥有 RazorVue 核心语义车道，`Jazor.RazorVue.Analysis` 保持瘦 Roslyn 主机
+- 逻辑上的 `Jazor.Razor` / `Jazor.RazorVue` / RazorVue analysis lane 边界已经稳定；其中 `Jazor.RazorVue` 拥有 RazorVue 核心语义车道，analysis 宿主当前物理程序集位于 `Jazor.Analyzer`
 - 当前 RazorVue 入口/误用集的 Roslyn 分析器：
   - `JAZORVUE001` 无效入口继承
   - `JAZORVUE002` 直接 `ComponentBase` 入口
@@ -47,23 +48,26 @@ RazorVue 的当前状态是：
   - `JAZORVUE006` `SetParametersAsync`
 - props / emits / slots 的组件描述符提取
 - `RazorVueCompilationContext` -> `RazorVueSemanticSnapshot` -> `RazorVuePipeline` -> `RazorVueArtifactFactory` -> `RazorVueCatalog` 主管道
-- 真实的 `BuildRenderTree` 提取/降低车道，可以发送 Vue `defineComponent + setup + render`
+- 默认的 Razor 生成组件模板前端已经优先走 `RazorCodeDocument` / Razor IR；只有源码中显式手写的 `BuildRenderTree` 组件才保留 `BuildRenderTree` 前端
 - 经过验证的组件节点降低，涵盖 props、emit/监听器连线和默认/命名/作用域插槽流
 - `if` 和 `foreach` 的最小结构降低
 - `OnInitialized*`、`OnParametersSet*` 和 `OnAfterRender*` 的生命周期安全子集降低，包括 `watch(..., { immediate: true })` 和 `firstRender` 桥接
-- 简单实例字段和辅助方法的最小设置侧逻辑降低，其参数可以安全地投影到 `setup()` 中，现在包括固定深度两级辅助组合和针对更深层或不支持的设置辅助链的显式 `JAZORVGA006` 投影
+- 简单实例字段和辅助方法的最小 setup 侧逻辑 lowering，其参数可以安全地投影到 `setup()` 中，现在包括固定深度两级辅助组合和针对更深层或不支持的设置辅助链的显式 `JAZORVGA006` 投影
+- `.mjs` / `.vue` artifact、manifest、diff/update plan 的发射侧物化
 - 工件标识/哈希塑造和基本 HMR 边界分类
+- `Jolt` 已消费 `Jazor.RazorVue` 下的 `Documents/` / `Protocol/` 共享契约，并在 DevServer 变更处理中接入 RazorVue manifest diff 与 HMR boundary 分类
 
 以下内容仍未完成第一阶段覆盖：
 
 - 超出当前生命周期/事件回调/设置字段/辅助安全子集的更广泛逻辑提取
 - 完整的组件实例语义
-- 全面的 Razor 语法覆盖
+- 更广泛的控制流与全面的 Razor 语法覆盖验证
 - `Dispose*`、`ShouldRender` 和 `SetParametersAsync` 运行时等效处理
-- 最终 `DenoHost` 端到端集成
+- 更广泛的 Razor IR 形状覆盖验证，以及旧 `BuildRenderTree` 过渡路径的最终受控清理
+- 最终 `DenoHost` 构建/运行时端到端闭环
 - 最终 HMR 运行时和 sourcemap 发送
 
-当分析/降低遇到不支持的形状时，`JAZORVGA001`（`RazorVue 目录生成失败`）仍然是一般回退表面。当前瘦 `Jazor.RazorVue.Analysis` 主机路径也为以下内容投影结构化编译器面向问题：
+当分析/降低遇到不支持的形状时，`JAZORVGA001`（`RazorVue 目录生成失败`）仍然是一般回退表面。当前 RazorVue analysis 宿主路径也为以下内容投影结构化编译器面向问题；对外命名空间仍使用 `Jazor.RazorVue.Analysis`，但物理程序集在 `Jazor.Analyzer`：
 
 - `JAZORVGA002` 组件未找到
 - `JAZORVGA003` 歧义短组件名称
@@ -90,7 +94,7 @@ RazorVue 的当前状态是：
 2. `[ECMAScriptModule]` 保持统一入口标记。
 3. Razor 组件必须继承 `JazorComponent`。
 4. 基础层次结构是 `ComponentBase -> JazorComponent -> VueComponent`。
-5. 最终公共项目拆分是 `Jazor.Compiler` + `Jazor.Razor` + `Jazor.RazorVue` + `Jazor.RazorVue.Analysis`。
+5. 当前有效的概念边界是 `Jazor.Compiler` + `Jazor.Razor` + `Jazor.RazorVue` + RazorVue analysis lane；其中 analysis lane 物理程序集当前并入 `Jazor.Analyzer`，尚未独立为单独 `Jazor.RazorVue.Analysis` 项目。
 6. RazorVue 不在源生成器排序上构建其主管道。
 7. Razor 组件不重用普通静态模块降低。
 8. 编译器发送 Vue ESM 工件，`DenoHost` 拥有统一构建。

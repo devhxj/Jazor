@@ -1,27 +1,8 @@
 # Jolt 整体架构
 
-> Status: 活跃参考
-> Positioning: Jolt 子系统的顶层架构视图，串联所有子模块
+Jolt 是一个 .NET 10 控制台应用，作为 .jazor 文件的多功能开发工具链，提供 LSP 语言服务、开发服务器、生产构建、调试适配器、扩展系统等核心能力。
 
-## 目录
-
-- [2. 运行模式](#2-运行模式)
-- [3. 子系统全景图](#3-子系统全景图)
-- [4. 核心设计原则](#4-核心设计原则)
-- [5. 模式组合矩阵](#5-模式组合矩阵)
-- [6. 关键依赖](#6-关键依赖)
-- [7. 数据流关键路径](#7-数据流关键路径)
-- [8. 文件组织结构](#8-文件组织结构)
-- [9. 配置与扩展点](#9-配置与扩展点)
-- [10. 可观测性与监控](#10-可观测性与监控)
-- [11. 性能优化策略](#11-性能优化策略)
-- [12. 错误处理与容错](#12-错误处理与容错)
-- [13. 安全性考虑](#13-安全性考虑)
-- [14. 总结](#14-总结)
-
-本文档为 Jolt 子系统提供完整的架构视图，解释各模块职责和交互关系。Jolt 是一个 .NET 10 控制台应用，作为 .jazor 文件的多功能开发工具链，提供 LSP 语言服务、开发服务器、生产构建、调试适配器、扩展系统等核心能力。
-
-## 2. 运行模式
+## 运行模式
 
 Jolt 支持 7 种 CLI 运行模式，每种模式组合不同的服务子系统：
 
@@ -40,16 +21,16 @@ Jolt 支持 7 种 CLI 运行模式，每种模式组合不同的服务子系统�
 - `--dap` 可与 `--dev` 组合：调试适配器 + 开发服务器（支持 Source Map 映射）
 - `--lsp + --dev` 可选 CDP 连接：支持 Chrome DevTools Protocol 调试
 
-### 2.1 当前部署边界（Windows）
+### 部署边界（Windows）
 
-当前架构上的“生产”目标需要按模式拆开理解，而不是把所有模式都当成公网服务：
+架构上的"生产"目标需要按模式拆开理解，而不是把所有模式都当成公网服务：
 
 - `--build`：正式构建 lane，可用于 CI、构建机和发布链路
 - `--dev`：本机开发或受控内网联调，不作为公网服务
 - `--preview`：本地或受控内网预览，不作为正式站点
 - `--lsp`：仅供本机编辑器和工具链接入
 
-当前推荐拓扑是：
+推荐拓扑是：
 
 `Jolt --build` -> `dist/` 静态产物 -> `IIS/Nginx/CDN/对象存储`
 
@@ -57,9 +38,9 @@ Jolt 支持 7 种 CLI 运行模式，每种模式组合不同的服务子系统�
 
 `公网用户` -> `Jolt --dev/--preview`
 
-这意味着 `Jolt` 当前并不以“直接面向公网”作为架构目标，也不把公网入站安全能力视为现阶段验收项。
+Jolt 不以"直接面向公网"作为架构目标，也不把公网入站安全能力视为现阶段验收项。
 
-## 3. 子系统全景图
+## 子系统全景图
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -103,9 +84,9 @@ Jolt 支持 7 种 CLI 运行模式，每种模式组合不同的服务子系统�
     └───────────────────────────────────────────────┘
 ```
 
-## 4. 核心设计原则
+## 核心设计原则
 
-### 4.1 三车道 LSP 架构
+### 三车道 LSP 架构
 
 Jolt LSP 采用三车道架构（Three-Lane Architecture），将语言功能按语义域分离到独立车道：
 
@@ -165,7 +146,7 @@ Jolt LSP 采用三车道架构（Three-Lane Architecture），将语言功能按
 - `CodeActionCoordinator`: 跨车道代码动作聚合
 - `MarkupBridgeFanoutCoordinator`: Markup 变更通知到所有车道
 
-### 4.2 `.slnx` 解决方案 / 项目作用域
+### `.slnx` 解决方案 / 项目作用域
 
 Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只认 `.slnx`。Owning project 必须从 `.slnx` 的 project entries 解析，不应通过 `.sln`、`.csproj` 或目录邻近关系推断。
 
@@ -175,7 +156,7 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 - 诊断刷新只重算 owning project 的相关文档
 - 找不到 `.slnx` 时，项目级发现必须返回英文错误，而不是继续退回到磁盘猜测
 
-### 4.3 文档投影系统
+### 文档投影系统
 
 **投影管道** (`JazorProjectionService`):
 
@@ -209,7 +190,7 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 - 记录源文档位置 ↔ 投影文档位置的映射关系
 - 支持 LSP 位置转换（Source → Projection → Source）
 
-### 4.4 Source Map 链
+### Source Map 链
 
 **Source Map 服务** (`ISourceMapService`):
 
@@ -229,7 +210,7 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 - DevServer HMR：错误堆栈映射到源文件
 - LSP 诊断：JavaScript 错误映射到 .jazor 位置
 
-### 4.5 可卸载扩展系统
+### 可卸载扩展系统
 
 **扩展加载架构**:
 
@@ -270,7 +251,7 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 - 工作区符号提供者
 - 其他自定义能力
 
-## 5. 模式组合矩阵
+## 模式组合矩阵
 
 | 模式 | Workspace | Projection | Deno Host | LSP Lanes | DevServer | DAP | Build |
 |------|-----------|------------|-----------|-----------|-----------|-----|-------|
@@ -288,9 +269,9 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 - `--lsp --dev` 激活 LSP + DevServer + HMR 协调
 - `--dap --dev` 激活调试适配器 + Source Map 映射
 
-## 6. 关键依赖
+## 关键依赖
 
-### 6.1 外部依赖
+### 外部依赖
 
 | 依赖 | 版本 | 用途 |
 |------|------|------|
@@ -301,7 +282,7 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 | **Acornima** | (通过 Jazor.Vue) | JavaScript AST 解析（间接依赖） |
 | **Jazor.Vue** | 项目引用 | .jazor 编译器、AST 转换 |
 
-### 6.2 内部项目依赖
+### 内部项目依赖
 
 ```
 Jolt
@@ -321,7 +302,7 @@ Jolt
     └── LSP Protocol
 ```
 
-### 6.3 NuGet 包依赖
+### NuGet 包依赖
 
 | 包名 | 用途 |
 |------|------|
@@ -331,9 +312,9 @@ Jolt
 | `Microsoft.CodeAnalysis.CSharp` | C# 语言服务 |
 | `Microsoft.CodeAnalysis.Razor.Compiler` | Razor 编译器 |
 
-## 7. 数据流关键路径
+## 数据流关键路径
 
-### 7.1 LSP 请求处理流
+### LSP 请求处理流
 
 ```
 Client Request
@@ -355,7 +336,7 @@ LspResultAggregator (聚合结果)
 Client Response
 ```
 
-### 7.2 DevServer 编译流
+### DevServer 编译流
 
 ```
 浏览器请求 .jazor
@@ -376,7 +357,7 @@ SourceMapService (记录映射)
 返回 JavaScript + SourceMap
 ```
 
-### 7.3 Build 构建流
+### Build 构建流
 
 ```
 BuildOrchestrator.BuildAsync
@@ -404,7 +385,7 @@ BuildManifest (写入清单)
 dist/ 目录
 ```
 
-## 8. 文件组织结构
+## 文件组织结构
 
 ```
 src/Jolt/
@@ -457,9 +438,9 @@ src/Jolt/
     └── Registry/                       # 虚拟文档注册表
 ```
 
-## 9. 配置与扩展点
+## 配置与扩展点
 
-### 9.1 配置文件
+### 配置文件
 
 - **jolt.config.json**: 项目配置
   - `dev.root`: 开发服务器根目录
@@ -469,7 +450,7 @@ src/Jolt/
   - `extension.loadEventRetention`: 加载事件保留时间
   - `extension.providerEventRetention`: Provider 事件保留时间
 
-### 9.2 扩展点
+### 扩展点
 
 **LSP 扩展点**（通过 `IExtension` 接口）:
 - `LspDiagnosticProvider`: 提供自定义诊断
@@ -489,9 +470,9 @@ src/Jolt/
 - 用户扩展：扫描 `extension.root` 目录
 - 清单文件：`jazor-extension.json`
 
-## 10. 可观测性与监控
+## 可观测性与监控
 
-### 10.1 日志输出
+### 日志输出
 
 Jolt 通过 `stderr` 输出结构化 JSON 日志：
 
@@ -510,7 +491,7 @@ Jolt 通过 `stderr` 输出结构化 JSON 日志：
 - `extensionProvider`: Provider 调用事件
 - `lspWorkspaceDocumentChangeSinkFailed`: 工作区变更通知失败
 
-### 10.2 健康检查端点
+### 健康检查端点
 
 **LSP 自定义方法**:
 - `jazor/extensionProviderHealth`: Provider 健康状态
@@ -523,9 +504,9 @@ Jolt 通过 `stderr` 输出结构化 JSON 日志：
 - 扩展加载次数、失败原因
 - 平均调用延迟、P99 延迟
 
-## 11. 性能优化策略
+## 性能优化策略
 
-### 11.1 增量构建
+### 增量构建
 
 **BuildOrchestrator 增量模式** (`BuildOptions.Incremental`):
 - 计算输入文件指纹哈希
@@ -533,7 +514,7 @@ Jolt 通过 `stderr` 输出结构化 JSON 日志：
 - 指纹未变时复用输出
 - 支持 HTML 快速刷新（仅更新资源引用）
 
-### 11.2 按需编译
+### 按需编译
 
 **DevServer 按需编译** (`OnDemandCompiler`):
 - 懒加载：仅编译浏览器请求的模块
@@ -541,87 +522,69 @@ Jolt 通过 `stderr` 输出结构化 JSON 日志：
 - 依赖图：`DependencyGraph` 跟踪模块依赖
 - Source Map 复用：避免重复生成
 
-### 11.3 LSP 投影缓存
+### LSP 投影缓存
 
 **投影服务缓存**:
 - Razor SDK 投影结果缓存
 - 虚拟文档注册表（`InMemoryVirtualDocumentRegistry`）
 - 文档版本跟踪（`DocumentSnapshot.Version`）
 
-### 11.4 扩展隔离
+### 扩展隔离
 
 **Provider 隔离机制**:
 - 超时保护：`extensionProviderTimeout`（默认 2s）
 - 失败隔离：连续失败 N 次后隔离 M 秒（可配置）
 - 跳过执行：隔离期间直接跳过，不阻塞主流程
 
-## 12. 错误处理与容错
+## 错误处理与容错
 
-### 12.1 LSP 诊断聚合
+### LSP 诊断聚合
 
 **LspResultAggregator**:
 - 合并多车道诊断结果
 - 去重重复诊断
 - 严重程度排序（Error > Warning > Info）
 
-### 12.2 投影失败回退
+### 投影失败回退
 
 **Razor 投影回退** (`InProcRoslynCodeService`):
 - Razor SDK 失败 → 使用 In-Proc fallback
 - 生成 `.inproc.g.cs` 作为备选投影
 - 确保基础 IntelliSense 可用
 
-### 12.3 分析客户端回退
+### 分析客户端回退
 
 **Vue Analysis 回退** (`FallbackJazorAnalysisService`):
 - 外部分析客户端不可用 → 使用内置回退
 - `AnalyzeWithFallbackAsync` 自动降级
 - 确保基本分析功能可用
 
-### 12.4 CDP 连接失败处理
+### CDP 连接失败处理
 
 **DAP CDP 连接** (`TryCreateCdpClientAsync`):
 - CDP 端点无效 → 启动无 CDP 模式
 - 连接失败 → 记录错误并继续
 - 断线处理：DAP Session 保持活跃
 
-## 13. 安全性考虑
+## 安全性考虑
 
-### 13.1 扩展沙箱
+### 扩展沙箱
 
 **扩展隔离** (`CollectibleAssemblyLoadContext`):
 - 每个扩展独立加载上下文
 - 卸载时释放所有资源
 - 防止扩展间干扰
 
-### 13.2 路径安全
+### 路径安全
 
 **路径规范化** (`JoltWorkspaceResolver.NormalizePath`):
 - 统一路径分隔符
 - 防止路径遍历攻击
 - 大小写不敏感（Windows）
 
-### 13.3 进程隔离
+### 进程隔离
 
 **Extension Worker 模式**:
 - 扩展在独立进程运行
 - STDIO 通信隔离
 - 崩溃不影响主进程
-
-## 14. 总结
-
-Jolt 架构核心特点：
-
-1. **三车道 LSP 架构**：Jazor、Roslyn、Volar 车道协同工作
-2. **文档投影系统**：.jazor → C# 投影 → Roslyn 分析
-3. **Source Map 链**：编译产物到源文件的完整映射
-4. **可卸载扩展系统**：动态加载/卸载，Provider 隔离
-5. **多模式组合**：LSP、DevServer、DAP、Build 灵活组合
-6. **增量优化**：构建缓存、按需编译、投影缓存
-7. **容错设计**：多层回退机制、诊断聚合
-
----
-
-**文档维护者**：developerhan
-**最后更新**：2026-04-21
-**文档版本**：v1.0

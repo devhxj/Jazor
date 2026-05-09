@@ -1,6 +1,5 @@
 # ECMAScript.VueRoute API 覆盖矩阵
 
-> Scope: `src/ECMAScript.VueRoute/` 当前 public surface  
 > Baseline: Vue Router 4 官方运行时 API（`vue-router` 包）  
 > Interpretation: “已覆盖”表示已有稳定 C# host binding；“部分覆盖”表示保留主 authoring path，但刻意没有镜像全部 TS 细节；“暂不覆盖”表示当前不进入 `ECMAScript.VueRoute` 设计边界。
 
@@ -25,7 +24,7 @@
 
 ## 部分覆盖
 
-| 分类 | 官方能力 | 当前状态 | 说明 |
+| 分类 | 官方能力 | 状态 | 说明 |
 |------|----------|----------|------|
 | Typed routes | `RouteMap` / 类型推导辅助 | 部分覆盖 | 当前优先普通 authoring path，不追 TS 类型系统级精度 |
 | Route props | `props` 的全部 TS 细分 | 部分覆盖 | 先覆盖 bool / props object 主路径 |
@@ -34,7 +33,7 @@
 
 ## 暂不覆盖
 
-| 分类 | 官方能力 | 当前状态 | 说明 |
+| 分类 | 官方能力 | 状态 | 说明 |
 |------|----------|----------|------|
 | Internal matcher APIs | matcher / internal record graph | 暂不覆盖 | 不属于 public authoring surface |
 | Experimental TS-only helpers | 类型级工具与内部 utility types | 暂不覆盖 | 不为 TS-only 类型结构扩张 C# surface |

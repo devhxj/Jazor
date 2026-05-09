@@ -1,15 +1,10 @@
 # HMR (Hot Module Replacement)
 
-> Status: 活跃参考
-> Positioning: WebSocket 驱动的热模块替换系统，支持 JavaScript、CSS 和组件级 HMR
+`DevServerReloadHub` 实现（`src/Jolt/DevServer/DevServerReloadHub.cs`），管理 WebSocket 连接、广播 HMR 更新、心跳检测和过期客户端清理。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 `DevServerReloadHub` 实现（位于 `src/Jolt/DevServer/DevServerReloadHub.cs`），它负责管理 WebSocket 连接、广播 HMR 更新、心跳检测和过期客户端清理。
-
-## 2. 核心类型
-
-### 2.1 DevServerReloadHub
+### DevServerReloadHub
 
 **职责**：WebSocket HMR 广播中心，管理客户端连接生命周期。
 
@@ -44,7 +39,7 @@ internal sealed class DevServerReloadHub : IAsyncDisposable
 }
 ```
 
-### 2.2 HmrClientState
+### HmrClientState
 
 **职责**：客户端连接状态跟踪。
 
@@ -71,7 +66,7 @@ internal sealed class HmrClientState(string clientId) : IDisposable
 - `LastSeenUtc`：最后一次活动时间（用于心跳检测）
 - `SendGate`：信号量，防止并发发送导致消息乱序
 
-### 2.3 DevServerNotificationEnvelope
+### DevServerNotificationEnvelope
 
 **职责**：服务端到客户端的通知消息封装。
 
@@ -115,7 +110,7 @@ internal sealed class DevServerNotificationEnvelope
 - `"update"`：JavaScript 模块更新
 - `"error"`：编译或更新错误
 
-### 2.4 DevServerClientMessage
+### DevServerClientMessage
 
 **职责**：客户端到服务器的消息封装。
 
@@ -132,9 +127,9 @@ internal sealed class DevServerClientMessage
 - `"ready"`：客户端准备就绪，可以接收 HMR 更新
 - `"heartbeat"`：心跳包，保持连接活跃
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 连接接受
+### 连接接受
 
 **AcceptAsync**（第 39-80 行）：
 ```csharp
@@ -185,7 +180,7 @@ public async Task AcceptAsync(WebSocket socket, CancellationToken cancellationTo
 }
 ```
 
-### 3.2 消息接收
+### 消息接收
 
 **ReceiveMessageAsync**（第 235-263 行）：
 ```csharp
@@ -220,7 +215,7 @@ private static async Task<HmrReceivedMessage> ReceiveMessageAsync(
 }
 ```
 
-### 3.3 客户端消息处理
+### 客户端消息处理
 
 **ProcessClientMessage**（第 265-293 行）：
 ```csharp
@@ -257,7 +252,7 @@ private static void ProcessClientMessage(HmrClientState state, string text)
 }
 ```
 
-### 3.4 广播算法
+### 广播算法
 
 **BroadcastAsync**（第 132-155 行）：
 ```csharp
@@ -290,7 +285,7 @@ private async Task BroadcastAsync(object payload, CancellationToken cancellation
 }
 ```
 
-### 3.5 发送到单个客户端
+### 发送到单个客户端
 
 **SendToClientAsync**（第 157-201 行）：
 ```csharp
@@ -366,7 +361,7 @@ private async Task SendWithClientStateAsync(
 }
 ```
 
-### 3.6 心跳检测
+### 心跳检测
 
 **RunHeartbeatSweepAsync**（第 317-332 行）：
 ```csharp
@@ -407,7 +402,7 @@ private async Task PruneExpiredClientsAsync(DateTimeOffset now)
 }
 ```
 
-### 3.7 Socket 清理
+### Socket 清理
 
 **RemoveSocket**（第 350-359 行）：
 ```csharp
@@ -456,9 +451,9 @@ private static async Task CloseAndDisposeAsync(WebSocket socket, CancellationTok
 }
 ```
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 ConcurrentDictionary
+### ConcurrentDictionary
 
 **线程安全集合**：
 ```csharp
@@ -470,7 +465,7 @@ private readonly ConcurrentDictionary<WebSocket, HmrClientState> _sockets = new(
 - 细粒度锁（每个桶独立锁）
 - 适用于高并发场景
 
-### 4.2 SemaphoreSlim 防止并发发送
+### SemaphoreSlim 防止并发发送
 
 **SendGate 信号量**（第 436 行）：
 ```csharp
@@ -482,7 +477,7 @@ public SemaphoreSlim SendGate { get; } = new(1, 1);
 - 防止并发发送导致 WebSocket 帧乱序
 - 配合超时机制实现背压处理
 
-### 4.3 超时取消
+### 超时取消
 
 **链接取消令牌**（第 209-211 行）：
 ```csharp
@@ -495,9 +490,9 @@ sendTokenSource.CancelAfter(_sendTimeout); // 默认 2 秒
 - 超时后自动取消发送任务
 - 异常处理会移除慢速客户端
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 慢速客户端断开
+### 慢速客户端断开
 
 **场景**：客户端处理消息缓慢，导致发送队列积压
 
@@ -520,7 +515,7 @@ catch (OperationCanceledException)
 - 保护服务器性能（避免阻塞其他客户端）
 - 强制客户端重新连接（可能解决临时性问题）
 
-### 5.2 JSON 序列化容错
+### JSON 序列化容错
 
 **ProcessClientMessage**（第 265-293 行）：
 ```csharp
@@ -540,7 +535,7 @@ catch (JsonException)
 - 避免因单个客户端错误导致整个连接中断
 - 容错设计确保服务器稳定性
 
-### 5.3 WebSocket 异常处理
+### WebSocket 异常处理
 
 **全覆盖异常处理**（第 361-389 行）：
 ```csharp
@@ -569,9 +564,9 @@ finally
 - 关闭操作可能竞争失败
 - 确保 Socket 总是被释放（避免资源泄漏）
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 超时配置
+### 超时配置
 
 **默认值**（第 11-13 行）：
 ```csharp
@@ -605,9 +600,9 @@ public DevServerReloadHub(
 - `HeartbeatTimeout`：30 秒（默认），3 倍于客户端心跳间隔
 - `HeartbeatSweepInterval`：10 秒（默认），平衡检测精度和 CPU 开销
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 ChangeProcessor 的集成
+### 与 ChangeProcessor 的集成
 
 **HMR 广播触发**（`DevHttpServer.BroadcastChangeResultAsync`，第 520-550 行）：
 ```csharp
@@ -644,7 +639,7 @@ private async Task BroadcastChangeResultAsync(
 }
 ```
 
-### 7.2 与 Dev 客户端的集成
+### 与 Dev 客户端的集成
 
 **Dev 客户端脚本**（`HtmlTransformer.GetDevClientScript()`，第 95-363 行）：
 
@@ -700,9 +695,9 @@ function scheduleReconnect() {
 }
 ```
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 背压处理 vs 连接稳定性
+### 背压处理 vs 连接稳定性
 
 **当前设计**：超时断开慢速客户端
 
@@ -720,7 +715,7 @@ function scheduleReconnect() {
 - **流量控制**：需要协议层支持
 - **降级服务**：降低所有客户端体验
 
-### 8.2 心跳检测精度 vs CPU 开销
+### 心跳检测精度 vs CPU 开销
 
 **当前设计**：10 秒扫描间隔
 
@@ -733,7 +728,7 @@ function scheduleReconnect() {
 - 10 秒延迟可接受
 - 与 30 秒超时配合（3 倍关系）
 
-### 8.3 并行广播 vs 顺序广播
+### 并行广播 vs 顺序广播
 
 **当前设计**：`Task.WhenAll` 并行广播
 
@@ -749,7 +744,7 @@ function scheduleReconnect() {
 - **顺序广播**：延迟高，但内存占用低
 - **分批广播**：复杂度增加，收益有限
 
-### 8.4 客户端 ID 生成
+### 客户端 ID 生成
 
 **当前设计**：GUID 的前 8 位
 

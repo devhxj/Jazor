@@ -4,7 +4,7 @@
 
 本文档用于补充 [SourceMap.Design.md](./SourceMap.Design.md) 中尚未固定为硬约束的实现规则。
 
-前面的设计文档已经说明了方向、分层和实施顺序；本文档只做一件事：
+前面的设计文档已经说明了方向、分层和实施顺序；这里只做一件事：
 
 把已落地 baseline 及其后续扩展时不能再临场决定的规则提前固定下来。
 
@@ -12,7 +12,7 @@
 
 ## 2. 适用范围
 
-本文档适用于当前 sourcemap baseline 以及沿该 baseline 继续扩面时的实现约束。
+适用于当前 sourcemap baseline 以及沿该 baseline 继续扩面时的实现约束。
 
 当前 broad compiler contract 仍以第一阶段边界作为主范围：
 

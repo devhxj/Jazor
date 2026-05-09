@@ -13,7 +13,7 @@ Jazor 的编译器并不接受任意 .NET 语义。很多错误如果等到 lowe
 3. **RazorVue 编译时分析**：对组件 authoring、旧指令迁移、库组件声明等做专项诊断。
 4. **RazorVue catalog 生成**：在编译时生成 RazorVue catalog。
 
-## 大致实现思路
+## 实现思路
 
 ### ECMAScript 主线分析
 

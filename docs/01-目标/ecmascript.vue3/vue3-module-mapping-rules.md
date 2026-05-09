@@ -1,8 +1,6 @@
 # ECMAScript.Vue3 模块映射规则
 
-> Status: active target
 > Updated: 2026-05-03
-> Positioning: 规定 `ECMAScript.Vue3` host binding、用户生成模块、record/object lowering 与 Vue runtime import/export 之间的映射边界。
 
 ## 1. 目标
 

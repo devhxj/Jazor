@@ -1,11 +1,9 @@
 # Jolt RPC 协议契约
 
-> Status: 活跃参考
-> Positioning: Jolt RPC 协议的核心数据契约定义，位于 `Jazor.VueContracts.Protocol` 共享命名空间
 
 ## 1. 文档定位
 
-本文档描述 Jolt RPC 协议的契约类型，这些类型在编译器（Jolt）和前端分析器（RpcVueAnalysisClient）之间共享。所有契约类型定义在 `src/Jolt/Protocol/Contracts/` 目录下，通过 `Jazor.VueContracts.Protocol` 命名空间组织。
+Jolt RPC 协议的契约类型，这些类型在编译器（Jolt）和前端分析器（RpcVueAnalysisClient）之间共享。所有契约类型定义在 `src/Jolt/Protocol/Contracts/` 目录下，通过 `Jazor.VueContracts.Protocol` 命名空间组织。
 
 ## 2. 核心类型
 

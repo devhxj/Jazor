@@ -1,21 +1,16 @@
 # Deno Worker 进程管理
 
-> Status: 活跃参考
-> Positioning: Deno 子进程的低级管理器，负责进程启动、stdin/stdout 通信、stderr 捕获和工作区隔离
+Deno 子进程的低级管理器：`IDenoWorkerProcess` 接口、`DenoWorkerProcess` 实现类。负责启动和管理 Deno 子进程，通过 stdin/stdout 实现 JSON-RPC 通信，捕获 stderr 输出用于诊断，提供工作区隔离机制。
 
-## 1. 文档定位
-
-本文档描述 Jolt 中 Deno Worker 进程管理的实现，包括 `IDenoWorkerProcess` 接口、`DenoWorkerProcess` 实现类。该系统负责启动和管理 Deno 子进程，通过 stdin/stdout 实现 JSON-RPC 通信，捕获 stderr 输出用于诊断，并提供工作区隔离机制。
-
-**相关源文件**：
+相关源文件：
 - `src/Jolt/Frontend/Deno/Hosting/IDenoWorkerProcess.cs` - 接口定义
 - `src/Jolt/Frontend/Deno/Hosting/DenoWorkerProcess.cs` - 主实现类
 - `src/Jolt/Frontend/Deno/Hosting/DenoVolarHost.cs` - 上层管理器（独立文档）
 - `src/Jolt/Frontend/Deno/Protocol/DenoFrontendProtocol.cs` - 请求/响应协议（独立文档）
 
-## 2. 核心类型
+## 核心类型
 
-### 2.1 `IDenoWorkerProcess` 接口
+### `IDenoWorkerProcess` 接口
 
 Deno worker 进程的抽象接口，提供基本的进程管理和 RPC 通信功能。
 
@@ -32,7 +27,7 @@ Deno worker 进程的抽象接口，提供基本的进程管理和 RPC 通信功
   - 等待响应并反序列化为指定类型
   - 支持任意请求/响应类型（通过泛型参数）
 
-### 2.2 `DenoWorkerProcess` 实现
+### `DenoWorkerProcess` 实现
 
 核心实现类，直接管理 `System.Diagnostics.Process` 实例。
 
@@ -66,9 +61,9 @@ private static readonly HashSet<string> LaunchWorkspaces = new(StringComparer.Or
 private static bool _launchWorkspaceCleanupHookRegistered;        // 进程退出清理钩子注册标志
 ```
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 进程启动流程（StartAsync）
+### 进程启动流程（StartAsync）
 
 ```
 1. 等待 _lifecycleGate（确保线程安全）
@@ -185,7 +180,7 @@ private static void CopyWorkerConfigurationFiles(
 - **配置文件复制**：保留原始配置（依赖、导入映射、权限等）
 - **自动清理**：注册进程退出钩子，确保临时工作区被删除
 
-### 3.2 请求发送流程（SendRequestAsync）
+### 请求发送流程（SendRequestAsync）
 
 ```
 1. 参数验证
@@ -251,7 +246,7 @@ private readonly JsonSerializerOptions _jsonOptions = new()
 - **错误诊断**：所有异常都附加 stderr 摘要，帮助诊断问题
 - **线程安全**：使用 `_requestGate` 确保请求串行发送（JSON-RPC over stdin/stdout 本质上是单线程的）
 
-### 3.3 进程停止流程（StopAsync）
+### 进程停止流程（StopAsync）
 
 ```
 1. 等待 _lifecycleGate
@@ -355,7 +350,7 @@ private static void TryDeleteLaunchWorkspace(string launchWorkspaceDirectory)
 - **工作区清理**：立即删除临时工作区，避免磁盘空间浪费
 - **容错设计**：清理操作忽略所有异常，确保即使清理失败也不会影响系统状态
 
-### 3.4 Stderr Pump 流程（PumpStandardErrorAsync）
+### Stderr Pump 流程（PumpStandardErrorAsync）
 
 ```
 1. 循环读取 stderr 行：
@@ -434,7 +429,7 @@ private string CreateStandardErrorSummarySuffix()
 - **诊断友好**：所有异常都附加 stderr 摘要，帮助诊断问题
 - **异步读取**：使用独立任务 pump stderr，避免阻塞 stdout 读取
 
-### 3.5 进程退出清理钩子
+### 进程退出清理钩子
 
 **注册清理钩子**（`RegisterLaunchWorkspaceForCleanup`）：
 ```csharp
@@ -493,9 +488,9 @@ private static void CleanupLaunchWorkspaces()
 - **单次注册**：使用 `_launchWorkspaceCleanupHookRegistered` 标志避免重复注册
 - **容错设计**：忽略所有删除失败异常（文件可能被占用）
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 双锁设计
+### 双锁设计
 
 **生命周期锁（`_lifecycleGate`）**：
 - **类型**：`SemaphoreSlim(1, 1)` - 互斥锁
@@ -517,7 +512,7 @@ private static void CleanupLaunchWorkspaces()
 - **保护的操作**：`LaunchWorkspaces`, `_launchWorkspaceCleanupHookRegistered`, `_launchWorkspaceSequence`
 - **设计意图**：保护全局静态状态，防止并发修改
 
-### 4.2 锁分离设计
+### 锁分离设计
 
 **为什么需要两个独立的锁？**
 
@@ -538,12 +533,12 @@ private static void CleanupLaunchWorkspaces()
 - 如果进程意外退出，抛出 `InvalidOperationException`（包含 stderr 摘要）
 - 上层 `DenoVolarHost` 捕获异常并重试（最多 3 次）
 
-### 4.3 无锁读取
+### 无锁读取
 
 **只读属性**（无需锁保护）：
 - `IsRunning` - 直接检查 `_process.HasExited`（`Process.HasExited` 是线程安全的）
 
-### 4.4 异步取消安全
+### 异步取消安全
 
 **stderr pump 取消**：
 ```csharp
@@ -559,9 +554,9 @@ catch (OperationCanceledException) when (cancellationToken.IsCancellationRequest
 
 **设计意图**：使用 `when` 子句确保只捕获预期的取消异常，避免掩盖其他问题
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 启动失败处理
+### 启动失败处理
 
 **场景**：
 - Deno 可执行文件不存在
@@ -580,7 +575,7 @@ Failed to locate the packaged Deno runtime for Jolt at 'runtimes/win-x64/native/
 Ensure DenoHost runtime assets are available for the current RID and restore/build Jolt before starting the Volar worker.
 ```
 
-### 5.2 请求失败处理
+### 请求失败处理
 
 **场景**：
 - Worker 进程意外退出
@@ -604,7 +599,7 @@ error: Uncaught (in promise) TypeError: Cannot read property 'forEach' of undefi
     at ...
 ```
 
-### 5.3 Worker 意外退出处理
+### Worker 意外退出处理
 
 **场景**：Worker 进程在运行期间崩溃
 
@@ -617,7 +612,7 @@ error: Uncaught (in promise) TypeError: Cannot read property 'forEach' of undefi
 Deno frontend worker exited unexpectedly with code 1. stderr: error: Uncaught TypeError: ...
 ```
 
-### 5.4 Stderr 捕获失败处理
+### Stderr 捕获失败处理
 
 **场景**：Stderr pump 任务异常（管道关闭、对象释放）
 
@@ -625,16 +620,16 @@ Deno frontend worker exited unexpectedly with code 1. stderr: error: Uncaught Ty
 - 捕获 `IOException` 和 `ObjectDisposedException` 并忽略
 - 设计意图：stderr pump 是辅助功能，不应该影响主流程
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 必需配置
+### 必需配置
 
 | 配置项 | 说明 | 示例 |
 |--------|------|------|
 | `ExecutablePath` | Deno 可执行文件路径 | `runtimes/win-x64/native/deno.exe` |
 | `WorkerScriptPath` | Worker 脚本路径（用于解析工作目录） | `Frontend/Deno/Worker/frontend-worker.ts` |
 
-### 6.2 可选配置
+### 可选配置
 
 | 配置项 | 说明 | 默认值 | 影响 |
 |--------|------|--------|------|
@@ -643,7 +638,7 @@ Deno frontend worker exited unexpectedly with code 1. stderr: error: Uncaught Ty
 | `Arguments` | Deno 命令行参数 | `[]` | 传递给 Deno 进程 |
 | `HasExplicitExecutableOverride` | 是否显式覆盖可执行文件路径 | `false` | 影响启动失败错误消息 |
 
-### 6.3 工作区隔离配置
+### 工作区隔离配置
 
 **隔离条件**（同时满足）：
 1. `WorkingDirectory` 配置为 worker 脚本所在目录
@@ -659,9 +654,9 @@ Deno frontend worker exited unexpectedly with code 1. stderr: error: Uncaught Ty
 - `WorkingDirectory` 不等于 worker 目录
 - worker 目录没有 `deno.json`
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 DenoVolarHost 的交互
+### 与 DenoVolarHost 的交互
 
 **关系**：`DenoVolarHost` 是 `DenoWorkerProcess` 的上层管理器
 
@@ -674,7 +669,7 @@ Deno frontend worker exited unexpectedly with code 1. stderr: error: Uncaught Ty
 - `DenoVolarHost`：高级 API、重试逻辑、故障恢复
 - `DenoWorkerProcess`：低级进程管理、stdin/stdout 通信、线程安全
 
-### 7.2 与 Deno Worker TypeScript 脚本的交互
+### 与 Deno Worker TypeScript 脚本的交互
 
 **通信协议**：JSON-RPC over stdin/stdout
 

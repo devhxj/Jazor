@@ -1,7 +1,5 @@
 # Jolt 测试拓扑设计
 
-> Status: 活跃参考
-> Positioning: Jolt 测试分层、实例生命周期和 `.slnx` 边界约定
 
 ## 1. 文档定位
 

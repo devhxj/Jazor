@@ -1,8 +1,5 @@
 # RazorVue — 库模式
 
-> Status: 活跃参考
-> Positioning: RazorVue 库模式设计入口，描述当前编译时 Razor-to-JS 路线及其物理拆分后的责任边界。
-> Note: RazorVue 的对外命名空间仍保留 `Jazor.RazorVue` / `Jazor.RazorVue.Analysis`，但物理项目已经收束为 `Jazor.RazorVue`（其中 `RazorSdk/` 目录承载 Razor SDK 桥接）、`Jazor.Analyzer`、`ECMAScript.Vuetify`。
 
 > 对应源码：`src/Jazor.RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/ECMAScript.Vuetify/`
 

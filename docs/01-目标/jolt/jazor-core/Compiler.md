@@ -1,11 +1,9 @@
 # Jazor 编译器（Compiler）
 
-> Status: 活跃参考
-> Positioning: Jazor 核心编译管线的后端，负责将解析后的文档编译为 Vue SFC 和 C# 外部声明
 
 ## 1. 文档定位
 
-本文档描述 Jazor 核心编译系统的编译器组件，该组件负责将 `JazorVueDocument` 编译为：
+Jazor 核心编译系统的编译器组件，该组件负责将 `JazorVueDocument` 编译为：
 1. 生成的 Vue Single File Component (SFC) 文本
 2. C# 外部声明代码（用于 C# 代码对 Vue 组件的引用）
 3. Source Map（用于调试和错误映射）

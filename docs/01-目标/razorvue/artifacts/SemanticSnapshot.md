@@ -1,9 +1,8 @@
 # RazorVueSemanticSnapshot - RazorVue 语义快照
-> Status: 活跃参考
 
 ## 1. 文档定位
 
-本文档描述 `RazorVueSemanticSnapshot`，这是 RazorVue 编译主链路使用的最小语义快照。它在 Source Generator 分析阶段构建，同时保留两层信息：descriptor/flag 视图（供 HMR/hash/诊断使用）和 lifecycle method symbols（供 lowering 阶段生成 Vue hooks）。
+`RazorVueSemanticSnapshot`，这是 RazorVue 编译主链路使用的最小语义快照。它在 Source Generator 分析阶段构建，同时保留两层信息：descriptor/flag 视图（供 HMR/hash/诊断使用）和 lifecycle method symbols（供 lowering 阶段生成 Vue hooks）。
 
 **核心文件**：
 - `src/Jazor.RazorVue/Artifacts/RazorVueSemanticSnapshot.cs`

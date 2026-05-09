@@ -1,26 +1,21 @@
 # Deno 前端协议
 
-> Status: 活跃参考
-> Positioning: Jolt 与 Deno Worker 之间的通信协议定义，包括编译协议和智能感知协议
+Jolt 与 Deno Worker 之间的通信协议：编译协议（`DenoCompilationProtocol`）和前端智能感知协议（`DenoFrontendProtocol`）。定义 C# 和 TypeScript 之间 JSON-RPC 通信的请求和响应数据结构。
 
-## 1. 文档定位
-
-本文档描述 Jolt 与 Deno Worker 之间的通信协议，包括编译协议（`DenoCompilationProtocol`）和前端智能感知协议（`DenoFrontendProtocol`）。这些协议定义了请求和响应的数据结构，用于 C# 和 TypeScript 之间的 JSON-RPC 通信。
-
-**相关源文件**：
+相关源文件：
 - `src/Jolt/Frontend/Deno/Protocol/DenoCompilationProtocol.cs` - 编译协议定义
 - `src/Jolt/Frontend/Deno/Protocol/DenoFrontendProtocol.cs` - 智能感知协议定义
 - `src/Jolt/Frontend/IFrontendContextProvider.cs` - 前端上下文提供者接口
 - `src/Jolt/Frontend/Deno/Hosting/DenoWorkerProcess.cs` - 协议传输层（独立文档）
 - `src/Jolt/Frontend/Deno/Hosting/DenoVolarHost.cs` - 协议使用者（独立文档）
 
-## 2. 核心类型
+## 核心类型
 
-### 2.1 编译协议（DenoCompilationProtocol）
+### 编译协议（DenoCompilationProtocol）
 
 编译协议定义了三种编译操作的请求和响应：SFC 编译、TypeScript 编译和 CSS 模块编译。
 
-#### 2.1.1 SFC 编译
+#### SFC 编译
 
 **DenoSfcCompileRequest**：
 ```csharp
@@ -62,7 +57,7 @@ internal sealed class DenoSfcStyleFragmentResult
 - 构建：生产模式编译（压缩、优化）
 - HMR：检测 SFC 是否支持热更新
 
-#### 2.1.2 TypeScript 编译
+#### TypeScript 编译
 
 **DenoTypeScriptCompileRequest**：
 ```csharp
@@ -89,7 +84,7 @@ internal sealed class DenoTypeScriptCompileResult
 - 编译独立的 .ts 文件
 - 支持类型检查（诊断信息）
 
-#### 2.1.3 CSS 模块编译
+#### CSS 模块编译
 
 **DenoCssModuleCompileRequest**：
 ```csharp
@@ -117,11 +112,11 @@ internal sealed class DenoCssModuleCompileResult
 - 生成局部作用域的类名（哈希）
 - 支持生产模式优化（压缩）
 
-### 2.2 智能感知协议（DenoFrontendProtocol）
+### 智能感知协议（DenoFrontendProtocol）
 
 智能感知协议定义了前端智能感知请求的通用信封和各种具体的请求类型。
 
-#### 2.2.1 请求/响应信封
+#### 请求/响应信封
 
 **DenoFrontendRequestEnvelope**：
 ```csharp
@@ -150,7 +145,7 @@ internal sealed class DenoFrontendResponseEnvelope
 - `Success` 标志区分成功和失败
 - `Result` 和 `Error` 互斥（成功时 `Result` 非空，失败时 `Error` 非空）
 
-#### 2.2.2 通用请求类型
+#### 通用请求类型
 
 **DenoTemplateDocumentRequest**：
 ```csharp
@@ -179,7 +174,7 @@ internal class DenoTemplateRangeRequest : DenoTemplateDocumentRequest
 }
 ```
 
-#### 2.2.3 具体请求类型
+#### 具体请求类型
 
 **DenoTemplateDiagnosticRequest**：
 ```csharp
@@ -213,7 +208,7 @@ internal sealed class DenoTemplateRenameRequest : DenoTemplateRequest
 }
 ```
 
-#### 2.2.4 RPC 方法映射
+#### RPC 方法映射
 
 | 方法名 | 请求类型 | 响应类型 | 说明 |
 |--------|---------|---------|------|
@@ -233,7 +228,7 @@ internal sealed class DenoTemplateRenameRequest : DenoTemplateRequest
 | `template/references` | `DenoTemplateReferenceRequest` | `LspLocation[]` | 获取引用位置 |
 | `template/rename` | `DenoTemplateRenameRequest` | `LspWorkspaceEdit` | 获取重命名编辑 |
 
-### 2.3 前端上下文提供者（IFrontendContextProvider）
+### 前端上下文提供者（IFrontendContextProvider）
 
 **接口定义**（`src/Jolt/Frontend/IFrontendContextProvider.cs`）：
 ```csharp
@@ -254,9 +249,9 @@ public interface IFrontendContextProvider
 - 传递给 Deno Worker 用于智能感知增强
 - 支持跨语言引用（C# 组件 → Vue 模板）
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 请求序列化流程
+### 请求序列化流程
 
 **C# 端**：
 ```
@@ -278,7 +273,7 @@ public interface IFrontendContextProvider
 5. 处理请求
 ```
 
-### 3.2 响应反序列化流程
+### 响应反序列化流程
 
 **TypeScript 端**：
 ```
@@ -303,7 +298,7 @@ public interface IFrontendContextProvider
 5. 返回结果
 ```
 
-### 3.3 前端上下文传递流程
+### 前端上下文传递流程
 
 **获取上下文**（C# 端）：
 ```
@@ -332,9 +327,9 @@ public interface IFrontendContextProvider
    - 补全建议（C# 成员 → Vue 模板）
 ```
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 协议层线程安全
+### 协议层线程安全
 
 **协议类型本身是无状态的**：
 - 所有协议类型都是 `record` 或 `class`（只读属性）
@@ -345,7 +340,7 @@ public interface IFrontendContextProvider
 - `JsonSerializer.Serialize/Deserialize` 是线程安全的（无状态）
 - 但需要注意：不要共享 `JsonSerializerOptions` 实例（如果配置了自定义转换器）
 
-### 4.2 传输层线程安全
+### 传输层线程安全
 
 **DenoWorkerProcess** 使用两个独立的锁：
 - `_lifecycleGate`：保护生命周期操作（StartAsync, StopAsync）
@@ -355,9 +350,9 @@ public interface IFrontendContextProvider
 - 协议层是无状态的，线程安全由传输层保证
 - 请求发送是串行的（JSON-RPC over stdin/stdout 本质上是单线程的）
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 协议层错误
+### 协议层错误
 
 **JSON 序列化错误**：
 - **类型**：`JsonException`
@@ -369,7 +364,7 @@ public interface IFrontendContextProvider
 - **原因**：响应 JSON 格式错误或类型不匹配
 - **处理**：传输层捕获并重试（最多 3 次）
 
-### 5.2 业务层错误
+### 业务层错误
 
 **Worker 返回错误**：
 - **标志**：`DenoFrontendResponseEnvelope.Success = false`
@@ -381,9 +376,9 @@ public interface IFrontendContextProvider
 - **类型**：`IReadOnlyList<string>` - 字符串列表
 - **处理**：上层转换为 LSP 诊断信息（`LspDiagnostic`）
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 JSON 序列化配置
+### JSON 序列化配置
 
 **DenoWorkerProcess 使用的配置**：
 ```csharp
@@ -398,7 +393,7 @@ private readonly JsonSerializerOptions _jsonOptions = new()
 - 与 JavaScript/TypeScript 互操作（camelCase 命名）
 - 容错性（不区分大小写，避免字段名大小写不匹配问题）
 
-### 6.2 RPC 方法命名约定
+### RPC 方法命名约定
 
 **编译方法**：`compile/{type}`
 - `compile/sfc` - SFC 编译
@@ -420,9 +415,9 @@ private readonly JsonSerializerOptions _jsonOptions = new()
 - 清晰的功能分类
 - 易于扩展（添加新的编译类型或智能感知功能）
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 DenoVolarHost 的交互
+### 与 DenoVolarHost 的交互
 
 **关系**：`DenoVolarHost` 使用协议类型与 `DenoWorkerProcess` 通信
 
@@ -445,7 +440,7 @@ DenoWorkerProcess 反序列化响应（使用协议类型）
 返回 LspCompletionItem[] 给 DenoVolarHost
 ```
 
-### 7.2 与 Volar 服务的交互
+### 与 Volar 服务的交互
 
 **TypeScript 端**（frontend-worker.ts）：
 ```
@@ -461,7 +456,7 @@ DenoWorkerProcess 反序列化响应（使用协议类型）
 - C# 协议类型 → Volar 请求类型
 - Volar 响应类型 → C# 协议类型
 
-### 7.3 与 C# 编译系统的交互
+### 与 C# 编译系统的交互
 
 **入口**：`IFrontendContextProvider`
 
@@ -484,9 +479,9 @@ GetFrontendContextResponse
 Volar 使用 C# 语义信息增强智能感知
 ```
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 JSON-RPC vs 二进制协议
+### JSON-RPC vs 二进制协议
 
 **权衡**：
 - **JSON-RPC**：简单、跨语言、易于调试，但性能较低
@@ -500,7 +495,7 @@ Volar 使用 C# 语义信息增强智能感知
 - TypeScript/JavaScript 互操作简单（原生 JSON 支持）
 - 易于调试（可读的 JSON 文本）
 
-### 8.2 统一信封 vs 多个方法
+### 统一信封 vs 多个方法
 
 **权衡**：
 - **统一信封**：所有请求使用相同的信封类型（`DenoFrontendRequestEnvelope`），通过 `Method` 字段区分
@@ -513,7 +508,7 @@ Volar 使用 C# 语义信息增强智能感知
 - 易于扩展（添加新请求类型不需要修改传输层）
 - 符合 JSON-RPC 标准（method + params）
 
-### 8.3 继承 vs 扁平化
+### 继承 vs 扁平化
 
 **权衡**：
 - **继承**：`DenoTemplateRequest` 继承 `DenoTemplateDocumentRequest`，复用字段
@@ -526,7 +521,7 @@ Volar 使用 C# 语义信息增强智能感知
 - 清晰的类型层次（文档请求 → 位置请求 → 范围请求）
 - C# record 类型支持继承（简洁语法）
 
-### 8.4 JsonElement vs 具体类型
+### JsonElement vs 具体类型
 
 **权衡**：
 - **JsonElement**：`DenoFrontendResponseEnvelope.Result` 使用 `JsonElement?`，延迟反序列化
@@ -540,7 +535,7 @@ Volar 使用 C# 语义信息增强智能感知
 - 延迟反序列化（只在需要时反序列化）
 - 支持 `null` 响应（某些请求没有返回值）
 
-### 8.5 诊断信息格式
+### 诊断信息格式
 
 **权衡**：
 - **字符串列表**：`IReadOnlyList<string>` Diagnostics

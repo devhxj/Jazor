@@ -3,7 +3,7 @@
 ## 目录
 
 - [定位](#定位)
-- [当前职责边界](#当前职责边界)
+- [职责边界](#职责边界)
 - [核心设计原则](#核心设计原则)
 - [当前已固定的语义边界](#当前已固定的语义边界)
 - [上下文模型](#上下文模型)
@@ -12,7 +12,7 @@
 - [与 AstConverter 的分工](#与-astconverter-的分工)
 - [与白名单的关系](#与白名单的关系)
 - [与 sourcemap 的关系](#与-sourcemap-的关系)
-- [当前边界](#当前边界)
+- [边界](#边界)
 - [延伸阅读](#延伸阅读)
 
 前置阅读：[实现原则](../../../../src/Jazor.Compiler/ImplementationPrinciples.md)
@@ -37,7 +37,7 @@ C# IOperation
     -> JavaScript writer
 ```
 
-## 当前职责边界
+## 职责边界
 
 `SemanticWalker` 负责的是“语义到 AST”的转换，不负责：
 
@@ -156,7 +156,7 @@ C# IOperation
 
 当前 `SemanticWalker` 按语法域拆成多个 partial 文件。
 
-| 文件 | 当前职责 |
+| 文件 | 职责 |
 |------|----------|
 | `SemanticWalker.cs` | 主入口、通用 `Translate`、基础类型映射、统一调度 |
 | `SemanticWalker.cs.Pattern.cs` | 模式匹配 lowering |
@@ -313,7 +313,7 @@ tuple 在当前设计里被视为“编译期语法糖”，不是新的运行�
 - [SourceMap.DecisionSummary.md](../sourcemap/SourceMap.DecisionSummary.md)
 - [SourceMap.Design.md](../sourcemap/SourceMap.Design.md)
 
-## 当前边界
+## 边界
 
 - 对所有 C# 语法无条件支持
 - 不插入任何临时变量

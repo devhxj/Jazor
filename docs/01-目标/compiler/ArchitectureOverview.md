@@ -317,7 +317,7 @@ flowchart TB
     I -.持续契约.-> X5[稳定命名 / import 顺序 / source-origin]
 ```
 
-当前状态可分为三类：
+状态可分为三类：
 
 ### 已闭环
 

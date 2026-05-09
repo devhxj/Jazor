@@ -1,7 +1,5 @@
 # Source Map Service 子系统
 
-> Status: 活跃参考
-> Positioning: Jolt Source Map 管理层，提供 Source Map v3 解析、双向映射和源码查询
 
 ## 1. 文档定位
 

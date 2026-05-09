@@ -1,50 +1,20 @@
 # Compiler 文档索引
 
-> Status: 活跃参考
 > Updated: 2026-04-26
-> Positioning: 仓库级 `Jazor.Compiler` 入口，负责组织架构、转换、白名单、SourceMap 与实现原则的阅读路径。
-> Note: 这份索引负责组织“长期有效的专题入口”；如果你要裁决当前实现路线和失败策略，优先回到 `src/Jazor.Compiler/ImplementationPrinciples.md`。
 
-## 定位
+这组文档覆盖编译器的架构、转换管线、白名单、宿主语义、SourceMap 和发射。实现路线和裁决原则在源码目录的另一份文档里：
 
-`docs/01-目标/compiler/` 这组文档回答的是：
+- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md) — 实现路线、失败策略、行为保真顺序、扩展判据
 
-- 编译器为什么存在；
-- 编译链路如何分层；
-- 核心转换器分别解决什么问题；
-- 白名单、宿主语义、SourceMap 和发射管线如何协作；
-- 新增能力时应落在哪一层。
+本目录偏仓库级设计组织和专题索引；`ImplementationPrinciples.md` 偏价值排序和裁决。两者不重复。
 
-与之配套但不重复的另一份核心文档在源码目录：
+## 阅读路线
 
-- [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
+**先建立整体图景：** [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md) → [ArchitectureOverview.md](./ArchitectureOverview.md) → [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md) → [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
-那份文档回答的是“实现路线与裁决原则”，更偏价值排序、失败策略、synthetic lowering 边界和扩展判据；本目录则更偏仓库级设计组织与专题索引。
+**准备动手改 compiler：** [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md) → [ArchitectureOverview.md](./ArchitectureOverview.md) → [WalkerExtensionSpec.md](./WalkerExtensionSpec.md) → [WhiteList.md](./WhiteList.md) → [OpCompileSpec.md](./OpCompileSpec.md)
 
-## 推荐阅读顺序
-
-### 路线 A：先建立整体图景
-
-1. [ArchitectureOverview.Simplified.md](./ArchitectureOverview.Simplified.md)
-2. [ArchitectureOverview.md](./ArchitectureOverview.md)
-3. [SyntaxTransformationPipeline.md](./SyntaxTransformationPipeline.md)
-4. [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-
-### 路线 B：准备实现或修改 compiler
-
-1. [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-2. [ArchitectureOverview.md](./ArchitectureOverview.md)
-3. [WalkerExtensionSpec.md](./WalkerExtensionSpec.md)
-4. [WhiteList.md](./WhiteList.md)
-5. [OpCompileSpec.md](./OpCompileSpec.md)
-
-### 路线 C：按专题深挖
-
-- `AstConverter`：模块/类型级展开
-- `SemanticWalker`：方法体与表达式 lowering
-- `WhiteList` / `Compile`：宿主语义接缝
-- `SourceMap`：调试锚点与生成映射
-- `Emit`：产物物化与 SourceMap 输出
+**按专题深挖：** `AstConverter`（模块/类型级展开）· `SemanticWalker`（方法体与表达式 lowering）· `WhiteList` / `Compile`（宿主语义接缝）· `SourceMap`（调试锚点与生成映射）· `Emit`（产物物化与 SourceMap 输出）
 
 ## 主题索引
 
@@ -84,14 +54,13 @@
 - [emit/Emit.Pipeline.Overview.md](./emit/Emit.Pipeline.Overview.md) - 发射总览
 - [emit/Emit.BundleAndSourceMap.Overview.md](./emit/Emit.BundleAndSourceMap.Overview.md) - 打包与 SourceMap 输出
 
-## 使用约定
+## 约定
 
-- 仓库级架构和专题入口优先看本目录。
-- 实现路线、边界裁决、价值排序优先看 [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)。
-- 如果某份旧文档与实现原则文档冲突，以 `ImplementationPrinciples.md` 记录的当前路线和现有测试约束为准，再回头修正文档漂移。
+- 仓库级架构和专题入口看本目录；实现路线和边界裁决看 [ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)。
+- 如果旧文档与实现原则冲突，以 `ImplementationPrinciples.md` 和现有测试为准，回头修正文档。
 
 ## 相关入口
 
-- [../README.md](../README.md) - `01-目标` 总入口
-- [../../README.md](../../README.md) - 仓库级文档中心
-- [architecture.md](./architecture.md) - 编译器架构桥接页
+- [../README.md](../README.md) — `01-目标` 总入口
+- [../../README.md](../../README.md) — 仓库级文档中心
+- [architecture.md](./architecture.md) — 编译器架构桥接页

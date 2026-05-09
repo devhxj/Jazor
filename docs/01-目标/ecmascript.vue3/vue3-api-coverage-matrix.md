@@ -1,6 +1,5 @@
 # ECMAScript.Vue3 API 覆盖矩阵
 
-> Status: active inventory
 > Updated: 2026-05-03
 > Source baseline: Vue 官方 API 索引与分组，目标对象是 `src/ECMAScript.Vue3/Vue3.cs` 的 host binding / authoring surface，而不是 `.vue` SFC 或模板编译器。
 
@@ -70,7 +69,7 @@
 
 Source: <https://vuejs.org/api/application.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `createApp()` | Covered | 保持 |
 | `createSSRApp()` | Covered | 保持；SSR renderer 另见独立工作流 |
@@ -90,7 +89,7 @@ Source: <https://vuejs.org/api/application.html>
 
 Source: <https://vuejs.org/api/general.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `version` | Covered | `Vue3.Version` |
 | `nextTick()` | Covered | `NextTick()` / `NextTick(Action)` 覆盖 promise 与 callback 形态 |
@@ -103,7 +102,7 @@ Source: <https://vuejs.org/api/general.html>
 
 Source: <https://vuejs.org/api/composition-api-setup.html>
 
-| 官方能力 | 当前状态 | 目标 |
+| 官方能力 | 状态 | 目标 |
 |----------|----------|------|
 | `setup(props, context)` | Covered | 通过 `VueTypedSetupCallback<TProps>` / `VueSetupContext` 表达 |
 | `context.attrs` | Covered | `VueAttributeBag` 已有 indexer / class / style / id / title / for / name / type / placeholder / disabled / readonly / required / tabindex / role 读取面；`UseAttrs<T>()` 可投影到 `VueAttributeListeners*` 以读取 callable listener key |
@@ -116,7 +115,7 @@ Source: <https://vuejs.org/api/composition-api-setup.html>
 
 Source: <https://vuejs.org/api/composition-api-helpers.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `useAttrs()` | Covered | `UseAttrs()` 返回 `VueAttributeBag`；`UseAttrs<TAttrs>()` 返回 typed projection（含 `VueAttributeListeners*` callable bridge） |
 | `useSlots()` | Covered | `UseSlots()` 返回 `VueSlotBag`；`UseSlots<TSlots>()` 返回 typed projection（含 `VueScopedSlots<TScope>` scoped helper） |
@@ -130,7 +129,7 @@ Source: <https://vuejs.org/api/composition-api-helpers.html>
 
 Source: <https://vuejs.org/api/reactivity-core.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `ref()` | Covered | 保持 `IVueRef<T>` |
 | `computed()` | Covered | getter + writable computed options |
@@ -155,7 +154,7 @@ Source: <https://vuejs.org/api/reactivity-core.html>
 
 Source: <https://vuejs.org/api/reactivity-utilities.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `isRef()` | Covered | `bool IsRef<T>(T value)`，用泛型承接 unknown-like 输入，避免 public `object` |
 | `unref()` | Covered | `Unref<T>(T)` + `Unref<T>(IVueRef<T>)` overload |
@@ -172,7 +171,7 @@ Source: <https://vuejs.org/api/reactivity-utilities.html>
 
 Source: <https://vuejs.org/api/reactivity-advanced.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `shallowRef()` | Covered | 保持 |
 | `triggerRef()` | Covered | `TriggerRef<T>(IVueRef<T>)` |
@@ -189,7 +188,7 @@ Source: <https://vuejs.org/api/reactivity-advanced.html>
 
 Source: <https://vuejs.org/api/composition-api-lifecycle.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `onMounted()` | Covered | 保持 |
 | `onUpdated()` | Covered | 保持 |
@@ -210,7 +209,7 @@ Source: <https://vuejs.org/api/composition-api-lifecycle.html>
 
 Source: <https://vuejs.org/api/composition-api-dependency-injection.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `provide()` | Covered | composition-level `Provide<T>(string key, T value)` |
 | `inject()` | Covered | string key、typed `VueInjectionKey<T>`、missing/default/factory default 已覆盖 |
@@ -228,7 +227,7 @@ Sources:
 - <https://vuejs.org/api/options-composition.html>
 - <https://vuejs.org/api/options-misc.html>
 
-| 分类 | API | 当前状态 | 目标 |
+| 分类 | API | 状态 | 目标 |
 |------|-----|----------|------|
 | State | `data` | Covered | `VueDataCallback` + `BindThis<TThis>(VueThisDataCallback<TThis>)` 已覆盖无 `this` 与 this-bound `data(vm)` authoring |
 | State | `props` | Covered | `Props` 覆盖 array-form 与 object-form；object-form 继续通过 `VuePropOptions<T>` / `VuePropRegistry<T>` / 自定义 `VueProps` record 表达 validators/defaults；typed generic 只提供 C# authoring contract，不自动生成 runtime declaration |
@@ -263,7 +262,7 @@ Sources:
 - <https://vuejs.org/api/built-in-special-attributes.html>
 - <https://vuejs.org/api/built-in-special-elements.html>
 
-| 分类 | 当前状态 | 目标 |
+| 分类 | 状态 | 目标 |
 |------|----------|------|
 | Built-in Directives | Gap | Template/SFC workstream；render function 下部分可通过 props / helper 表达 |
 | Built-in Components | Partial | `Transition`、`TransitionGroup`、`KeepAlive`、`Teleport`、`Suspense` 已作为 `IVueComponent` binding 落地 |
@@ -276,7 +275,7 @@ Sources:
 
 Source: <https://vuejs.org/api/render-function.html>
 
-| API | 当前状态 | 目标 |
+| API | 状态 | 目标 |
 |-----|----------|------|
 | `h()` | Covered | 主路径已覆盖；`VueObject` 已覆盖 string `is` / `key` / named `ref` / class / style / events / attrs / dataset / raw，并提供一组高频原生 HTML convenience attrs（如 `id` / `title` / `for` / `name` / `type` / `placeholder` / `href` / `src` 等）；`H(...)` 已按 element/component/props/slots/direct-child canonical 家族收敛，direct-child 统一通过 `IVNode` + `VueChild` 表达 |
 | `mergeProps()` | Covered | `MergeProps(params VueProps[])` |
@@ -298,7 +297,7 @@ Sources:
 - <https://vuejs.org/api/sfc-script-setup.html>
 - <https://vuejs.org/api/sfc-css-features.html>
 
-| API 面 | 当前状态 | 目标 |
+| API 面 | 状态 | 目标 |
 |--------|----------|------|
 | SFC syntax spec | Gap | Separate Workstream |
 | `<script setup>` | Gap | Separate Workstream |
@@ -315,7 +314,7 @@ Sources:
 - <https://vuejs.org/api/ssr.html>
 - <https://vuejs.org/api/custom-renderer.html>
 
-| 分类 | 当前状态 | 目标 |
+| 分类 | 状态 | 目标 |
 |------|----------|------|
 | Custom Elements | Covered | `DefineCustomElement(VueComponentDefinition[, VueCustomElementOptions])`、`VueCustomElementComponentOptions*` merged options、`UseHost()` / `UseHost<THost>()`、`UseShadowRoot()` 已覆盖 runtime + authoring 主路径 |
 | SSR | Partial | `createSSRApp` 已有；`renderToString` 等 SSR renderer API 属于 separate workstream |

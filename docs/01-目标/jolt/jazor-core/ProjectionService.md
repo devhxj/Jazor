@@ -1,11 +1,9 @@
 # Jazor 投影服务（Projection Service）
 
-> Status: 活跃参考
-> Positioning: Jazor 核心系统的投影层，负责将 .jazor 文档投影为虚拟 Vue 和 C# 文档供 LSP 和编译器使用
 
 ## 1. 文档定位
 
-本文档描述 Jazor 投影服务，该服务负责将 .jazor 源文档转换为两种虚拟文档：
+Jazor 投影服务，该服务负责将 .jazor 源文档转换为两种虚拟文档：
 1. **虚拟 Vue 文档**：生成的 Vue SFC，供 Volar/LSP 使用
 2. **虚拟 C# 文档**：桥接代码，供 Roslyn 语义分析使用
 

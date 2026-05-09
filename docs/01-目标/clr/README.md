@@ -12,7 +12,7 @@ C# 到 JavaScript 的转换不是“看到什么 .NET API 都直接翻译”。�
 2. **提供运行时实现**：对 `Op.Import` 这类需要 helper 或复杂语义的成员，提供真实 JavaScript 语义实现。
 3. **自动生成白名单**：让编译器和分析器消费同一份由源码再生成出来的事实表，而不是手写维护。
 
-## 大致实现思路
+## 实现思路
 
 ### 三层协作
 
@@ -40,7 +40,7 @@ public static class BooleanModule
 }
 ```
 
-## 当前边界
+## 边界
 
 - `Jazor.CLR` 是 **producer 侧事实来源**，不是 emit 或 bundling 层。
 - 白名单再生成工具在 `src/Jazor.Compiler.Generator/`。

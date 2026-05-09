@@ -1,11 +1,9 @@
 # Razor SDK 工具集解析器
 
-> Status: 活跃参考
-> Positioning: Jolt Razor SDK 发现与定位核心服务
 
 ## 1. 文档定位
 
-本文档描述 Razor SDK 工具集解析器的实现，这是 Jolt 项目中用于发现和定位 .NET SDK 及 Razor SDK 的核心服务。该服务通过多路径搜索策略找到可用的 Razor SDK，提供版本管理和路径解析功能。
+Razor SDK 工具集解析器的实现，这是 Jolt 项目中用于发现和定位 .NET SDK 及 Razor SDK 的核心服务。该服务通过多路径搜索策略找到可用的 Razor SDK，提供版本管理和路径解析功能。
 
 **源文件位置**：
 - `src/Jolt/Razor/Toolset/RazorSdkToolset.cs`（record 定义，11 行）

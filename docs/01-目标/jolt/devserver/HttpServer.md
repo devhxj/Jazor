@@ -1,15 +1,10 @@
 # DevServer HTTP 服务器
 
-> Status: 活跃参考
-> Positioning: 开发模式下的核心 HTTP 服务器，负责提供编译服务和 HMR 支持
+`DevHttpServer`（`src/Jolt/DevServer/DevHttpServer.cs`），基于 Kestrel HTTP 服务器，提供按需编译、HTML 转换、Source Map 服务、HMR WebSocket 和 API 代理功能。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 Jolt DevServer 的 HTTP 服务器实现 `DevHttpServer`（位于 `src/Jolt/DevServer/DevHttpServer.cs`），它基于 Kestrel HTTP 服务器，提供按需编译、HTML 转换、Source Map 服务、HMR WebSocket 和 API 代理功能。
-
-## 2. 核心类型
-
-### 2.1 DevHttpServer
+### DevHttpServer
 
 **职责**：Kestrel HTTP 服务器封装，处理所有开发模式下的 HTTP 请求。
 
@@ -77,7 +72,7 @@ public async Task StartAsync(CancellationToken cancellationToken)
 }
 ```
 
-### 2.2 请求处理管道
+### 请求处理管道
 
 **HandleRequestAsync**（第 194-231 行）：
 ```csharp
@@ -125,7 +120,7 @@ private async Task<IResult> HandleRequestAsync(HttpContext context)
 }
 ```
 
-### 2.3 ModuleResolver
+### ModuleResolver
 
 **职责**：请求路径解析、别名支持、扩展名解析、虚拟路径处理。
 
@@ -220,7 +215,7 @@ private ResolveResult ResolveCandidate(string absolutePath, string resolvedUrl)
 }
 ```
 
-### 2.4 DevServerProxy
+### DevServerProxy
 
 **职责**：API 代理支持，将特定路径请求转发到后端服务。
 
@@ -235,9 +230,9 @@ internal readonly record struct ProxyTarget
 }
 ```
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 路径解析算法
+### 路径解析算法
 
 **输入**：HTTP 请求路径（如 `/src/App.vue` 或 `@/components/Button.vue`）
 **输出**：绝对路径 + 解析 URL + 文档类型
@@ -255,7 +250,7 @@ internal readonly record struct ProxyTarget
 - **精确匹配**：`@` → `/src`
 - **前缀匹配**：`@/components` → `/src/components`，要求后跟 `/`
 
-### 3.2 Source Map 请求检测
+### Source Map 请求检测
 
 **TryGetSourceMapRequestPath**（第 706-716 行）：
 ```csharp
@@ -273,9 +268,9 @@ private static bool TryGetSourceMapRequestPath(string requestPath, out string so
 }
 ```
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 文件变更处理
+### 文件变更处理
 
 **Channel-based 异步处理**：
 ```csharp
@@ -300,7 +295,7 @@ private async Task PumpFileChangesAsync(CancellationToken cancellationToken)
 }
 ```
 
-### 4.2 广播快照同步
+### 广播快照同步
 
 **锁保护**（第 552-608 行）：
 ```csharp
@@ -330,9 +325,9 @@ private IReadOnlyList<string> FilterAlreadyBroadcastChanges(IReadOnlyList<string
 }
 ```
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 路径逃逸防护
+### 路径逃逸防护
 
 **IsInsideRoot**（第 718-732 行）：
 ```csharp
@@ -348,7 +343,7 @@ private bool IsInsideRoot(string absolutePath)
 }
 ```
 
-### 5.2 编译错误处理
+### 编译错误处理
 
 **CompileResolvedRequestAsync**（第 256-289 行）：
 ```csharp
@@ -368,7 +363,7 @@ private async Task<CompilationResult> CompileResolvedRequestAsync(
 }
 ```
 
-## 6. 配置选项
+## 配置选项
 
 **DevServerOptions**（`src/Jolt/DevServer/DevServerOptions.cs`）：
 ```csharp
@@ -404,9 +399,9 @@ private static TimeSpan ResolveIntervalOverride(
 }
 ```
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 LSP 的集成
+### 与 LSP 的集成
 
 **IWorkspaceDocumentChangeSink** 实现（第 413-490 行）：
 ```csharp
@@ -438,7 +433,7 @@ public async ValueTask OnWorkspaceDocumentChangedAsync(
 }
 ```
 
-### 7.2 与 HtmlTransformer 的集成
+### 与 HtmlTransformer 的集成
 
 **HTML 转换**（第 218-222 行）：
 ```csharp
@@ -449,7 +444,7 @@ if (resolved.ResolvedUrl.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
 }
 ```
 
-### 7.3 与 OnDemandCompiler 的集成
+### 与 OnDemandCompiler 的集成
 
 **编译请求**（第 256-289 行）：
 ```csharp
@@ -482,9 +477,9 @@ private async Task<CompilationResult> CompileResolvedRequestAsync(
 }
 ```
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 FileSystemWatcher + 轮询混合模式
+### FileSystemWatcher + 轮询混合模式
 
 **原因**：
 - **FileSystemWatcher**：在大多数操作系统上可靠，但某些编辑器（如 WSL + Vim）可能不触发事件
@@ -514,10 +509,10 @@ private void StartFileWatcher()
 }
 ```
 
-### 8.2 防抖 + 去重 + 快照比对
+### 防抖 + 去重 + 快照比对
 
 **三级过滤**：
-1. **防抖**：`FileChangeDebouncer` 将 100ms 内的多次变更合并
+1. **防抖**：`FileChangeDebouncer` 将 100 ms 内的多次变更合并
 2. **去重**：比较文件快照（长度 + 修改时间），跳过相同内容
 3. **Workspace 同步抑制**：LSP 变更与磁盘变更的哈希比对
 
@@ -546,7 +541,7 @@ private bool ShouldSuppressWorkspaceBroadcastForDiskSyncedSnapshot(DocumentSnaps
 }
 ```
 
-### 8.3 No-Cache Headers
+### No-Cache Headers
 
 **原因**：开发模式下避免浏览器缓存编译结果
 

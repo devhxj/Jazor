@@ -1,9 +1,8 @@
 # VueCompiledArtifact - RazorVue 编译产物
-> Status: 活跃参考
 
 ## 1. 文档定位
 
-本文档描述 `VueCompiledArtifact` 及相关记录类型，这是 RazorVue 编译链路的最终输出模型。编译产物由 Source Generator 生成并嵌入到程序集中，供 DevServer/HMR/Build 等下游阶段使用。
+`VueCompiledArtifact` 及相关记录类型，这是 RazorVue 编译链路的最终输出模型。编译产物由 Source Generator 生成并嵌入到程序集中，供 DevServer/HMR/Build 等下游阶段使用。
 
 **核心文件**：
 - `src/Jazor.RazorVue/Artifacts/VueCompiledArtifact.cs`

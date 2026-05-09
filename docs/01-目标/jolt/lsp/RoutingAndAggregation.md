@@ -1,11 +1,9 @@
 # LSP 路由与聚合 (Routing and Aggregation)
 
-> Status: 活跃参考
-> Positioning: Jolt LSP 的请求路由和多车道结果协调层
 
 ## 1. 文档定位
 
-本文档描述 Jolt LSP 的请求路由机制和多车道结果聚合策略。
+Jolt LSP 的请求路由机制和多车道结果聚合策略。
 
 ## 目录
 

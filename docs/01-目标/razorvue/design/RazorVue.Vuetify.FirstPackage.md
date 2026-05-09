@@ -1,7 +1,5 @@
 # RazorVue Vuetify 第一包
 
-> Status: 活跃参考
-> Positioning: 第一个 RazorVue 库创作包的作用域包设计参考。
 
 ## 1. 文档定位
 

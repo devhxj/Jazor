@@ -14,7 +14,7 @@
 - 某些 Roslyn / VB / FlowAnalysis 节点本来就不是目标输入面
 - 某些特性会显著放大 C# / JS 运行时割裂，当前选择直接拒绝
 
-## 当前职责
+## 职责
 
 ### 1. 快速失败
 
@@ -53,7 +53,7 @@
 
 这比让 unsupported 逻辑散落在各个 partial 文件里更清楚。
 
-## 当前关键规则
+## 关键规则
 
 ### 1. 不支持不等于“暂时没写”
 
@@ -150,7 +150,7 @@ WriteInterpolated($"Hello {name}");
 
 - 直接 transformation failure
 
-## 当前边界
+## 边界
 
 当前提供的是：
 

@@ -63,7 +63,7 @@ Jazor.RazorVue（RazorVue 专属实现）
     └── ECMAScript.Vuetify
 ```
 
-## 当前边界规则
+## 边界规则
 
 - 只要类型需要保持 **无外部依赖、低波动、跨程序集共享**，优先放 `ECMAScript.Contract`。
 - 只要类型需要 **JSON + 通用 SourceMap 支撑**，放 `Jazor.Common`。

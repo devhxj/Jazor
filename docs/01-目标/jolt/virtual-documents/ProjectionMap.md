@@ -1,7 +1,5 @@
 # Projection Map - Coordinate Mapping Engine
 
-> Status: 活跃参考
-> Positioning: Jolt 虚拟文档系统的核心映射引擎，负责源文档与投影文档之间的双向坐标转换
 
 ## 1. 文档定位
 

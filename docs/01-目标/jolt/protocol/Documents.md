@@ -1,11 +1,9 @@
 # Jolt 文档类型系统
 
-> Status: 活跃参考
-> Positioning: Jolt 内部文档版本管理和文本操作的核心类型，位于 `Jolt.Protocol.Documents` 命名空间
 
 ## 1. 文档定位
 
-本文档描述 Jolt 的文档类型系统，包括文档版本管理、文本区间和文本变更。这些类型用于 LSP 文档同步、增量编译和文本操作。
+Jolt 的文档类型系统，包括文档版本管理、文本区间和文本变更。这些类型用于 LSP 文档同步、增量编译和文本操作。
 
 **与契约层的关系**：
 - **契约层**（`Jazor.VueContracts.Protocol`）：跨项目共享的 RPC 契约，包含 `DocumentSnapshot`

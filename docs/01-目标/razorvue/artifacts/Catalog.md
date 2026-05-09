@@ -1,9 +1,8 @@
 # RazorVueCatalog - RazorVue 组件目录
-> Status: 活跃参考
 
 ## 1. 文档定位
 
-本文档描述 `RazorVueCatalog` 和 `RazorVueCatalogBuilder`，这是 RazorVue 编译产物的聚合和索引层。Catalog 在程序集级别聚合所有 `VueCompiledArtifact`，提供 DevServer、HMR 和 Build 阶段的统一查询接口。
+`RazorVueCatalog` 和 `RazorVueCatalogBuilder`，这是 RazorVue 编译产物的聚合和索引层。Catalog 在程序集级别聚合所有 `VueCompiledArtifact`，提供 DevServer、HMR 和 Build 阶段的统一查询接口。
 
 **核心文件**：
 - `src/Jazor.RazorVue/Artifacts/RazorVueCatalog.cs`

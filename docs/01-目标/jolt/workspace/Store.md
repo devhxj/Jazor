@@ -1,7 +1,5 @@
 # Workspace Store 子系统
 
-> Status: 活跃参考
-> Positioning: Jolt 工作区文档存储层，提供内存中的文档快照管理
 
 ## 1. 文档定位
 

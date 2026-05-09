@@ -1,22 +1,17 @@
 # Deno Volar 集成宿主
 
-> Status: 活跃参考
-> Positioning: Deno Volar 前端服务的顶层管理器，负责进程生命周期、智能感知请求路由和容错重试
+Deno Volar 前端服务的顶层管理器：`IDenoVolarHost` 接口、`DenoVolarHost` 实现类和配置选项。为 Vue 模板提供完整的 LSP 智能感知服务（诊断、补全、定义、引用、重命名等），封装 Deno 子进程的生命周期管理和故障恢复机制。
 
-## 1. 文档定位
-
-本文档描述 Jolt 中 Deno Volar 集成宿主的实现，包括 `IDenoVolarHost` 接口、`DenoVolarHost` 实现类和相关配置选项。该系统为 Vue 模板提供完整的 LSP 智能感知服务（诊断、补全、定义、引用、重命名等），并封装了 Deno 子进程的生命周期管理和故障恢复机制。
-
-**相关源文件**：
+相关源文件：
 - `src/Jolt/Frontend/Deno/Hosting/IDenoFrontendHost.cs` - 主接口定义
 - `src/Jolt/Frontend/Deno/Hosting/DenoVolarHost.cs` - 主实现类
 - `src/Jolt/Frontend/Deno/Hosting/DenoVolarHostOptions.cs` - 配置选项
 - `src/Jolt/Frontend/Deno/Hosting/DenoWorkerProcess.cs` - 子进程管理（独立文档）
 - `src/Jolt/Frontend/Deno/Protocol/DenoFrontendProtocol.cs` - 请求/响应协议（独立文档）
 
-## 2. 核心类型
+## 核心类型
 
-### 2.1 `IDenoVolarHost` 接口
+### `IDenoVolarHost` 接口
 
 完整的 Deno Volar 集成接口，继承自 `IAsyncDisposable`，提供编译和智能感知两大类功能。
 
@@ -48,7 +43,7 @@
 - `GetTemplateReferencesAsync` - 获取引用位置
 - `GetTemplateRenameAsync` - 获取重命名编辑
 
-### 2.2 `DenoVolarHost` 实现
+### `DenoVolarHost` 实现
 
 核心实现类，通过 `IDenoWorkerProcess` 管理 Deno 子进程，并提供自动重试和故障恢复机制。
 
@@ -65,7 +60,7 @@ private const int MaxSendAttempts = 3;  // 最大重试次数
 private static readonly TimeSpan RetryBackoffBase = TimeSpan.FromMilliseconds(100);  // 指数退避基数
 ```
 
-### 2.3 `DenoVolarIntelliSenseContext`
+### `DenoVolarIntelliSenseContext`
 
 智能感知上下文记录，包含前端编译的语义信息：
 
@@ -75,7 +70,7 @@ internal sealed record DenoVolarIntelliSenseContext(
     IReadOnlyList<ArtifactRecord> Artifacts); // 编译产物记录
 ```
 
-### 2.4 `DenoVolarHostOptions`
+### `DenoVolarHostOptions`
 
 配置选项类，控制 Deno Volar 行为：
 
@@ -90,9 +85,9 @@ internal sealed record DenoVolarIntelliSenseContext(
 | `WorkingDirectory` | `string?` | `null` | Deno 工作目录 |
 | `IgnoreStartupFailure` | `bool` | `true` | 是否忽略启动失败（默认 true） |
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 启动流程（StartAsync）
+### 启动流程（StartAsync）
 
 ```
 1. 检查 _options.Enabled，如果未启用则直接返回
@@ -107,7 +102,7 @@ internal sealed record DenoVolarIntelliSenseContext(
 
 **设计意图**：`IgnoreStartupFailure` 允许 Jolt 在 Deno 运行时缺失时优雅降级（禁用 Volar 功能），而不是导致整个服务启动失败。
 
-### 3.2 停止流程（StopAsync）
+### 停止流程（StopAsync）
 
 ```
 1. 检查 _options.Enabled，如果未启用则直接返回
@@ -116,7 +111,7 @@ internal sealed record DenoVolarIntelliSenseContext(
 4. 释放 _lifecycleGate
 ```
 
-### 3.3 请求发送流程（SendAsync）
+### 请求发送流程（SendAsync）
 
 所有智能感知请求的统一发送方法，支持自动重试和指数退避：
 
@@ -173,7 +168,7 @@ private async ValueTask<TResult?> SendAsync<TResult>(
 - 每次重试前调用 `TryResetWorkerStateAsync()` 停止旧 worker
 - 下一次请求时会重新启动 worker（`EnsureStartedAsync`）
 
-### 3.4 Worker 重置流程（TryResetWorkerStateAsync）
+### Worker 重置流程（TryResetWorkerStateAsync）
 
 ```
 1. 等待 _lifecycleGate（防止并发重置）
@@ -186,7 +181,7 @@ private async ValueTask<TResult?> SendAsync<TResult>(
 - 吞掉所有异常（`ObjectDisposedException`, `IOException`, `Win32Exception`, `InvalidOperationException`, `PlatformNotSupportedException`, `NotSupportedException`）
 - 设计意图：确保下一次请求可以干净地重启 worker，不受旧 worker 失败的影响
 
-### 3.5 智能感知请求封装
+### 智能感知请求封装
 
 所有智能感知方法遵循统一模式：
 
@@ -227,9 +222,9 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 | `GetTemplateReferencesAsync` | `DenoTemplateReferenceRequest` | `template/references` |
 | `GetTemplateRenameAsync` | `DenoTemplateRenameRequest` | `template/rename` |
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 生命周期门控（`_lifecycleGate`）
+### 生命周期门控（`_lifecycleGate`）
 
 **类型**：`SemaphoreSlim(1, 1)` - 互斥锁
 
@@ -243,7 +238,7 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 - 防止竞态条件（如同时启动和停止）
 - 配合 `IgnoreStartupFailure` 实现优雅降级
 
-### 4.2 Worker 进程内部锁
+### Worker 进程内部锁
 
 `DenoWorkerProcess` 内部维护两个独立的锁：
 
@@ -257,15 +252,15 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 - 生命周期锁和请求锁分离：启动/停止操作不会阻塞请求发送（反之亦然）
 - stderr 锁独立：避免 stderr pump 阻塞请求处理
 
-### 4.3 无锁读取
+### 无锁读取
 
 **只读属性**（无需锁保护）：
 - `IsEnabled` - 配置项，初始化后不变
 - `IsRunning` - 代理到 `_workerProcess.IsRunning`（底层使用 `Process.HasExited`，线程安全）
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 启动失败处理（IgnoreStartupFailure）
+### 启动失败处理（IgnoreStartupFailure）
 
 **场景**：Deno 运行时缺失、权限不足、路径错误等
 
@@ -286,7 +281,7 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 - 避免因 Deno 问题导致整个 Jolt 服务崩溃
 - 用户通过 `IsEnabled` 和 `IsRunning` 检测 Volar 可用性
 
-### 5.2 请求失败处理（自动重试）
+### 请求失败处理（自动重试）
 
 **场景**：Worker 进程崩溃、IO 通道故障、JSON 反序列化失败
 
@@ -308,7 +303,7 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 }
 ```
 
-### 5.3 Worker 停止失败处理
+### Worker 停止失败处理
 
 **场景**：StopAsync 调用时 worker 已经异常终止
 
@@ -320,9 +315,9 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 - 停止失败不应该阻止后续操作
 - 允许系统从任何状态恢复
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 必需配置
+### 必需配置
 
 | 配置项 | 说明 | 示例 |
 |--------|------|------|
@@ -330,7 +325,7 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 | `ExecutablePath` | Deno 可执行文件路径 | `runtimes/win-x64/native/deno.exe` |
 | `WorkerScriptPath` | Worker 脚本路径 | `Frontend/Deno/Worker/frontend-worker.ts` |
 
-### 6.2 可选配置
+### 可选配置
 
 | 配置项 | 说明 | 默认值 | 推荐值 |
 |--------|------|--------|--------|
@@ -339,7 +334,7 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 | `Arguments` | Deno 命令行参数 | `[]` | `["task", "run", "frontend-worker.ts"]` |
 | `IgnoreStartupFailure` | 是否忽略启动失败 | `true` | `true`（生产环境），`false`（开发环境） |
 
-### 6.3 路径解析辅助类
+### 路径解析辅助类
 
 **DenoRuntimeAssetResolver**（`src/Jolt/Frontend/Deno/Hosting/DenoRuntimeAssetResolver.cs`）提供静态方法：
 
@@ -356,9 +351,9 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 - `linux-x64`, `linux-arm64`
 - `osx-x64`, `osx-arm64`
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 DenoWorkerProcess 的交互
+### 与 DenoWorkerProcess 的交互
 
 **关系**：`DenoVolarHost` 是 `IDenoWorkerProcess` 的包装器
 
@@ -371,7 +366,7 @@ public async ValueTask<IReadOnlyList<LspCompletionItem>> GetTemplateCompletionIt
 - `DenoVolarHost`：高级 API、重试逻辑、故障恢复
 - `DenoWorkerProcess`：低级进程管理、stdin/stdout 通信、线程安全
 
-### 7.2 与 LSP 客户端的交互
+### 与 LSP 客户端的交互
 
 **入口**：`DenoVolarHost` 的智能感知方法
 
@@ -394,7 +389,7 @@ Volar 服务
 返回结果
 ```
 
-### 7.3 与编译系统的交互
+### 与编译系统的交互
 
 **入口**：`DenoVolarIntelliSenseContext`
 
@@ -418,7 +413,7 @@ Volar 使用 C# 语义信息增强智能感知
 - 支持跨语言引用（C# 组件 → Vue 模板）
 - 实现完整的全栈智能感知
 
-### 7.4 与 DevServer/HMR 的交互
+### 与 DevServer/HMR 的交互
 
 **场景**：开发模式下，Volar 提供实时智能感知
 
@@ -427,9 +422,9 @@ Volar 使用 C# 语义信息增强智能感知
 - 文件变更时：更新 `DenoVolarIntelliSenseContext`，重新请求智能感知
 - DevServer 关闭时：调用 `DenoVolarHost.StopAsync()` / `DisposeAsync()`
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 IgnoreStartupFailure 默认为 true
+### IgnoreStartupFailure 默认为 true
 
 **权衡**：
 - **优点**：Deno 缺失时不影响 Jolt 核心功能（编译、构建），系统可以优雅降级
@@ -440,7 +435,7 @@ Volar 使用 C# 语义信息增强智能感知
 - 建议开发环境设置为 `false`，尽早发现配置问题
 - 生产环境使用 `true` 避免单点故障
 
-### 8.2 自动重试 + 指数退避
+### 自动重试 + 指数退避
 
 **权衡**：
 - **优点**：自动从临时故障恢复（worker 崩溃、网络抖动），提高可用性
@@ -451,7 +446,7 @@ Volar 使用 C# 语义信息增强智能感知
 - 记录警告日志（JSON 格式，便于监控）
 - 3 次失败后抛出异常，避免无限重试
 
-### 8.3 生命周期锁和请求锁分离
+### 生命周期锁和请求锁分离
 
 **权衡**：
 - **优点**：启动/停止操作不会阻塞正在进行的请求，提高并发性能
@@ -462,7 +457,7 @@ Volar 使用 C# 语义信息增强智能感知
 - `TryResetWorkerStateAsync` 需要先获取 `_lifecycleGate`，防止与 StartAsync/StopAsync 竞态
 - `DenoWorkerProcess` 内部的两个锁独立，互不阻塞
 
-### 8.4 吞掉 StopAsync 的所有异常
+### 吞掉 StopAsync 的所有异常
 
 **权衡**：
 - **优点**：确保系统可以从任何状态恢复，停止失败不会阻止后续操作
@@ -473,7 +468,7 @@ Volar 使用 C# 语义信息增强智能感知
 - Deno worker 是无状态的，重启即可恢复
 - 优先保证系统可用性，而不是完美清理
 
-### 8.5 JSON-RPC 协议选择
+### JSON-RPC 协议选择
 
 **权衡**：
 - **优点**：简单、跨语言、易于调试（可读的 JSON 文本）

@@ -1,7 +1,5 @@
 # Workspace Resolver 子系统
 
-> Status: 活跃参考
-> Positioning: Jolt 工作区解析层，提供文档路径解析、组件发现和关联文档分析
 
 ## 1. 文档定位
 

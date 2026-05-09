@@ -1,6 +1,6 @@
 # ECMAScript
 
-`src/ECMAScript/` 相关目标文档索引。这里优先描述“应该是什么”，再描述“当前实现如何收口”。
+`src/ECMAScript/` 相关目标文档索引。
 
 ## 文件索引
 

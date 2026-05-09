@@ -1,9 +1,8 @@
 # RazorVueSourceOrigin - RazorVue 源码映射
-> Status: 活跃参考
 
 ## 1. 文档定位
 
-本文档描述 `RazorVueSourceOrigin` 及相关枚举类型，这是 RazorVue 编译产物的源码映射信息。SourceOrigin 连接 C# 源码和生成的 JavaScript 代码，支持 SourceMap 生成、诊断信息定位和调试器映射。
+`RazorVueSourceOrigin` 及相关枚举类型，这是 RazorVue 编译产物的源码映射信息。SourceOrigin 连接 C# 源码和生成的 JavaScript 代码，支持 SourceMap 生成、诊断信息定位和调试器映射。
 
 **核心文件**：
 - `src/Jazor.RazorVue/Artifacts/RazorVueSourceOrigin.cs`

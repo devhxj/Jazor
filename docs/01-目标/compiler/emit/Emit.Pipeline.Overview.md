@@ -1,14 +1,8 @@
 # Emit Pipeline 概述
 
-> Status: 活跃参考
-> Positioning: `Jazor.Emit` pipeline 与职责边界的模块级概述。
-> Note: 本页解释 emit 在当前架构中的承接角色；具体物化、bundle 与 SourceMap 细节请分别进入后续专题。
-
 ## 1. 目的
 
-本文档解释 `Jazor.Emit` 在 Jazor 程序中的当前角色。
-
-它是本地 emit doc set 的顶层概述。
+本文档解释 `Jazor.Emit` 在 Jazor 程序中的角色，是本地 emit doc set 的顶层概述。
 
 它回答四个问题：
 
@@ -21,16 +15,14 @@
 
 `Jazor.Emit` 是 host-facing 物化层，位于 compiler-side catalog 生成之后。
 
-当前的划分是：
+划分：
 
 - compiler-side modules 生成 catalog 和 artifact 数据
 - `Jazor.Emit` 从已构建的程序集读取这些编译后的 carriers
 - `Jazor.Emit` 将文件和 manifests 写入输出树
-- `Jazor.Emit` 然后可以通过 `DenoHost` 组装最终 bundle
+- `Jazor.Emit` 可以通过 `DenoHost` 组装最终 bundle
 
-`Jazor.Emit` 不是 compile-time 语义的所有者。
-
-它是以下内容的所有者：
+`Jazor.Emit` 不是 compile-time 语义的所有者。它拥有：
 
 - load/read/materialize/write flow
 - manifest 持久化
@@ -39,7 +31,7 @@
 
 ## 3. 主流程
 
-当前的 pipeline 是：
+pipeline：
 
 1. 在 `Program.cs` 中解析 CLI 选项
 2. 通过 `EmitLoadContext` 加载根和引用程序集
@@ -48,7 +40,7 @@
 5. 通过 `RazorVueModuleWriter` 写入 RazorVue 模块、manifests 和模块级 `.map` 文件
 6. 可选地通过 `ModuleBundler` bundle emitted 模块
 
-这意味着 emit lane 已经是以下内容的组合路径：
+emit lane 已经是以下内容的组合路径：
 
 - 常规 ECMAScript 模块输出
 - RazorVue 制品输出
@@ -57,7 +49,7 @@
 
 ## 4. 核心组件
 
-当你不需要一次处理整个 pipeline 时，请使用更窄的后续文档：
+更窄的后续文档：
 
 - [Emit.Materialization.Overview.md](./Emit.Materialization.Overview.md)
 - [Emit.BundleAndSourceMap.Overview.md](./Emit.BundleAndSourceMap.Overview.md)
@@ -71,9 +63,7 @@
 
 此层加载已构建的程序集并提取 compiler-owned 生成的 carriers。
 
-当前关键规则：
-
-- 路径冲突在收集时检测，在写入输出之前
+关键规则：路径冲突在收集时检测，在写入输出之前。
 
 ### 4.2 Manifest 和模块写入
 
@@ -84,7 +74,7 @@
 
 此层将收集的记录转换为具体输出文件。
 
-当前行为包括：
+行为包括：
 
 - 通过比较 manifest hash 状态跳过未更改的文件
 - 在启用 `clean` 时清理已移除的输出
@@ -97,16 +87,14 @@
 
 此层准备临时 bundle 工作空间，根据需要重写 intra-graph imports，并调用 `DenoHost` 进行最终 bundling。
 
-当前边界：
-
-- bundling 保持在 emit 中，绝不能泄漏回编译器语义所有权
+边界：bundling 保持在 emit 中，绝不能泄漏回编译器语义所有权。
 
 ### 4.4 SourceMap 继续
 
 - `SourceMaps/SourceMapBuilder.cs`
 - `SourceMaps/SourceMapWriter.cs`
 
-当前 SourceMap 位置：
+SourceMap 位置：
 
 - 模块级 map 写入已经位于 emit 中
 - RazorVue 的 SourceMap 继续是一个活跃的狭窄 lane
@@ -130,7 +118,7 @@
 - Roslyn generator 入口逻辑
 - repo-level 排序和工作流策略
 
-这些仍然在：
+这些仍在：
 
 - `Jazor.Compiler`
 - `Jazor.RazorVue`

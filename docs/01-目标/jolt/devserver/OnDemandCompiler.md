@@ -1,15 +1,10 @@
 # On-Demand Compiler
 
-> Status: 活跃参考
-> Positioning: 按需编译 .jazor、.vue、.ts、.js、.css 文件，支持 Source Map 链接和 CSS Modules
+`OnDemandCompiler`（`src/Jolt/DevServer/OnDemandCompiler.cs`，约 1011 行），按需编译 .jazor、.vue、.ts、.js、.css 文件为可执行的 JavaScript，支持 CSS Modules、Source Map 链接、HMR 元数据和构建模式转换。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 `OnDemandCompiler` 实现（位于 `src/Jolt/DevServer/OnDemandCompiler.cs`，约 1011 行），它负责将各种前端文件类型编译为可执行的 JavaScript，支持 CSS Modules、Source Map 链接、HMR 元数据和构建模式转换。
-
-## 2. 核心类型
-
-### 2.1 OnDemandCompiler
+### OnDemandCompiler
 
 **职责**：统一编译入口，根据文件扩展名分发到不同的编译逻辑。
 
@@ -43,7 +38,7 @@ internal sealed class OnDemandCompiler
 }
 ```
 
-### 2.2 CompilationResult
+### CompilationResult
 
 **职责**：编译结果的统一表示。
 
@@ -68,7 +63,7 @@ internal sealed class CompilationResult
 }
 ```
 
-### 2.3 CompilationCache
+### CompilationCache
 
 **职责**：LRU 缓存编译结果，避免重复编译。
 
@@ -114,9 +109,9 @@ private IReadOnlyList<string> EvictOverflowCore()
 }
 ```
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 编译分发
+### 编译分发
 
 **CompileCoreAsync**（第 198-221 行）：
 ```csharp
@@ -146,7 +141,7 @@ private async ValueTask<CompilationResult> CompileCoreAsync(
 }
 ```
 
-### 3.2 .jazor 文件编译
+### .jazor 文件编译
 
 **CompileJazorAsync**（第 272-309 行）：
 ```csharp
@@ -204,7 +199,7 @@ private async ValueTask<CompilationResult> CompileJazorAsync(
 }
 ```
 
-### 3.3 .vue 文件编译
+### .vue 文件编译
 
 **CompileVueAsync**（第 311-336 行）：
 ```csharp
@@ -241,7 +236,7 @@ private async ValueTask<CompilationResult> CompileVueAsync(
 }
 ```
 
-### 3.4 CSS Modules 编译
+### CSS Modules 编译
 
 **CompileStyleAsync**（第 392-432 行）：
 ```csharp
@@ -335,7 +330,7 @@ private static string CreateCssModuleJavaScript(IReadOnlyDictionary<string, stri
 }
 ```
 
-### 3.5 构建模式 CSS Modules 转换
+### 构建模式 CSS Modules 转换
 
 **TransformBuildJavaScriptAsync**（第 616-637 行）：
 ```csharp
@@ -379,7 +374,7 @@ import styles from './Button.module.css';
 const styles = { "__button__abc123": "_button_abc123", "__disabled__def456": "_disabled_def456" };
 ```
 
-### 3.6 Source Map 链接
+### Source Map 链接
 
 **ChainJazorSourceMap**（第 822-868 行）：
 ```csharp
@@ -448,7 +443,7 @@ private static string? OffsetSourceMapGeneratedLines(string? sourceMap, int gene
 }
 ```
 
-### 3.7 开发模式样式注入
+### 开发模式样式注入
 
 **CreateServedModule**（第 448-476 行）：
 ```csharp
@@ -501,9 +496,9 @@ if (typeof document !== "undefined" && __jazorStyle) {
 export default { name: "App" };
 ```
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 Lock 保护
+### Lock 保护
 
 **CompileAsync**（第 74-91 行）：
 ```csharp
@@ -552,9 +547,9 @@ private void PublishCompilationResult(string absolutePath, string contentHash, C
 }
 ```
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 前端编译器不可用
+### 前端编译器不可用
 
 **CreateFrontendUnavailableResult**（第 434-446 行）：
 ```csharp
@@ -575,7 +570,7 @@ private static CompilationResult CreateFrontendUnavailableResult(
 }
 ```
 
-### 5.2 Source Map 解析容错
+### Source Map 解析容错
 
 **所有 SourceMap 操作都使用 try-catch 包装**，失败时返回原始内容：
 ```csharp
@@ -600,9 +595,9 @@ catch (FormatException)
 // ... 其他异常类型
 ```
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 构建模式 vs 开发模式
+### 构建模式 vs 开发模式
 
 **构建模式特点**：
 - CSS Modules 输出 CSS 文件 + 映射对象
@@ -636,9 +631,9 @@ private async ValueTask<PreparedJavaScriptContent> PrepareJavaScriptForCurrentMo
 }
 ```
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 DependencyGraph 的集成
+### 与 DependencyGraph 的集成
 
 **依赖记录**（第 558 行）：
 ```csharp
@@ -660,7 +655,7 @@ public void Invalidate(string absolutePath)
 }
 ```
 
-### 7.2 与 ISourceMapService 的集成
+### 与 ISourceMapService 的集成
 
 **SourceMap 注册**（第 223-254 行）：
 ```csharp
@@ -701,7 +696,7 @@ private IReadOnlyList<string> GetSourceMapKeys(string absolutePath)
 }
 ```
 
-### 7.3 与 IWorkspaceStore 的集成
+### 与 IWorkspaceStore 的集成
 
 **Companion Documents 加载**（`DevHttpServer.CompileResolvedRequestAsync`，第 291-315 行）：
 ```csharp
@@ -732,9 +727,9 @@ private async Task<IReadOnlyList<DocumentSnapshot>> GetTrackedCompanionDocuments
 }
 ```
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 双层哈希缓存
+### 双层哈希缓存
 
 **ContentHash**（文件内容 + 同伴文档）：
 ```csharp
@@ -771,7 +766,7 @@ private static string ComputeCacheHash(
 - 双层哈希确保 C# 代码变更时正确失效缓存
 - 同伴文档按路径排序确保哈希稳定性
 
-### 8.2 ModuleSignature vs ContentHash
+### ModuleSignature vs ContentHash
 
 **ModuleSignature**（用于 HMR）：
 ```csharp
@@ -813,7 +808,7 @@ private static string ComputeJazorModuleSignature(
 - 单纯的 JavaScript 内容哈希无法捕获模板变更
 - 多层哈希组合确保细粒度变更检测
 
-### 8.3 内联 Source Map vs 外部文件
+### 内联 Source Map vs 外部文件
 
 **开发模式使用内联 Source Map**（`AttachInlineSourceMap`，第 870-880 行）：
 ```csharp
@@ -839,12 +834,12 @@ private static string AttachInlineSourceMap(string content, string? sourceMap)
 - 允许打包工具优化 Source Map
 - 支持生产环境 Source Map 部署策略
 
-### 8.4 CSS Modules 的双模式实现
+### CSS Modules 的双模式实现
 
 **开发模式**：JavaScript 模块 + DOM 注入
 **构建模式**：CSS 文件 + 映射对象
 
 **原因**：
 - 开发模式需要快速迭代和 HMR
-- 构建模式需要静态资源提取和优化
+- 构建模式需要静态资产提取和优化
 - 双模式支持不同的部署场景

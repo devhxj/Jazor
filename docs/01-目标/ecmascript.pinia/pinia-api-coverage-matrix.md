@@ -1,6 +1,5 @@
 # ECMAScript.Pinia API 覆盖矩阵
 
-> Scope: `src/ECMAScript.Pinia/` 当前 public surface  
 > Baseline: Pinia 官方运行时 API（`pinia` 包）  
 > Interpretation: “已覆盖”表示已有稳定 C# host binding；“部分覆盖”表示保留主 authoring path，但刻意没有镜像全部 TS 细节；“暂不覆盖”表示当前不进入 `ECMAScript.Pinia` 设计边界。
 

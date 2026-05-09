@@ -1,11 +1,9 @@
 # Jazor 解析器（Parser）
 
-> Status: 活跃参考
-> Positioning: Jazor 核心编译管线的前端，负责将 .jazor 源文本解析为结构化文档模型
 
 ## 1. 文档定位
 
-本文档描述 Jazor 核心编译系统的解析器组件，该组件负责将 .jazor 源文件文本解析为结构化的 `JazorVueDocument` 对象，为后续编译和投影提供基础数据结构。
+Jazor 核心编译系统的解析器组件，该组件负责将 .jazor 源文件文本解析为结构化的 `JazorVueDocument` 对象，为后续编译和投影提供基础数据结构。
 
 ## 2. 核心类型
 

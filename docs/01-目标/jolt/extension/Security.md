@@ -1,15 +1,10 @@
 # 扩展安全策略
 
-> Status: 活跃参考
-> Positioning: Jolt 扩展系统的安全验证与沙箱执行机制
+Jolt 扩展系统的安全策略：程序集路径限制、SHA256 哈希验证、清单签名验证、沙箱权限模型和运行时路径/主机验证。核心实现在 `src/Jolt/Extensions/ExtensionSecurityPolicy.cs`（约 857 行）和 `src/Jolt/Extensions/ExtensionSandboxProfile.cs`（约 146 行）。
 
-## 1. 文档定位
+## 核心类型
 
-本文档描述 Jolt 扩展系统的安全策略，包括程序集路径限制、SHA256 哈希验证、清单签名验证、沙箱权限模型和运行时路径/主机验证。核心实现在 `src/Jolt/Extensions/ExtensionSecurityPolicy.cs`（约 857 行）和 `src/Jolt/Extensions/ExtensionSandboxProfile.cs`（约 146 行）。
-
-## 2. 核心类型
-
-### 2.1 ExtensionSandboxProfile 沙箱配置
+### ExtensionSandboxProfile 沙箱配置
 
 **文件位置**: `src/Jolt/Extensions/ExtensionSandboxProfile.cs`
 
@@ -40,7 +35,7 @@ public static ExtensionSandboxProfile Unrestricted { get; } = new()
 };
 ```
 
-### 2.2 ExtensionSecurityPolicy 安全面具
+### ExtensionSecurityPolicy 安全面具
 
 **文件位置**: `src/Jolt/Extensions/ExtensionSecurityPolicy.cs`
 
@@ -51,9 +46,9 @@ public static ExtensionSandboxProfile Unrestricted { get; } = new()
 - `IsProviderPermissionSatisfied`: Provider 能力验证
 - `CreateRuntimeSandboxProfile`: 构建运行时沙箱配置
 
-## 3. 核心算法
+## 核心算法
 
-### 3.1 程序集路径限制
+### 程序集路径限制
 
 **方法**: `ExtensionLoader.ResolveAssemblyPath`
 
@@ -84,7 +79,7 @@ return !string.IsNullOrWhiteSpace(relativePath)
 - 防止绝对路径逃逸（`C:\Windows\System32\malicious.dll`）
 - 强制程序集在扩展目录边界内
 
-### 3.2 SHA256 哈希验证
+### SHA256 哈希验证
 
 **方法**: `ExtensionSecurityPolicy.IsAssemblyHashSatisfied`
 
@@ -126,7 +121,7 @@ return !string.IsNullOrWhiteSpace(relativePath)
 public bool RequireAssemblyHash { get; init; }  // 默认 true
 ```
 
-### 3.3 清单签名验证
+### 清单签名验证
 
 **方法**: `ExtensionSecurityPolicy.IsManifestSignatureSatisfied`
 
@@ -238,9 +233,9 @@ public bool RequireAssemblyHash { get; init; }  // 默认 true
 }
 ```
 
-### 3.4 沙箱权限模型
+### 沙箱权限模型
 
-#### 3.4.1 IO 权限等级
+#### IO 权限等级
 
 **等级定义** (`ExtensionHostOptions`):
 ```csharp
@@ -286,7 +281,7 @@ else if (string.Equals(ioCapability, IoCapabilityReadWrite))
 }
 ```
 
-#### 3.4.2 网络权限等级
+#### 网络权限等级
 
 **等级定义**:
 ```csharp
@@ -330,7 +325,7 @@ else if (string.Equals(networkCapability, NetworkCapabilityInternet))
 }
 ```
 
-#### 3.4.3 Provider 能力权限
+#### Provider 能力权限
 
 **能力列表** (11 种):
 ```csharp
@@ -396,7 +391,7 @@ return true;
 }
 ```
 
-### 3.5 运行时路径验证
+### 运行时路径验证
 
 **方法**: `ExtensionSandboxProfile.IsReadPathAllowed`
 
@@ -437,7 +432,7 @@ if (!string.Equals(IoCapability, ExtensionHostOptions.IoCapabilityReadWrite))
     return false;
 ```
 
-### 3.6 运行时主机验证
+### 运行时主机验证
 
 **方法**: `ExtensionSandboxProfile.IsNetworkHostAllowed`
 
@@ -485,7 +480,7 @@ return string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase)
     || string.Equals(host, "::1", StringComparison.OrdinalIgnoreCase);
 ```
 
-### 3.7 进程隔离强制策略
+### 进程隔离强制策略
 
 **触发条件** (`ValidateProcessIsolationRequirement`):
 1. **能力绑定沙箱** (`RequiresCapabilityBoundSandbox`):
@@ -512,9 +507,9 @@ a separate worker process is required when io/network capabilities are declared
 a separate worker process is required by host policy
 ```
 
-## 4. 线程安全模型
+## 线程安全模型
 
-### 4.1 ExtensionSandboxProfile
+### ExtensionSandboxProfile
 
 **无状态设计**:
 - 所有属性为 `init` only（不可变）
@@ -530,7 +525,7 @@ if (profile.IsReadPathAllowed(path))
 }
 ```
 
-### 4.2 ExtensionSecurityPolicy
+### ExtensionSecurityPolicy
 
 **静态方法设计**:
 - 所有方法为 `static`
@@ -539,9 +534,9 @@ if (profile.IsReadPathAllowed(path))
 
 **线程安全性**: 完全线程安全（无状态）
 
-## 5. 错误处理
+## 错误处理
 
-### 5.1 验证失败错误
+### 验证失败错误
 
 **程序集路径验证失败**:
 ```
@@ -584,7 +579,7 @@ a separate worker process is required when io/network capabilities are declared
 provider capability denied: codeAction, rename
 ```
 
-### 5.2 运行时沙箱违规
+### 运行时沙箱违规
 
 **ExtensionWorkerServer 抛出的异常**:
 ```csharp
@@ -601,9 +596,9 @@ throw new ExtensionWorkerProtocolException(
 - Provider 返回包含未授权 URI 的结果
 - Provider 返回包含未授权主机的网络 URI
 
-## 6. 配置选项
+## 配置选项
 
-### 6.1 主机策略配置
+### 主机策略配置
 
 **示例 1: 默认配置**
 ```json
@@ -647,7 +642,7 @@ throw new ExtensionWorkerProtocolException(
 }
 ```
 
-### 6.2 扩展清单配置示例
+### 扩展清单配置示例
 
 **示例 1: 只读扩展**
 ```json
@@ -697,9 +692,9 @@ throw new ExtensionWorkerProtocolException(
 }
 ```
 
-## 7. 与其他子系统的交互
+## 与其他子系统的交互
 
-### 7.1 与 ExtensionWorkerServer 的交互
+### 与 ExtensionWorkerServer 的交互
 
 **沙箱检查点**:
 - Provider 调用前验证输入路径/URI
@@ -719,7 +714,7 @@ EnsureNetworkUrisAllowedForWorkspaceSymbols(
     sandboxProfile, capability, symbols, payloadKind: "result");
 ```
 
-### 7.2 与 ExtensionLoader 的交互
+### 与 ExtensionLoader 的交互
 
 **验证顺序**:
 1. 清单格式验证
@@ -735,15 +730,15 @@ EnsureNetworkUrisAllowedForWorkspaceSymbols(
 - 跳过扩展加载
 - 继续处理下一个扩展
 
-### 7.3 与 ExtensionRegistry 的交互
+### 与 ExtensionRegistry 的交互
 
 **无直接交互**:
 - `ExtensionSecurityPolicy` 为静态工具类
 - 无状态，无需注册表
 
-## 8. 设计权衡
+## 设计权衡
 
-### 8.1 清单签名 vs 代码签名
+### 清单签名 vs 代码签名
 
 **清单签名优势**:
 - 无需特殊工具链（标准 JSON + RSA）
@@ -760,7 +755,7 @@ EnsureNetworkUrisAllowedForWorkspaceSymbols(
 - 简化开发流程（无需 Authenticode 工具）
 - 满足扩展场景需求（权限验证为主）
 
-### 8.2 沙箱粒度：进程级 vs 方法级
+### 沙箱粒度：进程级 vs 方法级
 
 **进程隔离沙箱**:
 - 边界：worker 进程
@@ -782,7 +777,7 @@ EnsureNetworkUrisAllowedForWorkspaceSymbols(
 - 使用 WebAssembly（未来考虑）
 - 使用操作系统级沙箱（Linux namespaces, Windows job objects）
 
-### 8.3 能力声明 vs 运行时发现
+### 能力声明 vs 运行时发现
 
 **能力声明** (`permissions.providers`):
 - 扩展在清单中声明支持的 provider
@@ -802,7 +797,7 @@ EnsureNetworkUrisAllowedForWorkspaceSymbols(
 - 验证实现是否在允许列表内
 - `EnforceProviderPermissions = false` 时跳过验证
 
-### 8.4 路径规范化时机
+### 路径规范化时机
 
 **加载时规范化** (`CreateRuntimeSandboxProfile`):
 - 一次性解析相对路径

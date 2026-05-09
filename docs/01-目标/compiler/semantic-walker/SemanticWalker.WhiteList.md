@@ -3,17 +3,17 @@
 ## 目录
 
 - [定位](#定位)
-- [当前职责](#当前职责)
+- [职责](#职责)
 - [当前入口](#当前入口)
 - [Op 在当前消费侧的含义](#op-在当前消费侧的含义)
 - [内联模板当前实现](#内联模板当前实现)
 - [与运行时宿主解析的关系](#与运行时宿主解析的关系)
-- [当前边界](#当前边界)
+- [边界](#边界)
 - [延伸阅读](#延伸阅读)
 
 ## 定位
 
-这份文档说明 `SemanticWalker` 如何消费白名单规则，而不是说明白名单数据本身如何生成。
+以下说明 `SemanticWalker` 如何消费白名单规则，而不是说明白名单数据本身如何生成。
 
 对应代码主要分布在：
 
@@ -26,7 +26,7 @@
 - `WhiteList` 提供“有哪些宿主规则”
 - `SemanticWalker` 负责“这些规则在具体语义节点上怎么落地”
 
-## 当前职责
+## 职责
 
 `SemanticWalker` 消费白名单主要是为了处理三类问题：
 
@@ -259,7 +259,7 @@ console.log("x");
 - [SemanticWalker.Reference.md](./SemanticWalker.Reference.md)
 - [RuntimeStaticHostResolution.md](../RuntimeStaticHostResolution.md)
 
-## 当前边界
+## 边界
 
 - `Op.Compile` 已接入主分发，但当前 contract 仍限于自包含表达式级钩子
 - 白名单是主要的宿主映射事实来源，但最终宿主选择仍需要 `Reference` 等语义域配合

@@ -1,22 +1,18 @@
 # Emit Materialization 概述
 
-> Status: 活跃参考
-> Positioning: `Jazor.Emit` manifest 持久化与文件物化路径的模块级概述。
-> Note: 本页聚焦非 bundling 的物化主线；如果要看 bundle 或 emit-side SourceMap 继续，请转到相邻专题。
-
 ## 1. 目的
 
 本文档专注于 emit lane 中非 bundling 的那一半。
 
-当你需要理解以下内容时使用它：
+涵盖内容：
 
-1. emit 如何读取 compiler-owned carriers
-2. 输出文件和 manifests 如何写入
-3. RazorVue 制品如何继续到具体的 emitted 文件
+- emit 如何读取 compiler-owned carriers
+- 输出文件和 manifests 如何写入
+- RazorVue 制品如何继续到具体的 emitted 文件
 
 ## 2. 主要物化路径
 
-当前的物化路径是：
+物化路径：
 
 1. 通过 `EmitLoadContext` 加载根和引用程序集
 2. 通过 `ModuleCollector` 收集 ECMAScript 和 RazorVue carriers
@@ -35,7 +31,7 @@
 - `CatalogReader.cs`
 - `RazorVueCatalogReader.cs`
 
-当前角色：
+角色：
 
 - 安全加载已构建的程序集
 - 提取 compiler-generated catalog payloads
@@ -46,7 +42,7 @@
 - `ManifestModel.cs`
 - `ModuleWriter.cs`
 
-当前角色：
+角色：
 
 - 写入常规 ECMAScript 模块文件
 - 跟踪基于 hash 的 manifest 状态
@@ -58,7 +54,7 @@
 - `RazorVueManifestModel.cs`
 - `RazorVueModuleWriter.cs`
 
-当前角色：
+角色：
 
 - 物化 RazorVue 制品模块
 - 持久化 RazorVue 特定的 manifest 数据
@@ -70,7 +66,7 @@
 - 收集时冲突检测在任何文件写入之前发生
 - 输出写入必须保持在配置的输出目录内
 - 常规模块和 RazorVue 制品并行演进，而不是作为一个模糊的 carrier
-- manifest 状态是物化行为的一部分，而不是事后的补充思考
+- manifest 状态是物化行为的一部分，不是事后补充
 
 ## 5. 边界
 
