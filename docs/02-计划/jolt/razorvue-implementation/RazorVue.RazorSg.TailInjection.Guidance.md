@@ -224,15 +224,15 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 13. `Jazor.EmitTest` RazorVue 过滤切片必须全绿，当前最新验证为 45/45 通过。
 14. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 必须同时断言当前 analyzer payload 完整、且 `.nupkg` 中不存在 Razor Compiler / Razor Utilities Shared payload。
 15. `samples/RazorVue.TodoList/build-local.ps1` 必须通过本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包完成 host rebuild，并生成 SFC artifact、manifest、host requirements module 和 sidecar。
-16. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `npm run build`，证明生成 `.vue` 可被标准 Vue/Vite/Vuetify production build 消费。
+16. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `.\scripts\run-deno.ps1 task build`，证明生成 `.vue` 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费。
 17. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 必须通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact。
-18. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `npm run smoke:ssr`，证明生成 `.vue` 至少可经 Vite SSR loader、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
+18. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `.\scripts\run-deno.ps1 task smoke:ssr`，证明生成 `.vue` 至少可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
 19. SFC component prop lowering 必须保留类型语义：字符串 literal 可输出静态属性，Boolean / numeric / null / other 非字符串 literal 必须输出 Vue bound prop，避免把 library component props 统一降成字符串。
 
 ## 10. 后续执行顺序
 
 1. 复跑 `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 与包内容负向守卫，确保不携带 Razor Compiler / Razor Utilities Shared。
-2. 将独立外部 consumer 的 Vite production build 纳入可重复验证路径，避免只依赖仓库 sample consumer。
+2. 将独立外部 consumer 的纯 Deno browser build 纳入可重复验证路径，避免只依赖仓库 sample consumer。
 3. 补真实浏览器 smoke，证明 TodoList 生成 SFC 可挂载且关键交互有效。
 4. 扩展 Razor SG document 数据面到 imports、document identity 和后续模板所需结构。
 5. 建立当前支持/unsupported 矩阵，明确 Razor 语法、生命周期、slot/bind/event、source map、HMR 的发布边界。
@@ -241,9 +241,9 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 
 1. `pwsh ./samples/RazorVue.TodoList/build-local.ps1` 已通过，输出包含 `razorvueSfcArtifacts=2`。
 2. `samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/components/todo-app.vue` 已包含完整 nested Vuetify template、component import 和 DTO 属性投影，并对 `VContainer` / `VCol` 等 Boolean / numeric props 输出 `:fluid="true"`、`:cols="12"` 这类 Vue bound props。
-3. `cd samples/RazorVue.TodoList/todo-consumer && npm run build` 已通过，Vite production build 成功转换 554 个模块。
+3. `cd samples/RazorVue.TodoList/todo-consumer && .\scripts\run-deno.ps1 task build` 已通过，`deno bundle` production build 成功产出浏览器 JS/CSS。
 4. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，覆盖独立临时 `.razor` consumer、NuGet 包消费、官方 Razor SG integration、SFC manifest/source map/origins 输出。
-5. `cd samples/RazorVue.TodoList/todo-consumer && npm run smoke:ssr` 已通过，SSR smoke 经 Vite SSR loader 加载生成 SFC、渲染 DTO 投影文本并验证 host requirements；该验证不等同于浏览器 hydration/交互 smoke，后者仍是上线前门槛。
+5. `cd samples/RazorVue.TodoList/todo-consumer && .\scripts\run-deno.ps1 task smoke:ssr` 已通过，SSR smoke 经纯 Deno 预编译加载生成 SFC、渲染 DTO 投影文本并验证 host requirements；该验证不等同于浏览器 hydration/交互 smoke，后者仍是上线前门槛。
 
 ## 11. 一句话结论
 

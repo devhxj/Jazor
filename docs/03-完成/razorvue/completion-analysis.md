@@ -10,7 +10,7 @@
 RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前更准确的判断是：
 
 - **核心语义与 lowering 主链：约 85% 完成**。组件发现、descriptor、Razor IR 优先模板前端、canonical H、SFC semantic model、SFC artifact、legacy/SFC 双 catalog、source-origin/hash/HMR 元数据等主干已经成型，并有大量单元测试覆盖。
-- **库模式生产接入：关键 P0 已解除，但仍未完成最终上线门槛**。Razor SG tail 注入、当前 context 级接管判断、package payload 守卫、emit/SDK RazorVue 集成切片、TodoList sample/Vite build/SSR render smoke、独立外部 NuGet `.razor` SFC consumer 已通过；剩余重点是真实浏览器 smoke、全量回归、支持矩阵和调试闭环。
+- **库模式生产接入：关键 P0 已解除，但仍未完成最终上线门槛**。Razor SG tail 注入、当前 context 级接管判断、package payload 守卫、emit/SDK RazorVue 集成切片、TodoList sample 纯 Deno build/SSR render smoke、独立外部 NuGet `.razor` SFC consumer 已通过；剩余重点是真实浏览器 smoke、全量回归、支持矩阵和调试闭环。
 - **Jolt 关联能力：局部可用，不能替代库模式验收**。Volar/VueAnalysis/virtual artifact 过滤测试通过，但这只证明 Jolt 相关局部协议和投影切片，不证明 RazorVue NuGet/SDK 生产消费链路闭合。
 
 当前建议状态：
@@ -24,7 +24,7 @@ RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前
 | solution 构建 | 通过但有警告 | 1 个 Razor IR 测试项目 nullable 警告 |
 | emit/SDK RazorVue 集成 | 通过 | RazorVue 过滤切片 45/45 通过 |
 | NuGet payload | 通过当前守卫 | `Jazor` 包 analyzer/lib payload 不携带 Razor Compiler / Razor Utilities Shared |
-| 生产发布判断 | **接近但未达最终上线标准** | SDK/package/emit/sample/Vite/SSR render/独立外部 .NET consumer 已闭合；浏览器 smoke、全量回归和支持边界仍需最终确认 |
+| 生产发布判断 | **接近但未达最终上线标准** | SDK/package/emit/sample/纯 Deno SSR render/独立外部 .NET consumer 已闭合；浏览器 smoke、全量回归和支持边界仍需最终确认 |
 
 ## 2026-05-09 状态更新
 
@@ -49,11 +49,12 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 3. 之前 `--no-restore` 下出现的 `ECMAScript.Contract` predefined type / `System.Runtime` 错误已确认是 restore/assets 状态问题；带 restore 的 focused test 可稳定通过。
 4. `samples/RazorVue.TodoList/build-local.ps1` 已用本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包重新跑通；当前样例生成 2 个 SFC artifact、manifest、host requirements module 和 sidecar。
 5. 生成的 `todo-app.vue` 已恢复完整嵌套 Vuetify 结构，包含 `VRow` / `VCol` / `VCard` / `VTextField` / `VList` / `VListItem`，并包含 `item.Title` / `item.IsDone` / `item.Category` / `item.IsPinned` 等 DTO 属性投影。
-6. `samples/RazorVue.TodoList/todo-consumer` 已切到纯 Deno consumer 验证链；`npm run build` 通过，底层实际调用仓库内 bundled `deno.exe`，证明当前生成的 `.vue` 可以先经 Deno 侧 SFC 预编译，再通过 `deno bundle` 产出浏览器 JS/CSS。
+6. `samples/RazorVue.TodoList/todo-consumer` 已切到纯 Deno consumer 验证链；`.\scripts\run-deno.ps1 task build` 通过，底层实际调用仓库内 bundled `deno.exe`，证明当前生成的 `.vue` 可以先经 Deno 侧 SFC 预编译，再通过 `deno bundle` 产出浏览器 JS/CSS。
 7. 新增 `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts`，用独立临时 consumer 通过本地 NuGet 包消费 `Jazor` / `ECMAScript.Vuetify`，显式启用 `UseRazorSourceGenerator=true`、`JazorRazorVueEnableRazorSgIntegration=true`、`JazorRazorVueOutputMode=sfc`，并验证 `.razor` authoring 生成 `.vue`、manifest、host requirements module、source map 和 origins sidecar。
 8. SFC template lowering 已修正 component literal prop 语义：组件非字符串 literal（例如 Vuetify `bool` / `number` props）输出为 Vue bound props，如 `:fluid="true"`、`:cols="12"`；字符串 literal 仍输出静态属性，如 `title="Inbox"`。
-9. `samples/RazorVue.TodoList/todo-consumer` 已执行 `npm run smoke:ssr`，通过纯 Deno 的 Vue server renderer + Vuetify 对生成 SFC 做 runtime render smoke，且不再出现 `fluid` Boolean prop 类型 warning。
-10. `samples/RazorVue.TodoList/todo-consumer` 已执行 `npm run smoke:bundle-api`，证明 `Deno.bundle()` 也能消费 Deno 预编译后的 RazorVue entry，产出 JS/CSS 与 source map。
+9. `samples/RazorVue.TodoList/todo-consumer` 已执行 `.\scripts\run-deno.ps1 task smoke:ssr`，通过纯 Deno 的 Vue server renderer + Vuetify 对生成 SFC 做 runtime render smoke，且不再出现 `fluid` Boolean prop 类型 warning。
+10. `samples/RazorVue.TodoList/todo-consumer` 已执行 `.\scripts\run-deno.ps1 task smoke:bundle-api`，证明 `Deno.bundle()` 也能消费 Deno 预编译后的 RazorVue entry，产出 JS/CSS 与 source map。
+11. `samples/RazorVue.TodoList/todo-consumer` 已移除 `package.json` / `package-lock.json` 包装层，仓库内正式 consumer 入口收口为 `deno.json` tasks + `scripts/run-deno.ps1`。
 
 ## 已完成能力
 
@@ -139,7 +140,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 4. 验证输出 `components/external-dashboard.vue`，并确认不会同时产出 legacy `external-dashboard.mjs`。
 5. 验证 host requirements module、RazorVue manifest、SFC source map 和 origins sidecar。
 
-仍未自动化的是“独立外部 Vite consumer build”。当前已有仓库内 TodoList Vite build 证明真实 Vue/Vuetify 工具链可消费生成 `.vue`，但独立临时 consumer 的 Vite build 还未纳入测试主链。
+仍未自动化的是“独立外部纯 Deno consumer build”。当前已有仓库内 TodoList pure-Deno build 证明真实 Vue/Vuetify 工具链可消费生成 `.vue`，但独立临时 consumer 的纯 Deno build 还未纳入测试主链。
 
 ### P0：authoring surface 合同需要用 sample / README 再确认
 
@@ -243,21 +244,21 @@ pwsh ./samples/RazorVue.TodoList/build-local.ps1
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-npm run build
+.\scripts\run-deno.ps1 task build
 ```
 
 最新结果：通过，`deno bundle` 产出浏览器 JS/CSS。
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-npm run smoke:ssr
+.\scripts\run-deno.ps1 task smoke:ssr
 ```
 
 最新结果：通过，`RazorVue TodoList Deno SSR smoke passed.`，无 Vue prop 类型 warning。
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-npm run smoke:bundle-api
+.\scripts\run-deno.ps1 task smoke:bundle-api
 ```
 
 最新结果：通过，`Deno.bundle()` 产出 JS/CSS 与 linked source map。
@@ -291,12 +292,12 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 当前不建议直接标记为通用生产可用。合理状态应调整为：
 
 - **core ready candidate**：核心编译、IR/SFC lowering、descriptor/canonical/emit 模型和 SG tail 接入已进入候选状态。
-- **library mode release candidate pending browser/support-matrix smoke**：SDK/package/emit/sample/Deno build 和独立外部 .NET consumer 已闭合，真实浏览器 smoke、独立外部 Deno 自动化和支持矩阵仍是上线前门槛。
+- **library mode release candidate pending browser/support-matrix smoke**：SDK/package/emit/sample/pure-Deno build 和独立外部 .NET consumer 已闭合，真实浏览器 smoke、独立外部 Deno 自动化和支持矩阵仍是上线前门槛。
 - **not GA production ready**：在浏览器交互、支持矩阵和调试闭环完成前，不对外宣称完整生产可用。
 
 下一轮评审的最低通过门槛：
 
-1. 独立外部 Vite consumer build 可重复验证，或明确作为发布流水线步骤。
+1. 独立外部纯 Deno consumer build 可重复验证，或明确作为发布流水线步骤。
 2. 真实浏览器 smoke 通过，证明 TodoList sample 可挂载且核心交互有效。
 3. `dotnet build Jazor.slnx` 0 警告或所有剩余警告有明确豁免说明。
 4. 文档、README、sample 的 authoring 写法与真实类型合同一致。
