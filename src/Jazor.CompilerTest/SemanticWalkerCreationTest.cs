@@ -1133,6 +1133,30 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
+    public void VisitObjectCreation_RecordWithoutECMAScriptMarker_LowersStructurally()
+    {
+        var block = GetBlockOperation(@"
+            public sealed record PersonProps(string Name, int Age);
+
+            [ECMAScriptModule]
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    var person = new PersonProps(""Ada"", 37);
+                }
+            }
+            ");
+
+        var operation = GetObjectCreationOperationAt(block);
+        var walker = new SemanticWalker(true);
+        var node = walker.VisitObjectCreation(operation, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(@"{ name: ""Ada"", age: 37 }", script);
+    }
+
+    [TestMethod]
     public void VisitObjectCreation_ObjectLiteralIndexerOnVuePropsCarrier_StaticNullLiteral_IsPreserved()
     {
         var block = GetBlockOperation(@"

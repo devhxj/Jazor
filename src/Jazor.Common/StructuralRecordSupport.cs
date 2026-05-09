@@ -1,0 +1,122 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
+
+namespace Jazor.Common;
+
+public static class StructuralRecordSupport
+{
+	public static bool IsStructuralRecordType(ITypeSymbol? typeSymbol)
+		=> typeSymbol is INamedTypeSymbol { IsRecord: true };
+
+	public static bool IsStructuralRecordMember(ISymbol? symbol)
+		=> symbol switch
+		{
+			IPropertySymbol property => IsStructuralRecordProperty(property),
+			IFieldSymbol { IsStatic: false, ContainingType: { } containingType } =>
+				IsStructuralRecordType(containingType),
+			IMethodSymbol
+			{
+				MethodKind: MethodKind.PropertyGet or MethodKind.PropertySet,
+				AssociatedSymbol: IPropertySymbol property
+			} => IsStructuralRecordMember(property),
+			_ => false
+		};
+
+	private static bool IsStructuralRecordProperty(IPropertySymbol property)
+	{
+		if (property is not { IsStatic: false, Parameters.Length: 0, ContainingType: { } containingType } ||
+			!IsStructuralRecordType(containingType))
+		{
+			return false;
+		}
+
+		if (property.IsAbstract)
+			return true;
+
+		foreach (var member in containingType.GetMembers())
+		{
+			if (member is IFieldSymbol { IsStatic: false } field &&
+				SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static bool IsNonStructuralRecordRuntimeMember(ISymbol? symbol, ITypeSymbol? hostType = null)
+	{
+		if (symbol is null ||
+			IsStructuralRecordMember(symbol) ||
+			IsExtensionMethod(symbol))
+		{
+			return false;
+		}
+
+		if (IsStructuralRecordType(symbol.ContainingType) ||
+			IsStructuralRecordType(symbol.OriginalDefinition.ContainingType))
+		{
+			return true;
+		}
+
+		return IsStructuralRecordType(hostType);
+	}
+
+	public static bool IsStructuralRecordRuntimeSemanticInvocation(IInvocationOperation? invocation)
+	{
+		if (invocation is null ||
+			!IsRecordRuntimeSemanticMember(invocation.TargetMethod))
+		{
+			return false;
+		}
+
+		if (IsStructuralRecordOperand(invocation.Instance))
+			return true;
+
+		foreach (var argument in invocation.Arguments)
+		{
+			if (IsStructuralRecordOperand(argument.Value))
+				return true;
+		}
+
+		return false;
+	}
+
+	public static bool IsRecordRuntimeSemanticMember(ISymbol? symbol)
+	{
+		if (symbol is not IMethodSymbol method)
+			return false;
+
+		if (method.Name is not "Equals" and not "GetHashCode" and not "ToString")
+			return false;
+
+		var containingType = method.ContainingType?.OriginalDefinition.ToDisplayString(Format.NameFormat);
+		return containingType is "object"
+			or "System.Collections.Generic.EqualityComparer<T>"
+			or "System.Collections.Generic.IEqualityComparer<T>"
+			or "System.Collections.IEqualityComparer";
+	}
+
+	private static bool IsStructuralRecordOperand(IOperation? operation)
+	{
+		for (var current = operation; current is not null;)
+		{
+			if (IsStructuralRecordType(current.Type))
+				return true;
+
+			current = current switch
+			{
+				IConversionOperation conversion => conversion.Operand,
+				IParenthesizedOperation parenthesized => parenthesized.Operand,
+				_ => null
+			};
+		}
+
+		return false;
+	}
+
+	private static bool IsExtensionMethod(ISymbol symbol)
+		=> symbol is IMethodSymbol method &&
+		   (method.IsExtensionMethod || method.ReducedFrom is not null);
+}

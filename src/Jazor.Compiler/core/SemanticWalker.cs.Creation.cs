@@ -172,8 +172,7 @@ public partial class SemanticWalker
 	}
 
 	private static bool ShouldLowerRecordStructurally(ITypeSymbol? typeSymbol)
-		=> typeSymbol is INamedTypeSymbol namedType &&
-		   namedType.IsRecord;
+		=> StructuralRecordSupport.IsStructuralRecordType(typeSymbol);
 
 	private static bool HasEcmascriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
 	{
@@ -1221,7 +1220,9 @@ public partial class SemanticWalker
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value!;
 
-		RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
+		if (!StructuralRecordSupport.IsStructuralRecordMember(symbol))
+			RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
+
 		return GetCurrentModuleDeclaredOrConfigName(symbol);
 	}
 
@@ -1238,7 +1239,9 @@ public partial class SemanticWalker
 			!string.IsNullOrEmpty(entry.Value))
 			return entry.Value!;
 
-		RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
+		if (!StructuralRecordSupport.IsStructuralRecordMember(symbol))
+			RejectUnsupportedRuntimeFallback(operation, validationSymbol, usage, hostType);
+
 		return GetCurrentModuleDeclaredOrConfigName(symbol);
 	}
 
@@ -1268,7 +1271,7 @@ public partial class SemanticWalker
 					arguments.Add(Translate<Expression>(propertyArgument.Value, argContext));
 				}
 
-				var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out var alias);
+				var mapperExpr = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out var alias, propertyReference);
 				if (mapperExpr is not null)
 					return mapperExpr;
 
@@ -1337,7 +1340,7 @@ public partial class SemanticWalker
 			case IFieldReferenceOperation fieldReference:
 			{
 				var instance = Translate<Expression>(fieldReference.Instance, argument, null) ?? fallbackInstance;
-				var mapperExpr = GetWhiteListExpression(fieldReference.Field, argument, [], instance, out var alias);
+				var mapperExpr = GetWhiteListExpression(fieldReference.Field, argument, [], instance, out var alias, fieldReference);
 				if (mapperExpr is not null)
 					return mapperExpr;
 
@@ -1483,7 +1486,7 @@ public partial class SemanticWalker
 						}
 						setterArguments.Add(right);
 
-						var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, propertyInstance, out var setterAlias);
+						var mapperExpr = GetWhiteListExpression(propertyReference.Property.SetMethod, argument, setterArguments, propertyInstance, out var setterAlias, propertyReference);
 						if (mapperExpr is not null)
 						{
 							exprs.Add(mapperExpr);
@@ -1521,7 +1524,7 @@ public partial class SemanticWalker
 				}
 
 				// 检查白名单 Inline/Import 操作
-				var mapperExpr = GetWhiteListExpression(invocationOp.TargetMethod, argument, arguments, obj, out var alias);
+				var mapperExpr = GetWhiteListExpression(invocationOp.TargetMethod, argument, arguments, obj, out var alias, invocationOp);
 				if (mapperExpr is not null)
 				{
 					exprs.Add(mapperExpr);

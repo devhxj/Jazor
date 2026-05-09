@@ -1037,6 +1037,142 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyPackageAdditionalAttributesAndExtendedProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-form-card")]
+                public class VuetifyFormCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? ModelValue { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ModelValueChanged { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        builder.OpenComponent<VBtn>(1);
+                        builder.AddAttribute(2, nameof(VBtn.Text), "Save");
+                        builder.AddAttribute(3, nameof(VBtn.Color), "primary");
+                        builder.AddAttribute(4, nameof(VBtn.Variant), "flat");
+                        builder.AddAttribute(5, nameof(VBtn.Size), "large");
+                        builder.AddAttribute(6, nameof(VBtn.Loading), true);
+                        builder.AddAttribute(7, nameof(VBtn.Block), true);
+                        builder.AddAttribute(8, nameof(VBtn.Href), "/orders");
+                        builder.AddAttribute(9, nameof(VBtn.Target), "_blank");
+                        builder.AddMultipleAttributes(10, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VTextField>(11);
+                        builder.AddAttribute(12, nameof(VTextField.Label), "Email");
+                        builder.AddAttribute(13, nameof(VTextField.Placeholder), "name@example.com");
+                        builder.AddAttribute(14, nameof(VTextField.Hint), "Work email");
+                        builder.AddAttribute(15, nameof(VTextField.PersistentHint), true);
+                        builder.AddAttribute(16, nameof(VTextField.Readonly), true);
+                        builder.AddAttribute(17, nameof(VTextField.Clearable), true);
+                        builder.AddAttribute(18, nameof(VTextField.Variant), "outlined");
+                        builder.AddAttribute(19, nameof(VTextField.Density), "comfortable");
+                        builder.AddAttribute(20, nameof(VTextField.Type), "email");
+                        builder.AddAttribute(21, nameof(VTextField.ModelValue), ModelValue);
+                        builder.AddAttribute(22, nameof(VTextField.ModelValueChanged), ModelValueChanged);
+                        builder.AddMultipleAttributes(23, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VTextarea>(24);
+                        builder.AddAttribute(25, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(26, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(27, nameof(VTextarea.Placeholder), "Add context");
+                        builder.AddAttribute(28, nameof(VTextarea.Hint), "Visible to approvers");
+                        builder.AddAttribute(29, nameof(VTextarea.PersistentHint), true);
+                        builder.AddAttribute(30, nameof(VTextarea.Readonly), true);
+                        builder.AddAttribute(31, nameof(VTextarea.AutoGrow), true);
+                        builder.AddAttribute(32, nameof(VTextarea.Counter), 280);
+                        builder.AddAttribute(33, nameof(VTextarea.Variant), "filled");
+                        builder.AddAttribute(34, nameof(VTextarea.Density), "compact");
+                        builder.AddAttribute(35, nameof(VTextarea.ModelValue), ModelValue);
+                        builder.AddAttribute(36, nameof(VTextarea.ModelValueChanged), ModelValueChanged);
+                        builder.AddMultipleAttributes(37, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VCheckbox>(38);
+                        builder.AddAttribute(39, nameof(VCheckbox.Label), "Active");
+                        builder.AddAttribute(40, nameof(VCheckbox.ModelValue), true);
+                        builder.AddAttribute(41, nameof(VCheckbox.Color), "success");
+                        builder.AddAttribute(42, nameof(VCheckbox.Density), "compact");
+                        builder.AddAttribute(43, nameof(VCheckbox.Readonly), true);
+                        builder.AddAttribute(44, nameof(VCheckbox.HideDetails), true);
+                        builder.AddMultipleAttributes(45, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VSwitch>(46);
+                        builder.AddAttribute(47, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(48, nameof(VSwitch.ModelValue), true);
+                        builder.AddAttribute(49, nameof(VSwitch.Color), "warning");
+                        builder.AddAttribute(50, nameof(VSwitch.Density), "comfortable");
+                        builder.AddAttribute(51, nameof(VSwitch.Readonly), true);
+                        builder.AddAttribute(52, nameof(VSwitch.Inset), true);
+                        builder.AddAttribute(53, nameof(VSwitch.HideDetails), true);
+                        builder.AddMultipleAttributes(54, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { VBtn as VBtnComponent, VCheckbox as VCheckboxComponent, VSwitch as VSwitchComponent, VTextField as VTextFieldComponent, VTextarea as VTextareaComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "h(VBtnComponent, __jazorVueMergeAttributes({ \"text\": \"Save\", \"color\": \"primary\", \"variant\": \"flat\", \"size\": \"large\", \"loading\": true, \"block\": true, \"href\": \"/orders\", \"target\": \"_blank\" }, props.additionalAttributes))");
+        StringAssert.Contains(artifact.ModuleCode, "\"placeholder\": \"name@example.com\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"hint\": \"Work email\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"persistentHint\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"readonly\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"clearable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"outlined\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"type\": \"email\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"autoGrow\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"counter\": 280");
+        StringAssert.Contains(artifact.ModuleCode, "\"hideDetails\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:modelValue\", __value)");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyDialogActivatorScopedSlot()
     {
         var context = CreateContext(
@@ -12403,4 +12539,3 @@ public sealed class RazorVuePipelineTests
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
 }
-

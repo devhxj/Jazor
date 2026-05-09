@@ -547,6 +547,353 @@ public sealed class JazorAnalyzerTests
 		AssertNoDiagnostic(diagnostics, "JAZOR003", "JAZOR004");
 	}
 
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordStructuralUsage_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps(string Name, int Age);
+
+			[ECMAScript.ECMAScriptModule]
+			public class ValidModule
+			{
+			    public PersonProps Create()
+			    {
+			        var person = new PersonProps("Ada", 37);
+			        return person with { Age = person.Age + 1 };
+			    }
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordAutoPropertyAccess_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps
+			{
+			    public string Name { get; init; } = string.Empty;
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class ValidModule
+			{
+			    public string Test(PersonProps person)
+			    {
+			        return person.Name;
+			    }
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordComputedPropertyAccess_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps(string Name)
+			{
+			    public string UpperName => Name.ToUpperInvariant();
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public string Test(PersonProps person)
+			    {
+			        return person.UpperName;
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordCustomMethodInvocation_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps(string Name)
+			{
+			    public string Format() => Name.ToUpperInvariant();
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public string Test(PersonProps person)
+			    {
+			        return person.Format();
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_RecordNestedInECMAScriptModuleCustomMethodInvocation_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public sealed record PersonProps(string Name)
+			    {
+			        public string Format() => Name.ToUpperInvariant();
+			    }
+
+			    public string Test(PersonProps person)
+			    {
+			        return person.Format();
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_RecordNestedInECMAScriptModuleStaticPropertyAccess_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public sealed record PersonProps(string Name)
+			    {
+			        public static int Version => 1;
+			    }
+
+			    public int Test()
+			    {
+			        return PersonProps.Version;
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordObjectToStringInvocation_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps(string Name);
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public string Test(PersonProps person)
+			    {
+			        return person.ToString();
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordObjectEqualsInvocation_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps(string Name);
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public bool Test(PersonProps left, PersonProps right)
+			    {
+			        return object.Equals(left, right);
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordEqualityComparerGetHashCodeInvocation_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using System.Collections.Generic;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			public sealed record PersonProps(string Name);
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public int Test(PersonProps person)
+			    {
+			        return EqualityComparer<PersonProps>.Default.GetHashCode(person);
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_RecordNestedInECMAScriptModuleEqualityOperator_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+
+			namespace ECMAScript
+			{
+			    [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+			    public sealed class ECMAScriptModuleAttribute : Attribute
+			    {
+			        public ECMAScriptModuleAttribute() { }
+			        public ECMAScriptModuleAttribute(string import) { }
+			    }
+			}
+
+			[ECMAScript.ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public sealed record PersonProps(string Name);
+
+			    public bool Test(PersonProps left, PersonProps right)
+			    {
+			        return left == right;
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
 	private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)
 	{
 		var compilation = CreateCompilation(source);

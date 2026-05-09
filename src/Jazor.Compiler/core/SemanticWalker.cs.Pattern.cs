@@ -495,7 +495,7 @@ public partial class SemanticWalker
 	{
 		existencePropertyName = null;
 		var symbol = GetWhiteListSymbol(memberReference);
-		var mapperExpr = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias);
+		var mapperExpr = GetWhiteListExpression(symbol, argument, [], targetExpr, out var alias, memberReference);
 		if (mapperExpr is not null)
 			return mapperExpr;
 
@@ -1128,7 +1128,7 @@ public partial class SemanticWalker
 		var lookupSymbol = symbol is IPropertySymbol { GetMethod: not null } propertyForLookup
 			? (ISymbol)propertyForLookup.GetMethod!
 			: symbol;
-		var mapperExpr = GetWhiteListExpression(lookupSymbol, argument, arguments, targetExpr, out var alias);
+		var mapperExpr = GetWhiteListExpression(lookupSymbol, argument, arguments, targetExpr, out var alias, ownerOperation, hostType);
 		if (mapperExpr is not null)
 			return mapperExpr;
 

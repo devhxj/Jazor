@@ -16,7 +16,7 @@ namespace Jazor.Analyzer;
 /// </summary>
 /// <remarks>
 /// 约定“ES特性”包括 <b>[ECMAScript]</b>、<b>[ECMAScriptModule]</b>，同时约定只诊断被“ES特性”标记的类，不考虑“ES特性”的来源
-/// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型</para>
+/// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、record、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型</para>
 /// <para>2、分析器对泛型实参、数组元素类型、局部推断类型、集合表达式等擦除位置做严格入口诊断；若出现闭合的外部具体类型，要求该类型本身受支持</para>
 /// <para>3、分析器不追踪类型参数 T 的真实来源；类型参数本身允许通过，等到具体运行时敏感的类型或成员用法再诊断</para>
 /// <para>4、支持成员：被ES特性标注的类型的成员都可以使用，其余需要匹配白名单中的构造函数、字段、属性、方法、索引器</para>
@@ -129,6 +129,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 				OperationKind.CollectionExpression,//[]
 				OperationKind.DelegateCreation,//new Action(MyMethod)
 				OperationKind.Invocation,//obj.MyMethod()
+				OperationKind.BinaryOperator,//left == right
 				OperationKind.FieldReference,//obj.myField
 				OperationKind.PropertyReference,//obj.MyProperty
 				OperationKind.MethodReference,//Action myAction = obj.MyMethod;
@@ -391,6 +392,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 		if (IsWhiteListedType(typeSymbol))
 			return;
 
+		if (StructuralRecordSupport.IsStructuralRecordType(typeSymbol))
+			return;
+
 		if (!InECMAScriptAttribute(typeSymbol.OriginalDefinition))
 			report(Diagnostic.Create(Rule, location, fullName));
 	}
@@ -421,6 +425,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			typeSymbol.TypeKind == TypeKind.Enum ||
 			typeSymbol.TypeKind == TypeKind.Interface ||
 			typeSymbol.TypeKind == TypeKind.Delegate ||
+			StructuralRecordSupport.IsStructuralRecordType(typeSymbol) ||
 			typeSymbol.IsAnonymousType ||
 			typeSymbol.IsAbstract ||
 			IsAttribute(typeSymbol) ||
@@ -507,7 +512,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var location = creation.Syntax.GetLocation();
 					CheckType(ctx.ReportDiagnostic, type, location);
 					// 特性和[ECMAScript]标注类型不需要检查
-					if (!IsAttribute(type) && !InECMAScriptAttribute(type))
+					if (!IsAttribute(type) && !StructuralRecordSupport.IsStructuralRecordType(type) && !InECMAScriptAttribute(type))
 					{
 						// 添加构造函数检查
 						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(Format.NameFormat);
@@ -548,11 +553,29 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 					CheckTypeArguments(ctx.ReportDiagnostic, invocation.TargetMethod.TypeArguments, invocation.Syntax.GetLocation());
 
-					if (InECMAScriptAttribute(invocation.TargetMethod.ContainingType))
+					var key = invocation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
+					if (StructuralRecordSupport.IsStructuralRecordRuntimeSemanticInvocation(invocation))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							invocation.Syntax.GetLocation(),
+							key));
+						return;
+					}
+
+					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+						invocation.TargetMethod,
+						invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							invocation.Syntax.GetLocation(),
+							key));
+						return;
+					}
+
+					if (IsWhiteListedMember(invocation.TargetMethod))
 						return;
 
-					var key = invocation.TargetMethod.OriginalDefinition.ToDisplayString(Format.NameFormat);
-					if (IsWhiteListedMember(invocation.TargetMethod))
+					if (InECMAScriptAttribute(invocation.TargetMethod.ContainingType))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -560,11 +583,34 @@ public partial class Analyzer : DiagnosticAnalyzer
 						key));
 				}
 				break;
+			case OperationKind.BinaryOperator:
+				{
+					var operation = (IBinaryOperation)ctx.Operation;
+					if (operation.OperatorMethod is not null &&
+						StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(operation.OperatorMethod))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							operation.Syntax.GetLocation(),
+							operation.OperatorMethod.OriginalDefinition.ToDisplayString(Format.NameFormat)));
+					}
+				}
+				break;
 			case OperationKind.FieldReference:
 				{
 					var operation = (IFieldReferenceOperation)ctx.Operation;
+					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+						operation.Field,
+						operation.Instance?.Type ?? operation.Field.ContainingType))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							operation.Syntax.GetLocation(),
+							operation.Field.OriginalDefinition.ToDisplayString(Format.NameFormat)));
+						return;
+					}
+
 					// 枚举字段、特性、白名单内不检查
 					if (operation.Field.ContainingType.TypeKind == TypeKind.Enum ||
+						StructuralRecordSupport.IsStructuralRecordMember(operation.Field) ||
 						InECMAScriptAttribute(operation.Field.ContainingType) ||
 						IsWhiteListedMember(operation.Field))
 						return;
@@ -578,9 +624,19 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.PropertyReference:
 				{
 					var operation = (IPropertyReferenceOperation)ctx.Operation;
+					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+						operation.Property,
+						operation.Instance?.Type ?? operation.Property.ContainingType))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							operation.Syntax.GetLocation(),
+							operation.Property.OriginalDefinition.ToDisplayString(Format.NameFormat)));
+						return;
+					}
 
 					// 匿名类型、特性、白名单内不检查
 					if (operation.Property.ContainingType.IsAnonymousType ||
+						StructuralRecordSupport.IsStructuralRecordMember(operation.Property) ||
 						InECMAScriptAttribute(operation.Property.ContainingType) ||
 						IsWhiteListedProperty(operation.Property))
 						return;
@@ -593,11 +649,21 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.MethodReference:
 				{
 					var operation = (IMethodReferenceOperation)ctx.Operation;
-					if (InECMAScriptAttribute(operation.Method.ContainingType))
+					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
+					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+						operation.Method,
+						operation.Instance?.Type ?? operation.Method.ContainingType))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
+							operation.Syntax.GetLocation(),
+							key));
+						return;
+					}
+
+					if (IsWhiteListedMember(operation.Method))
 						return;
 
-					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-					if (IsWhiteListedMember(operation.Method))
+					if (InECMAScriptAttribute(operation.Method.ContainingType))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,

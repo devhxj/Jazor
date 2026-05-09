@@ -888,7 +888,7 @@ public partial class SemanticWalker
 
 		if (operation.OperatorMethod is not null)
 		{
-			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _);
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _, operation);
 			if (mapped is not null)
 				return mapped;
 
@@ -1255,7 +1255,7 @@ public partial class SemanticWalker
 
 		if (operation.OperatorMethod is not null)
 		{
-			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _);
+			var mapped = GetWhiteListExpression(operation.OperatorMethod, argument, [left, right], out _, operation);
 			if (mapped is not null)
 			{
 				if (!CanDuplicateReadWriteTarget(left))
@@ -1961,7 +1961,7 @@ public partial class SemanticWalker
 			arguments.Add(MaterializePropertyMutationOperand(rawArgument, ownerOperation, argument, initializations, $"arg{i}"));
 		}
 
-		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out _);
+		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod, argument, arguments, instance, out _, propertyReference);
 		if (getterExpression is null)
 			return false;
 

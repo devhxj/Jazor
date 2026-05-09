@@ -3922,6 +3922,309 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_RecordStructuralPropertyAccess_WithoutECMAScriptMarker_Allows()
+	{
+		var block = GetBlockOperation(@"
+            public sealed record PersonProps(string Name, int Age);
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var nextAge = person.Age + 1;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let nextAge = person.age + 1;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_RecordAutoPropertyAccess_WithoutECMAScriptMarker_Allows()
+	{
+		var block = GetBlockOperation(@"
+            public sealed record PersonProps
+            {
+                public string Name { get; init; } = string.Empty;
+            }
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var name = person.Name;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  let name = person.name;
+}", script);
+	}
+
+	[TestMethod]
+	public void Visit_RecordComputedPropertyAccess_WithoutECMAScriptMarker_Throws()
+	{
+		var block = GetBlockOperation(@"
+            public sealed record PersonProps(string Name)
+            {
+                public string UpperName => Name.ToUpperInvariant();
+            }
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var upperName = person.UpperName;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "PersonProps.UpperName");
+	}
+
+	[TestMethod]
+	public void Visit_RecordCustomMethodInvocation_WithoutECMAScriptMarker_Throws()
+	{
+		var block = GetBlockOperation(@"
+            public sealed record PersonProps(string Name)
+            {
+                public string Format() => Name.ToUpperInvariant();
+            }
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var formatted = person.Format();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "PersonProps.Format()");
+	}
+
+	[TestMethod]
+	public void Visit_RecordNestedInECMAScriptModule_CustomMethodInvocation_Throws()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var formatted = person.Format();
+                }
+
+                public sealed record PersonProps(string Name)
+                {
+                    public string Format() => Name.ToUpperInvariant();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "PersonProps.Format()");
+	}
+
+	[TestMethod]
+	public void Visit_RecordNestedInECMAScriptModule_StaticPropertyAccess_Throws()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod()
+                {
+                    var version = PersonProps.Version;
+                }
+
+                public sealed record PersonProps(string Name)
+                {
+                    public static int Version => 1;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "PersonProps.Version");
+	}
+
+	[TestMethod]
+	public void Visit_RecordObjectToString_WithoutECMAScriptMarker_Throws()
+	{
+		var block = GetBlockOperation(@"
+            public sealed record PersonProps(string Name);
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var formatted = person.ToString();
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "ToString()");
+	}
+
+	[TestMethod]
+	public void Visit_RecordObjectEquals_WithoutECMAScriptMarker_Throws()
+	{
+		var block = GetBlockOperation(@"
+            public sealed record PersonProps(string Name);
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps left, PersonProps right)
+                {
+                    var same = object.Equals(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "object.Equals(object, object)");
+	}
+
+	[TestMethod]
+	public void Visit_RecordEqualityComparerEquals_WithoutECMAScriptMarker_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+
+            public sealed record PersonProps(string Name);
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps left, PersonProps right)
+                {
+                    var same = EqualityComparer<PersonProps>.Default.Equals(left, right);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "EqualityComparer<T>.Equals(T, T)");
+	}
+
+	[TestMethod]
+	public void Visit_RecordEqualityComparerGetHashCode_WithoutECMAScriptMarker_Throws()
+	{
+		var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+
+            public sealed record PersonProps(string Name);
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps person)
+                {
+                    var hash = EqualityComparer<PersonProps>.Default.GetHashCode(person);
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "External member");
+		StringAssert.Contains(exception.Message, "EqualityComparer<T>.GetHashCode(T)");
+	}
+
+	[TestMethod]
+	public void Visit_RecordNestedInECMAScriptModule_EqualityOperator_Throws()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(PersonProps left, PersonProps right)
+                {
+                    var same = left == right;
+                }
+
+                public sealed record PersonProps(string Name);
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var exception = Assert.Throws<OperationTransformationException>(() =>
+		{
+			_ = walker.Visit(block, new());
+		});
+
+		StringAssert.Contains(exception.Message, "Binary operator");
+		StringAssert.Contains(exception.Message, "PersonProps.operator ==");
+	}
+
+	[TestMethod]
 	public void Visit_Reference_IDictionaryIndexerGetSet_UsesSetAndGetMappings()
 	{
 		var block = GetBlockOperation(@"

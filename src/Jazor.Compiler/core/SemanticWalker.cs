@@ -262,11 +262,11 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         return operation.Member;
     }
 
-    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias, IOperation? originOperation = null)
-        => GetWhiteListExpressionCore(symbol, context, arguments, instance: null, out alias, originOperation);
+    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, out string? alias, IOperation? originOperation = null, ITypeSymbol? hostType = null)
+        => GetWhiteListExpressionCore(symbol, context, arguments, instance: null, out alias, originOperation, hostType);
 
-    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias, IOperation? originOperation = null)
-        => GetWhiteListExpressionCore(symbol, context, arguments, instance, out alias, originOperation);
+    private Expression? GetWhiteListExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias, IOperation? originOperation = null, ITypeSymbol? hostType = null)
+        => GetWhiteListExpressionCore(symbol, context, arguments, instance, out alias, originOperation, hostType);
 
     private void RejectUnsupportedTypeFallback(IOperation operation, ITypeSymbol typeSymbol, string usage)
     {
@@ -492,7 +492,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     private bool IsDirectlySupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
     {
         var original = typeSymbol.OriginalDefinition;
-        if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter || typeSymbol.IsTupleType)
+        if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter ||
+            typeSymbol.IsTupleType ||
+            StructuralRecordSupport.IsStructuralRecordType(typeSymbol))
             return true;
 
         if (IsSymbolDeclaredInCurrentSourceBoundary(operation, typeSymbol))
@@ -631,16 +633,25 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool IsSupportedExternalMember(IOperation operation, ISymbol symbol, ITypeSymbol? hostType = null)
     {
-        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, symbol))
+        if (StructuralRecordSupport.IsStructuralRecordMember(symbol))
             return true;
 
-        if (HasEcmascriptSupportMarker(symbol))
-            return true;
+        if (StructuralRecordSupport.IsStructuralRecordRuntimeSemanticInvocation(operation as IInvocationOperation))
+            return false;
+
+        if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(symbol, hostType))
+            return false;
 
         if (TryGetWhiteListValue(_whiteListCompiles, symbol, out _, out _))
             return true;
 
         if (TryGetWhiteListValue(WhiteList.Members, symbol, out _, out _))
+            return true;
+
+        if (IsSymbolDeclaredInCurrentSourceBoundary(operation, symbol))
+            return true;
+
+        if (HasEcmascriptSupportMarker(symbol))
             return true;
 
         if (symbol is IFieldSymbol field && IsIntrinsicFieldFallbackAllowed(field, hostType))
@@ -816,6 +827,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool IsPassThroughCustomOperatorFallbackAllowed(IMethodSymbol method)
     {
+        if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(method))
+            return false;
+
         if (TryGetWhiteListValue(_whiteListCompiles, method, out _, out _))
             return true;
 
@@ -846,9 +860,25 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
     ///
     /// 这样既能把 `Compile` 接到主分发优先级前面，又不会一次性打坏既有模板和导入规则。
     /// </summary>
-    private Expression? GetWhiteListExpressionCore(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, out string? alias, IOperation? originOperation)
+    private Expression? GetWhiteListExpressionCore(
+        ISymbol symbol,
+        SenseArgument context,
+        List<Expression> arguments,
+        Expression? instance,
+        out string? alias,
+        IOperation? originOperation,
+        ITypeSymbol? hostType)
     {
         alias = null;
+        if (StructuralRecordSupport.IsStructuralRecordRuntimeSemanticInvocation(originOperation as IInvocationOperation))
+            return null;
+
+        if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+            symbol,
+            hostType ?? TryGetRuntimeMemberHostType(originOperation)))
+        {
+            return null;
+        }
 
         var compileExpr = TryGetCompileExpression(symbol, context, arguments, instance, originOperation);
         if (compileExpr is not null)
@@ -873,6 +903,22 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         return null;
     }
+
+    private static ITypeSymbol? TryGetRuntimeMemberHostType(IOperation? operation)
+        => operation switch
+        {
+            IInvocationOperation invocation =>
+                invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType,
+            IMethodReferenceOperation methodReference =>
+                methodReference.Instance?.Type ?? methodReference.Method.ContainingType,
+            IPropertyReferenceOperation propertyReference =>
+                propertyReference.Instance?.Type ?? propertyReference.Property.ContainingType,
+            IFieldReferenceOperation fieldReference =>
+                fieldReference.Instance?.Type ?? fieldReference.Field.ContainingType,
+            IObjectCreationOperation objectCreation =>
+                objectCreation.Type,
+            _ => null
+        };
 
     private Expression? TryGetCompileExpression(ISymbol symbol, SenseArgument context, List<Expression> arguments, Expression? instance, IOperation? originOperation)
     {

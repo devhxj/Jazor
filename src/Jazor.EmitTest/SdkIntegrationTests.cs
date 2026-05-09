@@ -1724,6 +1724,132 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual("components/external-dashboard.vue.origins.json", module.GetProperty("OriginMapPath").GetString());
     }
 
+    [TestMethod]
+    public async Task Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var sampleSourceRoot = Path.Combine(package.RepoRoot, "samples", "RazorVue.TodoList");
+        var sampleRoot = Path.Combine(workspace.RootPath, "RazorVue.TodoList");
+        var hostJazorRoot = Path.Combine(sampleRoot, "Todo.Host", "wwwroot", "jazor");
+        var consumerRoot = Path.Combine(sampleRoot, "todo-consumer");
+        var consumerBuildRoot = Path.Combine(consumerRoot, ".deno-build-test");
+        var consumerDistRoot = Path.Combine(consumerRoot, "dist-test");
+
+        CopyDirectory(sampleSourceRoot, sampleRoot);
+
+        var sampleBuildEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["JAZOR_SAMPLE_REPO_ROOT"] = package.RepoRoot,
+            ["JAZOR_SAMPLE_PACKAGE_OUTPUT"] = Path.Combine(workspace.RootPath, "sample-packages"),
+            ["JAZOR_SAMPLE_RESTORE_PACKAGES_ROOT"] = Path.Combine(workspace.RootPath, "sample-restore-packages")
+        };
+
+        var buildLocal = await RunPowerShellAsync(
+            package.RepoRoot,
+            [
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", Path.Combine(sampleRoot, "build-local.ps1"),
+                "-Configuration", "Debug",
+                "-BaseOutputPath", Path.Combine(workspace.RootPath, "sample-out"),
+                "-BaseIntermediateOutputPath", Path.Combine(workspace.RootPath, "sample-obj")
+            ],
+            sampleBuildEnvironment);
+
+        Assert.AreEqual(0, buildLocal.ExitCode, buildLocal.ToString());
+        StringAssert.Contains(buildLocal.StandardOutput + buildLocal.StandardError, "razorvueSfcArtifacts=2");
+
+        var todoAppSfcPath = Path.Combine(hostJazorRoot, "components", "todo-app.vue");
+        var todoSummaryCardSfcPath = Path.Combine(hostJazorRoot, "components", "todo-summary-card.vue");
+        var razorVueManifestPath = Path.Combine(hostJazorRoot, "jazor-manifest-razorvue.json");
+        var hostRequirementsModulePath = Path.Combine(hostJazorRoot, "__jazor", "razorvue-host.mjs");
+
+        Assert.IsTrue(File.Exists(todoAppSfcPath), $"Expected TodoApp SFC was not generated: {todoAppSfcPath}");
+        Assert.IsTrue(File.Exists(todoSummaryCardSfcPath), $"Expected TodoSummaryCard SFC was not generated: {todoSummaryCardSfcPath}");
+        Assert.IsTrue(File.Exists(razorVueManifestPath), $"Expected RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"Expected RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
+
+        var todoAppSfc = (await File.ReadAllTextAsync(todoAppSfcPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(todoAppSfc, ":fluid=\"true\"");
+        StringAssert.Contains(todoAppSfc, ":cols=\"12\"");
+        StringAssert.Contains(todoAppSfc, "from \"vuetify/components\"");
+
+        using (var razorVueManifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath)))
+        {
+            CollectionAssert.AreEqual(
+                new[] { "vuetify/styles" },
+                GetStringArrayProperty(razorVueManifest.RootElement, "Styles"));
+            CollectionAssert.AreEqual(
+                new[] { "vuetify" },
+                GetStringArrayProperty(razorVueManifest.RootElement, "PluginRequirements"));
+        }
+
+        var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["RAZORVUE_HOST_JAZOR_ROOT"] = hostJazorRoot,
+            ["RAZORVUE_BUILD_ROOT"] = consumerBuildRoot,
+            ["RAZORVUE_DIST_ROOT"] = consumerDistRoot
+        };
+
+        var ssrSmoke = await RunPowerShellAsync(
+            consumerRoot,
+            [
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "task",
+                "smoke:ssr"
+            ],
+            denoEnvironment);
+        Assert.AreEqual(0, ssrSmoke.ExitCode, ssrSmoke.ToString());
+        StringAssert.Contains(ssrSmoke.StandardOutput + ssrSmoke.StandardError, "RazorVue TodoList Deno SSR smoke passed.");
+
+        var bundleApiSmoke = await RunPowerShellAsync(
+            consumerRoot,
+            [
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "task",
+                "smoke:bundle-api"
+            ],
+            denoEnvironment);
+        Assert.AreEqual(0, bundleApiSmoke.ExitCode, bundleApiSmoke.ToString());
+        StringAssert.Contains(bundleApiSmoke.StandardOutput + bundleApiSmoke.StandardError, "RazorVue Deno.bundle() smoke passed");
+
+        var browserBuild = await RunPowerShellAsync(
+            consumerRoot,
+            [
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "task",
+                "build"
+            ],
+            denoEnvironment);
+        Assert.AreEqual(0, browserBuild.ExitCode, browserBuild.ToString());
+        StringAssert.Contains(browserBuild.StandardOutput + browserBuild.StandardError, "RazorVue Deno build emitted client-entry.js and 1 CSS asset(s).");
+
+        var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
+        var distJsPath = Path.Combine(consumerDistRoot, "assets", "client-entry.js");
+        var distCssPath = Path.Combine(consumerDistRoot, "assets", "client-entry.css");
+        Assert.IsTrue(File.Exists(distHtmlPath), $"Expected Deno dist HTML was not generated: {distHtmlPath}");
+        Assert.IsTrue(File.Exists(distJsPath), $"Expected Deno dist JS was not generated: {distJsPath}");
+        Assert.IsTrue(File.Exists(distCssPath), $"Expected Deno dist CSS was not generated: {distCssPath}");
+        Assert.IsTrue(File.Exists(distJsPath + ".map"), $"Expected Deno dist JS source map was not generated: {distJsPath}.map");
+        Assert.IsTrue(File.Exists(distCssPath + ".map"), $"Expected Deno dist CSS source map was not generated: {distCssPath}.map");
+
+        var distHtml = (await File.ReadAllTextAsync(distHtmlPath)).ReplaceLineEndings("\n");
+        var distJs = (await File.ReadAllTextAsync(distJsPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
+        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
+        Assert.IsFalse(
+            distJs.Contains(".vue\"", StringComparison.Ordinal) || distJs.Contains(".vue'", StringComparison.Ordinal),
+            "Bundled browser entry should not retain unresolved .vue imports.");
+    }
+
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
     {
         var repoRoot = FindRepoRoot();
@@ -1923,6 +2049,41 @@ public sealed class SdkIntegrationTests
         }
 
         return result ?? throw new InvalidOperationException("dotnet process did not produce a result.");
+    }
+
+    private static async Task<ProcessResult> RunPowerShellAsync(
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IReadOnlyDictionary<string, string>? environmentVariables = null)
+    {
+        var startInfo = new ProcessStartInfo("pwsh")
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+
+        foreach (var argument in arguments)
+            startInfo.ArgumentList.Add(argument);
+
+        if (environmentVariables is not null)
+        {
+            foreach (var pair in environmentVariables)
+                startInfo.Environment[pair.Key] = pair.Value;
+        }
+
+        using var process = new Process { StartInfo = startInfo };
+        process.Start();
+
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        return new ProcessResult(
+            process.ExitCode,
+            await standardOutput,
+            await standardError);
     }
 
     private static async Task<ProcessResult> RunDotNetOnceAsync(string workingDirectory, IReadOnlyList<string> arguments)
@@ -2675,7 +2836,11 @@ public sealed class SdkIntegrationTests
         return segments.Any(static segment =>
             segment.Equals("bin", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
-            segment.Equals("TestResults", StringComparison.OrdinalIgnoreCase));
+            segment.Equals("TestResults", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals("node_modules", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals("dist", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals("wwwroot", StringComparison.OrdinalIgnoreCase) ||
+            segment.Equals(".deno-build", StringComparison.OrdinalIgnoreCase));
     }
 
     private sealed record LocalPackageFixture(

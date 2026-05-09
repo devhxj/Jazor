@@ -1,5 +1,6 @@
 using Acornima;
 using Acornima.Ast;
+using Jazor.Common;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ public partial class SemanticWalker
 		=> Util.GetConfigOrSymbolName(field);
 
 	private static bool ShouldLowerRecordStructurally(INamedTypeSymbol? namedType)
-		=> namedType is not null && namedType.IsRecord;
+		=> StructuralRecordSupport.IsStructuralRecordType(namedType);
 
 	private static bool TryGetRecordRuntimePropertyName(INamedTypeSymbol recordType, int index, out string propertyName)
 	{
