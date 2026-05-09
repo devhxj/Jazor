@@ -12,7 +12,7 @@ internal sealed partial class RazorVueExpressionEmitter
     internal ImmutableArray<VueLogicFieldDescriptor> GetRequiredSetupFields()
         => _requiredSetupFields
             .SelectMany(field => _logicFieldsByName.TryGetValue(field.Name, out var candidate) &&
-                                 SymbolEqualityComparer.Default.Equals(candidate.FieldSymbol, field)
+                                 RazorVueSymbolIdentity.SameMember(candidate.FieldSymbol, field)
                 ? [candidate]
                 : ImmutableArray<VueLogicFieldDescriptor>.Empty)
             .Distinct()
@@ -21,7 +21,7 @@ internal sealed partial class RazorVueExpressionEmitter
     internal ImmutableArray<VueLogicMethodDescriptor> GetRequiredSetupMethods()
         => _requiredSetupMethods
             .SelectMany(method => _logicMethodsByName.TryGetValue(method.Name, out var candidates)
-                ? candidates.Where(candidate => SymbolEqualityComparer.Default.Equals(candidate.MethodSymbol, method))
+                ? candidates.Where(candidate => RazorVueSymbolIdentity.SameMember(candidate.MethodSymbol, method))
                 : ImmutableArray<VueLogicMethodDescriptor>.Empty)
             .Distinct()
             .ToImmutableArray();

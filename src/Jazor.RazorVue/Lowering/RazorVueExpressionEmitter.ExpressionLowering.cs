@@ -190,8 +190,48 @@ internal sealed partial class RazorVueExpressionEmitter
                 $"RazorVue render currently only supports parameter properties in template expressions. Unsupported member: '{property.Property.Name}'.");
         }
 
+        if (TryEmitTemplateDataPropertyProjection(property, argument, out expression))
+            return true;
+
         expression = string.Empty;
         return false;
+    }
+
+    private bool TryEmitTemplateDataPropertyProjection(
+        IPropertyReferenceOperation property,
+        SenseArgument argument,
+        out string expression)
+    {
+        expression = string.Empty;
+        var instance = Unwrap(property.Instance);
+        if (instance is null)
+            return false;
+
+        if (property.Arguments.Length != 0 || property.Property.IsStatic || property.Property.IsIndexer)
+            return false;
+
+        if (!IsTemplateDataProjectionCarrier(instance.Type))
+            return false;
+
+        expression = EmitExpression(instance, argument) + "." + property.Property.Name;
+        return true;
+    }
+
+    private static bool IsTemplateDataProjectionCarrier(ITypeSymbol? type)
+    {
+        if (type is null)
+            return false;
+
+        var original = type.OriginalDefinition;
+        if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter ||
+            type.IsTupleType ||
+            original.IsAnonymousType ||
+            original.SpecialType != SpecialType.None)
+        {
+            return false;
+        }
+
+        return original.TypeKind is TypeKind.Class or TypeKind.Struct;
     }
 
     private string EmitSetupPropertyReference(IPropertyReferenceOperation property)
@@ -333,15 +373,11 @@ internal sealed partial class RazorVueExpressionEmitter
         INamedTypeSymbol componentSymbol,
         ISymbol symbol,
         IOperation? instance)
-    {
-        for (var current = componentSymbol; current is not null; current = current.BaseType)
-        {
-            if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
-                return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
-        }
-
-        return false;
-    }
+        => RazorVueSymbolIdentity.IsCurrentComponentMember(
+            componentSymbol,
+            symbol,
+            instance,
+            Unwrap);
 
     private static bool IsComponentParameterProperty(IPropertySymbol property)
         => property.GetAttributes().Any(static attribute =>
@@ -597,15 +633,11 @@ internal sealed partial class RazorVueExpressionEmitter
     }
 
     private bool IsCurrentComponentMember(ISymbol symbol, IOperation? instance)
-    {
-        for (var current = _snapshot.ComponentSymbol; current is not null; current = current.BaseType)
-        {
-            if (SymbolEqualityComparer.Default.Equals(symbol.ContainingType, current))
-                return instance is null || Unwrap(instance) is IInstanceReferenceOperation;
-        }
-
-        return false;
-    }
+        => RazorVueSymbolIdentity.IsCurrentComponentMember(
+            _snapshot.ComponentSymbol,
+            symbol,
+            instance,
+            Unwrap);
 
     private string EmitMemberTarget(IOperation? instance)
     {

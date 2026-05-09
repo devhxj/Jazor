@@ -510,6 +510,135 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersComponentDefaultSlotChildren()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var renderTree = new RazorVueRenderFragment(
+        [
+            new RazorVueComponentNode(
+                "LayoutCard",
+                "Demo.Components.LayoutCard",
+                "LayoutCard",
+                ImmutableArray<RazorVueAttributeEntry>.Empty,
+                ImmutableArray<RazorVueComponentSlotTemplateNode>.Empty,
+                new RazorVueRenderFragment(
+                [
+                    new RazorVueElementNode(
+                        "span",
+                        ImmutableArray<RazorVueAttributeEntry>.Empty,
+                        new RazorVueRenderFragment(
+                        [
+                            new RazorVueTextNode("Body", ImmutableArray<RazorVueSourceOrigin>.Empty)
+                        ]),
+                        ImmutableArray<RazorVueSourceOrigin>.Empty)
+                ]),
+                ImmutableArray<RazorVueSourceOrigin>.Empty)
+        ]);
+
+        var artifact = new RazorVueSfcArtifactFactory(new FixedTemplateFrontend(renderTree)).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<LayoutCardComponent>");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "Body");
+        StringAssert.Contains(artifact.TemplateText, "</LayoutCardComponent>");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_CollectsLiftedBindingsInsideComponentDefaultSlotChildren()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/host")]
+                public class Host : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Visible { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<LayoutCard>(0);
+                        builder.AddAttribute(1, "ChildContent", (RenderFragment)((child) =>
+                        {
+                            if (Visible)
+                            {
+                                child.OpenElement(2, "span");
+                                child.AddContent(3, "Shown");
+                                child.CloseElement();
+                            }
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/layout-card")]
+                public class LayoutCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "Host");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<LayoutCardComponent>");
+        StringAssert.Contains(artifact.TemplateText, "<template v-if=\"__jazorVueSfcBinding0\">");
+        StringAssert.Contains(artifact.TemplateText, "<span>");
+        StringAssert.Contains(artifact.TemplateText, "Shown");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => props.visible);");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersPartialRazorGeneratedBuildRenderTreeShape()
     {
         var compilation = CSharpCompilation.Create(
@@ -723,6 +852,67 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "<DemoButton text=\"Save\" />");
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./child-card.vue");
         CollectionAssert.Contains(artifact.Imports.ToArray(), "demo/components");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersComponentLiteralNonStringProps_ToBoundVueProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Authoring
+            {
+                [VueLibraryComponent("demo/components", "DemoPanel")]
+                public sealed class DemoPanel : ComponentBase, IVueLibraryComponent
+                {
+                    [Parameter]
+                    public bool Fluid { get; set; }
+
+                    [Parameter]
+                    public int Columns { get; set; }
+
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/parent-card")]
+                public class ParentCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Authoring.DemoPanel>(0);
+                        builder.AddAttribute(1, nameof(Demo.Authoring.DemoPanel.Fluid), true);
+                        builder.AddAttribute(2, nameof(Demo.Authoring.DemoPanel.Columns), 12);
+                        builder.AddAttribute(3, nameof(Demo.Authoring.DemoPanel.Title), "Inbox");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ParentCard");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<DemoPanel :fluid=\"true\" :columns=\"12\" title=\"Inbox\" />");
+        Assert.IsFalse(artifact.TemplateText.Contains(" fluid=\"true\"", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains(" columns=\"12\"", StringComparison.Ordinal), artifact.TemplateText);
     }
 
     [TestMethod]
@@ -1686,4 +1876,3 @@ public sealed class RazorVueSfcArtifactFactoryTests
                             new RazorVueTextNode(text, ImmutableArray<RazorVueSourceOrigin>.Empty))),
                     ImmutableArray<RazorVueSourceOrigin>.Empty)));
 }
-

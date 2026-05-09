@@ -255,6 +255,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                             throw CreateUnsupportedNodeException(node, "unbound template CSharpCodeIntermediateNode");
                         index++;
                         break;
+                    case RazorVueRazorIrNodeKind.IntermediateToken when IsCSharpIntermediateToken(node):
+                        if (!IsIgnorableTemplateCodeNode(node))
+                            throw CreateUnsupportedNodeException(node, "unbound template CSharpIntermediateToken");
+                        index++;
+                        break;
                     case RazorVueRazorIrNodeKind.FieldDeclaration:
                     case RazorVueRazorIrNodeKind.PropertyDeclaration:
                     case RazorVueRazorIrNodeKind.UsingDirective:
@@ -467,6 +472,12 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                     children[0],
                     fallbackSource,
                     ownerNode),
+                RazorVueRazorIrNodeKind.IntermediateToken when IsCSharpIntermediateToken(children[0]) => ResolveExpressionAttributeOperation(
+                    attributeName,
+                    children[0],
+                    fallbackSource,
+                    ownerNode),
+                RazorVueRazorIrNodeKind.IntermediateToken => ResolveLiteralAttributeValue(children[0]),
                 RazorVueRazorIrNodeKind.CSharpCodeAttributeValue => throw CreateUnsupportedNodeException(
                     children[0],
                     $"CSharpCodeAttributeValueIntermediateNode '{attributeName}'"),
@@ -524,7 +535,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
         private RazorVueCompilationIssueException CreateUnsupportedNodeException(RazorVueRazorIrNode node, string detail)
             => CreateUnsupportedAttributeException(
-                node.Source,
+                GetBestSourceSpan(node),
                 $"RazorVue Razor IR frontend does not yet support {detail} in component '{_snapshot.Descriptor.FullName}'.");
 
         private RazorVueCompilationIssueException CreateUnsupportedAttributeException(RazorVueRazorSourceSpan? sourceSpan, string message)
@@ -567,13 +578,11 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                  SymbolEqualityComparer.Default.Equals(namedType.OriginalDefinition, _context.Symbols.RenderFragmentOfT)));
 
         private bool IsCurrentComponentMember(ISymbol symbol, IOperation? instance)
-        {
-            if (!SymbolEqualityComparer.Default.Equals(symbol.ContainingType, _snapshot.ComponentSymbol))
-                return false;
-
-            return instance is null ||
-                   Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap(instance) is IInstanceReferenceOperation;
-        }
+            => RazorVueSymbolIdentity.IsCurrentComponentMember(
+                _snapshot.ComponentSymbol,
+                symbol,
+                instance,
+                Jazor.RazorVue.RazorVueOperationNormalizer.Unwrap);
 
         private RazorVueRenderNode ConvertExpressionOrSlotOutlet(RazorVueRazorIrNode node)
         {
@@ -590,7 +599,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             out RazorVueConditionalNode conditionalNode)
         {
             conditionalNode = default!;
-            if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
+            if (!IsTemplateCodeNode(nodes[index]))
                 return false;
 
             var codeNode = nodes[index];
@@ -610,7 +619,9 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 : FindControlStatementEndIndex(
                     nodes,
                     index,
-                    resolvedConditional.StatementRange,
+                    resolvedConditional.WhenFalseRange is null
+                        ? resolvedConditional.WhenTrueRange
+                        : resolvedConditional.StatementRange,
                     sourceSpan,
                     "if");
             var coveredNodes = isElseIfHeader
@@ -651,7 +662,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             out RazorVueForEachNode loopNode)
         {
             loopNode = default!;
-            if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
+            if (!IsTemplateCodeNode(nodes[index]))
                 return false;
 
             var codeNode = nodes[index];
@@ -665,7 +676,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var bodyEnd = FindControlStatementEndIndex(
                 nodes,
                 index,
-                resolvedLoop.StatementRange,
+                resolvedLoop.BodyRange,
                 sourceSpan,
                 "foreach");
             var coveredNodes = nodes.Skip(index + 1).Take(bodyEnd - index - 1).ToList();
@@ -687,7 +698,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             out RazorVueForNode loopNode)
         {
             loopNode = default!;
-            if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
+            if (!IsTemplateCodeNode(nodes[index]))
                 return false;
 
             var codeNode = nodes[index];
@@ -705,7 +716,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var bodyEnd = FindControlStatementEndIndex(
                 nodes,
                 index,
-                resolvedLoop.StatementRange,
+                resolvedLoop.BodyRange,
                 sourceSpan,
                 "for");
             var coveredNodes = nodes.Skip(index + 1).Take(bodyEnd - index - 1).ToList();
@@ -728,7 +739,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private int FindControlStatementEndIndex(
             IReadOnlyList<RazorVueRazorIrNode> nodes,
             int startIndex,
-            RazorVueRazorIrOperationResolver.SourceRange statementRange,
+            RazorVueRazorIrOperationResolver.SourceRange coveredRange,
             RazorVueRazorSourceSpan sourceSpan,
             string detail)
         {
@@ -739,14 +750,13 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 if (candidateRange is null)
                     continue;
 
-                if (!PathsEqual(candidateRange.Value.FilePath, statementRange.FilePath))
+                if (!PathsEqual(candidateRange.Value.FilePath, coveredRange.FilePath))
                     continue;
 
-                if (candidateRange.Value.End < statementRange.End)
+                if (!RangesOverlap(candidateRange.Value, coveredRange))
                     continue;
 
                 matchingEndIndex = candidateIndex + 1;
-                break;
             }
 
             if (matchingEndIndex < 0)
@@ -783,14 +793,14 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             }
 
             while (selected.Count > 0 &&
-                   selected[0].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsTemplateCodeNode(selected[0]) &&
                    IsIgnorableTemplateCodeNode(selected[0]))
             {
                 selected.RemoveAt(0);
             }
 
             while (selected.Count > 0 &&
-                   selected[selected.Count - 1].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsTemplateCodeNode(selected[selected.Count - 1]) &&
                    IsIgnorableTemplateCodeNode(selected[selected.Count - 1]))
             {
                 selected.RemoveAt(selected.Count - 1);
@@ -798,7 +808,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             if (trimLeadingControlNode &&
                 selected.Count > 0 &&
-                selected[0].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                IsTemplateCodeNode(selected[0]) &&
                 !StartsWithControlKeyword(GetNodeText(selected[0]), "if") &&
                 !StartsWithControlKeyword(GetNodeText(selected[0]), "foreach") &&
                 !StartsWithControlKeyword(GetNodeText(selected[0]), "for"))
@@ -826,7 +836,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             foreach (var node in nodes)
             {
-                if (node.Kind == RazorVueRazorIrNodeKind.CSharpCode)
+                if (IsTemplateCodeNode(node))
                 {
                     var normalized = NormalizeTemplateCodeText(GetNodeText(node));
                     if (nestedControlDepth == 0 &&
@@ -877,7 +887,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
             var nestedControlDepth = 0;
             for (var index = 0; index < nodes.Count; index++)
             {
-                if (nodes[index].Kind != RazorVueRazorIrNodeKind.CSharpCode)
+                if (!IsTemplateCodeNode(nodes[index]))
                     continue;
 
                 var codeNode = nodes[index];
@@ -919,7 +929,7 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
 
             foreach (var node in nodes)
             {
-                if (node.Kind == RazorVueRazorIrNodeKind.CSharpCode)
+                if (IsTemplateCodeNode(node))
                 {
                     var normalized = NormalizeTemplateCodeText(GetNodeText(node));
                     if (IsElseIfBoundaryCodeNode(normalized))
@@ -1003,19 +1013,28 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
         private static void TrimIgnorableBoundaryCodeNodes(List<RazorVueRazorIrNode> nodes)
         {
             while (nodes.Count > 0 &&
-                   nodes[0].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsTemplateCodeNode(nodes[0]) &&
                    IsIgnorableTemplateCodeNode(nodes[0]))
             {
                 nodes.RemoveAt(0);
             }
 
             while (nodes.Count > 0 &&
-                   nodes[nodes.Count - 1].Kind == RazorVueRazorIrNodeKind.CSharpCode &&
+                   IsTemplateCodeNode(nodes[nodes.Count - 1]) &&
                    IsIgnorableTemplateCodeNode(nodes[nodes.Count - 1]))
             {
                 nodes.RemoveAt(nodes.Count - 1);
             }
         }
+
+        private static bool IsTemplateCodeNode(RazorVueRazorIrNode node)
+            => node.Kind == RazorVueRazorIrNodeKind.CSharpCode ||
+               (node.Kind == RazorVueRazorIrNodeKind.IntermediateToken &&
+                IsCSharpIntermediateToken(node));
+
+        private static bool IsCSharpIntermediateToken(RazorVueRazorIrNode node)
+            => node.Kind == RazorVueRazorIrNodeKind.IntermediateToken &&
+               node.RuntimeTypeName.EndsWith(".CSharpIntermediateToken", StringComparison.Ordinal);
 
         private static bool IsIgnorableTemplateCodeNode(RazorVueRazorIrNode node)
         {
@@ -1108,8 +1127,18 @@ internal sealed class RazorVueRazorIrTemplateFrontend : IRazorVueTemplateFronten
                 sourceSpan.Value.AbsoluteIndex + sourceSpan.Value.Length);
         }
 
+        private static bool RangesOverlap(
+            RazorVueRazorIrOperationResolver.SourceRange left,
+            RazorVueRazorIrOperationResolver.SourceRange right)
+            => left.Start < right.End && right.Start < left.End;
+
         private static string GetNodeText(RazorVueRazorIrNode node)
-            => string.Concat(EnumerateTokens(node).Select(static token => token.Content));
+        {
+            var text = string.Concat(EnumerateTokens(node).Select(static token => token.Content));
+            return text.Length == 0 && node.Kind == RazorVueRazorIrNodeKind.IntermediateToken
+                ? GetNodeContent(node)
+                : text;
+        }
 
         private static string GetNodeContent(RazorVueRazorIrNode node)
             => node.Content ?? string.Empty;

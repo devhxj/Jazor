@@ -258,13 +258,17 @@ internal sealed class RazorVueSfcSemanticModelFactory
         for (var index = 0; index < slots.Length; index++)
         {
             var slot = slots[index];
-            if (slot.ValueKind != RazorVueCanonicalSlotValueKind.ValueExpression ||
-                slot.ValueExpressionText is null)
-                continue;
-
             var effectiveScopeDepth = string.IsNullOrWhiteSpace(slot.ParameterName)
                 ? templateScopeDepth
                 : templateScopeDepth + 1;
+
+            if (slot.ValueKind != RazorVueCanonicalSlotValueKind.ValueExpression ||
+                slot.ValueExpressionText is null)
+            {
+                CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");
+                continue;
+            }
+
             if (!ShouldLiftExpression(slot.TemplateEncodability, effectiveScopeDepth))
             {
                 CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");

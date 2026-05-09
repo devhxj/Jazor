@@ -345,6 +345,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                         ExpressionText: attribute.Value is null
                             ? null
                             : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                        LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                         AttributeKind: RazorVueCanonicalAttributeKind.HtmlAttribute,
                         BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
                         TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
@@ -423,6 +424,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     ExpressionText: attribute.Value is null
                         ? null
                         : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                    LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentEvent,
                     BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
                     TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
@@ -437,6 +439,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     ExpressionText: attribute.Value is null
                         ? null
                         : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
+                    LiteralValueKind: ClassifyLiteralValueKind(attribute.Value),
                     AttributeKind: RazorVueCanonicalAttributeKind.ComponentProp,
                     BindingKind: ClassifyBindingKind(snapshot, attribute.Value),
                     TemplateEncodability: ClassifyTemplateEncodability(attribute.Value),
@@ -800,6 +803,44 @@ internal sealed class RazorVueCanonicalHModelFactory
         };
     }
 
+    private static RazorVueLiteralValueKind ClassifyLiteralValueKind(IOperation? operation)
+    {
+        var current = Unwrap(operation);
+        if (current is null)
+            return RazorVueLiteralValueKind.None;
+
+        if (current is IDefaultValueOperation defaultValue)
+            return IsNullDefaultValue(defaultValue)
+                ? RazorVueLiteralValueKind.Null
+                : RazorVueLiteralValueKind.Other;
+
+        if (current is not ILiteralOperation || current.ConstantValue.HasValue != true)
+            return RazorVueLiteralValueKind.None;
+
+        return current.ConstantValue.Value switch
+        {
+            null => RazorVueLiteralValueKind.Null,
+            string => RazorVueLiteralValueKind.String,
+            char => RazorVueLiteralValueKind.String,
+            bool => RazorVueLiteralValueKind.Boolean,
+            sbyte or byte or short or ushort or int or uint or long or ulong or float or double or decimal => RazorVueLiteralValueKind.Number,
+            _ => RazorVueLiteralValueKind.Other
+        };
+    }
+
+    private static bool IsNullDefaultValue(IDefaultValueOperation defaultValue)
+    {
+        var type = defaultValue.Type;
+        if (type is null)
+            return false;
+
+        if (type.IsReferenceType)
+            return true;
+
+        return type is INamedTypeSymbol namedType &&
+               namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
+    }
+
     private static RazorVueTemplateEncodability ClassifyTemplateEncodability(IOperation? operation)
     {
         var current = Unwrap(operation);
@@ -862,7 +903,7 @@ internal sealed class RazorVueCanonicalHModelFactory
     {
         for (var current = snapshot.ComponentSymbol; current is not null; current = current.BaseType)
         {
-            if (SymbolEqualityComparer.Default.Equals(property.Property.ContainingType, current))
+            if (RazorVueSymbolIdentity.SameType(property.Property.ContainingType, current))
                 return true;
         }
 

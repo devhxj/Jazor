@@ -3,6 +3,7 @@ using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Discovery;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Jazor.RazorVue;
@@ -85,7 +86,8 @@ internal sealed class RazorVueCompilationContext
     internal RazorVueSemanticSnapshot CreateSemanticSnapshot(
         RazorVueComponentCandidate candidate,
         RazorSdk.RazorVueRazorIrCarrier? razorIrCarrier,
-        RazorSdk.RazorVueRazorSourceGeneratorDocument? razorSourceGeneratorDocument)
+        RazorSdk.RazorVueRazorSourceGeneratorDocument? razorSourceGeneratorDocument,
+        ImmutableArray<string> additionalImportedNamespaces = default)
     {
         if (candidate is null)
             throw new ArgumentNullException(nameof(candidate));
@@ -121,17 +123,7 @@ internal sealed class RazorVueCompilationContext
             .Where(static location => location.IsInSource)
             .Select(static location => RazorVueSourceOrigin.FromLocation(location, RazorVueOriginKind.Component))
             .ToImmutableArray();
-        var importedNamespaces = candidate.ComponentSymbol.DeclaringSyntaxReferences
-            .Select(static reference => reference.GetSyntax())
-            .OfType<TypeDeclarationSyntax>()
-            .SelectMany(static declaration =>
-                declaration.SyntaxTree.GetRoot() is CompilationUnitSyntax compilationUnit
-                    ? compilationUnit.Usings
-                    : Enumerable.Empty<UsingDirectiveSyntax>())
-            .Where(static directive => directive.Alias is null && directive.Name is not null)
-            .Select(static directive => directive.Name!.ToString())
-            .Distinct(StringComparer.Ordinal)
-            .ToImmutableArray();
+        var importedNamespaces = CollectImportedNamespaces(candidate, additionalImportedNamespaces);
 
         return new RazorVueSemanticSnapshot(
             Compilation,
@@ -154,6 +146,47 @@ internal sealed class RazorVueCompilationContext
             candidate.OnAfterRenderAsyncMethod,
             candidate.DisposeMethod,
             candidate.DisposeAsyncMethod);
+    }
+
+    private static ImmutableArray<string> CollectImportedNamespaces(
+        RazorVueComponentCandidate candidate,
+        ImmutableArray<string> additionalImportedNamespaces)
+    {
+        var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var importedNamespace in candidate.ComponentSymbol.DeclaringSyntaxReferences
+                     .Select(static reference => reference.GetSyntax())
+                     .OfType<TypeDeclarationSyntax>()
+                     .SelectMany(static declaration =>
+                         declaration.SyntaxTree.GetRoot() is CompilationUnitSyntax compilationUnit
+                             ? compilationUnit.Usings
+                             : Enumerable.Empty<UsingDirectiveSyntax>())
+                     .Where(static directive =>
+                         directive.Alias is null &&
+                         !directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword) &&
+                         directive.Name is not null)
+                     .Select(static directive => directive.Name!.ToString()))
+        {
+            AddImportedNamespace(importedNamespace);
+        }
+
+        if (!additionalImportedNamespaces.IsDefaultOrEmpty)
+        {
+            foreach (var importedNamespace in additionalImportedNamespaces)
+                AddImportedNamespace(importedNamespace);
+        }
+
+        return builder.ToImmutable();
+
+        void AddImportedNamespace(string importedNamespace)
+        {
+            if (string.IsNullOrWhiteSpace(importedNamespace))
+                return;
+
+            if (seen.Add(importedNamespace))
+                builder.Add(importedNamespace);
+        }
     }
 
     public ImmutableArray<RazorVueSemanticSnapshot> CreateSemanticSnapshots()

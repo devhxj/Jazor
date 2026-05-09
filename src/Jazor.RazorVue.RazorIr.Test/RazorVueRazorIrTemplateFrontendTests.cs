@@ -392,6 +392,121 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void CreateRenderTree_ForOfficialSgComponentAttributesAndNestedControlFlow_LowersTokenOnlyIr()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <PanelCard Fluid="true" Density="compact">
+                @foreach (var item in Items!)
+                {
+                    @if (ShowCompleted || !item.IsDone)
+                    {
+                        <ItemCard Title="@item.Title"
+                                  Subtitle="@(item.Category + " | " + (item.IsDone ? "Completed" : "Active"))">
+                            @if (item.IsPinned)
+                            {
+                                <ChipCard Text="Pinned" Color="primary" />
+                            }
+                        </ItemCard>
+                    }
+                }
+            </PanelCard>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.OfficialSg.TokenOnly.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                public sealed class TodoItem
+                {
+                    public string? Title { get; set; }
+                    public string? Category { get; set; }
+                    public bool IsDone { get; set; }
+                    public bool IsPinned { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/panel-card")]
+                public partial class PanelCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool Fluid { get; set; }
+
+                    [Parameter]
+                    public string? Density { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/item-card")]
+                public partial class ItemCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    [Parameter]
+                    public string? Subtitle { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/chip-card")]
+                public partial class ChipCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+
+                    [Parameter]
+                    public string? Color { get; set; }
+                }
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public List<TodoItem>? Items { get; set; }
+
+                    [Parameter]
+                    public bool ShowCompleted { get; set; }
+                }
+            }
+            """);
+
+        var renderTree = new RazorVueRazorIrTemplateFrontend().CreateRenderTree(context, snapshot);
+
+        var panel = Assert.IsInstanceOfType<RazorVueComponentNode>(renderTree.Children.Single());
+        var fluid = panel.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "Fluid");
+        Assert.IsNotNull(fluid.Value);
+        Assert.AreEqual("true", fluid.Value.Syntax.ToString());
+
+        var density = panel.Attributes.OfType<RazorVueAttributeNode>().Single(static attribute => attribute.Name == "Density");
+        Assert.IsNotNull(density.Value);
+        Assert.AreEqual("\"compact\"", density.Value.Syntax.ToString());
+
+        var loop = Assert.IsInstanceOfType<RazorVueForEachNode>(panel.Children.Children.Single());
+        Assert.AreEqual("item", loop.ItemName);
+
+        var conditional = Assert.IsInstanceOfType<RazorVueConditionalNode>(loop.Body.Children.Single());
+        Assert.IsInstanceOfType<IBinaryOperation>(conditional.Condition);
+
+        var itemCard = Assert.IsInstanceOfType<RazorVueComponentNode>(conditional.WhenTrue.Children.Single());
+        Assert.AreEqual("ItemCard", itemCard.ComponentName);
+        Assert.AreEqual(2, itemCard.Attributes.Length);
+
+        var pinnedConditional = Assert.IsInstanceOfType<RazorVueConditionalNode>(itemCard.Children.Children.Single());
+        Assert.IsInstanceOfType<IPropertyReferenceOperation>(pinnedConditional.Condition);
+
+        var chip = Assert.IsInstanceOfType<RazorVueComponentNode>(pinnedConditional.WhenTrue.Children.Single());
+        Assert.AreEqual("ChipCard", chip.ComponentName);
+    }
+
+    [TestMethod]
     public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerSimpleMarkup()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -569,6 +684,55 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
         StringAssert.Contains(artifact.ModuleCode, "props.items.length > 0");
         StringAssert.Contains(artifact.ModuleCode, ".map((item) => h(\"li\", item))");
         StringAssert.Contains(artifact.ModuleCode, "h(\"ul\"");
+    }
+
+    [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanProjectUserDtoPropertiesInsideForeach()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """
+            <ul>
+            @foreach (var item in Items!)
+            {
+                @if (!item.IsDone)
+                {
+                    <li>@item.Title</li>
+                }
+            }
+            </ul>
+            """;
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.DtoProjection.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using System.Collections.Generic;
+
+            namespace Demo.Pages
+            {
+                public sealed record TodoItem(
+                    int Id,
+                    string Title,
+                    bool IsDone);
+
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public List<TodoItem>? Items { get; set; }
+                }
+            }
+            """);
+
+        var artifact = RazorVueRazorIrTestContextFactory.CreateSgPipeline(snapshot)
+            .Execute(context)
+            .Artifacts
+            .Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item)");
+        StringAssert.Contains(artifact.ModuleCode, "!item.IsDone");
+        StringAssert.Contains(artifact.ModuleCode, "h(\"li\", item.Title)");
     }
 
     [TestMethod]

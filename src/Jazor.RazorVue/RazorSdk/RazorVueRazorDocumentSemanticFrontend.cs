@@ -45,7 +45,11 @@ internal sealed class RazorVueRazorDocumentSemanticFrontend : IRazorSemanticFron
 
             if (sourceGeneratorDocument is not null)
             {
-                builder.Add(requiredContext.CreateSemanticSnapshot(candidate, null, sourceGeneratorDocument));
+                builder.Add(requiredContext.CreateSemanticSnapshot(
+                    candidate,
+                    null,
+                    sourceGeneratorDocument,
+                    CollectImportedNamespaces(sourceGeneratorDocument)));
                 continue;
             }
 
@@ -97,6 +101,67 @@ internal sealed class RazorVueRazorDocumentSemanticFrontend : IRazorSemanticFron
             ? "global::" + classDeclaration.Identifier.ValueText
             : "global::" + namespaceName + "." + classDeclaration.Identifier.ValueText;
         return true;
+    }
+
+    private static ImmutableArray<string> CollectImportedNamespaces(RazorVueRazorSourceGeneratorDocument document)
+    {
+        var builder = ImmutableArray.CreateBuilder<string>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+
+        AddImportedNamespaces(document.CSharpText.ToString());
+        foreach (var importDocument in document.ImportDocuments)
+            AddRazorUsingDirectives(importDocument.Text.ToString());
+
+        return builder.ToImmutable();
+
+        void AddImportedNamespaces(string csharpText)
+        {
+            if (string.IsNullOrWhiteSpace(csharpText))
+                return;
+
+            var root = CSharpSyntaxTree.ParseText(csharpText).GetRoot();
+            foreach (var directive in root.DescendantNodes()
+                         .OfType<UsingDirectiveSyntax>()
+                         .Where(static directive =>
+                             directive.Alias is null &&
+                             !directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword) &&
+                             directive.Name is not null))
+            {
+                Add(directive.Name!.ToString());
+            }
+        }
+
+        void AddRazorUsingDirectives(string razorText)
+        {
+            if (string.IsNullOrWhiteSpace(razorText))
+                return;
+
+            foreach (var line in razorText.Split(["\r\n", "\n", "\r"], StringSplitOptions.None))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("@using ", StringComparison.Ordinal))
+                    continue;
+
+                var namespaceText = trimmed.Substring("@using ".Length).Trim();
+                if (namespaceText.StartsWith("static ", StringComparison.Ordinal))
+                    continue;
+
+                var semicolonIndex = namespaceText.IndexOf(';');
+                if (semicolonIndex >= 0)
+                    namespaceText = namespaceText.Substring(0, semicolonIndex).Trim();
+
+                Add(namespaceText);
+            }
+        }
+
+        void Add(string importedNamespace)
+        {
+            if (string.IsNullOrWhiteSpace(importedNamespace))
+                return;
+
+            if (seen.Add(importedNamespace))
+                builder.Add(importedNamespace);
+        }
     }
 
     private static Jazor.RazorVue.RazorVueCompilationContext GetRequiredContext(Jazor.RazorVue.RazorVueCompilationContext context)

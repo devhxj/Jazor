@@ -1088,6 +1088,92 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithOfficialRazorSgDocument_TailBridge_LowersRazorIrWithoutGeneratedTreeInCompilation()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var (compilationWithGeneratedTree, input) = CreateRazorSgTailBridgeInput(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.TailBridge.NoGeneratedTree.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages");
+        var generatedTree = compilationWithGeneratedTree.SyntaxTrees.Single(static tree => tree.FilePath.EndsWith(".razor.g.cs", StringComparison.Ordinal));
+        var compilation = compilationWithGeneratedTree.RemoveSyntaxTrees(generatedTree);
+
+        var result = RazorVueRazorSourceGeneratorTailBridge.ExecuteSfcPipeline(
+            compilation,
+            ImmutableArray.Create(input));
+
+        Assert.IsTrue(result.Success, result.Failure);
+        Assert.AreEqual(1, result.GeneratorDocumentCount);
+        var artifact = result.Catalog.Artifacts.Single();
+        StringAssert.Contains(artifact.TemplateText, "{{ props.title }}");
+        StringAssert.Contains(artifact.TemplateText, "Hello");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithOfficialRazorSgDocument_TailBridge_UsesRazorImportsForComponentResolution()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string razorDocumentText = """
+            <SharedBadge Text="@Title" />
+            """;
+        var normalizedDocumentPath = documentPath.Replace('\\', '/');
+
+        var (compilation, input) = CreateRazorSgTailBridgeInput(
+            assemblyName: "RazorVue.Generator.PreferredFrontend.TailBridge.Imports.Tests",
+            documentPath: normalizedDocumentPath,
+            documentText: razorDocumentText,
+            componentSource:
+            """
+            namespace Demo.Shared
+            {
+                [ECMAScript.ECMAScriptModule("./components/shared-badge")]
+                public partial class SharedBadge : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            rootNamespace: "Demo.Pages",
+            importsText: "@using Demo.Shared");
+
+        var result = RazorVueRazorSourceGeneratorTailBridge.ExecuteSfcPipeline(
+            compilation,
+            ImmutableArray.Create(input));
+
+        Assert.IsTrue(result.Success, result.Failure);
+        var artifact = result.Catalog.Artifacts.Single(static item => item.Identity.ComponentId == "Demo.Pages.TodoApp");
+        StringAssert.Contains(artifact.TemplateText, "<SharedBadgeComponent :text=\"props.title\" />");
+        CollectionAssert.Contains(artifact.Imports.ToArray(), "./shared-badge.vue");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_DefaultGenerator_ReportsJAZORVGA001()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
@@ -1340,6 +1426,107 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(0, diagnostics.Length, string.Join("\n", diagnostics.Select(static x => x.ToString())));
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndOnlyGlobalTailRegistration_ReportsJAZORVGA018()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generator.IntegrationEnabled.PartialOnly.GlobalTailOnly.Tests",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: true,
+                tailOutputRegistered: true,
+                tailOutputRegisteredForCurrentContext: false),
+            compatibilityProbeFactory: CreateSupportedRazorSgCompatibilityProbe);
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA018")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndMissingCurrentContextKey_ReportsJAZORVGA019()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.Generator.IntegrationEnabled.PartialOnly.MissingCurrentContextKey.Tests",
+            """
+            using System;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """);
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: true,
+                tailOutputRegistered: true,
+                currentContextKeyAvailable: false,
+                tailOutputRegisteredForCurrentContext: false),
+            compatibilityProbeFactory: CreateSupportedRazorSgCompatibilityProbe);
+
+        var (_, runResult) = RunAllGeneratorsWithResult(
+            compilation,
+            razorVueOutputMode: null,
+            razorVueGenerator: generator,
+            enableRazorSgIntegration: true);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA019")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        StringAssert.Contains(diagnostics[0].GetMessage(), "output-node state could not be read");
     }
 
     [TestMethod]
@@ -11189,12 +11376,15 @@ public sealed class ESGeneratorTests
             static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
             static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
             compatibilityProbeFactory ?? (static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent()),
-            () => bootstrapTrace);
+            _ => bootstrapTrace);
 
     private static RazorSourceGeneratorBootstrapTrace CreateBootstrapTrace(
         bool hasAttempted,
         bool isInstalled,
         bool tailOutputRegistered,
+        bool currentContextKeyAvailable = true,
+        bool? tailOutputRegisteredForCurrentContext = null,
+        string tailOutputRegistrationKind = "implementation-source-output",
         bool patchFailed = false,
         string? failure = null)
         => new(
@@ -11211,6 +11401,9 @@ public sealed class ESGeneratorTests
             HostOutputHookInstalled: tailOutputRegistered,
             HostOutputObserved: tailOutputRegistered,
             TailOutputRegistered: tailOutputRegistered,
+            CurrentContextKeyAvailable: currentContextKeyAvailable,
+            TailOutputRegisteredForCurrentContext: tailOutputRegisteredForCurrentContext ?? tailOutputRegistered,
+            TailOutputRegistrationKind: tailOutputRegistered ? tailOutputRegistrationKind : string.Empty,
             TestHookObserved: false,
             Failure: failure);
 

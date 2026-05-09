@@ -257,6 +257,12 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     slotOrdinal++;
                 }
 
+                foreach (var slot in component.Slots.Where(static slot => slot.IsDefault))
+                {
+                    AppendDefaultSlot(builder, slot, depth + 1, bindingSiteMap, path + "/slots/slot[" + slotOrdinal + "]", templateScopeDepth);
+                    slotOrdinal++;
+                }
+
                 for (var index = 0; index < component.Children.Children.Length; index++)
                     AppendTemplateNode(builder, component.Children.Children[index], depth + 1, bindingSiteMap, path + "/child[" + index + "]", templateScopeDepth);
                 builder.Append(indent).Append("</").Append(componentTagName).AppendLine(">");
@@ -384,6 +390,54 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         builder.Append(indent).AppendLine("</template>");
     }
 
+    private static void AppendDefaultSlot(
+        StringBuilder builder,
+        RazorVueCanonicalSlotBinding slot,
+        int depth,
+        IReadOnlyDictionary<string, string> bindingSiteMap,
+        string path,
+        int templateScopeDepth)
+    {
+        var indent = new string(' ', depth * 2);
+        if (!slot.Children.Children.IsDefaultOrEmpty)
+        {
+            for (var index = 0; index < slot.Children.Children.Length; index++)
+            {
+                AppendTemplateNode(
+                    builder,
+                    slot.Children.Children[index],
+                    depth,
+                    bindingSiteMap,
+                    path + "/child[" + index + "]",
+                    string.IsNullOrWhiteSpace(slot.ParameterName) ? templateScopeDepth : templateScopeDepth + 1);
+            }
+
+            return;
+        }
+
+        if (slot.ValueKind == RazorVueCanonicalSlotValueKind.ForwardedSlot)
+        {
+            builder.Append(indent).Append("<slot");
+            if (!string.IsNullOrWhiteSpace(slot.ParameterName))
+                builder.Append(" v-bind=\"").Append(slot.ParameterName).Append('"');
+            builder.AppendLine(" />");
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(slot.ValueExpressionText))
+        {
+            builder.Append(indent)
+                .Append("{{ ")
+                .Append(ResolveTemplateExpression(
+                    slot.ValueExpressionText!,
+                    slot.TemplateEncodability,
+                    bindingSiteMap,
+                    path,
+                    string.IsNullOrWhiteSpace(slot.ParameterName) ? templateScopeDepth : templateScopeDepth + 1))
+                .AppendLine(" }}");
+        }
+    }
+
     private static void AppendAttributeBindings(
         StringBuilder builder,
         ImmutableArray<RazorVueCanonicalAttributeEntry> attributes,
@@ -409,13 +463,26 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
                     }
 
                     if (attribute.BindingKind == RazorVueExpressionBindingKind.Literal &&
-                        attribute.TemplateEncodability == RazorVueTemplateEncodability.DirectTemplate)
+                        attribute.TemplateEncodability == RazorVueTemplateEncodability.DirectTemplate &&
+                        attribute.AttributeKind != RazorVueCanonicalAttributeKind.ComponentEvent)
                     {
-                        builder.Append(' ')
-                            .Append(attribute.Name)
-                            .Append("=\"")
-                            .Append(EscapeAttributeValue(attribute.ExpressionText.Trim('"')))
-                            .Append('"');
+                        if (CanEmitStaticLiteralAttribute(attribute))
+                        {
+                            builder.Append(' ')
+                                .Append(attribute.Name)
+                                .Append("=\"")
+                                .Append(EscapeAttributeValue(attribute.ExpressionText.Trim('"')))
+                                .Append('"');
+                        }
+                        else
+                        {
+                            builder.Append(" :")
+                                .Append(attribute.Name)
+                                .Append("=\"")
+                                .Append(EscapeAttributeValue(attribute.ExpressionText))
+                                .Append('"');
+                        }
+
                         continue;
                     }
 
@@ -456,6 +523,10 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             }
         }
     }
+
+    private static bool CanEmitStaticLiteralAttribute(RazorVueCanonicalAttributeBinding attribute)
+        => attribute.AttributeKind == RazorVueCanonicalAttributeKind.HtmlAttribute ||
+           attribute.LiteralValueKind is RazorVueLiteralValueKind.String;
 
     private static bool RequiresMergedAttributeBinding(ImmutableArray<RazorVueCanonicalAttributeEntry> attributes)
     {

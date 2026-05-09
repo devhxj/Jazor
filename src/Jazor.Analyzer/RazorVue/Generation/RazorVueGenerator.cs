@@ -23,7 +23,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     private readonly Func<RazorVuePipeline> _legacyPipelineFactory;
     private readonly Func<RazorVueSfcPipeline> _sfcPipelineFactory;
     private readonly Func<RazorSourceGeneratorCompatibilityProbeResult> _compatibilityProbeFactory;
-    private readonly Func<RazorSourceGeneratorBootstrapTrace> _bootstrapTraceFactory;
+    private readonly Func<object?, RazorSourceGeneratorBootstrapTrace> _bootstrapTraceFactory;
 
     private static readonly DiagnosticDescriptor RazorVueGenerationFailed = new(
         id: "JAZORVGA001",
@@ -182,7 +182,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
             static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
             static () => RazorSourceGeneratorCompatibilityProbe.CollectCurrent(),
-            static () => RazorSourceGeneratorBootstrapState.CreateTrace())
+            static contextKey => RazorSourceGeneratorBootstrapState.CreateTrace(contextKey))
     {
     }
 
@@ -194,7 +194,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             legacyPipelineFactory,
             sfcPipelineFactory,
             compatibilityProbeFactory,
-            static () => RazorSourceGeneratorBootstrapState.CreateTrace())
+            static contextKey => RazorSourceGeneratorBootstrapState.CreateTrace(contextKey))
     {
     }
 
@@ -202,7 +202,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         Func<RazorVuePipeline> legacyPipelineFactory,
         Func<RazorVueSfcPipeline> sfcPipelineFactory,
         Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
-        Func<RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory)
+        Func<object?, RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory)
     {
         _legacyPipelineFactory = legacyPipelineFactory ?? throw new ArgumentNullException(nameof(legacyPipelineFactory));
         _sfcPipelineFactory = sfcPipelineFactory ?? throw new ArgumentNullException(nameof(sfcPipelineFactory));
@@ -213,17 +213,24 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         RazorSourceGeneratorBootstrap.Initialize();
+        var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
+        var bootstrapTraceFactory = _bootstrapTraceFactory;
 
         var testHookEnabled = context.AnalyzerConfigOptionsProvider.Select(
             static (optionsProvider, _) => RazorSourceGeneratorHostOutputHookOptions.IsTestHookEnabled(optionsProvider));
-        context.RegisterSourceOutput(testHookEnabled, static (outputContext, enabled) =>
+        var bootstrapTrace = context.CompilationProvider.Select(
+            (_, _) => bootstrapTraceFactory(contextKey));
+        context.RegisterSourceOutput(
+            testHookEnabled.Combine(bootstrapTrace),
+            static (outputContext, input) =>
         {
+            var (enabled, trace) = input;
             if (!enabled)
                 return;
 
             outputContext.AddSource(
                 "Jazor.RazorVue.RazorSgBootstrapTrace.g.cs",
-                BuildRazorSgBootstrapTraceSource(RazorSourceGeneratorBootstrapState.CreateTrace()));
+                BuildRazorSgBootstrapTraceSource(trace));
         });
 
         var componentCandidates = context.SyntaxProvider.ForAttributeWithMetadataName(
@@ -238,15 +245,15 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         var combined = context.CompilationProvider
             .Combine(componentCandidates.Collect())
             .Combine(generatorOptions);
+        var combinedWithBootstrap = combined.Combine(bootstrapTrace);
 
         var legacyPipelineFactory = _legacyPipelineFactory;
         var sfcPipelineFactory = _sfcPipelineFactory;
         var compatibilityProbeFactory = _compatibilityProbeFactory;
-        var bootstrapTraceFactory = _bootstrapTraceFactory;
 
-        context.RegisterSourceOutput(combined, (outputContext, source) =>
+        context.RegisterSourceOutput(combinedWithBootstrap, (outputContext, source) =>
         {
-            var ((compilation, candidates), generatorOptions) = source;
+            var (((compilation, candidates), generatorOptions), trace) = source;
             EmitRazorVueCatalog(
                 outputContext,
                 compilation,
@@ -255,7 +262,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                 legacyPipelineFactory,
                 sfcPipelineFactory,
                 compatibilityProbeFactory,
-                bootstrapTraceFactory);
+                trace);
         });
     }
 
@@ -278,7 +285,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         Func<RazorVuePipeline> legacyPipelineFactory,
         Func<RazorVueSfcPipeline> sfcPipelineFactory,
         Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
-        Func<RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory)
+        RazorSourceGeneratorBootstrapTrace bootstrapTrace)
     {
         if (!candidates.Any(static candidate => candidate is not null))
             return;
@@ -296,7 +303,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
                     razorVueContext,
                     candidate,
                     compatibilityProbeFactory,
-                    bootstrapTraceFactory,
+                    bootstrapTrace,
                     out var integrationDiagnostic))
             {
                 context.ReportDiagnostic(integrationDiagnostic);
@@ -371,7 +378,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         RazorVueCompilationContext context,
         ModuleCandidate? candidate,
         Func<RazorSourceGeneratorCompatibilityProbeResult> compatibilityProbeFactory,
-        Func<RazorSourceGeneratorBootstrapTrace> bootstrapTraceFactory,
+        RazorSourceGeneratorBootstrapTrace bootstrapTrace,
         out Diagnostic diagnostic)
     {
         diagnostic = default!;
@@ -387,7 +394,6 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return false;
         }
 
-        var bootstrapTrace = bootstrapTraceFactory();
         if (bootstrapTrace.PatchFailed)
         {
             diagnostic = Diagnostic.Create(
@@ -397,7 +403,16 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return true;
         }
 
-        if (bootstrapTrace.TailOutputRegistered)
+        if (!bootstrapTrace.CurrentContextKeyAvailable)
+        {
+            diagnostic = Diagnostic.Create(
+                RazorVueRazorSgIntegrationIncompatible,
+                candidate?.Location ?? Location.None,
+                "Roslyn IncrementalGeneratorInitializationContext output-node state could not be read; RazorVue cannot prove that the Razor SG tail output was registered for the current generator context.");
+            return true;
+        }
+
+        if (bootstrapTrace.TailOutputRegisteredForCurrentContext)
             return false;
 
         var compatibilityProbe = compatibilityProbeFactory();
@@ -1220,6 +1235,9 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
         builder.Append("        internal const bool HostOutputHookInstalled = ").Append(ToCSharpBool(trace.HostOutputHookInstalled)).AppendLine(";");
         builder.Append("        internal const bool HostOutputObserved = ").Append(ToCSharpBool(trace.HostOutputObserved)).AppendLine(";");
         builder.Append("        internal const bool TailOutputRegistered = ").Append(ToCSharpBool(trace.TailOutputRegistered)).AppendLine(";");
+        builder.Append("        internal const bool CurrentContextKeyAvailable = ").Append(ToCSharpBool(trace.CurrentContextKeyAvailable)).AppendLine(";");
+        builder.Append("        internal const bool TailOutputRegisteredForCurrentContext = ").Append(ToCSharpBool(trace.TailOutputRegisteredForCurrentContext)).AppendLine(";");
+        builder.Append("        internal const string TailOutputRegistrationKind = ").Append(EscapeCSharpString(trace.TailOutputRegistrationKind)).AppendLine(";");
         builder.Append("        internal const bool TestHookObserved = ").Append(ToCSharpBool(trace.TestHookObserved)).AppendLine(";");
         builder.Append("        internal const string? Failure = ").Append(EscapeNullableCSharpString(trace.Failure)).AppendLine(";");
         builder.AppendLine("    }");

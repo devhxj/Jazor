@@ -56,18 +56,13 @@ internal sealed class RazorVueRazorIrOperationResolver
             throw new ArgumentNullException(nameof(document));
 
         _snapshot = snapshot;
-        var buildRenderTreeSyntax = GetBuildRenderTreeSyntax(snapshot);
-        _generatedRoot = buildRenderTreeSyntax.SyntaxTree.GetRoot();
-        _semanticModel = context.Compilation.GetSemanticModel(buildRenderTreeSyntax.SyntaxTree);
-        _generatedText = buildRenderTreeSyntax.SyntaxTree.GetText();
+        var generatedTree = GetGeneratedRazorSyntaxTree(context, snapshot, document);
+        _generatedRoot = generatedTree.GetRoot();
+        _semanticModel = context.Compilation.ContainsSyntaxTree(generatedTree)
+            ? context.Compilation.GetSemanticModel(generatedTree)
+            : context.Compilation.AddSyntaxTrees(generatedTree).GetSemanticModel(generatedTree);
+        _generatedText = generatedTree.GetText();
         _sourceMappings = document.SourceMappings;
-
-        if (!_generatedText.ContentEquals(document.CSharpText))
-        {
-            throw new InvalidOperationException(
-                $"The compiled Razor generated source for component '{snapshot.Descriptor.FullName}' diverged from RazorCodeDocument C# output. " +
-                "RazorVue IR expression resolution currently requires SDK-aligned generated source.");
-        }
     }
 
     public IOperation ResolveRequiredOperation(RazorVueRazorSourceSpan? sourceSpan, string detail)
@@ -207,6 +202,43 @@ internal sealed class RazorVueRazorIrOperationResolver
 
         loop = new ResolvedFor(operation, statementRange, bodyRange);
         return true;
+    }
+
+    private static SyntaxTree GetGeneratedRazorSyntaxTree(
+        Jazor.RazorVue.RazorVueCompilationContext context,
+        RazorVueSemanticSnapshot snapshot,
+        RazorVueRazorSourceGeneratorDocument document)
+    {
+        if (snapshot.BuildRenderTreeMethod is not null)
+        {
+            foreach (var syntaxReference in snapshot.BuildRenderTreeMethod.DeclaringSyntaxReferences)
+            {
+                if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodDeclaration)
+                    continue;
+
+                var syntaxTree = methodDeclaration.SyntaxTree;
+                var compiledText = syntaxTree.GetText();
+                if (!compiledText.ContentEquals(document.CSharpText))
+                {
+                    throw new InvalidOperationException(
+                        $"The compiled Razor generated source for component '{snapshot.Descriptor.FullName}' diverged from RazorCodeDocument C# output. " +
+                        "RazorVue IR expression resolution requires SDK-aligned generated source.");
+                }
+
+                return syntaxTree;
+            }
+        }
+
+        var parseOptions = context.Compilation.SyntaxTrees
+            .Select(static tree => tree.Options)
+            .OfType<Microsoft.CodeAnalysis.CSharp.CSharpParseOptions>()
+            .FirstOrDefault();
+        return Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+            document.CSharpText,
+            options: parseOptions,
+            path: string.IsNullOrWhiteSpace(document.HintName)
+                ? snapshot.Descriptor.Name + ".razor.g.cs"
+                : document.HintName);
     }
 
     private static MethodDeclarationSyntax GetBuildRenderTreeSyntax(RazorVueSemanticSnapshot snapshot)

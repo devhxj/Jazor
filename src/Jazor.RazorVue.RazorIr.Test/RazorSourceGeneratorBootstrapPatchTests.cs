@@ -68,6 +68,9 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
             StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+            StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
             StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
 
             var generatedTailTracePath = Directory
@@ -150,6 +153,9 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
             StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
             StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
+            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+            StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
             StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
         }
         finally

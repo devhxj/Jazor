@@ -1,4 +1,5 @@
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace Jazor.Analyzer.RazorVue.Generation;
 
@@ -19,6 +20,9 @@ internal static class RazorSourceGeneratorBootstrapState
     private static int _tailOutputRegistered;
     private static int _testHookObserved;
     private static string? _failure;
+    private static string? _tailOutputRegistrationKind;
+    private static readonly object ContextSync = new();
+    private static ConditionalWeakTable<object, TailOutputRegistration> _tailOutputRegisteredContexts = new();
 
     internal static void MarkAttempted()
         => Interlocked.Exchange(ref _attempted, 1);
@@ -65,8 +69,20 @@ internal static class RazorSourceGeneratorBootstrapState
     internal static void MarkHostOutputObserved()
         => Interlocked.Exchange(ref _hostOutputObserved, 1);
 
-    internal static void MarkTailOutputRegistered()
-        => Interlocked.Exchange(ref _tailOutputRegistered, 1);
+    internal static void MarkTailOutputRegistered(object? contextKey = null, string? registrationKind = null)
+    {
+        Interlocked.Exchange(ref _tailOutputRegistered, 1);
+        if (!string.IsNullOrWhiteSpace(registrationKind))
+            _tailOutputRegistrationKind = registrationKind;
+
+        if (contextKey is null)
+            return;
+
+        lock (ContextSync)
+        {
+            _tailOutputRegisteredContexts.GetOrCreateValue(contextKey).MarkRegistered(registrationKind);
+        }
+    }
 
     internal static void MarkTestHookObserved()
         => Interlocked.Exchange(ref _testHookObserved, 1);
@@ -74,7 +90,7 @@ internal static class RazorSourceGeneratorBootstrapState
     internal static bool WasTestHookObserved()
         => Volatile.Read(ref _testHookObserved) != 0;
 
-    internal static RazorSourceGeneratorBootstrapTrace CreateTrace()
+    internal static RazorSourceGeneratorBootstrapTrace CreateTrace(object? contextKey = null)
         => new(
             HasAttempted: Volatile.Read(ref _attempted) != 0,
             IsInstalled: Volatile.Read(ref _installed) != 0,
@@ -89,8 +105,37 @@ internal static class RazorSourceGeneratorBootstrapState
             HostOutputHookInstalled: Volatile.Read(ref _hostOutputHookInstalled) != 0,
             HostOutputObserved: Volatile.Read(ref _hostOutputObserved) != 0,
             TailOutputRegistered: Volatile.Read(ref _tailOutputRegistered) != 0,
+            CurrentContextKeyAvailable: contextKey is not null,
+            TailOutputRegisteredForCurrentContext: IsTailOutputRegisteredForContext(contextKey),
+            TailOutputRegistrationKind: GetTailOutputRegistrationKind(contextKey),
             TestHookObserved: Volatile.Read(ref _testHookObserved) != 0,
             Failure: _failure);
+
+    private static bool IsTailOutputRegisteredForContext(object? contextKey)
+    {
+        if (contextKey is null)
+            return false;
+
+        lock (ContextSync)
+        {
+            return _tailOutputRegisteredContexts.TryGetValue(contextKey, out var registration) &&
+                   registration.IsRegistered;
+        }
+    }
+
+    private static string GetTailOutputRegistrationKind(object? contextKey)
+    {
+        if (contextKey is null)
+            return _tailOutputRegistrationKind ?? string.Empty;
+
+        lock (ContextSync)
+        {
+            if (_tailOutputRegisteredContexts.TryGetValue(contextKey, out var registration))
+                return registration.Kind;
+        }
+
+        return string.Empty;
+    }
 
     internal static void ResetForTests()
     {
@@ -108,7 +153,31 @@ internal static class RazorSourceGeneratorBootstrapState
         Interlocked.Exchange(ref _hostOutputObserved, 0);
         Interlocked.Exchange(ref _tailOutputRegistered, 0);
         Interlocked.Exchange(ref _testHookObserved, 0);
+        lock (ContextSync)
+        {
+            _tailOutputRegisteredContexts = new ConditionalWeakTable<object, TailOutputRegistration>();
+        }
+
         _failure = null;
+        _tailOutputRegistrationKind = null;
+    }
+
+    private sealed class TailOutputRegistration
+    {
+        private int _registered;
+        private string? _kind;
+
+        public bool IsRegistered => Volatile.Read(ref _registered) != 0;
+
+        public string Kind => _kind ?? string.Empty;
+
+        public void MarkRegistered(string? kind)
+        {
+            if (!string.IsNullOrWhiteSpace(kind))
+                _kind = kind;
+
+            Interlocked.Exchange(ref _registered, 1);
+        }
     }
 }
 
@@ -126,5 +195,8 @@ internal sealed record RazorSourceGeneratorBootstrapTrace(
     bool HostOutputHookInstalled,
     bool HostOutputObserved,
     bool TailOutputRegistered,
+    bool CurrentContextKeyAvailable,
+    bool TailOutputRegisteredForCurrentContext,
+    string TailOutputRegistrationKind,
     bool TestHookObserved,
     string? Failure);

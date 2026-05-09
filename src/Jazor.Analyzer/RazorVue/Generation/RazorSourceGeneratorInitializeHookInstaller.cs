@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Microsoft.CodeAnalysis;
 
@@ -9,10 +10,13 @@ namespace Jazor.Analyzer.RazorVue.Generation;
 
 internal static class RazorSourceGeneratorInitializeHookInstaller
 {
+    private const string ImplementationSourceOutputRegistrationKind = "implementation-source-output";
+    private const string HostOutputRegistrationKind = "host-output";
     private static int _initialized;
     private static int _patchAttempted;
     private static readonly object Sync = new();
-    private static readonly HashSet<object> HookedHostOutputSources = new(ReferenceEqualityComparer.Instance);
+    private static readonly ConditionalWeakTable<object, HookedHostOutputSourceSet> HookedHostOutputSourcesByContext = new();
+    private static readonly HashSet<object> HookedHostOutputSourcesWithoutContext = new(ReferenceEqualityComparer.Instance);
     [ThreadStatic]
     private static int _outputNodeCountBeforeInitialize;
 
@@ -157,11 +161,9 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         object sourceNode)
     {
         RazorSourceGeneratorBootstrapState.MarkHostOutputObserved();
-        lock (Sync)
-        {
-            if (!HookedHostOutputSources.Add(sourceNode))
-                return;
-        }
+        var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
+        if (!TryMarkHostOutputSourceHooked(contextKey, sourceNode))
+            return;
 
         var provider = (IncrementalValueProvider<TSource>)CreateIncrementalValueProvider(
             typeof(TSource),
@@ -172,7 +174,7 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         var gatedSource = provider.Combine(options);
 
         context.RegisterSourceOutput(gatedSource, EmitTailOutput);
-        RazorSourceGeneratorBootstrapState.MarkTailOutputRegistered();
+        RazorSourceGeneratorBootstrapState.MarkTailOutputRegistered(contextKey, HostOutputRegistrationKind);
         RazorSourceGeneratorBootstrapState.MarkHostOutputHookInstalled();
     }
 
@@ -181,11 +183,9 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         object sourceNode)
     {
         RazorSourceGeneratorBootstrapState.MarkHostOutputObserved();
-        lock (Sync)
-        {
-            if (!HookedHostOutputSources.Add(sourceNode))
-                return;
-        }
+        var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
+        if (!TryMarkHostOutputSourceHooked(contextKey, sourceNode))
+            return;
 
         var provider = (IncrementalValuesProvider<TSource>)CreateIncrementalValuesProvider(
             typeof(TSource),
@@ -196,8 +196,21 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         var gatedSource = provider.Collect().Combine(options);
 
         context.RegisterSourceOutput(gatedSource, EmitCollectedTailOutput);
-        RazorSourceGeneratorBootstrapState.MarkTailOutputRegistered();
+        RazorSourceGeneratorBootstrapState.MarkTailOutputRegistered(contextKey, ImplementationSourceOutputRegistrationKind);
         RazorSourceGeneratorBootstrapState.MarkHostOutputHookInstalled();
+    }
+
+    private static bool TryMarkHostOutputSourceHooked(object? contextKey, object sourceNode)
+    {
+        lock (Sync)
+        {
+            if (contextKey is null)
+                return HookedHostOutputSourcesWithoutContext.Add(sourceNode);
+
+            return HookedHostOutputSourcesByContext
+                .GetOrCreateValue(contextKey)
+                .TryAdd(sourceNode);
+        }
     }
 
     private static void EmitTailOutput<TSource>(
@@ -232,7 +245,8 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
     {
         try
         {
-            foreach (var outputNode in EnumerateNewOutputNodes(context))
+            var outputNodes = EnumerateNewOutputNodes(context).ToArray();
+            foreach (var outputNode in outputNodes)
             {
                 if (IsImplementationSourceOutputNode(outputNode))
                 {
@@ -246,7 +260,10 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
 
                     continue;
                 }
+            }
 
+            foreach (var outputNode in outputNodes)
+            {
                 if (!IsHostOutputNode(outputNode))
                     continue;
 
@@ -301,10 +318,10 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
         var index = 0;
         foreach (var node in outputNodes)
         {
-            if (node is null)
+            if (index++ < _outputNodeCountBeforeInitialize)
                 continue;
 
-            if (index++ < _outputNodeCountBeforeInitialize)
+            if (node is null)
                 continue;
 
             yield return node;
@@ -325,12 +342,7 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
     }
 
     private static IEnumerable? GetOutputNodes(IncrementalGeneratorInitializationContext context)
-    {
-        var field = typeof(IncrementalGeneratorInitializationContext).GetField(
-            "_outputNodes",
-            BindingFlags.Instance | BindingFlags.NonPublic);
-        return field?.GetValue(context) as IEnumerable;
-    }
+        => RazorSourceGeneratorInitializationContextState.GetOutputNodes(context);
 
     private static bool IsHostOutputNode(object outputNode)
     {
@@ -439,5 +451,13 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
 
         public int GetHashCode(object obj)
             => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
+    }
+
+    private sealed class HookedHostOutputSourceSet
+    {
+        private readonly HashSet<object> _sources = new(ReferenceEqualityComparer.Instance);
+
+        public bool TryAdd(object sourceNode)
+            => _sources.Add(sourceNode);
     }
 }

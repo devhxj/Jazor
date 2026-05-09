@@ -129,6 +129,7 @@ internal abstract record RazorVueCanonicalAttributeEntry(
 internal sealed record RazorVueCanonicalAttributeBinding(
     string Name,
     string? ExpressionText,
+    RazorVueLiteralValueKind LiteralValueKind,
     RazorVueCanonicalAttributeKind AttributeKind,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
@@ -196,6 +197,16 @@ internal enum RazorVueExpressionBindingKind
     SetupReference,
     LocalReference,
     RuntimeExpression
+}
+
+internal enum RazorVueLiteralValueKind
+{
+    None,
+    String,
+    Boolean,
+    Number,
+    Null,
+    Other
 }
 
 internal enum RazorVueCanonicalAttributeKind
