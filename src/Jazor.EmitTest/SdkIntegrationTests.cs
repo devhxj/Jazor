@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
 
 namespace Jazor.EmitTest;
 
@@ -58,10 +57,15 @@ public sealed class SdkIntegrationTests
             {
                 "analyzers/dotnet/cs/Acornima.Extras.dll",
                 "analyzers/dotnet/cs/Acornima.dll",
+                "analyzers/dotnet/cs/0Harmony.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.dll",
                 "analyzers/dotnet/cs/Jazor.Analyzer.pdb",
+                "analyzers/dotnet/cs/ECMAScript.dll",
+                "analyzers/dotnet/cs/ECMAScript.pdb",
                 "analyzers/dotnet/cs/ECMAScript.Contract.dll",
                 "analyzers/dotnet/cs/ECMAScript.Contract.pdb",
+                "analyzers/dotnet/cs/ECMAScript.Vue3.dll",
+                "analyzers/dotnet/cs/ECMAScript.Vue3.pdb",
                 "analyzers/dotnet/cs/ECMAScript.VueContract.dll",
                 "analyzers/dotnet/cs/ECMAScript.VueContract.pdb",
                 "analyzers/dotnet/cs/Jazor.Compiler.dll",
@@ -72,6 +76,13 @@ public sealed class SdkIntegrationTests
                 "analyzers/dotnet/cs/Jazor.RazorVue.pdb"
             },
             entryNames.Where(static entry => entry.StartsWith("analyzers/dotnet/cs/", StringComparison.Ordinal)).ToArray());
+        Assert.IsFalse(
+            entryNames.Any(static entry =>
+                entry.Contains("Razor.Compiler", StringComparison.OrdinalIgnoreCase) ||
+                entry.Contains("Razor.Utilities.Shared", StringComparison.OrdinalIgnoreCase) ||
+                entry.Contains("Microsoft.CodeAnalysis.Razor", StringComparison.OrdinalIgnoreCase) ||
+                entry.Contains("Microsoft.AspNetCore.Razor.Language", StringComparison.OrdinalIgnoreCase)),
+            "Jazor package must not carry Razor Compiler or Razor Utilities payloads.");
         CollectionAssert.IsSubsetOf(
             new[]
             {
@@ -1639,16 +1650,92 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(expectedPackagedSupportsSsr, hostContract.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean());
     }
 
+    [TestMethod]
+    public async Task Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorVueSfcConsumer");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateExternalRazorVueSfcConsumerProject(projectRoot);
+
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
+        var razorVueManifestPath = Path.Combine(outputRoot, "jazor-manifest-razorvue.json");
+        var sfcPath = Path.Combine(outputRoot, "components", "external-dashboard.vue");
+        var legacyModulePath = Path.Combine(outputRoot, "components", "external-dashboard.mjs");
+        var hostRequirementsModulePath = Path.Combine(outputRoot, "__jazor", "razorvue-host.mjs");
+        var hostModulePath = Path.Combine(outputRoot, "host", "app.mjs");
+
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
+        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(sfcPath), $"RazorVue SFC was not generated: {sfcPath}");
+        Assert.IsTrue(File.Exists(sfcPath + ".map"), $"RazorVue SFC source map was not generated: {sfcPath}.map");
+        Assert.IsTrue(File.Exists(Path.ChangeExtension(sfcPath, ".vue.origins.json")), $"RazorVue SFC origins were not generated for: {sfcPath}");
+        Assert.IsFalse(File.Exists(legacyModulePath), $"SFC output mode must not also emit legacy module: {legacyModulePath}");
+        Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
+        Assert.IsTrue(File.Exists(hostModulePath), $"Host module was not generated: {hostModulePath}");
+
+        var sfc = (await File.ReadAllTextAsync(sfcPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(sfc, "<VContainer");
+        StringAssert.Contains(sfc, "<VList");
+        StringAssert.Contains(sfc, "item.Title");
+        StringAssert.Contains(sfc, "item.Category");
+        StringAssert.Contains(sfc, "item.IsPinned");
+        StringAssert.Contains(sfc, "from \"vuetify/components\"");
+        StringAssert.Contains(sfc, "defineProps<{ items?: any }>()");
+
+        var hostRequirementsModule = (await File.ReadAllTextAsync(hostRequirementsModulePath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(hostRequirementsModule, "export const razorVueStyles = Object.freeze([\"vuetify/styles\"]);");
+        StringAssert.Contains(hostRequirementsModule, "export const razorVuePluginRequirements = Object.freeze([\"vuetify\"]);");
+        StringAssert.Contains(hostRequirementsModule, "\"componentId\":\"ExternalRazorVueSfcConsumer.ExternalDashboard\"");
+        StringAssert.Contains(hostRequirementsModule, "\"relativeModulePath\":\"components/external-dashboard.vue\"");
+
+        using var razorVueManifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        CollectionAssert.AreEqual(
+            new[] { "vuetify/styles" },
+            GetStringArrayProperty(razorVueManifest.RootElement, "Styles"));
+        CollectionAssert.AreEqual(
+            new[] { "vuetify" },
+            GetStringArrayProperty(razorVueManifest.RootElement, "PluginRequirements"));
+
+        var module = razorVueManifest.RootElement.GetProperty("Modules")[0];
+        Assert.AreEqual("ExternalRazorVueSfcConsumer.ExternalDashboard", module.GetProperty("ComponentId").GetString());
+        Assert.AreEqual("ExternalDashboard", module.GetProperty("ComponentName").GetString());
+        Assert.AreEqual("components/external-dashboard.vue", module.GetProperty("RelativeModulePath").GetString());
+        Assert.AreEqual("components/external-dashboard.vue.map", module.GetProperty("SourceMapPath").GetString());
+        Assert.AreEqual("components/external-dashboard.vue.origins.json", module.GetProperty("OriginMapPath").GetString());
+    }
+
     private static async Task<LocalPackageFixture> CreateLocalPackageAsync()
     {
         var repoRoot = FindRepoRoot();
-        var packageVersion = ReadPackageVersion(Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
-        var ecmascriptOutput = Path.Combine(repoRoot, "src", "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
-        var contractOutput = Path.Combine(repoRoot, "src", "ECMAScript.Contract", "bin", "Debug", "netstandard2.0", "ECMAScript.Contract.dll");
-        var vuetifyOutput = Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "bin", "Debug", "net10.0", "ECMAScript.Vuetify.dll");
-        var analyzerOutput = Path.Combine(repoRoot, "src", "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
-        var emitPublishOutput = Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish", "Jazor.Emit.dll");
+        var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-out", Guid.NewGuid().ToString("N"));
+        var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-obj", Guid.NewGuid().ToString("N"));
+        var ecmascriptOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
+        var contractOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Contract", "bin", "Debug", "netstandard2.0", "ECMAScript.Contract.dll");
+        var vuetifyOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net10.0", "ECMAScript.Vuetify.dll");
+        var analyzerOutput = Path.Combine(packageBuildOutputRoot, "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
+        var emitPublishDirectory = Path.Combine(packageBuildOutputRoot, "Jazor.Emit", "bin", "Debug", "net10.0", "publish");
+        var emitPublishOutput = Path.Combine(emitPublishDirectory, "Jazor.Emit.dll");
 
         if (Directory.Exists(packageOutputDirectory))
             Directory.Delete(packageOutputDirectory, recursive: true);
@@ -1658,24 +1745,44 @@ public sealed class SdkIntegrationTests
         await EnsureProjectBuiltAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript", "ECMAScript.csproj"),
-            ecmascriptOutput);
+            ecmascriptOutput,
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
         await EnsureProjectBuiltAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Contract", "ECMAScript.Contract.csproj"),
-            contractOutput);
+            contractOutput,
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
         await EnsureProjectBuiltAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
-            vuetifyOutput);
+            vuetifyOutput,
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
         await EnsureProjectBuiltAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "Jazor.Analyzer", "Jazor.Analyzer.csproj"),
-            analyzerOutput);
+            analyzerOutput,
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
         await EnsureProjectPublishedAsync(
             repoRoot,
             Path.Combine(repoRoot, "src", "Jazor.Emit", "Jazor.Emit.csproj"),
             emitPublishOutput,
-            Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net10.0", "publish"));
+            emitPublishDirectory,
+            packageBuildOutputRoot,
+            packageBuildIntermediateRoot);
+        await RunDotNetAndAssertAsync(
+            repoRoot,
+            [
+                "restore",
+                Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
+            ]);
         var jazorPack = await RunDotNetAsync(
             repoRoot,
             [
@@ -1685,7 +1792,11 @@ public sealed class SdkIntegrationTests
                 "Debug",
                 "--no-build",
                 "-o",
-                packageOutputDirectory
+                packageOutputDirectory,
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
             ]);
         Assert.AreEqual(0, jazorPack.ExitCode, jazorPack.ToString());
         Assert.IsFalse(
@@ -1700,8 +1811,14 @@ public sealed class SdkIntegrationTests
                 "Debug",
                 "--no-build",
                 "-o",
-                packageOutputDirectory
+                packageOutputDirectory,
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
             ]);
+
+        var packageVersion = DiscoverPackageVersion(packageOutputDirectory, "Jazor");
 
         return new LocalPackageFixture(
             repoRoot,
@@ -1720,7 +1837,9 @@ public sealed class SdkIntegrationTests
     private static async Task EnsureProjectBuiltAsync(
         string repoRoot,
         string projectPath,
-        string expectedOutputPath)
+        string expectedOutputPath,
+        string packageBuildOutputRoot,
+        string packageBuildIntermediateRoot)
     {
         // 生产打包验证不能只看 DLL 是否存在；Directory.Build.props 或依赖版本变更时旧产物会污染 nupkg。
         await RunDotNetAndAssertAsync(
@@ -1731,7 +1850,11 @@ public sealed class SdkIntegrationTests
                 "-c",
                 "Debug",
                 "/m:1",
-                "/p:BuildInParallel=false"
+                "/p:BuildInParallel=false",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
             ]);
 
         Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected build output was not produced: {expectedOutputPath}");
@@ -1741,7 +1864,9 @@ public sealed class SdkIntegrationTests
         string repoRoot,
         string projectPath,
         string expectedOutputPath,
-        string publishDirectory)
+        string publishDirectory,
+        string packageBuildOutputRoot,
+        string packageBuildIntermediateRoot)
     {
         // publish 输出同样走 MSBuild 增量判断，避免复用旧工具导致包内行为和源码不一致。
         await RunDotNetAndAssertAsync(
@@ -1754,11 +1879,20 @@ public sealed class SdkIntegrationTests
                 "-o",
                 publishDirectory,
                 "/m:1",
-                "/p:BuildInParallel=false"
+                "/p:BuildInParallel=false",
+                $"-p:JazorIsolatedBaseOutputRoot={EnsureTrailingDirectorySeparator(packageBuildOutputRoot)}",
+                $"-p:JazorIsolatedBaseIntermediateOutputRoot={EnsureTrailingDirectorySeparator(packageBuildIntermediateRoot)}",
+                "/nr:false",
+                "-p:UseSharedCompilation=false"
             ]);
 
         Assert.IsTrue(File.Exists(expectedOutputPath), $"Expected publish output was not produced: {expectedOutputPath}");
     }
+
+    private static string EnsureTrailingDirectorySeparator(string path)
+        => path.EndsWith(Path.DirectorySeparatorChar)
+            ? path
+            : path + Path.DirectorySeparatorChar;
 
     private static async Task<ProcessResult> RunSourceReferencedRazorVueBuildAsync(
         string workingDirectory,
@@ -1838,19 +1972,19 @@ public sealed class SdkIntegrationTests
         throw new DirectoryNotFoundException("Could not locate repository root.");
     }
 
-    private static string ReadPackageVersion(string projectPath)
+    private static string DiscoverPackageVersion(string packageOutputDirectory, string packageId)
     {
-        var document = XDocument.Load(projectPath);
-        var version = document.Root?
-            .Elements("PropertyGroup")
-            .Elements("Version")
-            .Select(static element => element.Value.Trim())
-            .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
+        var prefix = packageId + ".";
+        var nupkg = Directory.GetFiles(packageOutputDirectory, $"{packageId}.*.nupkg")
+            .Where(static f => !f.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static f => File.GetLastWriteTimeUtc(f))
+            .FirstOrDefault();
 
-        if (string.IsNullOrWhiteSpace(version))
-            throw new InvalidOperationException($"Could not read package version from '{projectPath}'.");
+        if (nupkg is null)
+            throw new FileNotFoundException($"No '{packageId}' nupkg found in '{packageOutputDirectory}'.");
 
-        return version;
+        var fileName = Path.GetFileNameWithoutExtension(nupkg);
+        return fileName[prefix.Length..];
     }
 
     private static string GetPackagePath(string packageOutputDirectory, string packageVersion)
@@ -2294,6 +2428,133 @@ public sealed class SdkIntegrationTests
                     builder.CloseComponent();
                 }
             }
+            """);
+
+        return projectPath;
+    }
+
+    private static string CreateExternalRazorVueSfcConsumerProject(string projectRoot)
+    {
+        Directory.CreateDirectory(projectRoot);
+
+        var projectPath = Path.Combine(projectRoot, "ExternalRazorVueSfcConsumer.csproj");
+
+        WriteFile(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>net10.0</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+                <RazorLangVersion>10.0</RazorLangVersion>
+                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+                <JazorEmit>true</JazorEmit>
+                <JazorBundle>false</JazorBundle>
+                <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
+                <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
+                <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
+                <PackageReference Include="ECMAScript.Vuetify" Version="$(JazorPackageVersion)" />
+              </ItemGroup>
+
+              <ItemGroup>
+                <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "Program.cs"),
+            """
+            namespace ExternalRazorVueSfcConsumer;
+
+            internal static class Program
+            {
+                private static void Main()
+                {
+                }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "AppModule.cs"),
+            """
+            using ECMAScript;
+
+            namespace ExternalRazorVueSfcConsumer;
+
+            [ECMAScriptModule("host/app.mjs")]
+            public static class AppModule
+            {
+                public static string Boot() => "external RazorVue SFC consumer ready";
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "_Imports.razor"),
+            """
+            @using ExternalRazorVueSfcConsumer
+            @using ECMAScript.Vuetify
+            @using Microsoft.AspNetCore.Components
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "TaskItem.cs"),
+            """
+            namespace ExternalRazorVueSfcConsumer;
+
+            public sealed record TaskItem(
+                string Title,
+                string Category,
+                bool IsDone,
+                bool IsPinned);
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ExternalDashboard.razor.cs"),
+            """
+            using System.Collections.Generic;
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ExternalRazorVueSfcConsumer;
+
+            [ECMAScriptModule("./components/external-dashboard")]
+            public partial class ExternalDashboard : ComponentBase, IVueComponent
+            {
+                [Parameter]
+                public IReadOnlyList<TaskItem> Items { get; set; } = [];
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(projectRoot, "ExternalDashboard.razor"),
+            """
+            <VContainer Fluid="true">
+                <VCard>
+                    <VCardTitle Text="External RazorVue Consumer" />
+                    <VCardText>
+                        <VList Density="compact">
+                            @foreach (var item in Items)
+                            {
+                                <VListItem Title="@item.Title"
+                                           Subtitle="@(item.Category + " | " + (item.IsDone ? "Done" : "Open"))">
+                                    @if (item.IsPinned)
+                                    {
+                                        <VChip Text="Pinned" Color="primary" />
+                                    }
+                                </VListItem>
+                            }
+                        </VList>
+                    </VCardText>
+                </VCard>
+            </VContainer>
             """);
 
         return projectPath;

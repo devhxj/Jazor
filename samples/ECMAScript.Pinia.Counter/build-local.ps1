@@ -19,9 +19,6 @@ $baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
 $baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
 $jazorOutDirWasExplicit = $PSBoundParameters.ContainsKey("JazorOutDir")
 
-[xml]$sdkProject = Get-Content (Join-Path $repoRoot "src\Jazor\Jazor.csproj")
-$packageVersion = $sdkProject.Project.PropertyGroup.Version
-
 function Invoke-DotNet {
     param(
         [Parameter(Mandatory = $true)]
@@ -56,8 +53,13 @@ if ($LASTEXITCODE -ne 0) {
     throw "publish-nuget.ps1 failed with exit code $LASTEXITCODE."
 }
 
-$packagePath = Join-Path $packageOutput "Jazor.$packageVersion.nupkg"
-$packageStamp = (Get-Item $packagePath).LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
+$nupkg = Get-ChildItem -Path $packageOutput -Filter "Jazor.*.nupkg" -File |
+    Where-Object { $_.Name -notlike "*.snupkg" } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
+if (-not $nupkg) { throw "Packed Jazor package not found under '$packageOutput'." }
+$packageVersion = $nupkg.BaseName -replace '^Jazor\.', ''
+$packageStamp = $nupkg.LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
 $restorePackagesPath = Join-Path $repoRoot ".tmp\nuget-sample-packages\$packageVersion-$packageStamp"
 
 $buildArgs = @(

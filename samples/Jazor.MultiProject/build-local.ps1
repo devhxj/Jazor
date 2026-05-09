@@ -18,16 +18,18 @@ $emitPublishDir = Join-Path $repoRoot "src\Jazor.Emit\bin\$Configuration\net10.0
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
 
-[xml]$sdkProject = Get-Content $packageProject
-$packageVersion = $sdkProject.Project.PropertyGroup.Version
-
 dotnet build $runtimeProject -c $Configuration /m:1 /p:BuildInParallel=false
 dotnet build $analyzerProject -c $Configuration /m:1 /p:BuildInParallel=false
 dotnet publish $emitProject -c $Configuration -o $emitPublishDir /m:1 /p:BuildInParallel=false
 dotnet pack $packageProject -c $Configuration --no-build -o $packageOutput
 
-$packagePath = Join-Path $packageOutput "Jazor.$packageVersion.nupkg"
-$packageStamp = (Get-Item $packagePath).LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
+$nupkg = Get-ChildItem -Path $packageOutput -Filter "Jazor.*.nupkg" -File |
+    Where-Object { $_.Name -notlike "*.snupkg" } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
+if (-not $nupkg) { throw "Packed Jazor package not found under '$packageOutput'." }
+$packageVersion = $nupkg.BaseName -replace '^Jazor\.', ''
+$packageStamp = $nupkg.LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
 $restorePackagesPath = Join-Path $repoRoot ".tmp\nuget-sample-packages\$packageVersion-$packageStamp"
 
 $buildArgs = @(

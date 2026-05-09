@@ -1,5 +1,8 @@
 param(
     [string]$Configuration = "Debug",
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = "",
+    [string]$JazorOutDir = "",
     [switch]$Bundle
 )
 
@@ -7,22 +10,24 @@ $ErrorActionPreference = "Stop"
 
 $sampleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
-$jazorProject = Join-Path $repoRoot "src\Jazor\Jazor.csproj"
+$publishScript = Join-Path $repoRoot "scripts\publish-nuget.ps1"
 $vuetifyProject = Join-Path $repoRoot "src\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj"
 $packageOutput = Join-Path $repoRoot ".tmp\nupkg-sample"
 $hostProject = Join-Path $sampleRoot "Todo.Host\Todo.Host.csproj"
-$runtimeProject = Join-Path $repoRoot "src\ECMAScript\ECMAScript.csproj"
-$contractProject = Join-Path $repoRoot "src\ECMAScript.Contract\ECMAScript.Contract.csproj"
-$vue3Project = Join-Path $repoRoot "src\ECMAScript.Vue3\ECMAScript.Vue3.csproj"
-$analyzerProject = Join-Path $repoRoot "src\Jazor.Analyzer\Jazor.Analyzer.csproj"
-$emitProject = Join-Path $repoRoot "src\Jazor.Emit\Jazor.Emit.csproj"
-$emitPublishDir = Join-Path $repoRoot "src\Jazor.Emit\bin\$Configuration\net10.0\publish"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
+$jazorOutDirWasExplicit = $PSBoundParameters.ContainsKey("JazorOutDir")
 
-[xml]$sdkProject = Get-Content $jazorProject
-$packageVersion = $sdkProject.Project.PropertyGroup.Version
+if (-not $baseOutputPathWasExplicit) {
+    $BaseOutputPath = Join-Path $repoRoot ".tmp\razorvue-todolist-out"
+}
+
+if (-not $baseIntermediateOutputPathWasExplicit) {
+    $BaseIntermediateOutputPath = Join-Path $repoRoot ".tmp\razorvue-todolist-obj"
+}
 
 function Invoke-DotNet {
     param(
@@ -36,17 +41,55 @@ function Invoke-DotNet {
     }
 }
 
-Invoke-DotNet @("build", $runtimeProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
-Invoke-DotNet @("build", $contractProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
-Invoke-DotNet @("build", $vue3Project, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
-Invoke-DotNet @("build", $vuetifyProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
-Invoke-DotNet @("build", $analyzerProject, "-c", $Configuration, "/m:1", "/p:BuildInParallel=false")
-Invoke-DotNet @("publish", $emitProject, "-c", $Configuration, "-o", $emitPublishDir, "/m:1", "/p:BuildInParallel=false")
-Invoke-DotNet @("pack", $jazorProject, "-c", $Configuration, "--no-build", "-o", $packageOutput)
-Invoke-DotNet @("pack", $vuetifyProject, "-c", $Configuration, "--no-build", "-o", $packageOutput)
+if (Test-Path $packageOutput) {
+    Remove-Item -LiteralPath $packageOutput -Recurse -Force
+}
 
-$packagePath = Join-Path $packageOutput "Jazor.$packageVersion.nupkg"
-$packageStamp = (Get-Item $packagePath).LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
+if ($jazorOutDirWasExplicit -and -not [string]::IsNullOrWhiteSpace($JazorOutDir)) {
+    $resolvedRepoRoot = [System.IO.Path]::GetFullPath($repoRoot)
+    $resolvedJazorOutDir = [System.IO.Path]::GetFullPath($JazorOutDir)
+
+    if (-not $resolvedJazorOutDir.StartsWith($resolvedRepoRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Explicit JazorOutDir must stay within the repository root: $resolvedJazorOutDir"
+    }
+
+    if (Test-Path -LiteralPath $resolvedJazorOutDir) {
+        Remove-Item -LiteralPath $resolvedJazorOutDir -Recurse -Force
+    }
+}
+
+$publishArgs = @{
+    Configuration = $Configuration
+    OutputDirectory = $packageOutput
+    SkipPush = $true
+    BaseOutputPath = $BaseOutputPath
+    BaseIntermediateOutputPath = $BaseIntermediateOutputPath
+}
+
+& $publishScript @publishArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "publish-nuget.ps1 failed with exit code $LASTEXITCODE."
+}
+
+Invoke-DotNet @(
+    "pack",
+    $vuetifyProject,
+    "-c", $Configuration,
+    "--no-build",
+    "-o", $packageOutput,
+    "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath",
+    "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath",
+    "/nr:false",
+    "-p:UseSharedCompilation=false"
+)
+
+$nupkg = Get-ChildItem -Path $packageOutput -Filter "Jazor.*.nupkg" -File |
+    Where-Object { $_.Name -notlike "*.snupkg" } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
+if (-not $nupkg) { throw "Packed Jazor package not found under '$packageOutput'." }
+$packageVersion = $nupkg.BaseName -replace '^Jazor\.', ''
+$packageStamp = $nupkg.LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
 $restorePackagesPath = Join-Path $repoRoot ".tmp\nuget-sample-packages\$packageVersion-$packageStamp"
 
 $buildArgs = @(
@@ -61,8 +104,18 @@ $buildArgs = @(
     "-p:JazorPackageVersion=$packageVersion"
 )
 
+$buildArgs += "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath"
+$buildArgs += "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath"
+
+if ($jazorOutDirWasExplicit) {
+    $buildArgs += "-p:JazorOutDir=$JazorOutDir"
+}
+
 if ($Bundle) {
     $buildArgs += "-p:JazorBundle=true"
 }
+
+$buildArgs += "/nr:false"
+$buildArgs += "-p:UseSharedCompilation=false"
 
 Invoke-DotNet $buildArgs

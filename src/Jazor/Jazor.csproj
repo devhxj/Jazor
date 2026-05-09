@@ -4,7 +4,6 @@
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Jazor</PackageId>
-    <Version>0.1.17</Version>
     <Authors>hanxj</Authors>
     <Description>Jazor SDK with runtime, analyzer, source generator, emit tool and MSBuild integration.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -34,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MinVer" Version="6.*" PrivateAssets="All" />
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
   </ItemGroup>
 
@@ -111,16 +111,28 @@
           BeforeTargets="GenerateNuspec"
           Condition="'$(JazorPreparePackageArtifacts)' != 'false'">
     <MSBuild Projects="@(_JazorPackageBuildProject)"
-             Targets="Restore;Build"
+             Targets="Restore"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties)"
-             RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;JazorIsolatedBaseOutputRoot;JazorIsolatedBaseIntermediateOutputRoot" />
+             RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
 
     <MSBuild Projects="@(_JazorEmitProject)"
-             Targets="Restore;Publish"
+             Targets="Restore"
              BuildInParallel="false"
              Properties="$(JazorPackageArtifactBuildProperties);SelfContained=false"
-             RemoveProperties="TargetFramework;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath;JazorIsolatedBaseOutputRoot;JazorIsolatedBaseIntermediateOutputRoot" />
+             RemoveProperties="TargetFramework;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+
+    <MSBuild Projects="@(_JazorPackageBuildProject)"
+             Targets="Build"
+             BuildInParallel="false"
+             Properties="$(JazorPackageArtifactBuildProperties)"
+             RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained;PublishSingleFile;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
+
+    <MSBuild Projects="@(_JazorEmitProject)"
+             Targets="Publish"
+             BuildInParallel="false"
+             Properties="$(JazorPackageArtifactBuildProperties);SelfContained=false"
+             RemoveProperties="TargetFramework;RuntimeIdentifier;PackOnBuild;GeneratePackageOnBuild;NoBuild;PackageOutputPath" />
   </Target>
 
   <Target Name="AddJazorEmitPublishOutputToPackage"

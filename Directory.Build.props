@@ -6,6 +6,8 @@
     <CodeAnalysisVersion>5.3.0</CodeAnalysisVersion>
     <Net100AssembliesVersion>1.8.5</Net100AssembliesVersion>
     <CoverletVersion>8.0.1</CoverletVersion>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.1.20</JazorPackageVersion>
   </PropertyGroup>
 
   <!--

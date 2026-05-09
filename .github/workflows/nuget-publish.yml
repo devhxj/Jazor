@@ -37,36 +37,6 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Read package version
-        id: package
-        shell: pwsh
-        run: |
-          [xml]$project = Get-Content 'src/Jazor/Jazor.csproj'
-          $version = @($project.Project.PropertyGroup.Version | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })[0]
-
-          if ([string]::IsNullOrWhiteSpace($version))
-          {
-              throw 'Unable to resolve <Version> from src/Jazor/Jazor.csproj.'
-          }
-
-          "version=$version" >> $env:GITHUB_OUTPUT
-
-      - name: Validate tag version
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: pwsh
-        run: |
-          $tagVersion = '${{ github.ref_name }}'
-          if ($tagVersion.StartsWith('v'))
-          {
-              $tagVersion = $tagVersion.Substring(1)
-          }
-
-          $packageVersion = '${{ steps.package.outputs.version }}'
-          if ($tagVersion -ne $packageVersion)
-          {
-              throw "Tag version '$tagVersion' does not match package version '$packageVersion'."
-          }
-
       - name: Pack Jazor
         shell: pwsh
         run: |
@@ -74,6 +44,17 @@ jobs:
             -Configuration Release `
             -OutputDirectory 'artifacts/packages' `
             -SkipPush
+
+      - name: Discover package version
+        id: package
+        shell: pwsh
+        run: |
+          $nupkg = Get-ChildItem 'artifacts/packages/Jazor.*.nupkg' -Exclude '*.snupkg' |
+              Sort-Object LastWriteTimeUtc -Descending |
+              Select-Object -First 1
+          if (-not $nupkg) { throw 'No Jazor nupkg found in artifacts/packages.' }
+          $version = $nupkg.BaseName -replace '^Jazor\.', ''
+          "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: List package artifacts
         shell: pwsh

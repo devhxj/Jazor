@@ -167,17 +167,6 @@ if ([string]::IsNullOrWhiteSpace($packageId)) {
     $packageId = [System.IO.Path]::GetFileNameWithoutExtension($packageProject)
 }
 
-$packageVersion = Get-ProjectPropertyValue -Project $projectXml -Name "Version"
-if ([string]::IsNullOrWhiteSpace($packageVersion)) {
-    $versionPrefix = Get-ProjectPropertyValue -Project $projectXml -Name "VersionPrefix"
-    $versionSuffix = Get-ProjectPropertyValue -Project $projectXml -Name "VersionSuffix"
-    $packageVersion = if ([string]::IsNullOrWhiteSpace($versionSuffix)) { $versionPrefix } else { "$versionPrefix-$versionSuffix" }
-}
-
-if ([string]::IsNullOrWhiteSpace($packageVersion)) {
-    throw "Unable to resolve package version from $packageProject"
-}
-
 $resolvedOutputDirectory = if ([System.IO.Path]::IsPathRooted($OutputDirectory)) {
     $OutputDirectory
 } else {
@@ -207,18 +196,17 @@ if ($NoBuild) {
 }
 Invoke-DotNet -Arguments $packArgs
 
-$packagePath = Join-Path $resolvedOutputDirectory "$packageId.$packageVersion.nupkg"
-if (-not (Test-Path $packagePath)) {
-    $matches = Get-ChildItem -Path $resolvedOutputDirectory -Filter "$packageId.$packageVersion*.nupkg" -File |
-        Where-Object { $_.Name -notlike "*.snupkg" } |
-        Sort-Object LastWriteTimeUtc -Descending
+$packageFile = Get-ChildItem -Path $resolvedOutputDirectory -Filter "$packageId.*.nupkg" -File |
+    Where-Object { $_.Name -notlike "*.snupkg" } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
 
-    if ($matches.Count -eq 0) {
-        throw "Packed package not found under '$resolvedOutputDirectory'."
-    }
-
-    $packagePath = $matches[0].FullName
+if (-not $packageFile) {
+    throw "Packed package not found under '$resolvedOutputDirectory'."
 }
+
+$packagePath = $packageFile.FullName
+$packageVersion = $packageFile.BaseName -replace "^$([regex]::Escape($packageId))\.", ''
 
 Write-Host "Packed package: $packagePath"
 
