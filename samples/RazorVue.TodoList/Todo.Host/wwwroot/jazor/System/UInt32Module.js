@@ -7,13 +7,12 @@ function tryParseUInt32Core(s, value) {
   if (trimmed.length === 0)
     return [false, value];
   let start = 0;
-  if (_5ad63706a889c294(trimmed, 0) === "+") {
+  let first = _5ad63706a889c294(trimmed, 0);
+  if (first === "+" || first === "-") {
     if (trimmed.length === 1)
       return [false, value];
     start = 1;
   }
-  else if (_5ad63706a889c294(trimmed, 0) === "-")
-    return [false, value];
   for (let i = start; i < trimmed.length; i++) {
     let ch = _5ad63706a889c294(trimmed, i);
     if (ch < "0" || ch > "9")
@@ -27,6 +26,29 @@ function tryParseUInt32Core(s, value) {
   value = parsed;
   return [true, value];
 }
+function isOverflowUInt32Text(s) {
+  if (s === null)
+    return false;
+  let trimmed = s.trim();
+  if (trimmed.length === 0)
+    return false;
+  let start = 0;
+  let first = _5ad63706a889c294(trimmed, 0);
+  if (first === "+" || first === "-") {
+    if (trimmed.length === 1)
+      return false;
+    start = 1;
+  }
+  for (let i = start; i < trimmed.length; i++) {
+    let ch = _5ad63706a889c294(trimmed, i);
+    if (ch < "0" || ch > "9")
+      return false;
+  }
+  let parsed = Number(trimmed);
+  if (isNaN(parsed) || Math.floor(parsed) !== parsed)
+    return false;
+  return parsed < 0 || parsed > 4294967295;
+}
 export function _75ff3ca18f13f709(instance, value) {
   if (value === null)
     return 1;
@@ -39,8 +61,11 @@ export function _eb335b8243aba32a(s) {
   let value, __ref$54a0536247479dae1cafdf1d;
   if (s === null)
     throw new Error("ArgumentNullException: String cannot be null.");
-  if (!(__ref$54a0536247479dae1cafdf1d = tryParseUInt32Core(s, value), value = __ref$54a0536247479dae1cafdf1d[1], __ref$54a0536247479dae1cafdf1d[0]))
+  if (!(__ref$54a0536247479dae1cafdf1d = tryParseUInt32Core(s, value), value = __ref$54a0536247479dae1cafdf1d[1], __ref$54a0536247479dae1cafdf1d[0])) {
+    if (isOverflowUInt32Text(s))
+      throw new Error("OverflowException: Value was either too large or too small for a UInt32.");
     throw new Error(`FormatException: String '${s}' was not recognized as a valid UInt32.`);
+  }
   return value;
 }
 export function _ad4f3364f146e5da(s, result) {
@@ -65,11 +90,3 @@ export function _96cd49e102b39e5b(value) {
   v = v + (v >> 16);
   return v & 63;
 }
-export const UInt32Module = {
-  tryParseUInt32Core,
-  _75ff3ca18f13f709,
-  _eb335b8243aba32a,
-  _ad4f3364f146e5da,
-  _8a073d758132b5bb,
-  _96cd49e102b39e5b
-};

@@ -1,6 +1,7 @@
 # RazorVue 完成度与生产就绪评审
 
 > 评审日期：2026-05-07  
+> 最新更新：2026-05-09
 > 评审范围：`src/Jazor.RazorVue/`、`src/Jazor.Analyzer/RazorVue/`、`src/Jazor.Emit` 的 RazorVue 路径、`src/Jazor.RazorVue.Test/`、`src/Jazor.RazorVue.RazorIr.Test/`、`src/Jazor.EmitTest/` 的 RazorVue 切片、`src/Jolt.Test` 的 Volar/VueAnalysis/JazorVue 切片、`samples/RazorVue.TodoList/`  
 > 基线说明：本评审基于当前工作区状态。当前工作区存在多处 RazorVue/emit/VueRoute 相关未提交修改，因此结论不等同于已发布包基线。
 
@@ -8,8 +9,8 @@
 
 RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前更准确的判断是：
 
-- **核心语义与 lowering 主链：约 80% 完成**。组件发现、descriptor、Razor IR 优先模板前端、canonical H、SFC semantic model、SFC artifact、legacy/SFC 双 catalog、source-origin/hash/HMR 元数据等主干已经成型，并有大量单元测试覆盖。
-- **库模式生产就绪：未达标**。真实 generator assembly、SDK 本地包、sample/host 构建、emit 物化相关 RazorVue 集成测试仍有失败，不能作为可生产发布能力声明。
+- **核心语义与 lowering 主链：约 85% 完成**。组件发现、descriptor、Razor IR 优先模板前端、canonical H、SFC semantic model、SFC artifact、legacy/SFC 双 catalog、source-origin/hash/HMR 元数据等主干已经成型，并有大量单元测试覆盖。
+- **库模式生产接入：关键 P0 已解除，但仍未完成最终上线门槛**。Razor SG tail 注入、当前 context 级接管判断、package payload 守卫、emit/SDK RazorVue 集成切片、TodoList sample/Vite build/SSR render smoke、独立外部 NuGet `.razor` SFC consumer 已通过；剩余重点是真实浏览器 smoke、全量回归、支持矩阵和调试闭环。
 - **Jolt 关联能力：局部可用，不能替代库模式验收**。Volar/VueAnalysis/virtual artifact 过滤测试通过，但这只证明 Jolt 相关局部协议和投影切片，不证明 RazorVue NuGet/SDK 生产消费链路闭合。
 
 当前建议状态：
@@ -17,12 +18,41 @@ RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前
 | 维度 | 状态 | 说明 |
 |------|------|------|
 | 核心库编译 | 通过 | `Jazor.RazorVue` 可构建 |
-| RazorVue 单元测试 | 通过 | 549 通过 |
-| Razor IR 前端测试 | 通过但有警告 | 76 通过，测试项目存在 nullable 警告 |
+| RazorVue 单元测试 | 通过 | 557 通过 |
+| Razor IR 前端测试 | 通过 | 96 通过 |
 | Jolt 关联过滤测试 | 通过 | 35 通过 |
 | solution 构建 | 通过但有警告 | 1 个 Razor IR 测试项目 nullable 警告 |
-| emit/SDK RazorVue 集成 | **失败** | 43 个过滤测试中 8 失败 |
-| 生产发布判断 | **不建议上线** | SDK/package/sample/emit 集成链路未过 |
+| emit/SDK RazorVue 集成 | 通过 | RazorVue 过滤切片 45/45 通过 |
+| NuGet payload | 通过当前守卫 | `Jazor` 包 analyzer/lib payload 不携带 Razor Compiler / Razor Utilities Shared |
+| 生产发布判断 | **接近但未达最终上线标准** | SDK/package/emit/sample/Vite/SSR render/独立外部 .NET consumer 已闭合；浏览器 smoke、全量回归和支持边界仍需最终确认 |
+
+## 2026-05-09 状态更新
+
+本轮已解除 2026-05-07 评审中的 emit/SDK P0 阻断：
+
+```powershell
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~CreateLocalPackage_IncludesRazorVueAuthoringAssets" -v minimal -p:UseSharedCompilation=false
+```
+
+结果：1/1 通过。
+
+```powershell
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal -p:UseSharedCompilation=false
+```
+
+结果：45/45 通过。
+
+补充结论：
+
+1. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 已同步当前 analyzer payload，包含 `0Harmony.dll`、`ECMAScript.dll`、`ECMAScript.Vue3.dll` 及其 pdb。
+2. 包内容测试已加入负向守卫，禁止 `Razor.Compiler`、`Razor.Utilities.Shared`、`Microsoft.CodeAnalysis.Razor`、`Microsoft.AspNetCore.Razor.Language` 进入 `Jazor` 包 payload。
+3. 之前 `--no-restore` 下出现的 `ECMAScript.Contract` predefined type / `System.Runtime` 错误已确认是 restore/assets 状态问题；带 restore 的 focused test 可稳定通过。
+4. `samples/RazorVue.TodoList/build-local.ps1` 已用本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包重新跑通；当前样例生成 2 个 SFC artifact、manifest、host requirements module 和 sidecar。
+5. 生成的 `todo-app.vue` 已恢复完整嵌套 Vuetify 结构，包含 `VRow` / `VCol` / `VCard` / `VTextField` / `VList` / `VListItem`，并包含 `item.Title` / `item.IsDone` / `item.Category` / `item.IsPinned` 等 DTO 属性投影。
+6. `samples/RazorVue.TodoList/todo-consumer` 已执行 `npm run build`，Vite production build 通过，554 个模块完成 transform，证明当前生成的 `.vue` 能被真实 Vue/Vuetify 工具链消费。
+7. 新增 `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts`，用独立临时 consumer 通过本地 NuGet 包消费 `Jazor` / `ECMAScript.Vuetify`，显式启用 `UseRazorSourceGenerator=true`、`JazorRazorVueEnableRazorSgIntegration=true`、`JazorRazorVueOutputMode=sfc`，并验证 `.razor` authoring 生成 `.vue`、manifest、host requirements module、source map 和 origins sidecar。
+8. SFC template lowering 已修正 component literal prop 语义：组件非字符串 literal（例如 Vuetify `bool` / `number` props）输出为 Vue bound props，如 `:fluid="true"`、`:cols="12"`；字符串 literal 仍输出静态属性，如 `title="Inbox"`。
+9. `samples/RazorVue.TodoList/todo-consumer` 新增并执行 `npm run smoke:ssr`，通过 Vite SSR loader + Vue server renderer + Vuetify 对生成 SFC 做 runtime render smoke，且不再出现 `fluid` Boolean prop 类型 warning。
 
 ## 已完成能力
 
@@ -52,15 +82,15 @@ RazorVue 不能继续按历史文档里的“100% 完成”口径描述。当前
 
 ## 主要缺口
 
-### P0 阻断：emit/SDK 集成测试失败
+### 已解除：emit/SDK 集成测试失败
 
-本轮执行：
+2026-05-07 评审时执行：
 
 ```powershell
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal
 ```
 
-结果：
+历史结果：
 
 - 通过：35
 - 失败：8
@@ -84,35 +114,39 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 - 本地包内容断言仍按旧 entry 列表，实际包内容已经变化。
 - 多个 SDK 集成测试仍期待 legacy `.mjs` 产物路径，而当前默认已经切到 SFC。
 
-这不是小问题：生产发布必须证明 NuGet 包、MSBuild props/targets、source generator、emit tool、consumer project 可以按文档闭环。当前这条链路没有通过。
+该阻断已在 2026-05-09 解除。当前 RazorVue emit/SDK 切片已经做到 45/45 通过，package contents 断言也已经同步到当前 analyzer payload，并增加 Razor Compiler / Razor Utilities Shared 负向守卫。
 
-### P0 阻断：authoring surface 文档/样例与真实类型合同漂移
+### 已解除：TodoList sample / Vite / SSR consumer smoke
 
-当前 `RazorVueCompilationSymbols` 解析：
+当前已把最新包与 SG tail 注入链通过仓库内 TodoList 样例重新跑完：
 
-- `ECMAScript.Vue3+IVueComponent`
-- `ECMAScript.Vue3+IVueLibraryComponent`
+1. `samples/RazorVue.TodoList/build-local.ps1` 从本地 pack 出来的 `Jazor` / `ECMAScript.Vuetify` 包恢复并构建成功。
+2. 构建产出 `.vue`、manifest、host requirements module 和 sidecar。
+3. 不依赖仓库源码引用、不依赖本机全局缓存残留、不依赖旧 legacy `.mjs` 默认假设。
+4. `todo-consumer` Vite build 能消费生成的 `.vue` 与 host requirements module。
+5. `todo-consumer` SSR smoke 能通过 Vite SSR loader 加载生成 `.vue`、挂载 Vuetify plugin、渲染 DTO 投影文本，并验证 host requirements 中包含 `vuetify` plugin 和 `vuetify/styles`。
+6. `todo-app.vue` 中 Vuetify Boolean / numeric props 已以 Vue binding 输出，避免把 `bool` / `number` 传成字符串导致运行时 prop warning。
 
-但 `samples/RazorVue.TodoList/Todo.Library/TodoApp.razor.cs` 仍使用：
+### 已解除：独立外部 .NET NuGet/SFC consumer smoke
 
-```csharp
-using ECMAScript;
+`Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已覆盖一个独立临时 consumer：
 
-public partial class TodoApp : ComponentBase, IVueComponent
-```
+1. 不复用仓库 sample 源码。
+2. 只通过本地 pack 的 `Jazor` / `ECMAScript.Vuetify` NuGet 包消费 RazorVue。
+3. 使用 `Microsoft.NET.Sdk.Razor`、官方 Razor SG、`.razor + .razor.cs` authoring 和 SFC 输出模式。
+4. 验证输出 `components/external-dashboard.vue`，并确认不会同时产出 legacy `external-dashboard.mjs`。
+5. 验证 host requirements module、RazorVue manifest、SFC source map 和 origins sidecar。
 
-除非消费项目显式添加：
+仍未自动化的是“独立外部 Vite consumer build”。当前已有仓库内 TodoList Vite build 证明真实 Vue/Vuetify 工具链可消费生成 `.vue`，但独立临时 consumer 的 Vite build 还未纳入测试主链。
 
-```csharp
-global using static ECMAScript.Vue3;
-```
+### P0：authoring surface 合同需要用 sample / README 再确认
 
-否则裸 `IVueComponent` 不应解析。核心测试里很多测试通过全局 `using static ECMAScript.Vue3` 补齐，但 sample 和 emit 集成测试没有全面同步。
+当前 `RazorVueCompilationSymbols` 解析的正式入口仍是：
 
-生产前必须二选一：
+1. `ECMAScript.Vue3+IVueComponent`
+2. `ECMAScript.Vue3+IVueLibraryComponent`
 
-- 把官方 authoring 合同固定为 `using static ECMAScript.Vue3;`，并更新所有 sample、测试、README。
-- 或提供稳定兼容入口，让 `using ECMAScript;` + 裸 `IVueComponent` 在消费项目中可用。
+emit 集成测试已经收口，但生产前还必须确认 sample、README 和用户文档使用同一套 authoring 写法。不能出现测试靠 `global using static ECMAScript.Vue3` 通过，而 sample/文档仍展示旧 `using ECMAScript;` + 裸 `IVueComponent` 的漂移。
 
 ### P1：Razor IR 路线仍有过渡依赖
 
@@ -129,7 +163,7 @@ IR 前端已经是正确方向，但不是完全独立的 Razor 语义前端：
 - 生命周期/setup 逻辑仍是受控子集。
 - `ShouldRender`、`SetParametersAsync`、复杂字段/方法、复杂局部变量、复杂 slot/lifted binding 等仍有显式 unsupported/fail-fast 路径。
 - HMR 目前主要是身份、hash 和边界分类元数据，不是完整运行时热替换能力。
-- SSR/hydration 目前是 hints/预留，不是已验证生产能力。
+- SSR 目前已有 TodoList render smoke；hydration、浏览器挂载与交互仍是待验证生产能力。
 
 ### P1：source map/source-origin 仍偏元数据与 sidecar，生产调试闭环未充分证明
 
@@ -152,16 +186,16 @@ dotnet build src/Jazor.RazorVue/Jazor.RazorVue.csproj -v minimal
 结果：通过，0 警告，0 错误。
 
 ```powershell
-dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false
 ```
 
-结果：549 通过，0 失败，0 跳过。
+最新结果：557 通过，0 失败，0 跳过。
 
 ```powershell
-dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal
+dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj -v minimal -p:UseSharedCompilation=false
 ```
 
-结果：76 通过，0 失败，0 跳过；存在 `RazorEngineFeatureSpikeTests.cs(151,30)` nullable 警告。
+最新结果：96 通过，0 失败，0 跳过。
 
 ```powershell
 dotnet test src/Jolt.Test/Jolt.Test.csproj --filter "FullyQualifiedName~Volar|FullyQualifiedName~VueAnalysis|FullyQualifiedName~VirtualArtifact|FullyQualifiedName~JazorVue" -v minimal
@@ -176,42 +210,85 @@ dotnet build Jazor.slnx -v minimal
 结果：通过，1 个 nullable 警告，0 错误。
 
 ```powershell
-dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue" -v minimal -p:UseSharedCompilation=false
 ```
 
-结果：35 通过，8 失败，0 跳过。
+最新结果：45 通过，0 失败，0 跳过。
+
+```powershell
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQualifiedName~GenerateCatalog_WithOfficialRazorSgDocument_TailBridge" -p:JazorIsolatedBaseOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-out\razorvue-tailbridge-4\" -p:JazorIsolatedBaseIntermediateOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-obj\razorvue-tailbridge-4\" /nr:false -p:UseSharedCompilation=false -v minimal
+```
+
+最新结果：3 通过，0 失败，0 跳过。
+
+```powershell
+dotnet test src/Jazor.RazorVue.RazorIr.Test/Jazor.RazorVue.RazorIr.Test.csproj --filter "FullyQualifiedName~RazorVueRazorIrTemplateFrontendTests" -p:JazorIsolatedBaseOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-out\razorir-frontend-1\" -p:JazorIsolatedBaseIntermediateOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-obj\razorir-frontend-1\" /nr:false -p:UseSharedCompilation=false -v minimal
+```
+
+最新结果：28 通过，0 失败，0 跳过；仍有 `RazorEngineFeatureSpikeTests.cs(152,30)` nullable 警告。
+
+```powershell
+dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQualifiedName~RazorVue_SfcArtifactFactory|FullyQualifiedName~GenerateCatalog_WithOfficialRazorSgDocument_TailBridge" -p:JazorIsolatedBaseOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-out\razorvue-sfc-tail-1\" -p:JazorIsolatedBaseIntermediateOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-obj\razorvue-sfc-tail-1\" /nr:false -p:UseSharedCompilation=false -v minimal
+```
+
+最新结果：31 通过，0 失败，0 跳过；新增覆盖 component literal 非字符串 props 输出为 Vue bound props。
+
+```powershell
+pwsh ./samples/RazorVue.TodoList/build-local.ps1
+```
+
+最新结果：通过，`assemblies=15 catalogs=2 razorvueSfcCatalogs=1 modules=51 razorvueSfcArtifacts=2 written=3 skipped=51 deleted=0`。
+
+```powershell
+cd samples/RazorVue.TodoList/todo-consumer
+npm run build
+```
+
+最新结果：通过，Vite production build 成功，554 modules transformed。
+
+```powershell
+cd samples/RazorVue.TodoList/todo-consumer
+npm run smoke:ssr
+```
+
+最新结果：通过，`RazorVue TodoList SSR smoke passed.`，无 Vue prop 类型 warning。
+
+```powershell
+dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts" -p:JazorIsolatedBaseOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-out\emit-external-sfc-3\" -p:JazorIsolatedBaseIntermediateOutputRoot="D:\repository\own\jazor\Jazor\.tmp\test-obj\emit-external-sfc-3\" /nr:false -p:UseSharedCompilation=false -v minimal
+```
+
+最新结果：1 通过，0 失败，0 跳过。
 
 ## 离上生产还差什么
 
 ### 必须完成
 
-1. 修复 `Jazor.EmitTest` RazorVue 过滤切片，做到 43/43 通过。
-2. 统一 `IVueComponent` / `IVueLibraryComponent` authoring 合同，更新 tests、sample、README、SDK 集成样例。
-3. 重新验证 `samples/RazorVue.TodoList/build-local.ps1` 可从空本地包缓存跑通，并生成 `.vue`、manifest、host requirements module。
-4. 清理旧 legacy `.mjs` 默认假设，测试和文档必须与 SFC 默认模式一致；legacy 只作为显式兼容模式验证。
-5. 明确 NuGet 包 contents 合同，更新 `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 的期望，并确保 `Jazor` 包和 `ECMAScript.Vuetify` 包能被普通 consumer 无额外源码 hack 使用。
-6. 建立一个最小生产 smoke test：本地 pack `Jazor` + `ECMAScript.Vuetify`，新建外部 consumer，`dotnet build` 后由 Vite/Vue 消费生成 `.vue`，至少执行一次前端 build。
+1. 补真实浏览器 smoke，至少覆盖 TodoList sample 的挂载与关键交互。
+2. 将独立外部 consumer 的 Vite production build 纳入可重复验证路径，避免只依赖仓库 sample consumer。
+3. 统一 `IVueComponent` / `IVueLibraryComponent` authoring 合同，确保 tests、sample、README、SDK 集成样例完全一致。
+4. 继续保持 NuGet 包 contents 合同：`Jazor` 包和 `ECMAScript.Vuetify` 包能被普通 consumer 无额外源码 hack 使用，且不携带 Razor Compiler / Razor Utilities Shared。
+5. 全量回归：`Jazor.RazorVue.Test`、`Jazor.RazorVue.RazorIr.Test`、`Jazor.EmitTest` RazorVue 切片、`dotnet pack` 和 package payload guard 必须同时通过。
 
 ### 应该完成
 
 1. 消除 Razor IR 测试项目 nullable 警告。
 2. 在 docs 中替换旧的“默认 legacy / 单大 catalog / 100% 完成”表述，避免后续按过期计划推进。
 3. 给支持矩阵补当前实际支持/unsupported 清单：Razor 语法、生命周期、setup 逻辑、slot、bind、事件、Vuetify 组件、source map、HMR。
-4. 补真实浏览器或 Vite build 验证，至少覆盖 TodoList sample。
+4. 继续补真实浏览器 smoke，至少覆盖 TodoList sample 的挂载与关键交互。
 5. 对 `RazorVuePipelineTests.cs`、`ESGeneratorTests.cs` 做测试文件分组，降低后续维护成本。
 
 ## 上线建议
 
-当前不建议把 RazorVue 标记为生产可用。合理的发布标签应是：
+当前不建议直接标记为通用生产可用。合理状态应调整为：
 
-- **core preview**：核心编译、IR/SFC lowering、descriptor/canonical/emit 模型已可评估。
-- **library mode integration preview**：SDK/emit/sample 正在收口，不能承诺普通消费项目一键可用。
-- **not production ready**：在 emit/SDK 集成切片全绿、sample 端到端通过、authoring surface 固定前，不进入生产发布。
+- **core ready candidate**：核心编译、IR/SFC lowering、descriptor/canonical/emit 模型和 SG tail 接入已进入候选状态。
+- **library mode release candidate pending browser/support-matrix smoke**：SDK/package/emit/sample/Vite build 和独立外部 .NET consumer 已闭合，真实浏览器 smoke、独立外部 Vite 自动化和支持矩阵仍是上线前门槛。
+- **not GA production ready**：在浏览器交互、支持矩阵和调试闭环完成前，不对外宣称完整生产可用。
 
 下一轮评审的最低通过门槛：
 
-1. `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~RazorVue"` 全绿。
-2. `samples/RazorVue.TodoList/build-local.ps1` 全绿。
+1. 独立外部 Vite consumer build 可重复验证，或明确作为发布流水线步骤。
+2. 真实浏览器 smoke 通过，证明 TodoList sample 可挂载且核心交互有效。
 3. `dotnet build Jazor.slnx` 0 警告或所有剩余警告有明确豁免说明。
-4. 新建外部 consumer 项目验证包消费，不依赖仓库源码引用。
-5. 文档、README、sample 的 authoring 写法与真实类型合同一致。
+4. 文档、README、sample 的 authoring 写法与真实类型合同一致。
+5. 支持/unsupported 矩阵与实际测试覆盖一致。

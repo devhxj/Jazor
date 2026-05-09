@@ -1,41 +1,41 @@
 <template>
-<VContainer fluid="true">
+<VContainer :fluid="true">
   <VRow justify="center">
-    <VCol cols="12" md="10" lg="8">
+    <VCol :cols="12" :md="10" :lg="8">
       <VCard>
         <VCardTitle text="RazorVue Todo Workspace" />
         
                 
         <VCardText>
           <VRow>
-            <VCol cols="12" md="8">
-              <VTextField label="New task title" :modelValue="props.draftTitle" @update:modelValue="__jazorVueSfcBinding0" />
+            <VCol :cols="12" :md="8">
+              <VTextField label="New task title" :modelValue="props.draftTitle" @update:modelValue="(__value) =&gt; emit(&quot;update:draftTitle&quot;, __value)" />
             </VCol>
             
                         
-            <VCol cols="12" md="4">
-              <VTextField label="Category" :modelValue="props.draftCategory" @update:modelValue="__jazorVueSfcBinding1" />
+            <VCol :cols="12" :md="4">
+              <VTextField label="Category" :modelValue="props.draftCategory" @update:modelValue="(__value) =&gt; emit(&quot;update:draftCategory&quot;, __value)" />
             </VCol>
           </VRow>
           
 
                     
           <VRow>
-            <VCol cols="12" md="4">
-              <VCheckbox label="Create pinned task" :modelValue="props.draftPinned" @update:modelValue="__jazorVueSfcBinding2" />
+            <VCol :cols="12" :md="4">
+              <VCheckbox label="Create pinned task" :modelValue="props.draftPinned" @update:modelValue="(__value) =&gt; emit(&quot;update:draftPinned&quot;, __value)" />
             </VCol>
             
                         
-            <VCol cols="12" md="4">
-              <VSwitch label="Show completed" :modelValue="props.showCompleted" @update:modelValue="__jazorVueSfcBinding3" />
+            <VCol :cols="12" :md="4">
+              <VSwitch label="Show completed" :modelValue="props.showCompleted" @update:modelValue="(__value) =&gt; emit(&quot;update:showCompleted&quot;, __value)" />
             </VCol>
             
                         
-            <VCol cols="12" md="4">
-              <VBtn text="Add task" @click="__jazorVueSfcBinding4" />
+            <VCol :cols="12" :md="4">
+              <VBtn text="Add task" @click="() =&gt; emit(&quot;addRequested&quot;)" />
             </VCol>
           </VRow>
-          <template v-if="__jazorVueSfcBinding5">
+          <template v-if="__jazorVueSfcBinding0">
             <p>
               {{ props.statusMessage }}
             </p>
@@ -48,28 +48,28 @@
 
     
   <VRow justify="center">
-    <VCol cols="12" md="10" lg="8">
-      <TodoSummaryCardComponent :totalCount="props.totalCount" :completedCount="props.completedCount" :openCount="props.openCount" :pinnedCount="props.pinnedCount" :totalText="__jazorVueSfcBinding6" :completedText="__jazorVueSfcBinding7" :openText="__jazorVueSfcBinding8" :pinnedText="__jazorVueSfcBinding9" />
+    <VCol :cols="12" :md="10" :lg="8">
+      <TodoSummaryCardComponent :totalCount="props.totalCount" :completedCount="props.completedCount" :openCount="props.openCount" :pinnedCount="props.pinnedCount" :totalText="__jazorVueSfcBinding1" :completedText="__jazorVueSfcBinding2" :openText="__jazorVueSfcBinding3" :pinnedText="__jazorVueSfcBinding4" />
     </VCol>
   </VRow>
   
 
     
   <VRow justify="center">
-    <VCol cols="12" md="10" lg="8">
+    <VCol :cols="12" :md="10" :lg="8">
       <VCard>
         <VCardTitle text="Tasks" />
         
                 
         <VCardText>
-          <template v-if="__jazorVueSfcBinding10">
+          <template v-if="__jazorVueSfcBinding5">
             <VAlert type="info" variant="tonal" text="No tasks match the current filter." />
           </template>
           <template v-else>
             <VList density="comfortable">
-              <template v-for="item in __jazorVueSfcBinding11">
+              <template v-for="item in __jazorVueSfcBinding6">
                 <template v-if="(props.showCompleted || !item.IsDone)">
-                  <VListItem :title="item.Title" :subtitle="((item.Category + &quot; | &quot;) + (item.IsDone ? &quot;Completed&quot; : &quot;Active&quot;))">
+                  <VListItem :title="item.Title" :subtitle="(item.Category + &quot; | &quot; + (item.IsDone ? &quot;Completed&quot; : &quot;Active&quot;))">
                     <template v-if="item.IsPinned">
                       <VChip text="Pinned" color="primary" />
                     </template>
@@ -92,16 +92,11 @@ import { VAlert as VAlert, VBtn as VBtn, VCard as VCard, VCardText as VCardText,
 
 const props = defineProps<{ completedCount?: any; draftCategory?: any; draftPinned?: any; draftTitle?: any; openCount?: any; pinnedCount?: any; showCompleted?: any; statusMessage?: any; tasks?: any; totalCount?: any; visibleCount?: any }>();
 const emit = defineEmits<{ (event: "addRequested", payload?: any): void; (event: "update:draftCategory", payload?: any): void; (event: "update:draftPinned", payload?: any): void; (event: "update:draftTitle", payload?: any): void; (event: "update:showCompleted", payload?: any): void }>();
-const __jazorVueSfcBinding0 = computed(() => (__value) => emit("update:draftTitle", __value));
-const __jazorVueSfcBinding1 = computed(() => (__value) => emit("update:draftCategory", __value));
-const __jazorVueSfcBinding2 = computed(() => (__value) => emit("update:draftPinned", __value));
-const __jazorVueSfcBinding3 = computed(() => (__value) => emit("update:showCompleted", __value));
-const __jazorVueSfcBinding4 = computed(() => () => emit("addRequested"));
-const __jazorVueSfcBinding5 = computed(() => ((props.statusMessage !== null) && (props.statusMessage !== "")));
-const __jazorVueSfcBinding6 = computed(() => `${props.totalCount} tasks in scope`);
-const __jazorVueSfcBinding7 = computed(() => `${props.completedCount} completed`);
-const __jazorVueSfcBinding8 = computed(() => `${props.openCount} still active`);
-const __jazorVueSfcBinding9 = computed(() => `${props.pinnedCount} pinned for focus`);
-const __jazorVueSfcBinding10 = computed(() => (props.visibleCount === 0));
-const __jazorVueSfcBinding11 = computed(() => props.tasks);
+const __jazorVueSfcBinding0 = computed(() => (props.statusMessage !== null && props.statusMessage !== ""));
+const __jazorVueSfcBinding1 = computed(() => `${props.totalCount} tasks in scope`);
+const __jazorVueSfcBinding2 = computed(() => `${props.completedCount} completed`);
+const __jazorVueSfcBinding3 = computed(() => `${props.openCount} still active`);
+const __jazorVueSfcBinding4 = computed(() => `${props.pinnedCount} pinned for focus`);
+const __jazorVueSfcBinding5 = computed(() => (props.visibleCount === 0));
+const __jazorVueSfcBinding6 = computed(() => props.tasks);
 </script>

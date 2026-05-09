@@ -15,4 +15,3 @@ export function _5d3d00c3ee9d4076(instance, array, index) {
   for (let i = 0; i < instance.length; i++)
     array[index + i] = instance[i];
 }
-export const ICollectionModule = { ensureWholeNumber, _5d3d00c3ee9d4076 };

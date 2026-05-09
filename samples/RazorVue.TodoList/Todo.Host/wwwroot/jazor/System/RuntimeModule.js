@@ -1,4 +1,3 @@
-import { JQueue as i$988c2c3cb4523609, JStack as i$b2d4a0c380a9f152, RuntimeModule } from "System/RuntimeModule.js";
 function ensureWholeNumber(value, message) {
   if (isNaN(value) || Math.floor(value) !== value || value < Number.MIN_SAFE_INTEGER || value > Number.MAX_SAFE_INTEGER)
     throw new Error(message);
@@ -14,10 +13,98 @@ function ensureYearAndMonth(year, month) {
 function materializeArray(collection, nullMessage) {
   if (collection === null)
     throw new Error(nullMessage);
-  let result = [];
+  let result = new Array;
   for (let item of collection)
     result.push(item);
   return result;
+}
+const readOnlyCarrierMarker = "__jazor$readonly";
+const readOnlyCarrierMutationMessage = "NotSupportedException: Collection is read-only.";
+export function isReadOnlySetCarrier(instance) {
+  return !(instance === null) && Object.hasOwn(instance, "__jazor$readonly");
+}
+function throwReadOnlySetAdd(item) {
+  throw new Error("NotSupportedException: Collection is read-only.");
+}
+function throwReadOnlySetDelete(item) {
+  throw new Error("NotSupportedException: Collection is read-only.");
+}
+function throwReadOnlySetClear() {
+  throw new Error("NotSupportedException: Collection is read-only.");
+}
+export function markAsReadOnlySetCarrier(instance) {
+  if (instance === null)
+    throw new Error("NullReferenceException: instance is null.");
+  if (isReadOnlySetCarrier(instance))
+    return instance;
+  Object.defineProperty(instance, "__jazor$readonly", {
+    value: true,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  Object.defineProperty(instance, "add", {
+    value: throwReadOnlySetAdd,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  Object.defineProperty(instance, "delete", {
+    value: throwReadOnlySetDelete,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  Object.defineProperty(instance, "clear", {
+    value: throwReadOnlySetClear,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  return instance;
+}
+export function isReadOnlyDictionaryCarrier(instance) {
+  return !(instance === null) && Object.hasOwn(instance, "__jazor$readonly");
+}
+function throwReadOnlyDictionarySet(key, value) {
+  throw new Error("NotSupportedException: Collection is read-only.");
+}
+function throwReadOnlyDictionaryDelete(key) {
+  throw new Error("NotSupportedException: Collection is read-only.");
+}
+function throwReadOnlyDictionaryClear() {
+  throw new Error("NotSupportedException: Collection is read-only.");
+}
+export function markAsReadOnlyDictionaryCarrier(instance) {
+  if (instance === null)
+    throw new Error("NullReferenceException: instance is null.");
+  if (isReadOnlyDictionaryCarrier(instance))
+    return instance;
+  Object.defineProperty(instance, "__jazor$readonly", {
+    value: true,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  Object.defineProperty(instance, "set", {
+    value: throwReadOnlyDictionarySet,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  Object.defineProperty(instance, "delete", {
+    value: throwReadOnlyDictionaryDelete,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  Object.defineProperty(instance, "clear", {
+    value: throwReadOnlyDictionaryClear,
+    enumerable: false,
+    writable: false,
+    configurable: false
+  });
+  return instance;
 }
 export class JDateTime {
   #_15721c3f3a339cec;
@@ -54,38 +141,23 @@ export class JDateTime {
   $ctor_5f7a68d76534e272(date) {
     this.date = new Date(date.getTime());
     this.kind = 0;
-    this.subMillisecondTicks = BigInt.zero;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$f697bf67c500f21b3820d25b = new PropertyDescriptor;
-      __creation$f697bf67c500f21b3820d25b.value = this.toPrimitive.bind(this);
-      __creation$f697bf67c500f21b3820d25b.configurable = true;
-      return __creation$f697bf67c500f21b3820d25b;
-    })());
+    this.subMillisecondTicks = 0n;
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   $ctor_31a0f1908d992f04(date, kind) {
     this.date = new Date(date.getTime());
     this.kind = kind;
-    this.subMillisecondTicks = BigInt.zero;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$fa33366cc1bff5bce2ed2a16 = new PropertyDescriptor;
-      __creation$fa33366cc1bff5bce2ed2a16.value = this.toPrimitive.bind(this);
-      __creation$fa33366cc1bff5bce2ed2a16.configurable = true;
-      return __creation$fa33366cc1bff5bce2ed2a16;
-    })());
+    this.subMillisecondTicks = 0n;
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   $ctor_9eb10cd821441a68(date, kind, subMillisecondTicks) {
     this.date = new Date(date.getTime());
     this.kind = kind;
     this.subMillisecondTicks = subMillisecondTicks;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$e235af7a4f169c89c0a5239a = new PropertyDescriptor;
-      __creation$e235af7a4f169c89c0a5239a.value = this.toPrimitive.bind(this);
-      __creation$e235af7a4f169c89c0a5239a.configurable = true;
-      return __creation$e235af7a4f169c89c0a5239a;
-    })());
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   toString() {
-    return RuntimeModule.formatDateOnlyText(this.date.getFullYear(), this.date.getMonth() + 1, this.date.getDate()) + "T" + RuntimeModule.pad2(this.date.getHours()) + ":" + RuntimeModule.pad2(this.date.getMinutes()) + ":" + RuntimeModule.pad2(this.date.getSeconds()) + "." + RuntimeModule.pad7(BigInt(this.date.getMilliseconds()) * BigInt(10000) + this.subMillisecondTicks);
+    return formatDateOnlyText(this.date.getFullYear(), this.date.getMonth() + 1, this.date.getDate()) + "T" + pad2(this.date.getHours()) + ":" + pad2(this.date.getMinutes()) + ":" + pad2(this.date.getSeconds()) + "." + pad7(BigInt(this.date.getMilliseconds()) * BigInt(10000) + this.subMillisecondTicks);
   }
   valueOf() {
     return Date.UTC(this.date.getFullYear(), this.date.getMonth(), this.date.getDate(), this.date.getHours(), this.date.getMinutes(), this.date.getSeconds(), this.date.getMilliseconds());
@@ -126,34 +198,24 @@ export class JDateTimeOffset {
   $ctor_ec78e151ec26d931(utcDateTime, offsetTicks) {
     this.utcDateTime = new Date(utcDateTime.getTime());
     this.offsetTicks = offsetTicks;
-    this.utcSubMillisecondTicks = BigInt.zero;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$834e8b80c46b4e9f8ca25f59 = new PropertyDescriptor;
-      __creation$834e8b80c46b4e9f8ca25f59.value = this.toPrimitive.bind(this);
-      __creation$834e8b80c46b4e9f8ca25f59.configurable = true;
-      return __creation$834e8b80c46b4e9f8ca25f59;
-    })());
+    this.utcSubMillisecondTicks = 0n;
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   $ctor_edd22711399c52b9(utcDateTime, offsetTicks, utcSubMillisecondTicks) {
     this.utcDateTime = new Date(utcDateTime.getTime());
     this.offsetTicks = offsetTicks;
     this.utcSubMillisecondTicks = utcSubMillisecondTicks;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$401ff2259366375b5f06b78e = new PropertyDescriptor;
-      __creation$401ff2259366375b5f06b78e.value = this.toPrimitive.bind(this);
-      __creation$401ff2259366375b5f06b78e.configurable = true;
-      return __creation$401ff2259366375b5f06b78e;
-    })());
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   toString() {
     let local = new Date(this.utcDateTime.getTime() + Number(this.offsetTicks) / 10000);
-    let negative = this.offsetTicks < BigInt.zero;
+    let negative = this.offsetTicks < 0n;
     let absolute = negative ? -this.offsetTicks : this.offsetTicks;
     let totalMinutes = absolute / BigInt(600000000);
     let hours = Number(totalMinutes / BigInt(60));
     let minutes = Number(totalMinutes % BigInt(60));
-    let offset = (negative ? "-" : "+") + RuntimeModule.pad2(hours) + ":" + RuntimeModule.pad2(minutes);
-    return RuntimeModule.formatDateOnlyText(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate()) + "T" + RuntimeModule.pad2(local.getUTCHours()) + ":" + RuntimeModule.pad2(local.getUTCMinutes()) + ":" + RuntimeModule.pad2(local.getUTCSeconds()) + "." + RuntimeModule.pad7(BigInt(local.getUTCMilliseconds()) * BigInt(10000) + this.utcSubMillisecondTicks) + offset;
+    let offset = (negative ? "-" : "+") + pad2(hours) + ":" + pad2(minutes);
+    return formatDateOnlyText(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate()) + "T" + pad2(local.getUTCHours()) + ":" + pad2(local.getUTCMinutes()) + ":" + pad2(local.getUTCSeconds()) + "." + pad7(BigInt(local.getUTCMilliseconds()) * BigInt(10000) + this.utcSubMillisecondTicks) + offset;
   }
   valueOf() {
     return this.utcDateTime.getTime();
@@ -185,18 +247,13 @@ export class JDateOnly {
     this.year = year;
     this.month = month;
     this.day = day;
-    let utcDate = RuntimeModule.createUtcDate(year, month, day);
-    let start = RuntimeModule.createUtcDate(1, 1, 1);
+    let utcDate = createUtcDate(year, month, day);
+    let start = createUtcDate(1, 1, 1);
     this.dayNumber = Math.floor((utcDate.getTime() - start.getTime()) / 86400000);
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$b8269c9f48e7e6d9ea72c130 = new PropertyDescriptor;
-      __creation$b8269c9f48e7e6d9ea72c130.value = this.toPrimitive.bind(this);
-      __creation$b8269c9f48e7e6d9ea72c130.configurable = true;
-      return __creation$b8269c9f48e7e6d9ea72c130;
-    })());
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   toString() {
-    return RuntimeModule.formatDateOnlyText(this.year, this.month, this.day);
+    return formatDateOnlyText(this.year, this.month, this.day);
   }
   valueOf() {
     return this.dayNumber;
@@ -235,19 +292,19 @@ export class JQueue {
   }
   $ctor_83a6b5a077092c33() {
     this.kind = "queue";
-    this.items = [];
+    this.items = new Array;
     this.head = 0;
   }
   $ctor_a172437de92c387f(collection) {
     this.kind = "queue";
-    this.items = RuntimeModule.materializeArray(collection, "ArgumentNullException: collection cannot be null.");
+    this.items = materializeArray(collection, "ArgumentNullException: collection cannot be null.");
     this.head = 0;
   }
   static withCapacity(capacity) {
-    RuntimeModule.ensureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+    ensureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
     if (capacity < 0)
       throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-    return new i$988c2c3cb4523609;
+    return new JQueue;
   }
 }
 export class JStack {
@@ -278,13 +335,13 @@ export class JStack {
   }
   $ctor_a657e829623938c5(collection) {
     this.kind = "stack";
-    this.items = RuntimeModule.materializeArray(collection, "ArgumentNullException: collection cannot be null.");
+    this.items = materializeArray(collection, "ArgumentNullException: collection cannot be null.");
   }
   static withCapacity(capacity) {
-    RuntimeModule.ensureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
+    ensureWholeNumber(capacity, "ArgumentOutOfRangeException: capacity must be a whole number.");
     if (capacity < 0)
       throw new Error("ArgumentOutOfRangeException: capacity must be non-negative.");
-    return new i$b2d4a0c380a9f152;
+    return new JStack;
   }
 }
 export class JTimeOnly {
@@ -294,20 +351,15 @@ export class JTimeOnly {
   }
   constructor(ticks) {
     let normalized = ticks % BigInt("864000000000");
-    this.ticks = normalized < BigInt.zero ? normalized + BigInt("864000000000") : normalized;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$709efa840ebee99940da937e = new PropertyDescriptor;
-      __creation$709efa840ebee99940da937e.value = this.toPrimitive.bind(this);
-      __creation$709efa840ebee99940da937e.configurable = true;
-      return __creation$709efa840ebee99940da937e;
-    })());
+    this.ticks = normalized < 0n ? normalized + BigInt("864000000000") : normalized;
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   toString() {
     let hour = Number(this.ticks / BigInt("36000000000"));
     let minute = Number(this.ticks / BigInt(600000000) % BigInt(60));
     let second = Number(this.ticks / BigInt(10000000) % BigInt(60));
     let fraction = this.ticks % BigInt(10000000);
-    return RuntimeModule.pad2(hour) + ":" + RuntimeModule.pad2(minute) + ":" + RuntimeModule.pad2(second) + "." + RuntimeModule.pad7(fraction);
+    return pad2(hour) + ":" + pad2(minute) + ":" + pad2(second) + "." + pad7(fraction);
   }
   valueOf() {
     return this.ticks;
@@ -327,24 +379,19 @@ export class JTimeSpan {
     if (ticks < BigInt("-9223372036854775808") || ticks > BigInt("9223372036854775807"))
       throw new Error("OverflowException: TimeSpan is too long or too short.");
     this.ticks = ticks;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$1828998812383f30afbc43ff = new PropertyDescriptor;
-      __creation$1828998812383f30afbc43ff.value = this.toPrimitive.bind(this);
-      __creation$1828998812383f30afbc43ff.configurable = true;
-      return __creation$1828998812383f30afbc43ff;
-    })());
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   toString() {
-    let negative = this.ticks < BigInt.zero;
+    let negative = this.ticks < 0n;
     let absolute = negative ? -this.ticks : this.ticks;
     let days = absolute / BigInt("864000000000");
     let hours = Number(absolute / BigInt("36000000000") % BigInt(24));
     let minutes = Number(absolute / BigInt(600000000) % BigInt(60));
     let seconds = Number(absolute / BigInt(10000000) % BigInt(60));
     let fraction = absolute % BigInt(10000000);
-    let text = (negative ? "-" : "") + (days > BigInt.zero ? days.toString() + "." : "") + RuntimeModule.pad2(hours) + ":" + RuntimeModule.pad2(minutes) + ":" + RuntimeModule.pad2(seconds);
-    if (fraction !== BigInt.zero)
-      text += "." + RuntimeModule.pad7(fraction);
+    let text = (negative ? "-" : "") + (days > 0n ? days.toString() + "." : "") + pad2(hours) + ":" + pad2(minutes) + ":" + pad2(seconds);
+    if (fraction !== 0n)
+      text += "." + pad7(fraction);
     return text;
   }
   valueOf() {
@@ -374,12 +421,7 @@ export class JGregorianCalendar {
   constructor(calendarType, twoDigitYearMax) {
     this.calendarType = calendarType;
     this.twoDigitYearMax = twoDigitYearMax;
-    Object.defineProperty(this, Symbol.toPrimitive, (() => {
-      let __creation$40799ed5ca87d3216d90891d = new PropertyDescriptor;
-      __creation$40799ed5ca87d3216d90891d.value = this.toPrimitive.bind(this);
-      __creation$40799ed5ca87d3216d90891d.configurable = true;
-      return __creation$40799ed5ca87d3216d90891d;
-    })());
+    Object.defineProperty(this, Symbol.toPrimitive, { value: this.toPrimitive.bind(this), configurable: true });
   }
   toString() {
     return "System.Globalization.GregorianCalendar";
@@ -452,27 +494,3 @@ export function padLeft(text, width) {
     text = "0" + text;
   return text;
 }
-export const RuntimeModule = {
-  ensureWholeNumber,
-  ensureYearAndMonth,
-  materializeArray,
-  JDateTime,
-  JDateTimeOffset,
-  JDateOnly,
-  JQueue,
-  JStack,
-  JTimeOnly,
-  JTimeSpan,
-  JGregorianCalendar,
-  getDaysInMonth,
-  getInt64HashCode,
-  ensureValidDateParts,
-  ensureValidDateTimeParts,
-  createUtcDate,
-  createLocalDate,
-  createLocalDateTime,
-  formatDateOnlyText,
-  pad2,
-  pad7,
-  padLeft
-};

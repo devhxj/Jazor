@@ -343,7 +343,11 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 7. 当前 compilation 存在 RazorVue component candidate 时，Tail bridge 失败必须报告 `JAZORVGA020`，而不是静默丢失 RazorVue artifact。
 8. 当前 compilation 存在 RazorVue component candidate 时，Tail output 在启用后如果读不懂官方 output shape、未收到 Razor SG document 或只收到 suppressed document，也必须报告 `JAZORVGA020`。
 9. 当前 compilation 没有 RazorVue component candidate 时，Tail output 允许 no-op，避免启用包但未使用 RazorVue 组件的普通项目被误报。
-10. 普通 `RazorVueGenerator` 在 integration 启用后只做守门：bootstrap patch failed 报 `JAZORVGA019`，tail 未注册且确实需要 RazorVue tail output 报 `JAZORVGA018`，tail 已注册时让路给 injected source output。
+10. 普通 `RazorVueGenerator` 在 integration 启用后只做守门：bootstrap patch failed 报 `JAZORVGA019`，当前 generator context 未注册 tail 且确实需要 RazorVue tail output 时报 `JAZORVGA018`，当前 context 已注册 tail 时让路给 injected source output。
+11. 进程级 `TailOutputRegistered=true` 只表示历史上某个 Razor SG context 已成功注册过 tail output，不能作为当前 project/driver run 已接管的证据；当前接管必须由 `TailOutputRegisteredForCurrentContext=true` 证明。
+12. Hook source-node 去重必须带上当前 generator context；进程级 source-node 去重只能作为没有 context key 时的保守 fallback。
+13. 当前 context key 取不到时，RazorVue 无法证明本轮 Roslyn generator context 已被 tail 接管，必须按 `JAZORVGA019` 不兼容处理，不能用进程级注册状态继续构建。
+14. Hook 输出节点选择必须优先绑定官方 implementation source-output 数据流，并通过 bootstrap trace 暴露 `TailOutputRegistrationKind="implementation-source-output"`；HostOutput 只能作为锚点/兜底观测路径，不应成为正常生产通道。
 
 失败时禁止自动退回 `.razor` 原文回读、`BuildRenderTree` 反推、classic codegen 或 production nested run。
 
@@ -445,7 +449,9 @@ RazorVue generated sources 必须通过 source output 的 `AddSource(...)` 进�
 6. `ProductionRazorCompilerReferenceTests` 已加入，防止生产项目重新引入 Razor Compiler 强引用，并防止旧 `Jazor.RazorVue.RazorExtension` 项目恢复。
 7. `RazorSourceGeneratorCompatibilityProbeTests` 已覆盖 unsupported SDK shape patch 前拒绝。
 8. `RazorSourceGeneratorTailOutputTests` 已覆盖 enabled tail output 在有 RazorVue candidate 时输入不可读/无文档报 `JAZORVGA020`，在无 candidate 时 no-op。
-9. `ESGeneratorTests` 已覆盖 integration 启用后 partial-only RazorVue 组件在 tail 未注册时报 `JAZORVGA018`，bootstrap patch 失败时报 `JAZORVGA019`，tail 已注册时普通 generator 不误报。
+9. `ESGeneratorTests` 已覆盖 integration 启用后 partial-only RazorVue 组件在 tail 未注册时报 `JAZORVGA018`，bootstrap patch 失败时报 `JAZORVGA019`，当前 context 已注册 tail 时普通 generator 不误报，只有进程级历史注册但当前 context 未注册时仍报 `JAZORVGA018`，当前 context key 不可用时报 `JAZORVGA019`。
+10. `RazorSourceGeneratorBootstrapPatchTests` 已断言真实外部构建 trace 中 `TailOutputRegisteredForCurrentContext=true`，防止回退到只看进程级注册状态。
+11. `RazorSourceGeneratorBootstrapPatchTests` 已断言真实外部构建 trace 中 `TailOutputRegistrationKind="implementation-source-output"`，防止正常路径退回 HostOutput 通道。
 
 ## 15. 一句话结论
 

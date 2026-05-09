@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "smoke:ssr": "node ./scripts/smoke-ssr.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -89,16 +89,3 @@ export function _ea75510d32bc8099(x, y) {
 export function _63d3d54252a49e29(x, y) {
   return minMagnitudeCore(x, y);
 }
-export const Int16Module = {
-  compareCore,
-  tryParseInt16Core,
-  maxMagnitudeCore,
-  minMagnitudeCore,
-  _16417ddcfd71e8e5,
-  _8a975b9eda8ac957,
-  _65bc2566851a5ef7,
-  _b2c1f15fae072110,
-  _1636c956519f95fa,
-  _ea75510d32bc8099,
-  _63d3d54252a49e29
-};

@@ -1,7 +1,7 @@
 function materialize(source) {
   if (source === null)
     throw new Error("ArgumentNullException: source is null");
-  let result = [];
+  let result = new Array;
   for (let item of source)
     result.push(item);
   return result;
@@ -44,12 +44,3 @@ export function _6293e95141f14a55(source) {
 export function _ea56f0fe56c44ae7(source) {
   return materialize(source);
 }
-export const EnumerableModule = {
-  materialize,
-  _a0d3305d7a8d4c01,
-  _0f6f6fe4a8e94447,
-  _0d5df18d09084f3b,
-  _aab4dc2444d44402,
-  _6293e95141f14a55,
-  _ea56f0fe56c44ae7
-};

@@ -1,4 +1,4 @@
-import { GregorianCalendarModule } from "System/Globalization/GregorianCalendarModule.js";
+import { _23b9e8d671b5210e } from "System/Globalization/GregorianCalendarModule.js";
 import { _5ad63706a889c294, _d8080c573d45b4b4 } from "System/StringModule.js";
 const invariantCultureName = "";
 const invariantCultureDisplayName = "Invariant Language (Invariant Country)";
@@ -37,7 +37,7 @@ function getParentCulture(instance) {
     return "";
   if (normalized === "iv")
     return "";
-  let locale = new Locale(normalized);
+  let locale = new Intl.Locale(normalized);
   let language = locale.language;
   let script = locale.script;
   let region = locale.region;
@@ -65,10 +65,10 @@ function getIetfLanguageTag(instance) {
   return instance.length === 0 ? "" : instance;
 }
 function createLanguageDisplayNames(locale) {
-  return new DisplayNames(locale, {
-    type: 0,
-    fallback: 0,
-    languageDisplay: 0
+  return new Intl.DisplayNames(locale, {
+    type: "language",
+    fallback: "code",
+    languageDisplay: "dialect"
   });
 }
 function getLocalizedCultureName(instance, displayLocale) {
@@ -481,11 +481,11 @@ function createSpecificCulture(name) {
     return "";
   if (name === "iv")
     return "";
-  let supported = DateTimeFormat.supportedLocalesOf(name);
+  let supported = Intl.DateTimeFormat.supportedLocalesOf(name);
   if (supported.length === 0)
     throw new Error(`CultureNotFoundException: Culture '${name}' is not supported.`);
   let resolved = supported[0];
-  let locale = new Locale(resolved).maximize();
+  let locale = new Intl.Locale(resolved).maximize();
   let language = locale.language;
   let region = locale.region;
   let script = locale.script;
@@ -508,7 +508,7 @@ function createCultureInfo(name) {
     return "";
   if (name === "iv")
     return "iv";
-  let supported = DateTimeFormat.supportedLocalesOf(name);
+  let supported = Intl.DateTimeFormat.supportedLocalesOf(name);
   if (supported.length === 0)
     throw new Error(`CultureNotFoundException: Culture '${name}' is not supported.`);
   return supported[0];
@@ -523,11 +523,11 @@ function normalizeCultureInfo(instance) {
   return instance.length === 0 ? "" : createCultureInfo(instance);
 }
 function getCurrentCultureName() {
-  return createCultureInfo((new NumberFormat).resolvedOptions().locale);
+  return createCultureInfo((new Intl.NumberFormat).resolvedOptions().locale);
 }
 function getCurrentUICultureName() {
   try {
-    return createCultureInfo((new NumberFormat).resolvedOptions().locale);
+    return createCultureInfo((new Intl.NumberFormat).resolvedOptions().locale);
   } catch {
     return getCurrentCultureName();
   }
@@ -604,10 +604,10 @@ export function _0bedb111138c14ed(instance) {
 }
 export function _73e163fe0d6f4c41() { }
 export function _2ab4f6aaba1be337(instance) {
-  return GregorianCalendarModule._23b9e8d671b5210e();
+  return _23b9e8d671b5210e();
 }
 export function _5031598284c711b5(instance) {
-  return [GregorianCalendarModule._23b9e8d671b5210e()];
+  return [_23b9e8d671b5210e()];
 }
 export function _4b6ab04957c3b1d8(instance) {
   return false;
@@ -641,64 +641,3 @@ export function _a43a2bb07ef29293(name, predefinedOnly) {
 export function _1d57f4ce6dee8a81(name) {
   return getCultureInfoByIetfLanguageTag(name);
 }
-export const CultureInfoModule = {
-  invariantCultureName,
-  invariantCultureDisplayName,
-  invariantIetfLanguageTag,
-  invariantCultureByIetfName,
-  invariantThreeLetterIsoLanguageName,
-  invariantThreeLetterWindowsLanguageName,
-  getStringHashCode,
-  isNeutralCultureCore,
-  getParentCulture,
-  getLanguagePart,
-  getIetfLanguageTag,
-  createLanguageDisplayNames,
-  getLocalizedCultureName,
-  getDisplayName,
-  getNativeName,
-  getEnglishName,
-  getThreeLetterIsoLanguageName,
-  getThreeLetterWindowsLanguageName,
-  createSpecificCulture,
-  createCultureInfo,
-  createCultureInfo: CreateCultureInfo,
-  getCultureInfoByIetfLanguageTag,
-  normalizeCultureInfo,
-  getCurrentCultureName,
-  getCurrentUICultureName,
-  _b7486264ae338f27,
-  _df21a93fd9f84197,
-  _22aaac09e253b1f9,
-  _d0948ef9f698ec85,
-  _a078d5ccbbf2345a,
-  _1a26e2e2e4e0ca1d,
-  _eca32c250ead7de9,
-  _98e743867688a06d,
-  _e4c4d53d69e72382,
-  _cd29576576563da3,
-  _9c9f6e469362911e,
-  _59b041331098ad55,
-  _a4804f687bfc0013,
-  _97ad9637d1f75e7c,
-  _112fba1dc945fa1a,
-  _285ede13a469ce7b,
-  _1f981ccac713f3d9,
-  _dfe1a8cc1c9e5e52,
-  _b3aae6e43cf38d8a,
-  _559b27327f84f1af,
-  _0bedb111138c14ed,
-  _73e163fe0d6f4c41,
-  _2ab4f6aaba1be337,
-  _5031598284c711b5,
-  _4b6ab04957c3b1d8,
-  _e746a9049464da41,
-  _52d3a5ff068445a1,
-  _f3218a923929edaf,
-  _1a2fc3e83feec6fd,
-  _be269d85f3085630,
-  _a536c354b66082b9,
-  _e17d240a4c1653be,
-  _a43a2bb07ef29293,
-  _1d57f4ce6dee8a81
-};

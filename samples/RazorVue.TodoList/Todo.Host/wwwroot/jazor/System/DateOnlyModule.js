@@ -1,4 +1,4 @@
-import { JDateOnly, JDateTime, RuntimeModule } from "System/RuntimeModule.js";
+import { JDateOnly, JDateTime, createLocalDateTime, createUtcDate, getDaysInMonth } from "System/RuntimeModule.js";
 import { _5ad63706a889c294 } from "System/StringModule.js";
 function get_MaxDayNumber() {
   return 3652058;
@@ -18,15 +18,15 @@ function addMonthsCore(instance, months) {
   if (newMonthIndex < 0)
     newMonthIndex += 12;
   let newMonth = newMonthIndex + 1;
-  let daysInMonth = RuntimeModule.getDaysInMonth(newYear, newMonth);
+  let daysInMonth = getDaysInMonth(newYear, newMonth);
   let newDay = instance.day > daysInMonth ? daysInMonth : instance.day;
   return new JDateOnly(newYear, newMonth, newDay);
 }
 function createFromDayNumber(dayNumber) {
   ensureWholeNumber(dayNumber, "ArgumentOutOfRangeException: Day number must be a whole number.");
-  if (dayNumber < 0 || dayNumber > maxDayNumber)
+  if (dayNumber < 0 || dayNumber > get_MaxDayNumber())
     throw new Error("ArgumentOutOfRangeException: Day number must be within the range of DateOnly.");
-  let date = RuntimeModule.createUtcDate(1, 1, 1);
+  let date = createUtcDate(1, 1, 1);
   date.setUTCDate(date.getUTCDate() + dayNumber);
   return new JDateOnly(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
 }
@@ -56,7 +56,7 @@ function tryParseIsoDate(text, year, month, day) {
   day = Number(text.substring(8, 8 + 2));
   if (year < 1 || year > 9999 || month < 1 || month > 12)
     return [false, year, month, day];
-  let daysInMonth = RuntimeModule.getDaysInMonth(year, month);
+  let daysInMonth = getDaysInMonth(year, month);
   return [day >= 1 && day <= daysInMonth, year, month, day];
 }
 function parseCore(s) {
@@ -72,17 +72,15 @@ function parseCore(s) {
   return new JDateOnly(parsed.getFullYear(), parsed.getMonth() + 1, parsed.getDate());
 }
 function getDateTimeStylesValue(style) {
-  let numberStyle, enumStyle;
+  let numberStyle;
   if (typeof style === "number" && (numberStyle = style, true))
     return numberStyle;
-  if (typeof style === "number" && (enumStyle = style, true))
-    return Number(enumStyle);
   if (style === null)
     return 0;
   throw new Error("ArgumentException: Invalid DateTimeStyles value.");
 }
 function isSupportedDateTimeStyles(style) {
-  return style >= 0 && Math.floor(style) === style && (style & ~allowedDateTimeStylesMask) === 0;
+  return style >= 0 && Math.floor(style) === style && (style & ~get_AllowedDateTimeStylesMask()) === 0;
 }
 export function _5f8053a9657a0844() {
   return new JDateOnly(1, 1, 1);
@@ -112,12 +110,12 @@ export function _fa637ab5d7ac92a4(instance) {
   return instance.day;
 }
 export function _faf7aaba77d4de0c(instance) {
-  let date = RuntimeModule.createUtcDate(instance.year, instance.month, instance.day);
+  let date = createUtcDate(instance.year, instance.month, instance.day);
   return date.getUTCDay();
 }
 export function _6eb4f28206445ae2(instance) {
-  let date = RuntimeModule.createUtcDate(instance.year, instance.month, instance.day);
-  let start = RuntimeModule.createUtcDate(instance.year, 1, 0);
+  let date = createUtcDate(instance.year, instance.month, instance.day);
+  let start = createUtcDate(instance.year, 1, 0);
   let diff = date.getTime() - start.getTime();
   let oneDay = 1000 * 60 * 60 * 24;
   return Math.floor(diff / oneDay);
@@ -127,7 +125,7 @@ export function _04663ba34bb3359d(instance) {
 }
 export function _cb25738994c034e6(instance, value) {
   ensureWholeNumber(value, "ArgumentOutOfRangeException: Days value must be a whole number.");
-  let date = RuntimeModule.createUtcDate(instance.year, instance.month, instance.day);
+  let date = createUtcDate(instance.year, instance.month, instance.day);
   date.setUTCDate(date.getUTCDate() + value);
   return new JDateOnly(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
 }
@@ -166,7 +164,7 @@ export function _877770696b013f43(instance, time) {
   let minute = Math.floor(totalMilliseconds / 60000) % 60;
   let second = Math.floor(totalMilliseconds / 1000) % 60;
   let millisecond = totalMilliseconds % 1000;
-  return new JDateTime(RuntimeModule.createLocalDateTime(instance.year, instance.month, instance.day, hour, minute, second, millisecond), 0, subMillisecondTicks);
+  return new JDateTime(createLocalDateTime(instance.year, instance.month, instance.day, hour, minute, second, millisecond), 0, subMillisecondTicks);
 }
 export function _458cbe4dafb71f56(instance, time, kind) {
   let result = _877770696b013f43(instance, time);
@@ -263,62 +261,3 @@ export function _18323464e5af4054(s, provider) {
 export function _e876a9d582a79f6a(s, provider, result) {
   return _b14e4d5a572477d0(s, result);
 }
-export const DateOnlyModule = {
-  get_MaxDayNumber,
-  get_AllowedDateTimeStylesMask,
-  ensureWholeNumber,
-  addMonthsCore,
-  createFromDayNumber,
-  getDateTimeKind,
-  isAsciiDigit,
-  tryParseIsoDate,
-  parseCore,
-  getDateTimeStylesValue,
-  isSupportedDateTimeStyles,
-  _5f8053a9657a0844,
-  _4ab7a6677b34a52b,
-  _d3542025e0317ea5,
-  _8c5a25d777626c6c,
-  _c0568bfa1df0ef59,
-  _96a80b211a70154c,
-  _eeb6f43b5386f459,
-  _c189199a72fa745c,
-  _fa637ab5d7ac92a4,
-  _faf7aaba77d4de0c,
-  _6eb4f28206445ae2,
-  _04663ba34bb3359d,
-  _cb25738994c034e6,
-  _48134214e63fd9f3,
-  _267d01eded65ff1c,
-  _82086262cc7cfc9f,
-  _56cd63706d2066a6,
-  _9b5d78026d232bd9,
-  _0c9d48e09790b085,
-  _5384e5a8b5389bd2,
-  _ba9123a74024d518,
-  _87be25300884e7c8,
-  _877770696b013f43,
-  _458cbe4dafb71f56,
-  _8aa4a7a01276329d,
-  _e80970d38580b553,
-  _519a37b30f165f47,
-  _3c738069b4f977d8,
-  _48e30250a65786cc,
-  _6ea6fdcc8ab0282e,
-  _ec2f441fb253f83c,
-  _e2640560d207afce,
-  _60b758dae2c14037,
-  _589f2bd8e9539a93,
-  _0df2e2de9cba3b73,
-  _b14e4d5a572477d0,
-  _025d467c3006d36b,
-  _28b00aeb94d7ea8a,
-  _2853e304d94edbd5,
-  _5dd96e58e55f801c,
-  _4a8e04add813d3bc,
-  _6135867fb7290a07,
-  _90dcc7a43f944613,
-  _09af445002e82710,
-  _18323464e5af4054,
-  _e876a9d582a79f6a
-};

@@ -26,7 +26,7 @@ export function _d4e5f6a7b8c9d0e1(list) {
   return Object.freeze(snapshot);
 }
 export function _e5f6a7b8c9d0e1f2() {
-  return Object.freeze([]);
+  return Object.freeze(new Array);
 }
 export function _b8c9d0e1f2a3b4c5(instance, index) {
   ensureSource(instance);
@@ -66,16 +66,3 @@ export function _f2a3b4c5d6e7f8a9(instance, index, array, arrayIndex, count) {
   for (let i = 0; i < count; i++)
     array[arrayIndex + i] = instance[index + i];
 }
-export const ReadOnlyCollectionT1Module = {
-  ensureWholeNumber,
-  ensureSource,
-  ensureTarget,
-  ensureTargetIndex,
-  ensureCopyCapacity,
-  _d4e5f6a7b8c9d0e1,
-  _e5f6a7b8c9d0e1f2,
-  _b8c9d0e1f2a3b4c5,
-  _d0e1f2a3b4c5d6e7,
-  _e1f2a3b4c5d6e7f8,
-  _f2a3b4c5d6e7f8a9
-};

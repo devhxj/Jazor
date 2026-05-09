@@ -45,11 +45,3 @@ export function _2c3736bd7d205921(instance, obj) {
   ensureComparerInstance(instance);
   return getHashCodeCore(obj);
 }
-export const EqualityComparerT1Module = {
-  ensureComparerInstance,
-  hashStringCore,
-  equalsCore,
-  getHashCodeCore,
-  _4614e5ce6b42a7ad,
-  _2c3736bd7d205921
-};

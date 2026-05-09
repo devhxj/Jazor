@@ -1,3 +1,4 @@
+import { compareCore } from "System/Collections/Generic/ComparerT1Module.js";
 import { _0289dcf579b8a65e } from "System/Collections/Generic/IComparerT1Module.js";
 function ensureInstance(instance) {
   if (instance === null)
@@ -238,7 +239,7 @@ export function _56ef9aefabac7c09(instance, index, collection) {
   if (collection === null)
     throw new Error("ArgumentNullException: collection is null");
   if (Array.isArray(collection) && (source = collection, true) && Object.is(instance, source)) {
-    let snapshot = [];
+    let snapshot = new Array;
     for (let i = 0; i < source.length; i++)
       snapshot.push(source[i]);
     let selfInsertionIndex = index;
@@ -321,7 +322,28 @@ export function _56dc1af8af32e484(instance, index, count) {
     end--;
   }
 }
+function compareDefault(left, right) {
+  return compareCore(left, right);
+}
+export function _36a478f36b41a6d2(instance) {
+  ensureInstance(instance);
+  instance.sort((left, right) => {
+    return compareDefault(left, right);
+  });
+}
+export function _5fa599e721e252ff(instance, comparer) {
+  ensureInstance(instance);
+  if (comparer === null)
+    instance.sort((left, right) => {
+      return compareDefault(left, right);
+    });
+  else
+    instance.sort((left, right) => {
+      return _0289dcf579b8a65e(comparer, left, right);
+    });
+}
 export function _19207851b52a5287(instance, index, count, comparer) {
+  ensureInstance(instance);
   ensureRemoveRange(instance, index, count);
   if (count <= 1)
     return;
@@ -331,49 +353,9 @@ export function _19207851b52a5287(instance, index, count, comparer) {
       return _0289dcf579b8a65e(comparer, a, b);
     });
   else
-    subArray.sort();
+    subArray.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   for (let i = 0; i < count; i++)
     instance[index + i] = subArray[i];
 }
-export const ListT1Module = {
-  ensureInstance,
-  ensureWholeNumber,
-  ensureTargetArray,
-  ensureTargetIndex,
-  ensureCopyCapacity,
-  ensureInsertIndex,
-  ensureExistingIndex,
-  ensureRemoveRange,
-  ensureMatch,
-  ensureForwardSearchStartIndex,
-  ensureForwardSearchRange,
-  ensureLastSearchStartIndex,
-  ensureLastSearchRange,
-  equalsForListSearch,
-  appendRange,
-  _d389c31d59037b42,
-  _c16a7960302ea054,
-  _a2660853a4ebc1f6,
-  _9a3a4817585dded1,
-  _0fdf1627d283f8ae,
-  _3559b1ff2a643922,
-  _db9b68fbc73e342b,
-  _41b337b09c5daf75,
-  _de0943e496e36f2d,
-  _ae1a0b59c73f2b1a,
-  _081aa9ae0b09d058,
-  _58cc54dc07e440c4,
-  _c35c9c99a23ff96a,
-  _71ee35e0e260eb27,
-  _5ee52e4e4fc54e6d,
-  _0dc538197c677986,
-  _56ef9aefabac7c09,
-  _279befda6399cda5,
-  _b2f1955b62962812,
-  _562f832fd220e768,
-  _b864beda26f186e2,
-  _a5e8c6b27df6470b,
-  _8425758ef4e7b6f9,
-  _56dc1af8af32e484,
-  _19207851b52a5287
-};

@@ -172,9 +172,15 @@ RazorVue SG integration 启用后，且当前 compilation 存在 RazorVue compon
 普通 `RazorVueGenerator` 在 integration 启用后只负责诊断守门和让路：
 
 1. 如果 bootstrap patch 已失败，报告 `JAZORVGA019`，并带出 bootstrap failure。
-2. 如果 tail output 已注册，普通 generator 不再产 catalog/artifact，也不重复跑兼容 probe。
-3. 如果当前 compilation 需要 RazorVue tail output，但 tail output 没有注册且 SDK shape 兼容，报告 `JAZORVGA018`。
-4. 如果当前 compilation 不需要 RazorVue tail output，不报告 integration 诊断。
+2. 如果当前 generator context 已注册 tail output，普通 generator 不再产 catalog/artifact，也不重复跑兼容 probe。
+3. 如果只是进程级历史状态显示 tail output 曾经注册，但当前 generator context 没有注册证据，不能让路，必须继续按未接管处理。
+4. 如果当前 compilation 需要 RazorVue tail output，但当前 generator context 没有 tail output 注册且 SDK shape 兼容，报告 `JAZORVGA018`。
+5. 如果 Roslyn 当前 `IncrementalGeneratorInitializationContext` 的 output-node state 取不到，则无法证明“当前 context 已接管”，必须报告 `JAZORVGA019`，不能退化成进程级历史状态判断。
+6. 如果当前 compilation 不需要 RazorVue tail output，不报告 integration 诊断。
+
+Hook 注册去重也必须按当前 generator context + source node 组合处理，不能只按进程级 source node 去重。否则 compiler server 同进程多项目/多 driver run 可能让后续 context 被历史注册短路。
+
+Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSourceOutput(...)` 对应的 Razor/C# document 数据流，并在 trace 中记录 `TailOutputRegistrationKind = "implementation-source-output"`。只有无法定位 implementation source-output 时，才允许退到 `HostOutput` 形状作为兜底观测路径；这类情况应被视为 SDK shape 偏离，需要通过 focused test 重新评估。
 
 失败时禁止自动回退到：
 
@@ -213,17 +219,31 @@ RazorVue SG integration 启用后，且当前 compilation 存在 RazorVue compon
 8. `ProductionRazorCompilerReferenceTests` 保证生产项目和旧桥接项目不会回退到 Razor Compiler 强引用路线。
 9. `RazorSourceGeneratorCompatibilityProbeTests` 覆盖 unsupported SDK shape patch 前拒绝。
 10. `RazorSourceGeneratorTailOutputTests` 覆盖 enabled tail output 在有 RazorVue candidate 时输入缺失/不可读报 `JAZORVGA020`，在无 candidate 时 no-op。
-11. `ESGeneratorTests` 覆盖 integration 启用后 tail 未注册报 `JAZORVGA018`、bootstrap patch 失败报 `JAZORVGA019`、tail 已注册时普通 generator 不误报也不接管输出。
+11. `ESGeneratorTests` 覆盖 integration 启用后 tail 未注册报 `JAZORVGA018`、bootstrap patch 失败报 `JAZORVGA019`、当前 context 已注册 tail 时普通 generator 不误报也不接管输出、只有进程级历史注册但当前 context 未注册时仍报 `JAZORVGA018`、当前 context key 不可用时报 `JAZORVGA019`。
+12. `RazorSourceGeneratorBootstrapPatchTests` 覆盖真实外部构建 trace 中 `TailOutputRegisteredForCurrentContext=true` 且 `TailOutputRegistrationKind="implementation-source-output"`。
+13. `Jazor.EmitTest` RazorVue 过滤切片必须全绿，当前最新验证为 45/45 通过。
+14. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 必须同时断言当前 analyzer payload 完整、且 `.nupkg` 中不存在 Razor Compiler / Razor Utilities Shared payload。
+15. `samples/RazorVue.TodoList/build-local.ps1` 必须通过本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包完成 host rebuild，并生成 SFC artifact、manifest、host requirements module 和 sidecar。
+16. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `npm run build`，证明生成 `.vue` 可被标准 Vue/Vite/Vuetify production build 消费。
+17. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 必须通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact。
+18. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `npm run smoke:ssr`，证明生成 `.vue` 至少可经 Vite SSR loader、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
+19. SFC component prop lowering 必须保留类型语义：字符串 literal 可输出静态属性，Boolean / numeric / null / other 非字符串 literal 必须输出 Vue bound prop，避免把 library component props 统一降成字符串。
 
 ## 10. 后续执行顺序
 
-1. 建立 Razor SG `Initialize(...)` IL shape 探针，输出目标 SDK 的关键指纹。
-   关键指纹当前只以 `Initialize(...)` IL SHA-256 和 declared method surface 为正式兼容条件。
-2. 设计最小 `RazorVueSourceOutput` delegate，先产出最小 SFC artifact/catalog。
-3. 在测试环境中 patch Razor SG 并验证官方 `.razor.g.cs` 与 RazorVue source 同轮产出。
-4. 接入 RazorVue Razor SG 内存结果消费侧，跑 RazorVue focused suites。
-5. 补 package / analyzer 装载验证，确保普通 Razor 项目 no-op。
-6. 扩展 Razor SG document 数据面到 imports、document identity 和后续模板所需结构。
+1. 复跑 `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 与包内容负向守卫，确保不携带 Razor Compiler / Razor Utilities Shared。
+2. 将独立外部 consumer 的 Vite production build 纳入可重复验证路径，避免只依赖仓库 sample consumer。
+3. 补真实浏览器 smoke，证明 TodoList 生成 SFC 可挂载且关键交互有效。
+4. 扩展 Razor SG document 数据面到 imports、document identity 和后续模板所需结构。
+5. 建立当前支持/unsupported 矩阵，明确 Razor 语法、生命周期、slot/bind/event、source map、HMR 的发布边界。
+
+当前已通过的样例与前端工具链验证：
+
+1. `pwsh ./samples/RazorVue.TodoList/build-local.ps1` 已通过，输出包含 `razorvueSfcArtifacts=2`。
+2. `samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/components/todo-app.vue` 已包含完整 nested Vuetify template、component import 和 DTO 属性投影，并对 `VContainer` / `VCol` 等 Boolean / numeric props 输出 `:fluid="true"`、`:cols="12"` 这类 Vue bound props。
+3. `cd samples/RazorVue.TodoList/todo-consumer && npm run build` 已通过，Vite production build 成功转换 554 个模块。
+4. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，覆盖独立临时 `.razor` consumer、NuGet 包消费、官方 Razor SG integration、SFC manifest/source map/origins 输出。
+5. `cd samples/RazorVue.TodoList/todo-consumer && npm run smoke:ssr` 已通过，SSR smoke 经 Vite SSR loader 加载生成 SFC、渲染 DTO 投影文本并验证 host requirements；该验证不等同于浏览器 hydration/交互 smoke，后者仍是上线前门槛。
 
 ## 11. 一句话结论
 

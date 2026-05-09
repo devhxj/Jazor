@@ -131,26 +131,3 @@ export function _2c792a5d6ef88cd1(x) {
   let angle = x * Math.PI;
   return { sinPi: Math.sin(angle), cosPi: Math.cos(angle) };
 }
-export const SingleModule = {
-  areEqualCore,
-  compareCore,
-  isFiniteCore,
-  isPow2Core,
-  signCore,
-  maxMagnitudeCore,
-  minMagnitudeCore,
-  maxMagnitudeNumberCore,
-  minMagnitudeNumberCore,
-  _0b80f2f2f1a3c1a6,
-  _eb69b50c7032a809,
-  _d0492a7790d81596,
-  _ced8b209dbd75890,
-  _0dcf89ab5d6bd60c,
-  _323a6b94e62b2729,
-  _7c146ff0a50e958f,
-  _b7b1d7781578b7e0,
-  _e5a7b14f707c69f7,
-  _4a2ec5d010e27cb1,
-  _9905e3952bca67bc,
-  _2c792a5d6ef88cd1
-};

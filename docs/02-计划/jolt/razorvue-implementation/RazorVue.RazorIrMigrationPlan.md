@@ -163,14 +163,30 @@
   - unsupported SDK shape 会在 patch 前被拒绝，并通过 bootstrap trace 记录 failure
   - tail output 启用且当前 compilation 存在 RazorVue component candidate 时，如果读不懂官方 output shape、没有收到 Razor SG document 或只收到 suppressed document，必须报告 `JAZORVGA020`
   - tail output 启用但当前 compilation 没有 RazorVue component candidate 时必须 no-op，避免普通 Razor 或未使用 RazorVue 组件的项目被误报
-  - 普通 `RazorVueGenerator` 在 integration 启用后不再尝试自己产出 catalog/artifact；它只负责对 bootstrap patch failed、tail 未注册等未接管状态给出 `JAZORVGA019` / `JAZORVGA018`
+  - 普通 `RazorVueGenerator` 在 integration 启用后不再尝试自己产出 catalog/artifact；它只负责对 bootstrap patch failed、当前 generator context tail 未注册等未接管状态给出 `JAZORVGA019` / `JAZORVGA018`
+  - tail 接管判断从进程级 `TailOutputRegistered` 收紧为当前 context 级 `TailOutputRegisteredForCurrentContext`，避免 compiler server 同进程多项目/多 driver run 场景被历史状态误判为已接管
+  - tail source-node 去重从进程级收紧为当前 context + source node 组合，避免后续 context 被历史 source node 注册短路
+  - 当前 context key 不可用时直接按 `JAZORVGA019` fail-fast，不能用进程级历史状态保守弥合
+  - tail hook 优先绑定官方 implementation source-output 数据流，并在 bootstrap trace 中记录 `TailOutputRegistrationKind="implementation-source-output"`；HostOutput 只保留为锚点/兜底观测路径
 - 当前聚焦验证已通过：
   - `RazorSourceGeneratorBootstrapPatchTests` 3/3 通过，证明官方 `.razor.g.cs` 保持生成，RazorVue tail output 同轮生成 SFC catalog/artifact，禁用 integration 时 no-op
   - HostOutput / Bridge / Compatibility 相关 focused tests 5/5 通过
   - `RazorSourceGeneratorTailOutputTests` 4/4 通过，证明 enabled tail output 在有 RazorVue candidate 时缺失输入不静默成功，在无 candidate 时不误报
-  - `ESGeneratorTests` 新增 3 个 integration bootstrap 诊断回归，证明 tail 未注册不静默成功、patch failed 不被误判为 not-active、tail 已注册后普通 generator 不误报
+  - `ESGeneratorTests` 新增 integration bootstrap 诊断回归，证明 tail 未注册不静默成功、patch failed 不被误判为 not-active、当前 context 已注册后普通 generator 不误报、只有进程级历史注册但当前 context 未注册时仍 fail-fast
+  - `ESGeneratorTests` 已覆盖当前 context key 不可用时报 `JAZORVGA019`
+  - `RazorSourceGeneratorBootstrapPatchTests` 已断言真实外部构建 trace 中 `TailOutputRegisteredForCurrentContext=true` 且 `TailOutputRegistrationKind="implementation-source-output"`
   - `Jazor.Analyzer` build 0 warning / 0 error，输出目录不再包含 `Microsoft.CodeAnalysis.Razor.Compiler.dll`
   - `Jazor.RazorVue` build 0 warning / 0 error，生产输出不依赖 Razor Compiler
+  - `Jazor.RazorVue.Test` 557/557 通过
+  - `Jazor.RazorVue.RazorIr.Test` 96/96 通过
+  - `Jazor.EmitTest` RazorVue 过滤切片 45/45 通过
+  - `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 已覆盖当前 analyzer payload，并加入 Razor Compiler / Razor Utilities Shared 负向包内容守卫
+  - `samples/RazorVue.TodoList/build-local.ps1` 已通过本地 pack 样例验证，当前输出 `razorvueSfcArtifacts=2`
+  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `npm run build`，证明生成 SFC 可被标准 Vue/Vite/Vuetify production build 消费
+  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `npm run smoke:ssr`，证明生成 SFC 可经 Vite SSR loader、Vue server renderer 和 Vuetify plugin 做 runtime render
+  - SFC component prop lowering 已保留 literal 类型语义：字符串 literal 继续静态输出，Boolean / numeric 等非字符串 literal 输出 Vue bound prop，当前 TodoList 中 `VContainer :fluid="true"`、`VCol :cols="12"` 不再触发 Vue prop 类型 warning
+  - `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact
+  - 最新 `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 仍需在 sample/consumer smoke 前复跑；包 payload 不得回退携带 Razor Compiler / Razor Utilities Shared
 
 ## 5. 阶段 2. IR 节点盘点与支持边界
 

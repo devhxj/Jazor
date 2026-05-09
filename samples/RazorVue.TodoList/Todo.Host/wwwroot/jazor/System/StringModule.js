@@ -141,7 +141,7 @@ export function _aaa73a4811837ec7(instance, separator, count, options) {
     removeEmptyEntries = (splitOptions & 1) !== 0;
   }
   let token = separator.toString();
-  let result = [];
+  let result = new Array;
   let start = 0;
   while (result.length < count - 1) {
     let index = instance.indexOf(token, start);
@@ -174,7 +174,7 @@ function buildSplitCharClassPattern(separator) {
     return "\\s+";
   let pattern = "[";
   for (let i = 0; i < separator.length; i++)
-    pattern += escapeRegexCharClassChar(i$8578349aab59a79b(separator, i));
+    pattern += escapeRegexCharClassChar(separator.substring(i, i + 1));
   return pattern + "]";
 }
 function BuildSplitCharClassPattern(separators) {
@@ -188,22 +188,22 @@ function BuildSplitCharClassPattern(separators) {
       continue;
     hasSeparator = true;
     for (let j = 0; j < separator.length; j++)
-      pattern += escapeRegexCharClassChar(i$8578349aab59a79b(separator, j));
+      pattern += escapeRegexCharClassChar(separator.substring(j, j + 1));
   }
   return hasSeparator ? pattern + "]" : "\\s+";
 }
 function escapeRegexCharClassChar(ch) {
   return (() => {
-    const __swexpr$f731d5316558895dd3d3fa1c = ch;
-    if (__swexpr$f731d5316558895dd3d3fa1c === "\\")
+    const __swexpr$da15a416a4b563fe08c14254 = ch;
+    if (__swexpr$da15a416a4b563fe08c14254 === "\\")
       return "\\\\";
-    if (__swexpr$f731d5316558895dd3d3fa1c === "]")
+    if (__swexpr$da15a416a4b563fe08c14254 === "]")
       return "\\]";
-    if (__swexpr$f731d5316558895dd3d3fa1c === "^")
+    if (__swexpr$da15a416a4b563fe08c14254 === "^")
       return "\\^";
-    if (__swexpr$f731d5316558895dd3d3fa1c === "-")
+    if (__swexpr$da15a416a4b563fe08c14254 === "-")
       return "\\-";
-    return String.fromCharCode(ch);
+    return ch;
   })();
 }
 function applySplitOptions(parts, options) {
@@ -214,7 +214,7 @@ function applySplitOptions(parts, options) {
     trimEntries = (splitOptions & 2) !== 0;
     removeEmptyEntries = (splitOptions & 1) !== 0;
   }
-  let result = [];
+  let result = new Array;
   for (let part of parts) {
     let current = trimEntries ? part.trim() : part;
     if (removeEmptyEntries && current.length === 0)
@@ -236,10 +236,10 @@ function splitByCharSetWithLimitAndOptions(instance, separator, count, options) 
   if (count === 1)
     return applySplitOptions([instance], options);
   let any = normalizeCharSet(separator);
-  let result = [];
+  let result = new Array;
   let start = 0;
   for (let i = 0; i < instance.length && result.length < count - 1; i++) {
-    if (!any.has(String.fromCharCode(i$8578349aab59a79b(instance, i))))
+    if (!any.has(i$8578349aab59a79b(instance, i)))
       continue;
     let part = instance.substring(start, start + (i - start));
     part = trimEntries ? part.trim() : part;
@@ -266,7 +266,7 @@ function splitByStringsWithLimitAndOptions(instance, separator, count, options) 
   if (count === 1)
     return applySplitOptions([instance], options);
   let separators = normalizeStringSeparators(separator);
-  let result = [];
+  let result = new Array;
   let start = 0;
   while (result.length < count - 1) {
     let bestIndex = -1;
@@ -315,7 +315,7 @@ function replaceAllIgnoreCase(instance, oldValue, newValue) {
   return start === 0 ? instance : result + instance.substring(start);
 }
 function normalizeStringSeparators(separator) {
-  let result = [];
+  let result = new Array;
   (() => {
     let single, many;
     const __swpat$b0aa07bf10fc324d6d779b23 = separator;
@@ -363,7 +363,7 @@ export function _96eb0a23afa7fdfb(instance, separator, count, options) {
     trimEntries = (splitOptions & 2) !== 0;
     removeEmptyEntries = (splitOptions & 1) !== 0;
   }
-  let result = [];
+  let result = new Array;
   let start = 0;
   while (result.length < count - 1) {
     let index = instance.indexOf(separator, start);
@@ -393,9 +393,9 @@ export function _5d7e005b9dcb67de(instance, trimChar) {
     return instance;
   let start = 0;
   let end = instance.length - 1;
-  while (start <= end && String.fromCharCode(i$8578349aab59a79b(instance, start)) === token)
+  while (start <= end && i$8578349aab59a79b(instance, start) === token)
     start++;
-  while (end >= start && String.fromCharCode(i$8578349aab59a79b(instance, end)) === token)
+  while (end >= start && i$8578349aab59a79b(instance, end) === token)
     end--;
   return start > end ? "" : instance.substring(start, start + (end - start + 1));
 }
@@ -403,9 +403,9 @@ export function _c6c444b4e71e14f7(instance, trimChars) {
   let any = normalizeCharSet(trimChars);
   let start = 0;
   let end = instance.length - 1;
-  while (start <= end && any.has(String.fromCharCode(i$8578349aab59a79b(instance, start))))
+  while (start <= end && any.has(i$8578349aab59a79b(instance, start)))
     start++;
-  while (end >= start && any.has(String.fromCharCode(i$8578349aab59a79b(instance, end))))
+  while (end >= start && any.has(i$8578349aab59a79b(instance, end)))
     end--;
   return start > end ? "" : instance.substring(start, start + (end - start + 1));
 }
@@ -414,14 +414,14 @@ export function _561fe737e62cf332(instance, trimChar) {
   if (token.length === 0)
     return instance;
   let start = 0;
-  while (start < instance.length && String.fromCharCode(i$8578349aab59a79b(instance, start)) === token)
+  while (start < instance.length && i$8578349aab59a79b(instance, start) === token)
     start++;
   return start === 0 ? instance : instance.substring(start);
 }
 export function _98731360726c6976(instance, trimChars) {
   let any = normalizeCharSet(trimChars);
   let start = 0;
-  while (start < instance.length && any.has(String.fromCharCode(i$8578349aab59a79b(instance, start))))
+  while (start < instance.length && any.has(i$8578349aab59a79b(instance, start)))
     start++;
   return start === 0 ? instance : instance.substring(start);
 }
@@ -430,14 +430,14 @@ export function _eb362a090d734099(instance, trimChar) {
   if (token.length === 0)
     return instance;
   let end = instance.length - 1;
-  while (end >= 0 && String.fromCharCode(i$8578349aab59a79b(instance, end)) === token)
+  while (end >= 0 && i$8578349aab59a79b(instance, end) === token)
     end--;
   return end === instance.length - 1 ? instance : end < 0 ? "" : instance.substring(0, 0 + (end + 1));
 }
 export function _a62862c1fbaa21c3(instance, trimChars) {
   let any = normalizeCharSet(trimChars);
   let end = instance.length - 1;
-  while (end >= 0 && any.has(String.fromCharCode(i$8578349aab59a79b(instance, end))))
+  while (end >= 0 && any.has(i$8578349aab59a79b(instance, end)))
     end--;
   return end === instance.length - 1 ? instance : end < 0 ? "" : instance.substring(0, 0 + (end + 1));
 }
@@ -456,7 +456,7 @@ export function _d2873e605fbed764(instance, value, startIndex, count) {
   let target = value.toString();
   let end = startIndex + count;
   for (let i = startIndex; i < end && i < instance.length; i++) {
-    if (String.fromCharCode(i$8578349aab59a79b(instance, i)) === target)
+    if (i$8578349aab59a79b(instance, i) === target)
       return i;
   }
   return -1;
@@ -464,7 +464,7 @@ export function _d2873e605fbed764(instance, value, startIndex, count) {
 export function _69b749a1c6cbae78(instance, anyOf) {
   let any = normalizeCharSet(anyOf);
   for (let i = 0; i < instance.length; i++) {
-    let current = String.fromCharCode(i$8578349aab59a79b(instance, i));
+    let current = i$8578349aab59a79b(instance, i);
     if (any.has(current))
       return i;
   }
@@ -473,7 +473,7 @@ export function _69b749a1c6cbae78(instance, anyOf) {
 export function _63633a5f3b85c5a9(instance, anyOf, startIndex) {
   let any = normalizeCharSet(anyOf);
   for (let i = startIndex; i < instance.length; i++) {
-    let current = String.fromCharCode(i$8578349aab59a79b(instance, i));
+    let current = i$8578349aab59a79b(instance, i);
     if (any.has(current))
       return i;
   }
@@ -483,7 +483,7 @@ export function _cb863079aae72451(instance, anyOf, startIndex, count) {
   let any = normalizeCharSet(anyOf);
   let end = startIndex + count;
   for (let i = startIndex; i < end && i < instance.length; i++) {
-    let current = String.fromCharCode(i$8578349aab59a79b(instance, i));
+    let current = i$8578349aab59a79b(instance, i);
     if (any.has(current))
       return i;
   }
@@ -513,7 +513,7 @@ export function _dbdd57f8d259ce66(instance, value, startIndex, count) {
   if (begin < 0)
     begin = 0;
   for (let i = end; i >= begin; i--) {
-    if (String.fromCharCode(i$8578349aab59a79b(instance, i)) === target)
+    if (i$8578349aab59a79b(instance, i) === target)
       return i;
   }
   return -1;
@@ -521,7 +521,7 @@ export function _dbdd57f8d259ce66(instance, value, startIndex, count) {
 export function _c0212f4213a99019(instance, anyOf) {
   let any = normalizeCharSet(anyOf);
   for (let i = instance.length - 1; i >= 0; i--) {
-    let current = String.fromCharCode(i$8578349aab59a79b(instance, i));
+    let current = i$8578349aab59a79b(instance, i);
     if (any.has(current))
       return i;
   }
@@ -534,7 +534,7 @@ function normalizeCharSet(anyOf) {
     const __swpat$7d7ef8eca298015bad704949 = anyOf;
     if (typeof __swpat$7d7ef8eca298015bad704949 === "string" && (single = __swpat$7d7ef8eca298015bad704949, true)) {
       for (let i = 0; i < single.length; i++)
-        _e1d2ba750a2788cb(set, String.fromCharCode(i$8578349aab59a79b(single, i)));
+        _e1d2ba750a2788cb(set, i$8578349aab59a79b(single, i));
       return;
     }
     if (Array.isArray(__swpat$7d7ef8eca298015bad704949) && (many = __swpat$7d7ef8eca298015bad704949, true)) {
@@ -543,7 +543,7 @@ function normalizeCharSet(anyOf) {
         if (!item)
           continue;
         for (let j = 0; j < item.length; j++)
-          _e1d2ba750a2788cb(set, String.fromCharCode(i$8578349aab59a79b(item, j)));
+          _e1d2ba750a2788cb(set, i$8578349aab59a79b(item, j));
       }
       return;
     }
@@ -554,7 +554,7 @@ export function _c401e64318e768c4(instance, anyOf, startIndex) {
   let any = normalizeCharSet(anyOf);
   let index = startIndex >= instance.length ? Number(instance.length - 1) : startIndex;
   for (let i = index; i >= 0; i--) {
-    let current = String.fromCharCode(i$8578349aab59a79b(instance, i));
+    let current = i$8578349aab59a79b(instance, i);
     if (any.has(current))
       return i;
   }
@@ -567,7 +567,7 @@ export function _3c17fcef5615e7a3(instance, anyOf, startIndex, count) {
   if (begin < 0)
     begin = 0;
   for (let i = end; i >= begin; i--) {
-    let current = String.fromCharCode(i$8578349aab59a79b(instance, i));
+    let current = i$8578349aab59a79b(instance, i);
     if (any.has(current))
       return i;
   }
@@ -594,70 +594,3 @@ export function _359dbce44ce4a4da(instance, value, startIndex, comparisonType) {
 export function _c911a06f021bd138(instance, value, startIndex, count, comparisonType) {
   return isOrdinalIgnoreCase(comparisonType) ? _c4ee024d06ee238c(instance.toLowerCase(), value.toLowerCase(), startIndex, count) : _c4ee024d06ee238c(instance, value, startIndex, count);
 }
-export const StringModule = {
-  _e16eea9fe3891a62,
-  _20874c0b43640318,
-  _9d940114ace1198f,
-  _d78fb9d76fca75e4,
-  _a55d307de6e31c7b,
-  _629b0613344d82e7,
-  _380e7c7649d703f0,
-  _946b7129a48c8114,
-  _f8e1e01e8c17e8bb,
-  _b7c36408f0f172e9,
-  isOrdinalIgnoreCase,
-  sliceOrEmpty,
-  _0333a0fd5f67d8a0,
-  _5ad63706a889c294,
-  _980dff69bc3b8afa,
-  _8606f3cc36d1f8ed,
-  _cda0978188193522,
-  _99b8bed2ce27774c,
-  _8a7510653022a974,
-  _7d7cb13bbbbb83c8,
-  _d8080c573d45b4b4,
-  _aaa73a4811837ec7,
-  _62c8810ea13dba45,
-  buildSplitCharClassPattern,
-  buildSplitCharClassPattern: BuildSplitCharClassPattern,
-  escapeRegexCharClassChar,
-  applySplitOptions,
-  splitByCharSetWithLimitAndOptions,
-  splitByStringsWithLimitAndOptions,
-  replaceAllIgnoreCase,
-  normalizeStringSeparators,
-  _5417a93b3075813a,
-  _d03d120228c0c4ed,
-  _25c1f15b0ed2cb6e,
-  _c8e5ceed33c6c638,
-  _189761f781df8770,
-  _96eb0a23afa7fdfb,
-  _fff99c96206a241e,
-  _f3c7edcc7cc89a4a,
-  _5d7e005b9dcb67de,
-  _c6c444b4e71e14f7,
-  _561fe737e62cf332,
-  _98731360726c6976,
-  _eb362a090d734099,
-  _a62862c1fbaa21c3,
-  _d52d7114d5c1b839,
-  _16d4b2b4de019fb2,
-  _5331447e2c855a66,
-  _d2873e605fbed764,
-  _69b749a1c6cbae78,
-  _63633a5f3b85c5a9,
-  _cb863079aae72451,
-  _ff549d811898fb56,
-  _3ae4900da2b07b27,
-  _2fabe2b831abe71e,
-  _ab22561fc42166db,
-  _dbdd57f8d259ce66,
-  _c0212f4213a99019,
-  normalizeCharSet,
-  _c401e64318e768c4,
-  _3c17fcef5615e7a3,
-  _c4ee024d06ee238c,
-  _78449c135e18c4bc,
-  _359dbce44ce4a4da,
-  _c911a06f021bd138
-};

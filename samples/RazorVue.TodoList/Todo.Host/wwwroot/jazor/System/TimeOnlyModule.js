@@ -1,5 +1,5 @@
-import { DoubleModule } from "System/DoubleModule.js";
-import { JTimeOnly, JTimeSpan, RuntimeModule } from "System/RuntimeModule.js";
+import { _24e14b276e0c7e30, _aed2927097617729 } from "System/DoubleModule.js";
+import { JTimeOnly, JTimeSpan, getInt64HashCode } from "System/RuntimeModule.js";
 import { _5ad63706a889c294 } from "System/StringModule.js";
 function get_TicksPerDay() {
   return BigInt("864000000000");
@@ -36,30 +36,27 @@ function validateTimeParts(hour, minute, second, millisecond, microsecond) {
 }
 function createTimeOnly(hour, minute, second, millisecond, microsecond) {
   validateTimeParts(hour, minute, second, millisecond, microsecond);
-  return new JTimeOnly(BigInt(hour) * ticksPerHour + BigInt(minute) * ticksPerMinute + BigInt(second) * ticksPerSecond + BigInt(millisecond) * BigInt("10000") + BigInt(microsecond) * BigInt(10));
+  return new JTimeOnly(BigInt(hour) * get_TicksPerHour() + BigInt(minute) * get_TicksPerMinute() + BigInt(second) * get_TicksPerSecond() + BigInt(millisecond) * BigInt("10000") + BigInt(microsecond) * BigInt(10));
 }
-function createRoundedTicksFromDouble(value) {
-  if (DoubleModule._24e14b276e0c7e30(value))
+function createTruncatedTicksFromDouble(value) {
+  if (_24e14b276e0c7e30(value))
     throw new Error("ArgumentException: Value cannot be NaN.");
-  if (!DoubleModule._aed2927097617729(value))
+  if (!_aed2927097617729(value))
     throw new Error("ArgumentOutOfRangeException: Value must be finite.");
-  let rounded = Math.round(value);
-  if (!DoubleModule._aed2927097617729(rounded))
-    throw new Error("ArgumentOutOfRangeException: Value is outside the supported TimeOnly range.");
-  return BigInt(rounded);
+  return BigInt(Math.trunc(value));
 }
 function addWithWrappedDays(instance, deltaTicks) {
   let total = instance.ticks + deltaTicks;
-  let wrapped = Number(total / ticksPerDay);
-  let result = total % ticksPerDay;
-  if (result < BigInt.zero) {
-    result += ticksPerDay;
+  let wrapped = Number(total / get_TicksPerDay());
+  let result = total % get_TicksPerDay();
+  if (result < 0n) {
+    result += get_TicksPerDay();
     wrapped--;
   }
   return [new JTimeOnly(result), wrapped];
 }
 function createTimeOnlyFromTicks(ticks) {
-  if (ticks < BigInt.zero || ticks >= ticksPerDay)
+  if (ticks < 0n || ticks >= get_TicksPerDay())
     throw new Error("ArgumentOutOfRangeException: TimeOnly ticks must be within a single day.");
   return new JTimeOnly(ticks);
 }
@@ -78,7 +75,7 @@ function parseCore(s) {
   let hour = Number(hourText);
   let minute = Number(minuteText);
   let secondValue = 0;
-  let fractionTicks = BigInt.zero;
+  let fractionTicks = 0n;
   if (second >= 0) {
     let fractionIndex = text.indexOf(".", second + 1);
     let secondText = fractionIndex < 0 ? text.substring(second + 1) : text.substring(second + 1, second + 1 + (fractionIndex - second - 1));
@@ -98,26 +95,24 @@ function parseCore(s) {
     throw new Error(`FormatException: String '${s}' was not recognized as a valid TimeOnly.`);
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || secondValue < 0 || secondValue > 59)
     throw new Error(`FormatException: String '${s}' was not recognized as a valid TimeOnly.`);
-  return new JTimeOnly(BigInt(hour) * ticksPerHour + BigInt(minute) * ticksPerMinute + BigInt(secondValue) * ticksPerSecond + fractionTicks);
+  return new JTimeOnly(BigInt(hour) * get_TicksPerHour() + BigInt(minute) * get_TicksPerMinute() + BigInt(secondValue) * get_TicksPerSecond() + fractionTicks);
 }
 function getDateTimeStylesValue(style) {
-  let numberStyle, enumStyle;
+  let numberStyle;
   if (typeof style === "number" && (numberStyle = style, true))
     return numberStyle;
-  if (typeof style === "number" && (enumStyle = style, true))
-    return Number(enumStyle);
   if (style === null)
     return 0;
   throw new Error("ArgumentException: Invalid DateTimeStyles value.");
 }
 function isSupportedDateTimeStyles(style) {
-  return style >= 0 && Math.floor(style) === style && (style & ~allowedDateTimeStylesMask) === 0;
+  return style >= 0 && Math.floor(style) === style && (style & ~get_AllowedDateTimeStylesMask()) === 0;
 }
 export function _9f78f92d0753f4cf() {
-  return new JTimeOnly(BigInt.zero);
+  return new JTimeOnly(0n);
 }
 export function _5a02197e2ef2252f() {
-  return new JTimeOnly(BigInt.zero);
+  return new JTimeOnly(0n);
 }
 export function _b1d0e19d91dbb54a() {
   return new JTimeOnly(BigInt("863999999999"));
@@ -138,13 +133,13 @@ export function _b8b3b95e8b848f44(ticks) {
   return createTimeOnlyFromTicks(ticks);
 }
 export function _201ef41481f4e3fb(instance) {
-  return Number(instance.ticks / ticksPerHour % BigInt(24));
+  return Number(instance.ticks / get_TicksPerHour() % BigInt(24));
 }
 export function _009addd612610031(instance) {
-  return Number(instance.ticks / ticksPerMinute % BigInt(60));
+  return Number(instance.ticks / get_TicksPerMinute() % BigInt(60));
 }
 export function _b9481eedd6cbeb99(instance) {
-  return Number(instance.ticks / ticksPerSecond % BigInt(60));
+  return Number(instance.ticks / get_TicksPerSecond() % BigInt(60));
 }
 export function _3c789a48d39d0010(instance) {
   return Number(instance.ticks / BigInt(10000) % BigInt(1000));
@@ -163,27 +158,27 @@ export function _4c935b985e7b6e02(instance, value) {
 }
 export function _31bb07d031379025(instance, value, wrappedDays) {
   let total = instance.ticks + value.ticks;
-  let wrapped = Number(total / ticksPerDay);
-  let result = total % ticksPerDay;
-  if (result < BigInt.zero) {
-    result += ticksPerDay;
+  let wrapped = Number(total / get_TicksPerDay());
+  let result = total % get_TicksPerDay();
+  if (result < 0n) {
+    result += get_TicksPerDay();
     wrapped--;
   }
   return [new JTimeOnly(result), wrapped];
 }
 export function _8e71fa0d2695e84f(instance, value) {
-  let delta = new JTimeSpan(createRoundedTicksFromDouble(value * 36000000000));
+  let delta = new JTimeSpan(createTruncatedTicksFromDouble(value * 36000000000));
   return _4c935b985e7b6e02(instance, delta);
 }
 export function _ad6cad38823a5ef6(instance, value, wrappedDays) {
-  return addWithWrappedDays(instance, createRoundedTicksFromDouble(value * 36000000000));
+  return addWithWrappedDays(instance, createTruncatedTicksFromDouble(value * 36000000000));
 }
 export function _77bd7db30cbf3bc9(instance, value) {
-  let delta = new JTimeSpan(createRoundedTicksFromDouble(value * 600000000));
+  let delta = new JTimeSpan(createTruncatedTicksFromDouble(value * 600000000));
   return _4c935b985e7b6e02(instance, delta);
 }
 export function _e698cb9920401887(instance, value, wrappedDays) {
-  return addWithWrappedDays(instance, createRoundedTicksFromDouble(value * 600000000));
+  return addWithWrappedDays(instance, createTruncatedTicksFromDouble(value * 600000000));
 }
 export function _da64e8d379a7e47c(instance, start, end) {
   return start.ticks < end.ticks ? instance.ticks >= start.ticks && instance.ticks < end.ticks : instance.ticks >= start.ticks || instance.ticks < end.ticks;
@@ -208,7 +203,7 @@ export function _cd098f438100d4cb(left, right) {
 }
 export function _888a9b439de5e7c1(t1, t2) {
   let diff = t1.ticks - t2.ticks;
-  return new JTimeSpan(diff < BigInt.zero ? diff + ticksPerDay : diff);
+  return new JTimeSpan(diff < 0n ? diff + get_TicksPerDay() : diff);
 }
 export function _d6170153a1f10bc3(instance, hour, minute) {
   return [_201ef41481f4e3fb(instance), _009addd612610031(instance)];
@@ -255,7 +250,7 @@ export function _f70c423884fcb611(instance, value) {
   return other !== null && _f6e2f8f76d2b030d(instance, other);
 }
 export function _ec44c7db9ffc5397(instance) {
-  return RuntimeModule.getInt64HashCode(instance.ticks);
+  return getInt64HashCode(instance.ticks);
 }
 export function _5c89b5211b528926(s, provider, style) {
   let styleValue = getDateTimeStylesValue(style);
@@ -275,22 +270,22 @@ export function _94c68599373e4134(s, result) {
 export function _33c24989822cc33a(s, provider, style, result) {
   let styleValue = getDateTimeStylesValue(style);
   if (!isSupportedDateTimeStyles(styleValue))
-    return [false, new JTimeOnly(BigInt.zero)];
+    return [false, new JTimeOnly(0n)];
   return _ee7de3e005ab6751(s, result);
 }
 export function _ee7de3e005ab6751(s, result) {
   if (s === null || s.length === 0)
-    return [false, new JTimeOnly(BigInt.zero)];
+    return [false, new JTimeOnly(0n)];
   try {
     return [true, parseCore(s)];
   } catch {
-    return [false, new JTimeOnly(BigInt.zero)];
+    return [false, new JTimeOnly(0n)];
   }
 }
 export function _c9d76d7d723eb7f2(s, provider, style, result) {
   let styleValue = getDateTimeStylesValue(style);
   if (!isSupportedDateTimeStyles(styleValue))
-    return [false, new JTimeOnly(BigInt.zero)];
+    return [false, new JTimeOnly(0n)];
   return _ee7de3e005ab6751(s, result);
 }
 export function _237d7e75836b3e58(instance) {
@@ -320,77 +315,3 @@ export function _ae9862bc80a4bba9(s, provider) {
 export function _1c2553fed0fac496(s, provider, result) {
   return _ee7de3e005ab6751(s, result);
 }
-export const TimeOnlyModule = {
-  get_TicksPerDay,
-  get_TicksPerHour,
-  get_TicksPerMinute,
-  get_TicksPerSecond,
-  get_AllowedDateTimeStylesMask,
-  isAsciiDigit,
-  isDigits,
-  validateTimeParts,
-  createTimeOnly,
-  createRoundedTicksFromDouble,
-  addWithWrappedDays,
-  createTimeOnlyFromTicks,
-  parseCore,
-  getDateTimeStylesValue,
-  isSupportedDateTimeStyles,
-  _9f78f92d0753f4cf,
-  _5a02197e2ef2252f,
-  _b1d0e19d91dbb54a,
-  _62d395c56c4c299d,
-  _e9a3481b3456aad4,
-  _335167098e226ccf,
-  _28c8cb012fe0e547,
-  _b8b3b95e8b848f44,
-  _201ef41481f4e3fb,
-  _009addd612610031,
-  _b9481eedd6cbeb99,
-  _3c789a48d39d0010,
-  _a091b803b851e27e,
-  _656df0ee12e92399,
-  _2fd46050126234ac,
-  _4c935b985e7b6e02,
-  _31bb07d031379025,
-  _8e71fa0d2695e84f,
-  _ad6cad38823a5ef6,
-  _77bd7db30cbf3bc9,
-  _e698cb9920401887,
-  _da64e8d379a7e47c,
-  _8e47d4212be3070c,
-  _b3b712e75fff0050,
-  _341a3f0fbcda5677,
-  _0656cf79f08fd69b,
-  _9b001b8f9a72a57d,
-  _cd098f438100d4cb,
-  _888a9b439de5e7c1,
-  _d6170153a1f10bc3,
-  _d36793074735968e,
-  _b349a5fd892d33be,
-  _1f5bb15cea73f15b,
-  _df2fe8c100ae98f0,
-  _a305982aa6859677,
-  _3ae6313d263b390f,
-  _b08fb6c2056f6cd2,
-  _fa5c092641b8d1d5,
-  _f6e2f8f76d2b030d,
-  _f70c423884fcb611,
-  _ec44c7db9ffc5397,
-  _5c89b5211b528926,
-  _c2335ab7e556bf0b,
-  _b10aeed232e37ce3,
-  _94c68599373e4134,
-  _33c24989822cc33a,
-  _ee7de3e005ab6751,
-  _c9d76d7d723eb7f2,
-  _237d7e75836b3e58,
-  _656ad6fcd28355ef,
-  _b95bf75d8e4cc6af,
-  _c2fe4568a7f1bbeb,
-  _dd80539f727e11c1,
-  _ef54bbdfdbe24915,
-  _8fea7e8fcaae2f91,
-  _ae9862bc80a4bba9,
-  _1c2553fed0fac496
-};

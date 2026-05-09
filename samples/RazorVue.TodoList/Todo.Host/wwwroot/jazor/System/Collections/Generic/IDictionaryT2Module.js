@@ -1,3 +1,4 @@
+import { isReadOnlyDictionaryCarrier } from "System/RuntimeModule.js";
 function ensureInstance(instance) {
   if (instance === null)
     throw new Error("NullReferenceException: instance is null.");
@@ -10,7 +11,7 @@ export function _371fad9265e864a1(instance, key) {
 }
 export function _f3b177bfce76ed5c(instance, key, value) {
   ensureInstance(instance);
-  if (DictionaryCarrierRuntime.isReadOnlyCarrier(instance))
+  if (isReadOnlyDictionaryCarrier(instance))
     throw new Error("NotSupportedException: Collection is read-only.");
   instance.set(key, value);
 }
@@ -20,9 +21,3 @@ export function _ebaafc4d4a520807(instance, key) {
     return [true, instance.get(key)];
   return [false, null];
 }
-export const IDictionaryT2Module = {
-  ensureInstance,
-  _371fad9265e864a1,
-  _f3b177bfce76ed5c,
-  _ebaafc4d4a520807
-};

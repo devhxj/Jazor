@@ -84,14 +84,3 @@ export function _d0c6a74fd11d24bf(x, y) {
     return y;
   return compareCore(x, y) <= 0 ? x : y;
 }
-export const Int32Module = {
-  compareCore,
-  tryParseInt32Core,
-  _b03337a2a71c762d,
-  _151ccc6045162f8f,
-  _16e2a901535b765e,
-  _d4cc9914e60e5643,
-  _e04660fe6cb92bf1,
-  _a36b4a6dbd50fa77,
-  _d0c6a74fd11d24bf
-};

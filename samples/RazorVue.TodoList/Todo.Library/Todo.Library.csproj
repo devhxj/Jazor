@@ -4,8 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RazorLangVersion>10.0</RazorLangVersion>
-    <UseRazorSourceGenerator>false</UseRazorSourceGenerator>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
     <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
+    <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-import { DoubleModule } from "System/DoubleModule.js";
+import { _aed2927097617729 } from "System/DoubleModule.js";
 import { _5ad63706a889c294 } from "System/StringModule.js";
 function get_MaxFractionDigits() {
   return 28;
@@ -114,17 +114,15 @@ function hasStyle(style, flag) {
   return (integerStyle & integerFlag) === integerFlag;
 }
 function getNumberStylesValue(style) {
-  let numberStyle, enumStyle;
+  let numberStyle;
   if (typeof style === "number" && (numberStyle = style, true))
     return numberStyle | 0;
-  if (typeof style === "number" && (enumStyle = style, true))
-    return Number(enumStyle);
   throw new Error("ArgumentException: Invalid NumberStyles value.");
 }
 function validateDecimalNumberStyles(style) {
   if (Math.floor(style) !== style || style < 0)
     throw new Error("ArgumentException: An undefined NumberStyles value is not supported.");
-  if (hasStyle(style, allowHexSpecifierStyle) || hasStyle(style, allowBinarySpecifierStyle))
+  if (hasStyle(style, get_AllowHexSpecifierStyle()) || hasStyle(style, get_AllowBinarySpecifierStyle()))
     throw new Error("ArgumentException: The number style AllowHexSpecifier or AllowBinarySpecifier is not supported on floating point data types.");
 }
 function getNumberSymbols(provider) {
@@ -132,16 +130,16 @@ function getNumberSymbols(provider) {
   if (typeof provider === "string" && (locale = provider, true)) {
     if (locale.length === 0)
       return createNumberSymbols(",", ".", 3, 3);
-    return GetNumberSymbols(new NumberFormat(locale));
+    return GetNumberSymbols(new Intl.NumberFormat(locale));
   }
-  if (provider instanceof NumberFormat && (numberFormat = provider, true))
+  if (provider instanceof Intl.NumberFormat && (numberFormat = provider, true))
     return GetNumberSymbols(numberFormat);
-  return GetNumberSymbols(new NumberFormat);
+  return GetNumberSymbols(new Intl.NumberFormat);
 }
 function GetNumberSymbols(numberFormat) {
   let groupSeparator = ",";
   let decimalSeparator = ".";
-  let integerParts = [];
+  let integerParts = new Array;
   let parts = numberFormat.formatToParts(123456789.1);
   for (let i = 0; i < parts.length; i++) {
     let part = parts[i];
@@ -183,16 +181,16 @@ function stripLeadingZeros(digits) {
   return digits;
 }
 function normalizeParts(unscaled, scale) {
-  if (unscaled === BigInt.zero)
-    return createParts(BigInt.zero, 0);
-  while (scale > 0 && unscaled % BigInt(10) === BigInt.zero) {
+  if (unscaled === 0n)
+    return createParts(0n, 0);
+  while (scale > 0 && unscaled % BigInt(10) === 0n) {
     unscaled /= BigInt(10);
     scale--;
   }
-  if (scale < 0 || scale > maxFractionDigits)
+  if (scale < 0 || scale > get_MaxFractionDigits())
     throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
-  let absolute = unscaled < BigInt.zero ? -unscaled : unscaled;
-  if (absolute > maxDecimalUnscaled)
+  let absolute = unscaled < 0n ? -unscaled : unscaled;
+  if (absolute > get_MaxDecimalUnscaled())
     throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
   return createParts(unscaled, scale);
 }
@@ -249,7 +247,7 @@ function parseDecimal(value, allowExponent = true) {
     scale = 0;
   }
   let unscaled = BigInt(digits);
-  if (negative && unscaled !== BigInt.zero)
+  if (negative && unscaled !== 0n)
     unscaled = -unscaled;
   return normalizeParts(unscaled, scale);
 }
@@ -268,8 +266,8 @@ function replaceDecimalSeparator(value, decimalSeparator) {
 function normalizeExternalDecimalText(value, style, provider) {
   validateDecimalNumberStyles(style);
   let text = value;
-  let allowLeadingWhite = hasStyle(style, allowLeadingWhiteStyle);
-  let allowTrailingWhite = hasStyle(style, allowTrailingWhiteStyle);
+  let allowLeadingWhite = hasStyle(style, get_AllowLeadingWhiteStyle());
+  let allowTrailingWhite = hasStyle(style, get_AllowTrailingWhiteStyle());
   if (allowLeadingWhite && allowTrailingWhite)
     text = text.trim();
   else if (allowLeadingWhite)
@@ -279,7 +277,7 @@ function normalizeExternalDecimalText(value, style, provider) {
   if (text.length === 0)
     throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
   let negative = false;
-  if (hasStyle(style, allowParenthesesStyle) && text.length >= 2 && _5ad63706a889c294(text, 0) === "(" && _5ad63706a889c294(text, text.length - 1) === ")") {
+  if (hasStyle(style, get_AllowParenthesesStyle()) && text.length >= 2 && _5ad63706a889c294(text, 0) === "(" && _5ad63706a889c294(text, text.length - 1) === ")") {
     negative = true;
     text = text.substring(1, 1 + (text.length - 2));
     if (allowLeadingWhite && allowTrailingWhite)
@@ -292,7 +290,7 @@ function normalizeExternalDecimalText(value, style, provider) {
   if (text.length === 0)
     throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
   if (_5ad63706a889c294(text, 0) === "+" || _5ad63706a889c294(text, 0) === "-") {
-    if (!hasStyle(style, allowLeadingSignStyle))
+    if (!hasStyle(style, get_AllowLeadingSignStyle()))
       throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
     negative = _5ad63706a889c294(text, 0) === "-" ? !negative : negative;
     text = text.substring(1);
@@ -300,7 +298,7 @@ function normalizeExternalDecimalText(value, style, provider) {
   if (text.length === 0)
     throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
   if (_5ad63706a889c294(text, text.length - 1) === "+" || _5ad63706a889c294(text, text.length - 1) === "-") {
-    if (!hasStyle(style, allowTrailingSignStyle))
+    if (!hasStyle(style, get_AllowTrailingSignStyle()))
       throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
     negative = _5ad63706a889c294(text, text.length - 1) === "-" ? !negative : negative;
     text = text.substring(0, 0 + (text.length - 1));
@@ -311,19 +309,19 @@ function normalizeExternalDecimalText(value, style, provider) {
   let groupSeparator = getGroupSeparator(symbols);
   let decimalSeparator = getDecimalSeparator(symbols);
   if (groupSeparator.length !== 0) {
-    if (hasStyle(style, allowThousandsStyle))
+    if (hasStyle(style, get_AllowThousandsStyle()))
       text = removeAllOccurrences(text, groupSeparator);
     else if (text.indexOf(groupSeparator) >= 0)
       throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
   }
   if (decimalSeparator !== ".") {
     if (text.indexOf(decimalSeparator) >= 0) {
-      if (!hasStyle(style, allowDecimalPointStyle))
+      if (!hasStyle(style, get_AllowDecimalPointStyle()))
         throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
       text = replaceDecimalSeparator(text, decimalSeparator);
     }
   }
-  if (!hasStyle(style, allowDecimalPointStyle) && text.indexOf(".") >= 0)
+  if (!hasStyle(style, get_AllowDecimalPointStyle()) && text.indexOf(".") >= 0)
     throw new Error(`FormatException: String '${value}' was not recognized as a valid Decimal.`);
   if (negative)
     text = "-" + text;
@@ -331,16 +329,16 @@ function normalizeExternalDecimalText(value, style, provider) {
 }
 function parseDecimalExternal(value, style, provider) {
   let normalized = normalizeExternalDecimalText(value, style, provider);
-  let parts = parseDecimal(normalized, hasStyle(style, allowExponentStyle));
+  let parts = parseDecimal(normalized, hasStyle(style, get_AllowExponentStyle()));
   return formatDecimal(getUnscaled(parts), getScale(parts));
 }
 function formatDecimal(unscaled, scale) {
   let normalized = normalizeParts(unscaled, scale);
   unscaled = getUnscaled(normalized);
   scale = getScale(normalized);
-  if (unscaled === BigInt.zero)
+  if (unscaled === 0n)
     return "0";
-  let negative = unscaled < BigInt.zero;
+  let negative = unscaled < 0n;
   let absolute = negative ? -unscaled : unscaled;
   let digits = absolute.toString();
   if (scale === 0)
@@ -354,7 +352,7 @@ function formatDecimal(unscaled, scale) {
 function formatDecimalToScale(value, scale) {
   let parts = parseDecimal(value);
   let unscaled = getUnscaled(parts);
-  let negative = unscaled < BigInt.zero;
+  let negative = unscaled < 0n;
   let absolute = negative ? -unscaled : unscaled;
   let digits = absolute.toString();
   if (scale === 0)
@@ -368,7 +366,7 @@ function formatDecimalToScale(value, scale) {
 function insertGroupSeparators(integerDigits, separator, primaryGroupSize, secondaryGroupSize) {
   if (separator.length === 0 || integerDigits.length <= primaryGroupSize)
     return integerDigits;
-  let groups = [];
+  let groups = new Array;
   let end = integerDigits.length;
   let size = primaryGroupSize;
   while (end > size) {
@@ -427,11 +425,11 @@ function formatDecimalWithFormat(value, format, provider) {
   if ((specifier === "G" || specifier === "g") && format.length === 1)
     return normalizeDecimal(value);
   if (specifier === "F" || specifier === "f") {
-    let precision = parsePrecision(format, defaultFixedPrecision);
+    let precision = parsePrecision(format, get_DefaultFixedPrecision());
     return formatDecimalToScale(roundDecimal(value, precision), precision);
   }
   if (specifier === "N" || specifier === "n") {
-    let precision = parsePrecision(format, defaultNumberPrecision);
+    let precision = parsePrecision(format, get_DefaultNumberPrecision());
     return applyNumberSeparators(formatDecimalToScale(roundDecimal(value, precision), precision), provider);
   }
   if (isSimpleCustomDecimalFormat(format)) {
@@ -443,7 +441,7 @@ function formatDecimalWithFormat(value, format, provider) {
   throw new Error("FormatException: Format specifier was invalid.");
 }
 function createDecimalFromNumber(value) {
-  if (!DoubleModule._aed2927097617729(value))
+  if (!_aed2927097617729(value))
     throw new Error("OverflowException: Value was either too large or too small for a Decimal.");
   return normalizeDecimal(value.toString());
 }
@@ -473,15 +471,13 @@ function toCheckedBigInt(value, min, max, typeName) {
   return integral;
 }
 function getMidpointRoundingValue(mode) {
-  let numberMode, enumMode;
+  let numberMode;
   if (typeof mode === "number" && (numberMode = mode, true))
     return numberMode;
-  if (typeof mode === "number" && (enumMode = mode, true))
-    return Number(enumMode);
   throw new Error("ArgumentException: Invalid MidpointRounding value.");
 }
 function roundDecimal(value, decimals, mode = null) {
-  if (Math.floor(decimals) !== decimals || decimals < 0 || decimals > maxFractionDigits)
+  if (Math.floor(decimals) !== decimals || decimals < 0 || decimals > get_MaxFractionDigits())
     throw new Error("ArgumentOutOfRangeException: Decimal digits must be between 0 and 28.");
   let modeValue = mode === null ? Number(0) : getMidpointRoundingValue(mode);
   if (modeValue < 0 || modeValue > 4 || Math.floor(modeValue) !== modeValue)
@@ -495,9 +491,9 @@ function roundDecimal(value, decimals, mode = null) {
   let divisor = pow10(trimScale);
   let quotient = unscaled / divisor;
   let remainder = unscaled % divisor;
-  if (remainder === BigInt.zero)
+  if (remainder === 0n)
     return formatDecimal(quotient, decimals);
-  let negative = unscaled < BigInt.zero;
+  let negative = unscaled < 0n;
   if (modeValue === 2)
     return formatDecimal(quotient, decimals);
   if (modeValue === 3)
@@ -506,12 +502,12 @@ function roundDecimal(value, decimals, mode = null) {
     return formatDecimal(negative ? quotient : quotient + BigInt(1), decimals);
   let absoluteRemainder = negative ? -remainder : remainder;
   let comparison = absoluteRemainder * BigInt(2) - divisor;
-  if (comparison < BigInt.zero)
+  if (comparison < 0n)
     return formatDecimal(quotient, decimals);
   let step = negative ? -BigInt(1) : BigInt(1);
-  if (comparison > BigInt.zero || modeValue === 1)
+  if (comparison > 0n || modeValue === 1)
     return formatDecimal(quotient + step, decimals);
-  return quotient % BigInt(2) === BigInt.zero ? formatDecimal(quotient, decimals) : formatDecimal(quotient + step, decimals);
+  return quotient % BigInt(2) === 0n ? formatDecimal(quotient, decimals) : formatDecimal(quotient + step, decimals);
 }
 function compareDecimal(left, right) {
   let a = parseDecimal(left);
@@ -546,36 +542,36 @@ function multiplyDecimal(left, right) {
 function divideAndRound(numerator, denominator) {
   let quotient = numerator / denominator;
   let remainder = numerator % denominator;
-  if (remainder === BigInt.zero)
+  if (remainder === 0n)
     return quotient;
-  let absoluteRemainder = remainder < BigInt.zero ? -remainder : remainder;
-  let absoluteDenominator = denominator < BigInt.zero ? -denominator : denominator;
+  let absoluteRemainder = remainder < 0n ? -remainder : remainder;
+  let absoluteDenominator = denominator < 0n ? -denominator : denominator;
   let comparison = absoluteRemainder * BigInt(2) - absoluteDenominator;
-  if (comparison < BigInt.zero)
+  if (comparison < 0n)
     return quotient;
-  let step = numerator < BigInt.zero ? -BigInt(1) : BigInt(1);
-  if (comparison > BigInt.zero)
+  let step = numerator < 0n ? -BigInt(1) : BigInt(1);
+  if (comparison > 0n)
     return quotient + step;
-  return quotient % BigInt(2) === BigInt.zero ? quotient : quotient + step;
+  return quotient % BigInt(2) === 0n ? quotient : quotient + step;
 }
 function divideDecimal(left, right) {
   let a = parseDecimal(left);
   let b = parseDecimal(right);
-  if (getUnscaled(b) === BigInt.zero)
+  if (getUnscaled(b) === 0n)
     throw new Error("DivideByZeroException: Attempted to divide by zero.");
-  let scaleDelta = maxFractionDigits + getScale(b) - getScale(a);
+  let scaleDelta = get_MaxFractionDigits() + getScale(b) - getScale(a);
   let numerator = getUnscaled(a);
   let denominator = getUnscaled(b);
   if (scaleDelta >= 0)
     numerator *= pow10(scaleDelta);
   else
     denominator *= pow10(-scaleDelta);
-  return formatDecimal(divideAndRound(numerator, denominator), maxFractionDigits);
+  return formatDecimal(divideAndRound(numerator, denominator), get_MaxFractionDigits());
 }
 function remainderDecimal(left, right) {
   let a = parseDecimal(left);
   let b = parseDecimal(right);
-  if (getUnscaled(b) === BigInt.zero)
+  if (getUnscaled(b) === 0n)
     throw new Error("DivideByZeroException: Attempted to divide by zero.");
   let targetScale = maxNumber(getScale(a), getScale(b));
   return formatDecimal(alignUnscaled(a, targetScale) % alignUnscaled(b, targetScale), targetScale);
@@ -589,7 +585,7 @@ function floorDecimal(value) {
   let divisor = pow10(scale);
   let quotient = unscaled / divisor;
   let remainder = unscaled % divisor;
-  if (remainder !== BigInt.zero && unscaled < BigInt.zero)
+  if (remainder !== 0n && unscaled < 0n)
     quotient -= BigInt(1);
   return formatDecimal(quotient, 0);
 }
@@ -602,7 +598,7 @@ function ceilingDecimal(value) {
   let divisor = pow10(scale);
   let quotient = unscaled / divisor;
   let remainder = unscaled % divisor;
-  if (remainder !== BigInt.zero && unscaled > BigInt.zero)
+  if (remainder !== 0n && unscaled > 0n)
     quotient += BigInt(1);
   return formatDecimal(quotient, 0);
 }
@@ -617,14 +613,14 @@ function truncateDecimal(value) {
 function absDecimal(value) {
   let parts = parseDecimal(value);
   let unscaled = getUnscaled(parts);
-  return formatDecimal(unscaled < BigInt.zero ? -unscaled : unscaled, getScale(parts));
+  return formatDecimal(unscaled < 0n ? -unscaled : unscaled, getScale(parts));
 }
 function signDecimal(value) {
   let parts = parseDecimal(value);
   let unscaled = getUnscaled(parts);
-  if (unscaled < BigInt.zero)
+  if (unscaled < 0n)
     return -1;
-  if (unscaled > BigInt.zero)
+  if (unscaled > 0n)
     return 1;
   return 0;
 }
@@ -713,13 +709,13 @@ export function _b1e6a06111674f0c(instance, format, provider) {
   return formatDecimalWithFormat(instance, format, provider);
 }
 export function _91a2436283a24315(s) {
-  return parseDecimalExternal(s, numberStyleNumber, null);
+  return parseDecimalExternal(s, get_NumberStyleNumber(), null);
 }
 export function _79a0e8ede29256cc(s, style) {
   return parseDecimalExternal(s, getNumberStylesValue(style), null);
 }
 export function _01be2a34fe2cda4e(s, provider) {
-  return parseDecimalExternal(s, numberStyleNumber, provider);
+  return parseDecimalExternal(s, get_NumberStyleNumber(), provider);
 }
 export function _f525a420b2d600ec(s, style, provider) {
   return parseDecimalExternal(s, getNumberStylesValue(style), provider);
@@ -731,7 +727,7 @@ export function _e96278809bb50e35(s, result) {
   if (s === null || s.length === 0)
     return [false, "0"];
   try {
-    return [true, parseDecimalExternal(s, numberStyleNumber, null)];
+    return [true, parseDecimalExternal(s, get_NumberStyleNumber(), null)];
   } catch {
     return [false, "0"];
   }
@@ -778,31 +774,31 @@ export function _3e80f2d9cf753d05(d1, d2) {
   return subtractDecimal(d1, d2);
 }
 export function _d2aabede7e0207c1(value) {
-  return toCheckedNumber(value, BigInt.zero, byteMaxValue, "Byte");
+  return toCheckedNumber(value, 0n, get_ByteMaxValue(), "Byte");
 }
 export function _175bf5ee849fcf8f(value) {
-  return toCheckedNumber(value, sByteMinValue, sByteMaxValue, "SByte");
+  return toCheckedNumber(value, get_SByteMinValue(), get_SByteMaxValue(), "SByte");
 }
 export function _5df8c6a064c50c5f(value) {
-  return toCheckedNumber(value, int16MinValue, int16MaxValue, "Int16");
+  return toCheckedNumber(value, get_Int16MinValue(), get_Int16MaxValue(), "Int16");
 }
 export function _cfbbd251b43c99f4(d) {
   return Number(normalizeDecimal(d));
 }
 export function _ad71e0d1a8679244(d) {
-  return toCheckedNumber(d, int32MinValue, int32MaxValue, "Int32");
+  return toCheckedNumber(d, get_Int32MinValue(), get_Int32MaxValue(), "Int32");
 }
 export function _7a077e2e1baba462(d) {
-  return toCheckedBigInt(d, int64MinValue, int64MaxValue, "Int64");
+  return toCheckedBigInt(d, get_Int64MinValue(), get_Int64MaxValue(), "Int64");
 }
 export function _21bc553743dd324b(value) {
-  return toCheckedNumber(value, BigInt.zero, uInt16MaxValue, "UInt16");
+  return toCheckedNumber(value, 0n, get_UInt16MaxValue(), "UInt16");
 }
 export function _c975b2e5b2f4c009(d) {
-  return toCheckedNumber(d, BigInt.zero, uInt32MaxValue, "UInt32");
+  return toCheckedNumber(d, 0n, get_UInt32MaxValue(), "UInt32");
 }
 export function _9b15def492d41a4a(d) {
-  return toCheckedBigInt(d, BigInt.zero, uInt64MaxValue, "UInt64");
+  return toCheckedBigInt(d, 0n, get_UInt64MaxValue(), "UInt64");
 }
 export function _1450e4ab34b1a945(d) {
   return Number(normalizeDecimal(d));
@@ -850,7 +846,7 @@ export function _824c1dbd3e6691ba(value) {
   return _175bf5ee849fcf8f(value);
 }
 export function _e2c93b47df7960a8(value) {
-  return toCheckedNumber(value, BigInt.zero, uInt16MaxValue, "Char");
+  return toCheckedNumber(value, 0n, get_UInt16MaxValue(), "Char");
 }
 export function _8f4ca64a21fb08cc(value) {
   return _5df8c6a064c50c5f(value);
@@ -953,7 +949,7 @@ export function _b80d517d733633a6(value) {
 }
 export function _9d28fa751d24ce2e(value) {
   let parts = parseDecimal(value);
-  return getScale(parts) === 0 && getUnscaled(parts) % BigInt(2) === BigInt.zero;
+  return getScale(parts) === 0 && getUnscaled(parts) % BigInt(2) === 0n;
 }
 export function _e79590278b446432(value) {
   return isIntegerDecimal(value);
@@ -963,7 +959,7 @@ export function _1ad42f1c78dbe014(value) {
 }
 export function _38587400d9c44cb5(value) {
   let parts = parseDecimal(value);
-  return getScale(parts) === 0 && getUnscaled(parts) % BigInt(2) !== BigInt.zero;
+  return getScale(parts) === 0 && getUnscaled(parts) % BigInt(2) !== 0n;
 }
 export function _03c325899b0e33f0(value) {
   return signDecimal(value) >= 0;
@@ -992,202 +988,14 @@ export function _a3ffdb214a9c82a0(s, provider, result) {
   if (s === null || s.length === 0)
     return [false, "0"];
   try {
-    return [true, parseDecimalExternal(s, numberStyleNumber, provider)];
+    return [true, parseDecimalExternal(s, get_NumberStyleNumber(), provider)];
   } catch {
     return [false, "0"];
   }
 }
 export function _c644fa2b15360347(s, provider) {
-  return parseDecimalExternal(s, numberStyleNumber, provider);
+  return parseDecimalExternal(s, get_NumberStyleNumber(), provider);
 }
 export function _7ac8df441c1485cf(s, provider, result) {
   return _a3ffdb214a9c82a0(s, provider, result);
 }
-export const DecimalModule = {
-  get_MaxFractionDigits,
-  get_MaxDecimalUnscaled,
-  get_Int64MinValue,
-  get_Int64MaxValue,
-  get_UInt64MaxValue,
-  get_Int32MinValue,
-  get_Int32MaxValue,
-  get_UInt32MaxValue,
-  get_Int16MinValue,
-  get_Int16MaxValue,
-  get_UInt16MaxValue,
-  get_SByteMinValue,
-  get_SByteMaxValue,
-  get_ByteMaxValue,
-  get_AllowLeadingWhiteStyle,
-  get_AllowTrailingWhiteStyle,
-  get_AllowLeadingSignStyle,
-  get_AllowTrailingSignStyle,
-  get_AllowParenthesesStyle,
-  get_AllowDecimalPointStyle,
-  get_AllowThousandsStyle,
-  get_AllowExponentStyle,
-  get_AllowCurrencySymbolStyle,
-  get_AllowHexSpecifierStyle,
-  get_AllowBinarySpecifierStyle,
-  get_NumberStyleNumber,
-  get_DefaultFixedPrecision,
-  get_DefaultNumberPrecision,
-  createParts,
-  getUnscaled,
-  getScale,
-  createNumberSymbols,
-  getGroupSeparator,
-  getDecimalSeparator,
-  getPrimaryGroupSize,
-  getSecondaryGroupSize,
-  hasStyle,
-  getNumberStylesValue,
-  validateDecimalNumberStyles,
-  getNumberSymbols,
-  getNumberSymbols: GetNumberSymbols,
-  pow10,
-  maxNumber,
-  repeatZero,
-  stripLeadingZeros,
-  normalizeParts,
-  parseDecimal,
-  normalizeDecimal,
-  removeAllOccurrences,
-  replaceDecimalSeparator,
-  normalizeExternalDecimalText,
-  parseDecimalExternal,
-  formatDecimal,
-  formatDecimalToScale,
-  insertGroupSeparators,
-  applyNumberSeparators,
-  parsePrecision,
-  isSimpleCustomDecimalFormat,
-  formatDecimalWithFormat,
-  createDecimalFromNumber,
-  alignUnscaled,
-  truncateToIntegralValue,
-  toCheckedNumber,
-  toCheckedBigInt,
-  getMidpointRoundingValue,
-  roundDecimal,
-  compareDecimal,
-  addDecimal,
-  subtractDecimal,
-  negateDecimal,
-  multiplyDecimal,
-  divideAndRound,
-  divideDecimal,
-  remainderDecimal,
-  floorDecimal,
-  ceilingDecimal,
-  truncateDecimal,
-  absDecimal,
-  signDecimal,
-  isIntegerDecimal,
-  getStringHashCode,
-  _5faf9ddf65d02495,
-  _3db06a98834e6ef8,
-  _9311127a9ca2b91d,
-  _6a4e5f697d4fc607,
-  _cc6392a7d6df1e14,
-  _2f7f0d9035a4bbf6,
-  _cb7c7a937d3b8460,
-  _db7e7c8def75fee8,
-  _f73258f14e05c790,
-  _84028a6e79626057,
-  _c11e0aef6b5ccf1e,
-  _ff0e77ab6566e092,
-  _ca8a78810233056c,
-  _f5c1c0a2a040b000,
-  _8abe47785e51f122,
-  _3dfd87d9d2f35e11,
-  _f58659c33299d2b1,
-  _b25c4446c28ed255,
-  _518facaaeeb29ead,
-  _65a0e4fe8ccdd829,
-  _af32d07083f1da07,
-  _6234ba988b3e006d,
-  _b1e6a06111674f0c,
-  _91a2436283a24315,
-  _79a0e8ede29256cc,
-  _01be2a34fe2cda4e,
-  _f525a420b2d600ec,
-  _8e0c949ee2411c7f,
-  _e96278809bb50e35,
-  _5f6432cf52162431,
-  _b4ecd2424c9a371e,
-  _ed6b24306e2ef5cd,
-  _700359e0de148ee3,
-  _d5be5da3d4effe96,
-  _26945a698afa2a91,
-  _4a816369b59f1ca3,
-  _bc3a974d51c694ab,
-  _a334f7e82122cfc2,
-  _09ee3a4652dbe73c,
-  _3e80f2d9cf753d05,
-  _d2aabede7e0207c1,
-  _175bf5ee849fcf8f,
-  _5df8c6a064c50c5f,
-  _cfbbd251b43c99f4,
-  _ad71e0d1a8679244,
-  _7a077e2e1baba462,
-  _21bc553743dd324b,
-  _c975b2e5b2f4c009,
-  _9b15def492d41a4a,
-  _1450e4ab34b1a945,
-  _be8b149ea0e1d76b,
-  _c605c67b2cd1973c,
-  _e8d5240b7aa52784,
-  _8635fe57a74e1249,
-  _7c3cfa0de18bd43c,
-  _d4af042bf014fd51,
-  _f5a5d600ccd38777,
-  _d8b659cd861d2409,
-  _23103e069358ca06,
-  _7ab8c627f74cb718,
-  _f456cac2ae523add,
-  _8f3a66f6dc828dff,
-  _a8bfc1feb93c39cb,
-  _824c1dbd3e6691ba,
-  _e2c93b47df7960a8,
-  _8f4ca64a21fb08cc,
-  _3e209c4283c6e05e,
-  _bc03e302b86b6800,
-  _dea1c1c9c8f2b495,
-  _df6860f57d568704,
-  _047386be34a2d276,
-  _2de5f5a183f9455b,
-  _2db2eb304fe215ee,
-  _53fb6447e19a3943,
-  _ec128cb5140788f6,
-  _20e1c565f1757f95,
-  _92103936e252998e,
-  _6916013808c205d4,
-  _7b8c963ebbb0237b,
-  _5794746a3d1c5c7d,
-  _18540fea4c4d81f3,
-  _cf5ffdcf799ce372,
-  _9831be72bebc3a57,
-  _6e351e0d21e0ccd9,
-  _9e3b1978bc32f62a,
-  _01544ed3b8bf9a49,
-  _bb8c4bd3620de56b,
-  _325daf3875076acb,
-  _e886400fbfdbdaaa,
-  _30df447725c40575,
-  _872018e11335480a,
-  _ceb21f954af742e7,
-  _ed803cf9c8c052f1,
-  _e85678b4de2283e8,
-  _b80d517d733633a6,
-  _9d28fa751d24ce2e,
-  _e79590278b446432,
-  _1ad42f1c78dbe014,
-  _38587400d9c44cb5,
-  _03c325899b0e33f0,
-  _becce0ac49342bb2,
-  _5df17b0a512de878,
-  _a3ffdb214a9c82a0,
-  _c644fa2b15360347,
-  _7ac8df441c1485cf
-};

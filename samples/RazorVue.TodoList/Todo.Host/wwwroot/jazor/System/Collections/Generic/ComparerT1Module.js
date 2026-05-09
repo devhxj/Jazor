@@ -12,9 +12,9 @@ export function compareObjectsCore(x, y) {
     return 1;
   if (typeof x === "number" && (leftNumber = x, true) && (typeof y === "number" && (rightNumber = y, true))) {
     if (isNaN(leftNumber))
-      return isNaN(rightNumber) ? 0 : -1;
+      return isNaN(rightNumber) ? 0 : 1;
     if (isNaN(rightNumber))
-      return 1;
+      return -1;
     if (leftNumber < rightNumber)
       return -1;
     if (leftNumber > rightNumber)
@@ -37,15 +37,7 @@ export function compareObjectsCore(x, y) {
       return 1;
     return 0;
   }
-  let leftText = x.toString();
-  let rightText = y.toString();
-  if (leftText === null)
-    return rightText === null ? 0 : -1;
-  if (rightText === null)
-    return 1;
-  if (leftText === rightText)
-    return 0;
-  return leftText < rightText ? -1 : 1;
+  throw new Error("ArgumentException: At least one object must implement IComparable.");
 }
 export function compareCore(x, y) {
   return compareObjectsCore(x, y);
@@ -54,9 +46,3 @@ export function _a4222c99b516b861(instance, x, y) {
   ensureComparerInstance(instance);
   return compareCore(x, y);
 }
-export const ComparerT1Module = {
-  ensureComparerInstance,
-  compareObjectsCore,
-  compareCore,
-  _a4222c99b516b861
-};

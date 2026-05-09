@@ -33,11 +33,3 @@ export function _dada4bbdacd7aa19(value, result) {
 export function _619c4d1c94319558(value, result) {
   return _dada4bbdacd7aa19(value, result);
 }
-export const BooleanModule = {
-  compareCore,
-  _f877237b160159b0,
-  _5dbf54319ebc8dfe,
-  _c3ccfdf8f687d2bf,
-  _dada4bbdacd7aa19,
-  _619c4d1c94319558
-};

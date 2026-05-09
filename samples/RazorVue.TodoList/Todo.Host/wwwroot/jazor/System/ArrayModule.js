@@ -1,6 +1,15 @@
+import { compareCore, compareObjectsCore } from "System/Collections/Generic/ComparerT1Module.js";
 import { _0289dcf579b8a65e } from "System/Collections/Generic/IComparerT1Module.js";
 import { _7dffdd7244581cc5 } from "System/Collections/IComparerModule.js";
-import { _e16eea9fe3891a62 } from "System/StringModule.js";
+function compareDefault(left, right) {
+  return compareCore(left, right);
+}
+function compareDefaultObject(left, right) {
+  return compareObjectsCore(left, right);
+}
+function compareDefaultKey(left, right) {
+  return compareCore(left, right);
+}
 export function _abd52ebcdb6fefcb(array) {
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
@@ -9,7 +18,7 @@ export function _abd52ebcdb6fefcb(array) {
 export function _127013d39cf5bff9(array, newSize) {
   if (newSize < 0)
     throw new Error("ArgumentOutOfRangeException: newSize is less than zero");
-  let newArray = [newSize];
+  let newArray = new Array(newSize);
   if (array === null)
     return [newArray];
   let copyLength = Math.min(array.length, newSize);
@@ -93,9 +102,8 @@ export function _0c9e99640a975a5b(array, value) {
   let left = 0;
   let right = array.length - 1;
   while (left <= right) {
-    let __cacc$2238e84921769dda78685d1d, __cacc$6c1ada83463e101cabceb32d;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = _e16eea9fe3891a62((__cacc$2238e84921769dda78685d1d = array[mid], __cacc$2238e84921769dda78685d1d == null ? undefined : __cacc$2238e84921769dda78685d1d.toString()), (__cacc$6c1ada83463e101cabceb32d = value, __cacc$6c1ada83463e101cabceb32d == null ? undefined : __cacc$6c1ada83463e101cabceb32d.toString()));
+    let cmp = compareDefaultObject(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -119,9 +127,8 @@ export function _fa538add1f784012(array, index, length, value) {
   let left = index;
   let right = index + length - 1;
   while (left <= right) {
-    let __cacc$3733a2cc521fdb2a50e5b233, __cacc$6ad4c844449d233cea5ddeda;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = _e16eea9fe3891a62((__cacc$3733a2cc521fdb2a50e5b233 = array[mid], __cacc$3733a2cc521fdb2a50e5b233 == null ? undefined : __cacc$3733a2cc521fdb2a50e5b233.toString()), (__cacc$6ad4c844449d233cea5ddeda = value, __cacc$6ad4c844449d233cea5ddeda == null ? undefined : __cacc$6ad4c844449d233cea5ddeda.toString()));
+    let cmp = compareDefaultObject(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -139,9 +146,8 @@ export function _c453dd981ecbb5c5(array, value, comparer) {
   let left = 0;
   let right = array.length - 1;
   while (left <= right) {
-    let __cacc$7cff9395d83da6ff2670111b, __cacc$b816545c043816d7fc6c13ee;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = comparer !== null ? _7dffdd7244581cc5(comparer, array[mid], value) : _e16eea9fe3891a62((__cacc$7cff9395d83da6ff2670111b = array[mid], __cacc$7cff9395d83da6ff2670111b == null ? undefined : __cacc$7cff9395d83da6ff2670111b.toString()), (__cacc$b816545c043816d7fc6c13ee = value, __cacc$b816545c043816d7fc6c13ee == null ? undefined : __cacc$b816545c043816d7fc6c13ee.toString()));
+    let cmp = comparer !== null ? _7dffdd7244581cc5(comparer, array[mid], value) : compareDefaultObject(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -165,9 +171,8 @@ export function _f1fb5c20cf9ffd4d(array, index, length, value, comparer) {
   let left = index;
   let right = index + length - 1;
   while (left <= right) {
-    let __cacc$becc8b2a5311b0bfdc66642b, __cacc$cfefc198df9a8b673972d177;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = comparer !== null ? _7dffdd7244581cc5(comparer, array[mid], value) : _e16eea9fe3891a62((__cacc$becc8b2a5311b0bfdc66642b = array[mid], __cacc$becc8b2a5311b0bfdc66642b == null ? undefined : __cacc$becc8b2a5311b0bfdc66642b.toString()), (__cacc$cfefc198df9a8b673972d177 = value, __cacc$cfefc198df9a8b673972d177 == null ? undefined : __cacc$cfefc198df9a8b673972d177.toString()));
+    let cmp = comparer !== null ? _7dffdd7244581cc5(comparer, array[mid], value) : compareDefaultObject(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -185,9 +190,8 @@ export function _75258b66e0bba01a(array, value) {
   let left = 0;
   let right = array.length - 1;
   while (left <= right) {
-    let __cacc$fc27c7728c29931b5f38b3ca, __cacc$dfc0800e5910d0fe8b58f21d;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = _e16eea9fe3891a62((__cacc$fc27c7728c29931b5f38b3ca = array[mid], __cacc$fc27c7728c29931b5f38b3ca == null ? undefined : __cacc$fc27c7728c29931b5f38b3ca.toString()), (__cacc$dfc0800e5910d0fe8b58f21d = value, __cacc$dfc0800e5910d0fe8b58f21d == null ? undefined : __cacc$dfc0800e5910d0fe8b58f21d.toString()));
+    let cmp = compareDefault(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -205,9 +209,8 @@ export function _87f2af26c36fed01(array, value, comparer) {
   let left = 0;
   let right = array.length - 1;
   while (left <= right) {
-    let __cacc$0922bba4640f373c379494e9, __cacc$ac4d3844a0122d5d8c07f267;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = comparer !== null ? _0289dcf579b8a65e(comparer, array[mid], value) : _e16eea9fe3891a62((__cacc$0922bba4640f373c379494e9 = array[mid], __cacc$0922bba4640f373c379494e9 == null ? undefined : __cacc$0922bba4640f373c379494e9.toString()), (__cacc$ac4d3844a0122d5d8c07f267 = value, __cacc$ac4d3844a0122d5d8c07f267 == null ? undefined : __cacc$ac4d3844a0122d5d8c07f267.toString()));
+    let cmp = comparer !== null ? _0289dcf579b8a65e(comparer, array[mid], value) : compareDefault(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -231,9 +234,8 @@ export function _60003ac825620c60(array, index, length, value) {
   let left = index;
   let right = index + length - 1;
   while (left <= right) {
-    let __cacc$a8674b0befa0e87a4dbca873, __cacc$b93506786f41fde19faf46bf;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = _e16eea9fe3891a62((__cacc$a8674b0befa0e87a4dbca873 = array[mid], __cacc$a8674b0befa0e87a4dbca873 == null ? undefined : __cacc$a8674b0befa0e87a4dbca873.toString()), (__cacc$b93506786f41fde19faf46bf = value, __cacc$b93506786f41fde19faf46bf == null ? undefined : __cacc$b93506786f41fde19faf46bf.toString()));
+    let cmp = compareDefault(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -257,9 +259,8 @@ export function _42b1da24db771714(array, index, length, value, comparer) {
   let left = index;
   let right = index + length - 1;
   while (left <= right) {
-    let __cacc$8bc86142bc4477da944010a9, __cacc$befee0a76725d095e43b8d34;
     let mid = left + Math.floor((right - left) / 2);
-    let cmp = comparer !== null ? _0289dcf579b8a65e(comparer, array[mid], value) : _e16eea9fe3891a62((__cacc$8bc86142bc4477da944010a9 = array[mid], __cacc$8bc86142bc4477da944010a9 == null ? undefined : __cacc$8bc86142bc4477da944010a9.toString()), (__cacc$befee0a76725d095e43b8d34 = value, __cacc$befee0a76725d095e43b8d34 == null ? undefined : __cacc$befee0a76725d095e43b8d34.toString()));
+    let cmp = comparer !== null ? _0289dcf579b8a65e(comparer, array[mid], value) : compareDefault(array[mid], value);
     if (cmp === 0)
       return mid;
     if (cmp < 0)
@@ -293,7 +294,7 @@ export function _02714528e8c676b0(instance, array, index) {
     throw new Error("ArgumentNullException: instance is null");
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
-  if (index < BigInt.zero)
+  if (index < 0n)
     throw new Error("ArgumentOutOfRangeException: index is less than zero");
   if (Number(index) + instance.length > array.length)
     throw new Error("ArgumentException: not enough space in destination array");
@@ -591,14 +592,18 @@ export function _5b0cbdf276c63339(array, index, length) {
 export function _07ee8311aaf13b6b(array) {
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
-  array.sort();
+  array.sort((left, right) => {
+    return compareDefault(left, right);
+  });
 }
 export function _4df21ca760120c59(keys, items) {
   if (keys === null)
     throw new Error("ArgumentNullException: keys is null");
   if (items !== null && keys.length !== items.length)
     throw new Error("ArgumentException: keys and items have different lengths");
-  keys.sort();
+  keys.sort((left, right) => {
+    return compareDefault(left, right);
+  });
 }
 export function _4e10132b81a43421(array, index, length) {
   if (array === null)
@@ -610,7 +615,9 @@ export function _4e10132b81a43421(array, index, length) {
   if (index + length > array.length)
     throw new Error("ArgumentException: index + length exceeds array length");
   let subArray = array.slice(index, index + length);
-  subArray.sort();
+  subArray.sort((left, right) => {
+    return compareDefault(left, right);
+  });
   for (let i = 0; i < length; i++)
     array[index + i] = subArray[i];
 }
@@ -620,7 +627,9 @@ export function _12789d2affa27035(keys, items, index, length) {
   if (index < 0 || length < 0 || index + length > keys.length)
     throw new Error("ArgumentException: invalid index or length");
   let subArray = keys.slice(index, index + length);
-  subArray.sort();
+  subArray.sort((left, right) => {
+    return compareDefault(left, right);
+  });
   for (let i = 0; i < length; i++)
     keys[index + i] = subArray[i];
 }
@@ -628,7 +637,9 @@ export function _093c373956602c04(array, comparer) {
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
   if (comparer === null)
-    array.sort();
+    array.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   else
     array.sort((a, b) => {
       return _7dffdd7244581cc5(comparer, a, b);
@@ -638,7 +649,9 @@ export function _122404a1fc2867ba(keys, items, comparer) {
   if (keys === null)
     throw new Error("ArgumentNullException: keys is null");
   if (comparer === null)
-    keys.sort();
+    keys.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   else
     keys.sort((a, b) => {
       return _7dffdd7244581cc5(comparer, a, b);
@@ -651,7 +664,9 @@ export function _b2141b8c013bc1b0(array, index, length, comparer) {
     throw new Error("ArgumentException: invalid index or length");
   let subArray = array.slice(index, index + length);
   if (comparer === null)
-    subArray.sort();
+    subArray.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   else
     subArray.sort((a, b) => {
       return _7dffdd7244581cc5(comparer, a, b);
@@ -666,7 +681,9 @@ export function _a95c3f83e8cd4623(keys, items, index, length, comparer) {
     throw new Error("ArgumentException: invalid index or length");
   let subArray = keys.slice(index, index + length);
   if (comparer === null)
-    subArray.sort();
+    subArray.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   else
     subArray.sort((a, b) => {
       return _7dffdd7244581cc5(comparer, a, b);
@@ -677,12 +694,16 @@ export function _a95c3f83e8cd4623(keys, items, index, length, comparer) {
 export function _382add2bad872f67(array) {
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
-  array.sort();
+  array.sort((left, right) => {
+    return compareDefault(left, right);
+  });
 }
 export function _1a3ebd994898c67c(keys, items) {
   if (keys === null)
     throw new Error("ArgumentNullException: keys is null");
-  keys.sort();
+  keys.sort((left, right) => {
+    return compareDefaultKey(left, right);
+  });
 }
 export function _80e6f8922ae8703c(array, index, length) {
   if (array === null)
@@ -690,7 +711,9 @@ export function _80e6f8922ae8703c(array, index, length) {
   if (index < 0 || length < 0 || index + length > array.length)
     throw new Error("ArgumentException: invalid index or length");
   let subArray = array.slice(index, index + length);
-  subArray.sort();
+  subArray.sort((left, right) => {
+    return compareDefault(left, right);
+  });
   for (let i = 0; i < length; i++)
     array[index + i] = subArray[i];
 }
@@ -700,7 +723,9 @@ export function _9b803c8e781cf3c0(keys, items, index, length) {
   if (index < 0 || length < 0 || index + length > keys.length)
     throw new Error("ArgumentException: invalid index or length");
   let subArray = keys.slice(index, index + length);
-  subArray.sort();
+  subArray.sort((left, right) => {
+    return compareDefaultKey(left, right);
+  });
   for (let i = 0; i < length; i++)
     keys[index + i] = subArray[i];
 }
@@ -708,7 +733,9 @@ export function _92474aed4e4823f3(array, comparer) {
   if (array === null)
     throw new Error("ArgumentNullException: array is null");
   if (comparer === null)
-    array.sort();
+    array.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   else
     array.sort((__mref$9000162b8044a0a1ff86d2fb$0, __mref$9000162b8044a0a1ff86d2fb$1, __mref$9000162b8044a0a1ff86d2fb$2) => _0289dcf579b8a65e(__mref$9000162b8044a0a1ff86d2fb$0, __mref$9000162b8044a0a1ff86d2fb$1, __mref$9000162b8044a0a1ff86d2fb$2));
 }
@@ -716,7 +743,9 @@ export function _dfd5fefaaa03a228(keys, items, comparer) {
   if (keys === null)
     throw new Error("ArgumentNullException: keys is null");
   if (comparer === null)
-    keys.sort();
+    keys.sort((left, right) => {
+      return compareDefaultKey(left, right);
+    });
   else
     keys.sort((__mref$a78b583a65719b4e1fa96b40$0, __mref$a78b583a65719b4e1fa96b40$1, __mref$a78b583a65719b4e1fa96b40$2) => _0289dcf579b8a65e(__mref$a78b583a65719b4e1fa96b40$0, __mref$a78b583a65719b4e1fa96b40$1, __mref$a78b583a65719b4e1fa96b40$2));
 }
@@ -727,7 +756,9 @@ export function _55dbc52295bd7984(array, index, length, comparer) {
     throw new Error("ArgumentException: invalid index or length");
   let subArray = array.slice(index, index + length);
   if (comparer === null)
-    subArray.sort();
+    subArray.sort((left, right) => {
+      return compareDefault(left, right);
+    });
   else
     subArray.sort((__mref$5d703019b825ead303437e3b$0, __mref$5d703019b825ead303437e3b$1, __mref$5d703019b825ead303437e3b$2) => _0289dcf579b8a65e(__mref$5d703019b825ead303437e3b$0, __mref$5d703019b825ead303437e3b$1, __mref$5d703019b825ead303437e3b$2));
   for (let i = 0; i < length; i++)
@@ -740,7 +771,9 @@ export function _f3e7263659ac2e30(keys, items, index, length, comparer) {
     throw new Error("ArgumentException: invalid index or length");
   let subArray = keys.slice(index, index + length);
   if (comparer === null)
-    subArray.sort();
+    subArray.sort((left, right) => {
+      return compareDefaultKey(left, right);
+    });
   else
     subArray.sort((__mref$2daf1c7be64afc5a6d938af2$0, __mref$2daf1c7be64afc5a6d938af2$1, __mref$2daf1c7be64afc5a6d938af2$2) => _0289dcf579b8a65e(__mref$2daf1c7be64afc5a6d938af2$0, __mref$2daf1c7be64afc5a6d938af2$1, __mref$2daf1c7be64afc5a6d938af2$2));
   for (let i = 0; i < length; i++)
@@ -760,68 +793,3 @@ export function _7deb21b3fbe579c9(array, match) {
     throw new Error("ArgumentNullException: match is null");
   return array.every(match);
 }
-export const ArrayModule = {
-  _abd52ebcdb6fefcb,
-  _127013d39cf5bff9,
-  _7a3d7a78ff429283,
-  _e2bd26f0b897dcdc,
-  _e83857a6975e2bca,
-  _236e3a8894f7381f,
-  _5afb5659a201668f,
-  _0c9e99640a975a5b,
-  _fa538add1f784012,
-  _c453dd981ecbb5c5,
-  _f1fb5c20cf9ffd4d,
-  _75258b66e0bba01a,
-  _87f2af26c36fed01,
-  _60003ac825620c60,
-  _42b1da24db771714,
-  _a73f4ff0bddcc6f6,
-  _559d75b1e44b3eb0,
-  _02714528e8c676b0,
-  _3795c9344e3fe39f,
-  _8edf171ab37f3a05,
-  _1dfc77048ccf0234,
-  _b373eb093e6c7b63,
-  _64f5a7fd5c436edb,
-  _42e008ba24b77e94,
-  _fdfc005bdc859fff,
-  _2786abe2cff245fa,
-  _ea3118f38aa5f363,
-  _56359f972a00ab73,
-  _6b63489e941ef0f0,
-  _ad1c39ab55fe27b9,
-  _cde8d7a78af8dc9a,
-  _2151f4cd0a63b0a2,
-  _c419efc216312a6a,
-  _34e8668cac3c06fa,
-  _d7a4d17a98a17e7e,
-  _e3d80b27a67e8a0d,
-  _85801a2dbc247f17,
-  _6b23455f7b2f95ff,
-  _7f5af90fd2a084fe,
-  _198d0f4fcb1c0679,
-  _5c2c6aa99d0e0549,
-  _b5bf131d8947c855,
-  _36c04f95b4ffdfd5,
-  _e2b02681782c394b,
-  _5b0cbdf276c63339,
-  _07ee8311aaf13b6b,
-  _4df21ca760120c59,
-  _4e10132b81a43421,
-  _12789d2affa27035,
-  _093c373956602c04,
-  _122404a1fc2867ba,
-  _b2141b8c013bc1b0,
-  _a95c3f83e8cd4623,
-  _382add2bad872f67,
-  _1a3ebd994898c67c,
-  _80e6f8922ae8703c,
-  _9b803c8e781cf3c0,
-  _92474aed4e4823f3,
-  _dfd5fefaaa03a228,
-  _55dbc52295bd7984,
-  _f3e7263659ac2e30,
-  _c8fcae59a3aca6f6,
-  _7deb21b3fbe579c9
-};

@@ -1,8 +1,8 @@
-import { DoubleModule } from "System/DoubleModule.js";
-import { JDateOnly, JDateTime, JDateTimeOffset, JTimeOnly, JTimeSpan, RuntimeModule } from "System/RuntimeModule.js";
+import { _24e14b276e0c7e30, _aed2927097617729 } from "System/DoubleModule.js";
+import { JDateOnly, JDateTime, JDateTimeOffset, JTimeOnly, JTimeSpan, createLocalDate, createLocalDateTime, createUtcDate, formatDateOnlyText, getDaysInMonth, getInt64HashCode, pad2, pad7, padLeft } from "System/RuntimeModule.js";
 import { _5ad63706a889c294 } from "System/StringModule.js";
 function get_ZeroTicks() {
-  return BigInt.zero;
+  return 0n;
 }
 function get_UnixEpochTicks() {
   return BigInt("621355968000000000");
@@ -10,8 +10,23 @@ function get_UnixEpochTicks() {
 function get_FileTimeUnixEpochTicks() {
   return BigInt("116444736000000000");
 }
+function get_TicksPerMicrosecond() {
+  return BigInt("10");
+}
 function get_TicksPerMillisecond() {
   return BigInt("10000");
+}
+function get_TicksPerSecond() {
+  return BigInt("10000000");
+}
+function get_TicksPerMinute() {
+  return BigInt("600000000");
+}
+function get_TicksPerHour() {
+  return BigInt("36000000000");
+}
+function get_TicksPerDay() {
+  return BigInt("864000000000");
 }
 function get_OffsetMinuteTicks() {
   return BigInt("600000000");
@@ -60,26 +75,26 @@ function ensureWholeNumber(value, message) {
     throw new Error(message);
 }
 function createDateTimeOffset(utcDateTime, offsetTicks) {
-  return CreateDateTimeOffset(utcDateTime, offsetTicks, zeroTicks);
+  return CreateDateTimeOffset(utcDateTime, offsetTicks, get_ZeroTicks());
 }
 function CreateDateTimeOffset(utcDateTime, offsetTicks, utcSubMillisecondTicks) {
-  let utcTicks = BigInt(utcDateTime.getTime()) * ticksPerMillisecond + utcSubMillisecondTicks + unixEpochTicks;
+  let utcTicks = BigInt(utcDateTime.getTime()) * get_TicksPerMillisecond() + utcSubMillisecondTicks + get_UnixEpochTicks();
   validateDateTimeOffsetRange(utcTicks, offsetTicks);
   return new JDateTimeOffset(utcDateTime, offsetTicks, utcSubMillisecondTicks);
 }
 function createDefaultDateTimeOffset() {
-  return createDateTimeOffset(new Date(minValueMilliseconds), zeroTicks);
+  return createDateTimeOffset(new Date(get_MinValueMilliseconds()), get_ZeroTicks());
 }
 function validateDateTimeOffsetRange(utcTicks, offsetTicks) {
   validateOffsetTicks(offsetTicks);
   let ticks = utcTicks + offsetTicks;
-  if (ticks < zeroTicks || ticks > maxDateTimeTicks)
+  if (ticks < get_ZeroTicks() || ticks > get_MaxDateTimeTicks())
     throw new Error("ArgumentOutOfRangeException: The UTC time and offset must produce a DateTimeOffset within range.");
 }
 function validateOffsetTicks(offsetTicks) {
-  if (offsetTicks % offsetMinuteTicks !== BigInt.zero)
+  if (offsetTicks % get_OffsetMinuteTicks() !== 0n)
     throw new Error("ArgumentException: Offset must be specified in whole minutes.");
-  if (offsetTicks < -maxOffsetTicks || offsetTicks > maxOffsetTicks)
+  if (offsetTicks < -get_MaxOffsetTicks() || offsetTicks > get_MaxOffsetTicks())
     throw new Error("ArgumentOutOfRangeException: Offset must be within plus or minus 14 hours.");
 }
 function validateMicrosecond(microsecond) {
@@ -87,43 +102,43 @@ function validateMicrosecond(microsecond) {
     throw new Error("ArgumentOutOfRangeException: Microsecond must be between 0 and 999.");
 }
 function createLocalTicks(year, month, day, hour, minute, second, millisecond) {
-  let utc = RuntimeModule.createUtcDate(year, month, day);
+  let utc = createUtcDate(year, month, day);
   utc.setUTCHours(hour, minute, second, millisecond);
   if (utc.getUTCFullYear() !== year || utc.getUTCMonth() + 1 !== month || utc.getUTCDate() !== day || utc.getUTCHours() !== hour || utc.getUTCMinutes() !== minute || utc.getUTCSeconds() !== second || utc.getUTCMilliseconds() !== millisecond)
     throw new Error("ArgumentOutOfRangeException: The supplied date or time component is out of range.");
-  return BigInt(utc.getTime()) * ticksPerMillisecond + unixEpochTicks;
+  return BigInt(utc.getTime()) * get_TicksPerMillisecond() + get_UnixEpochTicks();
 }
 function getDateTimeInstantTicks(dateTime) {
-  if (dateTime.kind === dateTimeKindUtc) {
+  if (dateTime.kind === get_DateTimeKindUtc()) {
     let date = dateTime.date;
-    return BigInt(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds())) * ticksPerMillisecond + dateTime.subMillisecondTicks + unixEpochTicks;
+    return BigInt(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds())) * get_TicksPerMillisecond() + dateTime.subMillisecondTicks + get_UnixEpochTicks();
   }
-  return BigInt(dateTime.date.getTime()) * ticksPerMillisecond + dateTime.subMillisecondTicks + unixEpochTicks;
+  return BigInt(dateTime.date.getTime()) * get_TicksPerMillisecond() + dateTime.subMillisecondTicks + get_UnixEpochTicks();
 }
 function getDateTimeTicks(dateTime) {
   let date = dateTime.date;
-  return BigInt(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds())) * ticksPerMillisecond + dateTime.subMillisecondTicks + unixEpochTicks;
+  return BigInt(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds())) * get_TicksPerMillisecond() + dateTime.subMillisecondTicks + get_UnixEpochTicks();
 }
 function getUtcTicks(instance) {
-  return BigInt(instance.utcDateTime.getTime()) * ticksPerMillisecond + instance.utcSubMillisecondTicks + unixEpochTicks;
+  return BigInt(instance.utcDateTime.getTime()) * get_TicksPerMillisecond() + instance.utcSubMillisecondTicks + get_UnixEpochTicks();
 }
 function getTicks(instance) {
   return getUtcTicks(instance) + instance.offsetTicks;
 }
 function createFromUtcTicks(utcTicks, offsetTicks) {
   validateDateTimeOffsetRange(utcTicks, offsetTicks);
-  let ticksSinceUnixEpoch = utcTicks - unixEpochTicks;
-  let milliseconds = ticksSinceUnixEpoch / ticksPerMillisecond;
-  let utcSubMillisecondTicks = ticksSinceUnixEpoch % ticksPerMillisecond;
-  if (utcSubMillisecondTicks < zeroTicks) {
+  let ticksSinceUnixEpoch = utcTicks - get_UnixEpochTicks();
+  let milliseconds = ticksSinceUnixEpoch / get_TicksPerMillisecond();
+  let utcSubMillisecondTicks = ticksSinceUnixEpoch % get_TicksPerMillisecond();
+  if (utcSubMillisecondTicks < get_ZeroTicks()) {
     milliseconds -= BigInt(1);
-    utcSubMillisecondTicks += ticksPerMillisecond;
+    utcSubMillisecondTicks += get_TicksPerMillisecond();
   }
   return CreateDateTimeOffset(new Date(Number(milliseconds)), offsetTicks, utcSubMillisecondTicks);
 }
 function normalizeSubMillisecondTicks(ticks) {
-  let remainder = (ticks - unixEpochTicks) % ticksPerMillisecond;
-  return remainder < zeroTicks ? remainder + ticksPerMillisecond : remainder;
+  let remainder = (ticks - get_UnixEpochTicks()) % get_TicksPerMillisecond();
+  return remainder < get_ZeroTicks() ? remainder + get_TicksPerMillisecond() : remainder;
 }
 function validateOffset(offset) {
   validateOffsetTicks(offset.ticks);
@@ -139,18 +154,18 @@ function addMonthsCore(instance, months) {
     newMonthIndex += 12;
   let newMonth = newMonthIndex + 1;
   let day = local.getUTCDate();
-  let daysInMonth = RuntimeModule.getDaysInMonth(newYear, newMonth);
+  let daysInMonth = getDaysInMonth(newYear, newMonth);
   let newDay = day > daysInMonth ? daysInMonth : day;
   let localTicks = createLocalTicks(newYear, newMonth, newDay, local.getUTCHours(), local.getUTCMinutes(), local.getUTCSeconds(), local.getUTCMilliseconds()) + instance.utcSubMillisecondTicks;
   return createFromUtcTicks(localTicks - instance.offsetTicks, instance.offsetTicks);
 }
 function createWithLocalOffset(utcDateTime) {
-  let offsetTicks = BigInt(-utcDateTime.getTimezoneOffset()) * offsetMinuteTicks;
+  let offsetTicks = BigInt(-utcDateTime.getTimezoneOffset()) * get_OffsetMinuteTicks();
   return createDateTimeOffset(utcDateTime, offsetTicks);
 }
 function CreateWithLocalOffset(utcTicks) {
-  let utcDateTime = createFromUtcTicks(utcTicks, zeroTicks).utcDateTime;
-  let offsetTicks = BigInt(-utcDateTime.getTimezoneOffset()) * offsetMinuteTicks;
+  let utcDateTime = createFromUtcTicks(utcTicks, get_ZeroTicks()).utcDateTime;
+  let offsetTicks = BigInt(-utcDateTime.getTimezoneOffset()) * get_OffsetMinuteTicks();
   return createFromUtcTicks(utcTicks, offsetTicks);
 }
 function getOffsetLocalDate(instance) {
@@ -160,9 +175,9 @@ function getProviderLocale(provider) {
   let locale, numberFormat;
   if (typeof provider === "string" && (locale = provider, true))
     return locale;
-  if (provider instanceof NumberFormat && (numberFormat = provider, true))
+  if (provider instanceof Intl.NumberFormat && (numberFormat = provider, true))
     return numberFormat.resolvedOptions().locale;
-  return (new DateTimeFormat).resolvedOptions().locale;
+  return (new Intl.DateTimeFormat).resolvedOptions().locale;
 }
 function joinFormatParts(parts) {
   let text = "";
@@ -276,20 +291,20 @@ function isAsciiLetter(value) {
 function getLocalizedMonthName(locale, month, abbreviated) {
   if (locale.length === 0)
     return abbreviated ? getInvariantAbbreviatedMonthName(month) : getInvariantMonthName(month);
-  return joinFormatParts(new DateTimeFormat(locale, { month: abbreviated ? 1 : 0, timeZone: "UTC" }).formatToParts(new Date(Date.UTC(2000, month - 1, 1))));
+  return joinFormatParts(new Intl.DateTimeFormat(locale, { month: abbreviated ? "short" : "long", timeZone: "UTC" }).formatToParts(new Date(Date.UTC(2000, month - 1, 1))));
 }
 function getLocalizedDayName(locale, dayOfWeek, abbreviated) {
   if (locale.length === 0)
     return abbreviated ? getInvariantAbbreviatedDayName(dayOfWeek) : getInvariantDayName(dayOfWeek);
-  return joinFormatParts(new DateTimeFormat(locale, { weekday: abbreviated ? 1 : 0, timeZone: "UTC" }).formatToParts(new Date(Date.UTC(2024, 0, 7 + dayOfWeek))));
+  return joinFormatParts(new Intl.DateTimeFormat(locale, { weekday: abbreviated ? "short" : "long", timeZone: "UTC" }).formatToParts(new Date(Date.UTC(2024, 0, 7 + dayOfWeek))));
 }
 function getDateSeparator(locale) {
   if (locale.length === 0)
     return "/";
-  let parts = new DateTimeFormat(locale, {
-    year: 0,
-    month: 1,
-    day: 1,
+  let parts = new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     timeZone: "UTC"
   }).formatToParts(new Date(Date.UTC(2000, 0, 2)));
   for (let i = 0; i < parts.length; i++) {
@@ -302,9 +317,9 @@ function getDateSeparator(locale) {
 function getTimeSeparator(locale) {
   if (locale.length === 0)
     return ":";
-  let parts = new DateTimeFormat(locale, {
-    hour: 1,
-    minute: 1,
+  let parts = new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
     hour12: false,
     timeZone: "UTC"
   }).formatToParts(new Date(Date.UTC(2000, 0, 2, 3, 4, 5)));
@@ -318,8 +333,8 @@ function getTimeSeparator(locale) {
 function getLocalizedDayPeriod(date, locale) {
   if (locale.length === 0)
     return date.getUTCHours() < 12 ? "AM" : "PM";
-  let parts = new DateTimeFormat(locale, {
-    hour: 0,
+  let parts = new Intl.DateTimeFormat(locale, {
+    hour: "numeric",
     hour12: true,
     timeZone: "UTC"
   }).formatToParts(date);
@@ -331,70 +346,70 @@ function getLocalizedDayPeriod(date, locale) {
   return date.getUTCHours() < 12 ? "AM" : "PM";
 }
 function formatOffsetTicks(offsetTicks, count) {
-  let negative = offsetTicks < BigInt.zero;
+  let negative = offsetTicks < 0n;
   let absolute = negative ? -offsetTicks : offsetTicks;
-  let totalMinutes = absolute / offsetMinuteTicks;
+  let totalMinutes = absolute / get_OffsetMinuteTicks();
   let hours = Number(totalMinutes / BigInt(60));
   let minutes = Number(totalMinutes % BigInt(60));
   let sign = negative ? "-" : "+";
   if (count <= 1)
     return sign + hours;
   if (count === 2)
-    return sign + RuntimeModule.pad2(hours);
-  return sign + RuntimeModule.pad2(hours) + ":" + RuntimeModule.pad2(minutes);
+    return sign + pad2(hours);
+  return sign + pad2(hours) + ":" + pad2(minutes);
 }
 function formatInvariantGeneralDateTimeOffset(instance, includeSeconds, includeOffset) {
   let local = getOffsetLocalDate(instance);
-  let text = RuntimeModule.pad2(local.getUTCMonth() + 1) + "/" + RuntimeModule.pad2(local.getUTCDate()) + "/" + RuntimeModule.padLeft(local.getUTCFullYear().toString(), 4) + " " + RuntimeModule.pad2(local.getUTCHours()) + ":" + RuntimeModule.pad2(local.getUTCMinutes());
+  let text = pad2(local.getUTCMonth() + 1) + "/" + pad2(local.getUTCDate()) + "/" + padLeft(local.getUTCFullYear().toString(), 4) + " " + pad2(local.getUTCHours()) + ":" + pad2(local.getUTCMinutes());
   if (includeSeconds)
-    text += ":" + RuntimeModule.pad2(local.getUTCSeconds());
+    text += ":" + pad2(local.getUTCSeconds());
   if (includeOffset)
     text += " " + formatOffsetTicks(instance.offsetTicks, 3);
   return text;
 }
 function formatInvariantShortDate(instance) {
   let local = getOffsetLocalDate(instance);
-  return RuntimeModule.pad2(local.getUTCMonth() + 1) + "/" + RuntimeModule.pad2(local.getUTCDate()) + "/" + RuntimeModule.padLeft(local.getUTCFullYear().toString(), 4);
+  return pad2(local.getUTCMonth() + 1) + "/" + pad2(local.getUTCDate()) + "/" + padLeft(local.getUTCFullYear().toString(), 4);
 }
 function formatInvariantLongDate(instance) {
   let local = getOffsetLocalDate(instance);
-  return getInvariantDayName(local.getUTCDay()) + ", " + RuntimeModule.pad2(local.getUTCDate()) + " " + getInvariantMonthName(local.getUTCMonth() + 1) + " " + RuntimeModule.padLeft(local.getUTCFullYear().toString(), 4);
+  return getInvariantDayName(local.getUTCDay()) + ", " + pad2(local.getUTCDate()) + " " + getInvariantMonthName(local.getUTCMonth() + 1) + " " + padLeft(local.getUTCFullYear().toString(), 4);
 }
 function formatInvariantTime(instance, includeSeconds) {
   let local = getOffsetLocalDate(instance);
-  let text = RuntimeModule.pad2(local.getUTCHours()) + ":" + RuntimeModule.pad2(local.getUTCMinutes());
+  let text = pad2(local.getUTCHours()) + ":" + pad2(local.getUTCMinutes());
   if (includeSeconds)
-    text += ":" + RuntimeModule.pad2(local.getUTCSeconds());
+    text += ":" + pad2(local.getUTCSeconds());
   return text;
 }
 function formatMonthDay(instance, provider) {
   let locale = getProviderLocale(provider);
   if (locale.length === 0) {
     let local = getOffsetLocalDate(instance);
-    return getInvariantMonthName(local.getUTCMonth() + 1) + " " + RuntimeModule.pad2(local.getUTCDate());
+    return getInvariantMonthName(local.getUTCMonth() + 1) + " " + pad2(local.getUTCDate());
   }
-  return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, { month: 0, day: 1 });
+  return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, { month: "long", day: "2-digit" });
 }
 function formatYearMonth(instance, provider) {
   let locale = getProviderLocale(provider);
   if (locale.length === 0) {
     let local = getOffsetLocalDate(instance);
-    return RuntimeModule.padLeft(local.getUTCFullYear().toString(), 4) + " " + getInvariantMonthName(local.getUTCMonth() + 1);
+    return padLeft(local.getUTCFullYear().toString(), 4) + " " + getInvariantMonthName(local.getUTCMonth() + 1);
   }
-  return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, { year: 0, month: 0 });
+  return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, { year: "numeric", month: "long" });
 }
 function formatFullDateTime(instance, includeSeconds, provider) {
   return formatLongDate(instance, provider) + " " + formatTime(instance, includeSeconds, provider);
 }
 function formatRfc1123DateTimeOffset(instance) {
   let utc = instance.utcDateTime;
-  return getInvariantAbbreviatedDayName(utc.getUTCDay()) + ", " + RuntimeModule.pad2(utc.getUTCDate()) + " " + getInvariantAbbreviatedMonthName(utc.getUTCMonth() + 1) + " " + RuntimeModule.padLeft(utc.getUTCFullYear().toString(), 4) + " " + RuntimeModule.pad2(utc.getUTCHours()) + ":" + RuntimeModule.pad2(utc.getUTCMinutes()) + ":" + RuntimeModule.pad2(utc.getUTCSeconds()) + " GMT";
+  return getInvariantAbbreviatedDayName(utc.getUTCDay()) + ", " + pad2(utc.getUTCDate()) + " " + getInvariantAbbreviatedMonthName(utc.getUTCMonth() + 1) + " " + padLeft(utc.getUTCFullYear().toString(), 4) + " " + pad2(utc.getUTCHours()) + ":" + pad2(utc.getUTCMinutes()) + ":" + pad2(utc.getUTCSeconds()) + " GMT";
 }
 function formatLocaleDateTime(date, locale, options) {
-  return joinFormatParts(new DateTimeFormat(locale, options).formatToParts(date));
+  return joinFormatParts(new Intl.DateTimeFormat(locale, options).formatToParts(date));
 }
 function formatOffsetLocaleDateTime(date, locale, options) {
-  return joinFormatParts(new DateTimeFormat(locale, {
+  return joinFormatParts(new Intl.DateTimeFormat(locale, {
     localeMatcher: options.localeMatcher,
     weekday: options.weekday,
     era: options.era,
@@ -415,12 +430,12 @@ function formatGeneralDateTimeOffset(instance, includeSeconds, includeOffset, pr
   if (locale.length === 0)
     return formatInvariantGeneralDateTimeOffset(instance, includeSeconds, includeOffset);
   let text = formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, {
-    year: 0,
-    month: 1,
-    day: 1,
-    hour: 1,
-    minute: 1,
-    second: includeSeconds ? 1 : null,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: includeSeconds ? "2-digit" : null,
     hour12: false
   });
   if (includeOffset)
@@ -432,9 +447,9 @@ function formatShortDate(instance, provider) {
   if (locale.length === 0)
     return formatInvariantShortDate(instance);
   return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, {
-    year: 0,
-    month: 1,
-    day: 1
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
   });
 }
 function formatLongDate(instance, provider) {
@@ -442,10 +457,10 @@ function formatLongDate(instance, provider) {
   if (locale.length === 0)
     return formatInvariantLongDate(instance);
   return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, {
-    weekday: 0,
-    year: 0,
-    month: 0,
-    day: 1
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "2-digit"
   });
 }
 function formatTime(instance, includeSeconds, provider) {
@@ -453,22 +468,22 @@ function formatTime(instance, includeSeconds, provider) {
   if (locale.length === 0)
     return formatInvariantTime(instance, includeSeconds);
   return formatOffsetLocaleDateTime(getOffsetLocalDate(instance), locale, {
-    hour: 1,
-    minute: 1,
-    second: includeSeconds ? 1 : null,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: includeSeconds ? "2-digit" : null,
     hour12: false
   });
 }
 function formatUniversalSortableDateTimeOffset(instance) {
   let utc = instance.utcDateTime;
-  return RuntimeModule.formatDateOnlyText(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate()) + " " + RuntimeModule.pad2(utc.getUTCHours()) + ":" + RuntimeModule.pad2(utc.getUTCMinutes()) + ":" + RuntimeModule.pad2(utc.getUTCSeconds()) + "Z";
+  return formatDateOnlyText(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate()) + " " + pad2(utc.getUTCHours()) + ":" + pad2(utc.getUTCMinutes()) + ":" + pad2(utc.getUTCSeconds()) + "Z";
 }
 function formatSortableDateTimeOffset(instance) {
   let local = getOffsetLocalDate(instance);
-  return RuntimeModule.formatDateOnlyText(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate()) + "T" + RuntimeModule.pad2(local.getUTCHours()) + ":" + RuntimeModule.pad2(local.getUTCMinutes()) + ":" + RuntimeModule.pad2(local.getUTCSeconds());
+  return formatDateOnlyText(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate()) + "T" + pad2(local.getUTCHours()) + ":" + pad2(local.getUTCMinutes()) + ":" + pad2(local.getUTCSeconds());
 }
 function formatFraction(fraction, count, trimTrailingZeros) {
-  let text = RuntimeModule.pad7(fraction);
+  let text = pad7(fraction);
   if (count < 7)
     text = text.substring(0, 0 + count);
   if (!trimTrailingZeros)
@@ -488,17 +503,17 @@ function formatCustomToken(instance, token, count, locale, dateSeparator, timeSe
     hour12 = 12;
   let minute = local.getUTCMinutes();
   let second = local.getUTCSeconds();
-  let fraction = BigInt(local.getUTCMilliseconds()) * ticksPerMillisecond + instance.utcSubMillisecondTicks;
+  let fraction = BigInt(local.getUTCMilliseconds()) * get_TicksPerMillisecond() + instance.utcSubMillisecondTicks;
   switch (token) {
     case "y":
       if (count === 2)
-        return RuntimeModule.pad2(year % 100);
-      return RuntimeModule.padLeft(year.toString(), count < 4 ? 4 : count);
+        return pad2(year % 100);
+      return padLeft(year.toString(), count < 4 ? 4 : count);
     case "M":
       if (count === 1)
         return month.toString();
       if (count === 2)
-        return RuntimeModule.pad2(month);
+        return pad2(month);
       if (count === 3)
         return getLocalizedMonthName(locale, month, true);
       return getLocalizedMonthName(locale, month, false);
@@ -506,18 +521,18 @@ function formatCustomToken(instance, token, count, locale, dateSeparator, timeSe
       if (count === 1)
         return day.toString();
       if (count === 2)
-        return RuntimeModule.pad2(day);
+        return pad2(day);
       if (count === 3)
         return getLocalizedDayName(locale, local.getUTCDay(), true);
       return getLocalizedDayName(locale, local.getUTCDay(), false);
     case "H":
-      return count === 1 ? hour.toString() : RuntimeModule.pad2(hour);
+      return count === 1 ? hour.toString() : pad2(hour);
     case "h":
-      return count === 1 ? hour12.toString() : RuntimeModule.pad2(hour12);
+      return count === 1 ? hour12.toString() : pad2(hour12);
     case "m":
-      return count === 1 ? minute.toString() : RuntimeModule.pad2(minute);
+      return count === 1 ? minute.toString() : pad2(minute);
     case "s":
-      return count === 1 ? second.toString() : RuntimeModule.pad2(second);
+      return count === 1 ? second.toString() : pad2(second);
     case "t":
       let dayPeriod = getLocalizedDayPeriod(local, locale);
       return count === 1 ? dayPeriod.substring(0, 0 + 1) : dayPeriod;
@@ -681,7 +696,7 @@ function tryParseIsoDate(text, year, month, day) {
   day = Number(text.substring(8, 8 + 2));
   if (year < 1 || year > 9999 || month < 1 || month > 12)
     return [false, year, month, day];
-  let daysInMonth = RuntimeModule.getDaysInMonth(year, month);
+  let daysInMonth = getDaysInMonth(year, month);
   return [day >= 1 && day <= daysInMonth, year, month, day];
 }
 function tryParseIsoDateTime(text, year, month, day, hour, minute, second, millisecond, subMillisecondTicks, hasExplicitOffset, offsetTicks) {
@@ -693,9 +708,9 @@ function tryParseIsoDateTime(text, year, month, day, hour, minute, second, milli
   minute = 0;
   second = 0;
   millisecond = 0;
-  subMillisecondTicks = zeroTicks;
+  subMillisecondTicks = get_ZeroTicks();
   hasExplicitOffset = false;
-  offsetTicks = zeroTicks;
+  offsetTicks = get_ZeroTicks();
   if (text.length < 16)
     return [
       false,
@@ -953,7 +968,7 @@ function tryParseIsoDateTime(text, year, month, day, hour, minute, second, milli
       hasExplicitOffset,
       offsetTicks
     ];
-  offsetTicks = BigInt(offsetHours * 60 + offsetMinutes) * offsetMinuteTicks;
+  offsetTicks = BigInt(offsetHours * 60 + offsetMinutes) * get_OffsetMinuteTicks();
   if (sign === "-")
     offsetTicks = -offsetTicks;
   return [
@@ -976,9 +991,9 @@ function tryParseTimeOnly(text, hour, minute, second, millisecond, subMillisecon
   minute = 0;
   second = 0;
   millisecond = 0;
-  subMillisecondTicks = zeroTicks;
+  subMillisecondTicks = get_ZeroTicks();
   hasExplicitOffset = false;
-  offsetTicks = zeroTicks;
+  offsetTicks = get_ZeroTicks();
   if (text.length < 5)
     return [
       false,
@@ -1165,7 +1180,7 @@ function tryParseTimeOnly(text, hour, minute, second, millisecond, subMillisecon
       hasExplicitOffset,
       offsetTicks
     ];
-  offsetTicks = BigInt(offsetHours * 60 + offsetMinutes) * offsetMinuteTicks;
+  offsetTicks = BigInt(offsetHours * 60 + offsetMinutes) * get_OffsetMinuteTicks();
   if (sign === "-")
     offsetTicks = -offsetTicks;
   return [
@@ -1179,15 +1194,17 @@ function tryParseTimeOnly(text, hour, minute, second, millisecond, subMillisecon
     offsetTicks
   ];
 }
-function createRoundedTicksFromDouble(value) {
-  if (DoubleModule._24e14b276e0c7e30(value))
+function createAddUnitTicks(value, ticksPerUnit) {
+  if (_24e14b276e0c7e30(value))
     throw new Error("ArgumentException: Value cannot be NaN.");
-  if (!DoubleModule._aed2927097617729(value))
+  if (!_aed2927097617729(value))
     throw new Error("ArgumentOutOfRangeException: Value must be finite.");
-  let rounded = Math.round(value);
-  if (!DoubleModule._aed2927097617729(rounded))
+  let maxUnitCount = Number(get_MaxDateTimeTicks()) / Number(ticksPerUnit);
+  if (Math.abs(value) > maxUnitCount)
     throw new Error("ArgumentOutOfRangeException: Value is outside the supported DateTimeOffset range.");
-  return BigInt(rounded);
+  let integralPart = Math.trunc(value);
+  let fractionalPart = value - integralPart;
+  return BigInt(integralPart) * ticksPerUnit + BigInt(Math.trunc(fractionalPart * Number(ticksPerUnit)));
 }
 function getDateTimeStylesValue(styles) {
   let numberStyle, enumStyle;
@@ -1202,10 +1219,10 @@ function getDateTimeStylesValue(styles) {
 function validateDateTimeStyles(styles) {
   if (styles < 0 || Math.floor(styles) !== styles)
     throw new Error("ArgumentException: Invalid DateTimeStyles value.");
-  if ((styles & dateTimeStylesNoCurrentDateDefault) !== 0)
+  if ((styles & get_DateTimeStylesNoCurrentDateDefault()) !== 0)
     throw new Error("ArgumentException: NoCurrentDateDefault is not allowed when parsing DateTimeOffset.");
-  let hasAssumeLocal = (styles & dateTimeStylesAssumeLocal) !== 0;
-  let hasAssumeUniversal = (styles & dateTimeStylesAssumeUniversal) !== 0;
+  let hasAssumeLocal = (styles & get_DateTimeStylesAssumeLocal()) !== 0;
+  let hasAssumeUniversal = (styles & get_DateTimeStylesAssumeUniversal()) !== 0;
   if (hasAssumeLocal && hasAssumeUniversal)
     throw new Error("ArgumentException: AssumeLocal and AssumeUniversal cannot both be set.");
 }
@@ -1214,13 +1231,13 @@ function applyDateTimeStyles(value, input, styles) {
   validateDateTimeStyles(styleValue);
   let text = input.trim();
   let hasExplicitZone = hasUtcSuffix(text) || HasExplicitOffset(text);
-  let adjustToUniversal = (styleValue & dateTimeStylesAdjustToUniversal) !== 0;
-  let assumeUniversal = (styleValue & dateTimeStylesAssumeUniversal) !== 0;
+  let adjustToUniversal = (styleValue & get_DateTimeStylesAdjustToUniversal()) !== 0;
+  let assumeUniversal = (styleValue & get_DateTimeStylesAssumeUniversal()) !== 0;
   let result = value;
   if (!hasExplicitZone && assumeUniversal)
-    result = createFromUtcTicks(getTicks(value), zeroTicks);
+    result = createFromUtcTicks(getTicks(value), get_ZeroTicks());
   if (adjustToUniversal)
-    return createFromUtcTicks(getUtcTicks(result), zeroTicks);
+    return createFromUtcTicks(getUtcTicks(result), get_ZeroTicks());
   return result;
 }
 function resolveParsedOffsetTicks(input, parsedDate) {
@@ -1229,7 +1246,7 @@ function resolveParsedOffsetTicks(input, parsedDate) {
   if (spaceIndex > timeIndex)
     timeIndex = spaceIndex;
   if (input.endsWith("Z") || input.endsWith("z"))
-    return zeroTicks;
+    return get_ZeroTicks();
   if (input.length >= 6) {
     let signIndex = input.length - 6;
     let sign = _5ad63706a889c294(input, signIndex);
@@ -1237,7 +1254,7 @@ function resolveParsedOffsetTicks(input, parsedDate) {
       let hours = Number(input.substring(input.length - 5, input.length - 5 + 2));
       let minutes = Number(input.substring(input.length - 2, input.length - 2 + 2));
       if (signIndex > timeIndex && !isNaN(hours) && !isNaN(minutes) && minutes >= 0 && minutes < 60) {
-        let ticks = BigInt(hours * 60 + minutes) * offsetMinuteTicks;
+        let ticks = BigInt(hours * 60 + minutes) * get_OffsetMinuteTicks();
         return sign === "-" ? -ticks : ticks;
       }
     }
@@ -1249,7 +1266,7 @@ function resolveParsedOffsetTicks(input, parsedDate) {
       let hours = Number(input.substring(input.length - 4, input.length - 4 + 2));
       let minutes = Number(input.substring(input.length - 2, input.length - 2 + 2));
       if (signIndex > timeIndex && !isNaN(hours) && !isNaN(minutes) && minutes >= 0 && minutes < 60) {
-        let ticks = BigInt(hours * 60 + minutes) * offsetMinuteTicks;
+        let ticks = BigInt(hours * 60 + minutes) * get_OffsetMinuteTicks();
         return sign === "-" ? -ticks : ticks;
       }
     }
@@ -1260,12 +1277,12 @@ function resolveParsedOffsetTicks(input, parsedDate) {
     if (sign === "+" || sign === "-") {
       let hours = Number(input.substring(input.length - 2, input.length - 2 + 2));
       if (signIndex > timeIndex && !isNaN(hours)) {
-        let ticks = BigInt(hours * 60) * offsetMinuteTicks;
+        let ticks = BigInt(hours * 60) * get_OffsetMinuteTicks();
         return sign === "-" ? -ticks : ticks;
       }
     }
   }
-  return BigInt(-parsedDate.getTimezoneOffset()) * offsetMinuteTicks;
+  return BigInt(-parsedDate.getTimezoneOffset()) * get_OffsetMinuteTicks();
 }
 function extractSubMillisecondTicks(input) {
   let timeIndex = input.lastIndexOf("T");
@@ -1274,7 +1291,7 @@ function extractSubMillisecondTicks(input) {
     timeIndex = spaceIndex;
   let fractionIndex = input.indexOf(".", timeIndex + 1);
   if (fractionIndex < 0)
-    return zeroTicks;
+    return get_ZeroTicks();
   let end = input.length;
   for (let i = fractionIndex + 1; i < input.length; i++) {
     let c = _5ad63706a889c294(input, i);
@@ -1293,7 +1310,7 @@ function extractSubMillisecondTicks(input) {
 function floorDiv(value, divisor) {
   let quotient = value / divisor;
   let remainder = value % divisor;
-  if (remainder < zeroTicks)
+  if (remainder < get_ZeroTicks())
     return quotient - BigInt(1);
   return quotient;
 }
@@ -1308,24 +1325,24 @@ function parseCore(input) {
     let currentMonth = now.getMonth() + 1;
     let currentDay = now.getDate();
     if (!timeHasExplicitOffset) {
-      let localDateTime = RuntimeModule.createLocalDateTime(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond);
-      let localOffsetTicks = BigInt(-localDateTime.getTimezoneOffset()) * offsetMinuteTicks;
-      let utcTicks = BigInt(localDateTime.getTime()) * ticksPerMillisecond + timeSubMillisecondTicks + unixEpochTicks;
+      let localDateTime = createLocalDateTime(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond);
+      let localOffsetTicks = BigInt(-localDateTime.getTimezoneOffset()) * get_OffsetMinuteTicks();
+      let utcTicks = BigInt(localDateTime.getTime()) * get_TicksPerMillisecond() + timeSubMillisecondTicks + get_UnixEpochTicks();
       return createFromUtcTicks(utcTicks, localOffsetTicks);
     }
     let localTicks = createLocalTicks(currentYear, currentMonth, currentDay, timeHour, timeMinute, timeSecond, timeMillisecond) + timeSubMillisecondTicks;
     return createFromUtcTicks(localTicks - timeOffsetTicks, timeOffsetTicks);
   }
   if (__ref$1f7bc41fe2e6775199bcf0e8 = tryParseIsoDate(s, year, month, day), year = __ref$1f7bc41fe2e6775199bcf0e8[1], month = __ref$1f7bc41fe2e6775199bcf0e8[2], day = __ref$1f7bc41fe2e6775199bcf0e8[3], __ref$1f7bc41fe2e6775199bcf0e8[0]) {
-    let date = RuntimeModule.createLocalDate(year, month, day);
-    let utcTicks = BigInt(date.getTime()) * ticksPerMillisecond + unixEpochTicks;
+    let date = createLocalDate(year, month, day);
+    let utcTicks = BigInt(date.getTime()) * get_TicksPerMillisecond() + get_UnixEpochTicks();
     return CreateWithLocalOffset(utcTicks);
   }
   if (__ref$04911c9a3c2af607e600522e = tryParseIsoDateTime(s, year, month, day, hour, minute, second, millisecond, subMillisecondTicks, hasExplicitOffset, offsetTicks), year = __ref$04911c9a3c2af607e600522e[1], month = __ref$04911c9a3c2af607e600522e[2], day = __ref$04911c9a3c2af607e600522e[3], hour = __ref$04911c9a3c2af607e600522e[4], minute = __ref$04911c9a3c2af607e600522e[5], second = __ref$04911c9a3c2af607e600522e[6], millisecond = __ref$04911c9a3c2af607e600522e[7], subMillisecondTicks = __ref$04911c9a3c2af607e600522e[8], hasExplicitOffset = __ref$04911c9a3c2af607e600522e[9], offsetTicks = __ref$04911c9a3c2af607e600522e[10], __ref$04911c9a3c2af607e600522e[0]) {
     if (!hasExplicitOffset) {
-      let localDateTime = RuntimeModule.createLocalDateTime(year, month, day, hour, minute, second, millisecond);
-      let localOffsetTicks = BigInt(-localDateTime.getTimezoneOffset()) * offsetMinuteTicks;
-      let utcTicks = BigInt(localDateTime.getTime()) * ticksPerMillisecond + subMillisecondTicks + unixEpochTicks;
+      let localDateTime = createLocalDateTime(year, month, day, hour, minute, second, millisecond);
+      let localOffsetTicks = BigInt(-localDateTime.getTimezoneOffset()) * get_OffsetMinuteTicks();
+      let utcTicks = BigInt(localDateTime.getTime()) * get_TicksPerMillisecond() + subMillisecondTicks + get_UnixEpochTicks();
       return createFromUtcTicks(utcTicks, localOffsetTicks);
     }
     let localTicks = createLocalTicks(year, month, day, hour, minute, second, millisecond) + subMillisecondTicks;
@@ -1335,19 +1352,19 @@ function parseCore(input) {
   if (isNaN(parsed.getTime()))
     throw new Error(`FormatException: String '${input}' was not recognized as a valid DateTimeOffset.`);
   let resolvedOffsetTicks = resolveParsedOffsetTicks(s, parsed);
-  if (resolvedOffsetTicks < -maxOffsetTicks || resolvedOffsetTicks > maxOffsetTicks)
+  if (resolvedOffsetTicks < -get_MaxOffsetTicks() || resolvedOffsetTicks > get_MaxOffsetTicks())
     throw new Error(`FormatException: String '${input}' was not recognized as a valid DateTimeOffset.`);
   let parsedSubMillisecondTicks = extractSubMillisecondTicks(s);
-  return createFromUtcTicks(BigInt(parsed.getTime()) * ticksPerMillisecond + parsedSubMillisecondTicks + unixEpochTicks, resolvedOffsetTicks);
+  return createFromUtcTicks(BigInt(parsed.getTime()) * get_TicksPerMillisecond() + parsedSubMillisecondTicks + get_UnixEpochTicks(), resolvedOffsetTicks);
 }
 export function _77107f0c23675b69() {
   return createDefaultDateTimeOffset();
 }
 export function _d45d439f0b97ae0e() {
-  return CreateDateTimeOffset(new Date(253402300799999), zeroTicks, BigInt("9999"));
+  return CreateDateTimeOffset(new Date(253402300799999), get_ZeroTicks(), BigInt("9999"));
 }
 export function _087cabaedc1b5cc2() {
-  return createDateTimeOffset(new Date(0), zeroTicks);
+  return createDateTimeOffset(new Date(0), get_ZeroTicks());
 }
 export function _12b4f3f1dc14bea9() {
   return createDefaultDateTimeOffset();
@@ -1357,20 +1374,20 @@ export function _1e9c5d2a64e6d41d(ticks, offset) {
   return createFromUtcTicks(ticks - offset.ticks, offset.ticks);
 }
 export function _7adf69a53659433a(dateTime) {
-  if (dateTime.kind === dateTimeKindUtc)
-    return createFromUtcTicks(getDateTimeInstantTicks(dateTime), zeroTicks);
+  if (dateTime.kind === get_DateTimeKindUtc())
+    return createFromUtcTicks(getDateTimeInstantTicks(dateTime), get_ZeroTicks());
   let instantTicks = getDateTimeInstantTicks(dateTime);
   return CreateWithLocalOffset(instantTicks);
 }
 export function _106dabc0cc502aa4(dateTime, offset) {
   validateOffset(offset);
-  if (dateTime.kind === dateTimeKindUtc) {
-    if (offset.ticks !== zeroTicks)
+  if (dateTime.kind === get_DateTimeKindUtc()) {
+    if (offset.ticks !== get_ZeroTicks())
       throw new Error("ArgumentException: The UTC Offset for Utc DateTime instances must be 0.");
-    return createFromUtcTicks(getDateTimeInstantTicks(dateTime), zeroTicks);
+    return createFromUtcTicks(getDateTimeInstantTicks(dateTime), get_ZeroTicks());
   }
-  if (dateTime.kind === dateTimeKindLocal) {
-    let expectedOffset = BigInt(-dateTime.date.getTimezoneOffset()) * offsetMinuteTicks;
+  if (dateTime.kind === get_DateTimeKindLocal()) {
+    let expectedOffset = BigInt(-dateTime.date.getTimezoneOffset()) * get_OffsetMinuteTicks();
     if (expectedOffset !== offset.ticks)
       throw new Error("ArgumentException: The UTC Offset of the local dateTime parameter does not match the offset argument.");
   }
@@ -1398,18 +1415,18 @@ export function _04123d597aa761a3(year, month, day, hour, minute, second, millis
   return createFromUtcTicks(localTicks - offset.ticks, offset.ticks);
 }
 export function _7f444d9ce7391e15() {
-  return createDateTimeOffset(new Date, zeroTicks);
+  return createDateTimeOffset(new Date, get_ZeroTicks());
 }
 export function _2b7dd675863ae961(instance) {
   let localTicks = getTicks(instance);
-  return new JDateTime(RuntimeModule.createLocalDateTime(Number(_127105b7a40a7665(instance)), Number(_79eb4c93cea58d59(instance)), Number(_ba8df912681fe784(instance)), Number(_b7fc65477ef4df45(instance)), Number(_0fe8054b55f9f1c7(instance)), Number(_822de224fed5bb6b(instance)), Number(_0c1b2675cd7a2faa(instance))), 0, normalizeSubMillisecondTicks(localTicks));
+  return new JDateTime(createLocalDateTime(Number(_127105b7a40a7665(instance)), Number(_79eb4c93cea58d59(instance)), Number(_ba8df912681fe784(instance)), Number(_b7fc65477ef4df45(instance)), Number(_0fe8054b55f9f1c7(instance)), Number(_822de224fed5bb6b(instance)), Number(_0c1b2675cd7a2faa(instance))), 0, normalizeSubMillisecondTicks(localTicks));
 }
 export function _703902cecd7f61dd(instance) {
   let utc = instance.utcDateTime;
-  return new JDateTime(RuntimeModule.createLocalDateTime(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate(), utc.getUTCHours(), utc.getUTCMinutes(), utc.getUTCSeconds(), utc.getUTCMilliseconds()), dateTimeKindUtc, instance.utcSubMillisecondTicks);
+  return new JDateTime(createLocalDateTime(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate(), utc.getUTCHours(), utc.getUTCMinutes(), utc.getUTCSeconds(), utc.getUTCMilliseconds()), get_DateTimeKindUtc(), instance.utcSubMillisecondTicks);
 }
 export function _ffbfe7b660ff0527(instance) {
-  return new JDateTime(new Date(instance.utcDateTime.getTime()), dateTimeKindLocal, instance.utcSubMillisecondTicks);
+  return new JDateTime(new Date(instance.utcDateTime.getTime()), get_DateTimeKindLocal(), instance.utcSubMillisecondTicks);
 }
 export function _d1996f02ed3fa243(instance, offset) {
   validateOffset(offset);
@@ -1417,7 +1434,7 @@ export function _d1996f02ed3fa243(instance, offset) {
 }
 export function _d7098a1eabebc945(instance) {
   let local = new Date(instance.utcDateTime.getTime() + Number(instance.offsetTicks) / 10000);
-  return new JDateTime(RuntimeModule.createLocalDate(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate()), 0);
+  return new JDateTime(createLocalDate(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate()), 0);
 }
 export function _ba8df912681fe784(instance) {
   let local = new Date(instance.utcDateTime.getTime() + Number(instance.offsetTicks) / 10000);
@@ -1469,7 +1486,7 @@ export function _056adc0ac251ebd3(instance) {
 }
 export function _90401f92f6a9141e(instance) {
   let normalized = getTicks(instance) % BigInt("864000000000");
-  return new JTimeSpan(normalized < zeroTicks ? normalized + BigInt("864000000000") : normalized);
+  return new JTimeSpan(normalized < get_ZeroTicks() ? normalized + BigInt("864000000000") : normalized);
 }
 export function _127105b7a40a7665(instance) {
   let local = new Date(instance.utcDateTime.getTime() + Number(instance.offsetTicks) / 10000);
@@ -1479,25 +1496,25 @@ export function _09a94b0e7945eda6(instance, timeSpan) {
   return createFromUtcTicks(getUtcTicks(instance) + timeSpan.ticks, instance.offsetTicks);
 }
 export function _7fd735ce2102a3cc(instance, days) {
-  return createFromUtcTicks(getUtcTicks(instance) + createRoundedTicksFromDouble(days * 864000000000), instance.offsetTicks);
+  return createFromUtcTicks(getUtcTicks(instance) + createAddUnitTicks(days, get_TicksPerDay()), instance.offsetTicks);
 }
 export function _309c83b8a2fbc988(instance, hours) {
-  return createFromUtcTicks(getUtcTicks(instance) + createRoundedTicksFromDouble(hours * 36000000000), instance.offsetTicks);
+  return createFromUtcTicks(getUtcTicks(instance) + createAddUnitTicks(hours, get_TicksPerHour()), instance.offsetTicks);
 }
 export function _1528b452af6dd41d(instance, milliseconds) {
-  return createFromUtcTicks(getUtcTicks(instance) + createRoundedTicksFromDouble(milliseconds * 10000), instance.offsetTicks);
+  return createFromUtcTicks(getUtcTicks(instance) + createAddUnitTicks(milliseconds, get_TicksPerMillisecond()), instance.offsetTicks);
 }
 export function _4775ccfee8ed671f(instance, microseconds) {
-  return createFromUtcTicks(getUtcTicks(instance) + createRoundedTicksFromDouble(microseconds * 10), instance.offsetTicks);
+  return createFromUtcTicks(getUtcTicks(instance) + createAddUnitTicks(microseconds, get_TicksPerMicrosecond()), instance.offsetTicks);
 }
 export function _97aff1e2f4740394(instance, minutes) {
-  return createFromUtcTicks(getUtcTicks(instance) + createRoundedTicksFromDouble(minutes * 600000000), instance.offsetTicks);
+  return createFromUtcTicks(getUtcTicks(instance) + createAddUnitTicks(minutes, get_TicksPerMinute()), instance.offsetTicks);
 }
 export function _db8ffdb562d3ac68(instance, months) {
   return addMonthsCore(instance, months);
 }
 export function _54a4d6d554458fdb(instance, seconds) {
-  return createFromUtcTicks(getUtcTicks(instance) + createRoundedTicksFromDouble(seconds * 10000000), instance.offsetTicks);
+  return createFromUtcTicks(getUtcTicks(instance) + createAddUnitTicks(seconds, get_TicksPerSecond()), instance.offsetTicks);
 }
 export function _804f8bd2dc1e9443(instance, ticks) {
   return createFromUtcTicks(getUtcTicks(instance) + ticks, instance.offsetTicks);
@@ -1508,9 +1525,9 @@ export function _f4ea4e123d38eaa5(instance, years) {
 }
 export function _56ac26a94d0f9bca(first, second) {
   let diff = getUtcTicks(first) - getUtcTicks(second);
-  if (diff < zeroTicks)
+  if (diff < get_ZeroTicks())
     return -1;
-  if (diff > zeroTicks)
+  if (diff > get_ZeroTicks())
     return 1;
   return 0;
 }
@@ -1541,22 +1558,22 @@ export function _817d2f7b0e423bec(first, second) {
   return _5a55745cbe84c163(first, second);
 }
 export function _1185de87a3489deb(fileTime) {
-  if (fileTime < zeroTicks)
+  if (fileTime < get_ZeroTicks())
     throw new Error("ArgumentOutOfRangeException: File time must be non-negative.");
-  return CreateWithLocalOffset(fileTime - fileTimeUnixEpochTicks + unixEpochTicks);
+  return CreateWithLocalOffset(fileTime - get_FileTimeUnixEpochTicks() + get_UnixEpochTicks());
 }
 export function _fb7d72712794a2e4(seconds) {
-  if (seconds < minUnixTimeSeconds || seconds > maxUnixTimeSeconds)
+  if (seconds < get_MinUnixTimeSeconds() || seconds > get_MaxUnixTimeSeconds())
     throw new Error("ArgumentOutOfRangeException: Unix time seconds must be within the range of DateTimeOffset.");
-  return createDateTimeOffset(new Date(Number(seconds * BigInt(1000))), zeroTicks);
+  return createDateTimeOffset(new Date(Number(seconds * BigInt(1000))), get_ZeroTicks());
 }
 export function _89071e7da78164f5(milliseconds) {
-  if (milliseconds < minUnixTimeMilliseconds || milliseconds > maxUnixTimeMilliseconds)
+  if (milliseconds < get_MinUnixTimeMilliseconds() || milliseconds > get_MaxUnixTimeMilliseconds())
     throw new Error("ArgumentOutOfRangeException: Unix time milliseconds must be within the range of DateTimeOffset.");
-  return createDateTimeOffset(new Date(Number(milliseconds)), zeroTicks);
+  return createDateTimeOffset(new Date(Number(milliseconds)), get_ZeroTicks());
 }
 export function _484d626eb36d071d(instance) {
-  return RuntimeModule.getInt64HashCode(getUtcTicks(instance));
+  return getInt64HashCode(getUtcTicks(instance));
 }
 export function _25187a24d190d864(input) {
   return parseCore(input);
@@ -1577,13 +1594,13 @@ export function _2636ae85f21cd963(instance, value) {
   return createFromUtcTicks(getUtcTicks(instance) - value.ticks, instance.offsetTicks);
 }
 export function _d638010bc91ffd47(instance) {
-  return getUtcTicks(instance) - unixEpochTicks + fileTimeUnixEpochTicks;
+  return getUtcTicks(instance) - get_UnixEpochTicks() + get_FileTimeUnixEpochTicks();
 }
 export function _8bc213443653978d(instance) {
-  return floorDiv(getUtcTicks(instance) - unixEpochTicks, BigInt("10000000"));
+  return floorDiv(getUtcTicks(instance) - get_UnixEpochTicks(), BigInt("10000000"));
 }
 export function _e63166ec11d88ce1(instance) {
-  return floorDiv(getUtcTicks(instance) - unixEpochTicks, ticksPerMillisecond);
+  return floorDiv(getUtcTicks(instance) - get_UnixEpochTicks(), get_TicksPerMillisecond());
 }
 export function _c45ea6b7c8ed9501(instance) {
   return CreateWithLocalOffset(getUtcTicks(instance));
@@ -1601,7 +1618,7 @@ export function _e856edbfd7db0646(instance, format, formatProvider) {
   return formatDateTimeOffset(instance, format, formatProvider);
 }
 export function _cbe0bd9bc2e35d83(instance) {
-  return CreateDateTimeOffset(new Date(instance.utcDateTime.getTime()), zeroTicks, instance.utcSubMillisecondTicks);
+  return CreateDateTimeOffset(new Date(instance.utcDateTime.getTime()), get_ZeroTicks(), instance.utcSubMillisecondTicks);
 }
 export function _2fd90dc37b274014(input, result) {
   if (input === null || input.length === 0)
@@ -1629,8 +1646,8 @@ export function _9dd0fca0c6a9a4de(input, formatProvider, styles, result) {
   return _62fe5aa144f2c9e1(input, formatProvider, styles, result);
 }
 export function _31bbd12ed57f4f76(value) {
-  if (value.kind === dateTimeKindUtc)
-    return createFromUtcTicks(getDateTimeInstantTicks(value), zeroTicks);
+  if (value.kind === get_DateTimeKindUtc())
+    return createFromUtcTicks(getDateTimeInstantTicks(value), get_ZeroTicks());
   return CreateWithLocalOffset(getDateTimeInstantTicks(value));
 }
 export function _b8dd85346f7718fe(dateTimeOffset, timeSpan) {
@@ -1674,180 +1691,6 @@ export function _c9e042e683205a8b(s, provider, result) {
 }
 export function _e679a7abf50cf648() {
   let now = new Date;
-  let offsetTicks = BigInt(-now.getTimezoneOffset()) * offsetMinuteTicks;
+  let offsetTicks = BigInt(-now.getTimezoneOffset()) * get_OffsetMinuteTicks();
   return createDateTimeOffset(new Date(now.getTime()), offsetTicks);
 }
-export const DateTimeOffsetModule = {
-  get_ZeroTicks,
-  get_UnixEpochTicks,
-  get_FileTimeUnixEpochTicks,
-  get_TicksPerMillisecond,
-  get_OffsetMinuteTicks,
-  get_MaxOffsetTicks,
-  get_MaxDateTimeTicks,
-  get_MinUnixTimeMilliseconds,
-  get_MaxUnixTimeMilliseconds,
-  get_MinUnixTimeSeconds,
-  get_MaxUnixTimeSeconds,
-  get_DateTimeKindUtc,
-  get_DateTimeKindLocal,
-  get_MinValueMilliseconds,
-  get_DateTimeStylesNoCurrentDateDefault,
-  get_DateTimeStylesAdjustToUniversal,
-  get_DateTimeStylesAssumeLocal,
-  get_DateTimeStylesAssumeUniversal,
-  ensureWholeNumber,
-  createDateTimeOffset,
-  createDateTimeOffset: CreateDateTimeOffset,
-  createDefaultDateTimeOffset,
-  validateDateTimeOffsetRange,
-  validateOffsetTicks,
-  validateMicrosecond,
-  createLocalTicks,
-  getDateTimeInstantTicks,
-  getDateTimeTicks,
-  getUtcTicks,
-  getTicks,
-  createFromUtcTicks,
-  normalizeSubMillisecondTicks,
-  validateOffset,
-  addMonthsCore,
-  createWithLocalOffset,
-  createWithLocalOffset: CreateWithLocalOffset,
-  getOffsetLocalDate,
-  getProviderLocale,
-  joinFormatParts,
-  getInvariantMonthName,
-  getInvariantAbbreviatedMonthName,
-  getInvariantDayName,
-  getInvariantAbbreviatedDayName,
-  isAsciiLetter,
-  getLocalizedMonthName,
-  getLocalizedDayName,
-  getDateSeparator,
-  getTimeSeparator,
-  getLocalizedDayPeriod,
-  formatOffsetTicks,
-  formatInvariantGeneralDateTimeOffset,
-  formatInvariantShortDate,
-  formatInvariantLongDate,
-  formatInvariantTime,
-  formatMonthDay,
-  formatYearMonth,
-  formatFullDateTime,
-  formatRfc1123DateTimeOffset,
-  formatLocaleDateTime,
-  formatOffsetLocaleDateTime,
-  formatGeneralDateTimeOffset,
-  formatShortDate,
-  formatLongDate,
-  formatTime,
-  formatUniversalSortableDateTimeOffset,
-  formatSortableDateTimeOffset,
-  formatFraction,
-  formatCustomToken,
-  formatCustomDateTimeOffset,
-  formatDateTimeOffset,
-  hasUtcSuffix,
-  hasExplicitOffset: HasExplicitOffset,
-  isAsciiDigit,
-  tryParseTwoDigits,
-  tryParseIsoDate,
-  tryParseIsoDateTime,
-  tryParseTimeOnly,
-  createRoundedTicksFromDouble,
-  getDateTimeStylesValue,
-  validateDateTimeStyles,
-  applyDateTimeStyles,
-  resolveParsedOffsetTicks,
-  extractSubMillisecondTicks,
-  floorDiv,
-  parseCore,
-  _77107f0c23675b69,
-  _d45d439f0b97ae0e,
-  _087cabaedc1b5cc2,
-  _12b4f3f1dc14bea9,
-  _1e9c5d2a64e6d41d,
-  _7adf69a53659433a,
-  _106dabc0cc502aa4,
-  _8f1aab77eeb6f786,
-  _d90dce0e1d2f06e4,
-  _6abaa2b2082f575c,
-  _04123d597aa761a3,
-  _7f444d9ce7391e15,
-  _2b7dd675863ae961,
-  _703902cecd7f61dd,
-  _ffbfe7b660ff0527,
-  _d1996f02ed3fa243,
-  _d7098a1eabebc945,
-  _ba8df912681fe784,
-  _17d30a204818ce34,
-  _b69ef2b7d0abde1a,
-  _b7fc65477ef4df45,
-  _0c1b2675cd7a2faa,
-  _ae3a48995f0953ed,
-  _f9acef215c7d5168,
-  _0fe8054b55f9f1c7,
-  _79eb4c93cea58d59,
-  _2400298964c553b6,
-  _822de224fed5bb6b,
-  _584068ab15dcf3c9,
-  _056adc0ac251ebd3,
-  _90401f92f6a9141e,
-  _127105b7a40a7665,
-  _09a94b0e7945eda6,
-  _7fd735ce2102a3cc,
-  _309c83b8a2fbc988,
-  _1528b452af6dd41d,
-  _4775ccfee8ed671f,
-  _97aff1e2f4740394,
-  _db8ffdb562d3ac68,
-  _54a4d6d554458fdb,
-  _804f8bd2dc1e9443,
-  _f4ea4e123d38eaa5,
-  _56ac26a94d0f9bca,
-  _255c7bf4a2c3c663,
-  _f7f499e8872c8e8a,
-  _fbec90dd4b315acd,
-  _5a55745cbe84c163,
-  _d4a929178865b462,
-  _817d2f7b0e423bec,
-  _1185de87a3489deb,
-  _fb7d72712794a2e4,
-  _89071e7da78164f5,
-  _484d626eb36d071d,
-  _25187a24d190d864,
-  _fbb732b1255fdd38,
-  _277a1a2c7845bcdc,
-  _948a165174740d96,
-  _f1e08916de33ed2a,
-  _2636ae85f21cd963,
-  _d638010bc91ffd47,
-  _8bc213443653978d,
-  _e63166ec11d88ce1,
-  _c45ea6b7c8ed9501,
-  _2aaccc10061a3bb0,
-  _9b46cc87f855c6ba,
-  _f0d70d071309b539,
-  _e856edbfd7db0646,
-  _cbe0bd9bc2e35d83,
-  _2fd90dc37b274014,
-  _c7957aa2e68f8218,
-  _62fe5aa144f2c9e1,
-  _9dd0fca0c6a9a4de,
-  _31bbd12ed57f4f76,
-  _b8dd85346f7718fe,
-  _267065e6d921c80f,
-  _d1af541d3a7181e8,
-  _553dcbd8f7ea1a16,
-  _9f6eec56175d9528,
-  _43aa45c9517f4d47,
-  _a6755e7fc2ead5b5,
-  _84d1b669e69cd9bf,
-  _1cb1a326e417bc9b,
-  _6ec7dc3f674ff16c,
-  _61ef673e0dd00ab0,
-  _b0967252268296ed,
-  _c9e042e683205a8b,
-  _e679a7abf50cf648
-};

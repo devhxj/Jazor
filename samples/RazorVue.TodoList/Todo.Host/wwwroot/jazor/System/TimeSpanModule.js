@@ -1,5 +1,5 @@
-import { DoubleModule } from "System/DoubleModule.js";
-import { JTimeSpan, RuntimeModule } from "System/RuntimeModule.js";
+import { _24e14b276e0c7e30, _aed2927097617729 } from "System/DoubleModule.js";
+import { JTimeSpan, getInt64HashCode } from "System/RuntimeModule.js";
 import { _5ad63706a889c294 } from "System/StringModule.js";
 function get_TicksPerMicrosecond() {
   return BigInt("10");
@@ -19,8 +19,17 @@ function get_TicksPerHour() {
 function get_TicksPerDay() {
   return BigInt("864000000000");
 }
+function get_MaxTimeSpanTicks() {
+  return BigInt("9223372036854775807");
+}
 function get_MinTimeSpanTicks() {
   return BigInt("-9223372036854775808");
+}
+function get_MaxTimeSpanTicksAsDouble() {
+  return 9.223372036854776E+18;
+}
+function get_MinTimeSpanTicksAsDouble() {
+  return -9.223372036854776E+18;
 }
 function isAsciiDigit(value) {
   return value >= "0" && value <= "9";
@@ -43,32 +52,108 @@ function toWholeBigInt(value, message) {
   return BigInt(value);
 }
 function negateChecked(instance) {
-  if (instance.ticks === minTimeSpanTicks)
+  if (instance.ticks === get_MinTimeSpanTicks())
     throw new Error("OverflowException: Negating the minimum TimeSpan value is invalid.");
   return new JTimeSpan(-instance.ticks);
 }
-function createFromRoundedTicks(value) {
-  if (DoubleModule._24e14b276e0c7e30(value))
+function roundToEven(value) {
+  let truncated = Math.trunc(value);
+  let difference = value - truncated;
+  if (difference > 0.5)
+    return truncated + 1;
+  if (difference < -0.5)
+    return truncated - 1;
+  if (difference > -0.5 && difference < 0.5)
+    return truncated;
+  return (BigInt(Math.abs(truncated)) & 1n) === 1n ? difference > 0 ? truncated + 1 : truncated - 1 : truncated;
+}
+function createFromTruncatedTicks(value) {
+  if (_24e14b276e0c7e30(value))
     throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
-  if (!DoubleModule._aed2927097617729(value))
+  if (!_aed2927097617729(value))
     throw new Error("OverflowException: TimeSpan is too long or too short.");
-  let rounded = Math.round(value);
-  if (!DoubleModule._aed2927097617729(rounded))
+  if (value > get_MaxTimeSpanTicksAsDouble() || value < get_MinTimeSpanTicksAsDouble())
     throw new Error("OverflowException: TimeSpan is too long or too short.");
+  if (value === get_MaxTimeSpanTicksAsDouble())
+    return new JTimeSpan(get_MaxTimeSpanTicks());
+  return new JTimeSpan(BigInt(Math.trunc(value)));
+}
+function createFromRoundedTicks(value) {
+  if (_24e14b276e0c7e30(value))
+    throw new Error("ArgumentException: TimeSpan value cannot be NaN.");
+  if (!_aed2927097617729(value))
+    throw new Error("OverflowException: TimeSpan is too long or too short.");
+  let rounded = roundToEven(value);
+  if (rounded > get_MaxTimeSpanTicksAsDouble() || rounded < get_MinTimeSpanTicksAsDouble())
+    throw new Error("OverflowException: TimeSpan is too long or too short.");
+  if (rounded === get_MaxTimeSpanTicksAsDouble())
+    return new JTimeSpan(get_MaxTimeSpanTicks());
   return new JTimeSpan(BigInt(rounded));
 }
+function getFiniteDoubleRatio(value) {
+  let buffer = new ArrayBuffer(8);
+  let view = new DataView(buffer);
+  view.setFloat64(0, value, false);
+  let high = view.getUint32(0, false);
+  let low = view.getUint32(4, false);
+  let sign = high >= 2147483648 ? -1 : 1;
+  let exponentBits = Math.floor(high / 1048576) % 2048;
+  let mantissa = BigInt(high % 1048576) << BigInt(32) | BigInt(low);
+  let significand;
+  let exponent;
+  if (exponentBits === 0) {
+    significand = mantissa;
+    exponent = -1074;
+  }
+  else {
+    significand = 1n << BigInt(52) | mantissa;
+    exponent = exponentBits - 1075;
+  }
+  if (sign < 0)
+    significand = -significand;
+  if (exponent >= 0)
+    return [significand << BigInt(exponent), 1n];
+  return [significand, 1n << BigInt(-exponent)];
+}
+function createFromRoundedRationalTicks(numerator, denominator) {
+  if (denominator <= 0n)
+    throw new Error("ArgumentException: Denominator must be positive.");
+  let isNegative = numerator < 0n;
+  let magnitude = isNegative ? -numerator : numerator;
+  let quotient = magnitude / denominator;
+  let remainder = magnitude % denominator;
+  let doubledRemainder = remainder << 1n;
+  if (doubledRemainder > denominator || doubledRemainder === denominator && (quotient & 1n) === 1n)
+    quotient += 1n;
+  let rounded = isNegative ? -quotient : quotient;
+  if (rounded > get_MaxTimeSpanTicks() || rounded < get_MinTimeSpanTicks())
+    throw new Error("OverflowException: TimeSpan is too long or too short.");
+  return new JTimeSpan(rounded);
+}
 function create(days, hours, minutes, seconds, milliseconds, microseconds) {
-  let ticks = days * ticksPerDay + hours * ticksPerHour + minutes * ticksPerMinute + seconds * ticksPerSecond + milliseconds * ticksPerMillisecond + microseconds * ticksPerMicrosecond;
+  let ticks = days * get_TicksPerDay() + hours * get_TicksPerHour() + minutes * get_TicksPerMinute() + seconds * get_TicksPerSecond() + milliseconds * get_TicksPerMillisecond() + microseconds * get_TicksPerMicrosecond();
   return new JTimeSpan(ticks);
 }
 function Create(days, hours, minutes, seconds, milliseconds, microseconds) {
   return create(toWholeBigInt(days, "ArgumentOutOfRangeException: Days must be a whole number."), toWholeBigInt(hours, "ArgumentOutOfRangeException: Hours must be a whole number."), toWholeBigInt(minutes, "ArgumentOutOfRangeException: Minutes must be a whole number."), toWholeBigInt(seconds, "ArgumentOutOfRangeException: Seconds must be a whole number."), toWholeBigInt(milliseconds, "ArgumentOutOfRangeException: Milliseconds must be a whole number."), toWholeBigInt(microseconds, "ArgumentOutOfRangeException: Microseconds must be a whole number."));
 }
 function multiplyByDouble(instance, factor) {
-  return createFromRoundedTicks(Number(instance.ticks) * factor);
+  if (_24e14b276e0c7e30(factor) || !_aed2927097617729(factor))
+    return createFromRoundedTicks(Number(instance.ticks) * factor);
+  let ratio = getFiniteDoubleRatio(factor);
+  return createFromRoundedRationalTicks(instance.ticks * ratio[0], ratio[1]);
 }
 function divideByDouble(instance, divisor) {
-  return createFromRoundedTicks(Number(instance.ticks) / divisor);
+  if (_24e14b276e0c7e30(divisor) || !_aed2927097617729(divisor) || divisor === 0)
+    return createFromRoundedTicks(Number(instance.ticks) / divisor);
+  let ratio = getFiniteDoubleRatio(divisor);
+  let numerator = instance.ticks * ratio[1];
+  let denominator = ratio[0];
+  if (denominator < 0n) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+  return createFromRoundedRationalTicks(numerator, denominator);
 }
 function parseCore(input) {
   let s = input.trim();
@@ -125,7 +210,7 @@ function parseCore(input) {
     throw new Error(`FormatException: String '${input}' was not recognized as a valid TimeSpan.`);
   if (minutes > 59 || seconds > 59)
     throw new Error(`FormatException: String '${input}' was not recognized as a valid TimeSpan.`);
-  let fractionTicks = BigInt.zero;
+  let fractionTicks = 0n;
   if (fractionText.length > 0) {
     if (fractionText.length > 7 || !isDigits(fractionText))
       throw new Error(`FormatException: String '${input}' was not recognized as a valid TimeSpan.`);
@@ -133,11 +218,11 @@ function parseCore(input) {
       fractionText += "0";
     fractionTicks = BigInt(fractionText);
   }
-  let totalTicks = BigInt(days) * ticksPerDay + BigInt(hours) * ticksPerHour + BigInt(minutes) * ticksPerMinute + BigInt(seconds) * ticksPerSecond + fractionTicks;
+  let totalTicks = BigInt(days) * get_TicksPerDay() + BigInt(hours) * get_TicksPerHour() + BigInt(minutes) * get_TicksPerMinute() + BigInt(seconds) * get_TicksPerSecond() + fractionTicks;
   return new JTimeSpan(negative ? -totalTicks : totalTicks);
 }
 export function _e5548fcde33957a6() {
-  return new JTimeSpan(BigInt.zero);
+  return new JTimeSpan(0n);
 }
 export function _15e7c0dd01e25108() {
   return new JTimeSpan(BigInt("9223372036854775807"));
@@ -146,7 +231,7 @@ export function _3205534506581110() {
   return new JTimeSpan(BigInt("-9223372036854775808"));
 }
 export function _5af0f6ad850e6702() {
-  return new JTimeSpan(BigInt.zero);
+  return new JTimeSpan(0n);
 }
 export function _d4ecddf3bf0f01b8(ticks) {
   return new JTimeSpan(ticks);
@@ -234,10 +319,10 @@ export function _810426c1d7c3f64f(instance, value) {
   return 0;
 }
 export function _174093cb4f47884f(value) {
-  return createFromRoundedTicks(value * 864000000000);
+  return createFromTruncatedTicks(value * 864000000000);
 }
 export function _eeb4ad83b79a892c(instance) {
-  return instance.ticks < BigInt.zero ? negateChecked(instance) : new JTimeSpan(instance.ticks);
+  return instance.ticks < 0n ? negateChecked(instance) : new JTimeSpan(instance.ticks);
 }
 export function _c6b8a216cf6205b9(instance, value) {
   let other = value;
@@ -250,7 +335,7 @@ export function _77a10002dccedd59(t1, t2) {
   return t1.ticks === t2.ticks;
 }
 export function _650390adf244b5eb(instance) {
-  return RuntimeModule.getInt64HashCode(instance.ticks);
+  return getInt64HashCode(instance.ticks);
 }
 export function _1ef0cc8c95c82bc4(days) {
   return Create(days, 0, 0, 0, 0, 0);
@@ -262,46 +347,46 @@ export function _98fc150ce35e78d8(hours) {
   return Create(0, hours, 0, 0, 0, 0);
 }
 export function _f307370e05d16ca3(hours, minutes, seconds, milliseconds, microseconds) {
-  return create(BigInt.zero, toWholeBigInt(hours, "ArgumentOutOfRangeException: Hours must be a whole number."), minutes, seconds, milliseconds, microseconds);
+  return create(0n, toWholeBigInt(hours, "ArgumentOutOfRangeException: Hours must be a whole number."), minutes, seconds, milliseconds, microseconds);
 }
 export function _059d32e87cf36f24(minutes) {
-  return create(BigInt.zero, BigInt.zero, minutes, BigInt.zero, BigInt.zero, BigInt.zero);
+  return create(0n, 0n, minutes, 0n, 0n, 0n);
 }
 export function _f07d6f07ee70a1bd(minutes, seconds, milliseconds, microseconds) {
-  return create(BigInt.zero, BigInt.zero, minutes, seconds, milliseconds, microseconds);
+  return create(0n, 0n, minutes, seconds, milliseconds, microseconds);
 }
 export function _e0c33d45a9703e74(seconds) {
-  return create(BigInt.zero, BigInt.zero, BigInt.zero, seconds, BigInt.zero, BigInt.zero);
+  return create(0n, 0n, 0n, seconds, 0n, 0n);
 }
 export function _60df3ea4b8b2693c(seconds, milliseconds, microseconds) {
-  return create(BigInt.zero, BigInt.zero, BigInt.zero, seconds, milliseconds, microseconds);
+  return create(0n, 0n, 0n, seconds, milliseconds, microseconds);
 }
 export function _9dc3c54535eb1333(milliseconds) {
-  return create(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.zero, milliseconds, BigInt.zero);
+  return create(0n, 0n, 0n, 0n, milliseconds, 0n);
 }
 export function _4bf16885c28b9c57(milliseconds, microseconds) {
-  return create(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.zero, milliseconds, microseconds);
+  return create(0n, 0n, 0n, 0n, milliseconds, microseconds);
 }
 export function _5864e2e6b3820640(microseconds) {
-  return create(BigInt.zero, BigInt.zero, BigInt.zero, BigInt.zero, BigInt.zero, microseconds);
+  return create(0n, 0n, 0n, 0n, 0n, microseconds);
 }
 export function _105dc0462f9876d6(value) {
-  return createFromRoundedTicks(value * 36000000000);
+  return createFromTruncatedTicks(value * 36000000000);
 }
 export function _a6de3a3b561d553b(value) {
-  return createFromRoundedTicks(value * 10000);
+  return createFromTruncatedTicks(value * 10000);
 }
 export function _e05c52466faba973(value) {
-  return createFromRoundedTicks(value * 10);
+  return createFromTruncatedTicks(value * 10);
 }
 export function _2af67432bdd77d15(value) {
-  return createFromRoundedTicks(value * 600000000);
+  return createFromTruncatedTicks(value * 600000000);
 }
 export function _63a8d2e980965d93(instance) {
   return negateChecked(instance);
 }
 export function _77a04fa2e0b66990(value) {
-  return createFromRoundedTicks(value * 10000000);
+  return createFromTruncatedTicks(value * 10000000);
 }
 export function _3c5049382d7807a8(instance, ts) {
   return new JTimeSpan(instance.ticks - ts.ticks);
@@ -329,11 +414,11 @@ export function _f2cd45773b91a418(input, formatProvider) {
 }
 export function _6fb85ef4d11b9143(s, result) {
   if (s === null || s.length === 0)
-    return [false, new JTimeSpan(BigInt.zero)];
+    return [false, new JTimeSpan(0n)];
   try {
     return [true, parseCore(s)];
   } catch {
-    return [false, new JTimeSpan(BigInt.zero)];
+    return [false, new JTimeSpan(0n)];
   }
 }
 export function _11fc2c166b0126e3(s, result) {
@@ -393,102 +478,3 @@ export function _99f4b8243dbe421d(t1, t2) {
 export function _60fd1bb34b700faa(t1, t2) {
   return t1.ticks >= t2.ticks;
 }
-export const TimeSpanModule = {
-  get_TicksPerMicrosecond,
-  get_TicksPerMillisecond,
-  get_TicksPerSecond,
-  get_TicksPerMinute,
-  get_TicksPerHour,
-  get_TicksPerDay,
-  get_MinTimeSpanTicks,
-  isAsciiDigit,
-  isDigits,
-  ensureWholeNumber,
-  toWholeBigInt,
-  negateChecked,
-  createFromRoundedTicks,
-  create,
-  create: Create,
-  multiplyByDouble,
-  divideByDouble,
-  parseCore,
-  _e5548fcde33957a6,
-  _15e7c0dd01e25108,
-  _3205534506581110,
-  _5af0f6ad850e6702,
-  _d4ecddf3bf0f01b8,
-  _6f22e268aec62fe7,
-  _13098d82160f45dc,
-  _d5283dec9fea7d04,
-  _baceecc82b7d48ba,
-  _72d4a471ef1a968f,
-  _a980180cac17c195,
-  _e1126ea3789ed210,
-  _af6dae8b5cdc7078,
-  _b5ff892bced87c7a,
-  _95472c42904823fa,
-  _f84ed3952defaf6d,
-  _f3cdc3642c68ede1,
-  _3709bd5d7e02854b,
-  _b4c8b94ce8b8d996,
-  _b73ebb6b17996726,
-  _48066d805fb56409,
-  _c34f00910f115965,
-  _265f245f5ef9d2ed,
-  _d3a0d6dab09b85a6,
-  _0f42e55865af8fbf,
-  _06719a9a062fc7ca,
-  _224114f954c0aa27,
-  _810426c1d7c3f64f,
-  _174093cb4f47884f,
-  _eeb4ad83b79a892c,
-  _c6b8a216cf6205b9,
-  _6b7d08559c6c9859,
-  _77a10002dccedd59,
-  _650390adf244b5eb,
-  _1ef0cc8c95c82bc4,
-  _3e2fa32df3160e87,
-  _98fc150ce35e78d8,
-  _f307370e05d16ca3,
-  _059d32e87cf36f24,
-  _f07d6f07ee70a1bd,
-  _e0c33d45a9703e74,
-  _60df3ea4b8b2693c,
-  _9dc3c54535eb1333,
-  _4bf16885c28b9c57,
-  _5864e2e6b3820640,
-  _105dc0462f9876d6,
-  _a6de3a3b561d553b,
-  _e05c52466faba973,
-  _2af67432bdd77d15,
-  _63a8d2e980965d93,
-  _77a04fa2e0b66990,
-  _3c5049382d7807a8,
-  _a1b4efac0485c39e,
-  _871609175f846ae9,
-  _ca7e20ad5bf4a61a,
-  _a43571552d95203d,
-  _7b8fc48a806ecb54,
-  _55da737da6ee6a65,
-  _f2cd45773b91a418,
-  _6fb85ef4d11b9143,
-  _11fc2c166b0126e3,
-  _0d5a8bac05463d1f,
-  _5eae656c46346343,
-  _95c4c385ed7aa2da,
-  _49fbba4d75df94f7,
-  _e8e884a7b14ce4b4,
-  _0228a4c011d04780,
-  _6c2fe85d341763c7,
-  _24670e70abc0feb8,
-  _f2a4ea62d054d8a3,
-  _90eaec13ec0f9fea,
-  _eba9e2c9c23d7df9,
-  _f857571e543b3b87,
-  _cb0f1b7f98578d6e,
-  _20d19f6d7c8824a6,
-  _7b0fd798871f70d1,
-  _8d936a645fdca63f,
-  _99f4b8243dbe421d,
-  _60fd1bb34b700faa
-};

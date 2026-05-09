@@ -36,11 +36,3 @@ export function _61b63b2c7b14f06a(instance, key, value) {
   instance.set(key, value);
   return true;
 }
-export const DictionaryT2Module = {
-  ensureInstance,
-  _e73dbdff85c46ddc,
-  _39d6e632c4c102f9,
-  _d6ac89338dff5e3b,
-  _7db4d9112b4ba3c4,
-  _61b63b2c7b14f06a
-};

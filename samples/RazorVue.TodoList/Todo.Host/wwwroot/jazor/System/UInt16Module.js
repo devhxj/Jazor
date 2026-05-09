@@ -7,13 +7,12 @@ function tryParseUInt16Core(s, value) {
   if (trimmed.length === 0)
     return [false, value];
   let start = 0;
-  if (_5ad63706a889c294(trimmed, 0) === "+") {
+  let first = _5ad63706a889c294(trimmed, 0);
+  if (first === "+" || first === "-") {
     if (trimmed.length === 1)
       return [false, value];
     start = 1;
   }
-  else if (_5ad63706a889c294(trimmed, 0) === "-")
-    return [false, value];
   for (let i = start; i < trimmed.length; i++) {
     let ch = _5ad63706a889c294(trimmed, i);
     if (ch < "0" || ch > "9")
@@ -27,6 +26,29 @@ function tryParseUInt16Core(s, value) {
   value = parsed;
   return [true, value];
 }
+function isOverflowUInt16Text(s) {
+  if (s === null)
+    return false;
+  let trimmed = s.trim();
+  if (trimmed.length === 0)
+    return false;
+  let start = 0;
+  let first = _5ad63706a889c294(trimmed, 0);
+  if (first === "+" || first === "-") {
+    if (trimmed.length === 1)
+      return false;
+    start = 1;
+  }
+  for (let i = start; i < trimmed.length; i++) {
+    let ch = _5ad63706a889c294(trimmed, i);
+    if (ch < "0" || ch > "9")
+      return false;
+  }
+  let parsed = Number(trimmed);
+  if (isNaN(parsed) || Math.floor(parsed) !== parsed)
+    return false;
+  return parsed < 0 || parsed > 65535;
+}
 export function _d8d8b9cba9bd3347(instance, value) {
   if (value === null)
     return 1;
@@ -39,8 +61,11 @@ export function _bfae72f49db4f3c9(s) {
   let value, __ref$03ff449dcbd03e46f22066c4;
   if (s === null)
     throw new Error("ArgumentNullException: String cannot be null.");
-  if (!(__ref$03ff449dcbd03e46f22066c4 = tryParseUInt16Core(s, value), value = __ref$03ff449dcbd03e46f22066c4[1], __ref$03ff449dcbd03e46f22066c4[0]))
+  if (!(__ref$03ff449dcbd03e46f22066c4 = tryParseUInt16Core(s, value), value = __ref$03ff449dcbd03e46f22066c4[1], __ref$03ff449dcbd03e46f22066c4[0])) {
+    if (isOverflowUInt16Text(s))
+      throw new Error("OverflowException: Value was either too large or too small for a UInt16.");
     throw new Error(`FormatException: String '${s}' was not recognized as a valid UInt16.`);
+  }
   return value;
 }
 export function _2efd27d401f7def7(s, result) {
@@ -64,11 +89,3 @@ export function _2ea0cab4f3f489d9(value) {
   v = v + (v >> 8);
   return v & 31;
 }
-export const UInt16Module = {
-  tryParseUInt16Core,
-  _d8d8b9cba9bd3347,
-  _bfae72f49db4f3c9,
-  _2efd27d401f7def7,
-  _80e78c0aa0b98fef,
-  _2ea0cab4f3f489d9
-};

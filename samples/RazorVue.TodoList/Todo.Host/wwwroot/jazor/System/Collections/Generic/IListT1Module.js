@@ -10,4 +10,3 @@ export function _8b52bea1dfb9f9ba(instance, index) {
     throw new Error("ArgumentOutOfRangeException: index is out of range.");
   return instance[index];
 }
-export const IListT1Module = { ensureWholeNumber, _8b52bea1dfb9f9ba };

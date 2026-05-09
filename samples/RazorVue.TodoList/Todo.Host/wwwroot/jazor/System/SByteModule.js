@@ -50,10 +50,3 @@ export function _d9082c2537283f95(s, result) {
     return [false, 0];
   return [true, value];
 }
-export const SByteModule = {
-  compareCore,
-  tryParseSByteCore,
-  _f8a387725694962f,
-  _fc6fdbb937cb390a,
-  _d9082c2537283f95
-};

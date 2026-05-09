@@ -23,21 +23,16 @@ export function _ab08b15d1ba56047(s) {
 }
 export function _a2771534d71206bd(s, result) {
   if (s === null)
-    return [false, BigInt.zero];
+    return [false, 0n];
   let trimmed = s.trim();
   try {
     let parsed = BigInt(trimmed);
     let minValue = BigInt("0");
     let maxValue = BigInt("18446744073709551615");
     if (parsed < minValue || parsed > maxValue)
-      return [false, BigInt.zero];
+      return [false, 0n];
     return [true, parsed];
   } catch {
-    return [false, BigInt.zero];
+    return [false, 0n];
   }
 }
-export const UInt64Module = {
-  _b50ba86b85d8ac33,
-  _ab08b15d1ba56047,
-  _a2771534d71206bd
-};
