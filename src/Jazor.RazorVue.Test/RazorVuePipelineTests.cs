@@ -1079,7 +1079,7 @@ public sealed class RazorVuePipelineTests
                         builder.OpenComponent<VBtn>(1);
                         builder.AddAttribute(2, nameof(VBtn.Text), "Save");
                         builder.AddAttribute(3, nameof(VBtn.Color), "primary");
-                        builder.AddAttribute(4, nameof(VBtn.Variant), "flat");
+                        builder.AddAttribute(4, nameof(VBtn.Variant), VuetifyVariant.Flat);
                         builder.AddAttribute(5, nameof(VBtn.Size), "large");
                         builder.AddAttribute(6, nameof(VBtn.Loading), true);
                         builder.AddAttribute(7, nameof(VBtn.Block), true);
@@ -1095,8 +1095,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(15, nameof(VTextField.PersistentHint), true);
                         builder.AddAttribute(16, nameof(VTextField.Readonly), true);
                         builder.AddAttribute(17, nameof(VTextField.Clearable), true);
-                        builder.AddAttribute(18, nameof(VTextField.Variant), "outlined");
-                        builder.AddAttribute(19, nameof(VTextField.Density), "comfortable");
+                        builder.AddAttribute(18, nameof(VTextField.Variant), VuetifyFieldVariant.Outlined);
+                        builder.AddAttribute(19, nameof(VTextField.Density), VuetifyDensity.Comfortable);
                         builder.AddAttribute(20, nameof(VTextField.Type), "email");
                         builder.AddAttribute(21, nameof(VTextField.ModelValue), ModelValue);
                         builder.AddAttribute(22, nameof(VTextField.ModelValueChanged), ModelValueChanged);
@@ -1112,8 +1112,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(30, nameof(VTextarea.Readonly), true);
                         builder.AddAttribute(31, nameof(VTextarea.AutoGrow), true);
                         builder.AddAttribute(32, nameof(VTextarea.Counter), 280);
-                        builder.AddAttribute(33, nameof(VTextarea.Variant), "filled");
-                        builder.AddAttribute(34, nameof(VTextarea.Density), "compact");
+                        builder.AddAttribute(33, nameof(VTextarea.Variant), VuetifyFieldVariant.Filled);
+                        builder.AddAttribute(34, nameof(VTextarea.Density), VuetifyDensity.Compact);
                         builder.AddAttribute(35, nameof(VTextarea.ModelValue), ModelValue);
                         builder.AddAttribute(36, nameof(VTextarea.ModelValueChanged), ModelValueChanged);
                         builder.AddMultipleAttributes(37, AdditionalAttributes);
@@ -1123,9 +1123,9 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(39, nameof(VCheckbox.Label), "Active");
                         builder.AddAttribute(40, nameof(VCheckbox.ModelValue), true);
                         builder.AddAttribute(41, nameof(VCheckbox.Color), "success");
-                        builder.AddAttribute(42, nameof(VCheckbox.Density), "compact");
+                        builder.AddAttribute(42, nameof(VCheckbox.Density), VuetifyDensity.Compact);
                         builder.AddAttribute(43, nameof(VCheckbox.Readonly), true);
-                        builder.AddAttribute(44, nameof(VCheckbox.HideDetails), true);
+                        builder.AddAttribute(44, nameof(VCheckbox.HideDetails), VuetifyHideDetailsValue.From(true));
                         builder.AddMultipleAttributes(45, AdditionalAttributes);
                         builder.CloseComponent();
 
@@ -1133,10 +1133,10 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(47, nameof(VSwitch.Label), "Notifications");
                         builder.AddAttribute(48, nameof(VSwitch.ModelValue), true);
                         builder.AddAttribute(49, nameof(VSwitch.Color), "warning");
-                        builder.AddAttribute(50, nameof(VSwitch.Density), "comfortable");
+                        builder.AddAttribute(50, nameof(VSwitch.Density), VuetifyDensity.Comfortable);
                         builder.AddAttribute(51, nameof(VSwitch.Readonly), true);
                         builder.AddAttribute(52, nameof(VSwitch.Inset), true);
-                        builder.AddAttribute(53, nameof(VSwitch.HideDetails), true);
+                        builder.AddAttribute(53, nameof(VSwitch.HideDetails), VuetifyHideDetailsValue.From(true));
                         builder.AddMultipleAttributes(54, AdditionalAttributes);
                         builder.CloseComponent();
 
@@ -1246,7 +1246,19 @@ public sealed class RazorVuePipelineTests
 
                         builder.OpenComponent<VSelect>(8);
                         builder.AddAttribute(9, nameof(VSelect.Label), "Role");
-                        builder.AddAttribute(10, nameof(VSelect.Items), new object[] { "Admin", "User" });
+                        builder.AddAttribute(10, nameof(VSelect.Items), new VuetifySelectItemValue[]
+                        {
+                            "Admin",
+                            new VuetifySelectItem
+                            {
+                                Title = "User",
+                                Value = "user",
+                                Props = new VuetifyItemProps
+                                {
+                                    ["data-role"] = "user"
+                                }
+                            }
+                        });
                         builder.AddAttribute(11, nameof(VSelect.ItemTitle), "title");
                         builder.AddAttribute(12, nameof(VSelect.ItemValue), "value");
                         builder.AddAttribute(13, nameof(VSelect.ReturnObject), true);
@@ -1259,7 +1271,7 @@ public sealed class RazorVuePipelineTests
                             ["maxHeight"] = 320
                         });
                         builder.AddAttribute(18, nameof(VSelect.Density), VuetifyDensity.Compact);
-                        builder.AddAttribute(19, nameof(VSelect.Variant), VuetifyVariant.Outlined);
+                        builder.AddAttribute(19, nameof(VSelect.Variant), VuetifyFieldVariant.Outlined);
                         builder.AddAttribute(20, nameof(VSelect.ModelValue), Role);
                         builder.AddAttribute(21, nameof(VSelect.ModelValueChanged), RoleChanged);
                         builder.AddMultipleAttributes(22, AdditionalAttributes);
@@ -1267,7 +1279,18 @@ public sealed class RazorVuePipelineTests
 
                         builder.OpenComponent<VAutocomplete>(23);
                         builder.AddAttribute(24, nameof(VAutocomplete.Label), "Search");
-                        builder.AddAttribute(25, nameof(VAutocomplete.Items), new object[] { "alpha", "beta" });
+                        builder.AddAttribute(25, nameof(VAutocomplete.Items), new VuetifySelectItemValue[]
+                        {
+                            "alpha",
+                            42,
+                            true,
+                            new VuetifySelectItem
+                            {
+                                Title = "Beta",
+                                Value = "beta",
+                                Props = true
+                            }
+                        });
                         builder.AddAttribute(26, nameof(VAutocomplete.ItemTitle), "title");
                         builder.AddAttribute(27, nameof(VAutocomplete.ItemValue), "value");
                         builder.AddAttribute(28, nameof(VAutocomplete.ReturnObject), true);
@@ -1280,7 +1303,7 @@ public sealed class RazorVuePipelineTests
                             ["contentClass"] = "search-menu"
                         });
                         builder.AddAttribute(33, nameof(VAutocomplete.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(34, nameof(VAutocomplete.Variant), VuetifyVariant.Filled);
+                        builder.AddAttribute(34, nameof(VAutocomplete.Variant), VuetifyFieldVariant.Filled);
                         builder.AddAttribute(35, nameof(VAutocomplete.NoDataText), "Nothing found");
                         builder.AddAttribute(36, nameof(VAutocomplete.ModelValue), Query);
                         builder.AddAttribute(37, nameof(VAutocomplete.ModelValueChanged), QueryChanged);
@@ -1325,6 +1348,14 @@ public sealed class RazorVuePipelineTests
             "import { VAutocomplete as VAutocompleteComponent, VDialog as VDialogComponent, VForm as VFormComponent, VRadioGroup as VRadioGroupComponent, VSelect as VSelectComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
         StringAssert.Contains(artifact.ModuleCode, "\"validateOn\": \"blur lazy\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"items\": [\"Admin\", {");
+        StringAssert.Contains(artifact.ModuleCode, "title: \"User\"");
+        StringAssert.Contains(artifact.ModuleCode, "value: \"user\"");
+        StringAssert.Contains(artifact.ModuleCode, "props: { \"data-role\": \"user\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"items\": [\"alpha\", 42, true, {");
+        StringAssert.Contains(artifact.ModuleCode, "title: \"Beta\"");
+        StringAssert.Contains(artifact.ModuleCode, "value: \"beta\"");
+        StringAssert.Contains(artifact.ModuleCode, "props: true");
         StringAssert.Contains(artifact.ModuleCode, "\"returnObject\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"menuProps\": { closeOnContentClick: false, maxHeight: 320 }");
         StringAssert.Contains(artifact.ModuleCode, "\"menuProps\": { closeOnContentClick: false, contentClass: \"search-menu\" }");
@@ -1408,6 +1439,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
+            using System.Collections.Generic;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -1470,6 +1502,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
+            using System.Collections.Generic;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -1504,20 +1537,25 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(3, nameof(VSheet.Elevation), 2);
                         builder.OpenComponent<VToolbar>(4);
                         builder.AddAttribute(5, nameof(VToolbar.Color), "primary");
-                        builder.AddAttribute(6, nameof(VToolbar.Flat), true);
+                        builder.AddAttribute(6, nameof(VToolbar.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(7, nameof(VToolbar.Flat), true);
+                        builder.AddMultipleAttributes(8, new Dictionary<string, object>
+                        {
+                            ["data-surface"] = "toolbar"
+                        });
                         builder.OpenComponent<VToolbarTitle>(7);
-                        builder.AddAttribute(8, nameof(VToolbarTitle.Text), "Preferences");
+                        builder.AddAttribute(9, nameof(VToolbarTitle.Text), "Preferences");
                         builder.CloseComponent();
-                        builder.OpenComponent<VSpacer>(9);
+                        builder.OpenComponent<VSpacer>(10);
                         builder.CloseComponent();
-                        builder.OpenComponent<VDivider>(10);
-                        builder.AddAttribute(11, nameof(VDivider.Vertical), true);
-                        builder.AddAttribute(12, nameof(VDivider.Inset), true);
+                        builder.OpenComponent<VDivider>(11);
+                        builder.AddAttribute(12, nameof(VDivider.Vertical), true);
+                        builder.AddAttribute(13, nameof(VDivider.Inset), true);
                         builder.CloseComponent();
-                        builder.OpenComponent<VCheckbox>(13);
-                        builder.AddAttribute(14, nameof(VCheckbox.Label), "Enabled");
-                        builder.AddAttribute(15, nameof(VCheckbox.ModelValue), Enabled);
-                        builder.AddAttribute(16, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
+                        builder.OpenComponent<VCheckbox>(14);
+                        builder.AddAttribute(15, nameof(VCheckbox.Label), "Enabled");
+                        builder.AddAttribute(16, nameof(VCheckbox.ModelValue), Enabled);
+                        builder.AddAttribute(17, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
@@ -1532,7 +1570,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"surface\"");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"elevation\": 2");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
         StringAssert.Contains(artifact.ModuleCode, "\"flat\": true");
+        StringAssert.Contains(artifact.ModuleCode, "new Map([[\"data-surface\", \"toolbar\"]])");
         StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Preferences\"");
         StringAssert.Contains(artifact.ModuleCode, "\"vertical\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
@@ -1547,6 +1587,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
+            using System.Collections.Generic;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -1582,40 +1623,46 @@ public sealed class RazorVuePipelineTests
                     [Parameter]
                     public EventCallback OnPin { get; set; }
 
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VAlert>(0);
-                        builder.AddAttribute(1, nameof(VAlert.Type), "info");
-                        builder.AddAttribute(2, nameof(VAlert.Variant), "tonal");
-                        builder.AddAttribute(3, nameof(VAlert.Closable), true);
-                        builder.AddAttribute(4, nameof(VAlert.Text), "Saved");
+                        builder.AddAttribute(1, nameof(VAlert.Type), VuetifyAlertType.Info);
+                        builder.AddAttribute(2, nameof(VAlert.Variant), VuetifyVariant.Tonal);
+                        builder.AddAttribute(3, nameof(VAlert.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(4, nameof(VAlert.Closable), true);
+                        builder.AddAttribute(5, nameof(VAlert.Text), "Saved");
+                        builder.AddMultipleAttributes(6, AdditionalAttributes);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VList>(5);
-                        builder.AddAttribute(6, nameof(VList.Density), "compact");
-                        builder.AddAttribute(7, nameof(VList.Nav), true);
-                        builder.OpenComponent<VListItem>(8);
-                        builder.AddAttribute(9, nameof(VListItem.Title), "General");
-                        builder.AddAttribute(10, nameof(VListItem.Subtitle), "Workspace defaults");
-                        builder.OpenComponent<VChip>(11);
-                        builder.AddAttribute(12, nameof(VChip.Color), "success");
-                        builder.AddAttribute(13, nameof(VChip.Text), "Pinned");
-                        builder.AddAttribute(14, nameof(VChip.OnClick), OnPin);
+                        builder.OpenComponent<VList>(7);
+                        builder.AddAttribute(8, nameof(VList.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(9, nameof(VList.Nav), true);
+                        builder.AddMultipleAttributes(10, AdditionalAttributes);
+                        builder.OpenComponent<VListItem>(11);
+                        builder.AddAttribute(12, nameof(VListItem.Title), "General");
+                        builder.AddAttribute(13, nameof(VListItem.Subtitle), "Workspace defaults");
+                        builder.OpenComponent<VChip>(14);
+                        builder.AddAttribute(15, nameof(VChip.Color), "success");
+                        builder.AddAttribute(16, nameof(VChip.Text), "Pinned");
+                        builder.AddAttribute(17, nameof(VChip.OnClick), OnPin);
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VSwitch>(15);
-                        builder.AddAttribute(16, nameof(VSwitch.Label), "Notifications");
-                        builder.AddAttribute(17, nameof(VSwitch.ModelValue), Enabled);
-                        builder.AddAttribute(18, nameof(VSwitch.ModelValueChanged), EnabledChanged);
+                        builder.OpenComponent<VSwitch>(18);
+                        builder.AddAttribute(19, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(20, nameof(VSwitch.ModelValue), Enabled);
+                        builder.AddAttribute(21, nameof(VSwitch.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VTextarea>(19);
-                        builder.AddAttribute(20, nameof(VTextarea.Label), "Notes");
-                        builder.AddAttribute(21, nameof(VTextarea.Rows), 4);
-                        builder.AddAttribute(22, nameof(VTextarea.ModelValue), Notes);
-                        builder.AddAttribute(23, nameof(VTextarea.ModelValueChanged), NotesChanged);
+                        builder.OpenComponent<VTextarea>(22);
+                        builder.AddAttribute(23, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(24, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(25, nameof(VTextarea.ModelValue), Notes);
+                        builder.AddAttribute(26, nameof(VTextarea.ModelValueChanged), NotesChanged);
                         builder.CloseComponent();
                     }
                 }
@@ -1627,8 +1674,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "import { VAlert as VAlertComponent, VChip as VChipComponent, VList as VListComponent, VListItem as VListItemComponent, VSwitch as VSwitchComponent, VTextarea as VTextareaComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"info\"");
         StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"tonal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
         StringAssert.Contains(artifact.ModuleCode, "\"closable\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
+        StringAssert.Contains(artifact.ModuleCode, "props.additionalAttributes");
         StringAssert.Contains(artifact.ModuleCode, "\"nav\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"General\"");
         StringAssert.Contains(artifact.ModuleCode, "\"subtitle\": \"Workspace defaults\"");
@@ -1638,6 +1687,63 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"rows\": 4");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.notes");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:notes\", __value)");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyTooltipStrongTypedLocationAndAdditionalAttributes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/help-hint")]
+                public class HelpHint : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VTooltip>(0);
+                        builder.AddAttribute(1, nameof(VTooltip.Text), Text);
+                        builder.AddAttribute(2, nameof(VTooltip.Location), VuetifyLocation.BottomStart);
+                        builder.AddAttribute(3, nameof(VTooltip.OpenOnHover), true);
+                        builder.AddMultipleAttributes(4, AdditionalAttributes);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VTooltip as VTooltipComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": props.text");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"bottom start\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnHover\": true");
+        StringAssert.Contains(artifact.ModuleCode, "props.additionalAttributes");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -1840,6 +1946,105 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.snackbarOpen");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:snackbarOpen\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"timeout\": 2000");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyCollectionComponentsWithStrongItemContracts()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/report-table")]
+                public class ReportTable : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBreadcrumbs>(0);
+                        builder.AddAttribute(1, nameof(VBreadcrumbs.Items), new VuetifyBreadcrumbItemValue[]
+                        {
+                            "Home",
+                            2026,
+                            new VuetifyBreadcrumbItem
+                            {
+                                Title = "Reports",
+                                Href = "/reports",
+                                Disabled = true
+                            }
+                        });
+                        builder.AddAttribute(2, nameof(VBreadcrumbs.Divider), "/");
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VDataTable>(3);
+                        builder.AddAttribute(4, nameof(VDataTable.Headers), new VuetifyDataTableHeader[]
+                        {
+                            new()
+                            {
+                                Title = "Name",
+                                Key = "name",
+                                Sortable = true,
+                                Align = VuetifyDataTableHeaderAlign.Start
+                            },
+                            new()
+                            {
+                                Title = "Total",
+                                Key = "total",
+                                Value = "total",
+                                Width = 120,
+                                Align = VuetifyDataTableHeaderAlign.End
+                            }
+                        });
+                        builder.AddAttribute(5, nameof(VDataTable.Items), new VuetifyDataTableItem[]
+                        {
+                            new()
+                            {
+                                ["name"] = "Revenue",
+                                ["total"] = 1200
+                            }
+                        });
+                        builder.AddAttribute(6, nameof(VDataTable.ItemKey), "name");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VBreadcrumbs as VBreadcrumbsComponent, VDataTable as VDataTableComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"items\": [\"Home\", 2026, {");
+        StringAssert.Contains(artifact.ModuleCode, "title: \"Reports\"");
+        StringAssert.Contains(artifact.ModuleCode, "href: \"/reports\"");
+        StringAssert.Contains(artifact.ModuleCode, "disabled: true");
+        StringAssert.Contains(artifact.ModuleCode, "\"divider\": \"/\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"headers\": [{");
+        StringAssert.Contains(artifact.ModuleCode, "title: \"Name\"");
+        StringAssert.Contains(artifact.ModuleCode, "key: \"name\"");
+        StringAssert.Contains(artifact.ModuleCode, "sortable: true");
+        StringAssert.Contains(artifact.ModuleCode, "align: \"start\"");
+        StringAssert.Contains(artifact.ModuleCode, "title: \"Total\"");
+        StringAssert.Contains(artifact.ModuleCode, "value: \"total\"");
+        StringAssert.Contains(artifact.ModuleCode, "width: 120");
+        StringAssert.Contains(artifact.ModuleCode, "align: \"end\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"items\": [{ name: \"Revenue\", total: 1200 }]");
+        StringAssert.Contains(artifact.ModuleCode, "\"itemKey\": \"name\"");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 

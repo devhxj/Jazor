@@ -1727,6 +1727,83 @@ public sealed class SdkIntegrationTests
     }
 
     [TestMethod]
+    public async Task Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace()
+    {
+        var package = await LocalPackage.Value;
+
+        using var workspace = new TestWorkspace(package.RepoRoot);
+        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorVueSfcConsumer");
+        var restorePackagesPath = Path.Combine(workspace.RootPath, "packages");
+        var projectPath = CreateExternalRazorVueSfcConsumerProject(projectRoot);
+
+        var build = await RunSourceReferencedRazorVueBuildAsync(
+            package.RepoRoot,
+            [
+                "build",
+                projectPath,
+                "-t:Rebuild",
+                "/m:1",
+                "/p:BuildInParallel=false",
+                $"-p:RestoreSources={package.PackageOutputDirectory}",
+                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
+                $"-p:RestorePackagesPath={restorePackagesPath}",
+                $"-p:JazorPackageVersion={package.PackageVersion}"
+            ]);
+
+        Assert.AreEqual(0, build.ExitCode, build.ToString());
+
+        var hostJazorRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
+        var consumerRoot = CreateExternalRazorVuePureDenoConsumer(Path.Combine(workspace.RootPath, "ExternalRazorVuePureDenoConsumer"));
+        var consumerBuildRoot = Path.Combine(consumerRoot, ".deno-build-test");
+        var consumerDistRoot = Path.Combine(consumerRoot, "dist-test");
+
+        var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["RAZORVUE_HOST_JAZOR_ROOT"] = hostJazorRoot,
+            ["RAZORVUE_BUILD_ROOT"] = consumerBuildRoot,
+            ["RAZORVUE_DIST_ROOT"] = consumerDistRoot,
+            ["RAZORVUE_ROOT_COMPONENT_ID"] = "ExternalRazorVueSfcConsumer.ExternalDashboard",
+            ["RAZORVUE_ROOT_COMPONENT_NAME"] = "ExternalDashboard",
+            ["JAZOR_DENO_EXE"] = package.DenoExePath
+        };
+
+        var pipeline = await RunPowerShellAsync(
+            consumerRoot,
+            [
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "task",
+                "test"
+            ],
+            denoEnvironment);
+
+        Assert.AreEqual(0, pipeline.ExitCode, pipeline.ToString());
+        var output = (pipeline.StandardOutput + pipeline.StandardError).ReplaceLineEndings("\n");
+        StringAssert.Contains(output, "RazorVue TodoList Deno SSR smoke passed.");
+        StringAssert.Contains(output, "RazorVue Deno.bundle() smoke passed");
+        StringAssert.Contains(output, "RazorVue Deno build emitted client-entry.js and 1 CSS asset(s).");
+        StringAssert.Contains(output, "RazorVue TodoList pure Deno pipeline passed.");
+
+        var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
+        var distJsPath = Path.Combine(consumerDistRoot, "assets", "client-entry.js");
+        var distCssPath = Path.Combine(consumerDistRoot, "assets", "client-entry.css");
+        Assert.IsTrue(File.Exists(distHtmlPath), $"Expected Deno dist HTML was not generated: {distHtmlPath}");
+        Assert.IsTrue(File.Exists(distJsPath), $"Expected Deno dist JS was not generated: {distJsPath}");
+        Assert.IsTrue(File.Exists(distCssPath), $"Expected Deno dist CSS was not generated: {distCssPath}");
+        Assert.IsTrue(File.Exists(distJsPath + ".map"), $"Expected Deno dist JS source map was not generated: {distJsPath}.map");
+        Assert.IsTrue(File.Exists(distCssPath + ".map"), $"Expected Deno dist CSS source map was not generated: {distCssPath}.map");
+
+        var distHtml = (await File.ReadAllTextAsync(distHtmlPath)).ReplaceLineEndings("\n");
+        var distJs = (await File.ReadAllTextAsync(distJsPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
+        StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
+        Assert.IsFalse(
+            ContainsVueModuleSpecifier(distJs),
+            "Bundled browser entry should not retain unresolved .vue imports.");
+    }
+
+    [TestMethod]
     public async Task Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace()
     {
         var package = await LocalPackage.Value;
@@ -2747,7 +2824,7 @@ public sealed class SdkIntegrationTests
                 <VCard>
                     <VCardTitle Text="External RazorVue Consumer" />
                     <VCardText>
-                        <VList Density="compact">
+                        <VList>
                             @foreach (var item in Items)
                             {
                                 <VListItem Title="@item.Title"
@@ -2765,6 +2842,160 @@ public sealed class SdkIntegrationTests
             """);
 
         return projectPath;
+    }
+
+    private static string CreateExternalRazorVuePureDenoConsumer(string consumerRoot)
+    {
+        Directory.CreateDirectory(consumerRoot);
+        var templateRoot = Path.Combine(FindRepoRoot(), "samples", "RazorVue.TodoList", "todo-consumer");
+
+        WriteFile(
+            Path.Combine(consumerRoot, "deno.json"),
+            """
+            {
+              "nodeModulesDir": "auto",
+              "imports": {
+                "@vue/compiler-sfc": "npm:@vue/compiler-sfc@3.5.33",
+                "typescript": "npm:typescript@5.8.3",
+                "vue": "npm:vue@3.5.13",
+                "vue/server-renderer": "npm:@vue/server-renderer@3.5.13",
+                "vuetify": "npm:vuetify@3.8.0",
+                "vuetify/components": "npm:vuetify@3.8.0/components",
+                "vuetify/styles": "npm:vuetify@3.8.0/styles"
+              },
+              "tasks": {
+                "build": "deno run -A scripts/build.ts",
+                "smoke:ssr": "deno run -A scripts/smoke-ssr.ts",
+                "smoke:bundle-api": "deno run -A --unstable-bundle scripts/smoke-bundle-api.ts",
+                "test": "deno run -A --unstable-bundle scripts/test.ts"
+              }
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "index.html"),
+            """
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>External RazorVue Consumer</title>
+                <!-- razorvue:styles -->
+              </head>
+              <body>
+                <div id="app"></div>
+                <!-- razorvue:script -->
+              </body>
+            </html>
+            """);
+
+        File.Copy(Path.Combine(templateRoot, "deno.lock"), Path.Combine(consumerRoot, "deno.lock"), overwrite: true);
+        CopyDirectory(Path.Combine(templateRoot, "scripts"), Path.Combine(consumerRoot, "scripts"));
+
+        WriteFile(
+            Path.Combine(consumerRoot, "src", "runtime-common.js"),
+            """
+            import { h } from "vue";
+
+            export function assertHostRequirements(hostRequirements) {
+              if (hostRequirements === null || typeof hostRequirements !== "object") {
+                throw new Error("RazorVue host requirements were not provided to the external Deno consumer.");
+              }
+
+              if (!Array.isArray(hostRequirements.pluginRequirements)) {
+                throw new Error("RazorVue host requirements must expose a pluginRequirements array.");
+              }
+
+              if (!Array.isArray(hostRequirements.styles)) {
+                throw new Error("RazorVue host requirements must expose a styles array.");
+              }
+
+              if (!hostRequirements.pluginRequirements.includes("vuetify")) {
+                throw new Error("RazorVue host requirements must declare the Vuetify plugin.");
+              }
+
+              if (!hostRequirements.styles.includes("vuetify/styles")) {
+                throw new Error("RazorVue host requirements must declare Vuetify styles.");
+              }
+            }
+
+            export function createDashboardItems() {
+              return [
+                { Title: "Preview external pure Deno consumer", Category: "Automation", IsDone: false, IsPinned: true },
+                { Title: "Validate host requirements", Category: "Runtime", IsDone: true, IsPinned: false }
+              ];
+            }
+
+            export function createExternalDashboardRootComponent(Dashboard, items = createDashboardItems()) {
+              return {
+                render() {
+                  return h(Dashboard, { items });
+                }
+              };
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "src", "runtime-client.js"),
+            """
+            import { createApp } from "vue";
+            import { createVuetify } from "vuetify";
+            import "vuetify/styles";
+            import { assertHostRequirements, createExternalDashboardRootComponent } from "./runtime-common.js";
+
+            export function mountRootComponent(rootComponent, hostRequirements, selector = "#app") {
+              assertHostRequirements(hostRequirements);
+
+              const app = createApp(createExternalDashboardRootComponent(rootComponent));
+              app.use(createVuetify());
+              app.mount(selector);
+              return app;
+            }
+            """);
+
+        WriteFile(
+            Path.Combine(consumerRoot, "src", "runtime-ssr.js"),
+            """
+            import { createSSRApp, h } from "vue";
+            import { renderToString } from "vue/server-renderer";
+            import { createVuetify } from "vuetify";
+            import { assertHostRequirements, createDashboardItems } from "./runtime-common.js";
+
+            const expectedTexts = [
+              "External RazorVue Consumer",
+              "Preview external pure Deno consumer",
+              "Automation | Open",
+              "Validate host requirements",
+              "Runtime | Done",
+              "Pinned"
+            ];
+
+            export async function runSsrSmoke(Dashboard, hostRequirements) {
+              assertHostRequirements(hostRequirements);
+
+              const app = createSSRApp({
+                render() {
+                  return h(Dashboard, {
+                    items: createDashboardItems()
+                  });
+                }
+              });
+
+              app.use(createVuetify());
+
+              const html = await renderToString(app);
+              for (const expectedText of expectedTexts) {
+                if (!html.includes(expectedText)) {
+                  throw new Error(`SSR smoke output did not contain expected text: ${expectedText}`);
+                }
+              }
+
+              return html;
+            }
+            """);
+
+        return consumerRoot;
     }
 
     private static string CreateRazorVueSampleProject(string hostRoot, LocalPackageFixture package)
@@ -2885,8 +3116,10 @@ public sealed class SdkIntegrationTests
             segment.Equals("TestResults", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("node_modules", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("dist", StringComparison.OrdinalIgnoreCase) ||
+            segment.StartsWith("dist-", StringComparison.OrdinalIgnoreCase) ||
             segment.Equals("wwwroot", StringComparison.OrdinalIgnoreCase) ||
-            segment.Equals(".deno-build", StringComparison.OrdinalIgnoreCase));
+            segment.Equals(".deno-build", StringComparison.OrdinalIgnoreCase) ||
+            segment.StartsWith(".deno-build", StringComparison.OrdinalIgnoreCase));
     }
 
     private sealed record LocalPackageFixture(
@@ -2914,6 +3147,9 @@ public sealed class SdkIntegrationTests
         {
             try
             {
+                if (Environment.GetEnvironmentVariable("JAZOR_EMITTEST_KEEP_WORKSPACE") == "1")
+                    return;
+
                 if (Directory.Exists(RootPath))
                     Directory.Delete(RootPath, recursive: true);
             }

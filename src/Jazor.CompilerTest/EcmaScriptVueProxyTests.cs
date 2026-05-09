@@ -3057,6 +3057,94 @@ public sealed class EcmaScriptVueProxyTests
         }
     }
 
+    [TestMethod]
+    public void Vuetify_ValueAndUnionTypes_ExposeStronglyTypedContracts()
+    {
+        Assert.IsNotNull(typeof(VuetifyHideDetailsValue).GetCustomAttribute<ECMAScriptAttribute>());
+        Assert.IsNotNull(typeof(VuetifyHideDetailsValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifyMessagesValue).GetCustomAttribute<ECMAScriptAttribute>());
+        Assert.IsNotNull(typeof(VuetifyMessagesValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        CollectionAssert.AreEqual(
+            new[] { "elevated", "flat", "outlined", "plain", "text", "tonal" },
+            GetStringEnumRuntimeValues(typeof(VuetifyVariant)));
+        CollectionAssert.AreEqual(
+            new[] { "filled", "outlined", "plain", "solo", "solo-filled", "solo-inverted", "underlined" },
+            GetStringEnumRuntimeValues(typeof(VuetifyFieldVariant)));
+
+        Assert.AreEqual(typeof(bool?), typeof(VuetifyHideDetailsValue).GetProperty(nameof(VuetifyHideDetailsValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(VuetifyHideDetailsMode?), typeof(VuetifyHideDetailsValue).GetProperty(nameof(VuetifyHideDetailsValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(VuetifyHideDetailsValue), typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifyHideDetailsValue), typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyHideDetailsMode)])!.ReturnType);
+        Assert.AreEqual("__arg1", typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", typeof(VuetifyHideDetailsValue).GetMethod(nameof(VuetifyHideDetailsValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyHideDetailsMode)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+
+        Assert.AreEqual(typeof(string), typeof(VuetifyMessagesValue).GetProperty(nameof(VuetifyMessagesValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(string[]), typeof(VuetifyMessagesValue).GetProperty(nameof(VuetifyMessagesValue.AsStrings), BindingFlags.Public | BindingFlags.Instance)!.PropertyType);
+        Assert.AreEqual(typeof(VuetifyMessagesValue), typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifyMessagesValue), typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string[])])!.ReturnType);
+        Assert.AreEqual("__arg1", typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", typeof(VuetifyMessagesValue).GetMethod(nameof(VuetifyMessagesValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string[])])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+
+        Assert.IsNotNull(typeof(VuetifySelectItems).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifySelectItemValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifySelectItemKey).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifySelectItemPropsSelector).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifyBreadcrumbItems).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifyBreadcrumbItemValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifyDataTableHeaders).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VuetifyDataTableItems).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.AreEqual(typeof(string), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItem), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsItem), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(Number), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(bool), typeof(VuetifySelectItemValue).GetProperty(nameof(VuetifySelectItemValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifySelectItem)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifySelectItemValue), typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
+        Assert.AreEqual("__arg1", typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual("__arg1", typeof(VuetifySelectItemValue).GetMethod(nameof(VuetifySelectItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual(typeof(string), typeof(VuetifyBreadcrumbItemValue).GetProperty(nameof(VuetifyBreadcrumbItemValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifyBreadcrumbItem), typeof(VuetifyBreadcrumbItemValue).GetProperty(nameof(VuetifyBreadcrumbItemValue.AsItem), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(Number), typeof(VuetifyBreadcrumbItemValue).GetProperty(nameof(VuetifyBreadcrumbItemValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifyBreadcrumbItemValue), typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifyBreadcrumbItemValue), typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyBreadcrumbItem)])!.ReturnType);
+        Assert.AreEqual(typeof(VuetifyBreadcrumbItemValue), typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
+        Assert.AreEqual("__arg1", typeof(VuetifyBreadcrumbItemValue).GetMethod(nameof(VuetifyBreadcrumbItemValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
+        Assert.AreEqual(typeof(VuetifySelectItems), typeof(VSelect).GetProperty(nameof(VSelect.Items), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemKey), typeof(VSelect).GetProperty(nameof(VSelect.ItemTitle), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemKey), typeof(VSelect).GetProperty(nameof(VSelect.ItemValue), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemPropsSelector), typeof(VSelect).GetProperty(nameof(VSelect.ItemProps), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItems), typeof(VAutocomplete).GetProperty(nameof(VAutocomplete.Items), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemKey), typeof(VAutocomplete).GetProperty(nameof(VAutocomplete.ItemTitle), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemKey), typeof(VAutocomplete).GetProperty(nameof(VAutocomplete.ItemValue), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifySelectItemPropsSelector), typeof(VAutocomplete).GetProperty(nameof(VAutocomplete.ItemProps), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifyBreadcrumbItems), typeof(VBreadcrumbs).GetProperty(nameof(VBreadcrumbs.Items), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifyDataTableHeaders), typeof(VDataTable).GetProperty(nameof(VDataTable.Headers), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        Assert.AreEqual(typeof(VuetifyDataTableItems), typeof(VDataTable).GetProperty(nameof(VDataTable.Items), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
+        AssertNoPublicMemberUsesObject(
+            typeof(VuetifySelectItems),
+            typeof(VuetifySelectItemValue),
+            typeof(VuetifySelectItem),
+            typeof(VuetifySelectItemKey),
+            typeof(VuetifySelectItemPropsSelector),
+            typeof(VuetifyItemProps),
+            typeof(VuetifyBreadcrumbItems),
+            typeof(VuetifyBreadcrumbItemValue),
+            typeof(VuetifyBreadcrumbItem),
+            typeof(VuetifyDataTableHeaders),
+            typeof(VuetifyDataTableHeader),
+            typeof(VuetifyDataTableItems),
+            typeof(VuetifyDataTableItem));
+    }
+
+    private static string[] GetStringEnumRuntimeValues(Type enumType)
+        => enumType
+            .GetFields(BindingFlags.Public | BindingFlags.Static)
+            .Select(static field => field.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description)
+            .Select(static description => description?.TrimStart('@', '#'))
+            .OrderBy(static value => value, StringComparer.Ordinal)
+            .ToArray()!;
+
     private static void AssertNotObject(Type type, string message)
     {
         Assert.AreNotEqual(typeof(object), type.UnwrapNullable(), message);
@@ -3067,6 +3155,29 @@ public sealed class EcmaScriptVueProxyTests
         foreach (var argument in type.GetGenericArguments())
             AssertNotObject(argument, message);
     }
+
+    private static void AssertNoPublicMemberUsesObject(params Type[] types)
+    {
+        foreach (var type in types)
+        {
+            AssertNotObject(type, type.FullName ?? type.Name);
+
+            foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+                AssertNotObject(property.PropertyType, $"{type.Name}.{property.Name}");
+
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                         .Where(static method => !method.IsSpecialName && !IsRecordRuntimeMethod(method)))
+            {
+                AssertNotObject(method.ReturnType, $"{type.Name}.{method.Name} return");
+                foreach (var parameter in method.GetParameters())
+                    AssertNotObject(parameter.ParameterType, $"{type.Name}.{method.Name}({parameter.Name})");
+            }
+        }
+    }
+
+    private static bool IsRecordRuntimeMethod(MethodInfo method)
+        => method.Name is nameof(object.Equals) or nameof(object.GetHashCode) or nameof(ToString) &&
+           method.DeclaringType?.IsAssignableTo(typeof(VueProps)) == true;
 
     private static void AssertEcmaScriptImport(Type type, string expectedImport)
     {
