@@ -4,18 +4,13 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "smoke:ssr": "node ./scripts/smoke-ssr.mjs",
-    "preview": "vite preview"
+    "build": "pwsh ./scripts/run-deno.ps1 task build",
+    "smoke:ssr": "pwsh ./scripts/run-deno.ps1 task smoke:ssr",
+    "smoke:bundle-api": "pwsh ./scripts/run-deno.ps1 task smoke:bundle-api",
+    "test": "pwsh ./scripts/run-deno.ps1 task test"
   },
   "dependencies": {
     "vue": "^3.5.13",
     "vuetify": "^3.8.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.3.5",
-    "vite-plugin-vuetify": "^2.1.2"
   }
 }

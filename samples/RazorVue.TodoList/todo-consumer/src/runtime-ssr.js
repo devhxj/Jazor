@@ -1,10 +1,20 @@
 import { createSSRApp, h } from "vue";
 import { renderToString } from "vue/server-renderer";
 import { createVuetify } from "vuetify";
-import TodoApp from "../../Todo.Host/wwwroot/jazor/components/todo-app.vue";
-import { razorVueHostRequirements } from "../../Todo.Host/wwwroot/jazor/__jazor/razorvue-host.mjs";
+import { assertHostRequirements } from "./runtime-common.js";
 
-export async function runSmoke() {
+const expectedTexts = [
+  "RazorVue Todo Workspace",
+  "Validate generated DTO projections",
+  "Runtime | Active",
+  "Bundle generated Vue SFC",
+  "Tooling | Completed",
+  "Pinned"
+];
+
+export async function runSsrSmoke(TodoApp, hostRequirements) {
+  assertHostRequirements(hostRequirements);
+
   const app = createSSRApp({
     render() {
       return h(TodoApp, {
@@ -30,25 +40,11 @@ export async function runSmoke() {
   app.use(createVuetify());
 
   const html = await renderToString(app);
-
-  for (const expected of [
-    "RazorVue Todo Workspace",
-    "Validate generated DTO projections",
-    "Runtime | Active",
-    "Bundle generated Vue SFC",
-    "Tooling | Completed",
-    "Pinned"
-  ]) {
-    if (!html.includes(expected)) {
-      throw new Error(`SSR smoke output did not contain expected text: ${expected}`);
+  for (const expectedText of expectedTexts) {
+    if (!html.includes(expectedText)) {
+      throw new Error(`SSR smoke output did not contain expected text: ${expectedText}`);
     }
   }
 
-  if (!razorVueHostRequirements.pluginRequirements.includes("vuetify")) {
-    throw new Error("RazorVue host requirements must declare the Vuetify plugin.");
-  }
-
-  if (!razorVueHostRequirements.styles.includes("vuetify/styles")) {
-    throw new Error("RazorVue host requirements must declare Vuetify styles.");
-  }
+  return html;
 }

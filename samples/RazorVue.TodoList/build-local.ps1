@@ -9,10 +9,37 @@ param(
 $ErrorActionPreference = "Stop"
 
 $sampleRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
+$repoRootOverride = $env:JAZOR_SAMPLE_REPO_ROOT
+$repoRoot = if ([string]::IsNullOrWhiteSpace($repoRootOverride)) {
+    Split-Path -Parent (Split-Path -Parent $sampleRoot)
+}
+else {
+    [System.IO.Path]::GetFullPath($repoRootOverride)
+}
+
+function Resolve-OptionalOverridePath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Override,
+        [Parameter(Mandatory = $true)]
+        [string]$Fallback
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Override)) {
+        return $Fallback
+    }
+
+    if ([System.IO.Path]::IsPathRooted($Override)) {
+        return [System.IO.Path]::GetFullPath($Override)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $Override))
+}
+
 $publishScript = Join-Path $repoRoot "scripts\publish-nuget.ps1"
 $vuetifyProject = Join-Path $repoRoot "src\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj"
-$packageOutput = Join-Path $repoRoot ".tmp\nupkg-sample"
+$packageOutput = Resolve-OptionalOverridePath -Override $env:JAZOR_SAMPLE_PACKAGE_OUTPUT -Fallback (Join-Path $repoRoot ".tmp\nupkg-sample")
+$restorePackagesRoot = Resolve-OptionalOverridePath -Override $env:JAZOR_SAMPLE_RESTORE_PACKAGES_ROOT -Fallback (Join-Path $repoRoot ".tmp\nuget-sample-packages")
 $hostProject = Join-Path $sampleRoot "Todo.Host\Todo.Host.csproj"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
@@ -90,7 +117,7 @@ $nupkg = Get-ChildItem -Path $packageOutput -Filter "Jazor.*.nupkg" -File |
 if (-not $nupkg) { throw "Packed Jazor package not found under '$packageOutput'." }
 $packageVersion = $nupkg.BaseName -replace '^Jazor\.', ''
 $packageStamp = $nupkg.LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff")
-$restorePackagesPath = Join-Path $repoRoot ".tmp\nuget-sample-packages\$packageVersion-$packageStamp"
+$restorePackagesPath = Join-Path $restorePackagesRoot "$packageVersion-$packageStamp"
 
 $buildArgs = @(
     "build",
