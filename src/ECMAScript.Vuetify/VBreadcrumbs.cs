@@ -12,7 +12,7 @@ namespace ECMAScript.Vuetify;
 public sealed class VBreadcrumbs : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public IEnumerable<object>? Items { get; set; }
+    public VuetifyBreadcrumbItems? Items { get; set; }
 
     [Parameter]
     public string? Divider { get; set; }

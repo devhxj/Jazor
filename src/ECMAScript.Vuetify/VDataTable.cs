@@ -12,10 +12,10 @@ namespace ECMAScript.Vuetify;
 public sealed class VDataTable : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public IEnumerable<object>? Headers { get; set; }
+    public VuetifyDataTableHeaders? Headers { get; set; }
 
     [Parameter]
-    public IEnumerable<object>? Items { get; set; }
+    public VuetifyDataTableItems? Items { get; set; }
 
     [Parameter]
     public bool Dense { get; set; }

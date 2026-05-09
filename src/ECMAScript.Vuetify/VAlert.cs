@@ -8,16 +8,22 @@ namespace ECMAScript.Vuetify;
 public sealed class VAlert : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Type { get; set; }
+    public VuetifyAlertType? Type { get; set; }
 
     [Parameter]
-    public string? Variant { get; set; }
+    public VuetifyVariant? Variant { get; set; }
+
+    [Parameter]
+    public VuetifyDensity? Density { get; set; }
 
     [Parameter]
     public bool Closable { get; set; }
 
     [Parameter]
     public string? Text { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

@@ -12,10 +12,13 @@ public sealed class VToolbar : ComponentBase, IVueLibraryComponent
     public string? Color { get; set; }
 
     [Parameter]
-    public string? Density { get; set; }
+    public VuetifyDensity? Density { get; set; }
 
     [Parameter]
     public bool Flat { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

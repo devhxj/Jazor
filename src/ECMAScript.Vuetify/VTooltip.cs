@@ -15,10 +15,13 @@ public sealed class VTooltip : ComponentBase, IVueLibraryComponent
     public string? Text { get; set; }
 
     [Parameter]
-    public string? Location { get; set; }
+    public VuetifyLocation? Location { get; set; }
 
     [Parameter]
     public bool OpenOnHover { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
     public RenderFragment? Activator { get; set; }

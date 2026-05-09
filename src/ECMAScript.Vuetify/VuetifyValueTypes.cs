@@ -3,6 +3,22 @@ using System.ComponentModel;
 namespace ECMAScript.Vuetify;
 
 [String]
+public enum VuetifyAlertType
+{
+    [Description("@#success")]
+    Success,
+
+    [Description("@#info")]
+    Info,
+
+    [Description("@#warning")]
+    Warning,
+
+    [Description("@#error")]
+    Error
+}
+
+[String]
 public enum VuetifyDensity
 {
     [Description("@#default")]
@@ -17,6 +33,28 @@ public enum VuetifyDensity
 
 [String]
 public enum VuetifyVariant
+{
+    [Description("@#elevated")]
+    Elevated,
+
+    [Description("@#flat")]
+    Flat,
+
+    [Description("@#outlined")]
+    Outlined,
+
+    [Description("@#text")]
+    Text,
+
+    [Description("@#tonal")]
+    Tonal,
+
+    [Description("@#plain")]
+    Plain
+}
+
+[String]
+public enum VuetifyFieldVariant
 {
     [Description("@#underlined")]
     Underlined,
@@ -145,6 +183,7 @@ public enum VuetifyHideDetailsMode
     Auto
 }
 
+[ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
 public readonly struct VuetifyHideDetailsValue
@@ -171,6 +210,12 @@ public readonly struct VuetifyHideDetailsValue
 
     public VuetifyHideDetailsMode? AsMode => _kind == 2 ? _mode : default;
 
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyHideDetailsValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyHideDetailsValue From(VuetifyHideDetailsMode value);
+
     public static implicit operator VuetifyHideDetailsValue(bool value)
         => new(value);
 
@@ -178,6 +223,7 @@ public readonly struct VuetifyHideDetailsValue
         => new(value);
 }
 
+[ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
 public readonly struct VuetifyMessagesValue
@@ -203,6 +249,12 @@ public readonly struct VuetifyMessagesValue
     public string? AsString => _kind == 1 ? _string : default;
 
     public string[]? AsStrings => _kind == 2 ? _strings : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyMessagesValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyMessagesValue From(string[] value);
 
     public static implicit operator VuetifyMessagesValue(string value)
         => new(value);

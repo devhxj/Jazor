@@ -9,10 +9,13 @@ namespace ECMAScript.Vuetify;
 public sealed class VList : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Density { get; set; }
+    public VuetifyDensity? Density { get; set; }
 
     [Parameter]
     public bool Nav { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

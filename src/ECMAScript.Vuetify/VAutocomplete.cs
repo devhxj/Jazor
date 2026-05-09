@@ -12,13 +12,16 @@ public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
     public string? Label { get; set; }
 
     [Parameter]
-    public IEnumerable<object>? Items { get; set; }
+    public VuetifySelectItems? Items { get; set; }
 
     [Parameter]
-    public string? ItemTitle { get; set; }
+    public VuetifySelectItemKey? ItemTitle { get; set; }
 
     [Parameter]
-    public string? ItemValue { get; set; }
+    public VuetifySelectItemKey? ItemValue { get; set; }
+
+    [Parameter]
+    public VuetifySelectItemPropsSelector? ItemProps { get; set; }
 
     [Parameter]
     public bool Disabled { get; set; }
@@ -45,7 +48,7 @@ public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
     public VuetifyDensity? Density { get; set; }
 
     [Parameter]
-    public VuetifyVariant? Variant { get; set; }
+    public VuetifyFieldVariant? Variant { get; set; }
 
     [Parameter]
     public string? NoDataText { get; set; }

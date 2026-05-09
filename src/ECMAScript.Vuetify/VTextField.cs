@@ -31,7 +31,7 @@ public sealed class VTextField : ComponentBase, IVueLibraryComponent
     public bool Clearable { get; set; }
 
     [Parameter]
-    public VuetifyVariant? Variant { get; set; }
+    public VuetifyFieldVariant? Variant { get; set; }
 
     [Parameter]
     public VuetifyDensity? Density { get; set; }
