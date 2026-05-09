@@ -11,7 +11,7 @@ The sample is split into:
 
 - `Todo.Library`: RazorVue component library authored with Razor and C#
 - `Todo.Host`: build host that turns on `JazorEmit` and writes generated artifacts to `wwwroot/jazor/`
-- `todo-consumer`: a minimal Deno + Vue + Vuetify consumer that compiles generated `.vue` files and bundles them without Vite
+- `todo-consumer`: a minimal pure-Deno + Vue + Vuetify consumer that compiles generated `.vue` files and bundles them without Vite or npm wrapper scripts
 
 `Todo.Library` follows the explicit authoring contract. Component marker types are brought in with:
 
@@ -53,11 +53,11 @@ If you also want the regular JS bundle sidecars from `Jazor.Emit`, build with:
 After `.\build-local.ps1` succeeds:
 
 1. open `todo-consumer/`
-2. run the pure Deno pipeline
+2. run the pure Deno pipeline through the bundled runtime entry
 
 ```powershell
 cd .\todo-consumer
-npm run test
+.\scripts\run-deno.ps1 task test
 ```
 
 The consumer imports:
@@ -75,9 +75,9 @@ and then:
 Useful focused commands:
 
 ```powershell
-npm run smoke:ssr
-npm run smoke:bundle-api
-npm run build
+.\scripts\run-deno.ps1 task smoke:ssr
+.\scripts\run-deno.ps1 task smoke:bundle-api
+.\scripts\run-deno.ps1 task build
 ```
 
 ## What the sample covers
@@ -94,6 +94,7 @@ npm run build
 
 - The `.NET` host does not run the Vue app itself. Its responsibility is artifact generation and materialization.
 - The Deno consumer is intentionally small and explicit so the generated SFCs are consumed through a production-style Deno pipeline instead of a Vite-specific loader contract.
+- `todo-consumer` no longer relies on `package.json` / `npm run ...` wrapper scripts. The repository-level contract is `deno.json` tasks plus `scripts/run-deno.ps1`, which resolves the bundled `deno.exe`.
 - `Todo.Library` currently sets `UseRazorSourceGenerator=false`. The current library-mode design-time path still depends on generated `*.razor.g.cs` being present in compilation.
 - The generated SFCs do not emit `<style src="vuetify/styles">` blocks. Style and plugin requirements stay in `__jazor/razorvue-host.mjs`, and the Deno consumer imports `vuetify/styles` explicitly.
 - `todo-consumer/scripts/lib/pipeline.ts` owns the Deno-side SFC compilation contract. It compiles RazorVue-generated `.vue` files into local `.mjs` modules before bundling. Deno is not expected to consume `.vue` files directly.

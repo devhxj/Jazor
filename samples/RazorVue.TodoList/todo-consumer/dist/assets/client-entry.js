@@ -38465,6 +38465,71 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
 _sfc_main2.render = render2;
 var todo_app_default = _sfc_main2;
 
+// ../Todo.Host/wwwroot/jazor/__jazor/razorvue-host.mjs
+var razorVueHostAssemblyName = "Todo.Library";
+var razorVueHostGeneratedAtUtc = "2026-05-09T07:43:17.7456723Z";
+var razorVueStyles = Object.freeze([
+  "vuetify/styles"
+]);
+var razorVuePluginRequirements = Object.freeze([
+  "vuetify"
+]);
+var razorVueHostModules = Object.freeze([
+  {
+    "assemblyName": "Todo.Library",
+    "componentId": "Todo.Library.TodoApp",
+    "moduleId": "components/todo-app.vue",
+    "componentName": "TodoApp",
+    "relativeModulePath": "components/todo-app.vue",
+    "sourceMapPath": "components/todo-app.vue.map",
+    "originMapPath": "components/todo-app.vue.origins.json",
+    "styles": [
+      "vuetify/styles"
+    ],
+    "pluginRequirements": [
+      "vuetify"
+    ],
+    "descriptorHash": "CFA06F2B1992F6CC41900EDAEE989F6BAE551E116408F3D08572BBE46E88BA97",
+    "templateHash": "78180F9E81F17F42D651B7DC8E91332A1EDB5DC7179CBFFCEF61376755AE7E63",
+    "logicHash": "DA2A45565CB93C6CA4A27D4705BE8CBE614DF09FE7C0DF971492FD98C8E737C9",
+    "contentHash": "412FD85EE4988098750DCEAEE5544AD9E87E22D469CA3BFC5ECE89147CDD35FA",
+    "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "hmrBoundaryKind": 2,
+    "requiresHydration": false,
+    "supportsSsr": true
+  },
+  {
+    "assemblyName": "Todo.Library",
+    "componentId": "Todo.Library.TodoSummaryCard",
+    "moduleId": "components/todo-summary-card.vue",
+    "componentName": "TodoSummaryCard",
+    "relativeModulePath": "components/todo-summary-card.vue",
+    "sourceMapPath": "components/todo-summary-card.vue.map",
+    "originMapPath": "components/todo-summary-card.vue.origins.json",
+    "styles": [
+      "vuetify/styles"
+    ],
+    "pluginRequirements": [
+      "vuetify"
+    ],
+    "descriptorHash": "6E86E70E4861C2559984F9BC9B44A10BB89759804494D06709D8F263365C190C",
+    "templateHash": "22F336C53D6840572B11AAC45CD5313DDBDE624BAB3C81F84C2A1E5104BFD08D",
+    "logicHash": "F48C3484D162D573A9D7B5E26D6586E0141164EFB1CED2BC7A7CF36878DB70F6",
+    "contentHash": "2065788B4406235A446C83CEADC54F23AB1F87F80A828CD589052C360313CA58",
+    "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+    "hmrBoundaryKind": 2,
+    "requiresHydration": false,
+    "supportsSsr": true
+  }
+]);
+var razorVueHostRequirements = Object.freeze({
+  assemblyName: razorVueHostAssemblyName,
+  generatedAtUtc: razorVueHostGeneratedAtUtc,
+  styles: razorVueStyles,
+  pluginRequirements: razorVuePluginRequirements,
+  modules: razorVueHostModules
+});
+
 // node_modules/.deno/vuetify@3.8.0/node_modules/vuetify/lib/framework.js
 function createVuetify() {
   let vuetify = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
@@ -38565,77 +38630,21 @@ function inject2(key) {
   }
 }
 
-// ../Todo.Host/wwwroot/jazor/__jazor/razorvue-host.mjs
-var razorVueHostAssemblyName = "Todo.Library";
-var razorVueHostGeneratedAtUtc = "2026-05-09T07:43:17.7456723Z";
-var razorVueStyles = Object.freeze([
-  "vuetify/styles"
-]);
-var razorVuePluginRequirements = Object.freeze([
-  "vuetify"
-]);
-var razorVueHostModules = Object.freeze([
-  {
-    "assemblyName": "Todo.Library",
-    "componentId": "Todo.Library.TodoApp",
-    "moduleId": "components/todo-app.vue",
-    "componentName": "TodoApp",
-    "relativeModulePath": "components/todo-app.vue",
-    "sourceMapPath": "components/todo-app.vue.map",
-    "originMapPath": "components/todo-app.vue.origins.json",
-    "styles": [
-      "vuetify/styles"
-    ],
-    "pluginRequirements": [
-      "vuetify"
-    ],
-    "descriptorHash": "CFA06F2B1992F6CC41900EDAEE989F6BAE551E116408F3D08572BBE46E88BA97",
-    "templateHash": "78180F9E81F17F42D651B7DC8E91332A1EDB5DC7179CBFFCEF61376755AE7E63",
-    "logicHash": "DA2A45565CB93C6CA4A27D4705BE8CBE614DF09FE7C0DF971492FD98C8E737C9",
-    "contentHash": "412FD85EE4988098750DCEAEE5544AD9E87E22D469CA3BFC5ECE89147CDD35FA",
-    "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
-    "hmrBoundaryKind": 2,
-    "requiresHydration": false,
-    "supportsSsr": true
-  },
-  {
-    "assemblyName": "Todo.Library",
-    "componentId": "Todo.Library.TodoSummaryCard",
-    "moduleId": "components/todo-summary-card.vue",
-    "componentName": "TodoSummaryCard",
-    "relativeModulePath": "components/todo-summary-card.vue",
-    "sourceMapPath": "components/todo-summary-card.vue.map",
-    "originMapPath": "components/todo-summary-card.vue.origins.json",
-    "styles": [
-      "vuetify/styles"
-    ],
-    "pluginRequirements": [
-      "vuetify"
-    ],
-    "descriptorHash": "6E86E70E4861C2559984F9BC9B44A10BB89759804494D06709D8F263365C190C",
-    "templateHash": "22F336C53D6840572B11AAC45CD5313DDBDE624BAB3C81F84C2A1E5104BFD08D",
-    "logicHash": "F48C3484D162D573A9D7B5E26D6586E0141164EFB1CED2BC7A7CF36878DB70F6",
-    "contentHash": "2065788B4406235A446C83CEADC54F23AB1F87F80A828CD589052C360313CA58",
-    "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
-    "hmrBoundaryKind": 2,
-    "requiresHydration": false,
-    "supportsSsr": true
-  }
-]);
-var razorVueHostRequirements = Object.freeze({
-  assemblyName: razorVueHostAssemblyName,
-  generatedAtUtc: razorVueHostGeneratedAtUtc,
-  styles: razorVueStyles,
-  pluginRequirements: razorVuePluginRequirements,
-  modules: razorVueHostModules
-});
-
 // src/runtime-common.js
-function assertHostRequirements() {
-  if (!razorVueHostRequirements.pluginRequirements.includes("vuetify")) {
+function assertHostRequirements(hostRequirements) {
+  if (hostRequirements === null || typeof hostRequirements !== "object") {
+    throw new Error("RazorVue host requirements were not provided to the consumer runtime.");
+  }
+  if (!Array.isArray(hostRequirements.pluginRequirements)) {
+    throw new Error("RazorVue host requirements must expose a pluginRequirements array.");
+  }
+  if (!Array.isArray(hostRequirements.styles)) {
+    throw new Error("RazorVue host requirements must expose a styles array.");
+  }
+  if (!hostRequirements.pluginRequirements.includes("vuetify")) {
     throw new Error("RazorVue host requirements must declare the Vuetify plugin.");
   }
-  if (!razorVueHostRequirements.styles.includes("vuetify/styles")) {
+  if (!hostRequirements.styles.includes("vuetify/styles")) {
     throw new Error("RazorVue host requirements must declare Vuetify styles.");
   }
 }
@@ -38728,8 +38737,8 @@ function createTodoRootComponent(TodoApp, state = createTodoState()) {
 }
 
 // src/runtime-client.js
-function mountTodoApp(TodoApp, selector = "#app") {
-  assertHostRequirements();
+function mountTodoApp(TodoApp, hostRequirements, selector = "#app") {
+  assertHostRequirements(hostRequirements);
   const app = createApp(createTodoRootComponent(TodoApp));
   app.use(createVuetify());
   app.mount(selector);
@@ -38737,7 +38746,7 @@ function mountTodoApp(TodoApp, selector = "#app") {
 }
 
 // .deno-build/client-entry.mjs
-mountTodoApp(todo_app_default);
+mountTodoApp(todo_app_default, razorVueHostRequirements);
 /*! Bundled license information:
 
 @vue/shared/dist/shared.esm-bundler.js:
