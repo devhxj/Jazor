@@ -29,7 +29,8 @@ type PreparedWorkspace = {
 };
 
 const consumerRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const rootComponentId = "Todo.Library.TodoApp";
+const defaultRootComponentId = "Todo.Library.TodoApp";
+const defaultRootComponentName = "TodoApp";
 
 export async function prepareWorkspace(production: boolean): Promise<PreparedWorkspace> {
   const hostJazorRoot = resolvePathFromEnvironment("RAZORVUE_HOST_JAZOR_ROOT", resolve(consumerRoot, "..", "Todo.Host", "wwwroot", "jazor"));
@@ -37,6 +38,8 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
   const browserGeneratedRoot = resolve(buildRoot, "generated-browser");
   const ssrGeneratedRoot = resolve(buildRoot, "generated-ssr");
   const distRoot = resolvePathFromEnvironment("RAZORVUE_DIST_ROOT", resolve(consumerRoot, "dist"));
+  const rootComponentId = readConfiguredText("RAZORVUE_ROOT_COMPONENT_ID") ?? defaultRootComponentId;
+  const rootComponentName = readConfiguredText("RAZORVUE_ROOT_COMPONENT_NAME") ?? defaultRootComponentName;
   const manifestPath = resolve(hostJazorRoot, "jazor-manifest-razorvue.json");
   const hostRequirementsModulePath = resolve(hostJazorRoot, "__jazor", "razorvue-host.mjs");
 
@@ -63,14 +66,15 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     await compileVueModule(sourcePath, browserOutputPath, production, true);
     await compileVueModule(sourcePath, ssrOutputPath, production, false);
 
-    if (module.ComponentId === rootComponentId || module.ComponentName === "TodoApp") {
+    if (module.ComponentId === rootComponentId || module.ComponentName === rootComponentName) {
       browserRootModuleOutputPath = browserOutputPath;
       ssrRootModuleOutputPath = ssrOutputPath;
     }
   }
 
   if (browserRootModuleOutputPath === null || ssrRootModuleOutputPath === null) {
-    throw new Error(`RazorVue manifest did not contain root component '${rootComponentId}'.`);
+    throw new Error(
+      `RazorVue manifest did not contain root component '${rootComponentId}' or component name '${rootComponentName}'.`);
   }
 
   const clientEntryPath = resolve(buildRoot, "client-entry.mjs");
@@ -81,9 +85,9 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     [
       `import TodoApp from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserRootModuleOutputPath))};`,
       `import { razorVueHostRequirements } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, hostRequirementsModulePath))};`,
-      `import { mountTodoApp } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, resolve(consumerRoot, "src", "runtime-client.js")))};`,
+      `import { mountRootComponent } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, resolve(consumerRoot, "src", "runtime-client.js")))};`,
       "",
-      "mountTodoApp(TodoApp, razorVueHostRequirements);",
+      "mountRootComponent(TodoApp, razorVueHostRequirements);",
       ""
     ].join("\n"));
   await writeText(
@@ -163,6 +167,11 @@ function resolvePathFromEnvironment(environmentVariableName: string, defaultPath
   return configuredPath === undefined || configuredPath.length === 0
     ? defaultPath
     : resolve(consumerRoot, configuredPath);
+}
+
+function readConfiguredText(environmentVariableName: string): string | null {
+  const value = Deno.env.get(environmentVariableName)?.trim();
+  return value === undefined || value.length === 0 ? null : value;
 }
 
 function normalizeLineEndings(value: string): string {

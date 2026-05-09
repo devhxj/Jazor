@@ -38744,9 +38744,12 @@ function mountTodoApp(TodoApp, hostRequirements, selector = "#app") {
   app.mount(selector);
   return app;
 }
+function mountRootComponent(rootComponent, hostRequirements, selector = "#app") {
+  return mountTodoApp(rootComponent, hostRequirements, selector);
+}
 
 // .deno-build/client-entry.mjs
-mountTodoApp(todo_app_default, razorVueHostRequirements);
+mountRootComponent(todo_app_default, razorVueHostRequirements);
 /*! Bundled license information:
 
 @vue/shared/dist/shared.esm-bundler.js:

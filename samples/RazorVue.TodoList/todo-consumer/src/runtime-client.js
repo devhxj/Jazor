@@ -11,3 +11,7 @@ export function mountTodoApp(TodoApp, hostRequirements, selector = "#app") {
   app.mount(selector);
   return app;
 }
+
+export function mountRootComponent(rootComponent, hostRequirements, selector = "#app") {
+  return mountTodoApp(rootComponent, hostRequirements, selector);
+}
