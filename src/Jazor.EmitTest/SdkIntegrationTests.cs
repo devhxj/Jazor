@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Jazor.EmitTest;
 
@@ -1790,7 +1792,8 @@ public sealed class SdkIntegrationTests
         {
             ["RAZORVUE_HOST_JAZOR_ROOT"] = hostJazorRoot,
             ["RAZORVUE_BUILD_ROOT"] = consumerBuildRoot,
-            ["RAZORVUE_DIST_ROOT"] = consumerDistRoot
+            ["RAZORVUE_DIST_ROOT"] = consumerDistRoot,
+            ["JAZOR_DENO_EXE"] = package.DenoExePath
         };
 
         var ssrSmoke = await RunPowerShellAsync(
@@ -1846,7 +1849,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
         StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
         Assert.IsFalse(
-            distJs.Contains(".vue\"", StringComparison.Ordinal) || distJs.Contains(".vue'", StringComparison.Ordinal),
+            ContainsVueModuleSpecifier(distJs),
             "Bundled browser entry should not retain unresolved .vue imports.");
     }
 
@@ -1951,7 +1954,8 @@ public sealed class SdkIntegrationTests
             packageVersion,
             packageOutputDirectory,
             GetPackagePath(packageOutputDirectory, packageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion));
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", packageVersion),
+            GetBundledDenoPath(emitPublishDirectory));
     }
 
     private static async Task RunDotNetAndAssertAsync(string workingDirectory, IReadOnlyList<string> arguments)
@@ -2119,9 +2123,36 @@ public sealed class SdkIntegrationTests
             await standardError);
     }
 
-    private static string FindRepoRoot()
+    private static string FindRepoRoot([CallerFilePath] string sourceFilePath = "")
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        foreach (var startPath in GetRepoRootSearchStartPaths(sourceFilePath))
+        {
+            var root = TryFindRepoRootFrom(startPath);
+            if (root is not null)
+                return root;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate repository root.");
+    }
+
+    private static IEnumerable<string> GetRepoRootSearchStartPaths(string sourceFilePath)
+    {
+        if (!string.IsNullOrWhiteSpace(sourceFilePath))
+            yield return Path.GetDirectoryName(sourceFilePath)!;
+
+        yield return Environment.CurrentDirectory;
+        yield return AppContext.BaseDirectory;
+    }
+
+    private static string? TryFindRepoRootFrom(string? startPath)
+    {
+        if (string.IsNullOrWhiteSpace(startPath))
+            return null;
+
+        var directory = new DirectoryInfo(startPath);
+        if (!directory.Exists && directory.Parent is not null)
+            directory = directory.Parent;
+
         while (directory is not null)
         {
             if (File.Exists(Path.Combine(directory.FullName, "Jazor.slnx")))
@@ -2130,8 +2161,14 @@ public sealed class SdkIntegrationTests
             directory = directory.Parent;
         }
 
-        throw new DirectoryNotFoundException("Could not locate repository root.");
+        return null;
     }
+
+    private static bool ContainsVueModuleSpecifier(string script)
+        => Regex.IsMatch(
+            script,
+            """\b(?:import|export)\s+(?:[^"'`]*?\s+from\s*)?["'](?<specifier>[^"'`]+\.vue)["']|\bimport\s*\(\s*["'](?<dynamic>[^"'`]+\.vue)["']\s*\)""",
+            RegexOptions.CultureInvariant);
 
     private static string DiscoverPackageVersion(string packageOutputDirectory, string packageId)
     {
@@ -2158,6 +2195,15 @@ public sealed class SdkIntegrationTests
             throw new FileNotFoundException($"Could not locate packed Jazor package '{packagePath}'.", packagePath);
 
         return packagePath;
+    }
+
+    private static string GetBundledDenoPath(string emitPublishDirectory)
+    {
+        var denoPath = Path.Combine(emitPublishDirectory, "runtimes", "win-x64", "native", "deno.exe");
+        if (!File.Exists(denoPath))
+            throw new FileNotFoundException($"Bundled Deno runtime was not found under '{emitPublishDirectory}'.", denoPath);
+
+        return denoPath;
     }
 
     private static void CopyDirectory(string sourceDirectory, string destinationDirectory)
@@ -2848,7 +2894,8 @@ public sealed class SdkIntegrationTests
         string PackageVersion,
         string PackageOutputDirectory,
         string PackagePath,
-        string VuetifyPackagePath);
+        string VuetifyPackagePath,
+        string DenoExePath);
 
     private sealed class TestWorkspace : IDisposable
     {
