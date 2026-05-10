@@ -23,6 +23,9 @@ public sealed class VDataTable : ComponentBase, IVueLibraryComponent
     [Parameter]
     public string? ItemKey { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

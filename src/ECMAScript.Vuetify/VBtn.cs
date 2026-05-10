@@ -13,7 +13,13 @@ namespace ECMAScript.Vuetify;
 public sealed class VBtn : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Text { get; set; }
+    public VuetifyTextValue? Text { get; set; }
+
+    [Parameter]
+    public string? PrependIcon { get; set; }
+
+    [Parameter]
+    public string? AppendIcon { get; set; }
 
     [Parameter]
     public string? Color { get; set; }
@@ -22,13 +28,25 @@ public sealed class VBtn : ComponentBase, IVueLibraryComponent
     public VuetifyVariant? Variant { get; set; }
 
     [Parameter]
-    public string? Size { get; set; }
+    public VueStringNumberValue? Size { get; set; }
 
     [Parameter]
-    public bool Loading { get; set; }
+    public VuetifyBooleanStringValue? Loading { get; set; }
 
     [Parameter]
     public bool Block { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Height { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Width { get; set; }
+
+    [Parameter]
+    public VuetifyRoundedValue? Rounded { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Elevation { get; set; }
 
     [Parameter]
     public string? Href { get; set; }

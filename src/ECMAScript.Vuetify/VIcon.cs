@@ -13,4 +13,7 @@ public sealed class VIcon : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Icon { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

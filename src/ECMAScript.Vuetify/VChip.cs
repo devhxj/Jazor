@@ -9,7 +9,7 @@ namespace ECMAScript.Vuetify;
 public sealed class VChip : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Text { get; set; }
+    public VuetifyTextValue? Text { get; set; }
 
     [Parameter]
     public string? Color { get; set; }
@@ -18,7 +18,25 @@ public sealed class VChip : ComponentBase, IVueLibraryComponent
     public bool Closable { get; set; }
 
     [Parameter]
+    public string? PrependIcon { get; set; }
+
+    [Parameter]
+    public string? AppendIcon { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Size { get; set; }
+
+    [Parameter]
+    public VuetifyRoundedValue? Rounded { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Elevation { get; set; }
+
+    [Parameter]
     public EventCallback OnClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

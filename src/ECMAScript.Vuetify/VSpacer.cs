@@ -8,4 +8,6 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 public sealed class VSpacer : ComponentBase, IVueLibraryComponent
 {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

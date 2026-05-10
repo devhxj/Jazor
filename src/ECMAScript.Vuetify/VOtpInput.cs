@@ -1,34 +1,26 @@
-using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VTextarea")]
+[VueLibraryComponent("vuetify/components", "VOtpInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VTextarea : ComponentBase, IVueLibraryComponent
+public sealed class VOtpInput : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Label { get; set; }
+    public VueStringNumberValue? Length { get; set; }
 
     [Parameter]
-    public string? Placeholder { get; set; }
+    public bool Autofocus { get; set; }
 
     [Parameter]
-    public string? Hint { get; set; }
+    public string? Divider { get; set; }
 
     [Parameter]
-    public bool PersistentHint { get; set; }
+    public bool FocusAll { get; set; }
 
     [Parameter]
-    public bool Readonly { get; set; }
-
-    [Parameter]
-    public bool AutoGrow { get; set; }
-
-    [Parameter]
-    public VuetifyCounterValue? Counter { get; set; }
+    public VuetifyBooleanStringValue? Loading { get; set; }
 
     [Parameter]
     public VuetifyFieldVariant? Variant { get; set; }
@@ -40,10 +32,10 @@ public sealed class VTextarea : ComponentBase, IVueLibraryComponent
     public bool Disabled { get; set; }
 
     [Parameter]
-    public VueStringNumberValue? Rows { get; set; }
+    public bool Error { get; set; }
 
     [Parameter]
-    public VueStringNumberValue? MaxRows { get; set; }
+    public VuetifyInputType? Type { get; set; }
 
     [Parameter]
     public string? ModelValue { get; set; }

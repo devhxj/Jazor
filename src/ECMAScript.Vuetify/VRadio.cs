@@ -1,13 +1,11 @@
-using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
-using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VSwitch")]
+[VueLibraryComponent("vuetify/components", "VRadio")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VSwitch : ComponentBase, IVueLibraryComponent
+public sealed class VRadio : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }
@@ -19,25 +17,25 @@ public sealed class VSwitch : ComponentBase, IVueLibraryComponent
     public VuetifyDensity? Density { get; set; }
 
     [Parameter]
-    public bool Readonly { get; set; }
-
-    [Parameter]
-    public bool Inset { get; set; }
-
-    [Parameter]
-    public VuetifyBooleanStringValue? Loading { get; set; }
-
-    [Parameter]
-    public VuetifyHideDetailsValue? HideDetails { get; set; }
-
-    [Parameter]
     public bool Disabled { get; set; }
 
     [Parameter]
-    public bool ModelValue { get; set; }
+    public bool Readonly { get; set; }
 
     [Parameter]
-    public EventCallback<bool> ModelValueChanged { get; set; }
+    public string? FalseIcon { get; set; }
+
+    [Parameter]
+    public string? TrueIcon { get; set; }
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public string? ModelValue { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> ModelValueChanged { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

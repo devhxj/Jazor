@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VAutocomplete")]
+[VueLibraryComponent("vuetify/components", "VCombobox")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
+public sealed class VCombobox : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
     public string? Label { get; set; }
@@ -55,6 +55,30 @@ public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public string? NoDataText { get; set; }
+
+    [Parameter]
+    public VuetifyAutoSelectFirstValue? AutoSelectFirst { get; set; }
+
+    [Parameter]
+    public bool ClearOnSelect { get; set; } = true;
+
+    [Parameter]
+    public string[]? Delimiters { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public string? Hint { get; set; }
+
+    [Parameter]
+    public bool PersistentHint { get; set; }
+
+    [Parameter]
+    public VuetifyHideDetailsValue? HideDetails { get; set; }
+
+    [Parameter]
+    public VuetifyMessagesValue? Messages { get; set; }
 
     [Parameter]
     public string? ModelValue { get; set; }

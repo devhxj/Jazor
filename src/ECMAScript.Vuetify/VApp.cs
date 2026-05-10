@@ -3,19 +3,13 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VListItem")]
+[VueLibraryComponent("vuetify/components", "VApp")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VListItem : ComponentBase, IVueLibraryComponent
+public sealed class VApp : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Title { get; set; }
-
-    [Parameter]
-    public string? Subtitle { get; set; }
-
-    [Parameter]
-    public string? Value { get; set; }
+    public bool FullHeight { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

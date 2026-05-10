@@ -14,6 +14,9 @@ public sealed class VTab : ComponentBase, IVueLibraryComponent
     [Parameter]
     public string? Value { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

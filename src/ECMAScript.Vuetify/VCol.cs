@@ -17,6 +17,9 @@ public sealed class VCol : ComponentBase, IVueLibraryComponent
     [Parameter]
     public int? Lg { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

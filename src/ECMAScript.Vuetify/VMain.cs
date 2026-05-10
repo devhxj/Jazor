@@ -3,34 +3,31 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VAvatar")]
+[VueLibraryComponent("vuetify/components", "VMain")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VAvatar : ComponentBase, IVueLibraryComponent
+public sealed class VMain : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public string? Color { get; set; }
+    public bool Scrollable { get; set; }
 
     [Parameter]
-    public string? Image { get; set; }
+    public VueStringNumberValue? Height { get; set; }
 
     [Parameter]
-    public string? Icon { get; set; }
+    public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
-    public string? Text { get; set; }
+    public VueStringNumberValue? MinHeight { get; set; }
 
     [Parameter]
-    public VuetifyDensity? Density { get; set; }
+    public VueStringNumberValue? MinWidth { get; set; }
 
     [Parameter]
-    public VuetifyVariant? Variant { get; set; }
+    public VueStringNumberValue? MaxHeight { get; set; }
 
     [Parameter]
-    public VueStringNumberValue? Size { get; set; }
-
-    [Parameter]
-    public VuetifyRoundedValue? Rounded { get; set; }
+    public VueStringNumberValue? MaxWidth { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

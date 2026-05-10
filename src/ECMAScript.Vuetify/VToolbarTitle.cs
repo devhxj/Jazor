@@ -11,6 +11,9 @@ public sealed class VToolbarTitle : ComponentBase, IVueLibraryComponent
     [Parameter]
     public string? Text { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -17,6 +17,9 @@ public sealed class VMenu : ComponentBase, IVueLibraryComponent
     [Parameter]
     public bool CloseOnContentClick { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

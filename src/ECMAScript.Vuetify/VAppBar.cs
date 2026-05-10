@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
-[VueLibraryComponent("vuetify/components", "VSnackbar")]
+[VueLibraryComponent("vuetify/components", "VAppBar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
+public sealed class VAppBar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public bool ModelValue { get; set; }
+    public bool ModelValue { get; set; } = true;
 
     [Parameter]
     public EventCallback<bool> ModelValueChanged { get; set; }
@@ -18,19 +18,22 @@ public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
     public string? Color { get; set; }
 
     [Parameter]
-    public string? Text { get; set; }
+    public VuetifyDensity? Density { get; set; }
 
     [Parameter]
-    public VuetifyBooleanStringValue? Timer { get; set; }
+    public bool Flat { get; set; }
 
     [Parameter]
-    public VueStringNumberValue? Timeout { get; set; }
+    public VueStringNumberValue? Height { get; set; }
 
     [Parameter]
-    public VuetifyLocation? Location { get; set; }
+    public VuetifyAppBarLocation? Location { get; set; }
 
     [Parameter]
-    public VuetifyRoundedValue? Rounded { get; set; }
+    public string? ScrollBehavior { get; set; }
+
+    [Parameter]
+    public string? Image { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

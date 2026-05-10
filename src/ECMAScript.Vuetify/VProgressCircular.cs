@@ -12,8 +12,23 @@ public sealed class VProgressCircular : ComponentBase, IVueLibraryComponent
     public string? Color { get; set; }
 
     [Parameter]
-    public bool Indeterminate { get; set; }
+    public string? BgColor { get; set; }
 
     [Parameter]
-    public double? ModelValue { get; set; }
+    public VuetifyProgressCircularIndeterminateValue? Indeterminate { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? ModelValue { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Rotate { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Width { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Size { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

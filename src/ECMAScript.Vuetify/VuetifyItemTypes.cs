@@ -44,6 +44,244 @@ public static class VuetifySelectItemsCollectionBuilder
 [ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
+[CollectionBuilder(typeof(VuetifySelectModelValuesCollectionBuilder), nameof(VuetifySelectModelValuesCollectionBuilder.Create))]
+public readonly struct VuetifySelectModelValues : IEnumerable<VuetifySelectModelValue>
+{
+    private readonly VuetifySelectModelValue[]? _values;
+
+    private VuetifySelectModelValues(VuetifySelectModelValue[] values)
+    {
+        _values = values;
+    }
+
+    public VuetifySelectModelValue[]? AsArray => _values;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValues From(VuetifySelectModelValue[] values);
+
+    public static implicit operator VuetifySelectModelValues(VuetifySelectModelValue[] values)
+        => new(values);
+
+    public static implicit operator VuetifySelectModelValues(string[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(Number[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(bool[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(Symbol[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(VueProps[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(VueDictionary[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(int[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    public static implicit operator VuetifySelectModelValues(double[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifySelectModelValue)value));
+
+    IEnumerator<VuetifySelectModelValue> IEnumerable<VuetifySelectModelValue>.GetEnumerator()
+        => ((IEnumerable<VuetifySelectModelValue>)(_values ?? [])).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VuetifySelectModelValue>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifySelectModelValuesCollectionBuilder
+{
+    public static VuetifySelectModelValues Create(ReadOnlySpan<VuetifySelectModelValue> values)
+        => values.ToArray();
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifySelectModelValue
+{
+    private readonly byte _kind;
+    private readonly string? _string;
+    private readonly Number? _number;
+    private readonly bool? _boolean;
+    private readonly Symbol? _symbol;
+    private readonly VueProps? _object;
+    private readonly VuetifySelectModelValues? _values;
+
+    private VuetifySelectModelValue(string value)
+    {
+        _kind = 1;
+        _string = value;
+        _number = default;
+        _boolean = default;
+        _symbol = default;
+        _object = default;
+        _values = default;
+    }
+
+    private VuetifySelectModelValue(Number value)
+    {
+        _kind = 2;
+        _string = default;
+        _number = value;
+        _boolean = default;
+        _symbol = default;
+        _object = default;
+        _values = default;
+    }
+
+    private VuetifySelectModelValue(bool value)
+    {
+        _kind = 3;
+        _string = default;
+        _number = default;
+        _boolean = value;
+        _symbol = default;
+        _object = default;
+        _values = default;
+    }
+
+    private VuetifySelectModelValue(Symbol value)
+    {
+        _kind = 4;
+        _string = default;
+        _number = default;
+        _boolean = default;
+        _symbol = value;
+        _object = default;
+        _values = default;
+    }
+
+    private VuetifySelectModelValue(VueProps value)
+    {
+        _kind = 5;
+        _string = default;
+        _number = default;
+        _boolean = default;
+        _symbol = default;
+        _object = value;
+        _values = default;
+    }
+
+    private VuetifySelectModelValue(VuetifySelectModelValues value)
+    {
+        _kind = 6;
+        _string = default;
+        _number = default;
+        _boolean = default;
+        _symbol = default;
+        _object = default;
+        _values = value;
+    }
+
+    public string? AsString => _kind == 1 ? _string : default;
+
+    public Number? AsNumber => _kind == 2 ? _number : default;
+
+    public bool? AsBool => _kind == 3 ? _boolean : default;
+
+    public Symbol? AsSymbol => _kind == 4 ? _symbol : default;
+
+    public VueProps? AsObject => _kind == 5 ? _object : default;
+
+    public VuetifySelectModelValues? AsValues => _kind == 6 ? _values : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValue From(Number value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValue From(Symbol value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValue From(VueProps value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectModelValue From(VuetifySelectModelValues value);
+
+    public static implicit operator VuetifySelectModelValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(Number value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(Symbol value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(VueDictionary value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(VuetifySelectModelValues value)
+        => new(value);
+
+    public static implicit operator VuetifySelectModelValue(VuetifySelectModelValue[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(string[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(Number[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(bool[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(Symbol[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(VueProps[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(VueDictionary[] value)
+        => new((VuetifySelectModelValues)value);
+
+    public static implicit operator VuetifySelectModelValue(byte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(sbyte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(short value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(ushort value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(int value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(uint value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(float value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(double value)
+        => new((Number)value);
+
+    public static implicit operator VuetifySelectModelValue(decimal value)
+        => new((Number)value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
 public readonly struct VuetifySelectItemValue
 {
     private readonly byte _kind;

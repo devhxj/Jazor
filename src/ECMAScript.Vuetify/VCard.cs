@@ -14,6 +14,9 @@ public sealed class VCard : ComponentBase, IVueLibraryComponent
     [Parameter]
     public bool Disabled { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

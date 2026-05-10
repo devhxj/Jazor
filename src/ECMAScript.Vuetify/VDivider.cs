@@ -16,4 +16,7 @@ public sealed class VDivider : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public bool Vertical { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

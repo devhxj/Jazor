@@ -20,6 +20,9 @@ public sealed class VTabs : ComponentBase, IVueLibraryComponent
     [Parameter]
     public EventCallback<string?> ModelValueChanged { get; set; }
 
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

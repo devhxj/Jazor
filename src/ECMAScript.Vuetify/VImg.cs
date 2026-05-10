@@ -18,11 +18,29 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     public string? Alt { get; set; }
 
     [Parameter]
-    public string? Height { get; set; }
+    public string? LazySrc { get; set; }
 
     [Parameter]
-    public string? Width { get; set; }
+    public string? Srcset { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Height { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Width { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? AspectRatio { get; set; }
 
     [Parameter]
     public bool Cover { get; set; }
+
+    [Parameter]
+    public bool Eager { get; set; }
+
+    [Parameter]
+    public VuetifyRoundedValue? Rounded { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

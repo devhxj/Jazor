@@ -31,6 +31,9 @@ public sealed class VTextField : ComponentBase, IVueLibraryComponent
     public bool Clearable { get; set; }
 
     [Parameter]
+    public VuetifyCounterValue? Counter { get; set; }
+
+    [Parameter]
     public VuetifyFieldVariant? Variant { get; set; }
 
     [Parameter]

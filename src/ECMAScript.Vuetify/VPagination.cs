@@ -18,11 +18,14 @@ public sealed class VPagination : ComponentBase, IVueLibraryComponent
     public EventCallback<int> ModelValueChanged { get; set; }
 
     [Parameter]
-    public int Length { get; set; }
+    public VueStringNumberValue? Length { get; set; }
 
     [Parameter]
-    public int? TotalVisible { get; set; }
+    public VueStringNumberValue? TotalVisible { get; set; }
 
     [Parameter]
     public bool Disabled { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

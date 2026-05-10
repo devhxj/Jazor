@@ -12,10 +12,31 @@ public sealed class VSheet : ComponentBase, IVueLibraryComponent
     public string? Color { get; set; }
 
     [Parameter]
-    public bool Rounded { get; set; }
+    public VueStringNumberValue? Height { get; set; }
 
     [Parameter]
-    public int? Elevation { get; set; }
+    public VueStringNumberValue? Width { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? MinHeight { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? MinWidth { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? MaxHeight { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? MaxWidth { get; set; }
+
+    [Parameter]
+    public VuetifyRoundedValue? Rounded { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Elevation { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

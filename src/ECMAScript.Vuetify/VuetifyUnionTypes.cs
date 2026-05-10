@@ -29,6 +29,12 @@ public readonly struct VuetifyDisplayBreakpoint
 
     public Number? AsNumber => _kind == 2 ? _number : default;
 
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDisplayBreakpoint From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDisplayBreakpoint From(Number value);
+
     public static implicit operator VuetifyDisplayBreakpoint(string value)
         => new(value);
 
