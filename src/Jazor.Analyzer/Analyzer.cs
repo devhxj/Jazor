@@ -624,9 +624,16 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.PropertyReference:
 				{
 					var operation = (IPropertyReferenceOperation)ctx.Operation;
+					var hostType = operation.Instance?.Type ?? operation.Property.ContainingType;
+					if (IsSupportedObjectLiteralIndexerReference(operation, hostType) ||
+						IsSupportedStructuralRecordProxyIndexerReference(operation.Property, hostType))
+					{
+						return;
+					}
+
 					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
 						operation.Property,
-						operation.Instance?.Type ?? operation.Property.ContainingType))
+						hostType))
 					{
 						ctx.ReportDiagnostic(Diagnostic.Create(Rule,
 							operation.Syntax.GetLocation(),
@@ -833,6 +840,59 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static Location GetLocation(ImmutableArray<Location> locations)
 		=> locations.FirstOrDefault(x => x.IsInSource) ?? Location.None;
+
+	private static bool IsSupportedObjectLiteralIndexerReference(
+		IPropertyReferenceOperation operation,
+		ITypeSymbol? hostType)
+	{
+		if (!IsSingleParameterIndexer(operation.Property) ||
+			!Util.IsObjectLiteralHostType(hostType))
+		{
+			return false;
+		}
+
+		return operation.Parent is ISimpleAssignmentOperation assignment &&
+			   ReferenceEquals(assignment.Target, operation) &&
+			   IsInsideObjectOrCollectionInitializer(assignment);
+	}
+
+	private static bool IsSupportedStructuralRecordProxyIndexerReference(
+		IPropertySymbol property,
+		ITypeSymbol? hostType)
+	{
+		if (!IsSingleParameterIndexer(property))
+			return false;
+
+		var effectiveHost = hostType ?? property.ContainingType;
+		if (!StructuralRecordSupport.IsStructuralRecordType(effectiveHost))
+			return false;
+
+		if (!Util.HasECMAScriptSupportMarker(effectiveHost) &&
+			(effectiveHost is not INamedTypeSymbol namedHost ||
+			 !Util.HasECMAScriptSupportMarkerBaseType(namedHost)))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	private static bool IsSingleParameterIndexer(IPropertySymbol property)
+		=> property.IsIndexer && property.Parameters.Length == 1;
+
+	private static bool IsInsideObjectOrCollectionInitializer(IOperation operation)
+	{
+		for (var current = operation.Parent; current is not null; current = current.Parent)
+		{
+			if (current is IObjectOrCollectionInitializerOperation)
+				return true;
+
+			if (current is IObjectCreationOperation or IAnonymousObjectCreationOperation)
+				return false;
+		}
+
+		return false;
+	}
 
 	private static bool IsAttribute(ITypeSymbol typeSymbol)
 	{

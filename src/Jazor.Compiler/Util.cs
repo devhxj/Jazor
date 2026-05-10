@@ -283,6 +283,57 @@ public static class Util
     public static bool IsECMAScriptSupportMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() is ECMAScriptAttributeMetadataName or ECMAScriptModuleAttributeMetadataName;
 
+    public static bool HasECMAScriptSupportMarker(ISymbol? symbol)
+    {
+        if (symbol is null)
+            return false;
+
+        for (ISymbol? candidate = symbol.OriginalDefinition; candidate is not null; candidate = WhiteListLookup.GetFallbackSymbol(candidate))
+        {
+            for (ISymbol? current = candidate; current is not null; current = GetSupportContainingSymbol(current))
+            {
+                if (current.GetAttributes().Any(static attribute =>
+                    IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static ISymbol? GetSupportContainingSymbol(ISymbol symbol)
+        => symbol is ITypeSymbol typeSymbol ? typeSymbol.ContainingType : symbol.ContainingType;
+
+    public static bool HasECMAScriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
+    {
+        for (var current = typeSymbol.BaseType; current is not null; current = current.BaseType)
+        {
+            if (HasECMAScriptSupportMarker(current))
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsObjectLiteralHostType(ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is not INamedTypeSymbol namedType)
+            return false;
+
+        if (StructuralRecordSupport.IsStructuralRecordType(namedType))
+            return true;
+
+        if (!HasECMAScriptSupportMarker(namedType) &&
+            !HasECMAScriptSupportMarkerBaseType(namedType))
+        {
+            return false;
+        }
+
+        return HasNameResolutionBoundary(namedType);
+    }
+
     public static bool IsECMAScriptUnionMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == ECMAScriptUnionAttributeMetadataName;
 

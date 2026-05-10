@@ -446,6 +446,19 @@ public partial class SemanticWalker
 		=> HandleTransformationFailure<Node>(operation, "Interpolated string handler argument placeholder operations are not supported in JavaScript conversion.");
 
 	/// <summary>
+	/// 处理集合表达式元素占位符操作
+	/// C# 15 集合表达式构造参数会在 CollectionBuilder 的构造参数中使用该 Roslyn 内部占位符。
+	/// Jazor 从 ICollectionExpressionOperation.Elements 降低源码元素；该占位符不应作为独立运行时值发射。
+	/// </summary>
+	/// <param name="operation">当前访问的operation</param>
+	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
+	/// <returns>Acornima的ESTree的Node</returns>
+#pragma warning disable RSEXPERIMENTAL006
+	public override Node? VisitCollectionExpressionElementsPlaceholder(ICollectionExpressionElementsPlaceholderOperation operation, SenseArgument argument)
+		=> HandleTransformationFailure<Node>(operation, "Collection expression elements placeholder operations are compiler-internal and not supported in JavaScript conversion.");
+#pragma warning restore RSEXPERIMENTAL006
+
+	/// <summary>
 	/// 处理函数指针调用操作
 	/// C# 示例：
 	/// unsafe {

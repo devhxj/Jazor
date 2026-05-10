@@ -175,30 +175,10 @@ public partial class SemanticWalker
 		=> StructuralRecordSupport.IsStructuralRecordType(typeSymbol);
 
 	private static bool HasEcmascriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
-	{
-		for (var current = typeSymbol.BaseType; current is not null; current = current.BaseType)
-		{
-			if (HasEcmascriptSupportMarker(current))
-				return true;
-		}
-
-		return false;
-	}
+		=> Util.HasECMAScriptSupportMarkerBaseType(typeSymbol);
 
 	private static bool IsObjectLiteralHostType(ITypeSymbol? typeSymbol)
-	{
-		if (typeSymbol is not INamedTypeSymbol namedType)
-			return false;
-
-		if (ShouldLowerRecordStructurally(namedType))
-			return true;
-
-		if (!HasEcmascriptSupportMarker(namedType) &&
-			!HasEcmascriptSupportMarkerBaseType(namedType))
-			return false;
-
-		return Util.HasNameResolutionBoundary(namedType);
-	}
+		=> Util.IsObjectLiteralHostType(typeSymbol);
 
 	private Expression BuildRecordStructuralLiteral(Expression? assignObj, IObjectCreationOperation operation, SenseArgument argument)
 	{

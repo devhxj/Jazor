@@ -9,7 +9,7 @@ const string Split = $@"
 		";
 
 var repoRoot = SharedGeneration.FindRepositoryRoot();
-var references = Basic.Reference.Assemblies.Net100.References.All
+var references = Basic.Reference.Assemblies.Net110.References.All
     .Add(MetadataReference.CreateFromFile(typeof(JazorAttribute).Assembly.Location));
 
 GenerateWhiteListArtifacts(repoRoot, references);
