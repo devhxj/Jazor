@@ -1,25 +1,21 @@
 #!/usr/bin/env dotnet run
 #:package Microsoft.CodeAnalysis.CSharp@5.7.0-1.26207.106
-#:package Basic.Reference.Assemblies.Net110@1.8.4
+#:package Basic.Reference.Assemblies.Net110@1.8.7
+#:property EnableTrimAnalyzer=false
 
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
-var sdkRoot = Path.Combine(
-    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-    "dotnet",
-    "sdk",
-    "11.0.100-preview.3.26207.106",
-    "Sdks",
-    "Microsoft.NET.Sdk.Razor",
-    "source-generators",
-    "Microsoft.CodeAnalysis.Razor.Compiler.dll");
-var razorAssembly = Assembly.LoadFrom(sdkRoot);
+var razorCompilerPath = RazorCompilerPathResolver.Resolve();
+Console.WriteLine("Razor compiler: " + razorCompilerPath);
+var razorAssembly = Assembly.LoadFrom(razorCompilerPath);
 var generatorType = razorAssembly.GetType("Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", throwOnError: true)!;
 var generator = (IIncrementalGenerator)Activator.CreateInstance(generatorType)!;
 
@@ -133,4 +129,180 @@ internal sealed class TestAnalyzerConfigOptions(IReadOnlyDictionary<string, stri
 
     public override bool TryGetValue(string key, out string value)
         => _values.TryGetValue(key, out value!);
+}
+
+internal static class RazorCompilerPathResolver
+{
+    public static string Resolve()
+    {
+        var sdkVersion = ReadSdkVersionFromGlobalJson()
+            ?? throw new InvalidOperationException("global.json with sdk.version was not found from the current directory upward.");
+
+        foreach (var root in EnumerateDotNetRoots())
+        {
+            var candidate = Path.Combine(
+                root,
+                "sdk",
+                sdkVersion,
+                "Sdks",
+                "Microsoft.NET.Sdk.Razor",
+                "source-generators",
+                "Microsoft.CodeAnalysis.Razor.Compiler.dll");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        throw new FileNotFoundException("Microsoft.CodeAnalysis.Razor.Compiler.dll was not found for SDK " + sdkVersion + ".");
+    }
+
+    private static IEnumerable<string> EnumerateDotNetRoots()
+    {
+        var seen = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
+        foreach (var variable in new[] { "DOTNET_ROOT", "DOTNET_ROOT_X64", "DOTNET_ROOT_ARM64", "DOTNET_ROOT(x86)" })
+        {
+            if (TryAddRoot(Environment.GetEnvironmentVariable(variable), seen, out var root))
+            {
+                yield return root;
+            }
+        }
+
+        var dotnetInfoRoot = TryGetDotNetRootFromInfo();
+        if (TryAddRoot(dotnetInfoRoot, seen, out var infoRoot))
+        {
+            yield return infoRoot;
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            if (TryAddRoot(Path.Combine(programFiles, "dotnet"), seen, out var programFilesRoot))
+            {
+                yield return programFilesRoot;
+            }
+
+            var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            if (TryAddRoot(Path.Combine(programFilesX86, "dotnet"), seen, out var x86Root))
+            {
+                yield return x86Root;
+            }
+        }
+        else
+        {
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (TryAddRoot(Path.Combine(home, ".dotnet"), seen, out var homeRoot))
+            {
+                yield return homeRoot;
+            }
+
+            foreach (var candidate in new[] { "/usr/share/dotnet", "/usr/local/share/dotnet", "/usr/lib/dotnet", "/usr/lib64/dotnet", "/opt/dotnet" })
+            {
+                if (TryAddRoot(candidate, seen, out var root))
+                {
+                    yield return root;
+                }
+            }
+        }
+    }
+
+    private static bool TryAddRoot(string? path, ISet<string> seen, out string root)
+    {
+        root = string.Empty;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return false;
+        }
+
+        try
+        {
+            root = Path.GetFullPath(path);
+        }
+        catch (Exception exception) when (exception is ArgumentException or IOException or NotSupportedException)
+        {
+            return false;
+        }
+
+        return Directory.Exists(root) && seen.Add(root);
+    }
+
+    private static string? ReadSdkVersionFromGlobalJson()
+    {
+        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (directory is not null)
+        {
+            var globalJsonPath = Path.Combine(directory.FullName, "global.json");
+            if (File.Exists(globalJsonPath))
+            {
+                using var stream = File.OpenRead(globalJsonPath);
+                using var document = JsonDocument.Parse(stream);
+                if (document.RootElement.TryGetProperty("sdk", out var sdk)
+                    && sdk.TryGetProperty("version", out var version)
+                    && !string.IsNullOrWhiteSpace(version.GetString()))
+                {
+                    return version.GetString();
+                }
+            }
+
+            directory = directory.Parent;
+        }
+
+        return null;
+    }
+
+    private static string? TryGetDotNetRootFromInfo()
+    {
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "--info",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+            if (process is null)
+            {
+                return null;
+            }
+
+            var output = process.StandardOutput.ReadToEnd();
+            _ = process.StandardError.ReadToEnd();
+            if (!process.WaitForExit(milliseconds: 3_000))
+            {
+                process.Kill(entireProcessTree: true);
+                return null;
+            }
+
+            foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith("Base Path:", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var basePath = trimmed["Base Path:".Length..].Trim().Trim('"');
+                var normalized = basePath.Replace('\\', '/').TrimEnd('/');
+                var sdkIndex = normalized.LastIndexOf("/sdk/", StringComparison.OrdinalIgnoreCase);
+                if (sdkIndex <= 0)
+                {
+                    continue;
+                }
+
+                var root = normalized[..sdkIndex];
+                return basePath.Contains('\\', StringComparison.Ordinal)
+                    ? root.Replace('/', '\\')
+                    : root;
+            }
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception or IOException)
+        {
+        }
+
+        return null;
+    }
 }

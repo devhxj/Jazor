@@ -7511,7 +7511,7 @@ public sealed class JoltLspTests
             """
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
               </PropertyGroup>
             </Project>
             """);
@@ -7624,7 +7624,7 @@ public sealed class JoltLspTests
                 projectDirectoryName,
                 "bin",
                 "Debug",
-                "net10.0",
+                "net11.0",
                 assemblyFileName),
             Path.Combine(AppContext.BaseDirectory, assemblyFileName)
         };

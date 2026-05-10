@@ -1797,7 +1797,7 @@ public sealed class JoltTests
             projectDirectoryName,
             "bin",
             "Debug",
-            "net10.0",
+            "net11.0",
             assemblyFileName);
         Assert.IsTrue(File.Exists(assemblyPath), $"Expected built assembly '{assemblyPath}' to exist.");
         return assemblyPath;

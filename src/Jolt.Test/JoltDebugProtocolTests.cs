@@ -2965,7 +2965,7 @@ public sealed class JoltDebugProtocolTests
                     "Jolt",
                     "bin",
                     currentConfiguration,
-                    "net10.0",
+                    "net11.0",
                     "Jolt.dll");
                 var depsPathForCurrentConfiguration = Path.Combine(
                     repositoryRootForConfiguration,
@@ -2973,7 +2973,7 @@ public sealed class JoltDebugProtocolTests
                     "Jolt",
                     "bin",
                     currentConfiguration,
-                    "net10.0",
+                    "net11.0",
                     "Jolt.deps.json");
                 if (File.Exists(hostPathForCurrentConfiguration) && File.Exists(depsPathForCurrentConfiguration))
                 {
@@ -2997,7 +2997,7 @@ public sealed class JoltDebugProtocolTests
                 "Jolt",
                 "bin",
                 "Debug",
-                "net10.0",
+                "net11.0",
                 "Jolt.dll");
             if (File.Exists(defaultHostPath))
             {

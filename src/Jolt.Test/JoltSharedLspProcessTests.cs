@@ -557,7 +557,7 @@ public sealed class JoltSharedLspProcessTests
                     projectDirectoryName,
                     "bin",
                     "Debug",
-                    "net10.0",
+                    "net11.0",
                     assemblyFileName),
                 Path.Combine(AppContext.BaseDirectory, assemblyFileName)
             };

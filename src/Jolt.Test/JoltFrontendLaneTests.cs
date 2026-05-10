@@ -2254,7 +2254,7 @@ public sealed class JoltFrontendLaneTests
                 "Jolt",
                 "bin",
                 "Debug",
-                "net10.0",
+                "net11.0",
                 "Volar",
                 "Deno",
                 "Cache");
@@ -2299,7 +2299,7 @@ public sealed class JoltFrontendLaneTests
             "Jolt",
             "bin",
             "Debug",
-            "net10.0");
+            "net11.0");
         if (IsUsableDenoHostBaseDirectory(builtProjectOutputPath))
         {
             return builtProjectOutputPath;

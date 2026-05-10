@@ -19,10 +19,10 @@ if (-not [string]::IsNullOrWhiteSpace($explicitDenoPath)) {
 }
 else {
 $candidatePaths = @(
-    (Join-Path $repoRoot "src\Jolt\bin\Debug\net10.0\runtimes\win-x64\native\deno.exe"),
-    (Join-Path $repoRoot "src\Jolt\bin\Release\net10.0\runtimes\win-x64\native\deno.exe"),
-    (Join-Path $repoRoot "src\Jazor.Emit\bin\Debug\net10.0\runtimes\win-x64\native\deno.exe"),
-    (Join-Path $repoRoot "src\Jazor.Emit\bin\Release\net10.0\runtimes\win-x64\native\deno.exe"),
+    (Join-Path $repoRoot "src\Jolt\bin\Debug\net11.0\runtimes\win-x64\native\deno.exe"),
+    (Join-Path $repoRoot "src\Jolt\bin\Release\net11.0\runtimes\win-x64\native\deno.exe"),
+    (Join-Path $repoRoot "src\Jazor.Emit\bin\Debug\net11.0\runtimes\win-x64\native\deno.exe"),
+    (Join-Path $repoRoot "src\Jazor.Emit\bin\Release\net11.0\runtimes\win-x64\native\deno.exe"),
     (Join-Path $repoRoot ".dotnet\.nuget\packages\denohost.runtime.win-x64\2.7.14\runtimes\win-x64\native\deno.exe")
 )
 

@@ -126,21 +126,43 @@ internal static class RazorSdkToolsetProbeResolver
         return candidate ?? Path.Combine(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll");
     }
 
-    private static Version GetTargetFrameworkSortKey(string path)
+    private static RazorTasksTargetFrameworkSortKey GetTargetFrameworkSortKey(string path)
     {
         var directoryName = Path.GetFileName(Path.GetDirectoryName(path));
         if (string.IsNullOrWhiteSpace(directoryName))
         {
-            return new Version(0, 0);
+            return RazorTasksTargetFrameworkSortKey.Unknown;
         }
 
         if (directoryName.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+            && directoryName.Length > 3
+            && directoryName[3] is >= '0' and <= '9'
+            && directoryName.Contains('.', StringComparison.Ordinal)
             && Version.TryParse(directoryName["net".Length..], out var version))
         {
-            return version;
+            return new RazorTasksTargetFrameworkSortKey(4, version);
         }
 
-        return new Version(0, 0);
+        if (directoryName.StartsWith("netcoreapp", StringComparison.OrdinalIgnoreCase)
+            && Version.TryParse(directoryName["netcoreapp".Length..], out var netCoreAppVersion))
+        {
+            return new RazorTasksTargetFrameworkSortKey(3, netCoreAppVersion);
+        }
+
+        if (directoryName.StartsWith("netstandard", StringComparison.OrdinalIgnoreCase)
+            && Version.TryParse(directoryName["netstandard".Length..], out var netStandardVersion))
+        {
+            return new RazorTasksTargetFrameworkSortKey(2, netStandardVersion);
+        }
+
+        if (directoryName.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+            && directoryName.Length > 3
+            && directoryName[3] is >= '0' and <= '9')
+        {
+            return new RazorTasksTargetFrameworkSortKey(1, new Version(0, 0));
+        }
+
+        return RazorTasksTargetFrameworkSortKey.Unknown;
     }
 
     private static IEnumerable<(string RootPath, string? PreferredVersion)> EnumerateDotNetRoots()
@@ -497,5 +519,21 @@ internal static class RazorSdkToolsetProbeResolver
             ? versionText[(separatorIndex + 1)..]
             : string.Empty;
         return Version.TryParse(numericPart, out version);
+    }
+
+    private readonly record struct RazorTasksTargetFrameworkSortKey(int FamilyRank, Version Version) : IComparable<RazorTasksTargetFrameworkSortKey>
+    {
+        public static RazorTasksTargetFrameworkSortKey Unknown { get; } = new(0, new Version(0, 0));
+
+        public int CompareTo(RazorTasksTargetFrameworkSortKey other)
+        {
+            var familyComparison = FamilyRank.CompareTo(other.FamilyRank);
+            if (familyComparison != 0)
+            {
+                return familyComparison;
+            }
+
+            return Version.CompareTo(other.Version);
+        }
     }
 }

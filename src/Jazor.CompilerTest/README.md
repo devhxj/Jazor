@@ -9,7 +9,7 @@
 ## 依赖与运行环境
 
 - 测试框架：`MSTest.Sdk 4.1.0`
-- 目标框架：`net10.0`
+- 目标框架：`net11.0`
 - 主要项目引用：
   - `src/Jazor.Compiler/Jazor.Compiler.csproj`
   - `src/ECMAScript/ECMAScript.csproj`

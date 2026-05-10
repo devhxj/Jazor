@@ -3,7 +3,7 @@
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RazorLangVersion>10.0</RazorLangVersion>
+    <RazorLangVersion>11.0</RazorLangVersion>
     <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
     <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
     <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>

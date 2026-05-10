@@ -12,7 +12,7 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
 $buildLocalScript = Join-Path $sampleRoot "build-local.ps1"
 $consumerRoot = Join-Path $sampleRoot "vueroute-consumer"
 $hostRoot = Join-Path $sampleRoot "VueRoute.MemorySmoke.Host"
-$hostAssemblyPath = Join-Path $hostRoot "bin\$Configuration\net10.0\VueRoute.MemorySmoke.Host.dll"
+$hostAssemblyPath = Join-Path $hostRoot "bin\$Configuration\net11.0\VueRoute.MemorySmoke.Host.dll"
 $defaultGeneratedOutputRoot = Join-Path $repoRoot ".tmp\sample-smoke\ECMAScript.VueRoute.MemorySmoke\$Configuration\jazor"
 if ([string]::IsNullOrWhiteSpace($GeneratedOutputRoot)) {
     $GeneratedOutputRoot = $defaultGeneratedOutputRoot

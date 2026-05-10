@@ -15,7 +15,12 @@ public sealed class RazorSourceGeneratorLoadTimingTests
 
         try
         {
-            var sdkVersion = RazorSdkToolsetProbeResolver.Resolve()?.SdkVersion ?? "10.0.203";
+            var toolset = RazorSdkToolsetProbeResolver.Resolve();
+            if (toolset is null)
+            {
+                Assert.Inconclusive("A Razor SDK toolset could not be resolved for the load-timing probe.");
+            }
+
             var analyzerDirectory = Path.Combine(rootDirectory, "analyzer");
             var projectDirectory = Path.Combine(rootDirectory, "project");
             Directory.CreateDirectory(analyzerDirectory);
@@ -27,7 +32,12 @@ public sealed class RazorSourceGeneratorLoadTimingTests
             var intermediateRoot = Path.Combine(rootDirectory, "obj");
 
             CompileTimingProbeAnalyzer(analyzerAssemblyPath);
-            WriteProjectFiles(projectDirectory, analyzerAssemblyPath, sdkVersion);
+            WriteProjectFiles(
+                projectDirectory,
+                analyzerAssemblyPath,
+                toolset.SdkVersion,
+                toolset.TargetFramework,
+                toolset.RazorLangVersion);
 
             var buildResult = RunDotNetBuild(
                 projectDirectory,
@@ -168,7 +178,12 @@ public sealed class RazorSourceGeneratorLoadTimingTests
                     .Select(static diagnostic => diagnostic.ToString())));
     }
 
-    private static void WriteProjectFiles(string projectDirectory, string analyzerAssemblyPath, string sdkVersion)
+    private static void WriteProjectFiles(
+        string projectDirectory,
+        string analyzerAssemblyPath,
+        string sdkVersion,
+        string targetFramework,
+        string razorLangVersion)
     {
         File.WriteAllText(
             Path.Combine(projectDirectory, "global.json"),
@@ -185,10 +200,10 @@ public sealed class RazorSourceGeneratorLoadTimingTests
             """
             <Project Sdk="Microsoft.NET.Sdk.Razor">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>TARGET_FRAMEWORK</TargetFramework>
                 <Nullable>enable</Nullable>
                 <ImplicitUsings>enable</ImplicitUsings>
-                <RazorLangVersion>10.0</RazorLangVersion>
+                <RazorLangVersion>RAZOR_LANG_VERSION</RazorLangVersion>
                 <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
               </PropertyGroup>
 
@@ -197,7 +212,9 @@ public sealed class RazorSourceGeneratorLoadTimingTests
                 <Analyzer Include="ANALYZER_PATH" />
               </ItemGroup>
             </Project>
-            """.Replace("ANALYZER_PATH", analyzerAssemblyPath, StringComparison.Ordinal));
+            """.Replace("ANALYZER_PATH", analyzerAssemblyPath, StringComparison.Ordinal)
+            .Replace("TARGET_FRAMEWORK", targetFramework, StringComparison.Ordinal)
+            .Replace("RAZOR_LANG_VERSION", razorLangVersion, StringComparison.Ordinal));
 
         File.WriteAllText(
             Path.Combine(projectDirectory, "Counter.razor"),

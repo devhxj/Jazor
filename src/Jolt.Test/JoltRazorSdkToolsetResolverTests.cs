@@ -14,11 +14,13 @@ public sealed class JoltRazorSdkToolsetResolverTests
             var razorSdkRoot = Path.Combine(tempDirectory.FullName, "Microsoft.NET.Sdk.Razor");
             var net10Tasks = WriteTaskAssemblyPlaceholder(razorSdkRoot, "net10.0");
             var net11Tasks = WriteTaskAssemblyPlaceholder(razorSdkRoot, "net11.0");
+            var netFrameworkTasks = WriteTaskAssemblyPlaceholder(razorSdkRoot, "net472");
 
             var resolved = RazorSdkToolsetResolver.ResolveRazorTasksPath(razorSdkRoot);
 
             Assert.AreEqual(net11Tasks, resolved);
             Assert.AreNotEqual(net10Tasks, resolved);
+            Assert.AreNotEqual(netFrameworkTasks, resolved);
         }
         finally
         {

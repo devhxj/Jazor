@@ -43,11 +43,6 @@ if ([string]::IsNullOrWhiteSpace($packageId)) {
     $packageId = [System.IO.Path]::GetFileNameWithoutExtension($packageProject)
 }
 
-$packageVersion = Get-ProjectPropertyValue -Project $projectXml -Name "Version"
-if ([string]::IsNullOrWhiteSpace($packageVersion)) {
-    throw "Unable to resolve package version from $packageProject"
-}
-
 $resolvedOutputDirectory = if ([System.IO.Path]::IsPathRooted($OutputDirectory)) {
     $OutputDirectory
 } else {
@@ -65,9 +60,18 @@ if ($LASTEXITCODE -ne 0) {
     throw "publish-nuget.ps1 failed with exit code $LASTEXITCODE."
 }
 
-$packagePath = Join-Path $resolvedOutputDirectory "$packageId.$packageVersion.nupkg"
-if (-not (Test-Path $packagePath)) {
-    throw "Expected package not found: $packagePath"
+$packageFile = Get-ChildItem -Path $resolvedOutputDirectory -Filter "$packageId.*.nupkg" -File |
+    Where-Object { $_.Name -notlike "*.snupkg" } |
+    Sort-Object LastWriteTimeUtc -Descending |
+    Select-Object -First 1
+if (-not $packageFile) {
+    throw "Expected package not found under: $resolvedOutputDirectory"
+}
+
+$packagePath = $packageFile.FullName
+$packageVersion = $packageFile.BaseName -replace "^$([regex]::Escape($packageId))\.", ''
+if ([string]::IsNullOrWhiteSpace($packageVersion) -or $packageVersion -eq $packageFile.BaseName) {
+    throw "Unable to resolve package version from produced package: $packagePath"
 }
 
 $expandedDirectory = Join-Path $resolvedOutputDirectory "expanded"
@@ -81,10 +85,10 @@ $requiredPaths = @(
     "buildTransitive\Jazor.targets",
     "analyzers\dotnet\cs\Jazor.Analyzer.dll",
     "analyzers\dotnet\cs\Jazor.Compiler.dll",
-    "lib\net10.0\ECMAScript.dll",
-    "lib\net10.0\Jazor.Compiler.dll",
-    "tools\net10.0\Jazor.Emit.dll",
-    "tools\net10.0\runtimes\win-x64\native\deno.exe"
+    "lib\net11.0\ECMAScript.dll",
+    "lib\net11.0\Jazor.Compiler.dll",
+    "tools\net11.0\Jazor.Emit.dll",
+    "tools\net11.0\runtimes\win-x64\native\deno.exe"
 )
 
 foreach ($relativePath in $requiredPaths) {

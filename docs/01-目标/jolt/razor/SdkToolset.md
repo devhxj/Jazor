@@ -34,7 +34,7 @@ internal sealed record RazorSdkToolset(
 - `SdkRootPath`: `C:\Program Files\dotnet\sdk\9.0.101`
 - `RazorSdkRootPath`: `C:\Program Files\dotnet\sdk\9.0.101\Sdks\Microsoft.NET.Sdk.Razor`
 - `RazorSourceGeneratorPath`: `...\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll`
-- `RazorTasksPath`: `...\tasks\net10.0\Microsoft.NET.Sdk.Razor.Tasks.dll`
+- `RazorTasksPath`: `...\tasks\net11.0\Microsoft.NET.Sdk.Razor.Tasks.dll`（按 SDK 实际 tasks TFM 动态选择）
 - `RazorDesignTimeTargetsPath`: `...\targets\Microsoft.NET.Sdk.Razor.DesignTime.targets`
 - `RazorComponentTargetsPath`: `...\targets\Microsoft.NET.Sdk.Razor.Component.targets`
 
@@ -120,7 +120,7 @@ if (TryAddRoot(Path.Combine(appBaseDirectory, "dotnet"), version: null, seen, ou
 }
 ```
 
-**路径示例**：`D:\repository\own\jazor\Jazor\src\Jolt\bin\Debug\net10.0\dotnet`
+**路径示例**：`D:\repository\own\jazor\Jazor\src\Jolt\bin\Debug\net11.0\dotnet`
 
 #### 3.2.3 全局 SDK（多路径搜索）
 
@@ -217,7 +217,7 @@ using var process = new Process
        var versionRoot = Path.Combine(sdkRoot, version);
        var razorSdkRoot = Path.Combine(versionRoot, "Sdks", RazorSdkName);
        var sourceGeneratorPath = Path.Combine(razorSdkRoot, "source-generators", "Microsoft.CodeAnalysis.Razor.Compiler.dll");
-       var tasksPath = Path.Combine(razorSdkRoot, "tasks", "net10.0", "Microsoft.NET.Sdk.Razor.Tasks.dll");
+       var tasksPath = ResolveRazorTasksPath(razorSdkRoot);
        var designTimeTargetsPath = Path.Combine(razorSdkRoot, "targets", "Microsoft.NET.Sdk.Razor.DesignTime.targets");
        var componentTargetsPath = Path.Combine(razorSdkRoot, "targets", "Microsoft.NET.Sdk.Razor.Component.targets");
 
@@ -444,10 +444,10 @@ private const string RazorSdkName = "Microsoft.NET.Sdk.Razor";
 ### 6.3 目标框架版本
 
 ```csharp
-var tasksPath = Path.Combine(razorSdkRoot, "tasks", "net10.0", "Microsoft.NET.Sdk.Razor.Tasks.dll");
+var tasksPath = ResolveRazorTasksPath(razorSdkRoot);
 ```
 
-**说明**：当前硬编码为 `net10.0`，未来可能需要动态解析。
+**说明**：Razor tasks 路径不再硬编码到某个 TFM。解析器递归查找 `tasks` 下的 `Microsoft.NET.Sdk.Razor.Tasks.dll`，优先选择现代 `netX.0` 资产（例如 `net11.0`），再回退到 `netcoreapp`、`netstandard`、旧式 `net4xx` 或仅有的旧 `net10.0` 资产。
 
 ## 7. 与其他子系统的交互
 
@@ -502,14 +502,14 @@ public RazorDesignTimeCodeProjectionService(RazorSdkToolsetHost? toolsetHost = n
 - **缺点**：启动进程有开销，超时时间较长（3 秒）
 - **优化**：仅在静态路径失败时才调用
 
-### 8.4 硬编码 net10.0
+### 8.4 Razor tasks TFM 动态解析
 
-**选择**：当前硬编码 Razor 任务路径为 `net10.0`。
+**选择**：动态解析 Razor 任务路径，而不是硬编码 `net10.0`。
 
 **权衡**：
-- **优点**：简单直接，适用于当前 .NET 10 目标
-- **缺点**：未来升级到 .NET 11 需要修改代码
-- **未来改进**：动态解析 `tasks` 目录下的子目录
+- **优点**：适配 .NET 10、.NET 11 preview 以及未来 SDK 布局变化
+- **缺点**：需要额外的目录枚举和 TFM 排序逻辑
+- **兼容性**：当 SDK 只提供旧 `net10.0` tasks 资产时仍可回退使用
 
 ### 8.5 严格验证策略
 
@@ -528,22 +528,22 @@ public RazorDesignTimeCodeProjectionService(RazorSdkToolsetHost? toolsetHost = n
 ```
 DOTNET_ROOT=C:\Program Files\dotnet
 JOLT_DOTNET_ROOT=D:\jolt\runtime\dotnet
-JOLT_DOTNET_SDK_VERSION=9.0.101
+JOLT_DOTNET_SDK_VERSION=11.0.100-preview.3.26207.106
 ```
 
 **解析流程**：
-1. 尝试 `D:\jolt\runtime\dotnet`（bundled，版本 `9.0.101`）
+1. 尝试 `D:\jolt\runtime\dotnet`（bundled，版本 `11.0.100-preview.3.26207.106`）
 2. 如果失败，尝试 `C:\Program Files\dotnet`（全局，最高版本）
 
 **输出**：
 ```csharp
 new RazorSdkToolset(
     RootPath: "D:\\jolt\\runtime\\dotnet",
-    SdkVersion: "9.0.101",
-    SdkRootPath: "D:\\jolt\\runtime\\dotnet\\sdk\\9.0.101",
-    RazorSdkRootPath: "D:\\jolt\\runtime\\dotnet\\sdk\\9.0.101\\Sdks\\Microsoft.NET.Sdk.Razor",
+    SdkVersion: "11.0.100-preview.3.26207.106",
+    SdkRootPath: "D:\\jolt\\runtime\\dotnet\\sdk\\11.0.100-preview.3.26207.106",
+    RazorSdkRootPath: "D:\\jolt\\runtime\\dotnet\\sdk\\11.0.100-preview.3.26207.106\\Sdks\\Microsoft.NET.Sdk.Razor",
     RazorSourceGeneratorPath: "...\\source-generators\\Microsoft.CodeAnalysis.Razor.Compiler.dll",
-    RazorTasksPath: "...\\tasks\\net10.0\\Microsoft.NET.Sdk.Razor.Tasks.dll",
+    RazorTasksPath: "...\\tasks\\net11.0\\Microsoft.NET.Sdk.Razor.Tasks.dll",
     RazorDesignTimeTargetsPath: "...\\targets\\Microsoft.NET.Sdk.Razor.DesignTime.targets",
     RazorComponentTargetsPath: "...\\targets\\Microsoft.NET.Sdk.Razor.Component.targets")
 ```
@@ -566,13 +566,13 @@ new RazorSdkToolset(
 ```
 Razor SDK toolset: available
   root:                D:\jolt\runtime\dotnet
-  sdk version:         9.0.101
-  sdk root:            D:\jolt\runtime\dotnet\sdk\9.0.101
-  razor sdk root:      D:\jolt\runtime\dotnet\sdk\9.0.101\Sdks\Microsoft.NET.Sdk.Razor
-  source generator:    D:\jolt\runtime\dotnet\sdk\9.0.101\Sdks\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll
-  tasks:               D:\jolt\runtime\dotnet\sdk\9.0.101\Sdks\Microsoft.NET.Sdk.Razor\tasks\net10.0\Microsoft.NET.Sdk.Razor.Tasks.dll
-  design-time targets: D:\jolt\runtime\dotnet\sdk\9.0.101\Sdks\Microsoft.NET.Sdk.Razor\targets\Microsoft.NET.Sdk.Razor.DesignTime.targets
-  component targets:   D:\jolt\runtime\dotnet\sdk\9.0.101\Sdks\Microsoft.NET.Sdk.Razor\targets\Microsoft.NET.Sdk.Razor.Component.targets
+  sdk version:         11.0.100-preview.3.26207.106
+  sdk root:            D:\jolt\runtime\dotnet\sdk\11.0.100-preview.3.26207.106
+  razor sdk root:      D:\jolt\runtime\dotnet\sdk\11.0.100-preview.3.26207.106\Sdks\Microsoft.NET.Sdk.Razor
+  source generator:    D:\jolt\runtime\dotnet\sdk\11.0.100-preview.3.26207.106\Sdks\Microsoft.NET.Sdk.Razor\source-generators\Microsoft.CodeAnalysis.Razor.Compiler.dll
+  tasks:               D:\jolt\runtime\dotnet\sdk\11.0.100-preview.3.26207.106\Sdks\Microsoft.NET.Sdk.Razor\tasks\net11.0\Microsoft.NET.Sdk.Razor.Tasks.dll
+  design-time targets: D:\jolt\runtime\dotnet\sdk\11.0.100-preview.3.26207.106\Sdks\Microsoft.NET.Sdk.Razor\targets\Microsoft.NET.Sdk.Razor.DesignTime.targets
+  component targets:   D:\jolt\runtime\dotnet\sdk\11.0.100-preview.3.26207.106\Sdks\Microsoft.NET.Sdk.Razor\targets\Microsoft.NET.Sdk.Razor.Component.targets
 ```
 
 **失败**：
@@ -611,5 +611,5 @@ if (!seen.Add(fullPath))
 ---
 
 **文档维护者**：developerhan
-**最后更新**：2026-04-21
-**文档版本**：v1.0
+**最后更新**：2026-05-10
+**文档版本**：v1.1

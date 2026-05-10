@@ -13,7 +13,7 @@ $hostProject = Join-Path $sampleRoot "Sample.Host\Sample.Host.csproj"
 $runtimeProject = Join-Path $repoRoot "src\ECMAScript\ECMAScript.csproj"
 $analyzerProject = Join-Path $repoRoot "src\Jazor.Analyzer\Jazor.Analyzer.csproj"
 $emitProject = Join-Path $repoRoot "src\Jazor.Emit\Jazor.Emit.csproj"
-$emitPublishDir = Join-Path $repoRoot "src\Jazor.Emit\bin\$Configuration\net10.0\publish"
+$emitPublishDir = Join-Path $repoRoot "src\Jazor.Emit\bin\$Configuration\net11.0\publish"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"

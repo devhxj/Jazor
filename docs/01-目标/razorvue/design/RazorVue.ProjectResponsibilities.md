@@ -121,7 +121,7 @@ public interface IRazorVueArtifactLowerer
 因为仓库当前有目标框架拆分：
 
 - `Jazor.Compiler` 是 `netstandard2.0`
-- `Jazor.Razor`、`Jazor.RazorVue` 和当前 `Jazor.RazorVue.Analysis` 入口是 `net10.0`
+- `Jazor.Razor`、`Jazor.RazorVue` 和当前 `Jazor.RazorVue.Analysis` 入口处在 `net11.0` 预览迁移路径上，仍需保持与 `netstandard2.0` compiler 核心的边界
 
 项目不应强制不安全的反向引用以满足文件夹纯度。
 

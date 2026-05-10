@@ -147,7 +147,7 @@ function Assert-NoBuildPackInputsExist {
         }
     }
 
-    $emitPublishDir = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\Jazor.Emit\bin\$Configuration\net10.0\publish"))
+    $emitPublishDir = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\Jazor.Emit\bin\$Configuration\net11.0\publish"))
     if (-not (Test-Path -LiteralPath $emitPublishDir)) {
         $missingInputs.Add("$emitPublishDir (Jazor.Emit publish output directory)")
     }

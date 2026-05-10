@@ -22,7 +22,7 @@ public sealed class RepositoryLayoutTests
                     "ECMAScript.WebIDL.Generator",
                     "bin",
                     "Debug",
-                    "net10.0"));
+                    "net11.0"));
 
                 var layout = RepositoryLayout.Discover(baseDirectory.FullName);
 

@@ -12,7 +12,7 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $sampleRoot)
 $buildLocalScript = Join-Path $sampleRoot "build-local.ps1"
 $consumerRoot = Join-Path $sampleRoot "pinia-consumer"
 $hostRoot = Join-Path $sampleRoot "Pinia.Counter.Host"
-$hostAssemblyPath = Join-Path $hostRoot "bin\$Configuration\net10.0\Pinia.Counter.Host.dll"
+$hostAssemblyPath = Join-Path $hostRoot "bin\$Configuration\net11.0\Pinia.Counter.Host.dll"
 $defaultGeneratedOutputRoot = Join-Path $repoRoot ".tmp\sample-smoke\ECMAScript.Pinia.Counter\$Configuration\jazor"
 if ([string]::IsNullOrWhiteSpace($GeneratedOutputRoot)) {
     $GeneratedOutputRoot = $defaultGeneratedOutputRoot

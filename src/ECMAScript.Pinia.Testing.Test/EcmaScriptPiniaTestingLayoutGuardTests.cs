@@ -94,11 +94,12 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		var projectPath = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
 		var source = System.IO.File.ReadAllText(projectPath);
 
-		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net10.0\\ECMAScript.Pinia.Testing.dll");
-		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net10.0\\ECMAScript.Pinia.Testing.pdb");
+		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net11.0\\ECMAScript.Pinia.Testing.dll");
+		StringAssert.Contains(source, "$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\\bin\\$(Configuration)\\net11.0\\ECMAScript.Pinia.Testing.pdb");
 		StringAssert.Contains(source, "..\\ECMAScript.Pinia.Testing\\ECMAScript.Pinia.Testing.csproj");
 		StringAssert.Contains(source, "<JazorPackageBuildOutputRoot Condition=\"'$(JazorPackageBuildOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''\">");
-		StringAssert.Contains(source, "<JazorPackageArtifactBuildProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactBuildProperties>");
+		StringAssert.Contains(source, "<JazorPackageArtifactRestoreProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactRestoreProperties>");
+		StringAssert.Contains(source, "<JazorPackageArtifactBuildProperties>$(JazorPackageArtifactRestoreProperties);BuildProjectReferences=false</JazorPackageArtifactBuildProperties>");
 		StringAssert.Contains(source, "BuildInParallel=\"false\"");
 	}
 
