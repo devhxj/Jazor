@@ -2651,6 +2651,60 @@ public sealed class RazorVuePipelineTests
                 [ECMAScript.ECMAScriptModule("./components/report-table")]
                 public class ReportTable : ComponentBase, IVueComponent
                 {
+                    [Parameter]
+                    public VuetifyDataTableSelectedValues? SelectedRows { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyDataTableSelectedValues?> SelectedRowsChanged { get; set; }
+
+                    [Parameter]
+                    public int Page { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> PageChanged { get; set; }
+
+                    [Parameter]
+                    public int ItemsPerPage { get; set; }
+
+                    [Parameter]
+                    public EventCallback<int> ItemsPerPageChanged { get; set; }
+
+                    [Parameter]
+                    public VuetifyDataTableSortItems? SortBy { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyDataTableSortItems?> SortByChanged { get; set; }
+
+                    [Parameter]
+                    public VuetifyDataTableSelectedValues? ExpandedRows { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyDataTableSelectedValues?> ExpandedRowsChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyDataTableOptions?> OptionsChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyDataTableItems?> CurrentItemsChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VDataTableSlotContext>? TableTop { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VDataTableHeadersSlotContext>? Headers { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VDataTableHeaderCellSlotContext>? HeaderSelect { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VDataTableItemSlotContext>? Item { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? FooterPrepend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? NoData { get; set; }
+
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VBreadcrumbs>(0);
@@ -2696,6 +2750,90 @@ public sealed class RazorVuePipelineTests
                             }
                         });
                         builder.AddAttribute(6, nameof(VDataTable.ItemKey), "name");
+                        builder.AddAttribute(7, nameof(VDataTable.ItemValue), "id");
+                        builder.AddAttribute(8, nameof(VDataTable.ItemSelectable), "enabled");
+                        builder.AddAttribute(9, nameof(VDataTable.ReturnObject), true);
+                        builder.AddAttribute(10, nameof(VDataTable.ModelValue), SelectedRows);
+                        builder.AddAttribute(11, nameof(VDataTable.ModelValueChanged), SelectedRowsChanged);
+                        builder.AddAttribute(12, nameof(VDataTable.Page), Page);
+                        builder.AddAttribute(13, nameof(VDataTable.PageChanged), PageChanged);
+                        builder.AddAttribute(14, nameof(VDataTable.ItemsPerPage), ItemsPerPage);
+                        builder.AddAttribute(15, nameof(VDataTable.ItemsPerPageChanged), ItemsPerPageChanged);
+                        builder.AddAttribute(16, nameof(VDataTable.ItemsPerPageOptions), new VuetifyDataTableItemsPerPageOption[]
+                        {
+                            10,
+                            new VuetifyDataTableItemsPerPageOptionItem
+                            {
+                                Title = "All",
+                                Value = -1
+                            }
+                        });
+                        builder.AddAttribute(17, nameof(VDataTable.SortBy), new VuetifyDataTableSortItem[]
+                        {
+                            new()
+                            {
+                                Key = "total",
+                                Order = VuetifyDataTableSortOrder.Desc
+                            }
+                        });
+                        builder.AddAttribute(18, nameof(VDataTable.SortByChanged), SortByChanged);
+                        builder.AddAttribute(19, nameof(VDataTable.GroupBy), new VuetifyDataTableSortItem[]
+                        {
+                            new()
+                            {
+                                Key = "region",
+                                Order = VuetifyDataTableSortOrder.Asc
+                            }
+                        });
+                        builder.AddAttribute(20, nameof(VDataTable.Expanded), ExpandedRows);
+                        builder.AddAttribute(21, nameof(VDataTable.ExpandedChanged), ExpandedRowsChanged);
+                        builder.AddAttribute(22, nameof(VDataTable.OptionsChanged), OptionsChanged);
+                        builder.AddAttribute(23, nameof(VDataTable.CurrentItemsChanged), CurrentItemsChanged);
+                        builder.AddAttribute(24, nameof(VDataTable.Search), "rev");
+                        builder.AddAttribute(25, nameof(VDataTable.ShowSelect), true);
+                        builder.AddAttribute(26, nameof(VDataTable.SelectStrategy), VuetifyDataTableSelectStrategy.Page);
+                        builder.AddAttribute(27, nameof(VDataTable.ShowExpand), true);
+                        builder.AddAttribute(28, nameof(VDataTable.ExpandOnClick), true);
+                        builder.AddAttribute(29, nameof(VDataTable.HideNoData), false);
+                        builder.AddAttribute(30, nameof(VDataTable.NoDataText), "No reports");
+                        builder.AddAttribute(31, nameof(VDataTable.Loading), "primary");
+                        builder.AddAttribute(32, nameof(VDataTable.LoadingText), "Loading reports");
+                        builder.AddAttribute(33, nameof(VDataTable.MultiSort), true);
+                        builder.AddAttribute(34, nameof(VDataTable.MustSort), true);
+                        builder.AddAttribute(35, nameof(VDataTable.SortAscIcon), "$sortAsc");
+                        builder.AddAttribute(36, nameof(VDataTable.SortDescIcon), "$sortDesc");
+                        builder.AddAttribute(37, nameof(VDataTable.Color), "surface");
+                        builder.AddAttribute(38, nameof(VDataTable.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(39, nameof(VDataTable.FixedHeader), true);
+                        builder.AddAttribute(40, nameof(VDataTable.FixedFooter), true);
+                        builder.AddAttribute(41, nameof(VDataTable.Hover), true);
+                        builder.AddAttribute(42, nameof(VDataTable.Height), 420);
+                        builder.AddAttribute(43, nameof(VDataTable.Width), "100%");
+                        builder.AddAttribute(44, nameof(VDataTable.HeaderProps), new VueDictionary
+                        {
+                            ["class"] = "report-header"
+                        });
+                        builder.AddAttribute(45, nameof(VDataTable.RowProps), new VueDictionary
+                        {
+                            ["data-row-kind"] = "report"
+                        });
+                        builder.AddAttribute(46, nameof(VDataTable.CellProps), new VueDictionary
+                        {
+                            ["class"] = "report-cell"
+                        });
+                        builder.AddAttribute(47, nameof(VDataTable.PrevIcon), "$prev");
+                        builder.AddAttribute(48, nameof(VDataTable.NextIcon), "$next");
+                        builder.AddAttribute(49, nameof(VDataTable.FirstIcon), "$first");
+                        builder.AddAttribute(50, nameof(VDataTable.LastIcon), "$last");
+                        builder.AddAttribute(51, nameof(VDataTable.ItemsPerPageText), "Rows");
+                        builder.AddAttribute(52, nameof(VDataTable.PageText), "{0}-{1} of {2}");
+                        builder.AddAttribute(53, nameof(VDataTable.ShowCurrentPage), true);
+                        builder.AddAttribute(54, nameof(VDataTable.Top), TableTop);
+                        builder.AddAttribute(55, nameof(VDataTable.HeadersContent), Headers);
+                        builder.AddAttribute(56, nameof(VDataTable.HeaderSelect), HeaderSelect);
+                        builder.AddAttribute(57, nameof(VDataTable.ItemContent), Item);
+                        builder.AddAttribute(58, nameof(VDataTable.FooterPrepend), FooterPrepend);
+                        builder.AddAttribute(59, nameof(VDataTable.NoData), NoData);
                         builder.CloseComponent();
                     }
                 }
@@ -2721,6 +2859,53 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "align: \"end\"");
         StringAssert.Contains(artifact.ModuleCode, "\"items\": [{ name: \"Revenue\", total: 1200 }]");
         StringAssert.Contains(artifact.ModuleCode, "\"itemKey\": \"name\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"itemValue\": \"id\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"itemSelectable\": \"enabled\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"returnObject\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.selectedRows");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:selectedRows\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"page\": props.page");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:page\": (__value) => emit(\"update:page\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"itemsPerPage\": props.itemsPerPage");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:itemsPerPage\": (__value) => emit(\"update:itemsPerPage\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"itemsPerPageOptions\": [10, { title: \"All\", value: -1 }]");
+        StringAssert.Contains(artifact.ModuleCode, "\"sortBy\": [{ key: \"total\", order: \"desc\" }]");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:sortBy\": (__value) => emit(\"update:sortBy\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"groupBy\": [{ key: \"region\", order: \"asc\" }]");
+        StringAssert.Contains(artifact.ModuleCode, "\"expanded\": props.expandedRows");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:expanded\": (__value) => emit(\"update:expandedRows\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:options\": (__value) => emit(\"optionsChanged\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:currentItems\": (__value) => emit(\"currentItemsChanged\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"search\": \"rev\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"showSelect\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"selectStrategy\": \"page\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"showExpand\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"expandOnClick\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"noDataText\": \"No reports\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"loading\": \"primary\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"loadingText\": \"Loading reports\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"multiSort\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"mustSort\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"sortAscIcon\": \"$sortAsc\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"sortDescIcon\": \"$sortDesc\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"fixedHeader\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"fixedFooter\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"hover\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 420");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"100%\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"headerProps\": { class: \"report-header\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"rowProps\": { \"data-row-kind\": \"report\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"cellProps\": { class: \"report-cell\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"itemsPerPageText\": \"Rows\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"pageText\": \"{0}-{1} of {2}\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"showCurrentPage\": true");
+        StringAssert.Contains(artifact.ModuleCode, "top: (context) => props.tableTop(context)");
+        StringAssert.Contains(artifact.ModuleCode, "headers: (context) => props.headers(context)");
+        StringAssert.Contains(artifact.ModuleCode, "\"header.data-table-select\": (context) => props.headerSelect(context)");
+        StringAssert.Contains(artifact.ModuleCode, "item: (context) => props.item(context)");
+        StringAssert.Contains(artifact.ModuleCode, "\"footer.prepend\": () => props.footerPrepend");
+        StringAssert.Contains(artifact.ModuleCode, "\"no-data\": () => props.noData");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 

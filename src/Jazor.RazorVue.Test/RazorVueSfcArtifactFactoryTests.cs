@@ -2071,6 +2071,58 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersLibrarySlotNamesWithDots_ToVueSlotTemplates()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/report-table")]
+                public class ReportTable : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VDataTableHeaderCellSlotContext>? HeaderSelect { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? FooterPrepend { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDataTable>(0);
+                        builder.AddAttribute(1, nameof(VDataTable.HeaderSelect), HeaderSelect);
+                        builder.AddAttribute(2, nameof(VDataTable.FooterPrepend), FooterPrepend);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "ReportTable");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template #[`header.data-table-select`]=\"context\">");
+        StringAssert.Contains(artifact.TemplateText, "<slot name=\"headerSelect\" v-bind=\"context\" />");
+        StringAssert.Contains(artifact.TemplateText, "<template #[`footer.prepend`]>");
+        StringAssert.Contains(artifact.TemplateText, "<slot name=\"footerPrepend\" />");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersInlineTypedSlotTemplate_ToNestedScopedSlotTemplate()
     {
         var context = CreateContext(

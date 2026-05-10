@@ -149,12 +149,12 @@
 | `VList` | `Items`, `ItemTitle`, `ItemValue`, `ItemChildren`, `ItemProps`, `ItemType`, `BaseColor`, `ActiveColor`, `ActiveClass`, `BgColor`, `Color`, `ExpandIcon`, `CollapseIcon`, `Lines`, `Slim`, `Density`, `Nav`, `Disabled`, `Variant`, `Rounded`, `Elevation`, `Height/Width/Min*/Max*`, `ChildContent` | `A` | `selectStrategy` / opened/selected 等高级嵌套状态按真实业务继续建模 |
 | `VListItem` | `Title`, `Subtitle`, `Value`, `PrependIcon`, `AppendIcon`, `PrependAvatar`, `AppendAvatar`, `Active`, `ActiveClass`, `BaseColor`, `Color`, `Disabled`, `Lines`, `Link`, `Nav`, `Ripple`, `Slim`, `Density`, `Height/Width/Min*/Max*`, `Elevation`, `Rounded`, `Href`, `To`, `Replace`, `Exact`, `Variant`, `OnClick`, `Prepend`, `Append`, `TitleContent`, `SubtitleContent`, `ChildContent` | `A` | router object-form `To` 与更多 slot context 字段按需求扩展 |
 | `VBreadcrumbs` | `Items`, `Divider`, `Disabled`, `ChildContent` | `B` | `ItemTitle`, `ItemValue`, `Density`, `ActiveClass` |
-| `VDataTable` | `Headers`, `Items`, `Dense`, `ItemKey`, `ChildContent` | `C` | 强类型 `Header`/`Item` surface，排序、分页、命名槽、row/header slot |
+| `VDataTable` | `ModelValue`, `ModelValueChanged`, `Headers`, `Items`, `ItemValue`, `ItemSelectable`, `ReturnObject`, `Page`, `PageChanged`, `ItemsPerPage`, `ItemsPerPageChanged`, `ItemsPerPageOptions`, `SortBy`, `SortByChanged`, `GroupBy`, `GroupByChanged`, `Expanded`, `ExpandedChanged`, `OptionsChanged`, `CurrentItemsChanged`, `Search`, `ShowSelect`, `SelectStrategy`, `ShowExpand`, `ExpandOnClick`, `HideDefaultBody`, `HideDefaultFooter`, `HideDefaultHeader`, `HideNoData`, `NoDataText`, `Loading`, `LoadingText`, `DisableSort`, `MultiSort`, `MustSort`, `SortAscIcon`, `SortDescIcon`, `Color`, `Density`, `Dense`, `FixedHeader`, `FixedFooter`, `Hover`, `Height`, `Width`, `ItemKey`, `HeaderProps`, `RowProps`, `CellProps`, pagination icon/text props, `Top`, `Colgroup`, `HeadersContent`, `HeaderSelect`, `HeaderExpand`, `BodyContent`, `BodyPrepend`, `BodyAppend`, `ItemContent`, `GroupHeader`, `ExpandedRow`, `Tbody`, `Thead`, `Tfoot`, `Bottom`, `FooterPrepend`, `LoadingContent`, `NoData`, `ChildContent` | `A` | server-side table、virtual table、深度分组和每列 `item.<key>` 动态 slot 仍按业务继续建模 |
 | `VPagination` | `ModelValue`, `ModelValueChanged`, `Length`, `TotalVisible`, `Disabled` | `B` | `Density`, `Rounded`, `Color`, `Variant` |
 
 判断：
 
-- `VDataTable` 当前更像“证明最小输入面存在”，距离复杂业务表格还很远；
+- `VDataTable` 已覆盖常规业务表格主路径：headers/items、选择、展开、分页、排序、loading/no-data、表头/行/页脚命名槽；服务端数据表、虚拟表格与动态列级 slot 后续按业务推进；
 - `VList` / `VListItem` 已能满足简单展示，但槽能力仍偏弱。
 
 ### 3.5 媒体与状态展示
