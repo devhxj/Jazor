@@ -639,6 +639,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (StructuralRecordSupport.IsStructuralRecordRuntimeSemanticInvocation(operation as IInvocationOperation))
             return false;
 
+        if (IsSupportedStructuralRecordProxyMember(symbol, hostType))
+            return true;
+
         if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(symbol, hostType))
             return false;
 
@@ -661,6 +664,37 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             return true;
 
         return !RequiresExplicitExternalMemberSupport(operation, symbol, hostType);
+    }
+
+    private static bool IsSupportedStructuralRecordProxyMember(ISymbol symbol, ITypeSymbol? hostType)
+    {
+        var effectiveHost = hostType ?? symbol.ContainingType;
+        if (!StructuralRecordSupport.IsStructuralRecordType(effectiveHost))
+            return false;
+
+        if (!HasEcmascriptSupportMarker(effectiveHost) &&
+            (effectiveHost is not INamedTypeSymbol namedHost || !HasEcmascriptSupportMarkerBaseType(namedHost)))
+        {
+            return false;
+        }
+
+        var property = symbol switch
+        {
+            IPropertySymbol propertySymbol => propertySymbol,
+            IMethodSymbol { AssociatedSymbol: IPropertySymbol propertySymbol } => propertySymbol,
+            _ => null
+        };
+
+        if (property is null)
+            return false;
+
+        // ECMAScript record proxies such as Vue attribute/listener bags intentionally
+        // expose raw JS indexers on top of record structural lowering. Keep ordinary
+        // CLR record runtime members rejected.
+        return property.IsIndexer ||
+               property.Parameters.Length > 0 ||
+               property.GetMethod?.IsExtern == true ||
+               property.SetMethod?.IsExtern == true;
     }
 
     private static bool HasEcmascriptSupportMarker(ISymbol symbol)

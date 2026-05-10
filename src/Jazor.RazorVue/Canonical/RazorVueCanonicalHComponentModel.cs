@@ -213,5 +213,6 @@ internal enum RazorVueCanonicalAttributeKind
 {
     HtmlAttribute,
     ComponentProp,
-    ComponentEvent
+    ComponentEvent,
+    ComponentFallthroughAttribute
 }

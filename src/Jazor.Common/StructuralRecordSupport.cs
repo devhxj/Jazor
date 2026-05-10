@@ -33,16 +33,46 @@ public static class StructuralRecordSupport
 		if (property.IsAbstract)
 			return true;
 
+		if (!IsSourceDeclaredProperty(property) &&
+			IsMetadataStructuralSettableProperty(property))
+		{
+			return true;
+		}
+
 		foreach (var member in containingType.GetMembers())
 		{
 			if (member is IFieldSymbol { IsStatic: false } field &&
-				SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property))
+				IsBackingFieldForProperty(field, property))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private static bool IsSourceDeclaredProperty(IPropertySymbol property)
+		=> property.Locations.Any(static location => location.IsInSource);
+
+	private static bool IsMetadataStructuralSettableProperty(IPropertySymbol property)
+	{
+		var setMethod = property.SetMethod;
+		return setMethod is not null &&
+			   !setMethod.IsExtern &&
+			   property.Parameters.Length == 0;
+	}
+
+	private static bool IsBackingFieldForProperty(IFieldSymbol field, IPropertySymbol property)
+	{
+		if (SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, property))
+			return true;
+
+		// Metadata-only auto-properties can lose the AssociatedSymbol link. Keep this
+		// fallback narrow so computed record properties do not become structural data.
+		return string.Equals(
+			field.Name,
+			$"<{property.Name}>k__BackingField",
+			StringComparison.Ordinal);
 	}
 
 	public static bool IsNonStructuralRecordRuntimeMember(ISymbol? symbol, ITypeSymbol? hostType = null)

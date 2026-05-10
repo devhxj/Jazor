@@ -54,9 +54,12 @@ internal sealed partial class RazorVueExpressionEmitter
     {
         _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
+        _componentPropsByPublicName.TryGetValue(component.ComponentName, out var propsByPublicName);
+        _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
 
         // Library components only accept default child content when the stub
         // explicitly exposes ChildContent as part of the authoring contract.
+        ValidateComponentAuthoringAttributes(component, propsByPublicName, slotsByPublicName, emitDescriptorsByAlias);
         ValidateDefaultLibrarySlotUsage(component, descriptor, slotsByPublicName);
         ValidateDuplicateLibrarySlotUsage(component, descriptor, slotsByPublicName);
 
@@ -267,10 +270,6 @@ internal sealed partial class RazorVueExpressionEmitter
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
         _resolvedComponents.TryGetValue(component.ComponentName, out var resolvedDescriptor);
 
-        // Library stubs are explicit authoring contracts, so invalid parameters
-        // should fail at compile-time instead of silently falling through to attrs.
-        ValidateComponentAuthoringAttributes(component, propsByPublicName, slotsByPublicName, emitDescriptorsByAlias);
-
         var segments = new List<string>();
         var objectEntries = new List<string>();
         var containsSpread = false;
@@ -363,8 +362,7 @@ internal sealed partial class RazorVueExpressionEmitter
         ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias)
     {
         if (!_resolvedComponents.TryGetValue(component.ComponentName, out var descriptor) ||
-            descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
-            component.Attributes.IsDefaultOrEmpty)
+            descriptor.SourceKind != VueComponentSourceKind.LibraryComponent)
         {
             return;
         }
@@ -375,6 +373,7 @@ internal sealed partial class RazorVueExpressionEmitter
             .ToImmutableHashSet(StringComparer.Ordinal);
 
         ValidateInvalidBindTargets(component, descriptor, propsByPublicName, emitsByAlias, attributeNames);
+        ValidateDuplicateMappedComponentAttributes(component, descriptor, propsByPublicName, emitsByAlias);
 
         foreach (var attributeEntry in component.Attributes)
         {
@@ -415,6 +414,12 @@ internal sealed partial class RazorVueExpressionEmitter
                     attribute);
             }
 
+            if (HasCaptureUnmatchedValuesProp(propsByPublicName) &&
+                RazorVueCaptureUnmatchedAttributePolicy.CanCaptureExplicitAttribute(attribute.Name))
+            {
+                continue;
+            }
+
             throw CreateAuthoringIssue(
                 RazorVueIssueCode.UnknownParameter,
                 $"Component '{descriptor.Name}' does not declare a parameter named '{attribute.Name}'.",
@@ -450,6 +455,69 @@ internal sealed partial class RazorVueExpressionEmitter
                     slotTemplate.Origins.IsDefaultOrEmpty ? null : slotTemplate.Origins[0]);
             }
         }
+    }
+
+    private static bool HasCaptureUnmatchedValuesProp(ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName)
+        => propsByPublicName?.Values.Any(static prop => prop.CaptureUnmatchedValues) == true;
+
+    private void ValidateDuplicateMappedComponentAttributes(
+        RazorVueComponentNode component,
+        VueComponentDescriptor descriptor,
+        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
+        ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias)
+    {
+        var mappedAttributes = new Dictionary<string, RazorVueAttributeNode>(StringComparer.Ordinal);
+        foreach (var attributeEntry in component.Attributes)
+        {
+            if (attributeEntry is not RazorVueAttributeNode attribute)
+                continue;
+
+            if (propsByPublicName is not null &&
+                propsByPublicName.TryGetValue(attribute.Name, out var propDescriptor))
+            {
+                ValidateUniqueMappedAttribute(
+                    descriptor,
+                    mappedAttributes,
+                    "prop:" + propDescriptor.Name,
+                    "Vue prop",
+                    propDescriptor.Name,
+                    attribute);
+                continue;
+            }
+
+            if (emitsByAlias is not null &&
+                emitsByAlias.TryGetValue(attribute.Name, out var emitDescriptor))
+            {
+                ValidateUniqueMappedAttribute(
+                    descriptor,
+                    mappedAttributes,
+                    "emit:" + emitDescriptor.Name,
+                    "Vue event",
+                    emitDescriptor.Name,
+                    attribute);
+            }
+        }
+    }
+
+    private void ValidateUniqueMappedAttribute(
+        VueComponentDescriptor descriptor,
+        Dictionary<string, RazorVueAttributeNode> mappedAttributes,
+        string mappedKey,
+        string mappedKind,
+        string mappedName,
+        RazorVueAttributeNode attribute)
+    {
+        if (!mappedAttributes.ContainsKey(mappedKey))
+        {
+            mappedAttributes.Add(mappedKey, attribute);
+            return;
+        }
+
+        var firstAttribute = mappedAttributes[mappedKey];
+        throw CreateAuthoringIssue(
+            RazorVueIssueCode.UnknownParameter,
+            $"Component '{descriptor.Name}' receives both '{firstAttribute.Name}' and '{attribute.Name}', but both map to {mappedKind} '{mappedName}'. Use only one authoring parameter for that target.",
+            attribute);
     }
 
     private void ValidateInvalidBindTargets(
