@@ -7,7 +7,7 @@
 
 # Jazor - C# 到 JavaScript 编译器
 
-[![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-11.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 [![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
 
@@ -18,7 +18,7 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 
 ## 特性
 
-- **C# 语法覆盖** — 基本支持 C# 14 全部语言特性：变量声明、基础类型、模式匹配、可空类型、async/await、字符串插值、对象和集合初始化、元组与解构、switch 语句/表达式，以及循环（for/foreach/while/do-while）
+- **C# 语法覆盖** — 基本支持 C# 15 全部语言特性：变量声明、基础类型、模式匹配、可空类型、async/await、字符串插值、对象和集合初始化、元组与解构、switch 语句/表达式，以及循环（for/foreach/while/do-while）
 - **Roslyn `IOperation` lowering** — 通过 `IOperation` → ECMAScript AST 的语义驱动编译，而非语法层面的翻译
 - **静态分析安全** — `Jazor.Analyzer` 在编译期强制执行白名单边界，在不支持的类型和成员进入发射之前即诊断报错
 - **CLR 运行时模块** — 常见 BCL 类型（`string`、`int`、`double`、`List<T>`、`Dictionary<TKey, TValue>`、`Task<T>` 等）通过 `Jazor.CLR` 映射到 JavaScript 运行时实现
@@ -26,6 +26,7 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 - **Vue 3 集成** — `ECMAScript.Vue3` 提供 Vue 3 Composition API 和 `h()` 渲染函数的类型化 C# 绑定，支持纯 C# 编写组件
 - **Pinia 集成** — `ECMAScript.Pinia` 提供 Pinia 根实例和 store authoring 的类型化 C# 绑定，包括 `createPinia()`、`defineStore()`、`storeToRefs()`，以及 `mapState()` / `mapActions()` 等常用 Options API helper
 - **Vue Router 集成** — `ECMAScript.VueRoute` 提供 Vue Router 4 authoring 的类型化 C# 绑定，包括 `createRouter()`、history 创建函数、`useRouter()`、`useRoute()`、`RouterLink` 与 `RouterView`
+- **Vuetify 集成** — `ECMAScript.Vuetify` 提供 Vuetify 3 组件 authoring 的生产级类型化 C# 绑定，包括强类型 props、命名槽、事件绑定和完整运行时导出覆盖
 - **MSBuild 集成** — 通过标准 MSBuild 属性配置发射、打包和输出路径
 
 ## 项目状态
@@ -38,15 +39,15 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 <tr><td nowrap><strong>已可用</strong></td><td>MSBuild 集成（JazorEmit、JazorBundle、JazorOutDir）</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>Jazor.Analyzer（白名单编译时验证）</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>CLR 运行时模块 — 70 测试</td><td>稳定</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>RazorVue（SFC 管线、规范 h() 模型）— 64+ 测试</td><td>已提取为独立项目，for-loop lowering 进行中</td></tr>
+<tr><td nowrap><strong>进行中</strong></td><td>RazorVue（SFC 管线、规范 h() 模型、Vuetify 生产级覆盖）— 400+ 测试</td><td>生产级 Vuetify authoring、管线验证、槽/fallthrough 支持</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 80 测试</td><td>初始落地，API 覆盖持续扩展</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>SourceMap</td><td>局部可用 — 模块级 <code>.mjs.map</code>，尚未全覆盖</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>Deno 打包</td><td><code>JazorBundle</code> 目标支持基本场景</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>调试</td><td>设计和里程碑代码已就位，尚未面向用户</td></tr>
-<tr><td nowrap><strong>远期</strong></td><td>Jolt（LSP、HMR、DevServer、调试、构建）— 774 测试</td><td>Phase 1–6 收口中，<a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
+<tr><td nowrap><strong>远期</strong></td><td>Jolt（LSP、HMR、DevServer、调试、构建）— 800+ 测试</td><td>Phase 1–6 收口中，<a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
 </table>
 
-当前用户应基于**已可用**层进行开发。29 项目 · ~122K 生产代码 · ~164K 测试代码 · ~3,000 总测试。
+当前用户应基于**已可用**层进行开发。29 项目 · ~130K 生产代码 · ~180K 测试代码 · ~3,500+ 总测试。
 
 ---
 
@@ -69,7 +70,7 @@ Jazor 推荐使用多项目布局：库项目声明模块，宿主项目负责�
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <JazorEmit>false</JazorEmit>
   </PropertyGroup>
   <ItemGroup>
@@ -84,7 +85,7 @@ Jazor 推荐使用多项目布局：库项目声明模块，宿主项目负责�
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <JazorEmit>true</JazorEmit>
     <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
   </PropertyGroup>
@@ -232,7 +233,7 @@ Jazor/
 ## 开发和构建
 
 ### 环境要求
-- .NET 10 SDK
+- .NET 11 SDK（预览版）
 - PowerShell 7+（用于测试脚本）
 - Windows、Linux 或 macOS
 
