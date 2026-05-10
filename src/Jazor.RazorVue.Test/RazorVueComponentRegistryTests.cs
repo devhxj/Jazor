@@ -303,7 +303,7 @@ public sealed class RazorVueComponentRegistryTests
             """);
 
         var registry = context.CreateComponentRegistry();
-        foreach (var componentName in new[] { "VAlert", "VAutocomplete", "VAvatar", "VBadge", "VBtn", "VCard", "VCardText", "VCardTitle", "VCheckbox", "VChip", "VCol", "VContainer", "VDialog", "VDivider", "VForm", "VIcon", "VList", "VListItem", "VMenu", "VProgressCircular", "VProgressLinear", "VRadioGroup", "VRow", "VSelect", "VSheet", "VSnackbar", "VSpacer", "VSwitch", "VTab", "VTabs", "VTextField", "VTextarea", "VToolbar", "VToolbarTitle" })
+        foreach (var componentName in VuetifyTestMetadata.RuntimeComponentExportNames)
         {
             var result = registry.Resolve(
                 componentName,
@@ -372,4 +372,3 @@ public sealed class RazorVueComponentRegistryTests
         return context;
     }
 }
-

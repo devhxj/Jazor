@@ -10338,7 +10338,7 @@ public sealed class ESGeneratorTests
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VBtn>(0);
-                        builder.AddAttribute(1, "Variant", "flat");
+                        builder.AddAttribute(1, "DefinitelyMissing", "flat");
                         builder.CloseComponent();
                     }
                 }
@@ -10357,7 +10357,62 @@ public sealed class ESGeneratorTests
 
         Assert.AreEqual(1, diagnostics.Length);
         StringAssert.Contains(diagnostics[0].GetMessage(), "VBtn");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Variant");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "DefinitelyMissing");
+        Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+    }
+
+    [TestMethod]
+    public void GenerateCatalog_WithDuplicateLibraryMappedParameter_ReportsJAZORVGA007()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.DuplicateLibraryMappedParameter.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/select-host")]
+                public class SelectHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VSelect>(0);
+                        builder.AddAttribute(1, nameof(VSelect.ModelValue), "admin");
+                        builder.AddAttribute(2, nameof(VSelect.SelectedValue), VuetifySelectModelValue.From("user"));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(VSelect).Assembly.Location),
+			MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id == "JAZORVGA007")
+            .ToArray();
+
+        Assert.AreEqual(1, diagnostics.Length);
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VSelect");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "ModelValue");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "SelectedValue");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "modelValue");
         Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
 

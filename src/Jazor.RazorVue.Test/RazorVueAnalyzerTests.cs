@@ -497,13 +497,54 @@ public sealed class RazorVueAnalyzerTests
                 protected override void BuildRenderTree(RenderTreeBuilder builder)
                 {
                     builder.OpenComponent<VBtn>(0);
-                    builder.AddAttribute(1, "Href", "#");
+                    builder.AddAttribute(1, "DefinitelyMissing", "#");
                     builder.CloseComponent();
                 }
             }
             """);
 
         AssertHasDiagnostic(diagnostics, "JAZORVUE007");
+    }
+
+    [TestMethod]
+    public async Task RazorVue_Misuse_DuplicateLibraryMappedParameter_ReportsJAZORVUE007()
+    {
+        var diagnostics = await GetAnalyzerDiagnosticsAsync(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            [ECMAScript.ECMAScriptModule]
+            public class InvalidComponent : ComponentBase, IVueComponent
+            {
+                protected override void BuildRenderTree(RenderTreeBuilder builder)
+                {
+                    builder.OpenComponent<VSelect>(0);
+                    builder.AddAttribute(1, nameof(VSelect.ModelValue), "admin");
+                    builder.AddAttribute(2, nameof(VSelect.SelectedValue), VuetifySelectModelValue.From("user"));
+                    builder.CloseComponent();
+                }
+            }
+            """);
+
+        AssertHasDiagnostic(diagnostics, "JAZORVUE007");
+        var diagnostic = diagnostics.Single(static diagnostic => diagnostic.Id == "JAZORVUE007");
+        StringAssert.Contains(diagnostic.GetMessage(), "ModelValue");
+        StringAssert.Contains(diagnostic.GetMessage(), "SelectedValue");
+        StringAssert.Contains(diagnostic.GetMessage(), "modelValue");
     }
 
     [TestMethod]

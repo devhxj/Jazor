@@ -1081,63 +1081,71 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(3, nameof(VBtn.Color), "primary");
                         builder.AddAttribute(4, nameof(VBtn.Variant), VuetifyVariant.Flat);
                         builder.AddAttribute(5, nameof(VBtn.Size), "large");
-                        builder.AddAttribute(6, nameof(VBtn.Loading), true);
+                        builder.AddAttribute(6, nameof(VBtn.Loading), "accent");
                         builder.AddAttribute(7, nameof(VBtn.Block), true);
                         builder.AddAttribute(8, nameof(VBtn.Href), "/orders");
                         builder.AddAttribute(9, nameof(VBtn.Target), "_blank");
-                        builder.AddMultipleAttributes(10, AdditionalAttributes);
+                        builder.AddAttribute(10, nameof(VBtn.PrependIcon), "$save");
+                        builder.AddAttribute(11, nameof(VBtn.Height), 48);
+                        builder.AddAttribute(12, nameof(VBtn.Width), "100%");
+                        builder.AddAttribute(13, nameof(VBtn.Rounded), "xl");
+                        builder.AddAttribute(14, nameof(VBtn.Elevation), 2);
+                        builder.AddMultipleAttributes(15, AdditionalAttributes);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VTextField>(11);
-                        builder.AddAttribute(12, nameof(VTextField.Label), "Email");
-                        builder.AddAttribute(13, nameof(VTextField.Placeholder), "name@example.com");
-                        builder.AddAttribute(14, nameof(VTextField.Hint), "Work email");
-                        builder.AddAttribute(15, nameof(VTextField.PersistentHint), true);
-                        builder.AddAttribute(16, nameof(VTextField.Readonly), true);
-                        builder.AddAttribute(17, nameof(VTextField.Clearable), true);
-                        builder.AddAttribute(18, nameof(VTextField.Variant), VuetifyFieldVariant.Outlined);
-                        builder.AddAttribute(19, nameof(VTextField.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(20, nameof(VTextField.Type), "email");
-                        builder.AddAttribute(21, nameof(VTextField.ModelValue), ModelValue);
-                        builder.AddAttribute(22, nameof(VTextField.ModelValueChanged), ModelValueChanged);
-                        builder.AddMultipleAttributes(23, AdditionalAttributes);
+                        builder.OpenComponent<VTextField>(16);
+                        builder.AddAttribute(17, nameof(VTextField.Label), "Email");
+                        builder.AddAttribute(18, nameof(VTextField.Placeholder), "name@example.com");
+                        builder.AddAttribute(19, nameof(VTextField.Hint), "Work email");
+                        builder.AddAttribute(20, nameof(VTextField.PersistentHint), true);
+                        builder.AddAttribute(21, nameof(VTextField.Readonly), true);
+                        builder.AddAttribute(22, nameof(VTextField.Clearable), true);
+                        builder.AddAttribute(23, nameof(VTextField.Variant), VuetifyFieldVariant.Outlined);
+                        builder.AddAttribute(24, nameof(VTextField.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(25, nameof(VTextField.Type), "email");
+                        builder.AddAttribute(26, nameof(VTextField.ModelValue), ModelValue);
+                        builder.AddAttribute(27, nameof(VTextField.ModelValueChanged), ModelValueChanged);
+                        builder.AddAttribute(28, nameof(VTextField.Counter), true);
+                        builder.AddMultipleAttributes(29, AdditionalAttributes);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VTextarea>(24);
-                        builder.AddAttribute(25, nameof(VTextarea.Label), "Notes");
-                        builder.AddAttribute(26, nameof(VTextarea.Rows), 4);
-                        builder.AddAttribute(27, nameof(VTextarea.Placeholder), "Add context");
-                        builder.AddAttribute(28, nameof(VTextarea.Hint), "Visible to approvers");
-                        builder.AddAttribute(29, nameof(VTextarea.PersistentHint), true);
-                        builder.AddAttribute(30, nameof(VTextarea.Readonly), true);
-                        builder.AddAttribute(31, nameof(VTextarea.AutoGrow), true);
-                        builder.AddAttribute(32, nameof(VTextarea.Counter), 280);
-                        builder.AddAttribute(33, nameof(VTextarea.Variant), VuetifyFieldVariant.Filled);
-                        builder.AddAttribute(34, nameof(VTextarea.Density), VuetifyDensity.Compact);
-                        builder.AddAttribute(35, nameof(VTextarea.ModelValue), ModelValue);
-                        builder.AddAttribute(36, nameof(VTextarea.ModelValueChanged), ModelValueChanged);
-                        builder.AddMultipleAttributes(37, AdditionalAttributes);
+                        builder.OpenComponent<VTextarea>(30);
+                        builder.AddAttribute(31, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(32, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(33, nameof(VTextarea.Placeholder), "Add context");
+                        builder.AddAttribute(34, nameof(VTextarea.Hint), "Visible to approvers");
+                        builder.AddAttribute(35, nameof(VTextarea.PersistentHint), true);
+                        builder.AddAttribute(36, nameof(VTextarea.Readonly), true);
+                        builder.AddAttribute(37, nameof(VTextarea.AutoGrow), true);
+                        builder.AddAttribute(38, nameof(VTextarea.Counter), 280);
+                        builder.AddAttribute(39, nameof(VTextarea.Variant), VuetifyFieldVariant.Filled);
+                        builder.AddAttribute(40, nameof(VTextarea.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(41, nameof(VTextarea.ModelValue), ModelValue);
+                        builder.AddAttribute(42, nameof(VTextarea.ModelValueChanged), ModelValueChanged);
+                        builder.AddAttribute(43, nameof(VTextarea.MaxRows), "8");
+                        builder.AddMultipleAttributes(44, AdditionalAttributes);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VCheckbox>(38);
-                        builder.AddAttribute(39, nameof(VCheckbox.Label), "Active");
-                        builder.AddAttribute(40, nameof(VCheckbox.ModelValue), true);
-                        builder.AddAttribute(41, nameof(VCheckbox.Color), "success");
-                        builder.AddAttribute(42, nameof(VCheckbox.Density), VuetifyDensity.Compact);
-                        builder.AddAttribute(43, nameof(VCheckbox.Readonly), true);
-                        builder.AddAttribute(44, nameof(VCheckbox.HideDetails), VuetifyHideDetailsValue.From(true));
-                        builder.AddMultipleAttributes(45, AdditionalAttributes);
+                        builder.OpenComponent<VCheckbox>(45);
+                        builder.AddAttribute(46, nameof(VCheckbox.Label), "Active");
+                        builder.AddAttribute(47, nameof(VCheckbox.ModelValue), true);
+                        builder.AddAttribute(48, nameof(VCheckbox.Color), "success");
+                        builder.AddAttribute(49, nameof(VCheckbox.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(50, nameof(VCheckbox.Readonly), true);
+                        builder.AddAttribute(51, nameof(VCheckbox.HideDetails), VuetifyHideDetailsValue.From(true));
+                        builder.AddMultipleAttributes(52, AdditionalAttributes);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VSwitch>(46);
-                        builder.AddAttribute(47, nameof(VSwitch.Label), "Notifications");
-                        builder.AddAttribute(48, nameof(VSwitch.ModelValue), true);
-                        builder.AddAttribute(49, nameof(VSwitch.Color), "warning");
-                        builder.AddAttribute(50, nameof(VSwitch.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(51, nameof(VSwitch.Readonly), true);
-                        builder.AddAttribute(52, nameof(VSwitch.Inset), true);
-                        builder.AddAttribute(53, nameof(VSwitch.HideDetails), VuetifyHideDetailsValue.From(true));
-                        builder.AddMultipleAttributes(54, AdditionalAttributes);
+                        builder.OpenComponent<VSwitch>(53);
+                        builder.AddAttribute(54, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(55, nameof(VSwitch.ModelValue), true);
+                        builder.AddAttribute(56, nameof(VSwitch.Color), "warning");
+                        builder.AddAttribute(57, nameof(VSwitch.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(58, nameof(VSwitch.Readonly), true);
+                        builder.AddAttribute(59, nameof(VSwitch.Inset), true);
+                        builder.AddAttribute(60, nameof(VSwitch.HideDetails), VuetifyHideDetailsValue.From(true));
+                        builder.AddAttribute(61, nameof(VSwitch.Loading), "warning");
+                        builder.AddMultipleAttributes(62, AdditionalAttributes);
                         builder.CloseComponent();
 
                         builder.CloseElement();
@@ -1154,19 +1162,22 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
         StringAssert.Contains(
             artifact.ModuleCode,
-            "h(VBtnComponent, __jazorVueMergeAttributes({ \"text\": \"Save\", \"color\": \"primary\", \"variant\": \"flat\", \"size\": \"large\", \"loading\": true, \"block\": true, \"href\": \"/orders\", \"target\": \"_blank\" }, props.additionalAttributes))");
+            "h(VBtnComponent, __jazorVueMergeAttributes({ \"text\": \"Save\", \"color\": \"primary\", \"variant\": \"flat\", \"size\": \"large\", \"loading\": \"accent\", \"block\": true, \"href\": \"/orders\", \"target\": \"_blank\", \"prependIcon\": \"$save\", \"height\": 48, \"width\": \"100%\", \"rounded\": \"xl\", \"elevation\": 2 }, props.additionalAttributes))");
         StringAssert.Contains(artifact.ModuleCode, "\"placeholder\": \"name@example.com\"");
         StringAssert.Contains(artifact.ModuleCode, "\"hint\": \"Work email\"");
         StringAssert.Contains(artifact.ModuleCode, "\"persistentHint\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"readonly\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"clearable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"counter\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"outlined\"");
         StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"email\"");
         StringAssert.Contains(artifact.ModuleCode, "\"autoGrow\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"counter\": 280");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxRows\": \"8\"");
         StringAssert.Contains(artifact.ModuleCode, "\"hideDetails\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"loading\": \"warning\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:modelValue\", __value)");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -1382,6 +1393,223 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyAdvancedInputComponentsWithStrongProps()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-input-lab")]
+                public class VuetifyInputLab : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Tags { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> TagsChanged { get; set; }
+
+                    [Parameter]
+                    public VuetifyFileModelValue? Attachment { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyFileModelValue?> AttachmentChanged { get; set; }
+
+                    [Parameter]
+                    public Number? Quantity { get; set; }
+
+                    [Parameter]
+                    public EventCallback<Number?> QuantityChanged { get; set; }
+
+                    [Parameter]
+                    public string? Otp { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> OtpChanged { get; set; }
+
+                    [Parameter]
+                    public string? Choice { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ChoiceChanged { get; set; }
+
+                    [Parameter]
+                    public Number? Volume { get; set; }
+
+                    [Parameter]
+                    public EventCallback<Number?> VolumeChanged { get; set; }
+
+                    [Parameter]
+                    public VuetifyRangeSliderModelValue? Range { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyRangeSliderModelValue?> RangeChanged { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        builder.OpenComponent<VCombobox>(1);
+                        builder.AddAttribute(2, nameof(VCombobox.Label), "Tags");
+                        builder.AddAttribute(3, nameof(VCombobox.Items), new VuetifySelectItemValue[]
+                        {
+                            "alpha",
+                            "beta"
+                        });
+                        builder.AddAttribute(4, nameof(VCombobox.AutoSelectFirst), VuetifyAutoSelectFirstMode.Exact);
+                        builder.AddAttribute(5, nameof(VCombobox.ClearOnSelect), false);
+                        builder.AddAttribute(6, nameof(VCombobox.Delimiters), new[] { ",", ";" });
+                        builder.AddAttribute(7, nameof(VCombobox.Chips), true);
+                        builder.AddAttribute(8, nameof(VCombobox.Multiple), true);
+                        builder.AddAttribute(9, nameof(VCombobox.HideDetails), VuetifyHideDetailsValue.From(true));
+                        builder.AddAttribute(10, nameof(VCombobox.ModelValue), Tags);
+                        builder.AddAttribute(11, nameof(VCombobox.ModelValueChanged), TagsChanged);
+                        builder.AddMultipleAttributes(12, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VFileInput>(13);
+                        builder.AddAttribute(14, nameof(VFileInput.Label), "Attachment");
+                        builder.AddAttribute(15, nameof(VFileInput.Accept), "image/*");
+                        builder.AddAttribute(16, nameof(VFileInput.Chips), true);
+                        builder.AddAttribute(17, nameof(VFileInput.Counter), true);
+                        builder.AddAttribute(18, nameof(VFileInput.ShowSize), VuetifyFileSizeBase.Binary);
+                        builder.AddAttribute(19, nameof(VFileInput.Multiple), true);
+                        builder.AddAttribute(20, nameof(VFileInput.Variant), VuetifyFieldVariant.Outlined);
+                        builder.AddAttribute(21, nameof(VFileInput.ModelValue), Attachment);
+                        builder.AddAttribute(22, nameof(VFileInput.ModelValueChanged), AttachmentChanged);
+                        builder.AddMultipleAttributes(23, AdditionalAttributes);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VNumberInput>(24);
+                        builder.AddAttribute(25, nameof(VNumberInput.Label), "Quantity");
+                        builder.AddAttribute(26, nameof(VNumberInput.ControlVariant), VuetifyNumberInputControlVariant.Hidden);
+                        builder.AddAttribute(27, nameof(VNumberInput.HideInput), true);
+                        builder.AddAttribute(28, nameof(VNumberInput.Min), 0);
+                        builder.AddAttribute(29, nameof(VNumberInput.Max), 10);
+                        builder.AddAttribute(30, nameof(VNumberInput.Step), 0.5);
+                        builder.AddAttribute(31, nameof(VNumberInput.Precision), 2);
+                        builder.AddAttribute(33, nameof(VNumberInput.ModelValue), Quantity);
+                        builder.AddAttribute(34, nameof(VNumberInput.ModelValueChanged), QuantityChanged);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VOtpInput>(35);
+                        builder.AddAttribute(36, nameof(VOtpInput.Length), 6);
+                        builder.AddAttribute(37, nameof(VOtpInput.FocusAll), true);
+                        builder.AddAttribute(38, nameof(VOtpInput.Type), VuetifyInputType.Password);
+                        builder.AddAttribute(39, nameof(VOtpInput.Variant), VuetifyFieldVariant.Filled);
+                        builder.AddAttribute(40, nameof(VOtpInput.ModelValue), Otp);
+                        builder.AddAttribute(41, nameof(VOtpInput.ModelValueChanged), OtpChanged);
+                        builder.AddAttribute(70, nameof(VOtpInput.Divider), "-");
+                        builder.AddAttribute(73, nameof(VOtpInput.Loading), "primary");
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VRadio>(42);
+                        builder.AddAttribute(43, nameof(VRadio.Label), "Email");
+                        builder.AddAttribute(44, nameof(VRadio.Value), "email");
+                        builder.AddAttribute(45, nameof(VRadio.Color), "primary");
+                        builder.AddAttribute(46, nameof(VRadio.ModelValue), Choice);
+                        builder.AddAttribute(47, nameof(VRadio.ModelValueChanged), ChoiceChanged);
+                        builder.AddAttribute(71, nameof(VRadio.FalseIcon), "$radioOff");
+                        builder.AddAttribute(72, nameof(VRadio.TrueIcon), "$radioOn");
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VSlider>(48);
+                        builder.AddAttribute(49, nameof(VSlider.Label), "Volume");
+                        builder.AddAttribute(50, nameof(VSlider.Min), 0);
+                        builder.AddAttribute(51, nameof(VSlider.Max), 100);
+                        builder.AddAttribute(52, nameof(VSlider.Step), 5);
+                        builder.AddAttribute(53, nameof(VSlider.ThumbLabel), VuetifyAlwaysMode.Always);
+                        builder.AddAttribute(54, nameof(VSlider.ShowTicks), true);
+                        builder.AddAttribute(55, nameof(VSlider.ModelValue), Volume);
+                        builder.AddAttribute(56, nameof(VSlider.ModelValueChanged), VolumeChanged);
+                        builder.AddAttribute(57, nameof(VSlider.Direction), VuetifySliderDirection.Vertical);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VRangeSlider>(58);
+                        builder.AddAttribute(59, nameof(VRangeSlider.Label), "Range");
+                        builder.AddAttribute(60, nameof(VRangeSlider.Min), 0);
+                        builder.AddAttribute(61, nameof(VRangeSlider.Max), 100);
+                        builder.AddAttribute(62, nameof(VRangeSlider.Step), 10);
+                        builder.AddAttribute(63, nameof(VRangeSlider.TrackColor), "grey");
+                        builder.AddAttribute(64, nameof(VRangeSlider.ThumbColor), "primary");
+                        builder.AddAttribute(65, nameof(VRangeSlider.ThumbLabel), true);
+                        builder.AddAttribute(66, nameof(VRangeSlider.ModelValue), Range);
+                        builder.AddAttribute(67, nameof(VRangeSlider.ModelValueChanged), RangeChanged);
+                        builder.AddAttribute(68, nameof(VRangeSlider.ShowTicks), VuetifyAlwaysMode.Always);
+                        builder.AddAttribute(69, nameof(VRangeSlider.Direction), VuetifySliderDirection.Horizontal);
+                        builder.CloseComponent();
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { VCombobox as VComboboxComponent, VFileInput as VFileInputComponent, VNumberInput as VNumberInputComponent, VOtpInput as VOtpInputComponent, VRadio as VRadioComponent, VRangeSlider as VRangeSliderComponent, VSlider as VSliderComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.ModuleCode, "\"autoSelectFirst\": \"exact\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"clearOnSelect\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"delimiters\": [\",\", \";\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"hideDetails\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"accept\": \"image/*\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"counter\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"showSize\": 1024");
+        StringAssert.Contains(artifact.ModuleCode, "\"controlVariant\": \"hidden\"");
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"controlVariantHidden\"", StringComparison.Ordinal), artifact.ModuleCode);
+        StringAssert.Contains(artifact.ModuleCode, "\"hideInput\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"step\": 0.5");
+        StringAssert.Contains(artifact.ModuleCode, "\"precision\": 2");
+        StringAssert.Contains(artifact.ModuleCode, "\"length\": 6");
+        StringAssert.Contains(artifact.ModuleCode, "\"divider\": \"-\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"loading\": \"primary\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"focusAll\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"type\": \"password\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": \"email\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"falseIcon\": \"$radioOff\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"trueIcon\": \"$radioOn\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"thumbLabel\": \"always\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"showTicks\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"showTicks\": \"always\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"direction\": \"vertical\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"direction\": \"horizontal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"trackColor\": \"grey\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"thumbColor\": \"primary\"");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:tags\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:attachment\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:quantity\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:otp\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:choice\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:volume\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "emit(\"update:range\", __value)");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyDialogActivatorScopedSlot()
     {
         var context = CreateContext(
@@ -1533,29 +1761,32 @@ public sealed class RazorVuePipelineTests
                     {
                         builder.OpenComponent<VSheet>(0);
                         builder.AddAttribute(1, nameof(VSheet.Color), "surface");
-                        builder.AddAttribute(2, nameof(VSheet.Rounded), true);
-                        builder.AddAttribute(3, nameof(VSheet.Elevation), 2);
-                        builder.OpenComponent<VToolbar>(4);
-                        builder.AddAttribute(5, nameof(VToolbar.Color), "primary");
-                        builder.AddAttribute(6, nameof(VToolbar.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(7, nameof(VToolbar.Flat), true);
-                        builder.AddMultipleAttributes(8, new Dictionary<string, object>
+                        builder.AddAttribute(2, nameof(VSheet.Rounded), "lg");
+                        builder.AddAttribute(3, nameof(VSheet.Elevation), "2");
+                        builder.AddAttribute(4, nameof(VSheet.Height), 320);
+                        builder.AddAttribute(5, nameof(VSheet.Width), "100%");
+                        builder.AddAttribute(6, nameof(VSheet.MaxWidth), 960);
+                        builder.OpenComponent<VToolbar>(7);
+                        builder.AddAttribute(8, nameof(VToolbar.Color), "primary");
+                        builder.AddAttribute(9, nameof(VToolbar.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(10, nameof(VToolbar.Flat), true);
+                        builder.AddMultipleAttributes(11, new Dictionary<string, object>
                         {
                             ["data-surface"] = "toolbar"
                         });
-                        builder.OpenComponent<VToolbarTitle>(7);
-                        builder.AddAttribute(9, nameof(VToolbarTitle.Text), "Preferences");
+                        builder.OpenComponent<VToolbarTitle>(12);
+                        builder.AddAttribute(13, nameof(VToolbarTitle.Text), "Preferences");
                         builder.CloseComponent();
-                        builder.OpenComponent<VSpacer>(10);
+                        builder.OpenComponent<VSpacer>(14);
                         builder.CloseComponent();
-                        builder.OpenComponent<VDivider>(11);
-                        builder.AddAttribute(12, nameof(VDivider.Vertical), true);
-                        builder.AddAttribute(13, nameof(VDivider.Inset), true);
+                        builder.OpenComponent<VDivider>(15);
+                        builder.AddAttribute(16, nameof(VDivider.Vertical), true);
+                        builder.AddAttribute(17, nameof(VDivider.Inset), true);
                         builder.CloseComponent();
-                        builder.OpenComponent<VCheckbox>(14);
-                        builder.AddAttribute(15, nameof(VCheckbox.Label), "Enabled");
-                        builder.AddAttribute(16, nameof(VCheckbox.ModelValue), Enabled);
-                        builder.AddAttribute(17, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
+                        builder.OpenComponent<VCheckbox>(18);
+                        builder.AddAttribute(19, nameof(VCheckbox.Label), "Enabled");
+                        builder.AddAttribute(20, nameof(VCheckbox.ModelValue), Enabled);
+                        builder.AddAttribute(21, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
@@ -1568,8 +1799,11 @@ public sealed class RazorVuePipelineTests
 
         StringAssert.Contains(artifact.ModuleCode, "import { VCheckbox as VCheckboxComponent, VDivider as VDividerComponent, VSheet as VSheetComponent, VSpacer as VSpacerComponent, VToolbar as VToolbarComponent, VToolbarTitle as VToolbarTitleComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"surface\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
-        StringAssert.Contains(artifact.ModuleCode, "\"elevation\": 2");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"lg\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"elevation\": \"2\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 320");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"100%\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 960");
         StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
         StringAssert.Contains(artifact.ModuleCode, "\"flat\": true");
         StringAssert.Contains(artifact.ModuleCode, "new Map([[\"data-surface\", \"toolbar\"]])");
@@ -1646,23 +1880,26 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(13, nameof(VListItem.Subtitle), "Workspace defaults");
                         builder.OpenComponent<VChip>(14);
                         builder.AddAttribute(15, nameof(VChip.Color), "success");
-                        builder.AddAttribute(16, nameof(VChip.Text), "Pinned");
+                        builder.AddAttribute(16, nameof(VChip.Text), true);
                         builder.AddAttribute(17, nameof(VChip.OnClick), OnPin);
+                        builder.AddAttribute(18, nameof(VChip.PrependIcon), "$pin");
+                        builder.AddAttribute(19, nameof(VChip.Size), "small");
+                        builder.AddAttribute(20, nameof(VChip.Rounded), "pill");
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VSwitch>(18);
-                        builder.AddAttribute(19, nameof(VSwitch.Label), "Notifications");
-                        builder.AddAttribute(20, nameof(VSwitch.ModelValue), Enabled);
-                        builder.AddAttribute(21, nameof(VSwitch.ModelValueChanged), EnabledChanged);
+                        builder.OpenComponent<VSwitch>(21);
+                        builder.AddAttribute(22, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(23, nameof(VSwitch.ModelValue), Enabled);
+                        builder.AddAttribute(24, nameof(VSwitch.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VTextarea>(22);
-                        builder.AddAttribute(23, nameof(VTextarea.Label), "Notes");
-                        builder.AddAttribute(24, nameof(VTextarea.Rows), 4);
-                        builder.AddAttribute(25, nameof(VTextarea.ModelValue), Notes);
-                        builder.AddAttribute(26, nameof(VTextarea.ModelValueChanged), NotesChanged);
+                        builder.OpenComponent<VTextarea>(25);
+                        builder.AddAttribute(26, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(27, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(28, nameof(VTextarea.ModelValue), Notes);
+                        builder.AddAttribute(29, nameof(VTextarea.ModelValueChanged), NotesChanged);
                         builder.CloseComponent();
                     }
                 }
@@ -1681,6 +1918,9 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"nav\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"title\": \"General\"");
         StringAssert.Contains(artifact.ModuleCode, "\"subtitle\": \"Workspace defaults\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"prependIcon\": \"$pin\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"pill\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"pin\")");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:enabled\", __value)");
@@ -1748,6 +1988,182 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyApplicationShellComponents()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/application-shell")]
+                public class ApplicationShell : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public bool? DrawerOpen { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool?> DrawerOpenChanged { get; set; }
+
+                    [Parameter]
+                    public bool? Rail { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool?> RailChanged { get; set; }
+
+                    [Parameter]
+                    public bool AppBarOpen { get; set; } = true;
+
+                    [Parameter]
+                    public EventCallback<bool> AppBarOpenChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VApp>(0);
+                        builder.AddAttribute(1, nameof(VApp.FullHeight), true);
+
+                        builder.OpenComponent<VNavigationDrawer>(2);
+                        builder.AddAttribute(3, nameof(VNavigationDrawer.ModelValue), DrawerOpen);
+                        builder.AddAttribute(4, nameof(VNavigationDrawer.ModelValueChanged), DrawerOpenChanged);
+                        builder.AddAttribute(5, nameof(VNavigationDrawer.Rail), Rail);
+                        builder.AddAttribute(6, nameof(VNavigationDrawer.RailChanged), RailChanged);
+                        builder.AddAttribute(7, nameof(VNavigationDrawer.Width), 320);
+                        builder.AddAttribute(8, nameof(VNavigationDrawer.RailWidth), 72);
+                        builder.AddAttribute(9, nameof(VNavigationDrawer.Location), VuetifyNavigationDrawerLocation.Start);
+                        builder.AddAttribute(10, nameof(VNavigationDrawer.Scrim), "#00000066");
+                        builder.AddAttribute(11, nameof(VNavigationDrawer.ExpandOnHover), true);
+                        builder.AddAttribute(12, nameof(VNavigationDrawer.Floating), true);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VAppBar>(13);
+                        builder.AddAttribute(14, nameof(VAppBar.ModelValue), AppBarOpen);
+                        builder.AddAttribute(15, nameof(VAppBar.ModelValueChanged), AppBarOpenChanged);
+                        builder.AddAttribute(16, nameof(VAppBar.Color), "primary");
+                        builder.AddAttribute(17, nameof(VAppBar.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(18, nameof(VAppBar.Height), 56);
+                        builder.AddAttribute(19, nameof(VAppBar.Location), VuetifyAppBarLocation.Top);
+                        builder.AddAttribute(20, nameof(VAppBar.Flat), true);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VMain>(21);
+                        builder.AddAttribute(22, nameof(VMain.Scrollable), true);
+                        builder.AddAttribute(23, nameof(VMain.MinHeight), "100vh");
+                        builder.CloseComponent();
+
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VApp as VAppComponent, VAppBar as VAppBarComponent, VMain as VMainComponent, VNavigationDrawer as VNavigationDrawerComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"fullHeight\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.drawerOpen");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:drawerOpen\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"rail\": props.rail");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:rail\": (__value) => emit(\"update:rail\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": 320");
+        StringAssert.Contains(artifact.ModuleCode, "\"railWidth\": 72");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"start\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"scrim\": \"#00000066\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"expandOnHover\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.appBarOpen");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:appBarOpen\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 56");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"top\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"scrollable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": \"100vh\"");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyRuntimeOnlyAuthoringComponentsWithAdditionalAttributes()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/runtime-only-panel")]
+                public class RuntimeOnlyPanel : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBanner>(0);
+                        builder.AddMultipleAttributes(1, new Dictionary<string, object?>
+                        {
+                            ["class"] = "release-banner",
+                            ["text"] = "System maintenance"
+                        });
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VCalendar>(2);
+                        builder.AddMultipleAttributes(3, new Dictionary<string, object?>
+                        {
+                            ["viewMode"] = "month",
+                            ["color"] = "primary"
+                        });
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VWindow>(4);
+                        builder.AddMultipleAttributes(5, new Dictionary<string, object?>
+                        {
+                            ["style"] = "min-height: 320px",
+                            ["mandatory"] = true
+                        });
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VBanner as VBannerComponent, VCalendar as VCalendarComponent, VWindow as VWindowComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
+        StringAssert.Contains(artifact.ModuleCode, "[\"class\", \"release-banner\"]");
+        StringAssert.Contains(artifact.ModuleCode, "[\"text\", \"System maintenance\"]");
+        StringAssert.Contains(artifact.ModuleCode, "[\"viewMode\", \"month\"]");
+        StringAssert.Contains(artifact.ModuleCode, "[\"color\", \"primary\"]");
+        StringAssert.Contains(artifact.ModuleCode, "[\"style\", \"min-height: 320px\"]");
+        StringAssert.Contains(artifact.ModuleCode, "[\"mandatory\", true]");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyFormAndStatusComposition()
     {
         var context = CreateContext(
@@ -1800,21 +2216,35 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(9, nameof(VMenu.ModelValueChanged), MenuOpenChanged);
                         builder.AddAttribute(10, nameof(VMenu.CloseOnContentClick), false);
                         builder.OpenComponent<VBadge>(11);
-                        builder.AddAttribute(12, nameof(VBadge.Content), "3");
+                        builder.AddAttribute(12, nameof(VBadge.Content), 3);
                         builder.AddAttribute(13, nameof(VBadge.Color), "error");
-                        builder.OpenComponent<VAvatar>(14);
-                        builder.AddAttribute(15, nameof(VAvatar.Color), "primary");
-                        builder.AddAttribute(16, nameof(VAvatar.Size), "large");
+                        builder.AddAttribute(14, nameof(VBadge.Max), "9");
+                        builder.AddAttribute(15, nameof(VBadge.OffsetX), 4);
+                        builder.OpenComponent<VAvatar>(16);
+                        builder.AddAttribute(17, nameof(VAvatar.Color), "primary");
+                        builder.AddAttribute(18, nameof(VAvatar.Size), 48);
+                        builder.AddAttribute(19, nameof(VAvatar.Rounded), true);
+                        builder.AddAttribute(20, nameof(VAvatar.Icon), "$account");
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
-                        builder.OpenComponent<VProgressLinear>(17);
-                        builder.AddAttribute(18, nameof(VProgressLinear.Color), "success");
-                        builder.AddAttribute(19, nameof(VProgressLinear.ModelValue), 64d);
+                        builder.OpenComponent<VProgressLinear>(21);
+                        builder.AddAttribute(22, nameof(VProgressLinear.Color), "success");
+                        builder.AddAttribute(23, nameof(VProgressLinear.BgColor), "surface-variant");
+                        builder.AddAttribute(24, nameof(VProgressLinear.ModelValue), "64");
+                        builder.AddAttribute(25, nameof(VProgressLinear.BufferValue), 90);
+                        builder.AddAttribute(26, nameof(VProgressLinear.Height), 8);
+                        builder.AddAttribute(27, nameof(VProgressLinear.Max), 100);
+                        builder.AddAttribute(28, nameof(VProgressLinear.Stream), true);
+                        builder.AddAttribute(29, nameof(VProgressLinear.Rounded), "pill");
                         builder.CloseComponent();
-                        builder.OpenComponent<VProgressCircular>(20);
-                        builder.AddAttribute(21, nameof(VProgressCircular.Color), "primary");
-                        builder.AddAttribute(22, nameof(VProgressCircular.Indeterminate), true);
+                        builder.OpenComponent<VProgressCircular>(30);
+                        builder.AddAttribute(31, nameof(VProgressCircular.Color), "primary");
+                        builder.AddAttribute(32, nameof(VProgressCircular.BgColor), "surface-variant");
+                        builder.AddAttribute(33, nameof(VProgressCircular.Indeterminate), VuetifyProgressCircularIndeterminateMode.DisableShrink);
+                        builder.AddAttribute(34, nameof(VProgressCircular.ModelValue), 42);
+                        builder.AddAttribute(35, nameof(VProgressCircular.Size), "64");
+                        builder.AddAttribute(36, nameof(VProgressCircular.Width), 6);
                         builder.CloseComponent();
                         builder.CloseComponent();
                     }
@@ -1830,10 +2260,21 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:role\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:menuOpen\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"closeOnContentClick\": false");
-        StringAssert.Contains(artifact.ModuleCode, "\"content\": \"3\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"size\": \"large\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": 64");
-        StringAssert.Contains(artifact.ModuleCode, "\"indeterminate\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"content\": 3");
+        StringAssert.Contains(artifact.ModuleCode, "\"max\": \"9\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"offsetX\": 4");
+        StringAssert.Contains(artifact.ModuleCode, "\"size\": 48");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"icon\": \"$account\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"bgColor\": \"surface-variant\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": \"64\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"bufferValue\": 90");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 8");
+        StringAssert.Contains(artifact.ModuleCode, "\"stream\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"pill\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"indeterminate\": \"disable-shrink\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": 42");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": 6");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -1923,6 +2364,10 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(23, nameof(VSnackbar.ModelValueChanged), SnackbarOpenChanged);
                         builder.AddAttribute(24, nameof(VSnackbar.Color), "success");
                         builder.AddAttribute(25, nameof(VSnackbar.Timeout), 2000);
+                        builder.AddAttribute(26, nameof(VSnackbar.Text), "Saved");
+                        builder.AddAttribute(27, nameof(VSnackbar.Timer), "info");
+                        builder.AddAttribute(28, nameof(VSnackbar.Location), VuetifyLocation.BottomEnd);
+                        builder.AddAttribute(29, nameof(VSnackbar.Rounded), true);
                         builder.CloseComponent();
                     }
                 }
@@ -1946,6 +2391,10 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.snackbarOpen");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:snackbarOpen\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"timeout\": 2000");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Saved\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"timer\": \"info\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"bottom end\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -2046,6 +2495,191 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"items\": [{ name: \"Revenue\", total: 1200 }]");
         StringAssert.Contains(artifact.ModuleCode, "\"itemKey\": \"name\"");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifySelectLikeComponentsWithStrongSelectedValueModel()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/select-model-host")]
+                public class SelectModelHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public VuetifySelectModelValue? SelectedRole { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifySelectModelValue?> SelectedRoleChanged { get; set; }
+
+                    [Parameter]
+                    public VuetifySelectModelValue? Tags { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifySelectModelValue?> TagsChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+
+                        builder.OpenComponent<VSelect>(1);
+                        builder.AddAttribute(2, nameof(VSelect.Label), "Role");
+                        builder.AddAttribute(3, nameof(VSelect.ReturnObject), true);
+                        builder.AddAttribute(4, nameof(VSelect.SelectedValue), SelectedRole);
+                        builder.AddAttribute(5, nameof(VSelect.SelectedValueChanged), SelectedRoleChanged);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VAutocomplete>(6);
+                        builder.AddAttribute(7, nameof(VAutocomplete.Label), "Owner");
+                        builder.AddAttribute(8, nameof(VAutocomplete.ReturnObject), true);
+                        builder.AddAttribute(9, nameof(VAutocomplete.SelectedValue), VuetifySelectModelValue.From(new VueDictionary
+                        {
+                            ["id"] = "admin",
+                            ["locked"] = false
+                        }));
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VCombobox>(10);
+                        builder.AddAttribute(11, nameof(VCombobox.Label), "Tags");
+                        builder.AddAttribute(12, nameof(VCombobox.Multiple), true);
+                        builder.AddAttribute(13, nameof(VCombobox.SelectedValue), VuetifySelectModelValue.From(VuetifySelectModelValues.From(new VuetifySelectModelValue[]
+                        {
+                            "alpha",
+                            42,
+                            true
+                        })));
+                        builder.AddAttribute(14, nameof(VCombobox.SelectedValueChanged), TagsChanged);
+                        builder.CloseComponent();
+
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VAutocomplete as VAutocompleteComponent, VCombobox as VComboboxComponent, VSelect as VSelectComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.selectedRole");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:selectedRole\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": { id: \"admin\", locked: false }");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": [\"alpha\", 42, true]");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:tags\", __value)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"selectedValue\"", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithDuplicateVuetifyModelValueAuthoringAliases_ReportsUnknownParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/select-host")]
+                public class SelectHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VSelect>(0);
+                        builder.AddAttribute(1, nameof(VSelect.ModelValue), "admin");
+                        builder.AddAttribute(2, nameof(VSelect.SelectedValue), VuetifySelectModelValue.From("user"));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VSelect");
+        StringAssert.Contains(exception.Issue.Message, "ModelValue");
+        StringAssert.Contains(exception.Issue.Message, "SelectedValue");
+        StringAssert.Contains(exception.Issue.Message, "modelValue");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithDuplicateVuetifyModelUpdateAuthoringAliases_ReportsUnknownParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/select-host")]
+                public class SelectHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string?> ModelChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifySelectModelValue?> SelectedChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VSelect>(0);
+                        builder.AddAttribute(1, nameof(VSelect.ModelValueChanged), ModelChanged);
+                        builder.AddAttribute(2, nameof(VSelect.SelectedValueChanged), SelectedChanged);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VSelect");
+        StringAssert.Contains(exception.Issue.Message, "ModelValueChanged");
+        StringAssert.Contains(exception.Issue.Message, "SelectedValueChanged");
+        StringAssert.Contains(exception.Issue.Message, "update:modelValue");
     }
 
     [TestMethod]
@@ -2355,7 +2989,7 @@ public sealed class RazorVuePipelineTests
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VBtn>(0);
-                        builder.AddAttribute(1, "Href", "#");
+                        builder.AddAttribute(1, "DefinitelyMissing", "#");
                         builder.CloseComponent();
                     }
                 }
@@ -2366,7 +3000,102 @@ public sealed class RazorVuePipelineTests
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "VBtn");
-        StringAssert.Contains(exception.Issue.Message, "Href");
+        StringAssert.Contains(exception.Issue.Message, "DefinitelyMissing");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersExplicitLibraryFallthroughAttributes_WhenTargetHasCaptureUnmatchedValues()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "class", "primary-action");
+                        builder.AddAttribute(2, "style", "min-width: 160px");
+                        builder.AddAttribute(3, "data-tracking-id", "save-order");
+                        builder.AddAttribute(4, "aria-label", "Save order");
+                        builder.AddAttribute(5, "ripple", false);
+                        builder.AddAttribute(6, "viewMode", "month");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"primary-action\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": \"min-width: 160px\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-tracking-id\": \"save-order\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"aria-label\": \"Save order\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"viewMode\": \"month\"");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithUnknownRenderFragmentLibraryAttribute_ReportsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "Footer", (RenderFragment)((childBuilder) =>
+                        {
+                            childBuilder.AddContent(2, "Footer");
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VBtn");
+        StringAssert.Contains(exception.Issue.Message, "Footer");
     }
 
     [TestMethod]

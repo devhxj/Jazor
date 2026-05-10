@@ -1041,6 +1041,514 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDuplicateLibraryMappedModelProp_ThrowsUnknownParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/select-host")]
+                public class SelectHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VSelect>(0);
+                        builder.AddAttribute(1, nameof(VSelect.ModelValue), "admin");
+                        builder.AddAttribute(2, nameof(VSelect.SelectedValue), VuetifySelectModelValue.From("user"));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VSelect");
+        StringAssert.Contains(exception.Issue.Message, "ModelValue");
+        StringAssert.Contains(exception.Issue.Message, "SelectedValue");
+        StringAssert.Contains(exception.Issue.Message, "modelValue");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersExplicitLibraryFallthroughAttributes_WhenTargetHasCaptureUnmatchedValues()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "class", "primary-action");
+                        builder.AddAttribute(2, "style", "min-width: 160px");
+                        builder.AddAttribute(3, "data-tracking-id", "save-order");
+                        builder.AddAttribute(4, "aria-label", "Save order");
+                        builder.AddAttribute(5, "ripple", false);
+                        builder.AddAttribute(6, "viewMode", "month");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(
+            artifact.TemplateText,
+            "<VBtn class=\"primary-action\" style=\"min-width: 160px\" data-tracking-id=\"save-order\" aria-label=\"Save order\" :ripple=\"false\" viewMode=\"month\" />");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDuplicateLibraryMappedModelUpdateEmit_ThrowsUnknownParameter()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/select-host")]
+                public class SelectHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string?> ModelChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifySelectModelValue?> SelectedChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VSelect>(0);
+                        builder.AddAttribute(1, nameof(VSelect.ModelValueChanged), ModelChanged);
+                        builder.AddAttribute(2, nameof(VSelect.SelectedValueChanged), SelectedChanged);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownParameter, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VSelect");
+        StringAssert.Contains(exception.Issue.Message, "ModelValueChanged");
+        StringAssert.Contains(exception.Issue.Message, "SelectedValueChanged");
+        StringAssert.Contains(exception.Issue.Message, "update:modelValue");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithInvalidLibraryBindTarget_ThrowsInvalidBindTarget()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Text { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> TextChanged { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, nameof(VBtn.Text), Text);
+                        builder.AddAttribute(2, nameof(TextChanged), TextChanged);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.InvalidBindTarget, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VBtn");
+        StringAssert.Contains(exception.Issue.Message, "Text");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithUnknownRenderFragmentLibraryAttribute_ThrowsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VBtn>(0);
+                        builder.AddAttribute(1, "Footer", (RenderFragment)((childBuilder) =>
+                        {
+                            childBuilder.AddContent(2, "Footer");
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VBtn");
+        StringAssert.Contains(exception.Issue.Message, "Footer");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithUnknownLibrarySlotTemplate_ThrowsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/button-host")]
+                public class ButtonHost : ComponentBase, IVueComponent
+                {
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var renderTree = new RazorVueRenderFragment(
+        [
+            new RazorVueComponentNode(
+                "VBtn",
+                "ECMAScript.Vuetify.VBtn",
+                "VBtn",
+                ImmutableArray<RazorVueAttributeEntry>.Empty,
+                [
+                    new RazorVueComponentSlotTemplateNode(
+                        "Footer",
+                        "footer",
+                        null,
+                        null,
+                        new RazorVueRenderFragment(
+                        [
+                            new RazorVueTextNode("Footer", ImmutableArray<RazorVueSourceOrigin>.Empty)
+                        ]),
+                        ImmutableArray<RazorVueSourceOrigin>.Empty)
+                ],
+                RazorVueRenderFragment.Empty,
+                ImmutableArray<RazorVueSourceOrigin>.Empty)
+        ]);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            new RazorVueSfcArtifactFactory(new FixedTemplateFrontend(renderTree)).Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VBtn");
+        StringAssert.Contains(exception.Issue.Message, "Footer");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithImplicitLibraryDefaultSlotOnComponentWithoutChildContent_ThrowsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/icon-host")]
+                public class IconHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VIcon>(0);
+                        builder.AddContent(1, "warn");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VIcon");
+        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithImplicitTypedLibraryDefaultSlot_ThrowsSlotContextMisuse()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Library
+            {
+                [VueLibraryComponent("demo/components", "TypedContentPanel")]
+                public sealed class TypedContentPanel : ComponentBase, IVueLibraryComponent
+                {
+                    [Parameter]
+                    public RenderFragment<int>? ChildContent { get; set; }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/typed-content-host")]
+                public class TypedContentHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<Demo.Library.TypedContentPanel>(0);
+                        builder.AddContent(1, "warn");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypedContentHost");
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "TypedContentPanel");
+        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDuplicateLibraryDefaultSlotAssignment_ThrowsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment? ChildContent { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.ChildContent), ChildContent);
+                        builder.AddContent(2, ChildContent);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VDialog");
+        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithDuplicateLibraryNamedSlotAssignment_ThrowsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                        builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VDialog");
+        StringAssert.Contains(exception.Issue.Message, "Activator");
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_WithComponentLocalVariableDeclarationInBuildRenderTree_ThrowsCanonicalizationFailed()
     {
         var context = CreateContext(
