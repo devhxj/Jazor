@@ -246,7 +246,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
         var compilation = CSharpCompilation.Create(
             assemblyName,
             [CSharpSyntaxTree.ParseText(source, path: $"{assemblyName}.g.cs")],
-            Net100.References.All.Cast<MetadataReference>(),
+            Net110.References.All.Cast<MetadataReference>(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         using var stream = File.Create(assemblyPath);

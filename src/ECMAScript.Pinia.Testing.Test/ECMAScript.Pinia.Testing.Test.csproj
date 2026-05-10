@@ -21,7 +21,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="$(Net100AssembliesVersion)" />
+    <PackageReference Include="Basic.Reference.Assemblies.Net110" Version="$(Net110AssembliesVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
   </ItemGroup>
   <ItemGroup>

@@ -330,7 +330,7 @@ public sealed class RazorVueSfcCatalogReaderTests
         => CSharpCompilation.Create(
             assemblyName: assemblyName,
             syntaxTrees: [CSharpSyntaxTree.ParseText(source, path: sourcePath)],
-            references: Net100.References.All.Cast<MetadataReference>(),
+            references: Net110.References.All.Cast<MetadataReference>(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     private static Assembly CompileAssembly(Compilation compilation)
@@ -349,7 +349,7 @@ public sealed class RazorVueSfcCatalogReaderTests
                 CSharpSyntaxTree.ParseText(CreateRazorVueGlobalUsingsSource(), path: "__RazorVueGlobalUsings.g.cs"),
                 CSharpSyntaxTree.ParseText(source, path: sourcePath)
             ],
-            Net100.References.All.Cast<MetadataReference>().Concat([
+            Net110.References.All.Cast<MetadataReference>().Concat([
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueLibraryComponentAttribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),

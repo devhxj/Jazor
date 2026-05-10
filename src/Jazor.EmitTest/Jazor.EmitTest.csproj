@@ -35,8 +35,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Basic.Reference.Assemblies.Net100" Version="$(Net100AssembliesVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.6" />
+    <PackageReference Include="Basic.Reference.Assemblies.Net110" Version="$(Net110AssembliesVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.6" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(CodeAnalysisVersion)" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.4.0" />

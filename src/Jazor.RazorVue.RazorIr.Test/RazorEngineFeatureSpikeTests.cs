@@ -147,9 +147,16 @@ public sealed class RazorEngineFeatureSpikeTests
             if (syntaxReference.GetSyntax() is not MethodDeclarationSyntax methodSyntax)
                 continue;
 
-            foreach (var nodeOrToken in methodSyntax.Body!.DescendantNodesAndTokensAndSelf())
+            if (methodSyntax.Body is not { } methodBody)
+                continue;
+
+            foreach (var nodeOrToken in methodBody.DescendantNodesAndTokensAndSelf())
             {
-                var mapped = nodeOrToken.GetLocation().GetMappedLineSpan();
+                var location = nodeOrToken.GetLocation();
+                if (location is null)
+                    continue;
+
+                var mapped = location.GetMappedLineSpan();
                 if (!mapped.HasMappedPath)
                     continue;
 

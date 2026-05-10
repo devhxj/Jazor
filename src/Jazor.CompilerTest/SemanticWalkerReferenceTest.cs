@@ -4034,6 +4034,36 @@ public sealed class SemanticWalkerReferenceTest
 	}
 
 	[TestMethod]
+	public void Visit_ECMAScriptRecordProxyIndexerAssignment_AllowsJavaScriptComputedAssignment()
+	{
+		var block = GetBlockOperation(@"
+            [ECMAScript]
+            [System.ComponentModel.Description(""@#"")]
+            public record ListenerBag
+            {
+                public extern System.Action? this[string key] { get; set; }
+            }
+
+            [ECMAScriptModule]
+            public class TestClass
+            {
+                void TestMethod(ListenerBag listeners, System.Action handler)
+                {
+                    listeners[""on:update""] = handler;
+                }
+            }
+        ");
+
+		var walker = new SemanticWalker(true);
+		var node = walker.Visit(block, new());
+		var script = node?.ToKnRECMAScript();
+
+		AssertScriptEqual(@"{
+  listeners[""on:update""] = handler;
+}", script);
+	}
+
+	[TestMethod]
 	public void Visit_RecordCustomMethodInvocation_WithoutECMAScriptMarker_Throws()
 	{
 		var block = GetBlockOperation(@"

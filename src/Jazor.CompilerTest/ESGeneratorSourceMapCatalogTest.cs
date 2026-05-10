@@ -152,7 +152,9 @@ public sealed class ESGeneratorSourceMapCatalogTest
             new ESGenerator().AsSourceGenerator()
         ];
 
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators,
+            parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
 
         var runResult = driver.GetRunResult();

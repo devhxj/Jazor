@@ -26,34 +26,34 @@ public sealed class SdkIntegrationTests
         CollectionAssert.AreEquivalent(
             new[]
             {
-                "lib/net10.0/ECMAScript.dll",
-                "lib/net10.0/ECMAScript.pdb",
-                "lib/net10.0/ECMAScript.Pinia.dll",
-                "lib/net10.0/ECMAScript.Pinia.pdb",
-                "lib/net10.0/ECMAScript.Pinia.Testing.dll",
-                "lib/net10.0/ECMAScript.Pinia.Testing.pdb",
-                "lib/net10.0/ECMAScript.VueRoute.dll",
-                "lib/net10.0/ECMAScript.VueRoute.pdb",
-                "lib/net10.0/ECMAScript.Contract.dll",
-                "lib/net10.0/ECMAScript.Contract.pdb",
-                "lib/net10.0/ECMAScript.VueContract.dll",
-                "lib/net10.0/ECMAScript.VueContract.pdb",
-                "lib/net10.0/ECMAScript.Vue3.dll",
-                "lib/net10.0/ECMAScript.Vue3.pdb",
-                "lib/net10.0/Jazor.AspNetCore.dll",
-                "lib/net10.0/Jazor.AspNetCore.pdb",
-                "lib/net10.0/Jazor.AspNetCore.Dev.dll",
-                "lib/net10.0/Jazor.AspNetCore.Dev.pdb",
-                "lib/net10.0/Jazor.Compiler.dll",
-                "lib/net10.0/Jazor.Compiler.pdb",
-                "lib/net10.0/Jazor.Common.dll",
-                "lib/net10.0/Jazor.Common.pdb",
-                "lib/net10.0/Jazor.RazorVue.dll",
-                "lib/net10.0/Jazor.RazorVue.pdb",
-                "lib/net10.0/ECMAScript.Vuetify.dll",
-                "lib/net10.0/ECMAScript.Vuetify.pdb"
+                "lib/net11.0/ECMAScript.dll",
+                "lib/net11.0/ECMAScript.pdb",
+                "lib/net11.0/ECMAScript.Pinia.dll",
+                "lib/net11.0/ECMAScript.Pinia.pdb",
+                "lib/net11.0/ECMAScript.Pinia.Testing.dll",
+                "lib/net11.0/ECMAScript.Pinia.Testing.pdb",
+                "lib/net11.0/ECMAScript.VueRoute.dll",
+                "lib/net11.0/ECMAScript.VueRoute.pdb",
+                "lib/net11.0/ECMAScript.Contract.dll",
+                "lib/net11.0/ECMAScript.Contract.pdb",
+                "lib/net11.0/ECMAScript.VueContract.dll",
+                "lib/net11.0/ECMAScript.VueContract.pdb",
+                "lib/net11.0/ECMAScript.Vue3.dll",
+                "lib/net11.0/ECMAScript.Vue3.pdb",
+                "lib/net11.0/Jazor.AspNetCore.dll",
+                "lib/net11.0/Jazor.AspNetCore.pdb",
+                "lib/net11.0/Jazor.AspNetCore.Dev.dll",
+                "lib/net11.0/Jazor.AspNetCore.Dev.pdb",
+                "lib/net11.0/Jazor.Compiler.dll",
+                "lib/net11.0/Jazor.Compiler.pdb",
+                "lib/net11.0/Jazor.Common.dll",
+                "lib/net11.0/Jazor.Common.pdb",
+                "lib/net11.0/Jazor.RazorVue.dll",
+                "lib/net11.0/Jazor.RazorVue.pdb",
+                "lib/net11.0/ECMAScript.Vuetify.dll",
+                "lib/net11.0/ECMAScript.Vuetify.pdb"
             },
-            entryNames.Where(static entry => entry.StartsWith("lib/net10.0/", StringComparison.Ordinal)).ToArray());
+            entryNames.Where(static entry => entry.StartsWith("lib/net11.0/", StringComparison.Ordinal)).ToArray());
         CollectionAssert.AreEquivalent(
             new[]
             {
@@ -104,7 +104,7 @@ public sealed class SdkIntegrationTests
             .Select(static entry => entry.FullName.Replace('\\', '/'))
             .ToArray();
 
-        CollectionAssert.Contains(entryNames, "lib/net10.0/ECMAScript.Vuetify.dll");
+        CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Vuetify.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.Vuetify.nuspec");
     }
 
@@ -542,7 +542,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -663,7 +663,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -822,7 +822,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -1217,7 +1217,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -1488,7 +1488,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -1936,11 +1936,11 @@ public sealed class SdkIntegrationTests
         var packageOutputDirectory = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "nupkg", Guid.NewGuid().ToString("N"));
         var packageBuildOutputRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-out", Guid.NewGuid().ToString("N"));
         var packageBuildIntermediateRoot = Path.Combine(repoRoot, ".tmp", "Jazor.EmitTest", "package-obj", Guid.NewGuid().ToString("N"));
-        var ecmascriptOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript", "bin", "Debug", "net10.0", "ECMAScript.dll");
+        var ecmascriptOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript", "bin", "Debug", "net11.0", "ECMAScript.dll");
         var contractOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Contract", "bin", "Debug", "netstandard2.0", "ECMAScript.Contract.dll");
-        var vuetifyOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net10.0", "ECMAScript.Vuetify.dll");
+        var vuetifyOutput = Path.Combine(packageBuildOutputRoot, "ECMAScript.Vuetify", "bin", "Debug", "net11.0", "ECMAScript.Vuetify.dll");
         var analyzerOutput = Path.Combine(packageBuildOutputRoot, "Jazor.Analyzer", "bin", "Debug", "netstandard2.0", "Jazor.Analyzer.dll");
-        var emitPublishDirectory = Path.Combine(packageBuildOutputRoot, "Jazor.Emit", "bin", "Debug", "net10.0", "publish");
+        var emitPublishDirectory = Path.Combine(packageBuildOutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish");
         var emitPublishOutput = Path.Combine(emitPublishDirectory, "Jazor.Emit.dll");
 
         if (Directory.Exists(packageOutputDirectory))
@@ -2354,7 +2354,7 @@ public sealed class SdkIntegrationTests
             $$"""
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <PackageId>Demo.Authoring</PackageId>
@@ -2422,7 +2422,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -2475,7 +2475,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -2570,7 +2570,7 @@ public sealed class SdkIntegrationTests
             """
             <Project Sdk="Microsoft.NET.Sdk.Web">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -2623,7 +2623,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>
@@ -2729,10 +2729,10 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk.Razor">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
-                <RazorLangVersion>10.0</RazorLangVersion>
+                <RazorLangVersion>11.0</RazorLangVersion>
                 <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
                 <JazorEmit>true</JazorEmit>
                 <JazorBundle>false</JazorBundle>
@@ -3012,7 +3012,7 @@ public sealed class SdkIntegrationTests
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net11.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <JazorEmit>true</JazorEmit>

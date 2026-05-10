@@ -15,7 +15,7 @@
   - `src/ECMAScript/ECMAScript.csproj`
 - 主要包依赖：
   - `Microsoft.CodeAnalysis.CSharp`
-  - `Basic.Reference.Assemblies.Net100`
+  - `Basic.Reference.Assemblies.Net110`
   - `coverlet.collector`
 
 ## 当前测试分层

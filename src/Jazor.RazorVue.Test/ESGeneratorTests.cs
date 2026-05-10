@@ -1312,9 +1312,17 @@ public sealed class ESGeneratorTests
             """,
             rootNamespace: "Demo.Pages");
 
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: false,
+                tailOutputRegistered: false),
+            compatibilityProbeFactory: CreateSupportedRazorSgCompatibilityProbe);
+
         var (_, runResult) = RunAllGeneratorsWithResult(
             compilation,
             razorVueOutputMode: null,
+            razorVueGenerator: generator,
             enableRazorSgIntegration: true);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
@@ -11335,7 +11343,12 @@ public sealed class ESGeneratorTests
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
-        Assert.AreEqual(0, errors.Length, string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString())));
+        Assert.AreEqual(
+            0,
+            errors.Length,
+            string.Join(Environment.NewLine, errors.Select(static diagnostic => diagnostic.ToString()))
+            + Environment.NewLine
+            + csharpDocument.Text);
 
         return (compilation, parseOptions, codeDocument, csharpDocument);
     }
@@ -11394,7 +11407,9 @@ public sealed class ESGeneratorTests
             new ESGenerator().AsSourceGenerator()
         ];
 
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generators);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators,
+            parseOptions: (CSharpParseOptions?)compilation.SyntaxTrees.FirstOrDefault()?.Options);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
 
         var runResult = driver.GetRunResult();

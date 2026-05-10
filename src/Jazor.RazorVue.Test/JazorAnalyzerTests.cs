@@ -894,6 +894,167 @@ public sealed class JazorAnalyzerTests
 		AssertHasDiagnostic(diagnostics, "JAZOR001");
 	}
 
+	[TestMethod]
+	public async Task Jazor_VueDictionaryIndexerInitializer_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+			using static ECMAScript.Vue3;
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public VueDictionary Create()
+			        => new()
+			        {
+			            ["aria-live"] = "polite",
+			            ["aria-atomic"] = "true"
+			        };
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_VueEventHandlersIndexerInitializer_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+			using static ECMAScript.Vue3;
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public VueEventHandlers<Event> Create()
+			        => new()
+			        {
+			            ["onInput"] = OnInput
+			        };
+
+			    private static void OnInput(Event value)
+			    {
+			    }
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_ECMAScriptRecordProxyIndexerRead_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using System.ComponentModel;
+			using ECMAScript;
+
+			[ECMAScript]
+			[Description("@#")]
+			public record ListenerBag
+			{
+			    public extern Action? this[string key] { get; set; }
+			}
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public Action? Get(ListenerBag listeners)
+			        => listeners["on:update"];
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_ECMAScriptRecordProxyIndexerAssignment_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using System.ComponentModel;
+			using ECMAScript;
+
+			[ECMAScript]
+			[Description("@#")]
+			public record ListenerBag
+			{
+			    public extern Action? this[string key] { get; set; }
+			}
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public void Set(ListenerBag listeners, Action value)
+			    {
+			        listeners["on:update"] = value;
+			    }
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordIndexerRead_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+
+			public record PlainBag
+			{
+			    public string this[string key]
+			    {
+			        get => key;
+			        set { }
+			    }
+			}
+
+			[ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public string Get(PlainBag bag)
+			        => bag["name"];
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_UnmarkedRecordIndexerAssignment_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+
+			public record PlainBag
+			{
+			    public string this[string key]
+			    {
+			        get => key;
+			        set { }
+			    }
+			}
+
+			[ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public void Set(PlainBag bag, string value)
+			    {
+			        bag["name"] = value;
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
 	private static async Task<ImmutableArray<Diagnostic>> GetAnalyzerDiagnosticsAsync(string source)
 	{
 		var compilation = CreateCompilation(source);

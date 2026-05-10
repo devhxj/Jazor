@@ -19,7 +19,7 @@ internal static class RazorVueMetadataReferences
 
     public static List<MetadataReference> Create(params MetadataReference[] extraReferences)
     {
-        var references = Net100.References.All
+        var references = Net110.References.All
             .Cast<MetadataReference>()
             .ToList();
         var seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

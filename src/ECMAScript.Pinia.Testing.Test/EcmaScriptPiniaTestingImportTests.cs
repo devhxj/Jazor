@@ -15,7 +15,7 @@ public sealed class EcmaScriptPiniaTestingImportTests
 		var compilation = CSharpCompilation.Create(
 			"TestAssembly",
 			[syntaxTree],
-			Net100.References.All.Concat(
+			Net110.References.All.Concat(
 			[
 				MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),

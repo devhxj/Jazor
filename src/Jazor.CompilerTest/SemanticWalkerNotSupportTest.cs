@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using EsNode = Acornima.Ast.Node;
 
 namespace Jazor.ComplierTest;
 
@@ -544,5 +545,63 @@ public sealed class SemanticWalkerNotSupportTest
                 StringAssert.Contains(message, "not supported");
             }
         }
+    }
+
+    [TestMethod]
+    public void SemanticWalker_CoversCurrentRoslynOperationVisitorSurface()
+    {
+        var semanticWalkerMethods = typeof(SemanticWalker)
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Where(static method => method.Name.StartsWith("Visit", StringComparison.Ordinal))
+            .Where(static method =>
+            {
+                var parameters = method.GetParameters();
+                return parameters.Length == 2 &&
+                    typeof(IOperation).IsAssignableFrom(parameters[0].ParameterType) &&
+                    parameters[1].ParameterType == typeof(SenseArgument);
+            })
+            .Select(static method => (method.Name, OperationType: method.GetParameters()[0].ParameterType))
+            .ToHashSet();
+
+        var visitorMethods = typeof(OperationVisitor<SenseArgument, EsNode?>)
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .Where(static method => method.Name.StartsWith("Visit", StringComparison.Ordinal))
+            .Where(static method =>
+            {
+                var parameters = method.GetParameters();
+                return parameters.Length == 2 &&
+                    typeof(IOperation).IsAssignableFrom(parameters[0].ParameterType) &&
+                    parameters[1].ParameterType == typeof(SenseArgument);
+            })
+            .Where(static method => ShouldHaveExplicitSemanticWalkerCoverage(method.GetParameters()[0].ParameterType))
+            .Select(static method => (method.Name, OperationType: method.GetParameters()[0].ParameterType))
+            .ToArray();
+
+        var missing = visitorMethods
+            .Where(method => !semanticWalkerMethods.Contains(method))
+            .Select(static method => $"{method.Name}({method.OperationType.Name})")
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.IsTrue(
+            missing.Length == 0,
+            "SemanticWalker must explicitly support or reject every concrete Roslyn IOperation visitor method. Missing: " + string.Join(", ", missing));
+    }
+
+    private static bool ShouldHaveExplicitSemanticWalkerCoverage(Type operationType)
+    {
+        if (operationType == typeof(IOperation))
+            return false;
+
+        return operationType.Name is not (
+            nameof(IAssignmentOperation) or
+            "IAggregateQueryOperation" or
+            nameof(IInterpolatedStringContentOperation) or
+            nameof(ILoopOperation) or
+            nameof(IMemberReferenceOperation) or
+            nameof(IMethodBodyBaseOperation) or
+            nameof(IPatternOperation) or
+            "IPlaceholderOperation" or
+            nameof(ISymbolInitializerOperation));
     }
 }

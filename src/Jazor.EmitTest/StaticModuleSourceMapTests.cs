@@ -382,7 +382,7 @@ public sealed class StaticModuleSourceMapTests
             [
                 CSharpSyntaxTree.ParseText(source, path: $"{assemblyName}.g.cs")
             ],
-            references: Net100.References.All.Cast<MetadataReference>(),
+            references: Net110.References.All.Cast<MetadataReference>(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         using var stream = new MemoryStream();

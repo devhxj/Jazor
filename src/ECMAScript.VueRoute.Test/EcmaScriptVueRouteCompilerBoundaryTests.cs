@@ -2863,7 +2863,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
 
     private static MetadataReference[] BuildCompilationReferences(IEnumerable<MetadataReference>? additionalReferences = null)
     {
-        var references = Net100.References.All.Cast<MetadataReference>().ToList();
+        var references = Net110.References.All.Cast<MetadataReference>().ToList();
         references.Add(MetadataReference.CreateFromFile(typeof(Number).Assembly.Location));
         if (additionalReferences is not null)
             references.AddRange(additionalReferences);

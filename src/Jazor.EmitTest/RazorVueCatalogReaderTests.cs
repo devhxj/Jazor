@@ -597,7 +597,7 @@ namespace Jazor.EmitTest
         }
 
         private static IEnumerable<MetadataReference> CreateBaseReferences()
-            => Net100.References.All.Cast<MetadataReference>();
+            => Net110.References.All.Cast<MetadataReference>();
 
         private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string razorVueOutputMode)
             => new TestAnalyzerConfigOptionsProvider(new Dictionary<string, string>(StringComparer.Ordinal)
