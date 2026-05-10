@@ -36,9 +36,13 @@
 - `Jazor.Analyzer` accepts only the supported indexer slice:
   - object/collection initializer indexer assignments on object-literal host types such as `VueDictionary<TValue>` and `VueEventHandlers<TEvent>`
   - ECMAScript record-proxy single-parameter indexer reads and simple assignments already supported by compiler lowering
+- `Jazor.Analyzer` now also accepts the supported collection-initializer `Add(key, value)` slice on object-literal host types only. This covers `VueDictionary`, `PiniaStateMapper`, and structural-record object-literal authoring while keeping ordinary runtime `.Add(...)` invocations guarded by `JAZOR001`.
 - Ordinary unmarked record indexer reads and assignments still report `JAZOR001`.
-- Focused analyzer regressions were added for Vue dictionary initializers, Vue event-handler initializers, ECMAScript record-proxy reads/assignments, and unmarked record indexer reads/assignments.
+- Focused analyzer regressions were added for Vue dictionary initializers, Vue event-handler initializers, object-literal `Add(key, value)` initializers, structural-record collection initializer `Add(key, value)`, ECMAScript record-proxy reads/assignments, and unmarked record indexer reads/assignments.
 - In-memory reference assembly consumers were moved from `Basic.Reference.Assemblies.Net100` to `Basic.Reference.Assemblies.Net110`.
+- Checked-in sample manifests for Pinia, VueRoute, MultiProject, and RazorVue TodoList were refreshed through their build pipelines so `RootAssemblyPath` points to `net11.0` output instead of stale `net10.0` output.
+- `SampleGeneratedArtifactLayoutTests` now guards checked-in sample manifest layout: standard manifests must target `net11.0`, must not contain stale `net10.0`, and every declared module/source-map path must exist under the manifest output root. RazorVue SFC manifests are also checked for declared module/source-map/origin files and safe relative SFC imports.
+- `src/Wiki/build-local.ps1` now accepts `BaseOutputPath` and `BaseIntermediateOutputPath`, forwards them as isolated build roots, and disables shared compilation/node reuse for deterministic smoke-script reuse.
 
 ## Latest Verification
 
@@ -75,6 +79,11 @@
 - `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~RazorSourceGeneratorCompatibilityProbeTests|FullyQualifiedName~RazorSourceGeneratorBootstrapPatchTests|FullyQualifiedName~RazorSdkToolsetProbeTests|FullyQualifiedName~RazorSourceGeneratorHostOutputTests|FullyQualifiedName~RazorSourceGeneratorCarrierBridgeTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 11/11 tests.
 - `dotnet test src\Jazor.CompilerTest\Jazor.CompilerTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 1878/1878 tests.
 - `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj --no-build -v minimal -p:UseSharedCompilation=false -m:1` passed: 605/605 tests.
+- `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj --filter 'FullyQualifiedName~Jazor_VueDictionaryAddInitializer_IsAccepted|FullyQualifiedName~Jazor_PiniaStateMapperAddInitializer_IsAccepted|FullyQualifiedName~Jazor_ObjectLiteralAddOutsideInitializer_ReportsJAZOR001|FullyQualifiedName~Jazor_ObjectLiteralAddNestedInsideInitializerValue_ReportsJAZOR001|FullyQualifiedName~Jazor_StructuralRecordAddInitializer_IsAccepted|FullyQualifiedName~Jazor_StructuralRecordAddOutsideInitializer_ReportsJAZOR001' -v minimal -p:UseSharedCompilation=false -m:1` passed: 6/6 tests.
+- `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~SampleGeneratedArtifactLayoutTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
+- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the analyzer object-literal Add guard and sample manifest guard updates.
+- `.\src\Wiki\build-local.ps1 -BaseOutputPath '.tmp\wiki-buildlocal-out' -BaseIntermediateOutputPath '.tmp\wiki-buildlocal-obj'` passed with 0 warnings and 0 errors, proving the Wiki build-local script can be reused by isolated smoke/browser verification lanes.
+- Sample refresh scripts passed for `samples\Jazor.MultiProject\build-local.ps1`, `samples\ECMAScript.Pinia.Counter\build-local.ps1`, `samples\ECMAScript.VueRoute.MemorySmoke\build-local.ps1`, and `samples\RazorVue.TodoList\build-local.ps1`. The first Pinia refresh exposed the object-literal `Add(key, value)` analyzer gap; the rerun passed after the analyzer fix.
 - `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace' -v minimal -p:UseSharedCompilation=false -m:1` passed: 3/3 tests after Razor 11 attribute-expression fixes and non-null sample text parameters.
 - `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 110/110 tests after the Razor 11 attribute-expression fixes and non-null sample text-parameter cleanup.
 - Direct `dotnet build samples\RazorVue.TodoList\Todo.Library\Todo.Library.csproj` is not a valid standalone verification in this checkout without a matching local `0.1.20` package feed. It currently fails restore with `NU1102`; the isolated local-package EmitTest flow is the authoritative sample verification.
@@ -97,6 +106,18 @@ With Roslyn aligned to SDK `5.7`, analyzers loaded correctly and exposed real `W
 
 Resolution: these are plain-object host authoring surfaces, not arbitrary CLR indexer usage. `Jazor.Analyzer` now uses the same object-literal host predicate as compiler lowering and keeps ordinary runtime indexer reads/writes guarded.
 
+## Current Analyzer Blocker
+
+Refreshing the Pinia sample exposed a related analyzer-only gap for object-literal host collection initializers. Roslyn lowers `{ "count", value }` collection initializer elements to `Add(key, value)` invocations, so the analyzer must recognize this initializer syntax even though ordinary runtime `.Add(...)` remains unsupported.
+
+Resolution: `Jazor.Analyzer` now allows only non-static ordinary instance `Add(key, value)` calls with supported object-literal key types, only when the receiver is an object-literal host type, and only when the invocation is the direct element of an object/collection initializer. This keeps the public host API strong and avoids turning `Add` into a general mutable runtime surface; nested `.Add(...)` calls inside initializer value lambdas remain rejected.
+
+## Sample Artifact Guardrails
+
+- Do not hand-edit generated sample manifests, module paths, hashes, or timestamps. Refresh them through each sample's build pipeline.
+- The manifest `Hash`, `MapHash`, and RazorVue `ContentHash` values are generator content hashes, not a stable contract that the checked-in file bytes must equal after repository newline normalization. Guard file presence and path boundaries in layout tests; test hash semantics at the generator/writer layer where the source content string is available.
+- `src/Wiki/wwwroot/jazor` and `src/Wiki/jazor` are ignored local/publish outputs. They may show stale `net10.0` locally after previous publish checks, but they are not checked-in source-of-truth artifacts. Use `src/Wiki/build-local.ps1`, `src/Wiki/verify-smoke.ps1 -Publish`, or `src/Wiki/verify-browser.ps1 -Publish` to regenerate and validate them when working on Wiki release output.
+
 ## Next Work
 
 1. Continue migrating remaining generated/manual union wrappers only when each target branch set is proven safe for the official-preview contract.
@@ -105,3 +126,4 @@ Resolution: these are plain-object host authoring surfaces, not arbitrary CLR in
 4. Re-check Roslyn `IOperation` shape after each SDK update; keep the reflection visitor guard green before accepting a new compiler package.
 5. Re-run the full verification lane after the next SDK/Roslyn preview update, including compiler, RazorVue, RazorIr fallback, WebIDL generator, and Emit local-package sample coverage.
 6. When checked-in generated sample/site manifests are refreshed, regenerate them through the net11 emit/build pipeline rather than hand-editing `RootAssemblyPath`, hashes, or timestamps.
+7. Before finalizing the current migration branch, ensure newly generated sample runtime modules such as `samples/Jazor.MultiProject/Sample.Host/wwwroot/jazor/System/**` are included with their refreshed manifests so clean checkouts do not have manifest entries pointing at missing files.

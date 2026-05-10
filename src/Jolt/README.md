@@ -1,7 +1,7 @@
 # Jolt
 
 > Status: active development-time boundary
-> Positioning: standalone `.NET 10` host for `.jazor` authoring, workspace coordination, Deno/Volar frontend semantics, preview, build, and debug.
+> Positioning: standalone `.NET 11 preview` host for `.jazor` authoring, workspace coordination, Deno/Volar frontend semantics, preview, build, and debug.
 
 `Jolt` 是当前唯一活跃的 `.jazor` 开发时宿主边界。
 

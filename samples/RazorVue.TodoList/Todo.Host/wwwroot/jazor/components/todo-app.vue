@@ -63,11 +63,11 @@
                 
         <VCardText>
           <template v-if="__jazorVueSfcBinding5">
-            <VAlert type="info" variant="tonal" text="No tasks match the current filter." />
+            <VAlert :type="__jazorVueSfcBinding6" :variant="__jazorVueSfcBinding7" text="No tasks match the current filter." />
           </template>
           <template v-else>
-            <VList density="comfortable">
-              <template v-for="item in __jazorVueSfcBinding6">
+            <VList :density="__jazorVueSfcBinding8">
+              <template v-for="item in __jazorVueSfcBinding9">
                 <template v-if="(props.showCompleted || !item.IsDone)">
                   <VListItem :title="item.Title" :subtitle="(item.Category + &quot; | &quot; + (item.IsDone ? &quot;Completed&quot; : &quot;Active&quot;))">
                     <template v-if="item.IsPinned">
@@ -98,5 +98,8 @@ const __jazorVueSfcBinding2 = computed(() => `${props.completedCount} completed`
 const __jazorVueSfcBinding3 = computed(() => `${props.openCount} still active`);
 const __jazorVueSfcBinding4 = computed(() => `${props.pinnedCount} pinned for focus`);
 const __jazorVueSfcBinding5 = computed(() => (props.visibleCount === 0));
-const __jazorVueSfcBinding6 = computed(() => props.tasks);
+const __jazorVueSfcBinding6 = computed(() => "info");
+const __jazorVueSfcBinding7 = computed(() => "tonal");
+const __jazorVueSfcBinding8 = computed(() => "comfortable");
+const __jazorVueSfcBinding9 = computed(() => props.tasks);
 </script>

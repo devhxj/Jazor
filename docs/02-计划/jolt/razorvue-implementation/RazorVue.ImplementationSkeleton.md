@@ -68,7 +68,7 @@
 
 - `VueComponent`
 - Vue 优先的编写表面
-- 仅 net10 的依赖边界，用于面向 Vue 的入口类型
+- 当前 SDK TFM 的依赖边界，用于面向 Vue 的入口类型
 
 不拥有：
 
@@ -82,7 +82,7 @@
 
 - `JazorComponent`
 - 面向 Razor/AspNetCore 的前端组件入口基板
-- 仅 net10 的依赖边界，用于 Razor 入口类型
+- 当前 SDK TFM 的依赖边界，用于 Razor 入口类型
 
 不拥有：
 

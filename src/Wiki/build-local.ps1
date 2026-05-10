@@ -1,5 +1,7 @@
 param(
     [string]$Configuration = "Debug",
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = "",
     [switch]$Bundle
 )
 
@@ -14,6 +16,30 @@ $componentModulePath = Join-Path $jazorRoot "components\wiki-home.mjs"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
+
+function Get-IsolatedBuildRoot {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $resolvedPath = $Path
+    if (-not $resolvedPath.Contains('$(', [StringComparison]::Ordinal)) {
+        if (-not [System.IO.Path]::IsPathRooted($resolvedPath)) {
+            $resolvedPath = Join-Path $repoRoot $resolvedPath
+        }
+
+        $resolvedPath = [System.IO.Path]::GetFullPath($resolvedPath)
+    }
+
+    if (-not $resolvedPath.EndsWith('\', [StringComparison]::Ordinal)) {
+        $resolvedPath += '\'
+    }
+
+    return $resolvedPath
+}
 
 function Invoke-DotNet {
     param([string[]]$DotNetArgs)
@@ -46,6 +72,17 @@ $buildArgs = @(
 if ($Bundle) {
     $buildArgs += "-p:JazorBundle=true"
 }
+
+if ($baseOutputPathWasExplicit) {
+    $buildArgs += "-p:JazorIsolatedBaseOutputRoot=$(Get-IsolatedBuildRoot -Path $BaseOutputPath)"
+}
+
+if ($baseIntermediateOutputPathWasExplicit) {
+    $buildArgs += "-p:JazorIsolatedBaseIntermediateOutputRoot=$(Get-IsolatedBuildRoot -Path $BaseIntermediateOutputPath)"
+}
+
+$buildArgs += "/nr:false"
+$buildArgs += "-p:UseSharedCompilation=false"
 
 Invoke-DotNet $buildArgs
 

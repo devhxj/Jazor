@@ -19,7 +19,8 @@ else {
 
 function Resolve-OptionalOverridePath {
     param(
-        [Parameter(Mandatory = $true)]
+        [AllowNull()]
+        [AllowEmptyString()]
         [string]$Override,
         [Parameter(Mandatory = $true)]
         [string]$Fallback

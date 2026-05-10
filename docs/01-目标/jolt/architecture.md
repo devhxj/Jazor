@@ -1,6 +1,6 @@
 # Jolt 整体架构
 
-Jolt 是一个 .NET 10 控制台应用，作为 .jazor 文件的多功能开发工具链，提供 LSP 语言服务、开发服务器、生产构建、调试适配器、扩展系统等核心能力。
+Jolt 是一个 .NET 11 preview 控制台应用，作为 .jazor 文件的多功能开发工具链，提供 LSP 语言服务、开发服务器、生产构建、调试适配器、扩展系统等核心能力。
 
 ## 运行模式
 
@@ -278,7 +278,7 @@ Jolt 可以在一个进程里服务多个解决方案，但解决方案边界只
 | **Roslyn** | .NET SDK 内置 | C# 编译器平台、代码分析、投影生成 |
 | **Razor SDK** | .NET SDK 内置 | Razor 设计时投影、.razor.g.cs 生成 |
 | **Deno** | DenoHost.Core | TypeScript 类型检查、模块捆绑、前端编译 |
-| **ASP.NET Core** | .NET 10 | Kestrel HTTP 服务器（DevServer、Preview） |
+| **ASP.NET Core** | .NET 11 preview | Kestrel HTTP 服务器（DevServer、Preview） |
 | **Acornima** | (通过 Jazor.Vue) | JavaScript AST 解析（间接依赖） |
 | **Jazor.Vue** | 项目引用 | .jazor 编译器、AST 转换 |
 

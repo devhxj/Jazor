@@ -1,6 +1,6 @@
 {
-  "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\ECMAScript.Pinia.Counter\\Pinia.Counter.Host\\bin\\Release\\net10.0\\Pinia.Counter.Host.dll",
-  "GeneratedAtUtc": "2026-05-07T09:12:46.0015005Z",
+  "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\ECMAScript.Pinia.Counter\\Pinia.Counter.Host\\bin\\Debug\\net11.0\\Pinia.Counter.Host.dll",
+  "GeneratedAtUtc": "2026-05-10T12:46:17.0382437Z",
   "Modules": [
     {
       "AssemblyName": "Pinia.Counter.Host",

@@ -1,6 +1,6 @@
 {
-  "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\ECMAScript.VueRoute.MemorySmoke\\VueRoute.MemorySmoke.Host\\bin\\Debug\\net10.0\\VueRoute.MemorySmoke.Host.dll",
-  "GeneratedAtUtc": "2026-05-07T13:15:24.2442258Z",
+  "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\samples\\ECMAScript.VueRoute.MemorySmoke\\VueRoute.MemorySmoke.Host\\bin\\Debug\\net11.0\\VueRoute.MemorySmoke.Host.dll",
+  "GeneratedAtUtc": "2026-05-10T12:46:54.1871603Z",
   "Modules": [
     {
       "AssemblyName": "VueRoute.MemorySmoke.Host",
