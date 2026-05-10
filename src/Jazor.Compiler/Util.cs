@@ -334,6 +334,61 @@ public static class Util
         return HasNameResolutionBoundary(namedType);
     }
 
+    public static bool IsECMAScriptRecordProxyMember(ISymbol? symbol, ITypeSymbol? hostType = null)
+    {
+        if (symbol is null)
+            return false;
+
+        var effectiveHost = hostType ?? symbol.ContainingType;
+        if (!StructuralRecordSupport.IsStructuralRecordType(effectiveHost))
+            return false;
+
+        if (!HasDirectECMAScriptSupportMarker(effectiveHost) &&
+            (effectiveHost is not INamedTypeSymbol namedHost ||
+             !HasDirectECMAScriptSupportMarkerBaseType(namedHost)))
+        {
+            return false;
+        }
+
+        return symbol switch
+        {
+            IPropertySymbol property => IsECMAScriptRecordProxyProperty(property),
+            IMethodSymbol { AssociatedSymbol: IPropertySymbol property } => IsECMAScriptRecordProxyProperty(property),
+            IMethodSymbol method => IsECMAScriptRecordProxyMethod(method),
+            _ => false
+        };
+    }
+
+    private static bool HasDirectECMAScriptSupportMarker(ISymbol? symbol)
+    {
+        var original = symbol?.OriginalDefinition;
+        return original is not null &&
+               original.GetAttributes().Any(static attribute =>
+                   IsECMAScriptSupportMarkerAttribute(attribute.AttributeClass));
+    }
+
+    private static bool HasDirectECMAScriptSupportMarkerBaseType(INamedTypeSymbol typeSymbol)
+    {
+        for (var current = typeSymbol.BaseType; current is not null; current = current.BaseType)
+        {
+            if (HasDirectECMAScriptSupportMarker(current))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsECMAScriptRecordProxyProperty(IPropertySymbol property)
+        => property.IsIndexer ||
+           property.Parameters.Length > 0 ||
+           GetSymbolConfigName(property) is not null ||
+           property.GetMethod?.IsExtern == true ||
+           property.SetMethod?.IsExtern == true;
+
+    private static bool IsECMAScriptRecordProxyMethod(IMethodSymbol method)
+        => method.MethodKind == MethodKind.Ordinary &&
+           (method.IsExtern || GetSymbolConfigName(method) is not null);
+
     public static bool IsECMAScriptUnionMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == ECMAScriptUnionAttributeMetadataName;
 

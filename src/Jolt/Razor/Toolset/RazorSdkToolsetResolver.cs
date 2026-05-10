@@ -96,7 +96,7 @@ internal sealed class RazorSdkToolsetResolver
             var versionRoot = Path.Combine(sdkRoot, version);
             var razorSdkRoot = Path.Combine(versionRoot, "Sdks", RazorSdkName);
             var sourceGeneratorPath = Path.Combine(razorSdkRoot, "source-generators", "Microsoft.CodeAnalysis.Razor.Compiler.dll");
-            var tasksPath = Path.Combine(razorSdkRoot, "tasks", "net10.0", "Microsoft.NET.Sdk.Razor.Tasks.dll");
+            var tasksPath = ResolveRazorTasksPath(razorSdkRoot);
             var designTimeTargetsPath = Path.Combine(razorSdkRoot, "targets", "Microsoft.NET.Sdk.Razor.DesignTime.targets");
             var componentTargetsPath = Path.Combine(razorSdkRoot, "targets", "Microsoft.NET.Sdk.Razor.Component.targets");
 
@@ -120,6 +120,41 @@ internal sealed class RazorSdkToolsetResolver
         }
 
         return null;
+    }
+
+    internal static string ResolveRazorTasksPath(string razorSdkRoot)
+    {
+        var tasksRoot = Path.Combine(razorSdkRoot, "tasks");
+        if (!Directory.Exists(tasksRoot))
+        {
+            return Path.Combine(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll");
+        }
+
+        var candidates = Directory
+            .GetFiles(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll", SearchOption.AllDirectories)
+            .OrderByDescending(GetTargetFrameworkSortKey)
+            .ThenByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return candidates.FirstOrDefault()
+            ?? Path.Combine(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll");
+    }
+
+    private static Version GetTargetFrameworkSortKey(string path)
+    {
+        var directoryName = Path.GetFileName(Path.GetDirectoryName(path));
+        if (string.IsNullOrWhiteSpace(directoryName))
+        {
+            return new Version(0, 0);
+        }
+
+        if (directoryName.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+            && Version.TryParse(directoryName["net".Length..], out var version))
+        {
+            return version;
+        }
+
+        return new Version(0, 0);
     }
 
     private static IEnumerable<string> EnumerateDefaultDotNetRoots()

@@ -213,6 +213,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         RazorSourceGeneratorBootstrap.Initialize();
+        RazorSourceGeneratorFallbackOutput.Register(context);
         var contextKey = RazorSourceGeneratorInitializationContextState.GetContextKey(context);
         var bootstrapTraceFactory = _bootstrapTraceFactory;
 
@@ -396,6 +397,11 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
 
         if (bootstrapTrace.PatchFailed)
         {
+            if (RazorSourceGeneratorFallbackOutput.IsFallbackRequiredFailure(bootstrapTrace.Failure))
+            {
+                return false;
+            }
+
             diagnostic = Diagnostic.Create(
                 RazorVueRazorSgIntegrationIncompatible,
                 candidate?.Location ?? Location.None,
@@ -427,16 +433,7 @@ public sealed class RazorVueGenerator : IIncrementalGenerator
             return true;
         }
 
-        var firstRequiredSnapshot = snapshots.First(static snapshot =>
-            snapshot.RazorIrCarrier is null &&
-            snapshot.RazorSourceGeneratorDocument is null &&
-            (snapshot.BuildRenderTreeMethod is null ||
-             !RazorVueBuildRenderTreeAuthoringClassifier.IsHandwrittenBuildRenderTree(snapshot)));
-        diagnostic = Diagnostic.Create(
-            RazorVueRazorSgIntegrationNotActive,
-            GetComponentLocation(firstRequiredSnapshot.ComponentSymbol),
-            firstRequiredSnapshot.ComponentSymbol.ToDisplayString());
-        return true;
+        return false;
     }
 
     private static Diagnostic CreateCompilationIssueDiagnostic(

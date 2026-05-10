@@ -42,28 +42,23 @@ internal static class RazorSourceGeneratorCompatibilityProbe
 
             var assemblyPath = assembly.Location ?? string.Empty;
 
-            var initializeMethod = generatorType.GetMethod(
-                "Initialize",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                binder: null,
-                types: [typeof(IncrementalGeneratorInitializationContext)],
-                modifiers: null);
+            var initializeMethods = generatorType
+                .GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(static method => IsInitializeCandidate(method))
+                .ToArray();
+            if (initializeMethods.Length > 1)
+            {
+                return RazorSourceGeneratorCompatibilityProbeResult.Fail(
+                    "RazorSourceGenerator.Initialize(IncrementalGeneratorInitializationContext) was ambiguous.");
+            }
+
+            var initializeMethod = initializeMethods.SingleOrDefault();
             if (initializeMethod is null)
             {
                 return RazorSourceGeneratorCompatibilityProbeResult.Fail("RazorSourceGenerator.Initialize(IncrementalGeneratorInitializationContext) was not found.");
             }
 
-            var methodBody = initializeMethod.GetMethodBody();
-            if (methodBody is null)
-            {
-                return RazorSourceGeneratorCompatibilityProbeResult.Fail("RazorSourceGenerator.Initialize(...) did not expose a method body.");
-            }
-
-            var ilBytes = methodBody.GetILAsByteArray();
-            if (ilBytes is null || ilBytes.Length == 0)
-            {
-                return RazorSourceGeneratorCompatibilityProbeResult.Fail("RazorSourceGenerator.Initialize(...) IL bytes were unavailable.");
-            }
+            var initializeMethodBodyFingerprint = TryComputeMethodBodyFingerprint(initializeMethod);
 
             var initializeParameterType = initializeMethod.GetParameters().SingleOrDefault()?.ParameterType;
             var declaredMethodNames = generatorType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
@@ -80,8 +75,11 @@ internal static class RazorSourceGeneratorCompatibilityProbe
                 ImplementsIncrementalGenerator: generatorType.GetInterfaces().Any(static item => string.Equals(item.FullName, IncrementalGeneratorInterfaceName, StringComparison.Ordinal)),
                 InitializeMethodName: initializeMethod.Name,
                 InitializeContextParameterType: initializeParameterType?.FullName ?? string.Empty,
-                InitializeMethodIlLength: ilBytes.Length,
-                InitializeMethodIlSha256: ComputeSha256Hex(ilBytes),
+                InitializeMethodReturnType: initializeMethod.ReturnType.FullName ?? initializeMethod.ReturnType.Name,
+                InitializeMethodIsPublic: initializeMethod.IsPublic,
+                InitializeMethodIsStatic: initializeMethod.IsStatic,
+                InitializeMethodIlLength: initializeMethodBodyFingerprint.Length,
+                InitializeMethodIlSha256: initializeMethodBodyFingerprint.Sha256,
                 DeclaredMethodNames: declaredMethodNames);
 
             return RazorSourceGeneratorCompatibilityProbeResult.Succeed(shape);
@@ -96,6 +94,35 @@ internal static class RazorSourceGeneratorCompatibilityProbe
     {
         using var sha = SHA256.Create();
         return ConvertHashToHex(sha.ComputeHash(bytes));
+    }
+
+    private static MethodBodyFingerprint TryComputeMethodBodyFingerprint(MethodInfo method)
+    {
+        try
+        {
+            var ilBytes = method.GetMethodBody()?.GetILAsByteArray();
+            if (ilBytes is null || ilBytes.Length == 0)
+                return MethodBodyFingerprint.Unavailable;
+
+            return new MethodBodyFingerprint(ilBytes.Length, ComputeSha256Hex(ilBytes));
+        }
+        catch (Exception ex) when (ex is ArgumentException ||
+                                   ex is BadImageFormatException ||
+                                   ex is InvalidOperationException ||
+                                   ex is NotSupportedException)
+        {
+            return MethodBodyFingerprint.Unavailable;
+        }
+    }
+
+    private static bool IsInitializeCandidate(MethodInfo method)
+    {
+        if (!string.Equals(method.Name, "Initialize", StringComparison.Ordinal))
+            return false;
+
+        var parameters = method.GetParameters();
+        return parameters.Length == 1 &&
+               parameters[0].ParameterType == typeof(IncrementalGeneratorInitializationContext);
     }
 
     private static string ConvertHashToHex(byte[] hashBytes)
@@ -130,6 +157,18 @@ internal sealed record RazorSourceGeneratorCompatibilityShape(
     bool ImplementsIncrementalGenerator,
     string InitializeMethodName,
     string InitializeContextParameterType,
+    string InitializeMethodReturnType,
+    bool InitializeMethodIsPublic,
+    bool InitializeMethodIsStatic,
     int InitializeMethodIlLength,
     string InitializeMethodIlSha256,
-    IReadOnlyList<string> DeclaredMethodNames);
+    IReadOnlyList<string> DeclaredMethodNames)
+{
+    public bool InitializeMethodIlFingerprintAvailable
+        => InitializeMethodIlLength > 0 && !string.IsNullOrWhiteSpace(InitializeMethodIlSha256);
+}
+
+internal readonly record struct MethodBodyFingerprint(int Length, string Sha256)
+{
+    public static MethodBodyFingerprint Unavailable { get; } = new(0, string.Empty);
+}

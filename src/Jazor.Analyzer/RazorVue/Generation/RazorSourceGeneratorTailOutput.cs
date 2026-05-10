@@ -11,14 +11,6 @@ internal static class RazorSourceGeneratorTailOutput
 {
     private const string RazorCodeDocumentTypeName = "Microsoft.AspNetCore.Razor.Language.RazorCodeDocument";
     private const string RazorCSharpDocumentTypeName = "Microsoft.AspNetCore.Razor.Language.RazorCSharpDocument";
-    private static readonly DiagnosticDescriptor RazorSgTailOutputFailed = new(
-        id: "JAZORVGA020",
-        title: "RazorVue Razor SG tail output failed",
-        messageFormat: "RazorVue Razor SG tail output failed: {0}",
-        category: "Jazor.RazorVue.Analysis",
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: true);
-
     internal static void Emit(SourceProductionContext context, Compilation compilation, object source)
         => Emit(
             context,
@@ -146,6 +138,32 @@ internal static class RazorSourceGeneratorTailOutput
             suppressed: false,
             options,
             requiresTailOutput);
+    }
+
+    internal static void EmitDocuments(
+        SourceProductionContext context,
+        Compilation compilation,
+        ImmutableArray<RazorSourceGeneratorDocumentOutput> documents,
+        RazorSourceGeneratorTailOutputOptions options)
+    {
+        if (compilation is null)
+            throw new ArgumentNullException(nameof(compilation));
+
+        var convertedDocuments = documents.IsDefaultOrEmpty
+            ? ImmutableArray<ReflectedRazorSourceGeneratorDocument>.Empty
+            : documents
+                .Select(static item => new ReflectedRazorSourceGeneratorDocument(
+                    item.HintName,
+                    item.CodeDocument,
+                    item.CSharpDocument))
+                .ToImmutableArray();
+        EmitCore(
+            context,
+            compilation,
+            convertedDocuments,
+            suppressed: false,
+            options,
+            CompilationRequiresRazorVueTailOutput(compilation));
     }
 
     private static void EmitCore(
@@ -277,7 +295,7 @@ internal static class RazorSourceGeneratorTailOutput
 
     private static void ReportTailFailure(SourceProductionContext context, string failure)
         => context.ReportDiagnostic(Diagnostic.Create(
-            RazorSgTailOutputFailed,
+            RazorSourceGeneratorDiagnostics.RazorSgTailOutputFailed,
             Location.None,
             string.IsNullOrWhiteSpace(failure) ? "Unknown failure." : failure));
 

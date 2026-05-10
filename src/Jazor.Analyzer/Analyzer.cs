@@ -562,7 +562,10 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 					}
 
-					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+					if (!Util.IsECMAScriptRecordProxyMember(
+							invocation.TargetMethod,
+							invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType) &&
+						StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
 						invocation.TargetMethod,
 						invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType))
 					{
@@ -598,7 +601,10 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.FieldReference:
 				{
 					var operation = (IFieldReferenceOperation)ctx.Operation;
-					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+					if (!Util.IsECMAScriptRecordProxyMember(
+							operation.Field,
+							operation.Instance?.Type ?? operation.Field.ContainingType) &&
+						StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
 						operation.Field,
 						operation.Instance?.Type ?? operation.Field.ContainingType))
 					{
@@ -626,7 +632,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var operation = (IPropertyReferenceOperation)ctx.Operation;
 					var hostType = operation.Instance?.Type ?? operation.Property.ContainingType;
 					if (IsSupportedObjectLiteralIndexerReference(operation, hostType) ||
-						IsSupportedStructuralRecordProxyIndexerReference(operation.Property, hostType))
+						Util.IsECMAScriptRecordProxyMember(operation.Property, hostType))
 					{
 						return;
 					}
@@ -657,7 +663,10 @@ public partial class Analyzer : DiagnosticAnalyzer
 				{
 					var operation = (IMethodReferenceOperation)ctx.Operation;
 					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
-					if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
+					if (!Util.IsECMAScriptRecordProxyMember(
+							operation.Method,
+							operation.Instance?.Type ?? operation.Method.ContainingType) &&
+						StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(
 						operation.Method,
 						operation.Instance?.Type ?? operation.Method.ContainingType))
 					{
@@ -854,27 +863,6 @@ public partial class Analyzer : DiagnosticAnalyzer
 		return operation.Parent is ISimpleAssignmentOperation assignment &&
 			   ReferenceEquals(assignment.Target, operation) &&
 			   IsInsideObjectOrCollectionInitializer(assignment);
-	}
-
-	private static bool IsSupportedStructuralRecordProxyIndexerReference(
-		IPropertySymbol property,
-		ITypeSymbol? hostType)
-	{
-		if (!IsSingleParameterIndexer(property))
-			return false;
-
-		var effectiveHost = hostType ?? property.ContainingType;
-		if (!StructuralRecordSupport.IsStructuralRecordType(effectiveHost))
-			return false;
-
-		if (!Util.HasECMAScriptSupportMarker(effectiveHost) &&
-			(effectiveHost is not INamedTypeSymbol namedHost ||
-			 !Util.HasECMAScriptSupportMarkerBaseType(namedHost)))
-		{
-			return false;
-		}
-
-		return true;
 	}
 
 	private static bool IsSingleParameterIndexer(IPropertySymbol property)

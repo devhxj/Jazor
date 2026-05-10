@@ -1,18 +1,13 @@
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace Jazor.Analyzer.RazorVue.Generation;
 
 internal static class RazorSourceGeneratorCompatibilityGuard
 {
-    internal const string ExpectedInitializeMethodIlSha256 = "FDC307519FAC1C8FB29D94CE5477D6B5FDEB136ED3757D1236BB12E28C2F6B32";
-
-    private static readonly ImmutableArray<string> ExpectedDeclaredMethodNames =
-    [
-        "ComputeRazorSourceGeneratorOptions",
-        "Initialize"
-    ];
+    internal const string RazorSourceGeneratorTypeName = "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator";
+    internal const string IncrementalGeneratorInitializationContextTypeName = "Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext";
+    internal const string VoidTypeName = "System.Void";
 
     public static RazorSourceGeneratorCompatibilityValidationResult Validate(RazorSourceGeneratorCompatibilityProbeResult probeResult)
     {
@@ -33,22 +28,66 @@ internal static class RazorSourceGeneratorCompatibilityGuard
         if (shape is null)
             throw new ArgumentNullException(nameof(shape));
 
-        if (!string.Equals(shape.InitializeMethodIlSha256, ExpectedInitializeMethodIlSha256, StringComparison.Ordinal))
+        if (!string.Equals(shape.TypeFullName, RazorSourceGeneratorTypeName, StringComparison.Ordinal))
         {
             return RazorSourceGeneratorCompatibilityValidationResult.Fail(
-                "Initialize(...) IL SHA-256 mismatch. Expected '" +
-                ExpectedInitializeMethodIlSha256 +
+                "Razor source generator type mismatch. Expected '" +
+                RazorSourceGeneratorTypeName +
                 "' but found '" +
-                shape.InitializeMethodIlSha256 +
+                shape.TypeFullName +
                 "'.");
         }
 
-        if (!shape.DeclaredMethodNames.SequenceEqual(ExpectedDeclaredMethodNames, StringComparer.Ordinal))
+        if (!shape.ImplementsIncrementalGenerator)
         {
             return RazorSourceGeneratorCompatibilityValidationResult.Fail(
-                "Declared method surface mismatch. Expected [" +
-                string.Join(", ", ExpectedDeclaredMethodNames) +
-                "] but found [" +
+                RazorSourceGeneratorTypeName + " no longer implements Microsoft.CodeAnalysis.IIncrementalGenerator.");
+        }
+
+        if (!string.Equals(shape.InitializeMethodName, "Initialize", StringComparison.Ordinal))
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize method mismatch. Expected 'Initialize' but found '" +
+                shape.InitializeMethodName +
+                "'.");
+        }
+
+        if (!string.Equals(shape.InitializeContextParameterType, IncrementalGeneratorInitializationContextTypeName, StringComparison.Ordinal))
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize parameter mismatch. Expected '" +
+                IncrementalGeneratorInitializationContextTypeName +
+                "' but found '" +
+                shape.InitializeContextParameterType +
+                "'.");
+        }
+
+        if (!string.Equals(shape.InitializeMethodReturnType, VoidTypeName, StringComparison.Ordinal))
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize return type mismatch. Expected '" +
+                VoidTypeName +
+                "' but found '" +
+                shape.InitializeMethodReturnType +
+                "'.");
+        }
+
+        if (!shape.InitializeMethodIsPublic)
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize is no longer public.");
+        }
+
+        if (shape.InitializeMethodIsStatic)
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "RazorSourceGenerator.Initialize is static; the RazorVue bootstrap patch expects an instance method.");
+        }
+
+        if (!shape.DeclaredMethodNames.Contains("Initialize", StringComparer.Ordinal))
+        {
+            return RazorSourceGeneratorCompatibilityValidationResult.Fail(
+                "Declared method surface no longer contains Initialize. Found [" +
                 string.Join(", ", shape.DeclaredMethodNames) +
                 "].");
         }

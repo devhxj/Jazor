@@ -27,6 +27,16 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
             return RazorSourceGeneratorBootstrapState.IsInstalled();
         }
 
+        if (!IsRuntimeDetourSupported())
+        {
+            var runtimeMajor = GetCoreLibMajorVersion();
+            RazorSourceGeneratorBootstrapState.MarkPatchFailed(
+                "RazorVue Razor SG runtime patch is skipped on CoreCLR " +
+                runtimeMajor.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                "; fallback Razor SG host-output generation is required.");
+            return false;
+        }
+
         try
         {
             AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
@@ -45,6 +55,12 @@ internal static class RazorSourceGeneratorInitializeHookInstaller
             return false;
         }
     }
+
+    private static bool IsRuntimeDetourSupported()
+        => GetCoreLibMajorVersion() <= 10;
+
+    private static int GetCoreLibMajorVersion()
+        => typeof(object).Assembly.GetName().Version?.Major ?? 0;
 
     private static void OnAssemblyLoad(object? sender, AssemblyLoadEventArgs args)
     {
