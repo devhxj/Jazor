@@ -22,8 +22,13 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : IEnumerable<string>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : System.Runtime.CompilerServices.IUnion, IEnumerable<string>");
         StringAssert.Contains(files["Unions.cs"], "[ECMAScriptUnion]");
+        StringAssert.Contains(files["Unions.cs"], "[System.Runtime.CompilerServices.Union]");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : System.Runtime.CompilerServices.IUnion, IEnumerable<string>");
+        StringAssert.Contains(files["Unions.cs"], "public ConstrainDOMString(string value)");
+        StringAssert.Contains(files["Unions.cs"], "public ConstrainDOMString(string[] value)");
+        StringAssert.Contains(files["Unions.cs"], "public object? Value => _kind switch");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator ConstrainDOMString(string[] value)");
         StringAssert.Contains(files["Unions.cs"], "public static class ConstrainDOMStringCollectionBuilder");
     }
@@ -86,7 +91,7 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#threshold\")]IntersectionObserverInitThreshold? Threshold = default");
         Assert.IsFalse(files["Dictionaries.cs"].Contains("Either<", StringComparison.Ordinal));
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : IEnumerable<double>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : System.Runtime.CompilerServices.IUnion, IEnumerable<double>");
     }
 
     [TestMethod]
@@ -130,7 +135,7 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern URLSearchParams(URLSearchParamsInit init);");
         Assert.IsFalse(files["Interfaces.cs"].Contains("Either<", StringComparison.Ordinal));
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : IEnumerable<string[]>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : System.Runtime.CompilerServices.IUnion, IEnumerable<string[]>");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator URLSearchParamsInit(string[][] value)");
     }
 
@@ -202,6 +207,10 @@ public sealed class PreviewBindingEmitterTests
         Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
         StringAssert.Contains(files["Unions.cs"], "public readonly struct BufferSource");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct AlgorithmIdentifier");
+        Assert.IsFalse(files["Unions.cs"].Contains("[System.Runtime.CompilerServices.Union]", StringComparison.Ordinal));
+        Assert.IsFalse(files["Unions.cs"].Contains(": System.Runtime.CompilerServices.IUnion", StringComparison.Ordinal));
+        StringAssert.Contains(files["Unions.cs"], "private BufferSource(IArrayBufferView value)");
+        StringAssert.Contains(files["Unions.cs"], "private AlgorithmIdentifier(object value)");
         StringAssert.Contains(files["Unions.cs"], "public static BufferSource FromIArrayBufferView(IArrayBufferView value)");
         Assert.IsFalse(files["Unions.cs"].Contains("public static implicit operator BufferSource(IArrayBufferView value)", StringComparison.Ordinal));
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator BufferSource(Uint8Array value)");

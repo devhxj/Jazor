@@ -1,4 +1,3 @@
-using Basic.Reference.Assemblies;
 using Jazor.Common;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -57,7 +56,7 @@ public sealed class WhiteListLookupTests
 		var compilation = CSharpCompilation.Create(
 			"WhiteListLookupTests",
 			[CSharpSyntaxTree.ParseText(code)],
-			Net100.References.All,
+			TestMetadataReferences.Net11,
 			new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
 		var diagnostics = compilation.GetDiagnostics()

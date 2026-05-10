@@ -1718,6 +1718,11 @@ internal sealed class PreviewBindingEmitter
         builder.AppendLine("/// </summary>");
         builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[ECMAScriptUnion]");
+        if (union.SupportsSystemUnionContract)
+        {
+            builder.AppendLine("[System.Runtime.CompilerServices.Union]");
+        }
+
         builder.AppendLine("[Description(\"@#\")]");
         if (union.CollectionElementType is not null)
         {
@@ -1725,6 +1730,11 @@ internal sealed class PreviewBindingEmitter
         }
 
         var interfaces = new List<string>();
+        if (union.SupportsSystemUnionContract)
+        {
+            interfaces.Add("System.Runtime.CompilerServices.IUnion");
+        }
+
         if (union.CollectionElementType is not null)
         {
             interfaces.Add($"IEnumerable<{union.CollectionElementType}>");
@@ -1743,7 +1753,7 @@ internal sealed class PreviewBindingEmitter
         foreach (var branch in union.Branches)
         {
             builder.AppendLine();
-            builder.AppendLine($"    private {union.Name}({branch.Type} value)");
+            builder.AppendLine($"    {GetUnionConstructorAccessibility(union)} {union.Name}({branch.Type} value)");
             builder.AppendLine("    {");
             builder.AppendLine($"        _kind = {branch.Kind};");
             foreach (var fieldBranch in union.Branches)
@@ -1758,6 +1768,20 @@ internal sealed class PreviewBindingEmitter
         {
             builder.AppendLine();
             builder.AppendLine($"    public {ToOptionalType(branch.Type)} {branch.AccessorName} => _kind == {branch.Kind} ? _value{branch.Kind} : default;");
+        }
+
+        if (union.SupportsSystemUnionContract)
+        {
+            builder.AppendLine();
+            builder.AppendLine("    public object? Value => _kind switch");
+            builder.AppendLine("    {");
+            foreach (var branch in union.Branches)
+            {
+                builder.AppendLine($"        {branch.Kind} => _value{branch.Kind},");
+            }
+
+            builder.AppendLine("        _ => default");
+            builder.AppendLine("    };");
         }
 
         foreach (var branch in union.Branches)
@@ -1847,6 +1871,12 @@ internal sealed class PreviewBindingEmitter
 
     private static string ToOptionalType(string type)
         => type.EndsWith("?", StringComparison.Ordinal) ? type : $"{type}?";
+
+    private static bool SupportsSystemUnionContract(IReadOnlyList<GeneratedUnionBranch> branches)
+        => branches.All(static branch => branch.SupportsImplicitConversion);
+
+    private static string GetUnionConstructorAccessibility(GeneratedUnionDefinition union)
+        => union.SupportsSystemUnionContract ? "public" : "private";
 
     private static bool SupportsImplicitConversion(string type)
     {
@@ -2084,7 +2114,10 @@ internal sealed class PreviewBindingEmitter
         string QualifiedTypeName,
         IReadOnlyList<GeneratedUnionBranch> Branches,
         GeneratedUnionBranch? CollectionBranch,
-        string? CollectionElementType);
+        string? CollectionElementType)
+    {
+        public bool SupportsSystemUnionContract { get; } = PreviewBindingEmitter.SupportsSystemUnionContract(Branches);
+    }
 
     private sealed record GeneratedUnionBranch(
         string Type,

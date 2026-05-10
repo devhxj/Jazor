@@ -5,6 +5,7 @@ namespace ECMAScript.GPUBufferUsage;
 /// </summary>
 [Description("@#GPUAddressMode")]
 [ECMAScript]
+[String]
 public enum GPUAddressMode
 {
     [Description("@#ClampToEdge")]
@@ -22,6 +23,7 @@ public enum GPUAddressMode
 /// </summary>
 [Description("@#GPUAutoLayoutMode")]
 [ECMAScript]
+[String]
 public enum GPUAutoLayoutMode
 {
     [Description("@#Auto")]
@@ -33,6 +35,7 @@ public enum GPUAutoLayoutMode
 /// </summary>
 [Description("@#GPUBlendFactor")]
 [ECMAScript]
+[String]
 public enum GPUBlendFactor
 {
     [Description("@#Zero")]
@@ -80,6 +83,7 @@ public enum GPUBlendFactor
 /// </summary>
 [Description("@#GPUBlendOperation")]
 [ECMAScript]
+[String]
 public enum GPUBlendOperation
 {
     [Description("@#Add")]
@@ -103,6 +107,7 @@ public enum GPUBlendOperation
 /// </summary>
 [Description("@#GPUBufferBindingType")]
 [ECMAScript]
+[String]
 public enum GPUBufferBindingType
 {
     [Description("@#Uniform")]
@@ -120,6 +125,7 @@ public enum GPUBufferBindingType
 /// </summary>
 [Description("@#GPUBufferMapState")]
 [ECMAScript]
+[String]
 public enum GPUBufferMapState
 {
     [Description("@#Unmapped")]
@@ -137,6 +143,7 @@ public enum GPUBufferMapState
 /// </summary>
 [Description("@#GPUCanvasAlphaMode")]
 [ECMAScript]
+[String]
 public enum GPUCanvasAlphaMode
 {
     [Description("@#Opaque")]
@@ -151,6 +158,7 @@ public enum GPUCanvasAlphaMode
 /// </summary>
 [Description("@#GPUCompareFunction")]
 [ECMAScript]
+[String]
 public enum GPUCompareFunction
 {
     [Description("@#Never")]
@@ -183,6 +191,7 @@ public enum GPUCompareFunction
 /// </summary>
 [Description("@#GPUCompilationMessageType")]
 [ECMAScript]
+[String]
 public enum GPUCompilationMessageType
 {
     [Description("@#Error")]
@@ -200,6 +209,7 @@ public enum GPUCompilationMessageType
 /// </summary>
 [Description("@#GPUCullMode")]
 [ECMAScript]
+[String]
 public enum GPUCullMode
 {
     [Description("@#None")]
@@ -217,6 +227,7 @@ public enum GPUCullMode
 /// </summary>
 [Description("@#GPUDeviceLostReason")]
 [ECMAScript]
+[String]
 public enum GPUDeviceLostReason
 {
     [Description("@#Unknown")]
@@ -231,6 +242,7 @@ public enum GPUDeviceLostReason
 /// </summary>
 [Description("@#GPUErrorFilter")]
 [ECMAScript]
+[String]
 public enum GPUErrorFilter
 {
     [Description("@#Validation")]
@@ -248,6 +260,7 @@ public enum GPUErrorFilter
 /// </summary>
 [Description("@#GPUFeatureName")]
 [ECMAScript]
+[String]
 public enum GPUFeatureName
 {
     [Description("@#DepthClipControl")]
@@ -289,6 +302,7 @@ public enum GPUFeatureName
 /// </summary>
 [Description("@#GPUFilterMode")]
 [ECMAScript]
+[String]
 public enum GPUFilterMode
 {
     [Description("@#Nearest")]
@@ -303,6 +317,7 @@ public enum GPUFilterMode
 /// </summary>
 [Description("@#GPUFrontFace")]
 [ECMAScript]
+[String]
 public enum GPUFrontFace
 {
     [Description("@#Ccw")]
@@ -317,6 +332,7 @@ public enum GPUFrontFace
 /// </summary>
 [Description("@#GPUIndexFormat")]
 [ECMAScript]
+[String]
 public enum GPUIndexFormat
 {
     [Description("@#Uint16")]
@@ -331,6 +347,7 @@ public enum GPUIndexFormat
 /// </summary>
 [Description("@#GPULoadOp")]
 [ECMAScript]
+[String]
 public enum GPULoadOp
 {
     [Description("@#Load")]
@@ -345,6 +362,7 @@ public enum GPULoadOp
 /// </summary>
 [Description("@#GPUMipmapFilterMode")]
 [ECMAScript]
+[String]
 public enum GPUMipmapFilterMode
 {
     [Description("@#Nearest")]
@@ -359,6 +377,7 @@ public enum GPUMipmapFilterMode
 /// </summary>
 [Description("@#GPUPipelineErrorReason")]
 [ECMAScript]
+[String]
 public enum GPUPipelineErrorReason
 {
     [Description("@#Validation")]
@@ -373,6 +392,7 @@ public enum GPUPipelineErrorReason
 /// </summary>
 [Description("@#GPUPowerPreference")]
 [ECMAScript]
+[String]
 public enum GPUPowerPreference
 {
     [Description("@#LowPower")]
@@ -387,6 +407,7 @@ public enum GPUPowerPreference
 /// </summary>
 [Description("@#GPUPrimitiveTopology")]
 [ECMAScript]
+[String]
 public enum GPUPrimitiveTopology
 {
     [Description("@#PointList")]
@@ -410,6 +431,7 @@ public enum GPUPrimitiveTopology
 /// </summary>
 [Description("@#GPUQueryType")]
 [ECMAScript]
+[String]
 public enum GPUQueryType
 {
     [Description("@#Occlusion")]
@@ -424,6 +446,7 @@ public enum GPUQueryType
 /// </summary>
 [Description("@#GPUSamplerBindingType")]
 [ECMAScript]
+[String]
 public enum GPUSamplerBindingType
 {
     [Description("@#Filtering")]
@@ -441,6 +464,7 @@ public enum GPUSamplerBindingType
 /// </summary>
 [Description("@#GPUStencilOperation")]
 [ECMAScript]
+[String]
 public enum GPUStencilOperation
 {
     [Description("@#Keep")]
@@ -473,6 +497,7 @@ public enum GPUStencilOperation
 /// </summary>
 [Description("@#GPUStorageTextureAccess")]
 [ECMAScript]
+[String]
 public enum GPUStorageTextureAccess
 {
     [Description("@#WriteOnly")]
@@ -490,6 +515,7 @@ public enum GPUStorageTextureAccess
 /// </summary>
 [Description("@#GPUStoreOp")]
 [ECMAScript]
+[String]
 public enum GPUStoreOp
 {
     [Description("@#Store")]
@@ -504,6 +530,7 @@ public enum GPUStoreOp
 /// </summary>
 [Description("@#GPUTextureAspect")]
 [ECMAScript]
+[String]
 public enum GPUTextureAspect
 {
     [Description("@#All")]
@@ -521,6 +548,7 @@ public enum GPUTextureAspect
 /// </summary>
 [Description("@#GPUTextureDimension")]
 [ECMAScript]
+[String]
 public enum GPUTextureDimension
 {
     [Description("@#_1d")]
@@ -538,6 +566,7 @@ public enum GPUTextureDimension
 /// </summary>
 [Description("@#GPUTextureFormat")]
 [ECMAScript]
+[String]
 public enum GPUTextureFormat
 {
     [Description("@#R8unorm")]
@@ -831,6 +860,7 @@ public enum GPUTextureFormat
 /// </summary>
 [Description("@#GPUTextureSampleType")]
 [ECMAScript]
+[String]
 public enum GPUTextureSampleType
 {
     [Description("@#Float")]
@@ -854,6 +884,7 @@ public enum GPUTextureSampleType
 /// </summary>
 [Description("@#GPUTextureViewDimension")]
 [ECMAScript]
+[String]
 public enum GPUTextureViewDimension
 {
     [Description("@#_1d")]
@@ -880,6 +911,7 @@ public enum GPUTextureViewDimension
 /// </summary>
 [Description("@#GPUVertexFormat")]
 [ECMAScript]
+[String]
 public enum GPUVertexFormat
 {
     [Description("@#Uint8x2")]
@@ -981,6 +1013,7 @@ public enum GPUVertexFormat
 /// </summary>
 [Description("@#GPUVertexStepMode")]
 [ECMAScript]
+[String]
 public enum GPUVertexStepMode
 {
     [Description("@#Vertex")]

@@ -26,7 +26,7 @@ public sealed class SemanticWalkerOrdinaryTest
           global using ECMAScript;
           global using static ECMAScript.Global;";
 
-    var references = Basic.Reference.Assemblies.Net100.References.All
+    var references = TestMetadataReferences.Net11
       .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
     var compilation = CSharpCompilation.Create(
       assemblyName: "TestAssembly",
@@ -75,7 +75,7 @@ public sealed class SemanticWalkerOrdinaryTest
           global using ECMAScript;
           global using static ECMAScript.Global;";
 
-    var references = Basic.Reference.Assemblies.Net100.References.All
+    var references = TestMetadataReferences.Net11
       .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
     var compilation = CSharpCompilation.Create(
       assemblyName: "TestAssembly",
@@ -117,7 +117,7 @@ public sealed class SemanticWalkerOrdinaryTest
           global using ECMAScript;
           global using static ECMAScript.Global;";
 
-    var references = Basic.Reference.Assemblies.Net100.References.All
+    var references = TestMetadataReferences.Net11
       .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
     var compilation = CSharpCompilation.Create(
       assemblyName: "TestAssembly",

@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Linq;
 using System.Threading;
 using Acornima.Ast;
-using Basic.Reference.Assemblies;
+using Jazor.ComplierTest;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -140,9 +140,9 @@ public sealed class ESGeneratorSourceMapCatalogTest
             assemblyName: assemblyName,
             syntaxTrees:
             [
-                CSharpSyntaxTree.ParseText(source, path: sourcePath)
+                CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions, path: sourcePath)
             ],
-            references: Net100.References.All.Cast<MetadataReference>(),
+            references: TestMetadataReferences.Net11,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
     private static (Compilation OutputCompilation, GeneratorDriverRunResult RunResult) RunGeneratorWithResult(Compilation compilation)

@@ -3,7 +3,6 @@ using System.Threading;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Jazor.Common;
-using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -48,7 +47,7 @@ public sealed class AstConverterTests
 
     private static MetadataReference[] BuildCompilationReferences(IEnumerable<MetadataReference>? additionalReferences = null)
     {
-        var references = Net100.References.All.Cast<MetadataReference>().ToList();
+        var references = TestMetadataReferences.Net11.ToList();
         if (additionalReferences is not null)
             references.AddRange(additionalReferences);
 
@@ -71,9 +70,14 @@ public sealed class AstConverterTests
     {
         var syntaxTrees = new List<SyntaxTree>();
         if (additionalReferences is not null && ContainsVue3Reference(additionalReferences))
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText("global using ECMAScript.VueContract;", path: "__TestGlobalUsings.cs"));
+        {
+            syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+                "global using ECMAScript.VueContract;",
+                TestMetadataReferences.PreviewParseOptions,
+                path: "__TestGlobalUsings.cs"));
+        }
 
-        syntaxTrees.Add(CSharpSyntaxTree.ParseText(code));
+        syntaxTrees.Add(CSharpSyntaxTree.ParseText(code, TestMetadataReferences.PreviewParseOptions));
         return syntaxTrees.ToArray();
     }
 
@@ -81,9 +85,17 @@ public sealed class AstConverterTests
     {
         var syntaxTrees = new List<SyntaxTree>();
         if (additionalReferences is not null && ContainsVue3Reference(additionalReferences))
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText("global using ECMAScript.VueContract;", path: "__TestGlobalUsings.cs"));
+        {
+            syntaxTrees.Add(CSharpSyntaxTree.ParseText(
+                "global using ECMAScript.VueContract;",
+                TestMetadataReferences.PreviewParseOptions,
+                path: "__TestGlobalUsings.cs"));
+        }
 
-        syntaxTrees.AddRange(sources.Select(static source => CSharpSyntaxTree.ParseText(source.Text, path: source.Path)));
+        syntaxTrees.AddRange(sources.Select(static source => CSharpSyntaxTree.ParseText(
+            source.Text,
+            TestMetadataReferences.PreviewParseOptions,
+            path: source.Path)));
         return syntaxTrees.ToArray();
     }
 
@@ -7047,6 +7059,178 @@ export function readFile(value) {
 
         AssertScriptEqual(
 @"export function readValue(value) {
+  return value;
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingSystemUnionMarkerProjection_GeneratesNativeValue()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+
+            namespace System.Runtime.CompilerServices
+            {
+                [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+                public sealed class UnionAttribute : Attribute
+                {
+                }
+
+                public interface IUnion
+                {
+                    object? Value { get; }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScriptModule("webidl/system-union-marker-projection.mjs")]
+                public static class SystemUnionMarkerProjectionModule
+                {
+                    public static string? ReadString(SystemUnionMarker value)
+                        => value.AsString;
+
+                    public static object? ReadValue(SystemUnionMarker value)
+                        => value.Value;
+                }
+
+                [ECMAScript]
+                [System.Runtime.CompilerServices.Union]
+                public readonly struct SystemUnionMarker : System.Runtime.CompilerServices.IUnion
+                {
+                    public string? AsString => default;
+
+                    public object? Value => default;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "SystemUnionMarkerProjectionModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "SystemUnionMarkerProjectionModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function readString(value) {
+  return value;
+}
+export function readValue(value) {
+  return value;
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingSystemUnionMarkerWithoutECMAScriptMarker_ThrowsUnsupportedExternalPropertyAccess()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+
+            namespace System.Runtime.CompilerServices
+            {
+                [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+                public sealed class UnionAttribute : Attribute
+                {
+                }
+
+                public interface IUnion
+                {
+                    object? Value { get; }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScriptModule("webidl/plain-system-union-projection.mjs")]
+                public static class PlainSystemUnionProjectionModule
+                {
+                    public static string? ReadString(PlainSystemUnion value)
+                        => value.AsString;
+
+                    public static object? ReadValue(PlainSystemUnion value)
+                        => value.Value;
+                }
+
+                [System.Runtime.CompilerServices.Union]
+                public readonly struct PlainSystemUnion : System.Runtime.CompilerServices.IUnion
+                {
+                    public string? AsString => default;
+
+                    public object? Value => default;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "PlainSystemUnionProjectionModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "PlainSystemUnionProjectionModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "External type 'Demo.PlainSystemUnion' is not supported");
+        StringAssert.Contains(exception.Message, "property access");
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueNamesOrOptionsValueProjection_GeneratesNativeValue()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            [ECMAScriptModule("vue/union-value-projection.mjs")]
+            public static class TestClass
+            {
+                public static object? Read(VueNamesOrOptions value)
+                    => value.Value;
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var classSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "TestClass")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(classSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function read(value) {
   return value;
 }
 ", script);

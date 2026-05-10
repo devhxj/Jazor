@@ -91,7 +91,7 @@ internal static class RazorVueRazorCodeDocumentProvider
         if (propertiesFactory?.Invoke(null, [document.Path, Path.GetFileName(document.Path)]) is not RazorSourceDocumentProperties properties)
             throw new InvalidOperationException("RazorSourceDocumentProperties.Create(filePath, relativePath) was not available.");
 
-        return RazorSourceDocument.Create(document.Text, properties);
+        return RazorSourceDocument.Create(document.Text.ToString(), properties.FilePath);
     }
 
     internal static RazorCSharpDocument GetRequiredCSharpDocument(RazorCodeDocument codeDocument)

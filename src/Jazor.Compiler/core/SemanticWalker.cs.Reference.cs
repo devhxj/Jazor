@@ -952,16 +952,19 @@ public partial class SemanticWalker
 		if (property.IsStatic ||
 			property.Parameters.Length != 0 ||
 			property.GetMethod is null ||
-			!property.Name.StartsWith("As", System.StringComparison.Ordinal))
+			!IsErasedUnionProjectionPropertyName(property.Name))
 			return false;
 
 		return property.ContainingType is INamedTypeSymbol namedType &&
 			ImplementsErasedUnionContract(namedType);
 	}
 
+	private static bool IsErasedUnionProjectionPropertyName(string propertyName)
+		=> propertyName == "Value" || propertyName.StartsWith("As", System.StringComparison.Ordinal);
+
 	private static bool ImplementsErasedUnionContract(INamedTypeSymbol type)
 	{
-		return Util.IsECMAScriptUnionType(type.OriginalDefinition);
+		return Util.IsHostErasedUnionType(type.OriginalDefinition);
 	}
 
 	private static bool ShouldInvokeAliasedPropertyGetter(IPropertyReferenceOperation operation, string alias)

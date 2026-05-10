@@ -5,6 +5,7 @@ namespace ECMAScript.WebAssembly;
 /// </summary>
 [Description("@#ImportExportKind")]
 [ECMAScript]
+[String]
 public enum ImportExportKind
 {
     [Description("@#Function")]
@@ -25,6 +26,7 @@ public enum ImportExportKind
 /// </summary>
 [Description("@#TableKind")]
 [ECMAScript]
+[String]
 public enum TableKind
 {
     [Description("@#Externref")]
@@ -39,6 +41,7 @@ public enum TableKind
 /// </summary>
 [Description("@#ValueType")]
 [ECMAScript]
+[String]
 public enum ValueType
 {
     [Description("@#I32")]

@@ -5,6 +5,7 @@ namespace ECMAScript.CSS;
 /// </summary>
 [Description("@#BlockFragmentationType")]
 [ECMAScript]
+[String]
 public enum BlockFragmentationType
 {
     [Description("@#None")]
@@ -25,6 +26,7 @@ public enum BlockFragmentationType
 /// </summary>
 [Description("@#BreakType")]
 [ECMAScript]
+[String]
 public enum BreakType
 {
     [Description("@#None")]
@@ -48,6 +50,7 @@ public enum BreakType
 /// </summary>
 [Description("@#CSSMathOperator")]
 [ECMAScript]
+[String]
 public enum CSSMathOperator
 {
     [Description("@#Sum")]
@@ -77,6 +80,7 @@ public enum CSSMathOperator
 /// </summary>
 [Description("@#CSSNumericBaseType")]
 [ECMAScript]
+[String]
 public enum CSSNumericBaseType
 {
     [Description("@#Length")]
@@ -106,6 +110,7 @@ public enum CSSNumericBaseType
 /// </summary>
 [Description("@#ChildDisplayType")]
 [ECMAScript]
+[String]
 public enum ChildDisplayType
 {
     [Description("@#Block")]
@@ -120,6 +125,7 @@ public enum ChildDisplayType
 /// </summary>
 [Description("@#HighlightType")]
 [ECMAScript]
+[String]
 public enum HighlightType
 {
     [Description("@#Highlight")]
@@ -137,6 +143,7 @@ public enum HighlightType
 /// </summary>
 [Description("@#LayoutSizingMode")]
 [ECMAScript]
+[String]
 public enum LayoutSizingMode
 {
     [Description("@#BlockLike")]

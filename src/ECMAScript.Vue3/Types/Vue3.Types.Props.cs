@@ -94,20 +94,21 @@ public static partial class Vue3
 	/// </summary>
 	[ECMAScript]
 	[ECMAScriptUnion]
+	[System.Runtime.CompilerServices.Union]
 	[Description("@#")]
 	[CollectionBuilder(typeof(VueNamesOrOptionsCollectionBuilder), nameof(VueNamesOrOptionsCollectionBuilder.Create))]
-	public readonly struct VueNamesOrOptions : IEnumerable<string>
+	public readonly struct VueNamesOrOptions : System.Runtime.CompilerServices.IUnion, IEnumerable<string>
 	{
 		private readonly string[]? _names;
 		private readonly VueProps? _options;
 
-		private VueNamesOrOptions(string[] names)
+		public VueNamesOrOptions(string[] names)
 		{
 			_names = names;
 			_options = null;
 		}
 
-		private VueNamesOrOptions(VueProps options)
+		public VueNamesOrOptions(VueProps options)
 		{
 			_names = null;
 			_options = options;
@@ -124,6 +125,8 @@ public static partial class Vue3
 		/// Gets the object-form options when this value was created from a Vue options record.
 		/// </summary>
 		public VueProps? AsOptions => _options;
+
+		public object? Value => (object?)_names ?? _options;
 
 		public static implicit operator VueNamesOrOptions(string[] names)
 			=> new(names);

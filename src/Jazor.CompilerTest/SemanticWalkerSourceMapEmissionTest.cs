@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Diagnostics;
 using Acornima;
 using Acornima.Ast;
+using Jazor.ComplierTest;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -945,7 +946,7 @@ public sealed class SemanticWalkerSourceMapEmissionTest
             """;
 
         var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
-        var references = Basic.Reference.Assemblies.Net100.References.All
+        var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Global).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             assemblyName: "TestAssembly",

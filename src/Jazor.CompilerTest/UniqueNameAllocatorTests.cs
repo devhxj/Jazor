@@ -1,4 +1,3 @@
-using Basic.Reference.Assemblies;
 using ECMAScript;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -41,7 +40,7 @@ public sealed class UniqueNameAllocatorTests
                 CSharpSyntaxTree.ParseText(usings),
                 CSharpSyntaxTree.ParseText(code)
             ],
-            references: Net100.References.All
+            references: TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location)),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 

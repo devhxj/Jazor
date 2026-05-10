@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>Jazor</PackageId>
@@ -19,8 +19,8 @@
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(UserProfile)' != ''">$([System.IO.Path]::Combine('$(UserProfile)', '.nuget', 'packages'))\</NuGetPackageRoot>
     <JazorPackageBuildOutputRoot Condition="'$(JazorPackageBuildOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorPackageBuildOutputRoot>
     <JazorPackageBuildOutputRoot Condition="'$(JazorPackageBuildOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorPackageBuildOutputRoot>
-    <JazorEmitPublishOutputRoot Condition="'$(JazorEmitPublishOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''">$([System.IO.Path]::Combine('$([MSBuild]::EnsureTrailingSlash($(JazorIsolatedBaseOutputRoot)))', 'Jazor.Emit', 'bin', '$(Configuration)', 'net10.0', 'publish'))\</JazorEmitPublishOutputRoot>
-    <JazorEmitPublishOutputRoot Condition="'$(JazorEmitPublishOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\Jazor.Emit\bin\$(Configuration)\net10.0\publish\</JazorEmitPublishOutputRoot>
+    <JazorEmitPublishOutputRoot Condition="'$(JazorEmitPublishOutputRoot)' == '' and '$(JazorIsolatedBaseOutputRoot)' != ''">$([System.IO.Path]::Combine('$([MSBuild]::EnsureTrailingSlash($(JazorIsolatedBaseOutputRoot)))', 'Jazor.Emit', 'bin', '$(Configuration)', 'net11.0', 'publish'))\</JazorEmitPublishOutputRoot>
+    <JazorEmitPublishOutputRoot Condition="'$(JazorEmitPublishOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\Jazor.Emit\bin\$(Configuration)\net11.0\publish\</JazorEmitPublishOutputRoot>
     <JazorPackageArtifactRestoreProperties>Configuration=$(Configuration);BuildInParallel=false</JazorPackageArtifactRestoreProperties>
     <JazorPackageArtifactBuildProperties>$(JazorPackageArtifactRestoreProperties);BuildProjectReferences=false</JazorPackageArtifactBuildProperties>
   </PropertyGroup>
@@ -39,47 +39,47 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia\bin\$(Configuration)\net10.0\ECMAScript.Pinia.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia\bin\$(Configuration)\net10.0\ECMAScript.Pinia.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\bin\$(Configuration)\net10.0\ECMAScript.Pinia.Testing.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\bin\$(Configuration)\net10.0\ECMAScript.Pinia.Testing.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\bin\$(Configuration)\net10.0\ECMAScript.VueRoute.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\bin\$(Configuration)\net10.0\ECMAScript.VueRoute.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vuetify\bin\$(Configuration)\net10.0\ECMAScript.Vuetify.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vuetify\bin\$(Configuration)\net10.0\ECMAScript.Vuetify.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net10.0\Jazor.AspNetCore.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net10.0\Jazor.AspNetCore.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net10.0\Jazor.AspNetCore.Dev.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net10.0\Jazor.AspNetCore.Dev.pdb" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="lib\net10.0\" />
-    <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="lib\net10.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia\bin\$(Configuration)\net11.0\ECMAScript.Pinia.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia\bin\$(Configuration)\net11.0\ECMAScript.Pinia.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\bin\$(Configuration)\net11.0\ECMAScript.Pinia.Testing.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Pinia.Testing\bin\$(Configuration)\net11.0\ECMAScript.Pinia.Testing.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\bin\$(Configuration)\net11.0\ECMAScript.VueRoute.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueRoute\bin\$(Configuration)\net11.0\ECMAScript.VueRoute.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vuetify\bin\$(Configuration)\net11.0\ECMAScript.Vuetify.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vuetify\bin\$(Configuration)\net11.0\ECMAScript.Vuetify.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net11.0\Jazor.AspNetCore.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore\bin\$(Configuration)\net11.0\Jazor.AspNetCore.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.AspNetCore.Dev\bin\$(Configuration)\net11.0\Jazor.AspNetCore.Dev.pdb" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="lib\net11.0\" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.pdb" Pack="true" PackagePath="lib\net11.0\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net10.0\ECMAScript.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net10.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
+    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Vue3\bin\$(Configuration)\net11.0\ECMAScript.Vue3.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Common.pdb" Pack="true" PackagePath="analyzers\dotnet\cs\" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Pack="true" PackagePath="analyzers\dotnet\cs\" />
@@ -140,7 +140,7 @@
           DependsOnTargets="PrepareJazorPackageArtifacts">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(JazorEmitPublishOutputRoot)**\*">
-        <PackagePath>tools\net10.0\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+        <PackagePath>tools\net11.0\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

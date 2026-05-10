@@ -19,6 +19,8 @@ public static class Util
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
     public const string ECMAScriptUnionAttributeMetadataName = "ECMAScript.ECMAScriptUnionAttribute";
+    public const string SystemUnionAttributeMetadataName = "System.Runtime.CompilerServices.UnionAttribute";
+    public const string SystemIUnionMetadataName = "System.Runtime.CompilerServices.IUnion";
     public const string StringAttributeMetadataName = "ECMAScript.StringAttribute";
 
     private enum JsNameConfigKind
@@ -284,6 +286,9 @@ public static class Util
     public static bool IsECMAScriptUnionMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == ECMAScriptUnionAttributeMetadataName;
 
+    public static bool IsSystemUnionMarkerAttribute(INamedTypeSymbol? symbol)
+        => symbol?.ToDisplayString() == SystemUnionAttributeMetadataName;
+
     public static bool IsStringEnumMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == StringAttributeMetadataName;
 
@@ -301,6 +306,28 @@ public static class Util
 
         return symbol.AllInterfaces.Any(@interface =>
             @interface.GetAttributes().Any(attr => IsECMAScriptUnionMarkerAttribute(attr.AttributeClass)));
+    }
+
+    public static bool IsSystemUnionType(INamedTypeSymbol? symbol)
+    {
+        if (symbol is null)
+            return false;
+
+        if (symbol.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass)))
+            return true;
+
+        return symbol.AllInterfaces.Any(@interface =>
+            @interface.OriginalDefinition.ToDisplayString(Format.NameFormat) == SystemIUnionMetadataName ||
+            @interface.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass)));
+    }
+
+    public static bool IsHostErasedUnionType(INamedTypeSymbol? symbol)
+    {
+        if (symbol is null)
+            return false;
+
+        return IsECMAScriptUnionType(symbol) ||
+            IsSystemUnionType(symbol) && IsECMAScriptRuntimeType(symbol);
     }
 
     private static bool IsRuntimeMarkerType(ISymbol? symbol)

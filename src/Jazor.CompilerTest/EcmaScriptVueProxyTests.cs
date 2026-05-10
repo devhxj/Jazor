@@ -107,7 +107,17 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalProps.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalEmits.PropertyType.UnwrapNullable());
         Assert.IsNotNull(typeof(VueNamesOrOptions).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VueNamesOrOptions).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
+        Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(VueNamesOrOptions)));
         Assert.IsTrue(typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(typeof(VueNamesOrOptions)));
+        Assert.IsNotNull(typeof(VueNamesOrOptions).GetProperty(nameof(System.Runtime.CompilerServices.IUnion.Value), BindingFlags.Public | BindingFlags.Instance));
+        CollectionAssert.AreEquivalent(
+            new[] { typeof(string[]), typeof(VueProps) },
+            typeof(VueNamesOrOptions)
+                .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+                .Select(static constructor => constructor.GetParameters().SingleOrDefault()?.ParameterType)
+                .Where(static type => type is not null)
+                .ToArray());
         var collectionBuilder = typeof(VueNamesOrOptions).GetCustomAttribute<System.Runtime.CompilerServices.CollectionBuilderAttribute>();
         Assert.IsNotNull(collectionBuilder);
         Assert.AreEqual(typeof(VueNamesOrOptionsCollectionBuilder), collectionBuilder!.BuilderType);

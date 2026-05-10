@@ -31,13 +31,13 @@ public sealed class SemanticWalkerBoundaryTest
 		global using ECMAScript;
 		global using static ECMAScript.Global;";
 
-		var references = Basic.Reference.Assemblies.Net100.References.All
+		var references = TestMetadataReferences.Net11
 			.Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
 		var compilation = CSharpCompilation.Create(
 			assemblyName: "TestAssembly",
 			syntaxTrees: [
-			  CSharpSyntaxTree.ParseText(usings),
-			  CSharpSyntaxTree.ParseText(code)
+			  CSharpSyntaxTree.ParseText(usings, TestMetadataReferences.PreviewParseOptions),
+			  CSharpSyntaxTree.ParseText(code, TestMetadataReferences.PreviewParseOptions)
 			],
 			references: references,
 			options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

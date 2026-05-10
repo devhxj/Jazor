@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using Basic.Reference.Assemblies;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,7 +17,7 @@ public sealed class AstConverterUniqueNameTests
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             [syntaxTree],
-            Net100.References.All,
+            TestMetadataReferences.Net11,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var semanticModel = compilation.GetSemanticModel(syntaxTree);

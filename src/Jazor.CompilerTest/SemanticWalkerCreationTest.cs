@@ -27,7 +27,7 @@ public sealed class SemanticWalkerCreationTest
 		global using ECMAScript;
 		global using static ECMAScript.Global;";
 
-        var references = Basic.Reference.Assemblies.Net100.References.All
+        var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location))
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
