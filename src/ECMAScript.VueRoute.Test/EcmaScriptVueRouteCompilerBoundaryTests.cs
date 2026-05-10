@@ -1086,6 +1086,37 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_RouterRecordProxyExternProperty_CompilesThroughHostFallback()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.VueRoute;
+
+            public static class TestClass
+            {
+                public static string CurrentPath(Router router)
+                {
+                    return router.CurrentRoute.Value.Path;
+                }
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "router.currentRoute.value.path");
+    }
+
+    [TestMethod]
     public async Task VueRoute_QueryHelpers_AndResolveOverload_Compile_WithTypedContracts()
     {
         var code = """

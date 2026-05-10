@@ -1288,7 +1288,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndEnabledRazorSgIntegration_ReportsJAZORVGA018()
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndEnabledRazorSgIntegrationWithoutTailRegistration_DoesNotReportBootstrapDiagnostic()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1326,21 +1326,19 @@ public sealed class ESGeneratorTests
             enableRazorSgIntegration: true);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA018")
+            .Where(static diagnostic => diagnostic.Id is "JAZORVGA018" or "JAZORVGA019")
             .ToArray();
         var genericDiagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
             .Where(static diagnostic => diagnostic.Id == "JAZORVGA001")
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
         Assert.AreEqual(0, genericDiagnostics.Length, string.Join("\n", genericDiagnostics.Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "no RazorVue tail output was produced");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithoutTailRegistration_ReportsJAZORVGA018()
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndEnabledRazorSgIntegrationWithoutTailRegistration_DoesNotReportBootstrapDiagnostic()
     {
         var compilation = CreateCompilation(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.Tests",
@@ -1381,11 +1379,10 @@ public sealed class ESGeneratorTests
             enableRazorSgIntegration: true);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA018")
+            .Where(static diagnostic => diagnostic.Id is "JAZORVGA018" or "JAZORVGA019")
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
     }
 
     [TestMethod]
@@ -1437,7 +1434,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithRazorVuePartialOnly_AndOnlyGlobalTailRegistration_ReportsJAZORVGA018()
+    public void GenerateCatalog_WithRazorVuePartialOnly_AndOnlyGlobalTailRegistration_DoesNotReportBootstrapDiagnostic()
     {
         var compilation = CreateCompilation(
             "RazorVue.Generator.IntegrationEnabled.PartialOnly.GlobalTailOnly.Tests",
@@ -1479,11 +1476,10 @@ public sealed class ESGeneratorTests
             enableRazorSgIntegration: true);
         var diagnostics = runResult.Results
             .SelectMany(static result => result.Diagnostics)
-            .Where(static diagnostic => diagnostic.Id == "JAZORVGA018")
+            .Where(static diagnostic => diagnostic.Id is "JAZORVGA018" or "JAZORVGA019")
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Demo.Pages.TodoApp");
+        Assert.AreEqual(0, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
     }
 
     [TestMethod]
@@ -1588,7 +1584,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndIncompatibleRazorSgShape_ReportsJAZORVGA019()
+    public void GenerateCatalog_WithGeneratedRazorComponentButNoCarrier_AndIncompatibleRazorSgAbi_ReportsJAZORVGA019()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
         const string razorDocumentText = """<section><h1>@Title</h1><p>Hello</p></section>""";
@@ -1612,10 +1608,14 @@ public sealed class ESGeneratorTests
             """,
             rootNamespace: "Demo.Pages");
 
-        var generator = new RazorVueGenerator(
-            static () => new RazorVuePipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => new RazorVueSfcPipeline(RazorVueRazorDocumentSemanticFrontend.Instance, RazorVuePreferredTemplateFrontend.Instance),
-            static () => RazorSourceGeneratorCompatibilityProbeResult.Succeed(
+        var generator = CreateRazorSgIntegrationTestGenerator(
+            bootstrapTrace: CreateBootstrapTrace(
+                hasAttempted: true,
+                isInstalled: true,
+                tailOutputRegistered: false,
+                currentContextKeyAvailable: true,
+                tailOutputRegisteredForCurrentContext: false),
+            compatibilityProbeFactory: static () => RazorSourceGeneratorCompatibilityProbeResult.Succeed(
                 new RazorSourceGeneratorCompatibilityShape(
                     AssemblyPath: "ignored",
                     AssemblyVersion: "10.0.0.0",
@@ -1624,6 +1624,9 @@ public sealed class ESGeneratorTests
                     ImplementsIncrementalGenerator: true,
                     InitializeMethodName: "Initialize",
                     InitializeContextParameterType: "Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext",
+                    InitializeMethodReturnType: "System.Void",
+                    InitializeMethodIsPublic: false,
+                    InitializeMethodIsStatic: false,
                     InitializeMethodIlLength: 1,
                     InitializeMethodIlSha256: "BAD",
                     DeclaredMethodNames: ["Initialize"])));
@@ -1639,7 +1642,7 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(1, diagnostics.Length, string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
-        StringAssert.Contains(diagnostics[0].GetMessage(), "Initialize(...) IL SHA-256 mismatch");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "RazorSourceGenerator.Initialize is no longer public");
     }
 
     [TestMethod]
@@ -11486,8 +11489,11 @@ public sealed class ESGeneratorTests
             ImplementsIncrementalGenerator: true,
             InitializeMethodName: "Initialize",
             InitializeContextParameterType: "Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext",
+            InitializeMethodReturnType: "System.Void",
+            InitializeMethodIsPublic: true,
+            InitializeMethodIsStatic: false,
             InitializeMethodIlLength: 1,
-            InitializeMethodIlSha256: RazorSourceGeneratorCompatibilityGuard.ExpectedInitializeMethodIlSha256,
+            InitializeMethodIlSha256: "diagnostic-only",
             DeclaredMethodNames: ["ComputeRazorSourceGeneratorOptions", "Initialize"]));
 
     private static AnalyzerConfigOptionsProvider CreateAnalyzerConfigOptionsProvider(string? razorVueOutputMode, bool enableRazorSgIntegration)

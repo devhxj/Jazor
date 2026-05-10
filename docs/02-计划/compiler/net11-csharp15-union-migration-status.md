@@ -22,6 +22,10 @@
 - Roslyn operation-surface audit now explicitly rejects the new collection-expression placeholder operation and has a reflection guard for visitor coverage drift.
 - Root `NuGet.config` is present for `nuget.org` plus the preview `dotnet-tools` feed.
 - Roslyn packages are aligned to SDK compiler version `5.7.0-1.26207.106`, restoring analyzer execution instead of `CS9057` analyzer skips.
+- Razor source-generator integration compatibility is matched by structural ABI, not IL hash. The hard gate is the expected SDK generator type, `IIncrementalGenerator`, and public instance `Initialize(IncrementalGeneratorInitializationContext): void`; the optional `Initialize` IL SHA-256 is retained only as diagnostic/probe metadata.
+- RazorIr external-build tests now resolve SDK versions semantically and derive `TargetFramework` / `RazorLangVersion` from the resolved SDK major version. This prevents `10.0.300-preview...` from being selected ahead of `11.0.100-preview...` by string ordering.
+- On CoreCLR 11, Lib.Harmony detouring is skipped by design and RazorVue uses the fallback Razor SG host-output generation path. The external build tests now validate both the old hook path on supported runtimes and the fallback trace/catalog/artifact path on CoreCLR 11.
+- Razor 11 component-attribute binding differences are handled at the authored surface with explicit strong expressions, not by weakening component APIs. Static values for non-`string` parameters such as `VuetifyTextValue`, `[String]` enums, and other host value wrappers must be written as typed C# expressions when Razor cannot legally bind an HTML-style literal.
 - Compiler and analyzer now share the object-literal host predicate through `Jazor.Compiler.Util.IsObjectLiteralHostType`.
 - `Jazor.Analyzer` accepts only the supported indexer slice:
   - object/collection initializer indexer assignments on object-literal host types such as `VueDictionary<TValue>` and `VueEventHandlers<TEvent>`
@@ -58,6 +62,16 @@
 - `dotnet build src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after removing the redundant `Microsoft.AspNetCore.Components` package reference covered by `Microsoft.AspNetCore.App`.
 - `dotnet build src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after explicit nullable guards.
 - `dotnet build src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the same Razor source-document path guard.
+- `dotnet build src\Jazor.Analyzer\Jazor.Analyzer.csproj --no-restore -v minimal -p:UseSharedCompilation=false -m:1` passed after making Razor SG IL fingerprint collection best-effort.
+- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RazorSourceGeneratorCompatibilityProbeTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 4/4 tests. This covers current SDK ABI probing, non-incremental-generator rejection, unknown `Initialize` IL hash acceptance, and unavailable IL fingerprint acceptance.
+- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~ExternalBuild_RazorSgIntegrationDisabled_DoesNotEmitTailOutput' -v minimal -p:UseSharedCompilation=false -m:1` passed on CoreCLR 11.
+- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~ExternalBuild_BootstrapHook_CanObserveOfficialRegisterHostOutput' -v minimal -p:UseSharedCompilation=false -m:1` passed on CoreCLR 11 via fallback trace and tail output generation.
+- `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --no-build --filter 'FullyQualifiedName~RazorSourceGeneratorCompatibilityProbeTests|FullyQualifiedName~RazorSourceGeneratorBootstrapPatchTests|FullyQualifiedName~RazorSdkToolsetProbeTests|FullyQualifiedName~RazorSourceGeneratorHostOutputTests|FullyQualifiedName~RazorSourceGeneratorCarrierBridgeTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 11/11 tests.
+- `dotnet test src\Jazor.CompilerTest\Jazor.CompilerTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 1878/1878 tests.
+- `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj --no-build -v minimal -p:UseSharedCompilation=false -m:1` passed: 605/605 tests.
+- `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace' -v minimal -p:UseSharedCompilation=false -m:1` passed: 3/3 tests after Razor 11 attribute-expression fixes and non-null sample text parameters.
+- `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 110/110 tests after the Razor 11 attribute-expression fixes and non-null sample text-parameter cleanup.
+- Direct `dotnet build samples\RazorVue.TodoList\Todo.Library\Todo.Library.csproj` is not a valid standalone verification in this checkout without a matching local `0.1.20` package feed. It currently fails restore with `NU1102`; the isolated local-package EmitTest flow is the authoritative sample verification.
 
 ## Original Analyzer Blocker
 
@@ -67,11 +81,8 @@ Resolution: these are plain-object host authoring surfaces, not arbitrary CLR in
 
 ## Next Work
 
-1. Run broader test coverage when time budget allows:
-   - `dotnet test src\Jazor.CompilerTest\Jazor.CompilerTest.csproj -v minimal -p:UseSharedCompilation=false -m:1`
-   - `dotnet test src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1`
-   - `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1`
-2. Continue migrating remaining generated/manual union wrappers only when each target branch set is proven safe for the official-preview contract.
-3. Keep object/interface/delegate/nullable-boundary union branches on explicit strong factories or overloads unless C# 15 preview semantics make normal assignment/overload binding sound.
-4. Continue monitoring SDK preview changes. Remove the temporary union shim only when the target .NET 11 SDK exposes the official runtime union contract.
-5. Re-check Roslyn `IOperation` shape after each SDK update; keep the reflection visitor guard green before accepting a new compiler package.
+1. Continue migrating remaining generated/manual union wrappers only when each target branch set is proven safe for the official-preview contract.
+2. Keep object/interface/delegate/nullable-boundary union branches on explicit strong factories or overloads unless C# 15 preview semantics make normal assignment/overload binding sound.
+3. Continue monitoring SDK preview changes. Remove the temporary union shim only when the target .NET 11 SDK exposes the official runtime union contract.
+4. Re-check Roslyn `IOperation` shape after each SDK update; keep the reflection visitor guard green before accepting a new compiler package.
+5. Re-run the full verification lane after the next SDK/Roslyn preview update, including compiler, RazorVue, RazorIr fallback, WebIDL generator, and Emit local-package sample coverage.

@@ -21,14 +21,14 @@ public partial class TodoSummaryCard : ComponentBase, IVueComponent
     public int PinnedCount { get; set; }
 
     [Parameter]
-    public string? TotalText { get; set; }
+    public string TotalText { get; set; } = string.Empty;
 
     [Parameter]
-    public string? CompletedText { get; set; }
+    public string CompletedText { get; set; } = string.Empty;
 
     [Parameter]
-    public string? OpenText { get; set; }
+    public string OpenText { get; set; } = string.Empty;
 
     [Parameter]
-    public string? PinnedText { get; set; }
+    public string PinnedText { get; set; } = string.Empty;
 }

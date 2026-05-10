@@ -7,6 +7,9 @@ namespace Jazor.RazorVue.RazorIr.Test;
 internal sealed record RazorSdkToolsetProbe(
     string RootPath,
     string SdkVersion,
+    int SdkMajorVersion,
+    string TargetFramework,
+    string RazorLangVersion,
     string SdkRootPath,
     string RazorSdkRootPath,
     string RazorSourceGeneratorPath,
@@ -21,6 +24,8 @@ internal sealed record RazorSdkToolsetProbe(
                 "Razor SDK toolset probe: available",
                 $"  root:                {RootPath}",
                 $"  sdk version:         {SdkVersion}",
+                $"  target framework:    {TargetFramework}",
+                $"  RazorLangVersion:    {RazorLangVersion}",
                 $"  sdk root:            {SdkRootPath}",
                 $"  razor sdk root:      {RazorSdkRootPath}",
                 $"  source generator:    {RazorSourceGeneratorPath}",
@@ -72,10 +77,13 @@ internal static class RazorSdkToolsetProbeResolver
 
         foreach (var version in versions)
         {
+            if (!TryParseSdkMajorVersion(version, out var sdkMajorVersion))
+                continue;
+
             var versionRoot = Path.Combine(sdkRoot, version);
             var razorSdkRoot = Path.Combine(versionRoot, "Sdks", RazorSdkName);
             var sourceGeneratorPath = Path.Combine(razorSdkRoot, "source-generators", "Microsoft.CodeAnalysis.Razor.Compiler.dll");
-            var tasksPath = Path.Combine(razorSdkRoot, "tasks", "net10.0", "Microsoft.NET.Sdk.Razor.Tasks.dll");
+            var tasksPath = ResolveRazorTasksPath(razorSdkRoot);
             var designTimeTargetsPath = Path.Combine(razorSdkRoot, "targets", "Microsoft.NET.Sdk.Razor.DesignTime.targets");
             var componentTargetsPath = Path.Combine(razorSdkRoot, "targets", "Microsoft.NET.Sdk.Razor.Component.targets");
 
@@ -90,6 +98,9 @@ internal static class RazorSdkToolsetProbeResolver
             return new RazorSdkToolsetProbe(
                 rootPath,
                 version,
+                sdkMajorVersion,
+                "net" + sdkMajorVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) + ".0",
+                sdkMajorVersion.ToString(System.Globalization.CultureInfo.InvariantCulture) + ".0",
                 versionRoot,
                 razorSdkRoot,
                 sourceGeneratorPath,
@@ -99,6 +110,37 @@ internal static class RazorSdkToolsetProbeResolver
         }
 
         return null;
+    }
+
+    private static string ResolveRazorTasksPath(string razorSdkRoot)
+    {
+        var tasksRoot = Path.Combine(razorSdkRoot, "tasks");
+        if (!Directory.Exists(tasksRoot))
+            return Path.Combine(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll");
+
+        var candidate = Directory
+            .GetFiles(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll", SearchOption.AllDirectories)
+            .OrderByDescending(GetTargetFrameworkSortKey)
+            .ThenByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+        return candidate ?? Path.Combine(tasksRoot, "Microsoft.NET.Sdk.Razor.Tasks.dll");
+    }
+
+    private static Version GetTargetFrameworkSortKey(string path)
+    {
+        var directoryName = Path.GetFileName(Path.GetDirectoryName(path));
+        if (string.IsNullOrWhiteSpace(directoryName))
+        {
+            return new Version(0, 0);
+        }
+
+        if (directoryName.StartsWith("net", StringComparison.OrdinalIgnoreCase)
+            && Version.TryParse(directoryName["net".Length..], out var version))
+        {
+            return version;
+        }
+
+        return new Version(0, 0);
     }
 
     private static IEnumerable<(string RootPath, string? PreferredVersion)> EnumerateDotNetRoots()
@@ -374,6 +416,16 @@ internal static class RazorSdkToolsetProbeResolver
         }
     }
 
+    private static bool TryParseSdkMajorVersion(string versionText, out int majorVersion)
+    {
+        majorVersion = 0;
+        if (!TryParseSemanticSdkVersion(versionText, out var version, out _))
+            return false;
+
+        majorVersion = version!.Major;
+        return majorVersion > 0;
+    }
+
     private sealed class SdkVersionComparer : IComparer<string>
     {
         public static SdkVersionComparer Instance { get; } = new();
@@ -395,8 +447,8 @@ internal static class RazorSdkToolsetProbeResolver
                 return 1;
             }
 
-            var leftParsed = TryParse(left, out var leftVersion, out var leftPrerelease);
-            var rightParsed = TryParse(right, out var rightVersion, out var rightPrerelease);
+            var leftParsed = TryParseSemanticSdkVersion(left, out var leftVersion, out var leftPrerelease);
+            var rightParsed = TryParseSemanticSdkVersion(right, out var rightVersion, out var rightPrerelease);
             if (leftParsed && rightParsed)
             {
                 var versionComparison = leftVersion!.CompareTo(rightVersion);
@@ -425,28 +477,25 @@ internal static class RazorSdkToolsetProbeResolver
             {
                 return leftParsed ? 1 : -1;
             }
-
             return string.Compare(left, right, StringComparison.OrdinalIgnoreCase);
         }
+    }
 
-        private static bool TryParse(string versionText, out Version? version, out string prereleaseLabel)
-        {
-            version = null;
-            prereleaseLabel = string.Empty;
+    private static bool TryParseSemanticSdkVersion(string versionText, out Version? version, out string prereleaseLabel)
+    {
+        version = null;
+        prereleaseLabel = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(versionText))
-            {
-                return false;
-            }
+        if (string.IsNullOrWhiteSpace(versionText))
+            return false;
 
-            var separatorIndex = versionText.IndexOf('-', StringComparison.Ordinal);
-            var numericPart = separatorIndex >= 0
-                ? versionText[..separatorIndex]
-                : versionText;
-            prereleaseLabel = separatorIndex >= 0
-                ? versionText[(separatorIndex + 1)..]
-                : string.Empty;
-            return Version.TryParse(numericPart, out version);
-        }
+        var separatorIndex = versionText.IndexOf('-', StringComparison.Ordinal);
+        var numericPart = separatorIndex >= 0
+            ? versionText[..separatorIndex]
+            : versionText;
+        prereleaseLabel = separatorIndex >= 0
+            ? versionText[(separatorIndex + 1)..]
+            : string.Empty;
+        return Version.TryParse(numericPart, out version);
     }
 }

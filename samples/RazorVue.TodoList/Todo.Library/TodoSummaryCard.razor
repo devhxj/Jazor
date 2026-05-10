@@ -1,13 +1,13 @@
 <VCard>
     <VCardTitle Text="Overview" />
     <VCardText>
-        <VList Density="compact">
-            <VListItem Title="All tasks" Subtitle="@TotalText" />
-            <VListItem Title="Completed" Subtitle="@CompletedText" />
-            <VListItem Title="Open" Subtitle="@OpenText" />
+        <VList Density="@VuetifyDensity.Compact">
+            <VListItem Title='@("All tasks")' Subtitle="@TotalText" />
+            <VListItem Title='@("Completed")' Subtitle="@CompletedText" />
+            <VListItem Title='@("Open")' Subtitle="@OpenText" />
             @if (PinnedCount > 0)
             {
-                <VListItem Title="Pinned" Subtitle="@PinnedText" />
+                <VListItem Title='@("Pinned")' Subtitle="@PinnedText" />
             }
         </VList>
     </VCardText>

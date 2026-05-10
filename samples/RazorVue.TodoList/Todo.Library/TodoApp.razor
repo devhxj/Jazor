@@ -29,7 +29,7 @@
                                      ModelValueChanged="@ShowCompletedChanged" />
                         </VCol>
                         <VCol Cols="12" Md="4">
-                            <VBtn Text="Add task"
+                            <VBtn Text='@("Add task")'
                                   OnClick="@AddRequested" />
                         </VCol>
                     </VRow>
@@ -63,13 +63,13 @@
                 <VCardText>
                     @if (VisibleCount == 0)
                     {
-                        <VAlert Type="info"
-                                Variant="tonal"
+                        <VAlert Type="@VuetifyAlertType.Info"
+                                Variant="@VuetifyVariant.Tonal"
                                 Text="No tasks match the current filter." />
                     }
                     else
                     {
-                        <VList Density="comfortable">
+                        <VList Density="@VuetifyDensity.Comfortable">
                             @foreach (var item in Tasks!)
                             {
                                 @if (ShowCompleted || !item.IsDone)
@@ -78,7 +78,7 @@
                                                Subtitle="@(item.Category + " | " + (item.IsDone ? "Completed" : "Active"))">
                                         @if (item.IsPinned)
                                         {
-                                            <VChip Text="Pinned" Color="primary" />
+                                            <VChip Text='@("Pinned")' Color="primary" />
                                         }
                                     </VListItem>
                                 }

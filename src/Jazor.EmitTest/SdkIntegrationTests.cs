@@ -2831,7 +2831,7 @@ public sealed class SdkIntegrationTests
                                            Subtitle="@(item.Category + " | " + (item.IsDone ? "Done" : "Open"))">
                                     @if (item.IsPinned)
                                     {
-                                        <VChip Text="Pinned" Color="primary" />
+                                        <VChip Text='@("Pinned")' Color="primary" />
                                     }
                                 </VListItem>
                             }

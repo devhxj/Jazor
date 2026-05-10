@@ -1000,6 +1000,25 @@ public sealed class JazorAnalyzerTests
 	}
 
 	[TestMethod]
+	public async Task Jazor_ECMAScriptRecordProxyExternProperty_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+			using static ECMAScript.VueRoute;
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public string GetCurrentPath(Router router)
+			        => router.CurrentRoute.Value.Path;
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
 	public async Task Jazor_UnmarkedRecordIndexerRead_ReportsJAZOR001()
 	{
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(

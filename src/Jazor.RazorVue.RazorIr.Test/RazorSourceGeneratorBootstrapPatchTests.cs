@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using Jazor.Analyzer.RazorVue.Generation;
 using Jazor.RazorVue.Analysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -19,7 +20,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
 
         try
         {
-            var sdkVersion = RazorSdkToolsetProbeResolver.Resolve()?.SdkVersion ?? "10.0.203";
+            var toolset = RequireRazorSdkToolset();
             var analyzerDirectory = Path.Combine(rootDirectory, "analyzer");
             var projectDirectory = Path.Combine(rootDirectory, "project");
             Directory.CreateDirectory(analyzerDirectory);
@@ -34,7 +35,9 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             WriteProjectFiles(
                 projectDirectory,
                 analyzerDirectory,
-                sdkVersion,
+                toolset.SdkVersion,
+                toolset.TargetFramework,
+                toolset.RazorLangVersion,
                 enableRazorSgIntegration: true);
 
             var buildResult = RunDotNetBuild(
@@ -65,13 +68,33 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                 .FirstOrDefault();
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap host-output hook did not emit the trace generated source.");
             var generatedTrace = File.ReadAllText(generatedTracePath!);
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
             StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
-            StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
-            StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
+            if (IsRuntimeDetourSupported())
+            {
+                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
+                StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+                StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
+                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
+            }
+            else
+            {
+                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = false;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = false;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = false;");
+                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = true;");
+                StringAssert.Contains(generatedTrace, RazorSourceGeneratorFallbackOutput.FallbackRequiredFailureMarker);
+
+                var generatedFallbackTracePath = Directory
+                    .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgFallbackTrace.g.cs", SearchOption.AllDirectories)
+                    .FirstOrDefault();
+                Assert.IsFalse(string.IsNullOrWhiteSpace(generatedFallbackTracePath), "The RazorVue fallback output did not emit its test trace.");
+                var generatedFallbackTrace = File.ReadAllText(generatedFallbackTracePath!);
+                TestContext.WriteLine("Fallback trace:");
+                TestContext.WriteLine(generatedFallbackTrace);
+                StringAssert.Contains(generatedFallbackTrace, "internal const string State = \"fallback-collected\";");
+            }
 
             var generatedTailTracePath = Directory
                 .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgTailTrace.g.cs", SearchOption.AllDirectories)
@@ -110,7 +133,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
 
         try
         {
-            var sdkVersion = RazorSdkToolsetProbeResolver.Resolve()?.SdkVersion ?? "10.0.203";
+            var toolset = RequireRazorSdkToolset();
             var analyzerDirectory = Path.Combine(rootDirectory, "analyzer");
             var projectDirectory = Path.Combine(rootDirectory, "project");
             Directory.CreateDirectory(analyzerDirectory);
@@ -125,7 +148,9 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             WriteProjectFiles(
                 projectDirectory,
                 analyzerDirectory,
-                sdkVersion,
+                toolset.SdkVersion,
+                toolset.TargetFramework,
+                toolset.RazorLangVersion,
                 enableRazorSgIntegration: false);
 
             var buildResult = RunDotNetBuild(
@@ -150,13 +175,29 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
                 .FirstOrDefault();
             Assert.IsFalse(string.IsNullOrWhiteSpace(generatedTracePath), "The bootstrap trace source was not emitted.");
             var generatedTrace = File.ReadAllText(generatedTracePath!);
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
             StringAssert.Contains(generatedTrace, "internal const bool CurrentContextKeyAvailable = true;");
-            StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
-            StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
-            StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
+            if (IsRuntimeDetourSupported())
+            {
+                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = true;");
+                StringAssert.Contains(generatedTrace, "internal const bool HostOutputObserved = true;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = true;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = true;");
+                StringAssert.Contains(generatedTrace, "internal const string TailOutputRegistrationKind = \"implementation-source-output\";");
+                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = false;");
+            }
+            else
+            {
+                StringAssert.Contains(generatedTrace, "internal const bool HostOutputHookInstalled = false;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegistered = false;");
+                StringAssert.Contains(generatedTrace, "internal const bool TailOutputRegisteredForCurrentContext = false;");
+                StringAssert.Contains(generatedTrace, "internal const bool PatchFailed = true;");
+                StringAssert.Contains(generatedTrace, RazorSourceGeneratorFallbackOutput.FallbackRequiredFailureMarker);
+
+                var generatedFallbackTracePath = Directory
+                    .EnumerateFiles(generatedRoot, "Jazor.RazorVue.RazorSgFallbackTrace.g.cs", SearchOption.AllDirectories)
+                    .FirstOrDefault();
+                Assert.IsTrue(string.IsNullOrWhiteSpace(generatedFallbackTracePath), "Disabling RazorVue integration must not emit fallback tail output.");
+            }
         }
         finally
         {
@@ -272,10 +313,15 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
 
     public TestContext TestContext { get; set; } = default!;
 
+    private static bool IsRuntimeDetourSupported()
+        => (typeof(object).Assembly.GetName().Version?.Major ?? 0) <= 10;
+
     private static void WriteProjectFiles(
         string projectDirectory,
         string analyzerDirectory,
         string sdkVersion,
+        string targetFramework,
+        string razorLangVersion,
         bool enableRazorSgIntegration)
     {
         File.WriteAllText(
@@ -293,10 +339,10 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             """
             <Project Sdk="Microsoft.NET.Sdk.Razor">
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>TARGET_FRAMEWORK</TargetFramework>
                 <Nullable>enable</Nullable>
                 <ImplicitUsings>enable</ImplicitUsings>
-                <RazorLangVersion>10.0</RazorLangVersion>
+                <RazorLangVersion>RAZOR_LANG_VERSION</RazorLangVersion>
                 <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
                 <JazorRazorVueTestHook>true</JazorRazorVueTestHook>
                 <JazorRazorVueEnableRazorSgIntegration>ENABLE_RAZOR_SG_INTEGRATION</JazorRazorVueEnableRazorSgIntegration>
@@ -330,6 +376,8 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
               </ItemGroup>
             </Project>
             """.Replace("ANALYZER_DIRECTORY", analyzerDirectory, StringComparison.Ordinal)
+            .Replace("TARGET_FRAMEWORK", targetFramework, StringComparison.Ordinal)
+            .Replace("RAZOR_LANG_VERSION", razorLangVersion, StringComparison.Ordinal)
             .Replace("ENABLE_RAZOR_SG_INTEGRATION", enableRazorSgIntegration ? "true" : "false", StringComparison.Ordinal));
 
         File.WriteAllText(
@@ -350,6 +398,15 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             {
             }
             """);
+    }
+
+    private static RazorSdkToolsetProbe RequireRazorSdkToolset()
+    {
+        var toolset = RazorSdkToolsetProbeResolver.Resolve();
+        if (toolset is null)
+            Assert.Inconclusive("A Razor SDK toolset could not be resolved from the installed dotnet SDKs.");
+
+        return toolset;
     }
 
     private static void CopyAnalyzerPayload(string analyzerAssemblyPath, string analyzerDirectory)
@@ -392,7 +449,7 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
             {
                 FileName = "dotnet",
                 Arguments =
-                    "build \"PatchProbe.csproj\" /nodeReuse:false -p:UseSharedCompilation=false " +
+                    "build \"PatchProbe.csproj\" /nodeReuse:false -m:1 -p:UseSharedCompilation=false " +
                     "-p:BaseOutputPath=\"" + EnsureTrailingDirectorySeparator(outputRoot) + "\" " +
                     "-p:BaseIntermediateOutputPath=\"" + EnsureTrailingDirectorySeparator(intermediateRoot) + "\" " +
                     "-v minimal",
@@ -407,11 +464,44 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
         process.StartInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
 
         Assert.IsTrue(process.Start(), "Failed to start dotnet build for bootstrap patch probe.");
-        var standardOutput = process.StandardOutput.ReadToEnd();
-        var standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
+        var standardOutputTask = process.StandardOutput.ReadToEndAsync();
+        var standardErrorTask = process.StandardError.ReadToEndAsync();
+        if (!process.WaitForExit(milliseconds: 120_000))
+        {
+            KillProcessTree(process);
 
-        return new BuildProcessResult(process.ExitCode, standardOutput, standardError);
+            var timedOutOutput = standardOutputTask.IsCompletedSuccessfully ? standardOutputTask.Result : string.Empty;
+            var timedOutError = standardErrorTask.IsCompletedSuccessfully ? standardErrorTask.Result : string.Empty;
+            return new BuildProcessResult(-1, timedOutOutput, timedOutError, TimedOut: true);
+        }
+
+        var standardOutput = WaitForOutputOrFallback(standardOutputTask);
+        var standardError = WaitForOutputOrFallback(standardErrorTask);
+        return new BuildProcessResult(process.ExitCode, standardOutput, standardError, TimedOut: false);
+    }
+
+    private static string WaitForOutputOrFallback(Task<string> outputTask)
+        => outputTask.Wait(millisecondsTimeout: 5_000) && outputTask.IsCompletedSuccessfully
+            ? outputTask.Result
+            : string.Empty;
+
+    private static void KillProcessTree(Process process)
+    {
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+
+        try
+        {
+            process.WaitForExit(milliseconds: 5_000);
+        }
+        catch (InvalidOperationException)
+        {
+        }
     }
 
     private sealed class InMemoryAdditionalText(string path, string text) : AdditionalText
@@ -489,13 +579,15 @@ public sealed class RazorSourceGeneratorBootstrapPatchTests
     private sealed record BuildProcessResult(
         int ExitCode,
         string StandardOutput,
-        string StandardError)
+        string StandardError,
+        bool TimedOut)
     {
         public string DescribeFailure()
         {
             var builder = new StringBuilder();
             builder.AppendLine("dotnet build failed.");
             builder.AppendLine("ExitCode: " + ExitCode);
+            builder.AppendLine("TimedOut: " + TimedOut);
             if (!string.IsNullOrWhiteSpace(StandardOutput))
             {
                 builder.AppendLine("stdout:");
