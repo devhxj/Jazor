@@ -309,14 +309,14 @@ internal sealed partial class RazorVueExpressionEmitter
 
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty || !IsCallableSlotExpression(attribute.Value!))
                 {
-                    slotEntries.Add(slotName + ": () => " + slotExpression);
+                    slotEntries.Add(FormatObjectPropertyKey(slotName) + ": () => " + slotExpression);
                 }
                 else
                 {
                     // Preserve the declared slot context name so generated authoring
                     // code matches the library contract instead of hard-coding "context".
                     var slotParameterName = slotDescriptor.Parameters[0].Name;
-                    slotEntries.Add(slotName + ": (" + slotParameterName + ") => " + slotExpression + "(" + slotParameterName + ")");
+                    slotEntries.Add(FormatObjectPropertyKey(slotName) + ": (" + slotParameterName + ") => " + slotExpression + "(" + slotParameterName + ")");
                 }
 
                 continue;
@@ -646,12 +646,12 @@ internal sealed partial class RazorVueExpressionEmitter
             {
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty)
                 {
-                    slotEntries.Add(slotDescriptor.Name + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
+                    slotEntries.Add(FormatObjectPropertyKey(slotDescriptor.Name) + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
                 }
                 else
                 {
                     var slotParameterName = slotTemplate.ParameterName ?? slotDescriptor.Parameters[0].Name;
-                    slotEntries.Add(slotDescriptor.Name + ": (" + slotParameterName + ") => " +
+                    slotEntries.Add(FormatObjectPropertyKey(slotDescriptor.Name) + ": (" + slotParameterName + ") => " +
                                     EmitFragment(
                                         slotTemplate.Children,
                                         allowedLocalSymbols,
@@ -665,15 +665,38 @@ internal sealed partial class RazorVueExpressionEmitter
                 ? "default"
                 : char.ToLowerInvariant(slotTemplate.PublicName[0]) + slotTemplate.PublicName.Substring(1);
             if (string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
-                slotEntries.Add(slotName + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
+                slotEntries.Add(FormatObjectPropertyKey(slotName) + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
             else
-                slotEntries.Add(slotName + ": (" + slotTemplate.ParameterName + ") => " +
+                slotEntries.Add(FormatObjectPropertyKey(slotName) + ": (" + slotTemplate.ParameterName + ") => " +
                                 EmitFragment(
                                     slotTemplate.Children,
                                     allowedLocalSymbols,
                                     RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, slotTemplate.ParameterSymbol)));
         }
     }
+
+    private static string FormatObjectPropertyKey(string name)
+        => IsSimpleJavaScriptIdentifier(name) ? name : ToJavaScriptString(name);
+
+    private static bool IsSimpleJavaScriptIdentifier(string value)
+    {
+        if (string.IsNullOrEmpty(value) || !IsIdentifierStart(value[0]))
+            return false;
+
+        for (var index = 1; index < value.Length; index++)
+        {
+            if (!IsIdentifierPart(value[index]))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsIdentifierStart(char value)
+        => value == '_' || value == '$' || char.IsLetter(value);
+
+    private static bool IsIdentifierPart(char value)
+        => IsIdentifierStart(value) || char.IsDigit(value);
 
     private string EmitScopedExpression(
         IOperation operation,

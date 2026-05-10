@@ -852,6 +852,29 @@ public enum VuetifyDataTableHeaderAlign
     Center
 }
 
+[String]
+public enum VuetifyDataTableSortOrder
+{
+    [Description("@#asc")]
+    Asc,
+
+    [Description("@#desc")]
+    Desc
+}
+
+[String]
+public enum VuetifyDataTableSelectStrategy
+{
+    [Description("@#single")]
+    Single,
+
+    [Description("@#page")]
+    Page,
+
+    [Description("@#all")]
+    All
+}
+
 [ECMAScript]
 [ECMAScriptUnion]
 [Description("@#")]
@@ -898,3 +921,325 @@ public sealed class VuetifyDataTableItem : IEnumerable
 
     extern IEnumerator IEnumerable.GetEnumerator();
 }
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[CollectionBuilder(typeof(VuetifyDataTableSelectedValuesCollectionBuilder), nameof(VuetifyDataTableSelectedValuesCollectionBuilder.Create))]
+public readonly struct VuetifyDataTableSelectedValues : IEnumerable<VueValue>
+{
+    private readonly VueValue[]? _values;
+
+    private VuetifyDataTableSelectedValues(VueValue[] values)
+    {
+        _values = values;
+    }
+
+    public VueValue[]? AsArray => _values;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableSelectedValues From(VueValue[] values);
+
+    public static implicit operator VuetifyDataTableSelectedValues(VueValue[] values)
+        => new(values);
+
+    public static implicit operator VuetifyDataTableSelectedValues(string[] values)
+        => new(Array.ConvertAll(values, static value => (VueValue)value));
+
+    public static implicit operator VuetifyDataTableSelectedValues(Number[] values)
+        => new(Array.ConvertAll(values, static value => (VueValue)value));
+
+    public static implicit operator VuetifyDataTableSelectedValues(int[] values)
+        => new(Array.ConvertAll(values, static value => (VueValue)value));
+
+    public static implicit operator VuetifyDataTableSelectedValues(double[] values)
+        => new(Array.ConvertAll(values, static value => (VueValue)value));
+
+    IEnumerator<VueValue> IEnumerable<VueValue>.GetEnumerator()
+        => ((IEnumerable<VueValue>)(_values ?? [])).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VueValue>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifyDataTableSelectedValuesCollectionBuilder
+{
+    public static VuetifyDataTableSelectedValues Create(ReadOnlySpan<VueValue> values)
+        => values.ToArray();
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[CollectionBuilder(typeof(VuetifyDataTableSortItemsCollectionBuilder), nameof(VuetifyDataTableSortItemsCollectionBuilder.Create))]
+public readonly struct VuetifyDataTableSortItems : IEnumerable<VuetifyDataTableSortItem>
+{
+    private readonly VuetifyDataTableSortItem[]? _items;
+
+    private VuetifyDataTableSortItems(VuetifyDataTableSortItem[] items)
+    {
+        _items = items;
+    }
+
+    public VuetifyDataTableSortItem[]? AsArray => _items;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableSortItems From(VuetifyDataTableSortItem[] items);
+
+    public static implicit operator VuetifyDataTableSortItems(VuetifyDataTableSortItem[] items)
+        => new(items);
+
+    IEnumerator<VuetifyDataTableSortItem> IEnumerable<VuetifyDataTableSortItem>.GetEnumerator()
+        => ((IEnumerable<VuetifyDataTableSortItem>)(_items ?? [])).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VuetifyDataTableSortItem>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifyDataTableSortItemsCollectionBuilder
+{
+    public static VuetifyDataTableSortItems Create(ReadOnlySpan<VuetifyDataTableSortItem> items)
+        => items.ToArray();
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed class VuetifyDataTableSortItem
+{
+    [Description("@#key")]
+    public string? Key { get; init; }
+
+    [Description("@#order")]
+    public VuetifyDataTableSortOrder? Order { get; init; }
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed class VuetifyDataTableOptions
+{
+    [Description("@#page")]
+    public int? Page { get; init; }
+
+    [Description("@#itemsPerPage")]
+    public int? ItemsPerPage { get; init; }
+
+    [Description("@#sortBy")]
+    public VuetifyDataTableSortItem[]? SortBy { get; init; }
+
+    [Description("@#groupBy")]
+    public VuetifyDataTableSortItem[]? GroupBy { get; init; }
+
+    [Description("@#search")]
+    public string? Search { get; init; }
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[CollectionBuilder(typeof(VuetifyDataTableItemsPerPageOptionsCollectionBuilder), nameof(VuetifyDataTableItemsPerPageOptionsCollectionBuilder.Create))]
+public readonly struct VuetifyDataTableItemsPerPageOptions : IEnumerable<VuetifyDataTableItemsPerPageOption>
+{
+    private readonly VuetifyDataTableItemsPerPageOption[]? _options;
+
+    private VuetifyDataTableItemsPerPageOptions(VuetifyDataTableItemsPerPageOption[] options)
+    {
+        _options = options;
+    }
+
+    public VuetifyDataTableItemsPerPageOption[]? AsArray => _options;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableItemsPerPageOptions From(VuetifyDataTableItemsPerPageOption[] options);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOptions(VuetifyDataTableItemsPerPageOption[] options)
+        => new(options);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOptions(Number[] options)
+        => new(Array.ConvertAll(options, static value => (VuetifyDataTableItemsPerPageOption)value));
+
+    public static implicit operator VuetifyDataTableItemsPerPageOptions(int[] options)
+        => new(Array.ConvertAll(options, static value => (VuetifyDataTableItemsPerPageOption)value));
+
+    IEnumerator<VuetifyDataTableItemsPerPageOption> IEnumerable<VuetifyDataTableItemsPerPageOption>.GetEnumerator()
+        => ((IEnumerable<VuetifyDataTableItemsPerPageOption>)(_options ?? [])).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VuetifyDataTableItemsPerPageOption>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifyDataTableItemsPerPageOptionsCollectionBuilder
+{
+    public static VuetifyDataTableItemsPerPageOptions Create(ReadOnlySpan<VuetifyDataTableItemsPerPageOption> options)
+        => options.ToArray();
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyDataTableItemsPerPageOption
+{
+    private readonly byte _kind;
+    private readonly Number? _number;
+    private readonly VuetifyDataTableItemsPerPageOptionItem? _item;
+
+    private VuetifyDataTableItemsPerPageOption(Number value)
+    {
+        _kind = 1;
+        _number = value;
+        _item = default;
+    }
+
+    private VuetifyDataTableItemsPerPageOption(VuetifyDataTableItemsPerPageOptionItem value)
+    {
+        _kind = 2;
+        _number = default;
+        _item = value;
+    }
+
+    public Number? AsNumber => _kind == 1 ? _number : default;
+
+    public VuetifyDataTableItemsPerPageOptionItem? AsItem => _kind == 2 ? _item : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableItemsPerPageOption From(Number value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableItemsPerPageOption From(VuetifyDataTableItemsPerPageOptionItem value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(Number value)
+        => new(value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(VuetifyDataTableItemsPerPageOptionItem value)
+        => new(value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(byte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(sbyte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(short value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(ushort value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(int value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(uint value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(float value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(double value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyDataTableItemsPerPageOption(decimal value)
+        => new((Number)value);
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed class VuetifyDataTableItemsPerPageOptionItem
+{
+    [Description("@#title")]
+    public string? Title { get; init; }
+
+    [Description("@#value")]
+    public int? Value { get; init; }
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyDataTableRowProps
+{
+    private readonly byte _kind;
+    private readonly VueProps? _props;
+    private readonly VuetifyDataTableRowPropsCallback? _callback;
+
+    private VuetifyDataTableRowProps(VueProps value)
+    {
+        _kind = 1;
+        _props = value;
+        _callback = default;
+    }
+
+    private VuetifyDataTableRowProps(VuetifyDataTableRowPropsCallback value)
+    {
+        _kind = 2;
+        _props = default;
+        _callback = value;
+    }
+
+    public VueProps? AsProps => _kind == 1 ? _props : default;
+
+    public VuetifyDataTableRowPropsCallback? AsCallback => _kind == 2 ? _callback : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableRowProps From(VueProps value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableRowProps From(VuetifyDataTableRowPropsCallback value);
+
+    public static implicit operator VuetifyDataTableRowProps(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifyDataTableRowProps(VueDictionary value)
+        => new(value);
+
+    public static implicit operator VuetifyDataTableRowProps(VuetifyDataTableRowPropsCallback value)
+        => new(value);
+}
+
+public delegate VueProps? VuetifyDataTableRowPropsCallback(VuetifyDataTableRowPropsContext context);
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyDataTableCellProps
+{
+    private readonly byte _kind;
+    private readonly VueProps? _props;
+    private readonly VuetifyDataTableCellPropsCallback? _callback;
+
+    private VuetifyDataTableCellProps(VueProps value)
+    {
+        _kind = 1;
+        _props = value;
+        _callback = default;
+    }
+
+    private VuetifyDataTableCellProps(VuetifyDataTableCellPropsCallback value)
+    {
+        _kind = 2;
+        _props = default;
+        _callback = value;
+    }
+
+    public VueProps? AsProps => _kind == 1 ? _props : default;
+
+    public VuetifyDataTableCellPropsCallback? AsCallback => _kind == 2 ? _callback : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableCellProps From(VueProps value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDataTableCellProps From(VuetifyDataTableCellPropsCallback value);
+
+    public static implicit operator VuetifyDataTableCellProps(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifyDataTableCellProps(VueDictionary value)
+        => new(value);
+
+    public static implicit operator VuetifyDataTableCellProps(VuetifyDataTableCellPropsCallback value)
+        => new(value);
+}
+
+public delegate VueProps? VuetifyDataTableCellPropsCallback(VuetifyDataTableCellPropsContext context);

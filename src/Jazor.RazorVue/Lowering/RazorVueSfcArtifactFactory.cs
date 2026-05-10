@@ -346,7 +346,8 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         int templateScopeDepth)
     {
         var indent = new string(' ', depth * 2);
-        builder.Append(indent).Append("<template #").Append(slot.SlotName);
+        builder.Append(indent).Append("<template ");
+        AppendSlotDirectiveTarget(builder, slot.SlotName);
         if (!string.IsNullOrWhiteSpace(slot.ParameterName))
             builder.Append("=\"").Append(slot.ParameterName).Append('"');
         builder.AppendLine(">");
@@ -389,6 +390,47 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         }
         builder.Append(indent).AppendLine("</template>");
     }
+
+    private static void AppendSlotDirectiveTarget(StringBuilder builder, string slotName)
+    {
+        if (IsSimpleDirectiveArgument(slotName))
+        {
+            builder.Append('#').Append(slotName);
+            return;
+        }
+
+        builder.Append("#[`")
+            .Append(EscapeDynamicDirectiveString(slotName))
+            .Append("`]");
+    }
+
+    private static bool IsSimpleDirectiveArgument(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return false;
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character is not (>= 'A' and <= 'Z') &&
+                character is not (>= 'a' and <= 'z') &&
+                character is not (>= '0' and <= '9') &&
+                character != '_' &&
+                character != '-' &&
+                character != '$')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string EscapeDynamicDirectiveString(string value)
+        => (value ?? string.Empty)
+            .Replace("\\", "\\\\")
+            .Replace("`", "\\`")
+            .Replace("${", "\\${");
 
     private static void AppendDefaultSlot(
         StringBuilder builder,

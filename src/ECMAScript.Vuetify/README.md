@@ -25,6 +25,7 @@
 - `VuetifyCore.cs`: Vuetify 运行时投影与插件选项。
 - `V*.cs`: 高频组件的专用强类型 authoring 桩定义。
 - `VuetifyItemTypes.cs`: select/autocomplete/combobox、breadcrumb、data-table 等集合 item 与 model value 合同。
+- `VDataTableSlotContexts.cs`: `VDataTable` 分页、排序、选择、展开、表头/行/页脚等高频命名槽上下文合同。
 - `VListItemSlotContext.cs`: `VListItem` 常用命名槽上下文合同。
 - `VOverlaySlotContexts.cs`: `VMenu` / `VTooltip` 等 overlay activator 槽上下文合同。
 - `VuetifyRuntimeOnlyAuthoringComponents.cs`: 与 runtime exports 对齐的透传型 authoring 桩。
