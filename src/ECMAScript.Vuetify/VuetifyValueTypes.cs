@@ -276,6 +276,99 @@ public enum VuetifyAppBarLocation
 }
 
 [String]
+public enum VuetifyListLineMode
+{
+    [Description("@#one")]
+    One,
+
+    [Description("@#two")]
+    Two,
+
+    [Description("@#three")]
+    Three
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyListLines
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly VuetifyListLineMode? _mode;
+
+    private VuetifyListLines(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _mode = default;
+    }
+
+    private VuetifyListLines(VuetifyListLineMode value)
+    {
+        _kind = 2;
+        _bool = default;
+        _mode = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public VuetifyListLineMode? AsMode => _kind == 2 ? _mode : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyListLines From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyListLines From(VuetifyListLineMode value);
+
+    public static implicit operator VuetifyListLines(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyListLines(VuetifyListLineMode value)
+        => new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyRippleValue
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly VueProps? _options;
+
+    private VuetifyRippleValue(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _options = default;
+    }
+
+    private VuetifyRippleValue(VueProps value)
+    {
+        _kind = 2;
+        _bool = default;
+        _options = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public VueProps? AsOptions => _kind == 2 ? _options : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyRippleValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyRippleValue From(VueProps value);
+
+    public static implicit operator VuetifyRippleValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyRippleValue(VueProps value)
+        => new(value);
+}
+
+[String]
 public enum VuetifyNavigationDrawerLocation
 {
     [Description("@#start")]
