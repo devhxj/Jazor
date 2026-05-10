@@ -34,7 +34,7 @@ public sealed class JazorAnalyzerTests
 			}
 			""");
 
-		AssertHasDiagnostic(diagnostics, "JAZOR001");
+		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", ".Add(string, ");
 	}
 
 	[TestMethod]
@@ -65,7 +65,7 @@ public sealed class JazorAnalyzerTests
 			}
 			""");
 
-		AssertHasDiagnostic(diagnostics, "JAZOR001");
+		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", ".Add(string, ");
 	}
 
 	[TestMethod]
@@ -96,7 +96,7 @@ public sealed class JazorAnalyzerTests
 			}
 			""");
 
-		AssertHasDiagnostic(diagnostics, "JAZOR001");
+		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", "Bag.Add(string, string)");
 	}
 
 	[TestMethod]
@@ -944,6 +944,168 @@ public sealed class JazorAnalyzerTests
 	}
 
 	[TestMethod]
+	public async Task Jazor_VueDictionaryAddInitializer_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+			using static ECMAScript.Vue3;
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public VueDictionary Create()
+			        => new()
+			        {
+			            { "aria-live", "polite" },
+			            { "aria-atomic", "true" }
+			        };
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_PiniaStateMapperAddInitializer_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			public abstract class CounterStore : Store<PiniaStateTree>
+			{
+			}
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public PiniaStateMapper<CounterStore> Create()
+			        => new()
+			        {
+			            { "count", PiniaStateMapValue<CounterStore>.From("count") },
+			            { "doubleCount", PiniaStateMapValue<CounterStore>.From(ReadDouble) }
+			        };
+
+			    private static PiniaValue ReadDouble(CounterStore store)
+			        => 2;
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_ObjectLiteralAddOutsideInitializer_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using ECMAScript;
+			using static ECMAScript.Vue3;
+
+			[ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public void Add(VueDictionary attrs)
+			    {
+			        attrs.Add("title", "hello");
+			    }
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_ObjectLiteralAddNestedInsideInitializerValue_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using ECMAScript;
+			using static ECMAScript.Vue3;
+
+			[ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public VueDictionary Create(VueDictionary attrs)
+			        => new()
+			        {
+			            { "configure", (Action)(() => attrs.Add("title", "hello")) }
+			        };
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_StructuralRecordAddInitializer_IsAccepted()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using System.Collections;
+			using ECMAScript;
+
+			[ECMAScriptModule]
+			public class ValidModule
+			{
+			    public Bag Create()
+			        => new()
+			        {
+			            { "title", "hello" }
+			        };
+			}
+
+			public sealed record Bag : IEnumerable
+			{
+			    public void Add(string key, string value)
+			    {
+			    }
+
+			    IEnumerator IEnumerable.GetEnumerator()
+			        => throw new NotImplementedException();
+			}
+			""");
+
+		AssertNoDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
+	public async Task Jazor_StructuralRecordAddOutsideInitializer_ReportsJAZOR001()
+	{
+		var diagnostics = await GetAnalyzerDiagnosticsAsync(
+			"""
+			using System;
+			using System.Collections;
+			using ECMAScript;
+
+			[ECMAScriptModule]
+			public class InvalidModule
+			{
+			    public void Add(Bag bag)
+			    {
+			        bag.Add("title", "hello");
+			    }
+			}
+
+			public sealed record Bag : IEnumerable
+			{
+			    public void Add(string key, string value)
+			    {
+			    }
+
+			    IEnumerator IEnumerable.GetEnumerator()
+			        => throw new NotImplementedException();
+			}
+			""");
+
+		AssertHasDiagnostic(diagnostics, "JAZOR001");
+	}
+
+	[TestMethod]
 	public async Task Jazor_ECMAScriptRecordProxyIndexerRead_IsAccepted()
 	{
 		var diagnostics = await GetAnalyzerDiagnosticsAsync(
@@ -1102,6 +1264,13 @@ public sealed class JazorAnalyzerTests
 		=> Assert.IsTrue(
 			diagnostics.Any(diagnostic => diagnostic.Id == id),
 			$"Expected diagnostic {id}, actual: {string.Join(Environment.NewLine, diagnostics.Select(static x => x.ToString()))}");
+
+	private static void AssertHasDiagnosticContaining(IEnumerable<Diagnostic> diagnostics, string id, string messageSubstring)
+		=> Assert.IsTrue(
+			diagnostics.Any(diagnostic =>
+				diagnostic.Id == id &&
+				diagnostic.GetMessage().Contains(messageSubstring, StringComparison.Ordinal)),
+			$"Expected diagnostic {id} containing '{messageSubstring}', actual: {string.Join(Environment.NewLine, diagnostics.Select(static x => x.ToString()))}");
 
 	private static void AssertNoDiagnostic(IEnumerable<Diagnostic> diagnostics, params string[] ids)
 	{

@@ -562,6 +562,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 						return;
 					}
 
+					if (IsSupportedObjectLiteralAddInvocation(invocation))
+						return;
+
 					if (!Util.IsECMAScriptRecordProxyMember(
 							invocation.TargetMethod,
 							invocation.Instance?.Type ?? invocation.TargetMethod.ContainingType) &&
@@ -867,6 +870,53 @@ public partial class Analyzer : DiagnosticAnalyzer
 
 	private static bool IsSingleParameterIndexer(IPropertySymbol property)
 		=> property.IsIndexer && property.Parameters.Length == 1;
+
+	private static bool IsSupportedObjectLiteralAddInvocation(IInvocationOperation invocation)
+	{
+		var method = invocation.TargetMethod;
+		if (method is not
+			{
+				MethodKind: MethodKind.Ordinary,
+				IsStatic: false,
+				Name: "Add"
+			} ||
+			method.Parameters.Length != 2 ||
+			invocation.Arguments.Length != 2 ||
+			method.Parameters[0].RefKind != RefKind.None ||
+			method.Parameters[1].RefKind != RefKind.None ||
+			!IsSupportedObjectLiteralKeyType(method.Parameters[0].Type) ||
+			!Util.IsObjectLiteralHostType(invocation.Instance?.Type))
+		{
+			return false;
+		}
+
+		return invocation.Parent is IObjectOrCollectionInitializerOperation initializer &&
+			   initializer.Initializers.Contains(invocation);
+	}
+
+	private static bool IsSupportedObjectLiteralKeyType(ITypeSymbol keyType)
+	{
+		if (keyType.SpecialType == SpecialType.System_String)
+			return true;
+
+		if (keyType.SpecialType is
+			SpecialType.System_Byte or
+			SpecialType.System_SByte or
+			SpecialType.System_Int16 or
+			SpecialType.System_UInt16 or
+			SpecialType.System_Int32 or
+			SpecialType.System_UInt32 or
+			SpecialType.System_Int64 or
+			SpecialType.System_UInt64 or
+			SpecialType.System_Single or
+			SpecialType.System_Double or
+			SpecialType.System_Decimal)
+		{
+			return true;
+		}
+
+		return keyType.OriginalDefinition.ToDisplayString(Format.NameFormat) == "ECMAScript.Symbol";
+	}
 
 	private static bool IsInsideObjectOrCollectionInitializer(IOperation operation)
 	{

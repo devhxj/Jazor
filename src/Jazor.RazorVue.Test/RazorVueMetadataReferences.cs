@@ -37,6 +37,7 @@ internal static class RazorVueMetadataReferences
         AddAssemblyReference(references, seenPaths, typeof(SpreadAttribute));
         AddAssemblyReference(references, seenPaths, typeof(ECMAScript.Vue3.IVueComponent));
         AddAssemblyReference(references, seenPaths, typeof(VueRoute));
+        AddAssemblyReference(references, seenPaths, typeof(Pinia));
         AddAssemblyReference(references, seenPaths, typeof(ECMAScript.VueContract.VueLibraryComponentAttribute));
         AddAssemblyReference(references, seenPaths, typeof(VBtn));
         AddAssemblyReference(references, seenPaths, typeof(Jazor.RazorVue.JazorVueCompiler));
