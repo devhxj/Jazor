@@ -7,7 +7,7 @@
 
 # Jazor - C# to JavaScript Compiler
 
-[![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/)
+[![.NET](https://img.shields.io/badge/.NET-11.0-blue.svg)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 [![NuGet](https://img.shields.io/nuget/v/Jazor.svg)](https://www.nuget.org/packages/Jazor)
 
@@ -17,7 +17,7 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 
 ## Features
 
-- **C# syntax coverage** — supports virtually all C# 14 language features: variable declarations, basic types, pattern matching, nullable types, async/await, string interpolation, object and collection initialization, tuples, deconstruction, switch statements/expressions, and loops (for/foreach/while/do-while)
+- **C# syntax coverage** — supports virtually all C# 15 language features: variable declarations, basic types, pattern matching, nullable types, async/await, string interpolation, object and collection initialization, tuples, deconstruction, switch statements/expressions, and loops (for/foreach/while/do-while)
 - **Roslyn `IOperation` lowering** — semantic-driven compilation via `IOperation` → ECMAScript AST, not syntax-level translation
 - **Static analysis safety** — `Jazor.Analyzer` enforces whitelist boundaries at compile time, diagnosing unsupported types and members before emission
 - **CLR runtime modules** — common BCL types (`string`, `int`, `double`, `List<T>`, `Dictionary<TKey, TValue>`, `Task<T>`, etc.) are mapped to JavaScript runtime implementations through `Jazor.CLR`
@@ -25,6 +25,7 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 - **Vue 3 integration** — `ECMAScript.Vue3` provides typed C# bindings for Vue 3's Composition API and `h()` render function, enabling component authoring in pure C#
 - **Pinia integration** — `ECMAScript.Pinia` provides typed C# bindings for Pinia root/store authoring, including `createPinia()`, `defineStore()`, `storeToRefs()`, and common Options API helpers such as `mapState()` / `mapActions()`
 - **Vue Router integration** — `ECMAScript.VueRoute` provides typed C# bindings for Vue Router 4 authoring, including `createRouter()`, history creators, `useRouter()`, `useRoute()`, `RouterLink`, and `RouterView`
+- **Vuetify integration** — `ECMAScript.Vuetify` provides production-grade typed C# bindings for Vuetify 3 component authoring, with strongly typed props, named slots, event bindings, and full runtime export coverage
 - **MSBuild integration** — emit, bundle, and output path configuration through standard MSBuild properties
 
 ## Status
@@ -37,15 +38,15 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 <tr><td nowrap><strong>Working</strong></td><td>MSBuild integration (JazorEmit, JazorBundle, JazorOutDir)</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>Jazor.Analyzer (whitelist compile-time validation)</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>CLR runtime modules — 70 tests</td><td>Stable</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>RazorVue (SFC pipeline, canonical h() model) — 64+ tests</td><td>Extracted to standalone project, for-loop lowering in progress</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>RazorVue (SFC pipeline, canonical h() model, Vuetify production coverage) — 400+ tests</td><td>Production-grade Vuetify authoring, pipeline validation, slot/fallthrough support</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 80 tests</td><td>Initial landing, expanding API coverage</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>SourceMap</td><td>Narrow lane — module-level <code>.mjs.map</code>, not full coverage yet</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>Deno bundling</td><td><code>JazorBundle</code> target works for basic cases</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>Debugging</td><td>Design and milestone code exist, not user-facing yet</td></tr>
-<tr><td nowrap><strong>Long-term</strong></td><td>Jolt (LSP, HMR, DevServer, debug, build) — 774 tests</td><td>Phase 1–6 closing, <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
+<tr><td nowrap><strong>Long-term</strong></td><td>Jolt (LSP, HMR, DevServer, debug, build) — 800+ tests</td><td>Phase 1–6 closing, <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
 </table>
 
-Users today should target the **Working** tier. 29 projects · ~122K production LoC · ~164K test LoC · ~3,000 total tests.
+Users today should target the **Working** tier. 29 projects · ~130K production LoC · ~180K test LoC · ~3,500+ total tests.
 
 ---
 
@@ -68,7 +69,7 @@ Jazor works best with a multi-project layout where library projects declare modu
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <JazorEmit>false</JazorEmit>
   </PropertyGroup>
   <ItemGroup>
@@ -83,7 +84,7 @@ Jazor works best with a multi-project layout where library projects declare modu
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <JazorEmit>true</JazorEmit>
     <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
   </PropertyGroup>
@@ -231,7 +232,7 @@ Docs are organized into five categories: [Goals](docs/01-目标/README.md) · [P
 ## Development
 
 ### Prerequisites
-- .NET 10 SDK
+- .NET 11 SDK (preview)
 - PowerShell 7+ (for test scripts)
 - Windows, Linux, or macOS
 
