@@ -4007,8 +4007,6 @@ public sealed class SemanticWalkerReferenceTest
 	public void Visit_ECMAScriptRecordProxyIndexerAccess_AllowsJavaScriptComputedAccess()
 	{
 		var block = GetBlockOperation(@"
-            using ECMAScript.Contract;
-
             [ECMAScript]
             [System.ComponentModel.Description(""@#"")]
             public record ListenerBag

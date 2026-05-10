@@ -33,6 +33,7 @@
 - Select/autocomplete/combobox contracts: `VuetifySelectItems`, `VuetifySelectItemValue`, `VuetifySelectItem`, `VuetifySelectItemKey`, `VuetifySelectItemPropsSelector`, `VuetifyItemProps`, `VuetifySelectModelValue`, `VuetifySelectModelValues`。
 - Breadcrumb item contracts: `VuetifyBreadcrumbItems`, `VuetifyBreadcrumbItemValue`, `VuetifyBreadcrumbItem`。
 - Data table contracts: `VuetifyDataTableHeaders`, `VuetifyDataTableHeader`, `VuetifyDataTableHeaderAlign`, `VuetifyDataTableItems`, `VuetifyDataTableItem`。
+- List/card/overlay composition contracts: `VuetifyListLines`, `VuetifyListLineMode`, `VuetifyRippleValue`, `VListItemSlotContext`, `VListItemTitleSlotContext`, `VListItemSubtitleSlotContext`, `VOverlayActivatorContext`。
 - Form/input control contracts: `VuetifyAutoSelectFirstValue`, `VuetifyFileShowSizeValue`, `VuetifyFileModelValue`, `VuetifyNumberInputControlVariant`, `VuetifyBooleanAlwaysValue`, `VuetifyBooleanStringValue`, `VuetifyCounterValue`, `VuetifyProgressCircularIndeterminateValue`, `VuetifyAlwaysMode`, `VuetifySliderDirection`, `VuetifyRangeSliderModelValue`。
 - Display/options contracts: `VuetifyDisplayBreakpoint`, `VuetifyDisplayThresholds`。
 - Visual/value contracts: `VuetifyRoundedValue`, `VuetifyTextValue`，以及尺寸、长度、进度、海拔、分页长度等 `Number | String` props 统一使用 `VueStringNumberValue`。
@@ -91,6 +92,9 @@ builder.CloseComponent();
 - `RazorVue_SfcArtifactFactory_LowersExplicitLibraryFallthroughAttributes_WhenTargetHasCaptureUnmatchedValues` / `RazorVue_Pipeline_LowersExplicitLibraryFallthroughAttributes_WhenTargetHasCaptureUnmatchedValues`：验证显式 `class`、`style`、`data-*`、`aria-*`、kebab-case 和 lower-camel raw attrs 可通过库组件 `AdditionalAttributes` sink 透传，且 PascalCase 未知参数仍失败。
 - `RazorVue_SfcArtifactFactory_WithImplicitLibraryDefaultSlotOnComponentWithoutChildContent_ThrowsUnknownSlot` / `RazorVue_SfcArtifactFactory_WithUnknownRenderFragmentLibraryAttribute_ThrowsUnknownSlot` / `RazorVue_SfcArtifactFactory_WithUnknownLibrarySlotTemplate_ThrowsUnknownSlot` / `RazorVue_SfcArtifactFactory_WithImplicitTypedLibraryDefaultSlot_ThrowsSlotContextMisuse` / `RazorVue_SfcArtifactFactory_WithDuplicateLibraryDefaultSlotAssignment_ThrowsDuplicateSlotValue` / `RazorVue_SfcArtifactFactory_WithDuplicateLibraryNamedSlotAssignment_ThrowsDuplicateSlotValue`：验证 SFC/canonical 输出路径不会绕过库组件 slot authoring 合同，未声明 slot、typed slot 误用、重复 slot 赋值都会失败。
 - `RazorVue_Pipeline_LowersVuetifyFeedbackAndListComposition` / `RazorVue_Pipeline_LowersVuetifyNavigationAndFeedbackComposition`：验证 chip/snackbar 等反馈组件的 `Boolean | String`、`Boolean | Number | String`、`Number | String` prop 降级输出。
+- `RazorVue_Pipeline_LowersVuetifyCardPromotedPropsAndNamedSlots`：验证 `VCard` 的 title/subtitle/text、视觉/尺寸/路由 props 与 `title` / `text` / `actions` 等命名槽输出。
+- `RazorVue_Pipeline_LowersVuetifyFeedbackAndListComposition`：同时验证 `VList` 的 items/item-title/item-value/item-children/item-props/lines/slim/bgColor/variant，以及 `VListItem` 的 icon/active/link/ripple/typed append slot 输出。
+- `RazorVue_Pipeline_LowersVuetifyTooltipStrongTypedLocationAndAdditionalAttributes` / `RazorVue_Pipeline_LowersVuetifyNavigationAndFeedbackComposition`：验证 `VTooltip` / `VMenu` 的 model update、typed activator slot、location/origin/offset/delay/dimension/transition、`activatorProps` / `contentProps` 等 overlay authoring 面。
 - `Vuetify_AuthoringComponents_ExposeOnlyAdditionalAttributesAsObjectSink`：验证 authoring 组件公开属性除 `AdditionalAttributes` 外不使用 `object`。
 - `Vuetify_ValueAndUnionTypes_ExposeStronglyTypedContracts`：验证核心 union/value 类型公开合同。
 

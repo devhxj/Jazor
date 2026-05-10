@@ -1,8 +1,8 @@
 # ECMAScript.Vuetify 组件覆盖矩阵
 
 > Status: 活跃矩阵  
-> Updated: 2026-05-09  
-> Positioning: 基于 `src/ECMAScript.Vuetify/` 当前 Razor authoring 组件桩、`src/Jazor.RazorVue.Test/RazorVueDescriptorExtractionTests.cs` 现有守护，以及 `samples/RazorVue.TodoList/` 当前示例使用方式整理的组件覆盖矩阵。  
+> Updated: 2026-05-10
+> Positioning: 历史覆盖矩阵，当前生产快照以 `docs/03-完成/razorvue/ECMAScript.Vuetify.ProductionChecklist.md` 和代码测试为准。
 > Scope: 本文档只讨论 RazorVue authoring 组件桩，不讨论 `VuetifyComponents` / `VuetifyDirectives` runtime export 的全量覆盖。
 
 ## 1. 读法
@@ -30,7 +30,9 @@
 
 ## 2. 当前总览
 
-当前 `ECMAScript.Vuetify` authoring 组件桩共 `39` 个：
+当前 `ECMAScript.Vuetify` authoring 组件桩已覆盖 `VuetifyComponents` runtime exports 的全部 `109` 个组件；其中 `50` 个为专用强类型 authoring 组件，其余 `59` 个为带 `AdditionalAttributes` 的透传型 authoring 桩。
+
+历史上第一批专用组件包括：
 
 - `VAlert`
 - `VAutocomplete`
@@ -109,8 +111,8 @@
 | `VAlert` | `Type`, `Variant`, `Closable`, `Text`, `ChildContent` | `B` | `Color`, `Density`, `Prominent`, `Border`, `Icon`, `Title` |
 | `VSnackbar` | `ModelValue`, `ModelValueChanged`, `Color`, `Timeout`, `ChildContent` | `B` | `Location`, `Variant`, `MultiLine`, `Rounded`, `Actions` 槽 |
 | `VDialog` | `ModelValue`, `ModelValueChanged`, `Activator`, `ChildContent` | `B` | `Persistent`, `MaxWidth`, `Width`, `ScrollStrategy`, `Location`, `Transition` |
-| `VMenu` | `ModelValue`, `ModelValueChanged`, `CloseOnContentClick`, `ChildContent` | `B` | `Location`, `Offset`, `OpenOnHover`, `Activator` 槽强类型化 |
-| `VTooltip` | `Text`, `Location`, `OpenOnHover`, `Activator`, `ChildContent` | `B` | `Color`, `OpenDelay`, `CloseDelay`, `Disabled`, `MaxWidth` |
+| `VMenu` | `ModelValue`, `ModelValueChanged`, `CloseOnContentClick`, `CloseOnBack`, `CloseOnClick`, `OpenOnClick`, `OpenOnHover`, `OpenOnFocus`, `OpenDelay`, `CloseDelay`, `Location`, `Origin`, `Offset`, `ScrollStrategy`, `Persistent`, `Disabled`, `MinWidth`, `MaxWidth`, `Width`, `Transition`, `ActivatorProps`, `ContentProps`, typed `Activator`, `ChildContent` | `A` | 高级 selected/opened nested 状态按业务补齐 |
+| `VTooltip` | `ModelValue`, `ModelValueChanged`, `Id`, `Interactive`, `Text`, `Location`, `Origin`, `Offset`, `OpenOnClick`, `OpenOnHover`, `OpenOnFocus`, `OpenDelay`, `CloseDelay`, `Disabled`, `Eager`, `MinWidth`, `MaxWidth`, `Width`, `Transition`, `ActivatorProps`, `ContentProps`, typed `Activator`, `ChildContent` | `A` | `scrim` 等长尾 overlay props 继续走 `AdditionalAttributes` 或按需建模 |
 
 判断：
 
@@ -125,7 +127,7 @@
 | `VContainer` | `Fluid`, `ChildContent` | `A` | 低优先级增量即可 |
 | `VRow` | `Align`, `Justify`, `ChildContent` | `B` | `Dense`, `NoGutters`, `Class/Style/AdditionalAttributes` |
 | `VCol` | `Cols`, `Md`, `Lg`, `ChildContent` | `B` | `Sm`, `Xl`, `Offset*`, `AlignSelf`, `Class/Style/AdditionalAttributes` |
-| `VCard` | `Disabled`, `ChildContent` | `C` | `Title`, `Subtitle`, `Text`, `Variant`, `Elevation`, `Rounded`, `Color` |
+| `VCard` | `Title`, `Subtitle`, `Text`, `PrependIcon`, `AppendIcon`, `PrependAvatar`, `AppendAvatar`, `Image`, `Color`, `Variant`, `Density`, `Elevation`, `Rounded`, `Height/Width/Min*/Max*`, `Disabled`, `Flat`, `Hover`, `Link`, `Href`, `To`, `Replace`, `Exact`, `TextContent`, `TitleContent`, `SubtitleContent`, `ImageContent`, `Prepend`, `Append`, `Actions`, `Item`, `ChildContent` | `A` | 后续按业务补更深层 router object-form `To` |
 | `VCardTitle` | `Text`, `ChildContent` | `A` | 低优先级增量即可 |
 | `VCardText` | `ChildContent` | `A` | 低优先级增量即可 |
 | `VSheet` | `Color`, `Rounded`, `Elevation`, `ChildContent` | `B` | `Border`, `Height`, `Width`, `Position`, `Class/Style` |
@@ -144,8 +146,8 @@
 
 | 组件 | 当前参数 | 当前判断 | 建议优先补齐 |
 |------|---------|----------|-------------|
-| `VList` | `Density`, `Nav`, `ChildContent` | `B` | `Lines`, `Slim`, `SelectStrategy`, 命名槽 |
-| `VListItem` | `Title`, `Subtitle`, `Value`, `ChildContent` | `B` | `PrependIcon`, `AppendIcon`, `Active`, `Disabled`, `Link`, 命名槽 |
+| `VList` | `Items`, `ItemTitle`, `ItemValue`, `ItemChildren`, `ItemProps`, `ItemType`, `BaseColor`, `ActiveColor`, `ActiveClass`, `BgColor`, `Color`, `ExpandIcon`, `CollapseIcon`, `Lines`, `Slim`, `Density`, `Nav`, `Disabled`, `Variant`, `Rounded`, `Elevation`, `Height/Width/Min*/Max*`, `ChildContent` | `A` | `selectStrategy` / opened/selected 等高级嵌套状态按真实业务继续建模 |
+| `VListItem` | `Title`, `Subtitle`, `Value`, `PrependIcon`, `AppendIcon`, `PrependAvatar`, `AppendAvatar`, `Active`, `ActiveClass`, `BaseColor`, `Color`, `Disabled`, `Lines`, `Link`, `Nav`, `Ripple`, `Slim`, `Density`, `Height/Width/Min*/Max*`, `Elevation`, `Rounded`, `Href`, `To`, `Replace`, `Exact`, `Variant`, `OnClick`, `Prepend`, `Append`, `TitleContent`, `SubtitleContent`, `ChildContent` | `A` | router object-form `To` 与更多 slot context 字段按需求扩展 |
 | `VBreadcrumbs` | `Items`, `Divider`, `Disabled`, `ChildContent` | `B` | `ItemTitle`, `ItemValue`, `Density`, `ActiveClass` |
 | `VDataTable` | `Headers`, `Items`, `Dense`, `ItemKey`, `ChildContent` | `C` | 强类型 `Header`/`Item` surface，排序、分页、命名槽、row/header slot |
 | `VPagination` | `ModelValue`, `ModelValueChanged`, `Length`, `TotalVisible`, `Disabled` | `B` | `Density`, `Rounded`, `Color`, `Variant` |
