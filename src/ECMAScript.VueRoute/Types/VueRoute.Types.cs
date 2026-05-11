@@ -2746,55 +2746,20 @@ public record ScrollPositionNormalized : Vue3.VueProps
 /// Union type for scroll position targets, which can be a CSS selector string or a DOM element.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct ScrollPositionTarget
+public readonly union ScrollPositionTarget(string, Element)
 {
-	private readonly byte _kind;
-	private readonly string? _selector;
-	private readonly Element? _element;
-
-	private ScrollPositionTarget(string value)
-	{
-		_kind = 1;
-		_selector = value;
-		_element = default;
-	}
-
-	private ScrollPositionTarget(Element value)
-	{
-		_kind = 2;
-		_selector = default;
-		_element = value;
-	}
-
 	/// <summary>
 	/// 以 CSS 选择器字符串形式获取目标。
 	/// Gets the target as a CSS selector string.
 	/// </summary>
-	public string? AsSelector => _kind == 1 ? _selector : default;
+	public string? AsSelector => Value as string;
 
 	/// <summary>
 	/// 以 DOM 元素形式获取目标。
 	/// Gets the target as a DOM element.
 	/// </summary>
-	public Element? AsElement => _kind == 2 ? _element : default;
-
-	/// <summary>
-	/// 从字符串隐式转换为滚动位置目标。
-	/// Implicit conversion from a string to a scroll position target.
-	/// </summary>
-	/// <param name="value">CSS 选择器字符串。The CSS selector string.</param>
-	public static implicit operator ScrollPositionTarget(string value)
-		=> new(value);
-
-	/// <summary>
-	/// 从 DOM 元素隐式转换为滚动位置目标。
-	/// Implicit conversion from a DOM element to a scroll position target.
-	/// </summary>
-	/// <param name="value">DOM 元素。The DOM element.</param>
-	public static implicit operator ScrollPositionTarget(Element value)
-		=> new(value);
+	public Element? AsElement => Value as Element;
 }
 
 /// <summary>

@@ -407,65 +407,20 @@ public static partial class Pinia
 	/// mutation kind.
 	/// </summary>
 	[ECMAScript]
-	[ECMAScriptUnion]
 	[Description("@#")]
-	public readonly struct SubscriptionMutationEvents
+	public readonly union SubscriptionMutationEvents(Vue3.VueDebuggerEvent, Vue3.VueDebuggerEvent[])
 	{
-		private readonly byte _kind;
-		private readonly Vue3.VueDebuggerEvent? _event;
-		private readonly Vue3.VueDebuggerEvent[]? _batch;
-
-		/// <summary>
-		/// 从单个调试事件初始化。
-		/// Initializes from a single debugger event.
-		/// </summary>
-		/// <param name="value">Vue 调试器事件。Vue debugger event.</param>
-		private SubscriptionMutationEvents(Vue3.VueDebuggerEvent value)
-		{
-			_kind = 1;
-			_event = value;
-			_batch = default;
-		}
-
-		/// <summary>
-		/// 从调试事件批次初始化。
-		/// Initializes from a debugger event batch.
-		/// </summary>
-		/// <param name="value">Vue 调试器事件数组。Vue debugger event array.</param>
-		private SubscriptionMutationEvents(Vue3.VueDebuggerEvent[] value)
-		{
-			_kind = 2;
-			_event = default;
-			_batch = value;
-		}
-
 		/// <summary>
 		/// 以单个事件形式返回调试事件，如果不是该变体则返回 default。
 		/// Returns the debugger event as a single event, or default if not this variant.
 		/// </summary>
-		public Vue3.VueDebuggerEvent? AsEvent => _kind == 1 ? _event : default;
+		public Vue3.VueDebuggerEvent? AsEvent => Value as Vue3.VueDebuggerEvent;
 
 		/// <summary>
 		/// 以事件批次形式返回调试事件，如果不是该变体则返回 default。
 		/// Returns the debugger events as a batch, or default if not this variant.
 		/// </summary>
-		public Vue3.VueDebuggerEvent[]? AsBatch => _kind == 2 ? _batch : default;
-
-		/// <summary>
-		/// 从单个调试器事件隐式转换为 <see cref="SubscriptionMutationEvents"/>。
-		/// Implicitly converts a single debugger event to a <see cref="SubscriptionMutationEvents"/>.
-		/// </summary>
-		/// <param name="value">Vue 调试器事件。Vue debugger event.</param>
-		public static implicit operator SubscriptionMutationEvents(Vue3.VueDebuggerEvent value)
-			=> new(value);
-
-		/// <summary>
-		/// 从调试器事件数组隐式转换为 <see cref="SubscriptionMutationEvents"/>。
-		/// Implicitly converts a debugger event array to a <see cref="SubscriptionMutationEvents"/>.
-		/// </summary>
-		/// <param name="value">Vue 调试器事件数组。Vue debugger event array.</param>
-		public static implicit operator SubscriptionMutationEvents(Vue3.VueDebuggerEvent[] value)
-			=> new(value);
+		public Vue3.VueDebuggerEvent[]? AsBatch => Value as Vue3.VueDebuggerEvent[];
 	}
 
 	/// <summary>

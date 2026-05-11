@@ -11,65 +11,20 @@ namespace ECMAScript;
 /// Route record name union accepting string or Symbol.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordName
+public readonly union RouteRecordName(string, Symbol)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Symbol? _symbol;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">路由记录名称。The route record name.</param>
-    private RouteRecordName(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _symbol = default;
-    }
-
-    /// <summary>
-    /// 从 Symbol 值初始化。
-    /// Initializes from a Symbol value.
-    /// </summary>
-    /// <param name="value">路由记录名称的 Symbol 值。The Symbol value for the route record name.</param>
-    private RouteRecordName(Symbol value)
-    {
-        _kind = 2;
-        _string = default;
-        _symbol = value;
-    }
-
     /// <summary>
     /// 以字符串形式返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以 Symbol 形式返回，如果不是 Symbol 变体则返回 default。
     /// Returns as Symbol, or default if not a Symbol variant.
     /// </summary>
-    public Symbol? AsSymbol => _kind == 2 ? _symbol : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator RouteRecordName(string value)
-        => new(value);
-
-    /// <summary>
-    /// 从 Symbol 隐式转换。
-    /// Implicitly converts from a Symbol.
-    /// </summary>
-    /// <param name="value">要转换的 Symbol 值。The Symbol value to convert.</param>
-    public static implicit operator RouteRecordName(Symbol value)
-        => new(value);
+    public Symbol? AsSymbol => Value as Symbol;
 }
 
 /// <summary>
@@ -77,65 +32,20 @@ public readonly struct RouteRecordName
 /// Route record alias union accepting string or string array.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordAlias
+public readonly union RouteRecordAlias(string, string[])
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly string[]? _strings;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">路由别名。The route alias.</param>
-    private RouteRecordAlias(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _strings = default;
-    }
-
-    /// <summary>
-    /// 从字符串数组初始化。
-    /// Initializes from a string array.
-    /// </summary>
-    /// <param name="value">路由别名数组。The route alias array.</param>
-    private RouteRecordAlias(string[] value)
-    {
-        _kind = 2;
-        _string = default;
-        _strings = value;
-    }
-
     /// <summary>
     /// 以字符串形式返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以字符串数组形式返回，如果不是数组变体则返回 default。
     /// Returns as string array, or default if not an array variant.
     /// </summary>
-    public string[]? AsStrings => _kind == 2 ? _strings : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator RouteRecordAlias(string value)
-        => new(value);
-
-    /// <summary>
-    /// 从字符串数组隐式转换。
-    /// Implicitly converts from a string array.
-    /// </summary>
-    /// <param name="value">要转换的字符串数组。The string array to convert.</param>
-    public static implicit operator RouteRecordAlias(string[] value)
-        => new(value);
+    public string[]? AsStrings => Value as string[];
 }
 
 /// <summary>
@@ -143,95 +53,26 @@ public readonly struct RouteRecordAlias
 /// Route location raw union accepting string, RouteLocationAsPath, or RouteLocationAsRelative.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteLocationRaw
+public readonly union RouteLocationRaw(string, RouteLocationAsPath, RouteLocationAsRelative)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly RouteLocationAsPath? _path;
-    private readonly RouteLocationAsRelative? _relative;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">路由路径字符串。The route path string.</param>
-    private RouteLocationRaw(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _path = default;
-        _relative = default;
-    }
-
-    /// <summary>
-    /// 从路径式路由位置初始化。
-    /// Initializes from a path-based route location.
-    /// </summary>
-    /// <param name="value">路径式路由位置。The path-based route location.</param>
-    private RouteLocationRaw(RouteLocationAsPath value)
-    {
-        _kind = 2;
-        _string = default;
-        _path = value;
-        _relative = default;
-    }
-
-    /// <summary>
-    /// 从相对式路由位置初始化。
-    /// Initializes from a relative route location.
-    /// </summary>
-    /// <param name="value">相对式路由位置。The relative route location.</param>
-    private RouteLocationRaw(RouteLocationAsRelative value)
-    {
-        _kind = 3;
-        _string = default;
-        _path = default;
-        _relative = value;
-    }
-
     /// <summary>
     /// 以字符串形式返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以路径式路由位置返回，如果不是路径变体则返回 default。
     /// Returns as path-based route location, or default if not a path variant.
     /// </summary>
-    public RouteLocationAsPath? AsPath => _kind == 2 ? _path : default;
+    public RouteLocationAsPath? AsPath => Value as RouteLocationAsPath;
 
     /// <summary>
     /// 以相对式路由位置返回，如果不是相对变体则返回 default。
     /// Returns as relative route location, or default if not a relative variant.
     /// </summary>
-    public RouteLocationAsRelative? AsRelative => _kind == 3 ? _relative : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的路径字符串。The path string to convert.</param>
-    public static implicit operator RouteLocationRaw(string value)
-        => new(value);
-
-    /// <summary>
-    /// 从路径式路由位置隐式转换。
-    /// Implicitly converts from a path-based route location.
-    /// </summary>
-    /// <param name="value">要转换的路径式路由位置。The path-based route location to convert.</param>
-    public static implicit operator RouteLocationRaw(RouteLocationAsPath value)
-        => new(value);
-
-    /// <summary>
-    /// 从相对式路由位置隐式转换。
-    /// Implicitly converts from a relative route location.
-    /// </summary>
-    /// <param name="value">要转换的相对式路由位置。The relative route location to convert.</param>
-    public static implicit operator RouteLocationRaw(RouteLocationAsRelative value)
-        => new(value);
+    public RouteLocationAsRelative? AsRelative => Value as RouteLocationAsRelative;
 
     /// <summary>
     /// 从 RouteLocationPathRaw 隐式转换，映射为路径式路由位置。
@@ -980,153 +821,38 @@ public readonly struct RouterViewDepthValue
 /// History state value union accepting string, Number, bool, HistoryState, or array.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct HistoryStateValue
+public readonly union HistoryStateValue(string, Number, bool, HistoryState, Array<HistoryStateValue?>)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Number? _number;
-    private readonly bool? _bool;
-    private readonly HistoryState? _object;
-    private readonly Array<HistoryStateValue?>? _array;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">状态字符串值。The state string value.</param>
-    private HistoryStateValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _number = default;
-        _bool = default;
-        _object = default;
-        _array = default;
-    }
-
-    /// <summary>
-    /// 从 Number 值初始化。
-    /// Initializes from a Number value.
-    /// </summary>
-    /// <param name="value">状态数值。The state number value.</param>
-    private HistoryStateValue(Number value)
-    {
-        _kind = 2;
-        _string = default;
-        _number = value;
-        _bool = default;
-        _object = default;
-        _array = default;
-    }
-
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a bool value.
-    /// </summary>
-    /// <param name="value">状态布尔值。The state bool value.</param>
-    private HistoryStateValue(bool value)
-    {
-        _kind = 3;
-        _string = default;
-        _number = default;
-        _bool = value;
-        _object = default;
-        _array = default;
-    }
-
-    /// <summary>
-    /// 从 HistoryState 对象初始化。
-    /// Initializes from a HistoryState object.
-    /// </summary>
-    /// <param name="value">历史状态对象。The history state object.</param>
-    private HistoryStateValue(HistoryState value)
-    {
-        _kind = 4;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _object = value;
-        _array = default;
-    }
-
-    /// <summary>
-    /// 从 HistoryStateValue 数组初始化。
-    /// Initializes from an array of HistoryStateValue.
-    /// </summary>
-    /// <param name="value">状态值数组。The array of state values.</param>
-    private HistoryStateValue(Array<HistoryStateValue?> value)
-    {
-        _kind = 5;
-        _string = default;
-        _number = default;
-        _bool = default;
-        _object = default;
-        _array = value;
-    }
-
     /// <summary>
     /// 以字符串返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以 Number 返回，如果不是 Number 变体则返回 default。
     /// Returns as Number, or default if not a Number variant.
     /// </summary>
-    public Number? AsNumber => _kind == 2 ? _number : default;
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
     /// <summary>
     /// 以布尔值返回，如果不是布尔变体则返回 default。
     /// Returns as bool, or default if not a bool variant.
     /// </summary>
-    public bool? AsBool => _kind == 3 ? _bool : default;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
     /// <summary>
     /// 以 HistoryState 对象返回，如果不是对象变体则返回 default。
     /// Returns as HistoryState, or default if not an object variant.
     /// </summary>
-    public HistoryState? AsObject => _kind == 4 ? _object : default;
+    public HistoryState? AsObject => Value as HistoryState;
 
     /// <summary>
     /// 以数组返回，如果不是数组变体则返回 default。
     /// Returns as array, or default if not an array variant.
     /// </summary>
-    public Array<HistoryStateValue?>? AsArray => _kind == 5 ? _array : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator HistoryStateValue(string value)
-        => new(value);
-
-    /// <summary>
-    /// 从 Number 隐式转换。
-    /// Implicitly converts from a Number.
-    /// </summary>
-    /// <param name="value">要转换的 Number 值。The Number value to convert.</param>
-    public static implicit operator HistoryStateValue(Number value)
-        => new(value);
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator HistoryStateValue(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从 HistoryState 对象隐式转换。
-    /// Implicitly converts from a HistoryState object.
-    /// </summary>
-    /// <param name="value">要转换的历史状态对象。The HistoryState to convert.</param>
-    public static implicit operator HistoryStateValue(HistoryState value)
-        => new(value);
+    public Array<HistoryStateValue?>? AsArray => Value as Array<HistoryStateValue?>;
 
     /// <summary>
     /// 从可空字符串数组隐式转换。
@@ -2596,11 +2322,16 @@ public readonly struct RouteRedirectOption
     /// </summary>
     /// <param name="value">要转换的路由记录重定向选项。The route record redirect option to convert.</param>
     public static implicit operator RouteRedirectOption(RouteRecordRedirectOption value)
-        => value.AsCallback is RouteRedirectCallback callback
-            ? new(callback)
-            : value.AsLocation is RouteLocationRaw location
-                ? new(location)
-                : throw new InvalidOperationException("RouteRecordRedirectOption must contain either a location or a callback.");
+    {
+        if (value.AsCallback is RouteRedirectCallback callback)
+            return new(callback);
+
+        var location = value.AsLocation;
+        if (location.HasValue)
+            return new(location.GetValueOrDefault());
+
+        throw new InvalidOperationException("RouteRecordRedirectOption must contain either a location or a callback.");
+    }
 
     /// <summary>
     /// 从 RouteLocationRaw 创建联合值。
@@ -2759,161 +2490,43 @@ public readonly struct RouteRecordRedirectOption
 /// Route record raw union accepting single view, single view with children, multiple views, multiple views with children, or redirect record.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordRaw
+public readonly union RouteRecordRaw(
+    RouteRecordSingleView,
+    RouteRecordSingleViewWithChildren,
+    RouteRecordMultipleViews,
+    RouteRecordMultipleViewsWithChildren,
+    RouteRecordRedirect)
 {
-    private readonly byte _kind;
-    private readonly RouteRecordSingleView? _singleView;
-    private readonly RouteRecordSingleViewWithChildren? _singleViewWithChildren;
-    private readonly RouteRecordMultipleViews? _multipleViews;
-    private readonly RouteRecordMultipleViewsWithChildren? _multipleViewsWithChildren;
-    private readonly RouteRecordRedirect? _redirect;
-
-    /// <summary>
-    /// 从单视图路由记录初始化。
-    /// Initializes from a single view route record.
-    /// </summary>
-    /// <param name="value">单视图路由记录。The single view route record.</param>
-    private RouteRecordRaw(RouteRecordSingleView value)
-    {
-        _kind = 1;
-        _singleView = value;
-        _singleViewWithChildren = default;
-        _multipleViews = default;
-        _multipleViewsWithChildren = default;
-        _redirect = default;
-    }
-
-    /// <summary>
-    /// 从带子路由的单视图路由记录初始化。
-    /// Initializes from a single view route record with children.
-    /// </summary>
-    /// <param name="value">带子路由的单视图路由记录。The single view route record with children.</param>
-    private RouteRecordRaw(RouteRecordSingleViewWithChildren value)
-    {
-        _kind = 2;
-        _singleView = default;
-        _singleViewWithChildren = value;
-        _multipleViews = default;
-        _multipleViewsWithChildren = default;
-        _redirect = default;
-    }
-
-    /// <summary>
-    /// 从多视图路由记录初始化。
-    /// Initializes from a multiple views route record.
-    /// </summary>
-    /// <param name="value">多视图路由记录。The multiple views route record.</param>
-    private RouteRecordRaw(RouteRecordMultipleViews value)
-    {
-        _kind = 3;
-        _singleView = default;
-        _singleViewWithChildren = default;
-        _multipleViews = value;
-        _multipleViewsWithChildren = default;
-        _redirect = default;
-    }
-
-    /// <summary>
-    /// 从带子路由的多视图路由记录初始化。
-    /// Initializes from a multiple views route record with children.
-    /// </summary>
-    /// <param name="value">带子路由的多视图路由记录。The multiple views route record with children.</param>
-    private RouteRecordRaw(RouteRecordMultipleViewsWithChildren value)
-    {
-        _kind = 4;
-        _singleView = default;
-        _singleViewWithChildren = default;
-        _multipleViews = default;
-        _multipleViewsWithChildren = value;
-        _redirect = default;
-    }
-
-    /// <summary>
-    /// 从重定向路由记录初始化。
-    /// Initializes from a redirect route record.
-    /// </summary>
-    /// <param name="value">重定向路由记录。The redirect route record.</param>
-    private RouteRecordRaw(RouteRecordRedirect value)
-    {
-        _kind = 5;
-        _singleView = default;
-        _singleViewWithChildren = default;
-        _multipleViews = default;
-        _multipleViewsWithChildren = default;
-        _redirect = value;
-    }
-
     /// <summary>
     /// 以单视图路由记录返回，如果不是单视图变体则返回 default。
     /// Returns as single view route record, or default if not a single view variant.
     /// </summary>
-    public RouteRecordSingleView? AsSingleView => _kind == 1 ? _singleView : default;
+    public RouteRecordSingleView? AsSingleView => Value as RouteRecordSingleView;
 
     /// <summary>
     /// 以带子路由的单视图路由记录返回，如果不是该变体则返回 default。
     /// Returns as single view route record with children, or default if not that variant.
     /// </summary>
-    public RouteRecordSingleViewWithChildren? AsSingleViewWithChildren => _kind == 2 ? _singleViewWithChildren : default;
+    public RouteRecordSingleViewWithChildren? AsSingleViewWithChildren => Value as RouteRecordSingleViewWithChildren;
 
     /// <summary>
     /// 以多视图路由记录返回，如果不是多视图变体则返回 default。
     /// Returns as multiple views route record, or default if not a multiple views variant.
     /// </summary>
-    public RouteRecordMultipleViews? AsMultipleViews => _kind == 3 ? _multipleViews : default;
+    public RouteRecordMultipleViews? AsMultipleViews => Value as RouteRecordMultipleViews;
 
     /// <summary>
     /// 以带子路由的多视图路由记录返回，如果不是该变体则返回 default。
     /// Returns as multiple views route record with children, or default if not that variant.
     /// </summary>
-    public RouteRecordMultipleViewsWithChildren? AsMultipleViewsWithChildren => _kind == 4 ? _multipleViewsWithChildren : default;
+    public RouteRecordMultipleViewsWithChildren? AsMultipleViewsWithChildren => Value as RouteRecordMultipleViewsWithChildren;
 
     /// <summary>
     /// 以重定向路由记录返回，如果不是重定向变体则返回 default。
     /// Returns as redirect route record, or default if not a redirect variant.
     /// </summary>
-    public RouteRecordRedirect? AsRedirect => _kind == 5 ? _redirect : default;
-
-    /// <summary>
-    /// 从单视图路由记录隐式转换。
-    /// Implicitly converts from a single view route record.
-    /// </summary>
-    /// <param name="value">要转换的单视图路由记录。The single view route record to convert.</param>
-    public static implicit operator RouteRecordRaw(RouteRecordSingleView value)
-        => new(value);
-
-    /// <summary>
-    /// 从带子路由的单视图路由记录隐式转换。
-    /// Implicitly converts from a single view route record with children.
-    /// </summary>
-    /// <param name="value">要转换的带子路由的单视图路由记录。The single view with children record to convert.</param>
-    public static implicit operator RouteRecordRaw(RouteRecordSingleViewWithChildren value)
-        => new(value);
-
-    /// <summary>
-    /// 从多视图路由记录隐式转换。
-    /// Implicitly converts from a multiple views route record.
-    /// </summary>
-    /// <param name="value">要转换的多视图路由记录。The multiple views route record to convert.</param>
-    public static implicit operator RouteRecordRaw(RouteRecordMultipleViews value)
-        => new(value);
-
-    /// <summary>
-    /// 从带子路由的多视图路由记录隐式转换。
-    /// Implicitly converts from a multiple views route record with children.
-    /// </summary>
-    /// <param name="value">要转换的带子路由的多视图路由记录。The multiple views with children record to convert.</param>
-    public static implicit operator RouteRecordRaw(RouteRecordMultipleViewsWithChildren value)
-        => new(value);
-
-    /// <summary>
-    /// 从重定向路由记录隐式转换。
-    /// Implicitly converts from a redirect route record.
-    /// </summary>
-    /// <param name="value">要转换的重定向路由记录。The redirect route record to convert.</param>
-    public static implicit operator RouteRecordRaw(RouteRecordRedirect value)
-        => new(value);
+    public RouteRecordRedirect? AsRedirect => Value as RouteRecordRedirect;
 }
 
 /// <summary>
@@ -2921,95 +2534,26 @@ public readonly struct RouteRecordRaw
 /// Matcher location raw union accepting path-based, named, or relative matcher location.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct MatcherLocationRaw
+public readonly union MatcherLocationRaw(MatcherLocationAsPath, MatcherLocationAsName, MatcherLocationAsRelative)
 {
-    private readonly byte _kind;
-    private readonly MatcherLocationAsPath? _path;
-    private readonly MatcherLocationAsName? _named;
-    private readonly MatcherLocationAsRelative? _relative;
-
-    /// <summary>
-    /// 从路径式匹配器位置初始化。
-    /// Initializes from a path-based matcher location.
-    /// </summary>
-    /// <param name="value">路径式匹配器位置。The path-based matcher location.</param>
-    private MatcherLocationRaw(MatcherLocationAsPath value)
-    {
-        _kind = 1;
-        _path = value;
-        _named = default;
-        _relative = default;
-    }
-
-    /// <summary>
-    /// 从命名式匹配器位置初始化。
-    /// Initializes from a named matcher location.
-    /// </summary>
-    /// <param name="value">命名式匹配器位置。The named matcher location.</param>
-    private MatcherLocationRaw(MatcherLocationAsName value)
-    {
-        _kind = 2;
-        _path = default;
-        _named = value;
-        _relative = default;
-    }
-
-    /// <summary>
-    /// 从相对式匹配器位置初始化。
-    /// Initializes from a relative matcher location.
-    /// </summary>
-    /// <param name="value">相对式匹配器位置。The relative matcher location.</param>
-    private MatcherLocationRaw(MatcherLocationAsRelative value)
-    {
-        _kind = 3;
-        _path = default;
-        _named = default;
-        _relative = value;
-    }
-
     /// <summary>
     /// 以路径式匹配器位置返回，如果不是路径变体则返回 default。
     /// Returns as path-based matcher location, or default if not a path variant.
     /// </summary>
-    public MatcherLocationAsPath? AsPath => _kind == 1 ? _path : default;
+    public MatcherLocationAsPath? AsPath => Value as MatcherLocationAsPath;
 
     /// <summary>
     /// 以命名式匹配器位置返回，如果不是命名变体则返回 default。
     /// Returns as named matcher location, or default if not a named variant.
     /// </summary>
-    public MatcherLocationAsName? AsNamed => _kind == 2 ? _named : default;
+    public MatcherLocationAsName? AsNamed => Value as MatcherLocationAsName;
 
     /// <summary>
     /// 以相对式匹配器位置返回，如果不是相对变体则返回 default。
     /// Returns as relative matcher location, or default if not a relative variant.
     /// </summary>
-    public MatcherLocationAsRelative? AsRelative => _kind == 3 ? _relative : default;
-
-    /// <summary>
-    /// 从路径式匹配器位置隐式转换。
-    /// Implicitly converts from a path-based matcher location.
-    /// </summary>
-    /// <param name="value">要转换的路径式匹配器位置。The path-based matcher location to convert.</param>
-    public static implicit operator MatcherLocationRaw(MatcherLocationAsPath value)
-        => new(value);
-
-    /// <summary>
-    /// 从命名式匹配器位置隐式转换。
-    /// Implicitly converts from a named matcher location.
-    /// </summary>
-    /// <param name="value">要转换的命名式匹配器位置。The named matcher location to convert.</param>
-    public static implicit operator MatcherLocationRaw(MatcherLocationAsName value)
-        => new(value);
-
-    /// <summary>
-    /// 从相对式匹配器位置隐式转换。
-    /// Implicitly converts from a relative matcher location.
-    /// </summary>
-    /// <param name="value">要转换的相对式匹配器位置。The relative matcher location to convert.</param>
-    public static implicit operator MatcherLocationRaw(MatcherLocationAsRelative value)
-        => new(value);
+    public MatcherLocationAsRelative? AsRelative => Value as MatcherLocationAsRelative;
 }
 
 /// <summary>
@@ -3017,65 +2561,20 @@ public readonly struct MatcherLocationRaw
 /// Route parameter union accepting string or string array.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteParam
+public readonly union RouteParam(string, string[])
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly string[]? _strings;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">路由参数值。The route parameter value.</param>
-    private RouteParam(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _strings = default;
-    }
-
-    /// <summary>
-    /// 从字符串数组初始化。
-    /// Initializes from a string array.
-    /// </summary>
-    /// <param name="value">路由参数值数组。The route parameter value array.</param>
-    private RouteParam(string[] value)
-    {
-        _kind = 2;
-        _string = default;
-        _strings = value;
-    }
-
     /// <summary>
     /// 以字符串返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以字符串数组返回，如果不是数组变体则返回 default。
     /// Returns as string array, or default if not an array variant.
     /// </summary>
-    public string[]? AsStrings => _kind == 2 ? _strings : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator RouteParam(string value)
-        => new(value);
-
-    /// <summary>
-    /// 从字符串数组隐式转换。
-    /// Implicitly converts from a string array.
-    /// </summary>
-    /// <param name="value">要转换的字符串数组。The string array to convert.</param>
-    public static implicit operator RouteParam(string[] value)
-        => new(value);
+    public string[]? AsStrings => Value as string[];
 }
 
 /// <summary>
@@ -3083,79 +2582,26 @@ public readonly struct RouteParam
 /// Route parameter raw union accepting string, RouteParamRaw array, or Number.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteParamRaw
+public readonly union RouteParamRaw(string, Array<RouteParamRaw>, Number)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Array<RouteParamRaw>? _array;
-    private readonly Number? _number;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">路由参数原始字符串值。The raw route parameter string value.</param>
-    private RouteParamRaw(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _array = default;
-        _number = default;
-    }
-
-    /// <summary>
-    /// 从 RouteParamRaw 数组初始化。
-    /// Initializes from an array of RouteParamRaw.
-    /// </summary>
-    /// <param name="value">路由参数原始值数组。The array of raw route parameters.</param>
-    private RouteParamRaw(Array<RouteParamRaw> value)
-    {
-        _kind = 2;
-        _string = default;
-        _array = value;
-        _number = default;
-    }
-
-    /// <summary>
-    /// 从 Number 值初始化。
-    /// Initializes from a Number value.
-    /// </summary>
-    /// <param name="value">路由参数数值。The route parameter number value.</param>
-    private RouteParamRaw(Number value)
-    {
-        _kind = 3;
-        _string = default;
-        _array = default;
-        _number = value;
-    }
-
     /// <summary>
     /// 以字符串返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以数组返回，如果不是数组变体则返回 default。
     /// Returns as array, or default if not an array variant.
     /// </summary>
-    public Array<RouteParamRaw>? AsArray => _kind == 2 ? _array : default;
+    public Array<RouteParamRaw>? AsArray => Value as Array<RouteParamRaw>;
 
     /// <summary>
     /// 以 Number 返回，如果不是 Number 变体则返回 default。
     /// Returns as Number, or default if not a Number variant.
     /// </summary>
-    public Number? AsNumber => _kind == 3 ? _number : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator RouteParamRaw(string value)
-        => new(value);
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
     /// <summary>
     /// 从字符串数组隐式转换，逐项映射为 RouteParamRaw。
@@ -3164,22 +2610,6 @@ public readonly struct RouteParamRaw
     /// <param name="value">要转换的字符串数组。The string array to convert.</param>
     public static implicit operator RouteParamRaw(string[] value)
         => new((Array<RouteParamRaw>)value.Select(static item => (RouteParamRaw)item).ToArray());
-
-    /// <summary>
-    /// 从 Number 隐式转换。
-    /// Implicitly converts from a Number.
-    /// </summary>
-    /// <param name="value">要转换的 Number 值。The Number value to convert.</param>
-    public static implicit operator RouteParamRaw(Number value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouteParamRaw 数组隐式转换。
-    /// Implicitly converts from an Array of RouteParamRaw.
-    /// </summary>
-    /// <param name="value">要转换的 RouteParamRaw 数组。The Array of RouteParamRaw to convert.</param>
-    public static implicit operator RouteParamRaw(Array<RouteParamRaw> value)
-        => new(value);
 
     /// <summary>
     /// 从 RouteParamRaw CLR 数组隐式转换。
@@ -3203,57 +2633,20 @@ public readonly struct RouteParamRaw
 /// Location query value union accepting string or string array.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct LocationQueryValue
+public readonly union LocationQueryValue(string, Array<string?>)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Array<string?>? _array;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">查询字符串值。The query string value.</param>
-    private LocationQueryValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _array = default;
-    }
-
-    /// <summary>
-    /// 从可空字符串数组初始化。
-    /// Initializes from an array of nullable strings.
-    /// </summary>
-    /// <param name="value">查询字符串数组。The query string array.</param>
-    private LocationQueryValue(Array<string?> value)
-    {
-        _kind = 2;
-        _string = default;
-        _array = value;
-    }
-
     /// <summary>
     /// 以字符串返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以可空字符串数组返回，如果不是数组变体则返回 default。
     /// Returns as nullable string array, or default if not an array variant.
     /// </summary>
-    public Array<string?>? AsArray => _kind == 2 ? _array : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator LocationQueryValue(string value)
-        => new(value);
+    public Array<string?>? AsArray => Value as Array<string?>;
 
     /// <summary>
     /// 从可空字符串 CLR 数组隐式转换。
@@ -3263,13 +2656,6 @@ public readonly struct LocationQueryValue
     public static implicit operator LocationQueryValue(string?[] value)
         => new((Array<string?>)value);
 
-    /// <summary>
-    /// 从可空字符串 Array 隐式转换。
-    /// Implicitly converts from an Array of nullable strings.
-    /// </summary>
-    /// <param name="value">要转换的可空字符串 Array。The Array of nullable strings to convert.</param>
-    public static implicit operator LocationQueryValue(Array<string?> value)
-        => new(value);
 }
 
 /// <summary>
@@ -3277,79 +2663,26 @@ public readonly struct LocationQueryValue
 /// Location query raw value union accepting string, LocationQueryValueRaw array, or Number.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct LocationQueryValueRaw
+public readonly union LocationQueryValueRaw(string, Array<LocationQueryValueRaw?>, Number)
 {
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly Array<LocationQueryValueRaw?>? _array;
-    private readonly Number? _number;
-
-    /// <summary>
-    /// 从字符串值初始化。
-    /// Initializes from a string value.
-    /// </summary>
-    /// <param name="value">查询原始字符串值。The raw query string value.</param>
-    private LocationQueryValueRaw(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _array = default;
-        _number = default;
-    }
-
-    /// <summary>
-    /// 从 LocationQueryValueRaw 数组初始化。
-    /// Initializes from an array of LocationQueryValueRaw.
-    /// </summary>
-    /// <param name="value">查询原始值数组。The array of raw query values.</param>
-    private LocationQueryValueRaw(Array<LocationQueryValueRaw?> value)
-    {
-        _kind = 2;
-        _string = default;
-        _array = value;
-        _number = default;
-    }
-
-    /// <summary>
-    /// 从 Number 值初始化。
-    /// Initializes from a Number value.
-    /// </summary>
-    /// <param name="value">查询数值。The query number value.</param>
-    private LocationQueryValueRaw(Number value)
-    {
-        _kind = 3;
-        _string = default;
-        _array = default;
-        _number = value;
-    }
-
     /// <summary>
     /// 以字符串返回，如果不是字符串变体则返回 default。
     /// Returns as string, or default if not a string variant.
     /// </summary>
-    public string? AsString => _kind == 1 ? _string : default;
+    public string? AsString => Value as string;
 
     /// <summary>
     /// 以数组返回，如果不是数组变体则返回 default。
     /// Returns as array, or default if not an array variant.
     /// </summary>
-    public Array<LocationQueryValueRaw?>? AsArray => _kind == 2 ? _array : default;
+    public Array<LocationQueryValueRaw?>? AsArray => Value as Array<LocationQueryValueRaw?>;
 
     /// <summary>
     /// 以 Number 返回，如果不是 Number 变体则返回 default。
     /// Returns as Number, or default if not a Number variant.
     /// </summary>
-    public Number? AsNumber => _kind == 3 ? _number : default;
-
-    /// <summary>
-    /// 从字符串隐式转换。
-    /// Implicitly converts from a string.
-    /// </summary>
-    /// <param name="value">要转换的字符串值。The string value to convert.</param>
-    public static implicit operator LocationQueryValueRaw(string value)
-        => new(value);
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
     /// <summary>
     /// 从可空字符串数组隐式转换，逐项映射为 LocationQueryValueRaw。
@@ -3358,22 +2691,6 @@ public readonly struct LocationQueryValueRaw
     /// <param name="value">要转换的可空字符串数组。The nullable string array to convert.</param>
     public static implicit operator LocationQueryValueRaw(string?[] value)
         => new((Array<LocationQueryValueRaw?>)value.Select(static item => item is null ? null : (LocationQueryValueRaw?)item).ToArray());
-
-    /// <summary>
-    /// 从 Number 隐式转换。
-    /// Implicitly converts from a Number.
-    /// </summary>
-    /// <param name="value">要转换的 Number 值。The Number value to convert.</param>
-    public static implicit operator LocationQueryValueRaw(Number value)
-        => new(value);
-
-    /// <summary>
-    /// 从 LocationQueryValueRaw 数组隐式转换。
-    /// Implicitly converts from an Array of LocationQueryValueRaw.
-    /// </summary>
-    /// <param name="value">要转换的 LocationQueryValueRaw 数组。The Array of LocationQueryValueRaw to convert.</param>
-    public static implicit operator LocationQueryValueRaw(Array<LocationQueryValueRaw?> value)
-        => new(value);
 
     /// <summary>
     /// 从可空 LocationQueryValueRaw CLR 数组隐式转换。

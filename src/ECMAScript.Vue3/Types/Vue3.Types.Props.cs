@@ -93,49 +93,24 @@ public static partial class Vue3
 	/// on canonical members like <c>Props</c>, <c>Emits</c>, and <c>Inject</c>.
 	/// </summary>
 	[ECMAScript]
-	[ECMAScriptUnion]
-	[System.Runtime.CompilerServices.Union]
 	[Description("@#")]
 	[CollectionBuilder(typeof(VueNamesOrOptionsCollectionBuilder), nameof(VueNamesOrOptionsCollectionBuilder.Create))]
-	public readonly struct VueNamesOrOptions : System.Runtime.CompilerServices.IUnion, IEnumerable<string>
+	public readonly union VueNamesOrOptions(string[], VueProps) : IEnumerable<string>
 	{
-		private readonly string[]? _names;
-		private readonly VueProps? _options;
-
-		public VueNamesOrOptions(string[] names)
-		{
-			_names = names;
-			_options = null;
-		}
-
-		public VueNamesOrOptions(VueProps options)
-		{
-			_names = null;
-			_options = options;
-		}
-
 		/// <summary>
 		/// 当此值由字符串集合创建时，获取数组形式的名称。
 		/// Gets the array-form names when this value was created from a string collection.
 		/// </summary>
-		public string[]? AsNames => _names;
+		public string[]? AsNames => Value as string[];
 
 		/// <summary>
 		/// 当此值由 Vue 选项记录创建时，获取对象形式的选项。
 		/// Gets the object-form options when this value was created from a Vue options record.
 		/// </summary>
-		public VueProps? AsOptions => _options;
-
-		public object? Value => (object?)_names ?? _options;
-
-		public static implicit operator VueNamesOrOptions(string[] names)
-			=> new(names);
-
-		public static implicit operator VueNamesOrOptions(VueProps options)
-			=> new(options);
+		public VueProps? AsOptions => Value as VueProps;
 
 		IEnumerator<string> IEnumerable<string>.GetEnumerator()
-			=> ((IEnumerable<string>)(_names ?? Array.Empty<string>())).GetEnumerator();
+			=> ((IEnumerable<string>)(AsNames ?? Array.Empty<string>())).GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator()
 			=> ((IEnumerable<string>)this).GetEnumerator();

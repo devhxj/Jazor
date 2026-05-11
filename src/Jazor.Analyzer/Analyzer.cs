@@ -85,6 +85,39 @@ public partial class Analyzer : DiagnosticAnalyzer
 	/// </summary>
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, AmbiguousRuntimeTypeFilterRule, InvalidSpreadUsageRule, ConflictingSpreadPropertyNameRule];
 
+	internal static readonly ImmutableArray<OperationKind> AnalysisOperationKinds =
+	[
+		OperationKind.FieldInitializer,
+		OperationKind.PropertyInitializer,
+		OperationKind.ParameterInitializer,
+		OperationKind.VariableDeclarationGroup,
+		OperationKind.ObjectCreation,
+		OperationKind.ArrayCreation,
+		OperationKind.CollectionExpression,
+		OperationKind.Invocation,
+		OperationKind.BinaryOperator,
+		OperationKind.FieldReference,
+		OperationKind.PropertyReference,
+		OperationKind.MethodReference,
+		OperationKind.IsType,
+		OperationKind.IsPattern,
+		OperationKind.Switch,
+		OperationKind.SwitchExpression,
+		OperationKind.CatchClause,
+		OperationKind.TypeOf,
+		OperationKind.Conversion,
+		OperationKind.ConditionalAccess,
+		OperationKind.DefaultValue,
+		OperationKind.Await,
+		OperationKind.Using,
+		OperationKind.EventReference,
+		OperationKind.EventAssignment,
+		OperationKind.AnonymousFunction,
+		OperationKind.LocalFunction
+	];
+
+	private static readonly OperationKind[] AnalysisOperationKindArray = AnalysisOperationKinds.ToArray();
+
 	public override void Initialize(AnalysisContext context)
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -119,35 +152,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 				return;
 
 			// 处理字段、属性初始值
-			startContext.RegisterOperationAction(AnalysisOperationAction,
-				OperationKind.FieldInitializer,//obj.myField = 1
-				OperationKind.PropertyInitializer, //obj.MyProperty = 1
-				OperationKind.ParameterInitializer,//obj.MyMethod(myParam = 1)
-				OperationKind.VariableDeclarationGroup,//var value = expr
-				OperationKind.ObjectCreation,//new MyClass()
-				OperationKind.ArrayCreation,//new MyType[10]
-				OperationKind.CollectionExpression,//[]
-				OperationKind.DelegateCreation,//new Action(MyMethod)
-				OperationKind.Invocation,//obj.MyMethod()
-				OperationKind.BinaryOperator,//left == right
-				OperationKind.FieldReference,//obj.myField
-				OperationKind.PropertyReference,//obj.MyProperty
-				OperationKind.MethodReference,//Action myAction = obj.MyMethod;
-				OperationKind.IsType,//value is SomeType
-				OperationKind.IsPattern,//value is SomePattern
-				OperationKind.Switch,//switch with pattern cases
-				OperationKind.SwitchExpression,//value switch { SomePattern => ... }
-				OperationKind.CatchClause,//catch (SomeType ex)
-				OperationKind.TypeOf,//typeof(MyClass)
-				OperationKind.Conversion,//(MyType)obj
-				OperationKind.ConditionalAccess,//obj?.MyMethod()
-				OperationKind.DefaultValue,//default(MyType)
-				OperationKind.Await,//await task
-				OperationKind.Using, //using var obj = new MyDisposable()
-				OperationKind.EventReference,// obj.MyEvent += MyHandler
-				OperationKind.EventAssignment,// obj.MyEvent = MyHandler
-				OperationKind.AnonymousFunction,// Lambda
-				OperationKind.LocalFunction);// local function
+			startContext.RegisterOperationAction(AnalysisOperationAction, AnalysisOperationKindArray);
 
 			// 检查类成员定义中使用的类型
 			startContext.RegisterSymbolEndAction(AnalysisSymbolEndAction);
@@ -536,9 +541,6 @@ public partial class Analyzer : DiagnosticAnalyzer
 					CheckType(ctx.ReportDiagnostic, collection.Type, collection.Syntax.GetLocation());
 				}
 				break;
-			//case OperationKind.DelegateCreation:
-			//	CheckType(ctx.ReportDiagnostic, ctx.Operation.Type, ctx.Operation.Syntax.GetLocation());
-			//	break;
 			case OperationKind.Invocation:
 				{
 					var invocation = (IInvocationOperation)ctx.Operation;
