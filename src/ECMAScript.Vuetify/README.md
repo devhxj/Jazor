@@ -9,15 +9,15 @@
 
 - 提供 `Vuetify` / `VuetifyPlugin` / `VuetifyOptions` 等运行时投影类型。
 - 提供覆盖当前支持的 `VuetifyComponents` normal exports 与 `VuetifyLabsComponents` labs exports 的 RazorVue authoring 组件桩。
-- 为 `VBtn`、`VBtnGroup`、`VBtnToggle`、`VFab`、`VSpeedDial`、`VStepper`、`VTextField`、`VTextarea`、`VInput`、`VField`、`VValidation`、`VConfirmEdit`、`VCheckbox`、`VSwitch`、`VSelectionControl`、`VSelectionControlGroup`、`VSelect`、`VAutocomplete`、`VCombobox`、`VFileInput`、`VNumberInput`、`VSlider`、`VDataTable`、`VDataIterator`、`VVirtualScroll`、`VInfiniteScroll`、`VSnackbarQueue`、`VSparkline`、`VColorPicker`、`VDatePicker`、`VCalendar`、`VTimePicker`、`VTreeview`、`VCard`、`VCardItem`、`VFooter`、`VRating`、`VTable`、`VList`、`VListItem`、`VMenu`、`VTooltip`、`VOverlay`、`VHover`、`VLazy`、`VResponsive`、`VItemGroup`、`VChipGroup`、`VSlideGroup`、`VCarousel`、`VEmptyState`、`VSkeletonLoader`、`VWindow`、`VTabsWindow`、`VTabsWindowItem`、`VLayout`、`VSystemBar`、`VThemeProvider`、`VDefaultsProvider`、`VLabel`、`VKbd`、`VCounter`、`VMessages`、`VNoSsr`、`VImg`、`VProgressLinear`、`VToolbarItems`、`VParallax`、`VCode`、`VTimeline`、`VLocaleProvider` 等组件提供专用强类型 props。
+- 为 `VAlert`、`VBtn`、`VBtnGroup`、`VBtnToggle`、`VBottomNavigation`、`VFab`、`VSpeedDial`、`VStepper`、`VStepperVertical`、`VTextField`、`VTextarea`、`VInput`、`VField`、`VValidation`、`VConfirmEdit`、`VCheckbox`、`VSwitch`、`VSelectionControl`、`VSelectionControlGroup`、`VSelect`、`VAutocomplete`、`VCombobox`、`VFileInput`、`VNumberInput`、`VSlider`、`VDataTable`、`VDataIterator`、`VVirtualScroll`、`VInfiniteScroll`、`VSnackbarQueue`、`VSparkline`、`VColorPicker`、`VDatePicker`、`VDateInput`、`VCalendar`、`VTimePicker`、`VTreeview`、`VFileUpload`、`VIconBtn`、`VPicker`、`VPullToRefresh`、`VCard`、`VCardItem`、`VFooter`、`VRating`、`VTable`、`VList`、`VListItem`、`VDialog`、`VMenu`、`VTooltip`、`VOverlay`、`VHover`、`VLazy`、`VResponsive`、`VItemGroup`、`VChipGroup`、`VSlideGroup`、`VCarousel`、`VEmptyState`、`VSkeletonLoader`、`VWindow`、`VTabsWindow`、`VTabsWindowItem`、`VLayout`、`VSystemBar`、`VThemeProvider`、`VDefaultsProvider`、`VLabel`、`VKbd`、`VCounter`、`VMessages`、`VNoSsr`、`VImg`、`VProgressLinear`、`VToolbarItems`、`VParallax`、`VCode`、`VTimeline`、`VLocaleProvider` 等组件提供专用强类型 props。
 - 所有 authoring 组件都保留 `AdditionalAttributes`，作为 class/style、`data-*` / `aria-*` 和尚未强类型建模 Vuetify props 的生产逃生口；RazorVue 也允许显式书写 `class`、`style`、`data-*`、`aria-*`、Vue directive-like attrs、kebab-case raw attrs 和 lower-camel raw Vuetify props。
 - Vuetify `Boolean | String`、`Boolean | Number | String`、`Number | String` 等 prop 使用显式命名 union 或 `VueStringNumberValue`，不使用通用二选一封装或弱 `object` 主 API。
 - 通过 `VueLibrary*` 特性把库组件元数据暴露给 RazorVue 描述符与生成器。
 
 ## Production Snapshot
 
-- Runtime component exports: 108 total; 105 from `vuetify/components`, 3 labs from `vuetify/labs/components`.
-- Strong RazorVue authoring components: 108.
+- Runtime component exports: 114 total; 105 from `vuetify/components`, 9 labs from `vuetify/labs/components`.
+- Strong RazorVue authoring components: 114.
 - Runtime-only pass-through authoring components: 0.
 - Public object sink policy: only `AdditionalAttributes : IReadOnlyDictionary<string, object?>?` may accept unmatched values.
 - Scoped slot ref policy: Vuetify ref/computed ref slot fields are modeled as `IVueRef<T>`, `VueComputedRef<T>`, or `VueWritableComputedRef<T>` and should be read or written through `.Value` in authoring code, for example `ctx.IsValid.Value` or `ctx.Model.Value`.
@@ -35,6 +35,7 @@
 - `VuetifyItemTypes.cs`: select/autocomplete/combobox、breadcrumb、data-table 等集合 item 与 model value 合同。
 - `VuetifyGroupTypes.cs`: button toggle、item group、rating 等分组/选择值合同。
 - `VInputComponentBase.cs`: `VTextField` / `VTextarea` 共享的 field/input authoring props 和 slots。
+- `VAlert.cs`, `VAlertSlotContexts.cs`: alert feedback 组件的 model、close emit、border/icon union、theme/layout/size/class/style props 和 prepend/title/text/append/close slots。
 - `VInput.cs`, `VField.cs`: Vuetify input infrastructure 组件的直接 authoring 代理，覆盖 validation、messages、field chrome 和 loader slots。
 - `VValidation.cs`, `VValidationSlotContexts.cs`: validation composable 的直接 authoring 代理，覆盖 `focused`、nullable disabled/readonly、rules、model/validation value、typed default slot 和 Promise-returning validation methods。
 - `VConfirmEdit.cs`, `VConfirmEditTypes.cs`: confirm-edit 的 model/update、save/cancel emit、action disabled union、default slot model/actions context 和 `AdditionalAttributes` 合同。
@@ -48,12 +49,18 @@
 - `VDataTableSlotContexts.cs`: `VDataTable` 分页、排序、选择、展开、表头/行/页脚等高频命名槽上下文合同。
 - `VVirtualScroll.cs`, `VVirtualScrollSlotContexts.cs`: virtual-scroll 尺寸、items、item key、renderless 和 typed default slot 合同。
 - `VInfiniteScroll.cs`, `VInfiniteScrollTypes.cs`: infinite-scroll side/mode/status、load event payload、status scoped slots 和 load-more slot 合同。
+- `VDateInput.cs`, `VDateInputTypes.cs`: labs date-input 的 text-field 主表面、confirm edit actions、display format、save/cancel emits 和 actions scoped slot 合同。
+- `VFileUpload.cs`, `VFileUploadTypes.cs`: labs file-upload 的 file model、browse/input/item slots、visual/drop-zone props 和 upload item context 合同。
+- `VIconBtn.cs`, `VIconBtnTypes.cs`: labs icon-btn 的 active model、icon/size maps、variant state、loader/default slots 和 button-like visual props。
+- `VPicker.cs`: labs picker shell 的 theme/layout/dimension/header/actions/title slots 合同。
+- `VPullToRefresh.cs`, `VPullToRefreshTypes.cs`: labs pull-to-refresh load payload、threshold、default slot 和 pullDownPanel scoped slot 合同。
 - `VListItemSlotContext.cs`: `VListItem` 常用命名槽上下文合同。
-- `VOverlaySlotContexts.cs`: `VMenu` / `VTooltip` 等 overlay activator 槽上下文合同。
+- `VOverlay.cs`, `VDialog.cs`, `VuetifyOverlayTypes.cs`, `VOverlaySlotContexts.cs`, `VDialogActivatorContext.cs`: overlay/dialog target/activator unions、keydown/click-outside events、overlay props 和 activator scoped slot 合同。
 - `VHoverSlotContexts.cs`, `VItemGroupSlotContexts.cs`: display/group utility scoped slot 上下文合同。
 - `VSlideGroup.cs`, `VSlideGroupSlotContexts.cs`: slide-group model、mobile/display、arrow controls 和 default/prev/next scoped slot 合同。
 - `VCarousel.cs`, `VCarouselSlotContexts.cs`: carousel model、cycle/interval/progress/delimiters、window navigation props、prev/next/item slots 和 `verticalDelimiters` union 合同。
 - `VStepper.cs`, `VStepperTypes.cs`: stepper group model、items union/collection、stepper/group/sheet/display/actions props、default/actions/header/item/prev/next scoped slots 和 `AdditionalAttributes` 合同。
+- `VStepperVertical.cs`, `VStepperVerticalTypes.cs`: labs vertical stepper group model、items union/collection、expansion-panel/stepper props、pattern-only dynamic `header-item.${string}` / `item.${string}` slots、actions/icon/title/subtitle/prev/next slots 和 `AdditionalAttributes` 合同。
 - `VEmptyState.cs`, `VEmptyStateSlotContexts.cs`: empty-state media/text/action props、click:action 和 actions scoped slot 合同。
 - `VSkeletonLoader.cs`, `VuetifySkeletonLoaderTypes.cs`: skeleton-loader 尺寸、loading、boilerplate、官方 root type/custom type 和 type array 合同。
 - `VTimeline.cs`, `VuetifyTimelineTypes.cs`: timeline alignment、direction、justify、side、line display 和默认 slot 合同。

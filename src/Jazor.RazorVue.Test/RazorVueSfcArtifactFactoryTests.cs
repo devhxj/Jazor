@@ -1574,17 +1574,17 @@ public sealed class RazorVueSfcArtifactFactoryTests
 
             namespace Demo.Components
             {
-                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : ComponentBase, IVueComponent
+                [ECMAScript.ECMAScriptModule("./components/alert-host")]
+                public class AlertHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
-                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+                    public RenderFragment? Prepend { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
-                        builder.OpenComponent<VDialog>(0);
-                        builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
-                        builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                        builder.OpenComponent<VAlert>(0);
+                        builder.AddAttribute(1, nameof(VAlert.Prepend), Prepend);
+                        builder.AddAttribute(2, nameof(VAlert.Prepend), Prepend);
                         builder.CloseComponent();
                     }
                 }
@@ -1596,8 +1596,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
             CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
 
         Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "VDialog");
-        StringAssert.Contains(exception.Issue.Message, "Activator");
+        StringAssert.Contains(exception.Issue.Message, "VAlert");
+        StringAssert.Contains(exception.Issue.Message, "Prepend");
     }
 
     [TestMethod]
@@ -2228,6 +2228,64 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "{{ item.Title }}");
         StringAssert.Contains(artifact.TemplateText, "<template #[`item.profile`]=\"item\">");
         StringAssert.Contains(artifact.TemplateText, "{{ item.Value }}");
+        Assert.IsFalse(artifact.TemplateText.Contains("<template #header-item=", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains("<template #item=", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersVuetifyStepperVerticalDynamicSlots_WithExactAuthoredSlotKeys()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-vertical-dynamic-sfc")]
+                public class VuetifyStepperVerticalDynamicSfc : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepperVertical>(0);
+                        builder.AddAttribute(1, "header-item.profile", (RenderFragment<VStepperVerticalItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(2, "strong");
+                            slotBuilder.AddContent(3, item.Step);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.AddAttribute(4, "item.profile", (RenderFragment<VStepperVerticalItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(5, "section");
+                            slotBuilder.AddContent(6, item.Title);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "VuetifyStepperVerticalDynamicSfc");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template #[`header-item.profile`]=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.Step }}");
+        StringAssert.Contains(artifact.TemplateText, "<template #[`item.profile`]=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.Title }}");
         Assert.IsFalse(artifact.TemplateText.Contains("<template #header-item=", StringComparison.Ordinal), artifact.TemplateText);
         Assert.IsFalse(artifact.TemplateText.Contains("<template #item=", StringComparison.Ordinal), artifact.TemplateText);
     }

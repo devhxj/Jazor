@@ -8,24 +8,27 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-[VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:selected")]
+[VueLibraryEmit(nameof(ActiveChanged), VueEmitKind.ModelUpdate, Name = "update:active")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public bool ModelValue { get; set; } = true;
+    public VuetifyGroupModelValue? ModelValue { get; set; }
 
     [Parameter]
-    public EventCallback<bool> ModelValueChanged { get; set; }
+    public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
     [Parameter]
-    public VuetifyGroupModelValue? SelectedValue { get; set; }
+    public bool Active { get; set; } = true;
 
     [Parameter]
-    public EventCallback<VuetifyGroupModelValue?> SelectedValueChanged { get; set; }
+    public EventCallback<bool> ActiveChanged { get; set; }
 
     [Parameter]
-    public string? ActiveColor { get; set; }
+    public bool Absolute { get; set; }
+
+    [Parameter]
+    public VuetifyBorderValue? Border { get; set; }
 
     [Parameter]
     public string? BaseColor { get; set; }
@@ -35,6 +38,9 @@ public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public string? Color { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
 
     [Parameter]
     public VuetifyDensity? Density { get; set; }
@@ -52,19 +58,40 @@ public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
     public VuetifyMandatoryValue? Mandatory { get; set; }
 
     [Parameter]
-    public string? Mode { get; set; }
+    public Number? Max { get; set; }
+
+    [Parameter]
+    public VuetifyBottomNavigationMode? Mode { get; set; }
+
+    [Parameter]
+    public bool Multiple { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Order { get; set; }
+
+    [Parameter]
+    public VuetifyRoundedValue? Rounded { get; set; }
 
     [Parameter]
     public string? SelectedClass { get; set; }
 
     [Parameter]
-    public bool Shift { get; set; }
+    public VueClassValue? Class { get; set; }
+
+    [Parameter]
+    public VuetifyStyleValue? Style { get; set; }
 
     [Parameter]
     public string? Tag { get; set; }
 
     [Parameter]
     public string? Theme { get; set; }
+
+    [Parameter]
+    public bool Tile { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

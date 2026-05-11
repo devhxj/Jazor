@@ -20,6 +20,142 @@ public enum VuetifyAlertType
 }
 
 [String]
+public enum VuetifyAlertBorderSide
+{
+    [Description("@#top")]
+    Top,
+
+    [Description("@#end")]
+    End,
+
+    [Description("@#bottom")]
+    Bottom,
+
+    [Description("@#start")]
+    Start
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly struct VuetifyAlertBorderValue : System.Runtime.CompilerServices.IUnion
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly VuetifyAlertBorderSide? _side;
+
+    private VuetifyAlertBorderValue(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _side = default;
+    }
+
+    private VuetifyAlertBorderValue(VuetifyAlertBorderSide value)
+    {
+        _kind = 2;
+        _bool = default;
+        _side = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public VuetifyAlertBorderSide? AsSide => _kind == 2 ? _side : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsSide,
+        _ => default
+    };
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAlertBorderValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAlertBorderValue From(VuetifyAlertBorderSide value);
+
+    public static implicit operator VuetifyAlertBorderValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyAlertBorderValue(VuetifyAlertBorderSide value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly struct VuetifyAlertIconValue : System.Runtime.CompilerServices.IUnion
+{
+    private readonly byte _kind;
+    private readonly string? _string;
+    private readonly Symbol? _symbol;
+    private readonly VueProps? _props;
+
+    private VuetifyAlertIconValue(string value)
+    {
+        _kind = 1;
+        _string = value;
+        _symbol = default;
+        _props = default;
+    }
+
+    private VuetifyAlertIconValue(Symbol value)
+    {
+        _kind = 2;
+        _string = default;
+        _symbol = value;
+        _props = default;
+    }
+
+    private VuetifyAlertIconValue(VueProps value)
+    {
+        _kind = 3;
+        _string = default;
+        _symbol = default;
+        _props = value;
+    }
+
+    public string? AsString => _kind == 1 ? _string : default;
+
+    public Symbol? AsSymbol => _kind == 2 ? _symbol : default;
+
+    public VueProps? AsProps => _kind == 3 ? _props : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsSymbol,
+        3 => AsProps,
+        _ => default
+    };
+
+    [ECMAScriptInline("false")]
+    public extern static VuetifyAlertIconValue None();
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAlertIconValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAlertIconValue From(Symbol value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAlertIconValue From(VueProps value);
+
+    public static implicit operator VuetifyAlertIconValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifyAlertIconValue(Symbol value)
+        => new(value);
+
+    public static implicit operator VuetifyAlertIconValue(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifyAlertIconValue(VueDictionary value)
+        => new(value);
+}
+
+[String]
 public enum VuetifyDensity
 {
     [Description("@#default")]
@@ -166,6 +302,16 @@ public enum VuetifySliderDirection
 
     [Description("@#vertical")]
     Vertical
+}
+
+[String]
+public enum VuetifyBottomNavigationMode
+{
+    [Description("@#horizontal")]
+    Horizontal,
+
+    [Description("@#shift")]
+    Shift
 }
 
 [String]

@@ -10,6 +10,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(AfterEnter), VueEmitKind.LibrarySpecific, Name = "afterEnter")]
 [VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
+[VueLibraryEmit(nameof(Keydown), VueEmitKind.LibrarySpecific, Name = "keydown")]
 [VueLibraryProp(nameof(ZIndex), Name = "zIndex")]
 [VueLibrarySlot(nameof(Activator), Name = "activator")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
@@ -128,6 +129,9 @@ public sealed class VOverlay : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public EventCallback<MouseEvent> ClickOutside { get; set; }
+
+    [Parameter]
+    public EventCallback<KeyboardEvent> Keydown { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

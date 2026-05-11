@@ -1,7 +1,7 @@
 # ECMAScript.Vuetify 组件覆盖矩阵
 
 > Status: 活跃矩阵  
-> Updated: 2026-05-10
+> Updated: 2026-05-11
 > Positioning: 历史覆盖矩阵，当前生产快照以 `docs/03-完成/razorvue/ECMAScript.Vuetify.ProductionChecklist.md` 和代码测试为准。
 > Scope: 本文档只讨论 RazorVue authoring 组件桩，不讨论 `VuetifyComponents` / `VuetifyDirectives` runtime export 的全量覆盖。
 
@@ -30,11 +30,11 @@
 
 ## 2. 当前总览
 
-当前 `ECMAScript.Vuetify` authoring 组件桩已覆盖当前支持的 runtime exports 共 `108` 个组件：`VuetifyComponents` 的 `105` 个 normal exports，以及 `VuetifyLabsComponents` 的 `3` 个 labs exports。108 个组件全部为专用强类型 authoring 组件；当前不再保留 runtime-only / labs 透传型 authoring 桩。
+当前 `ECMAScript.Vuetify` authoring 组件桩已覆盖当前支持的 runtime exports 共 `114` 个组件：`VuetifyComponents` 的 `105` 个 normal exports，以及 `VuetifyLabsComponents` 的 `9` 个 labs exports。114 个组件全部为专用强类型 authoring 组件；当前不再保留 runtime-only / labs 透传型 authoring 桩。
 
 当前专用强类型 authoring 组件包括：
 
-`VAlert`, `VApp`, `VAppBar`, `VAutocomplete`, `VAvatar`, `VBadge`, `VBanner`, `VBottomNavigation`, `VBottomSheet`, `VBreadcrumbs`, `VBtn`, `VBtnGroup`, `VBtnToggle`, `VCalendar`, `VCard`, `VCardActions`, `VCardItem`, `VCardSubtitle`, `VCardText`, `VCardTitle`, `VCarousel`, `VCheckbox`, `VChip`, `VChipGroup`, `VCode`, `VCol`, `VColorPicker`, `VCombobox`, `VConfirmEdit`, `VContainer`, `VCounter`, `VDataIterator`, `VDataTable`, `VDatePicker`, `VDefaultsProvider`, `VDialog`, `VDivider`, `VEmptyState`, `VExpansionPanel`, `VFab`, `VField`, `VFileInput`, `VFooter`, `VForm`, `VHover`, `VIcon`, `VImg`, `VInfiniteScroll`, `VInput`, `VItemGroup`, `VKbd`, `VLabel`, `VLayout`, `VLazy`, `VList`, `VListItem`, `VLocaleProvider`, `VMain`, `VMenu`, `VMessages`, `VNavigationDrawer`, `VNoSsr`, `VNumberInput`, `VOtpInput`, `VOverlay`, `VPagination`, `VParallax`, `VProgressCircular`, `VProgressLinear`, `VRadio`, `VRadioGroup`, `VRangeSlider`, `VRating`, `VResponsive`, `VRow`, `VSelect`, `VSelectionControl`, `VSelectionControlGroup`, `VSheet`, `VSkeletonLoader`, `VSlider`, `VSlideGroup`, `VSnackbar`, `VSnackbarQueue`, `VSpacer`, `VSparkline`, `VSpeedDial`, `VStepper`, `VSwitch`, `VSystemBar`, `VTab`, `VTable`, `VTabs`, `VTabsWindow`, `VTabsWindowItem`, `VTextarea`, `VTextField`, `VThemeProvider`, `VTimePicker`, `VTimeline`, `VToolbar`, `VToolbarItems`, `VToolbarTitle`, `VTooltip`, `VTreeview`, `VValidation`, `VVirtualScroll`, `VWindow`.
+`VAlert`, `VApp`, `VAppBar`, `VAutocomplete`, `VAvatar`, `VBadge`, `VBanner`, `VBottomNavigation`, `VBottomSheet`, `VBreadcrumbs`, `VBtn`, `VBtnGroup`, `VBtnToggle`, `VCalendar`, `VCard`, `VCardActions`, `VCardItem`, `VCardSubtitle`, `VCardText`, `VCardTitle`, `VCarousel`, `VCheckbox`, `VChip`, `VChipGroup`, `VCode`, `VCol`, `VColorPicker`, `VCombobox`, `VConfirmEdit`, `VContainer`, `VCounter`, `VDataIterator`, `VDataTable`, `VDateInput`, `VDatePicker`, `VDefaultsProvider`, `VDialog`, `VDivider`, `VEmptyState`, `VExpansionPanel`, `VFab`, `VField`, `VFileInput`, `VFileUpload`, `VFooter`, `VForm`, `VHover`, `VIcon`, `VIconBtn`, `VImg`, `VInfiniteScroll`, `VInput`, `VItemGroup`, `VKbd`, `VLabel`, `VLayout`, `VLazy`, `VList`, `VListItem`, `VLocaleProvider`, `VMain`, `VMenu`, `VMessages`, `VNavigationDrawer`, `VNoSsr`, `VNumberInput`, `VOtpInput`, `VOverlay`, `VPagination`, `VParallax`, `VPicker`, `VProgressCircular`, `VProgressLinear`, `VPullToRefresh`, `VRadio`, `VRadioGroup`, `VRangeSlider`, `VRating`, `VResponsive`, `VRow`, `VSelect`, `VSelectionControl`, `VSelectionControlGroup`, `VSheet`, `VSkeletonLoader`, `VSlider`, `VSlideGroup`, `VSnackbar`, `VSnackbarQueue`, `VSpacer`, `VSparkline`, `VSpeedDial`, `VStepper`, `VStepperVertical`, `VSwitch`, `VSystemBar`, `VTab`, `VTable`, `VTabs`, `VTabsWindow`, `VTabsWindowItem`, `VTextarea`, `VTextField`, `VThemeProvider`, `VTimePicker`, `VTimeline`, `VToolbar`, `VToolbarItems`, `VToolbarTitle`, `VTooltip`, `VTreeview`, `VValidation`, `VVirtualScroll`, `VWindow`.
 
 当前所有 authoring 组件都已经接入：
 
@@ -64,6 +64,7 @@
 | `VAutocomplete` | `VSelect` 主表面 + `Search`, `SearchChanged`, `AutoSelectFirst`, `ClearOnSelect`, `CustomFilter`, `CustomKeyFilter`, `FilterKeys`, `FilterMode`, `NoFilter` | `A` | 高级 filter match 场景已强类型，后续按真实页面补 loader/field 长尾 slot |
 | `VCombobox` | `VSelect` 主表面 + `Search`, `SearchChanged`, `AutoSelectFirst`, `ClearOnSelect`, `Delimiters`, filter props | `A` | 自由输入复杂模型继续通过 `SelectedValue` 并行入口覆盖，泛型库组件支持成熟前不破坏 `ModelValue string?` |
 | `VForm` | `Disabled`, `FastFail`, `ChildContent` | `B` | `Readonly`, `ValidateOn`, `ModelValue`, `ModelValueChanged` 评估是否需要 |
+| `VDateInput` | labs date input：继承 text-field/input 主表面，覆盖 `ModelValue` / `Focused` updates、`Min` / `Max`、confirm edit actions、mobile/display-format/location props、`save` / `cancel` emits、field slots 和 actions scoped slot | `A` | labs API 版本敏感，复杂 date adapter object 按业务继续建模 |
 | `VDatePicker` | `ModelValue`, `ModelValueChanged`, `Multiple`, `Min`, `Max`, `Year`, `YearChanged`, `Month`, `MonthChanged`, `ViewMode`, `ViewModeChanged`, `Active`, `AllowedDates`, calendar display props, picker display props, `HeaderText`, `HeaderContent`, `TitleContent`, `Actions`, `ChildContent` | `A` | 更复杂 date adapter object 和业务日期类型如有需求再补 |
 
 判断：
@@ -82,14 +83,15 @@
 | `VBtnToggle` | `VBtnGroup` 主表面 + `ModelValue`, `ModelValueChanged`, `Mandatory`, `Max`, `Multiple`, `SelectedClass` | `A` | 复杂 value object 与 selected strategy 按业务继续扩展 |
 | `VConfirmEdit` | `ModelValue`, `ModelValueChanged`, `Color`, `CancelText`, `OkText`, `Disabled` as `bool | ("save"|"cancel")[]`, `HideActions`, `Save`, `Cancel`, typed default slot with editable model/actions | `A` | action slot 返回 `IVNode`，复杂 props 继续通过 `VueProps`/`AdditionalAttributes` 表达 |
 | `VChip` | `Text`, `Color`, `Closable`, `OnClick`, `ChildContent` | `B` | `Variant`, `Size`, `Label`, `Disabled`, `Filter` |
-| `VAlert` | `Type`, `Variant`, `Closable`, `Text`, `ChildContent` | `B` | `Color`, `Density`, `Prominent`, `Border`, `Icon`, `Title` |
+| `VAlert` | `ModelValue`, `ModelValueChanged`, `ClickClose`, `Type`, `Variant`, `Color`, `Theme`, `Tag`, `Rounded`, `Tile`, `Position`, `Location`, dimensions, `Density`, `Class`, `Style`, `Border`, `BorderColor`, `Closable`, `CloseIcon`, `CloseLabel`, `Icon`, `Prominent`, `Title`, `Text`, `Prepend`, `TitleContent`, `TextContent`, `Append`, typed `Close`, `ChildContent` | `A` | 更低频的 icon component/function 形态和 alert-title 深层定制继续通过 `AdditionalAttributes` 或后续专用类型补齐 |
 | `VSnackbar` | `ModelValue`, `ModelValueChanged`, `Color`, `Timeout`, `ChildContent` | `B` | `Location`, `Variant`, `MultiLine`, `Rounded`, `Actions` 槽 |
 | `VSnackbarQueue` | `ModelValue`, `ModelValueChanged`, `Variant`, `Color`, `Timeout`, `Timer`, `Closable`, `CloseText`, location/origin/offset/dimensions, typed default/text/actions slots | `A` | 更深层 snackbar prop 长尾和业务消息 record 可按真实通知系统继续细化 |
-| `VDialog` | `ModelValue`, `ModelValueChanged`, `Activator`, `ChildContent` | `B` | `Persistent`, `MaxWidth`, `Width`, `ScrollStrategy`, `Location`, `Transition` |
+| `VDialog` | `ModelValue`, `ModelValueChanged`, overlay props/events (`ActivatorTarget`, `ActivatorProps`, `ContentProps`, `AfterEnter`, `AfterLeave`, `ClickOutside`, `Keydown`, location/origin/offset/scroll/scrim/transition/dimensions), dialog props (`Fullscreen`, `RetainFocus`, `Scrollable`), typed `Activator`, `ChildContent` | `A` | 低频 target 实例/坐标场景已通过专用 union 覆盖；更复杂 contentProps shape 按业务继续用 typed `VueProps` record 扩展 |
 | `VMenu` | `ModelValue`, `ModelValueChanged`, `CloseOnContentClick`, `CloseOnBack`, `CloseOnClick`, `OpenOnClick`, `OpenOnHover`, `OpenOnFocus`, `OpenDelay`, `CloseDelay`, `Location`, `Origin`, `Offset`, `ScrollStrategy`, `Persistent`, `Disabled`, `MinWidth`, `MaxWidth`, `Width`, `Transition`, `ActivatorProps`, `ContentProps`, typed `Activator`, `ChildContent` | `A` | 高级 selected/opened nested 状态按业务补齐 |
 | `VTooltip` | `ModelValue`, `ModelValueChanged`, `Id`, `Interactive`, `Text`, `Location`, `Origin`, `Offset`, `OpenOnClick`, `OpenOnHover`, `OpenOnFocus`, `OpenDelay`, `CloseDelay`, `Disabled`, `Eager`, `MinWidth`, `MaxWidth`, `Width`, `Transition`, `ActivatorProps`, `ContentProps`, typed `Activator`, `ChildContent` | `A` | `scrim` 等长尾 overlay props 继续走 `AdditionalAttributes` 或按需建模 |
 | `VSpeedDial` | `ModelValue`, `ModelValueChanged`, overlay/menu location/origin/offset/transition/dimensions, `ActivatorProps`, `ContentProps`, typed default/activator slots | `A` | 复杂 target/activator 实例等长尾 overlay props 继续通过 `AdditionalAttributes` 或后续专门建模 |
-| `VOverlay` | `ModelValue`, `ModelValueChanged`, `Attach`, `Absolute`, `Contained`, `Disabled`, `Eager`, `Persistent`, close/open strategy props, delay props, `ActivatorProps`, `ContentProps`, `Location`, `Origin`, `Offset`, `LocationStrategy`, `ScrollStrategy`, `Scrim`, dimensions, `AfterEnter`, `AfterLeave`, `ClickOutside`, typed `Activator`, `ChildContent` | `A` | 函数型 location/scroll strategy 与复杂 target 实例按业务继续建模 |
+| `VOverlay` | `ModelValue`, `ModelValueChanged`, `Attach`, `Absolute`, `Contained`, `Disabled`, `Eager`, `Persistent`, close/open strategy props, delay props, `ActivatorProps`, `ContentProps`, `Location`, `Origin`, `Offset`, `LocationStrategy`, `ScrollStrategy`, `Scrim`, dimensions, `AfterEnter`, `AfterLeave`, `ClickOutside`, `Keydown`, typed `Activator`, `ChildContent` | `A` | 函数型 location/scroll strategy 与复杂 target 实例按业务继续建模 |
+| `VPullToRefresh` | labs pull-to-refresh：`Disabled`, `PullDownThreshold`, typed `Load` payload, default slot, typed `pullDownPanel` scoped slot | `A` | labs API 版本敏感，复杂 visual 状态按真实移动页面继续补齐 |
 | `VEmptyState` | `ActionText`, `BgColor`, `Color`, `Icon`, `Image`, `Justify`, `Headline`, `Title`, `Text`, `TextWidth`, dimensions, `Href`, `To`, `ActionClick`, `Actions`, `HeadlineContent`, `TitleContent`, `Media`, `TextContent`, `ChildContent` | `A` | router object-form `To` 继续通过 `AdditionalAttributes` 或后续专门建模 |
 | `VHover` | `ModelValue`, `ModelValueChanged`, `Disabled`, `OpenDelay`, `CloseDelay`, typed default slot | `A` | 无 |
 | `VLazy` | `ModelValue`, `ModelValueChanged`, `MinHeight`, `Options`, dimensions, `Tag`, `Transition`, `ChildContent` | `A` | 更完整 IntersectionObserverInit 长尾字段按业务扩展 |
@@ -98,9 +100,10 @@
 
 判断：
 
-- `VDialog.Activator`、`VConfirmEdit` default slot 等已证明 scoped slot 路径可行；
+- `VAlert` 已覆盖反馈组件主路径，包括可关闭模型、close slot props、`border` / `icon: false` 等容易出错的 union 值；
+- `VDialog.Activator`、`VConfirmEdit` default slot 等已证明 scoped slot 路径可行；`VDialog` 当前 activator slot 已对齐 Vuetify `isActive` / `props` / `targetRef` 上下文；
 - `VBtn` 已覆盖按钮高频生产主路径，复杂 payload event 与 router object-form `To` 继续按真实业务提升；
-- 浮层类组件已经可演示，但离“复杂业务稳定 authoring”仍有距离。
+- 浮层类组件已经覆盖常见 overlay/dialog/menu/tooltip/speed-dial 主路径，复杂函数型策略、target 实例和业务 content props 继续按实际页面收窄建模。
 
 ### 3.3 布局、导航与展示
 
@@ -130,6 +133,7 @@
 | `VNoSsr` | `ChildContent` | `A` | 无 |
 | `VLocaleProvider` | `Locale`, `FallbackLocale`, `Messages`, `Rtl`, `ChildContent` | `A` | `Messages` 使用 `VueProps` / `VueDictionary`，复杂 locale message tree 可继续通过嵌套 typed record 或 dictionary 表达 |
 | `VDefaultsProvider` | `Defaults`, `Disabled`, `Reset`, `Root`, `Scoped`, `ChildContent` | `A` | defaults object 使用 `VueProps` / `VueDictionary`；长尾 defaults shape 可按业务增加 typed records |
+| `VPicker` | labs picker shell：theme/tag/rounded/tile/position/location/dimensions/border/color/bgColor、`Divided`, `Landscape`, `Title`, `HideHeader`, header/default/actions/title slots | `A` | labs API 版本敏感，主要作为 picker 组合壳使用 |
 | `VTabs` | `Color`, `Grow`, `ModelValue`, `ModelValueChanged`, `ChildContent` | `B` | `Direction`, `AlignTabs`, `Density`, `BgColor` |
 | `VTab` | `Text`, `Value`, `ChildContent` | `B` | `Disabled`, `SelectedClass`, `Stacked` |
 | `VWindow` | `ModelValue`, `ModelValueChanged`, `Continuous`, `NextIcon`, `PrevIcon`, `Reverse`, `ShowArrows`, `Touch`, `Direction`, `Disabled`, `SelectedClass`, `Mandatory`, `Tag`, `Theme`, `Additional`, `Prev`, `Next`, typed default slot | `A` | 长尾 group internals 和复杂 touch data 继续按业务扩展 |
@@ -140,7 +144,7 @@
 判断：
 
 - 布局类组件已足够支撑当前 sample；
-- `VCard` 当前表面过窄，虽然能组合使用，但 authoring 感受不够完整。
+- `VCard` 已覆盖常规内容、视觉、尺寸、路由和高频命名槽主路径；更深层 router object-form `To` 后续按业务推进。
 
 ### 3.4 列表、表格与数据展示
 
@@ -151,11 +155,14 @@
 | `VTreeview` | `ModelValue`, `ModelValueChanged`, `Activated`, `ActivatedChanged`, `Selected`, `SelectedChanged`, `Opened`, `OpenedChanged`, `Items`, `ItemTitle`, `ItemValue`, `ItemChildren`, `ItemProps`, `ReturnObject`, `Mandatory`, `Activatable`, `Selectable`, `ActiveStrategy`, `SelectStrategy`, `LoadChildren`, filter props, icon/color/list/dimension props, `Class`, `Style`, click payload events, tree item scoped slots | `A` | labs API 仍按 Vuetify 版本变化跟进；低频策略 object 继续通过专用 definition record 或 `AdditionalAttributes` 扩展 |
 | `VBreadcrumbs` | `Items`, `Divider`, `Disabled`, `ChildContent` | `B` | `ItemTitle`, `ItemValue`, `Density`, `ActiveClass` |
 | `VDataTable` | `ModelValue`, `ModelValueChanged`, `Headers`, `Items`, `ItemValue`, `ItemSelectable`, `ReturnObject`, `Page`, `PageChanged`, `ItemsPerPage`, `ItemsPerPageChanged`, `ItemsPerPageOptions`, `SortBy`, `SortByChanged`, `GroupBy`, `GroupByChanged`, `Expanded`, `ExpandedChanged`, `OptionsChanged`, `CurrentItemsChanged`, `Search`, `ShowSelect`, `SelectStrategy`, `ShowExpand`, `ExpandOnClick`, `HideDefaultBody`, `HideDefaultFooter`, `HideDefaultHeader`, `HideNoData`, `NoDataText`, `Loading`, `LoadingText`, `DisableSort`, `MultiSort`, `MustSort`, `SortAscIcon`, `SortDescIcon`, `Color`, `Density`, `Dense`, `FixedHeader`, `FixedFooter`, `Hover`, `Height`, `Width`, `ItemKey`, `HeaderProps`, `RowProps`, `CellProps`, pagination icon/text props, `Top`, `Colgroup`, `HeadersContent`, `HeaderSelect`, `HeaderExpand`, `BodyContent`, `BodyPrepend`, `BodyAppend`, `ItemContent`, `GroupHeader`, `ExpandedRow`, `Tbody`, `Thead`, `Tfoot`, `Bottom`, `FooterPrepend`, `LoadingContent`, `NoData`, `ChildContent` | `A` | server-side table、virtual table、深度分组和每列 `item.<key>` 动态 slot 仍按业务继续建模 |
+| `VDataIterator` | data-iterator runtime export 具备专用 authoring 组件和 `AdditionalAttributes`，当前覆盖基础 child-content 组合入口 | `B` | pagination/sort/group slot 与 item context 按业务提升 |
 | `VTable` | `FixedHeader`, `FixedFooter`, `Height`, `Hover`, `Density`, `Tag`, `Theme`, `ChildContent` | `A` | 原生 table 内容由默认 slot 组合 |
 | `VPagination` | `ModelValue`, `ModelValueChanged`, `Length`, `TotalVisible`, `Disabled` | `B` | `Density`, `Rounded`, `Color`, `Variant` |
 | `VItemGroup` | `ModelValue`, `ModelValueChanged`, `Mandatory`, `Max`, `Multiple`, `SelectedClass`, `Tag`, `ValueComparator`, typed default slot | `A` | 低频 group internals 继续按业务扩展 |
 | `VChipGroup` | `ModelValue`, `ModelValueChanged`, `BaseColor`, `CenterActive`, `Color`, `Column`, `Filter`, `Direction`, `Mandatory`, `Max`, `Mobile`, `Multiple`, `NextIcon`, `PrevIcon`, `ShowArrows`, `SelectedClass`, `Variant`, `Tag`, `ValueComparator`, `ChildContent` | `A` | 低频 slide-group display props 继续按业务扩展 |
 | `VSlideGroup` | `ModelValue`, `ModelValueChanged`, `Multiple`, `Mandatory`, `Max`, `SelectedClass`, `Disabled`, `Tag`, `Mobile`, `MobileBreakpoint`, `CenterActive`, `Direction`, `NextIcon`, `PrevIcon`, `ShowArrows`, typed default/prev/next slots | `A` | `symbol` injection key 暂未暴露，作为内部组合协议保留 |
+| `VStepper` | group model、items union/collection、stepper/group/sheet/display/actions props、default/actions/header/item/prev/next scoped slots 和 dynamic step item slots | `A` | 深层 item context 字段随业务页面继续补齐 |
+| `VStepperVertical` | labs vertical stepper：group model、items union/collection、expansion-panel/stepper props、pattern-only dynamic `header-item.${string}` / `item.${string}` slots、actions/icon/title/subtitle/prev/next slots | `A` | labs API 版本敏感，复杂 panel 组合行为按真实页面继续验证 |
 | `VVirtualScroll` | dimensions, `ItemHeight`, `ItemKey`, `Items`, `Renderless`, typed default slot | `A` | 当前 `Items` 使用 `VueValue[]` 覆盖常见标量/object bag；泛型库组件支持成熟后可评估泛型 authoring |
 | `VInfiniteScroll` | `Tag`, dimensions, `Color`, `Direction`, `Side`, `Mode`, `Margin`, `LoadMoreText`, `EmptyText`, `Load`, default/loading/error/empty/load-more slots | `A` | 复杂按钮 props 通过 status slot context 的 `Props` 或 `AdditionalAttributes` 继续表达 |
 
@@ -173,6 +180,8 @@
 | `VAvatar` | `Color`, `Image`, `Size`, `ChildContent` | `B` | `Rounded`, `Density`, `Variant` |
 | `VBadge` | `Color`, `Content`, `Dot`, `ChildContent` | `B` | `Floating`, `Location`, `Inline`, `Max` |
 | `VIcon` | `Icon` | `C` | `Color`, `Size`, `Tag`, `Start`, `End` |
+| `VIconBtn` | labs icon button：active model/update、color/variant/theme/tag/rounded/elevation/border、active/base variants/icons、size/icon size maps、loading/readonly/rotate/text、default/loader slots | `A` | labs API 版本敏感，低频 animation/state props 按业务继续验证 |
+| `VFileUpload` | labs file upload：model/update、theme/tag/rounded/position/location/dimensions/border/color/density/delay props、browse/title/subtitle/icon/clearable/disabled/multiple/scrim/showSize/name，以及 browse/default/icon/input/item/title/divider slots | `A` | labs API 版本敏感，复杂 drag/drop 状态和 item context 字段按真实上传页面继续扩展 |
 | `VCarousel` | `ModelValue`, `ModelValueChanged`, `Color`, `Cycle`, `DelimiterIcon`, `Height`, `HideDelimiters`, `HideDelimiterBackground`, `Interval`, `Progress`, `VerticalDelimiters`, VWindow navigation/group props, `ChildContent`, `Prev`, `Next`, `Item` | `A` | `VCarouselItem` 不在当前 runtime export surface 内，carousel slide 内容先通过默认 slot 和业务组合表达 |
 | `VParallax` | `Scale`, `ChildContent`, `Placeholder`, `Error`, `Sources` | `A` | image attrs 通过 `AdditionalAttributes` 透传，复杂 image props 可按 `VImg` 后续合并策略推进 |
 | `VRating` | `ModelValue`, `ModelValueChanged`, `ActiveColor`, `Color`, `Clearable`, `Density`, `Name`, `ItemLabelPosition`, `ItemLabels`, `ItemAriaLabel`, `HalfIncrements`, `EmptyIcon`, `FullIcon`, `HalfIcon`, `Length`, `Hover`, `Readonly`, `Disabled`, `Ripple`, `Size`, `Tag`, `ItemContent`, `ItemLabel` | `A` | 自定义 icon component 值可通过 `VuetifyIconValue`/`AdditionalAttributes` 扩展 |
@@ -234,6 +243,7 @@ Vuetify 官方 scoped slot 中的 `Ref`、`ComputedRef`、`WritableComputedRef` 
 
 当前亮点主要集中在：
 
+- `VAlert` prepend/title/text/append/close slots
 - `VDialog.Activator`
 - `VTooltip.Activator`
 - `VSpeedDial` default/activator scoped slots
@@ -246,6 +256,10 @@ Vuetify 官方 scoped slot 中的 `Ref`、`ComputedRef`、`WritableComputedRef` 
 - `VInput` / `VField` / `VSelectionControl` input infrastructure scoped slots
 - `VValidation` default scoped slot
 - `VConfirmEdit` default scoped slot
+- `VDateInput` actions scoped slot
+- `VFileUpload` browse/input/item scoped slots
+- `VPullToRefresh` pullDownPanel scoped slot
+- `VStepper` / `VStepperVertical` dynamic step item slots
 - `VCounter` scoped default slot
 - `VMessages` scoped `message` slot
 
@@ -305,12 +319,18 @@ Vuetify 官方 scoped slot 中的 `Ref`、`ComputedRef`、`WritableComputedRef` 
 - `VItemGroup`
 - `VSnackbarQueue`
 - `VSparkline`
+- `VDateInput`
+- `VFileUpload`
+- `VIconBtn`
+- `VPicker`
+- `VPullToRefresh`
 - `VChipGroup`
 - `VWindow`
 - `VTabsWindow`
 - `VTabsWindowItem`
 - `VConfirmEdit`
 - `VValidation`
+- `VStepperVertical`
 
 ## 6. 当前结论
 

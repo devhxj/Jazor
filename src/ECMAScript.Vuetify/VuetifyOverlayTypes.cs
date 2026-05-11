@@ -216,3 +216,200 @@ public readonly struct VuetifyOriginValue : System.Runtime.CompilerServices.IUni
     public static implicit operator VuetifyOriginValue(string value)
         => new(value);
 }
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly struct VuetifyOverlayCoordinateTarget : System.Runtime.CompilerServices.IUnion
+{
+    private readonly Number[]? _values;
+
+    private VuetifyOverlayCoordinateTarget(Number[] values)
+    {
+        _values = values;
+    }
+
+    public Number[]? AsArray => _values;
+
+    public object? Value => AsArray;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayCoordinateTarget From(Number[] values);
+
+    [ECMAScriptInline("[__arg1, __arg2]")]
+    public extern static VuetifyOverlayCoordinateTarget From(Number x, Number y);
+
+    public static implicit operator VuetifyOverlayCoordinateTarget(Number[] values)
+        => new(values);
+
+    public static implicit operator VuetifyOverlayCoordinateTarget(int[] values)
+        => new(Array.ConvertAll(values, static value => (Number)value));
+
+    public static implicit operator VuetifyOverlayCoordinateTarget(double[] values)
+        => new(Array.ConvertAll(values, static value => (Number)value));
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly struct VuetifyDialogTarget : System.Runtime.CompilerServices.IUnion
+{
+    private readonly byte _kind;
+    private readonly Element? _element;
+    private readonly VueComponentPublicInstance? _component;
+    private readonly string? _string;
+    private readonly VuetifyOverlayCoordinateTarget? _coordinates;
+
+    private VuetifyDialogTarget(Element value)
+    {
+        _kind = 1;
+        _element = value;
+        _component = default;
+        _string = default;
+        _coordinates = default;
+    }
+
+    private VuetifyDialogTarget(VueComponentPublicInstance value)
+    {
+        _kind = 2;
+        _element = default;
+        _component = value;
+        _string = default;
+        _coordinates = default;
+    }
+
+    private VuetifyDialogTarget(string value)
+    {
+        _kind = 3;
+        _element = default;
+        _component = default;
+        _string = value;
+        _coordinates = default;
+    }
+
+    private VuetifyDialogTarget(VuetifyOverlayCoordinateTarget value)
+    {
+        _kind = 4;
+        _element = default;
+        _component = default;
+        _string = default;
+        _coordinates = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _element : default;
+
+    public VueComponentPublicInstance? AsComponent => _kind == 2 ? _component : default;
+
+    public string? AsString => _kind == 3 ? _string : default;
+
+    public VuetifyOverlayCoordinateTarget? AsCoordinates => _kind == 4 ? _coordinates : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsElement,
+        2 => AsComponent,
+        3 => AsString,
+        4 => AsCoordinates,
+        _ => default
+    };
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogTarget From(Element value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogTarget From(VueComponentPublicInstance value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogTarget From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogTarget From(VuetifyOverlayCoordinateTarget value);
+
+    [ECMAScriptInline("'cursor'")]
+    public extern static VuetifyDialogTarget Cursor();
+
+    [ECMAScriptInline("'parent'")]
+    public extern static VuetifyDialogTarget Parent();
+
+    public static implicit operator VuetifyDialogTarget(Element value)
+        => new(value);
+
+    public static implicit operator VuetifyDialogTarget(VueComponentPublicInstance value)
+        => new(value);
+
+    public static implicit operator VuetifyDialogTarget(string value)
+        => new(value);
+
+    public static implicit operator VuetifyDialogTarget(VuetifyOverlayCoordinateTarget value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly struct VuetifyDialogActivatorTarget : System.Runtime.CompilerServices.IUnion
+{
+    private readonly byte _kind;
+    private readonly Element? _element;
+    private readonly VueComponentPublicInstance? _component;
+    private readonly string? _string;
+
+    private VuetifyDialogActivatorTarget(Element value)
+    {
+        _kind = 1;
+        _element = value;
+        _component = default;
+        _string = default;
+    }
+
+    private VuetifyDialogActivatorTarget(VueComponentPublicInstance value)
+    {
+        _kind = 2;
+        _element = default;
+        _component = value;
+        _string = default;
+    }
+
+    private VuetifyDialogActivatorTarget(string value)
+    {
+        _kind = 3;
+        _element = default;
+        _component = default;
+        _string = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _element : default;
+
+    public VueComponentPublicInstance? AsComponent => _kind == 2 ? _component : default;
+
+    public string? AsString => _kind == 3 ? _string : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsElement,
+        2 => AsComponent,
+        3 => AsString,
+        _ => default
+    };
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogActivatorTarget From(Element value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogActivatorTarget From(VueComponentPublicInstance value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyDialogActivatorTarget From(string value);
+
+    [ECMAScriptInline("'parent'")]
+    public extern static VuetifyDialogActivatorTarget Parent();
+
+    public static implicit operator VuetifyDialogActivatorTarget(Element value)
+        => new(value);
+
+    public static implicit operator VuetifyDialogActivatorTarget(VueComponentPublicInstance value)
+        => new(value);
+
+    public static implicit operator VuetifyDialogActivatorTarget(string value)
+        => new(value);
+}
