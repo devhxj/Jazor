@@ -18,7 +18,6 @@ public static class Util
 {
     public const string ECMAScriptAttributeMetadataName = "ECMAScript.ECMAScriptAttribute";
     public const string ECMAScriptModuleAttributeMetadataName = "ECMAScript.ECMAScriptModuleAttribute";
-    public const string ECMAScriptUnionAttributeMetadataName = "ECMAScript.ECMAScriptUnionAttribute";
     public const string SystemUnionAttributeMetadataName = "System.Runtime.CompilerServices.UnionAttribute";
     public const string SystemIUnionMetadataName = "System.Runtime.CompilerServices.IUnion";
     public const string StringAttributeMetadataName = "ECMAScript.StringAttribute";
@@ -389,11 +388,17 @@ public static class Util
         => method.MethodKind == MethodKind.Ordinary &&
            (method.IsExtern || GetSymbolConfigName(method) is not null);
 
-    public static bool IsECMAScriptUnionMarkerAttribute(INamedTypeSymbol? symbol)
-        => symbol?.ToDisplayString() == ECMAScriptUnionAttributeMetadataName;
-
     public static bool IsSystemUnionMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == SystemUnionAttributeMetadataName;
+
+    public static bool IsRuntimeIUnionType(INamedTypeSymbol? symbol)
+    {
+        if (symbol is null)
+            return false;
+
+        return symbol.AllInterfaces.Any(@interface =>
+            @interface.OriginalDefinition.ToDisplayString(Format.NameFormat) == SystemIUnionMetadataName);
+    }
 
     public static bool IsStringEnumMarkerAttribute(INamedTypeSymbol? symbol)
         => symbol?.ToDisplayString() == StringAttributeMetadataName;
@@ -402,29 +407,12 @@ public static class Util
         => symbol is INamedTypeSymbol { TypeKind: TypeKind.Enum } namedType &&
            namedType.GetAttributes().Any(attribute => IsStringEnumMarkerAttribute(attribute.AttributeClass));
 
-    public static bool IsECMAScriptUnionType(INamedTypeSymbol? symbol)
-    {
-        if (symbol is null)
-            return false;
-
-        if (symbol.GetAttributes().Any(attr => IsECMAScriptUnionMarkerAttribute(attr.AttributeClass)))
-            return true;
-
-        return symbol.AllInterfaces.Any(@interface =>
-            @interface.GetAttributes().Any(attr => IsECMAScriptUnionMarkerAttribute(attr.AttributeClass)));
-    }
-
     public static bool IsSystemUnionType(INamedTypeSymbol? symbol)
     {
         if (symbol is null)
             return false;
 
-        if (symbol.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass)))
-            return true;
-
-        return symbol.AllInterfaces.Any(@interface =>
-            @interface.OriginalDefinition.ToDisplayString(Format.NameFormat) == SystemIUnionMetadataName ||
-            @interface.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass)));
+        return symbol.GetAttributes().Any(attr => IsSystemUnionMarkerAttribute(attr.AttributeClass));
     }
 
     public static bool IsHostErasedUnionType(INamedTypeSymbol? symbol)
@@ -432,8 +420,9 @@ public static class Util
         if (symbol is null)
             return false;
 
-        return IsECMAScriptUnionType(symbol) ||
-            IsSystemUnionType(symbol) && IsECMAScriptRuntimeType(symbol);
+        return IsSystemUnionType(symbol) &&
+            IsECMAScriptRuntimeType(symbol) &&
+            IsRuntimeIUnionType(symbol);
     }
 
     private static bool IsRuntimeMarkerType(ISymbol? symbol)

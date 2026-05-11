@@ -654,6 +654,14 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (IsSymbolDeclaredInCurrentSourceBoundary(operation, symbol))
             return true;
 
+        if (symbol is IMethodSymbol { AssociatedSymbol: IPropertySymbol associatedProperty } &&
+            IsUnsupportedUnionProjectionProperty(associatedProperty))
+            return false;
+
+        if (symbol is IPropertySymbol property &&
+            IsUnsupportedUnionProjectionProperty(property))
+            return false;
+
         if (HasEcmascriptSupportMarker(symbol))
             return true;
 

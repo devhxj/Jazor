@@ -967,6 +967,23 @@ public partial class SemanticWalker
 		return Util.IsHostErasedUnionType(type.OriginalDefinition);
 	}
 
+	private static bool IsUnsupportedUnionProjectionProperty(IPropertySymbol property)
+	{
+		if (property.IsStatic ||
+			property.Parameters.Length != 0 ||
+			property.GetMethod is null ||
+			!IsErasedUnionProjectionPropertyName(property.Name) ||
+			property.ContainingType is not INamedTypeSymbol namedType)
+			return false;
+
+		var originalDefinition = namedType.OriginalDefinition;
+		if (Util.IsHostErasedUnionType(originalDefinition))
+			return false;
+
+		return Util.IsSystemUnionType(originalDefinition) ||
+			Util.IsRuntimeIUnionType(originalDefinition);
+	}
+
 	private static bool ShouldInvokeAliasedPropertyGetter(IPropertyReferenceOperation operation, string alias)
 	{
 		if (operation.Instance is null || operation.Arguments.Length != 0 || string.IsNullOrEmpty(alias))
