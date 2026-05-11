@@ -119,6 +119,26 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         StringAssert.Contains(coverlet, "<BranchMinimum>80</BranchMinimum>");
     }
 
+    [TestMethod]
+    public void VueRoute_SafeErasedValueUnions_UseNativeUnionKeyword()
+    {
+        var repoRoot = ResolveRepositoryRoot();
+        var unionSource = System.IO.File.ReadAllText(System.IO.Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "Types", "VueRoute.Types.Unions.cs"));
+        var typesSource = System.IO.File.ReadAllText(System.IO.Path.Combine(repoRoot, "src", "ECMAScript.VueRoute", "Types", "VueRoute.Types.cs"));
+
+        AssertUsesNativeUnion(unionSource, "RouteRecordName");
+        AssertUsesNativeUnion(unionSource, "RouteRecordAlias");
+        AssertUsesNativeUnion(unionSource, "RouteLocationRaw");
+        AssertUsesNativeUnion(unionSource, "HistoryStateValue");
+        AssertUsesNativeUnion(unionSource, "RouteRecordRaw");
+        AssertUsesNativeUnion(unionSource, "MatcherLocationRaw");
+        AssertUsesNativeUnion(unionSource, "RouteParam");
+        AssertUsesNativeUnion(unionSource, "RouteParamRaw");
+        AssertUsesNativeUnion(unionSource, "LocationQueryValue");
+        AssertUsesNativeUnion(unionSource, "LocationQueryValueRaw");
+        AssertUsesNativeUnion(typesSource, "ScrollPositionTarget");
+    }
+
     private static string ResolveRepositoryRoot()
     {
         var current = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
@@ -130,5 +150,15 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         }
 
         throw new InvalidOperationException("Cannot locate repository root (Jazor.slnx).");
+    }
+
+    private static void AssertUsesNativeUnion(string source, string typeName)
+    {
+        Assert.IsTrue(
+            System.Text.RegularExpressions.Regex.IsMatch(source, $@"\bpublic\s+readonly\s+union\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b"),
+            $"{typeName} must be declared with the C# native union keyword.");
+        Assert.IsFalse(
+            System.Text.RegularExpressions.Regex.IsMatch(source, $@"\bpublic\s+readonly\s+struct\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b"),
+            $"{typeName} must stay on the C# native union keyword path.");
     }
 }

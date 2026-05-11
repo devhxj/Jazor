@@ -5,6 +5,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Text.Json;
+using ECMAScript;
+using ECMAScript.Vuetify;
+using static ECMAScript.Vue3;
 
 namespace Jazor.RazorVue.Test;
 
@@ -324,9 +327,9 @@ public sealed class RazorVueDescriptorExtractionTests
                 .Select(static descriptor => descriptor.Name)
                 .OrderBy(static name => name, StringComparer.Ordinal)
                 .ToArray());
-        Assert.AreEqual(109, vuetifyDescriptors.Length);
-        Assert.AreEqual(50, VuetifyTestMetadata.StrongAuthoringComponentNames.Length);
-        Assert.AreEqual(59, VuetifyTestMetadata.RuntimeOnlyAuthoringComponentNames.Length);
+        Assert.AreEqual(108, vuetifyDescriptors.Length);
+        Assert.AreEqual(108, VuetifyTestMetadata.StrongAuthoringComponentNames.Length);
+        Assert.AreEqual(0, VuetifyTestMetadata.RuntimeOnlyAuthoringComponentNames.Length);
         CollectionAssert.IsSubsetOf(
             VuetifyTestMetadata.RuntimeOnlyAuthoringComponentNames,
             VuetifyTestMetadata.RuntimeComponentExportNames);
@@ -344,17 +347,106 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("placeholder", textField.Props.Single(static prop => prop.PublicName == "Placeholder").Name);
         Assert.AreEqual("hint", textField.Props.Single(static prop => prop.PublicName == "Hint").Name);
         Assert.AreEqual("persistentHint", textField.Props.Single(static prop => prop.PublicName == "PersistentHint").Name);
+        Assert.AreEqual("persistentPlaceholder", textField.Props.Single(static prop => prop.PublicName == "PersistentPlaceholder").Name);
+        Assert.AreEqual("prefix", textField.Props.Single(static prop => prop.PublicName == "Prefix").Name);
+        Assert.AreEqual("suffix", textField.Props.Single(static prop => prop.PublicName == "Suffix").Name);
+        Assert.AreEqual("color", textField.Props.Single(static prop => prop.PublicName == "Color").Name);
+        Assert.AreEqual("baseColor", textField.Props.Single(static prop => prop.PublicName == "BaseColor").Name);
+        Assert.AreEqual("bgColor", textField.Props.Single(static prop => prop.PublicName == "BgColor").Name);
         Assert.AreEqual("readonly", textField.Props.Single(static prop => prop.PublicName == "Readonly").Name);
         Assert.AreEqual("clearable", textField.Props.Single(static prop => prop.PublicName == "Clearable").Name);
+        Assert.AreEqual("persistentClear", textField.Props.Single(static prop => prop.PublicName == "PersistentClear").Name);
+        Assert.AreEqual("focused", textField.Props.Single(static prop => prop.PublicName == "Focused").Name);
         Assert.AreEqual("counter", textField.Props.Single(static prop => prop.PublicName == "Counter").Name);
+        Assert.AreEqual("counterValue", textField.Props.Single(static prop => prop.PublicName == "CounterValue").Name);
+        Assert.AreEqual("errorMessages", textField.Props.Single(static prop => prop.PublicName == "ErrorMessages").Name);
+        Assert.AreEqual("hideDetails", textField.Props.Single(static prop => prop.PublicName == "HideDetails").Name);
+        Assert.AreEqual("validateOn", textField.Props.Single(static prop => prop.PublicName == "ValidateOn").Name);
         Assert.AreEqual("variant", textField.Props.Single(static prop => prop.PublicName == "Variant").Name);
         Assert.AreEqual("density", textField.Props.Single(static prop => prop.PublicName == "Density").Name);
         Assert.AreEqual("type", textField.Props.Single(static prop => prop.PublicName == "Type").Name);
+        Assert.AreEqual("autofocus", textField.Props.Single(static prop => prop.PublicName == "Autofocus").Name);
+        Assert.AreEqual("reverse", textField.Props.Single(static prop => prop.PublicName == "Reverse").Name);
+        Assert.AreEqual("update:focused", textField.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
         Assert.AreEqual("additionalAttributes", textField.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(textField.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyCounterValue?", textField.Props.Single(static prop => prop.PublicName == "Counter").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyCounterValueSource?", textField.Props.Single(static prop => prop.PublicName == "CounterValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyValidateOn?", textField.Props.Single(static prop => prop.PublicName == "ValidateOn").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VFieldSlotContext", textField.Slots.Single(static slot => slot.Name == "prepend").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VFieldSlotContext", textField.Slots.Single(static slot => slot.Name == "append-inner").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputDetailsSlotContext", textField.Slots.Single(static slot => slot.Name == "details").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VCounterSlotContext", textField.Slots.Single(static slot => slot.Name == "counter").Parameters[0].TypeName);
+
+        var calendar = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCalendar");
+        Assert.AreEqual("vuetify/labs/components", calendar.ImportSpecifier);
+        Assert.AreEqual("VCalendar", calendar.ExportName);
+        Assert.AreEqual("modelValue", calendar.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", calendar.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("allowedDates", calendar.Props.Single(static prop => prop.PublicName == "AllowedDates").Name);
+        Assert.AreEqual("events", calendar.Props.Single(static prop => prop.PublicName == "Events").Name);
+        Assert.AreEqual("intervalFormat", calendar.Props.Single(static prop => prop.PublicName == "IntervalFormat").Name);
+        Assert.AreEqual("next", calendar.Emits.Single(static emit => emit.RazorAlias == "Next").Name);
+        Assert.AreEqual("prev", calendar.Emits.Single(static emit => emit.RazorAlias == "Prev").Name);
+        Assert.AreEqual("header", calendar.Slots.Single(static slot => slot.PublicName == "Header").Name);
+        Assert.AreEqual("event", calendar.Slots.Single(static slot => slot.PublicName == "EventContent").Name);
+
+        var timePicker = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTimePicker");
+        Assert.AreEqual("vuetify/labs/components", timePicker.ImportSpecifier);
+        Assert.AreEqual("VTimePicker", timePicker.ExportName);
+        Assert.AreEqual("modelValue", timePicker.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", timePicker.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("allowedHours", timePicker.Props.Single(static prop => prop.PublicName == "AllowedHours").Name);
+        Assert.AreEqual("allowedMinutes", timePicker.Props.Single(static prop => prop.PublicName == "AllowedMinutes").Name);
+        Assert.AreEqual("allowedSeconds", timePicker.Props.Single(static prop => prop.PublicName == "AllowedSeconds").Name);
+        Assert.AreEqual("update:viewMode", timePicker.Emits.Single(static emit => emit.RazorAlias == "ViewModeChanged").Name);
+        Assert.AreEqual("update:period", timePicker.Emits.Single(static emit => emit.RazorAlias == "PeriodChanged").Name);
+        Assert.AreEqual("update:hour", timePicker.Emits.Single(static emit => emit.RazorAlias == "HourChanged").Name);
+        Assert.AreEqual("update:minute", timePicker.Emits.Single(static emit => emit.RazorAlias == "MinuteChanged").Name);
+        Assert.AreEqual("update:second", timePicker.Emits.Single(static emit => emit.RazorAlias == "SecondChanged").Name);
+        Assert.AreEqual("title", timePicker.Slots.Single(static slot => slot.PublicName == "TitleContent").Name);
+        Assert.AreEqual("actions", timePicker.Slots.Single(static slot => slot.PublicName == "Actions").Name);
+
+        var treeview = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTreeview");
+        Assert.AreEqual("vuetify/labs/components", treeview.ImportSpecifier);
+        Assert.AreEqual("VTreeview", treeview.ExportName);
+        Assert.AreEqual("modelValue", treeview.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", treeview.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("items", treeview.Props.Single(static prop => prop.PublicName == "Items").Name);
+        Assert.AreEqual("activated", treeview.Props.Single(static prop => prop.PublicName == "Activated").Name);
+        Assert.AreEqual("selected", treeview.Props.Single(static prop => prop.PublicName == "Selected").Name);
+        Assert.AreEqual("opened", treeview.Props.Single(static prop => prop.PublicName == "Opened").Name);
+        Assert.AreEqual("activeStrategy", treeview.Props.Single(static prop => prop.PublicName == "ActiveStrategy").Name);
+        Assert.AreEqual("selectStrategy", treeview.Props.Single(static prop => prop.PublicName == "SelectStrategy").Name);
+        Assert.AreEqual("loadChildren", treeview.Props.Single(static prop => prop.PublicName == "LoadChildren").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", treeview.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("click:open", treeview.Emits.Single(static emit => emit.RazorAlias == "OpenClicked").Name);
+        Assert.AreEqual("click:select", treeview.Emits.Single(static emit => emit.RazorAlias == "SelectClicked").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTreeviewClickPayload", treeview.Emits.Single(static emit => emit.RazorAlias == "OpenClicked").PayloadTypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTreeviewClickPayload", treeview.Emits.Single(static emit => emit.RazorAlias == "SelectClicked").PayloadTypeName);
+        Assert.AreEqual("prepend", treeview.Slots.Single(static slot => slot.PublicName == "Prepend").Name);
+        Assert.AreEqual("append", treeview.Slots.Single(static slot => slot.PublicName == "Append").Name);
+        Assert.AreEqual("title", treeview.Slots.Single(static slot => slot.PublicName == "TitleContent").Name);
+        Assert.AreEqual("subtitle", treeview.Slots.Single(static slot => slot.PublicName == "SubtitleContent").Name);
+        Assert.AreEqual("item", treeview.Slots.Single(static slot => slot.PublicName == "ItemContent").Name);
+        Assert.AreEqual("header", treeview.Slots.Single(static slot => slot.PublicName == "Header").Name);
+        Assert.AreEqual("divider", treeview.Slots.Single(static slot => slot.PublicName == "Divider").Name);
+        Assert.AreEqual("subheader", treeview.Slots.Single(static slot => slot.PublicName == "Subheader").Name);
+        Assert.AreEqual(
+            "ECMAScript.Vuetify.VTreeviewNodeSlotContext",
+            treeview.Slots.Single(static slot => slot.PublicName == "Prepend").Parameters[0].TypeName);
+        Assert.AreEqual(
+            "ECMAScript.Vuetify.VTreeviewItemSlotContext",
+            treeview.Slots.Single(static slot => slot.PublicName == "ItemContent").Parameters[0].TypeName);
+        Assert.AreEqual(
+            "ECMAScript.Vuetify.VTreeviewStructuralItemSlotContext",
+            treeview.Slots.Single(static slot => slot.PublicName == "Header").Parameters[0].TypeName);
 
         var button = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBtn");
+        Assert.AreEqual("active", button.Props.Single(static prop => prop.PublicName == "Active").Name);
+        Assert.AreEqual("activeColor", button.Props.Single(static prop => prop.PublicName == "ActiveColor").Name);
+        Assert.AreEqual("activeReadonly", button.Props.Single(static prop => prop.PublicName == "ActiveReadonly").Name);
+        Assert.AreEqual("baseColor", button.Props.Single(static prop => prop.PublicName == "BaseColor").Name);
         Assert.AreEqual("prependIcon", button.Props.Single(static prop => prop.PublicName == "PrependIcon").Name);
         Assert.AreEqual("appendIcon", button.Props.Single(static prop => prop.PublicName == "AppendIcon").Name);
         Assert.AreEqual("color", button.Props.Single(static prop => prop.PublicName == "Color").Name);
@@ -362,18 +454,103 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("size", button.Props.Single(static prop => prop.PublicName == "Size").Name);
         Assert.AreEqual("loading", button.Props.Single(static prop => prop.PublicName == "Loading").Name);
         Assert.AreEqual("block", button.Props.Single(static prop => prop.PublicName == "Block").Name);
+        Assert.AreEqual("border", button.Props.Single(static prop => prop.PublicName == "Border").Name);
         Assert.AreEqual("height", button.Props.Single(static prop => prop.PublicName == "Height").Name);
         Assert.AreEqual("width", button.Props.Single(static prop => prop.PublicName == "Width").Name);
+        Assert.AreEqual("minHeight", button.Props.Single(static prop => prop.PublicName == "MinHeight").Name);
+        Assert.AreEqual("maxWidth", button.Props.Single(static prop => prop.PublicName == "MaxWidth").Name);
         Assert.AreEqual("rounded", button.Props.Single(static prop => prop.PublicName == "Rounded").Name);
         Assert.AreEqual("elevation", button.Props.Single(static prop => prop.PublicName == "Elevation").Name);
+        Assert.AreEqual("exact", button.Props.Single(static prop => prop.PublicName == "Exact").Name);
         Assert.AreEqual("href", button.Props.Single(static prop => prop.PublicName == "Href").Name);
         Assert.AreEqual("target", button.Props.Single(static prop => prop.PublicName == "Target").Name);
+        Assert.AreEqual("to", button.Props.Single(static prop => prop.PublicName == "To").Name);
+        Assert.AreEqual("replace", button.Props.Single(static prop => prop.PublicName == "Replace").Name);
+        Assert.AreEqual("icon", button.Props.Single(static prop => prop.PublicName == "Icon").Name);
+        Assert.AreEqual("slim", button.Props.Single(static prop => prop.PublicName == "Slim").Name);
+        Assert.AreEqual("stacked", button.Props.Single(static prop => prop.PublicName == "Stacked").Name);
+        Assert.AreEqual("symbol", button.Props.Single(static prop => prop.PublicName == "Symbol").Name);
+        Assert.AreEqual("density", button.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.AreEqual("location", button.Props.Single(static prop => prop.PublicName == "Location").Name);
+        Assert.AreEqual("position", button.Props.Single(static prop => prop.PublicName == "Position").Name);
+        Assert.AreEqual("tag", button.Props.Single(static prop => prop.PublicName == "Tag").Name);
+        Assert.AreEqual("type", button.Props.Single(static prop => prop.PublicName == "Type").Name);
+        Assert.AreEqual("value", button.Props.Single(static prop => prop.PublicName == "Value").Name);
+        Assert.AreEqual("ripple", button.Props.Single(static prop => prop.PublicName == "Ripple").Name);
         Assert.AreEqual("additionalAttributes", button.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(button.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyTextValue?", button.Props.Single(static prop => prop.PublicName == "Text").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", button.Props.Single(static prop => prop.PublicName == "Size").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyBooleanStringValue?", button.Props.Single(static prop => prop.PublicName == "Loading").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", button.Props.Single(static prop => prop.PublicName == "Border").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", button.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", button.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
+        Assert.IsTrue(button.Slots.Single(static slot => slot.Name == "prepend").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(button.Slots.Single(static slot => slot.Name == "append").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(button.Slots.Single(static slot => slot.Name == "loader").Parameters.IsDefaultOrEmpty);
+
+        var fab = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VFab");
+        Assert.AreEqual("modelValue", fab.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", fab.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("app", fab.Props.Single(static prop => prop.PublicName == "App").Name);
+        Assert.AreEqual("appear", fab.Props.Single(static prop => prop.PublicName == "Appear").Name);
+        Assert.AreEqual("extended", fab.Props.Single(static prop => prop.PublicName == "Extended").Name);
+        Assert.AreEqual("layout", fab.Props.Single(static prop => prop.PublicName == "Layout").Name);
+        Assert.AreEqual("offset", fab.Props.Single(static prop => prop.PublicName == "Offset").Name);
+        Assert.AreEqual("transition", fab.Props.Single(static prop => prop.PublicName == "Transition").Name);
+        Assert.AreEqual("location", fab.Props.Single(static prop => prop.PublicName == "Location").Name);
+        Assert.AreEqual("name", fab.Props.Single(static prop => prop.PublicName == "Name").Name);
+        Assert.AreEqual("order", fab.Props.Single(static prop => prop.PublicName == "Order").Name);
+        Assert.AreEqual("absolute", fab.Props.Single(static prop => prop.PublicName == "Absolute").Name);
+        Assert.AreEqual("active", fab.Props.Single(static prop => prop.PublicName == "Active").Name);
+        Assert.AreEqual("baseColor", fab.Props.Single(static prop => prop.PublicName == "BaseColor").Name);
+        Assert.AreEqual("prependIcon", fab.Props.Single(static prop => prop.PublicName == "PrependIcon").Name);
+        Assert.AreEqual("variant", fab.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.AreEqual("theme", fab.Props.Single(static prop => prop.PublicName == "Theme").Name);
+        Assert.AreEqual("readonly", fab.Props.Single(static prop => prop.PublicName == "Readonly").Name);
+        Assert.AreEqual("tile", fab.Props.Single(static prop => prop.PublicName == "Tile").Name);
+        Assert.AreEqual("selectedClass", fab.Props.Single(static prop => prop.PublicName == "SelectedClass").Name);
+        Assert.AreEqual("additionalAttributes", fab.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(fab.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", fab.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", fab.Props.Single(static prop => prop.PublicName == "Location").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", fab.Props.Single(static prop => prop.PublicName == "Order").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTextValue?", fab.Props.Single(static prop => prop.PublicName == "Text").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", fab.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
+        Assert.IsTrue(fab.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var speedDial = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSpeedDial");
+        Assert.AreEqual("modelValue", speedDial.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", speedDial.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("offset", speedDial.Props.Single(static prop => prop.PublicName == "Offset").Name);
+        Assert.AreEqual("location", speedDial.Props.Single(static prop => prop.PublicName == "Location").Name);
+        Assert.AreEqual("origin", speedDial.Props.Single(static prop => prop.PublicName == "Origin").Name);
+        Assert.AreEqual("transition", speedDial.Props.Single(static prop => prop.PublicName == "Transition").Name);
+        Assert.AreEqual("zIndex", speedDial.Props.Single(static prop => prop.PublicName == "ZIndex").Name);
+        Assert.AreEqual("activatorProps", speedDial.Props.Single(static prop => prop.PublicName == "ActivatorProps").Name);
+        Assert.AreEqual("contentProps", speedDial.Props.Single(static prop => prop.PublicName == "ContentProps").Name);
+        Assert.AreEqual("submenu", speedDial.Props.Single(static prop => prop.PublicName == "Submenu").Name);
+        Assert.AreEqual("additionalAttributes", speedDial.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
+        Assert.IsTrue(speedDial.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyOverlayOffsetValue?", speedDial.Props.Single(static prop => prop.PublicName == "Offset").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyOriginValue?", speedDial.Props.Single(static prop => prop.PublicName == "Origin").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSpeedDialDefaultSlotContext", speedDial.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VOverlayActivatorContext", speedDial.Slots.Single(static slot => slot.Name == "activator").Parameters[0].TypeName);
+
+        var confirmEdit = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VConfirmEdit");
+        Assert.AreEqual("modelValue", confirmEdit.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", confirmEdit.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("save", confirmEdit.Emits.Single(static emit => emit.RazorAlias == "Save").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueValue?", confirmEdit.Emits.Single(static emit => emit.RazorAlias == "Save").PayloadTypeName);
+        Assert.AreEqual("cancel", confirmEdit.Emits.Single(static emit => emit.RazorAlias == "Cancel").Name);
+        Assert.AreEqual("color", confirmEdit.Props.Single(static prop => prop.PublicName == "Color").Name);
+        Assert.AreEqual("cancelText", confirmEdit.Props.Single(static prop => prop.PublicName == "CancelText").Name);
+        Assert.AreEqual("okText", confirmEdit.Props.Single(static prop => prop.PublicName == "OkText").Name);
+        Assert.AreEqual("disabled", confirmEdit.Props.Single(static prop => prop.PublicName == "Disabled").Name);
+        Assert.AreEqual("hideActions", confirmEdit.Props.Single(static prop => prop.PublicName == "HideActions").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueValue?", confirmEdit.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyConfirmEditDisabled?", confirmEdit.Props.Single(static prop => prop.PublicName == "Disabled").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VConfirmEditSlotContext", confirmEdit.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
 
         var checkbox = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCheckbox");
         Assert.AreEqual("vuetify/components", checkbox.ImportSpecifier);
@@ -386,8 +563,518 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("density", checkbox.Props.Single(static prop => prop.PublicName == "Density").Name);
         Assert.AreEqual("readonly", checkbox.Props.Single(static prop => prop.PublicName == "Readonly").Name);
         Assert.AreEqual("hideDetails", checkbox.Props.Single(static prop => prop.PublicName == "HideDetails").Name);
+        Assert.AreEqual("trueValue", checkbox.Props.Single(static prop => prop.PublicName == "TrueValue").Name);
+        Assert.AreEqual("falseValue", checkbox.Props.Single(static prop => prop.PublicName == "FalseValue").Name);
+        Assert.AreEqual("indeterminate", checkbox.Props.Single(static prop => prop.PublicName == "Indeterminate").Name);
+        Assert.AreEqual("focused", checkbox.Props.Single(static prop => prop.PublicName == "Focused").Name);
+        Assert.AreEqual("update:focused", checkbox.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
         Assert.AreEqual("additionalAttributes", checkbox.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(checkbox.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
+        Assert.AreEqual("ECMAScript.Vue3.VueValue?", checkbox.Props.Single(static prop => prop.PublicName == "TrueValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", checkbox.Props.Single(static prop => prop.PublicName == "TrueIcon").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlInputDefaultSlotContext", checkbox.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputSlotContext", checkbox.Slots.Single(static slot => slot.Name == "prepend").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputSlotContext", checkbox.Slots.Single(static slot => slot.Name == "append").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputDetailsSlotContext", checkbox.Slots.Single(static slot => slot.Name == "details").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VMessagesMessageSlotContext", checkbox.Slots.Single(static slot => slot.Name == "message").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlLabelSlotContext", checkbox.Slots.Single(static slot => slot.Name == "label").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlInputSlotContext", checkbox.Slots.Single(static slot => slot.Name == "input").Parameters[0].TypeName);
+
+        var switchDescriptor = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSwitch");
+        Assert.AreEqual("modelValue", switchDescriptor.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", switchDescriptor.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("inset", switchDescriptor.Props.Single(static prop => prop.PublicName == "Inset").Name);
+        Assert.AreEqual("loading", switchDescriptor.Props.Single(static prop => prop.PublicName == "Loading").Name);
+        Assert.AreEqual("flat", switchDescriptor.Props.Single(static prop => prop.PublicName == "Flat").Name);
+        Assert.AreEqual("trueIcon", switchDescriptor.Props.Single(static prop => prop.PublicName == "TrueIcon").Name);
+        Assert.AreEqual("falseIcon", switchDescriptor.Props.Single(static prop => prop.PublicName == "FalseIcon").Name);
+        Assert.AreEqual("update:focused", switchDescriptor.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlInputDefaultSlotContext", switchDescriptor.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "prepend").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "append").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputDetailsSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "details").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VMessagesMessageSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "message").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlInputSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "input").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyLoaderSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "loader").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSwitchSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "thumb").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSwitchSlotContext", switchDescriptor.Slots.Single(static slot => slot.Name == "track-true").Parameters[0].TypeName);
+
+        var buttonGroup = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBtnGroup");
+        Assert.AreEqual("baseColor", buttonGroup.Props.Single(static prop => prop.PublicName == "BaseColor").Name);
+        Assert.AreEqual("divided", buttonGroup.Props.Single(static prop => prop.PublicName == "Divided").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", buttonGroup.Props.Single(static prop => prop.PublicName == "Border").TypeName);
+
+        var buttonToggle = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBtnToggle");
+        Assert.AreEqual("modelValue", buttonToggle.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", buttonToggle.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("mandatory", buttonToggle.Props.Single(static prop => prop.PublicName == "Mandatory").Name);
+        Assert.AreEqual("multiple", buttonToggle.Props.Single(static prop => prop.PublicName == "Multiple").Name);
+        Assert.AreEqual("selectedClass", buttonToggle.Props.Single(static prop => prop.PublicName == "SelectedClass").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", buttonToggle.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMandatoryValue?", buttonToggle.Props.Single(static prop => prop.PublicName == "Mandatory").TypeName);
+
+        var cardItem = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCardItem");
+        Assert.AreEqual("prependIcon", cardItem.Props.Single(static prop => prop.PublicName == "PrependIcon").Name);
+        Assert.AreEqual("appendAvatar", cardItem.Props.Single(static prop => prop.PublicName == "AppendAvatar").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTextValue?", cardItem.Props.Single(static prop => prop.PublicName == "Title").TypeName);
+        Assert.IsTrue(cardItem.Slots.Any(static slot => slot.Name == "prepend"));
+        Assert.IsTrue(cardItem.Slots.Any(static slot => slot.Name == "title"));
+
+        var footer = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VFooter");
+        Assert.AreEqual("app", footer.Props.Single(static prop => prop.PublicName == "App").Name);
+        Assert.AreEqual("order", footer.Props.Single(static prop => prop.PublicName == "Order").Name);
+        Assert.AreEqual("theme", footer.Props.Single(static prop => prop.PublicName == "Theme").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", footer.Props.Single(static prop => prop.PublicName == "Border").TypeName);
+
+        var rating = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VRating");
+        Assert.AreEqual("modelValue", rating.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", rating.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("halfIncrements", rating.Props.Single(static prop => prop.PublicName == "HalfIncrements").Name);
+        Assert.AreEqual("itemLabelPosition", rating.Props.Single(static prop => prop.PublicName == "ItemLabelPosition").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", rating.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", rating.Props.Single(static prop => prop.PublicName == "FullIcon").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VRatingItemSlotContext", rating.Slots.Single(static slot => slot.Name == "item").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VRatingItemLabelSlotContext", rating.Slots.Single(static slot => slot.Name == "item-label").Parameters[0].TypeName);
+
+        var table = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTable");
+        Assert.AreEqual("fixedHeader", table.Props.Single(static prop => prop.PublicName == "FixedHeader").Name);
+        Assert.AreEqual("fixedFooter", table.Props.Single(static prop => prop.PublicName == "FixedFooter").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", table.Props.Single(static prop => prop.PublicName == "Density").TypeName);
+
+        var banner = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBanner");
+        Assert.AreEqual("avatar", banner.Props.Single(static prop => prop.PublicName == "Avatar").Name);
+        Assert.AreEqual("bgColor", banner.Props.Single(static prop => prop.PublicName == "BgColor").Name);
+        Assert.AreEqual("stacked", banner.Props.Single(static prop => prop.PublicName == "Stacked").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMobileValue?", banner.Props.Single(static prop => prop.PublicName == "Mobile").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", banner.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
+        Assert.IsTrue(banner.Slots.Any(static slot => slot.Name == "actions"));
+
+        var bottomNavigation = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBottomNavigation");
+        Assert.AreEqual("modelValue", bottomNavigation.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", bottomNavigation.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("selectedValue", bottomNavigation.Props.Single(static prop => prop.PublicName == "SelectedValue").Name);
+        Assert.AreEqual("update:selectedValue", bottomNavigation.Emits.Single(static emit => emit.RazorAlias == "SelectedValueChanged").Name);
+        Assert.AreEqual("selectedClass", bottomNavigation.Props.Single(static prop => prop.PublicName == "SelectedClass").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "SelectedValue").TypeName);
+
+        var bottomSheet = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VBottomSheet");
+        Assert.AreEqual("modelValue", bottomSheet.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", bottomSheet.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("activatorProps", bottomSheet.Props.Single(static prop => prop.PublicName == "ActivatorProps").Name);
+        Assert.AreEqual("contentProps", bottomSheet.Props.Single(static prop => prop.PublicName == "ContentProps").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VOverlayActivatorContext", bottomSheet.Slots.Single(static slot => slot.Name == "activator").Parameters[0].TypeName);
+
+        var emptyState = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VEmptyState");
+        Assert.AreEqual("actionText", emptyState.Props.Single(static prop => prop.PublicName == "ActionText").Name);
+        Assert.AreEqual("textWidth", emptyState.Props.Single(static prop => prop.PublicName == "TextWidth").Name);
+        Assert.AreEqual("click:action", emptyState.Emits.Single(static emit => emit.RazorAlias == "ActionClick").Name);
+        Assert.AreEqual("ECMAScript.Event", emptyState.Emits.Single(static emit => emit.RazorAlias == "ActionClick").PayloadTypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", emptyState.Props.Single(static prop => prop.PublicName == "Size").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", emptyState.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyJustify?", emptyState.Props.Single(static prop => prop.PublicName == "Justify").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VEmptyStateActionsSlotContext", emptyState.Slots.Single(static slot => slot.Name == "actions").Parameters[0].TypeName);
+        Assert.IsTrue(emptyState.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(emptyState.Slots.Single(static slot => slot.Name == "headline").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(emptyState.Slots.Single(static slot => slot.Name == "title").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(emptyState.Slots.Single(static slot => slot.Name == "media").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(emptyState.Slots.Single(static slot => slot.Name == "text").Parameters.IsDefaultOrEmpty);
+
+        var skeletonLoader = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSkeletonLoader");
+        Assert.AreEqual("type", skeletonLoader.Props.Single(static prop => prop.PublicName == "Type").Name);
+        Assert.AreEqual("loadingText", skeletonLoader.Props.Single(static prop => prop.PublicName == "LoadingText").Name);
+        Assert.AreEqual("boilerplate", skeletonLoader.Props.Single(static prop => prop.PublicName == "Boilerplate").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySkeletonLoaderTypeSetting?", skeletonLoader.Props.Single(static prop => prop.PublicName == "Type").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", skeletonLoader.Props.Single(static prop => prop.PublicName == "Elevation").TypeName);
+        Assert.IsTrue(skeletonLoader.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var parallax = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VParallax");
+        Assert.AreEqual("scale", parallax.Props.Single(static prop => prop.PublicName == "Scale").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", parallax.Props.Single(static prop => prop.PublicName == "Scale").TypeName);
+        Assert.IsTrue(parallax.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(parallax.Slots.Single(static slot => slot.Name == "placeholder").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(parallax.Slots.Single(static slot => slot.Name == "error").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(parallax.Slots.Single(static slot => slot.Name == "sources").Parameters.IsDefaultOrEmpty);
+
+        var code = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCode");
+        Assert.AreEqual("tag", code.Props.Single(static prop => prop.PublicName == "Tag").Name);
+        Assert.AreEqual("string?", code.Props.Single(static prop => prop.PublicName == "Tag").TypeName);
+        Assert.IsTrue(code.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var timeline = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTimeline");
+        Assert.AreEqual("theme", timeline.Props.Single(static prop => prop.PublicName == "Theme").Name);
+        Assert.AreEqual("density", timeline.Props.Single(static prop => prop.PublicName == "Density").Name);
+        Assert.AreEqual("lineInset", timeline.Props.Single(static prop => prop.PublicName == "LineInset").Name);
+        Assert.AreEqual("lineThickness", timeline.Props.Single(static prop => prop.PublicName == "LineThickness").Name);
+        Assert.AreEqual("truncateLine", timeline.Props.Single(static prop => prop.PublicName == "TruncateLine").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTimelineAlign?", timeline.Props.Single(static prop => prop.PublicName == "Align").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTimelineDirection?", timeline.Props.Single(static prop => prop.PublicName == "Direction").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTimelineJustify?", timeline.Props.Single(static prop => prop.PublicName == "Justify").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTimelineSide?", timeline.Props.Single(static prop => prop.PublicName == "Side").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTimelineTruncateLine?", timeline.Props.Single(static prop => prop.PublicName == "TruncateLine").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", timeline.Props.Single(static prop => prop.PublicName == "Size").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", timeline.Props.Single(static prop => prop.PublicName == "LineThickness").TypeName);
+        Assert.IsTrue(timeline.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var localeProvider = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VLocaleProvider");
+        Assert.AreEqual("locale", localeProvider.Props.Single(static prop => prop.PublicName == "Locale").Name);
+        Assert.AreEqual("fallbackLocale", localeProvider.Props.Single(static prop => prop.PublicName == "FallbackLocale").Name);
+        Assert.AreEqual("messages", localeProvider.Props.Single(static prop => prop.PublicName == "Messages").Name);
+        Assert.AreEqual("rtl", localeProvider.Props.Single(static prop => prop.PublicName == "Rtl").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueProps?", localeProvider.Props.Single(static prop => prop.PublicName == "Messages").TypeName);
+        Assert.AreEqual("bool?", localeProvider.Props.Single(static prop => prop.PublicName == "Rtl").TypeName);
+        Assert.IsTrue(localeProvider.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var defaultsProvider = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VDefaultsProvider");
+        Assert.AreEqual("defaults", defaultsProvider.Props.Single(static prop => prop.PublicName == "Defaults").Name);
+        Assert.AreEqual("disabled", defaultsProvider.Props.Single(static prop => prop.PublicName == "Disabled").Name);
+        Assert.AreEqual("reset", defaultsProvider.Props.Single(static prop => prop.PublicName == "Reset").Name);
+        Assert.AreEqual("root", defaultsProvider.Props.Single(static prop => prop.PublicName == "Root").Name);
+        Assert.AreEqual("scoped", defaultsProvider.Props.Single(static prop => prop.PublicName == "Scoped").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueProps?", defaultsProvider.Props.Single(static prop => prop.PublicName == "Defaults").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", defaultsProvider.Props.Single(static prop => prop.PublicName == "Reset").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBooleanStringValue?", defaultsProvider.Props.Single(static prop => prop.PublicName == "Root").TypeName);
+        Assert.IsTrue(defaultsProvider.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var virtualScroll = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VVirtualScroll");
+        Assert.AreEqual("items", virtualScroll.Props.Single(static prop => prop.PublicName == "Items").Name);
+        Assert.AreEqual("itemHeight", virtualScroll.Props.Single(static prop => prop.PublicName == "ItemHeight").Name);
+        Assert.AreEqual("itemKey", virtualScroll.Props.Single(static prop => prop.PublicName == "ItemKey").Name);
+        Assert.AreEqual("renderless", virtualScroll.Props.Single(static prop => prop.PublicName == "Renderless").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueValue[]?", virtualScroll.Props.Single(static prop => prop.PublicName == "Items").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItemKey?", virtualScroll.Props.Single(static prop => prop.PublicName == "ItemKey").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VVirtualScrollSlotContext", virtualScroll.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+
+        var infiniteScroll = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VInfiniteScroll");
+        Assert.AreEqual("load", infiniteScroll.Emits.Single(static emit => emit.RazorAlias == "Load").Name);
+        Assert.AreEqual("tag", infiniteScroll.Props.Single(static prop => prop.PublicName == "Tag").Name);
+        Assert.AreEqual("direction", infiniteScroll.Props.Single(static prop => prop.PublicName == "Direction").Name);
+        Assert.AreEqual("side", infiniteScroll.Props.Single(static prop => prop.PublicName == "Side").Name);
+        Assert.AreEqual("mode", infiniteScroll.Props.Single(static prop => prop.PublicName == "Mode").Name);
+        Assert.AreEqual("margin", infiniteScroll.Props.Single(static prop => prop.PublicName == "Margin").Name);
+        Assert.AreEqual("loadMoreText", infiniteScroll.Props.Single(static prop => prop.PublicName == "LoadMoreText").Name);
+        Assert.AreEqual("emptyText", infiniteScroll.Props.Single(static prop => prop.PublicName == "EmptyText").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyInfiniteScrollSide?", infiniteScroll.Props.Single(static prop => prop.PublicName == "Side").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyInfiniteScrollMode?", infiniteScroll.Props.Single(static prop => prop.PublicName == "Mode").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInfiniteScrollLoadOptions", infiniteScroll.Emits.Single(static emit => emit.RazorAlias == "Load").PayloadTypeName);
+        Assert.IsTrue(infiniteScroll.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+        Assert.AreEqual("ECMAScript.Vuetify.VInfiniteScrollSlotContext", infiniteScroll.Slots.Single(static slot => slot.Name == "loading").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInfiniteScrollSlotContext", infiniteScroll.Slots.Single(static slot => slot.Name == "error").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInfiniteScrollSlotContext", infiniteScroll.Slots.Single(static slot => slot.Name == "empty").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInfiniteScrollSlotContext", infiniteScroll.Slots.Single(static slot => slot.Name == "load-more").Parameters[0].TypeName);
+
+        var expansionPanel = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VExpansionPanel");
+        Assert.AreEqual("collapseIcon", expansionPanel.Props.Single(static prop => prop.PublicName == "CollapseIcon").Name);
+        Assert.AreEqual("expandIcon", expansionPanel.Props.Single(static prop => prop.PublicName == "ExpandIcon").Name);
+        Assert.AreEqual("hideActions", expansionPanel.Props.Single(static prop => prop.PublicName == "HideActions").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueValue?", expansionPanel.Props.Single(static prop => prop.PublicName == "Value").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VExpansionPanelTitleSlotContext", expansionPanel.Slots.Single(static slot => slot.Name == "title").Parameters[0].TypeName);
+
+        var overlay = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VOverlay");
+        Assert.AreEqual("modelValue", overlay.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", overlay.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("attach", overlay.Props.Single(static prop => prop.PublicName == "Attach").Name);
+        Assert.AreEqual("locationStrategy", overlay.Props.Single(static prop => prop.PublicName == "LocationStrategy").Name);
+        Assert.AreEqual("scrollStrategy", overlay.Props.Single(static prop => prop.PublicName == "ScrollStrategy").Name);
+        Assert.AreEqual("zIndex", overlay.Props.Single(static prop => prop.PublicName == "ZIndex").Name);
+        Assert.AreEqual("afterEnter", overlay.Emits.Single(static emit => emit.RazorAlias == "AfterEnter").Name);
+        Assert.AreEqual("afterLeave", overlay.Emits.Single(static emit => emit.RazorAlias == "AfterLeave").Name);
+        Assert.AreEqual("click:outside", overlay.Emits.Single(static emit => emit.RazorAlias == "ClickOutside").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyAttachTarget?", overlay.Props.Single(static prop => prop.PublicName == "Attach").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocationStrategy?", overlay.Props.Single(static prop => prop.PublicName == "LocationStrategy").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", overlay.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
+        Assert.AreEqual("ECMAScript.MouseEvent", overlay.Emits.Single(static emit => emit.RazorAlias == "ClickOutside").PayloadTypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VOverlayActivatorContext", overlay.Slots.Single(static slot => slot.Name == "activator").Parameters[0].TypeName);
+
+        var hover = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VHover");
+        Assert.AreEqual("modelValue", hover.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", hover.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("openDelay", hover.Props.Single(static prop => prop.PublicName == "OpenDelay").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VHoverDefaultSlotContext", hover.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+
+        var lazy = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VLazy");
+        Assert.AreEqual("modelValue", lazy.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", lazy.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("options", lazy.Props.Single(static prop => prop.PublicName == "Options").Name);
+        Assert.AreEqual("minHeight", lazy.Props.Single(static prop => prop.PublicName == "MinHeight").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIntersectionObserverOptions?", lazy.Props.Single(static prop => prop.PublicName == "Options").TypeName);
+
+        var responsive = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VResponsive");
+        Assert.AreEqual("aspectRatio", responsive.Props.Single(static prop => prop.PublicName == "AspectRatio").Name);
+        Assert.AreEqual("contentClass", responsive.Props.Single(static prop => prop.PublicName == "ContentClass").Name);
+        Assert.AreEqual("inline", responsive.Props.Single(static prop => prop.PublicName == "Inline").Name);
+        Assert.IsTrue(responsive.Slots.Single(static slot => slot.Name == "additional").Parameters.IsDefaultOrEmpty);
+
+        var itemGroup = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VItemGroup");
+        Assert.AreEqual("modelValue", itemGroup.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", itemGroup.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("mandatory", itemGroup.Props.Single(static prop => prop.PublicName == "Mandatory").Name);
+        Assert.AreEqual("valueComparator", itemGroup.Props.Single(static prop => prop.PublicName == "ValueComparator").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VItemGroupDefaultSlotContext", itemGroup.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+
+        var chipGroup = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VChipGroup");
+        Assert.AreEqual("centerActive", chipGroup.Props.Single(static prop => prop.PublicName == "CenterActive").Name);
+        Assert.AreEqual("direction", chipGroup.Props.Single(static prop => prop.PublicName == "Direction").Name);
+        Assert.AreEqual("showArrows", chipGroup.Props.Single(static prop => prop.PublicName == "ShowArrows").Name);
+        Assert.AreEqual("valueComparator", chipGroup.Props.Single(static prop => prop.PublicName == "ValueComparator").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyShowArrowsValue?", chipGroup.Props.Single(static prop => prop.PublicName == "ShowArrows").TypeName);
+
+        var slideGroup = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSlideGroup");
+        Assert.AreEqual("modelValue", slideGroup.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", slideGroup.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("centerActive", slideGroup.Props.Single(static prop => prop.PublicName == "CenterActive").Name);
+        Assert.AreEqual("mobileBreakpoint", slideGroup.Props.Single(static prop => prop.PublicName == "MobileBreakpoint").Name);
+        Assert.AreEqual("showArrows", slideGroup.Props.Single(static prop => prop.PublicName == "ShowArrows").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", slideGroup.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("int?", slideGroup.Props.Single(static prop => prop.PublicName == "Max").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDisplayBreakpoint?", slideGroup.Props.Single(static prop => prop.PublicName == "MobileBreakpoint").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyShowArrowsValue?", slideGroup.Props.Single(static prop => prop.PublicName == "ShowArrows").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSlideGroupSlotContext", slideGroup.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSlideGroupSlotContext", slideGroup.Slots.Single(static slot => slot.Name == "prev").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSlideGroupSlotContext", slideGroup.Slots.Single(static slot => slot.Name == "next").Parameters[0].TypeName);
+
+        var counter = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCounter");
+        Assert.AreEqual("active", counter.Props.Single(static prop => prop.PublicName == "Active").Name);
+        Assert.AreEqual("disabled", counter.Props.Single(static prop => prop.PublicName == "Disabled").Name);
+        Assert.AreEqual("max", counter.Props.Single(static prop => prop.PublicName == "Max").Name);
+        Assert.AreEqual("value", counter.Props.Single(static prop => prop.PublicName == "Value").Name);
+        Assert.AreEqual("transition", counter.Props.Single(static prop => prop.PublicName == "Transition").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", counter.Props.Single(static prop => prop.PublicName == "Max").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", counter.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VCounterDefaultSlotContext", counter.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+
+        var kbd = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VKbd");
+        Assert.AreEqual("tag", kbd.Props.Single(static prop => prop.PublicName == "Tag").Name);
+        Assert.IsTrue(kbd.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var label = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VLabel");
+        Assert.AreEqual("text", label.Props.Single(static prop => prop.PublicName == "Text").Name);
+        Assert.AreEqual("theme", label.Props.Single(static prop => prop.PublicName == "Theme").Name);
+        Assert.AreEqual("click", label.Emits.Single(static emit => emit.RazorAlias == "OnClick").Name);
+        Assert.AreEqual("ECMAScript.MouseEvent", label.Emits.Single(static emit => emit.RazorAlias == "OnClick").PayloadTypeName);
+
+        var layout = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VLayout");
+        Assert.AreEqual("overlaps", layout.Props.Single(static prop => prop.PublicName == "Overlaps").Name);
+        Assert.AreEqual("fullHeight", layout.Props.Single(static prop => prop.PublicName == "FullHeight").Name);
+        Assert.AreEqual("width", layout.Props.Single(static prop => prop.PublicName == "Width").Name);
+        Assert.AreEqual("string[]?", layout.Props.Single(static prop => prop.PublicName == "Overlaps").TypeName);
+
+        var messages = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VMessages");
+        Assert.AreEqual("active", messages.Props.Single(static prop => prop.PublicName == "Active").Name);
+        Assert.AreEqual("messages", messages.Props.Single(static prop => prop.PublicName == "Messages").Name);
+        Assert.AreEqual("transition", messages.Props.Single(static prop => prop.PublicName == "Transition").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMessagesValue?", messages.Props.Single(static prop => prop.PublicName == "Messages").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VMessagesMessageSlotContext", messages.Slots.Single(static slot => slot.Name == "message").Parameters[0].TypeName);
+
+        var input = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VInput");
+        Assert.AreEqual("modelValue", input.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", input.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("focused", input.Props.Single(static prop => prop.PublicName == "Focused").Name);
+        Assert.AreEqual("update:focused", input.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
+        Assert.AreEqual("click:prepend", input.Emits.Single(static emit => emit.RazorAlias == "PrependClick").Name);
+        Assert.AreEqual("click:append", input.Emits.Single(static emit => emit.RazorAlias == "AppendClick").Name);
+        Assert.AreEqual("direction", input.Props.Single(static prop => prop.PublicName == "Direction").Name);
+        Assert.AreEqual("maxErrors", input.Props.Single(static prop => prop.PublicName == "MaxErrors").Name);
+        Assert.AreEqual("rules", input.Props.Single(static prop => prop.PublicName == "Rules").Name);
+        Assert.AreEqual("validationValue", input.Props.Single(static prop => prop.PublicName == "ValidationValue").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueValue?", input.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyNullableBoolean?", input.Props.Single(static prop => prop.PublicName == "Disabled").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyValidationRule[]?", input.Props.Single(static prop => prop.PublicName == "Rules").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputSlotContext", input.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VInputDetailsSlotContext", input.Slots.Single(static slot => slot.Name == "details").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VMessagesMessageSlotContext", input.Slots.Single(static slot => slot.Name == "message").Parameters[0].TypeName);
+
+        var field = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VField");
+        Assert.AreEqual("modelValue", field.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", field.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("update:focused", field.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
+        Assert.AreEqual("click:clear", field.Emits.Single(static emit => emit.RazorAlias == "ClearClick").Name);
+        Assert.AreEqual("click:appendInner", field.Emits.Single(static emit => emit.RazorAlias == "AppendInnerClick").Name);
+        Assert.AreEqual("click:prependInner", field.Emits.Single(static emit => emit.RazorAlias == "PrependInnerClick").Name);
+        Assert.AreEqual("appendInnerIcon", field.Props.Single(static prop => prop.PublicName == "AppendInnerIcon").Name);
+        Assert.AreEqual("centerAffix", field.Props.Single(static prop => prop.PublicName == "CenterAffix").Name);
+        Assert.AreEqual("singleLine", field.Props.Single(static prop => prop.PublicName == "SingleLine").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBooleanStringValue?", field.Props.Single(static prop => prop.PublicName == "Loading").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconColorValue?", field.Props.Single(static prop => prop.PublicName == "IconColor").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VFieldSlotContext", field.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VFieldLabelSlotContext", field.Slots.Single(static slot => slot.Name == "label").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyLoaderSlotContext", field.Slots.Single(static slot => slot.Name == "loader").Parameters[0].TypeName);
+
+        var selectionControl = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSelectionControl");
+        Assert.AreEqual("modelValue", selectionControl.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", selectionControl.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("defaultsTarget", selectionControl.Props.Single(static prop => prop.PublicName == "DefaultsTarget").Name);
+        Assert.AreEqual("valueComparator", selectionControl.Props.Single(static prop => prop.PublicName == "ValueComparator").Name);
+        Assert.AreEqual("trueValue", selectionControl.Props.Single(static prop => prop.PublicName == "TrueValue").Name);
+        Assert.AreEqual("falseValue", selectionControl.Props.Single(static prop => prop.PublicName == "FalseValue").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", selectionControl.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyNullableBoolean?", selectionControl.Props.Single(static prop => prop.PublicName == "Multiple").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlDefaultSlotContext", selectionControl.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlLabelSlotContext", selectionControl.Slots.Single(static slot => slot.Name == "label").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectionControlInputSlotContext", selectionControl.Slots.Single(static slot => slot.Name == "input").Parameters[0].TypeName);
+
+        var selectionControlGroup = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSelectionControlGroup");
+        Assert.AreEqual("modelValue", selectionControlGroup.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", selectionControlGroup.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("defaultsTarget", selectionControlGroup.Props.Single(static prop => prop.PublicName == "DefaultsTarget").Name);
+        Assert.AreEqual("valueComparator", selectionControlGroup.Props.Single(static prop => prop.PublicName == "ValueComparator").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", selectionControlGroup.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.IsTrue(selectionControlGroup.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var window = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VWindow");
+        Assert.AreEqual("modelValue", window.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", window.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("showArrows", window.Props.Single(static prop => prop.PublicName == "ShowArrows").Name);
+        Assert.AreEqual("selectedClass", window.Props.Single(static prop => prop.PublicName == "SelectedClass").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", window.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyWindowShowArrowsValue?", window.Props.Single(static prop => prop.PublicName == "ShowArrows").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTouchValue?", window.Props.Single(static prop => prop.PublicName == "Touch").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMandatoryValue?", window.Props.Single(static prop => prop.PublicName == "Mandatory").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowSlotContext", window.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowSlotContext", window.Slots.Single(static slot => slot.Name == "additional").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowControlSlotContext", window.Slots.Single(static slot => slot.Name == "prev").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowControlSlotContext", window.Slots.Single(static slot => slot.Name == "next").Parameters[0].TypeName);
+
+        var carousel = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCarousel");
+        Assert.AreEqual("modelValue", carousel.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", carousel.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("delimiterIcon", carousel.Props.Single(static prop => prop.PublicName == "DelimiterIcon").Name);
+        Assert.AreEqual("hideDelimiters", carousel.Props.Single(static prop => prop.PublicName == "HideDelimiters").Name);
+        Assert.AreEqual("hideDelimiterBackground", carousel.Props.Single(static prop => prop.PublicName == "HideDelimiterBackground").Name);
+        Assert.AreEqual("verticalDelimiters", carousel.Props.Single(static prop => prop.PublicName == "VerticalDelimiters").Name);
+        Assert.AreEqual("showArrows", carousel.Props.Single(static prop => prop.PublicName == "ShowArrows").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", carousel.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", carousel.Props.Single(static prop => prop.PublicName == "DelimiterIcon").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", carousel.Props.Single(static prop => prop.PublicName == "Height").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", carousel.Props.Single(static prop => prop.PublicName == "Interval").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBooleanStringValue?", carousel.Props.Single(static prop => prop.PublicName == "Progress").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyCarouselVerticalDelimiters?", carousel.Props.Single(static prop => prop.PublicName == "VerticalDelimiters").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowSlotContext", carousel.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowControlSlotContext", carousel.Slots.Single(static slot => slot.Name == "prev").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VWindowControlSlotContext", carousel.Slots.Single(static slot => slot.Name == "next").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VCarouselItemSlotContext", carousel.Slots.Single(static slot => slot.Name == "item").Parameters[0].TypeName);
+
+        var stepper = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VStepper");
+        Assert.AreEqual("modelValue", stepper.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", stepper.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("altLabels", stepper.Props.Single(static prop => prop.PublicName == "AltLabels").Name);
+        Assert.AreEqual("bgColor", stepper.Props.Single(static prop => prop.PublicName == "BgColor").Name);
+        Assert.AreEqual("completeIcon", stepper.Props.Single(static prop => prop.PublicName == "CompleteIcon").Name);
+        Assert.AreEqual("hideActions", stepper.Props.Single(static prop => prop.PublicName == "HideActions").Name);
+        Assert.AreEqual("itemTitle", stepper.Props.Single(static prop => prop.PublicName == "ItemTitle").Name);
+        Assert.AreEqual("itemValue", stepper.Props.Single(static prop => prop.PublicName == "ItemValue").Name);
+        Assert.AreEqual("nonLinear", stepper.Props.Single(static prop => prop.PublicName == "NonLinear").Name);
+        Assert.AreEqual("prevText", stepper.Props.Single(static prop => prop.PublicName == "PrevText").Name);
+        Assert.AreEqual("nextText", stepper.Props.Single(static prop => prop.PublicName == "NextText").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", stepper.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStepperItems?", stepper.Props.Single(static prop => prop.PublicName == "Items").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", stepper.Props.Single(static prop => prop.PublicName == "CompleteIcon").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMandatoryValue?", stepper.Props.Single(static prop => prop.PublicName == "Mandatory").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMobileValue?", stepper.Props.Single(static prop => prop.PublicName == "Mobile").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDisplayBreakpoint?", stepper.Props.Single(static prop => prop.PublicName == "MobileBreakpoint").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", stepper.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", stepper.Props.Single(static prop => prop.PublicName == "Border").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperNavigationSlotContext", stepper.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperNavigationSlotContext", stepper.Slots.Single(static slot => slot.Name == "actions").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperItemSlotContext", stepper.Slots.Single(static slot => slot.Name == "header").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperItemSlotContext", stepper.Slots.Single(static slot => slot.Name == "header-item").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperItemSlotContext", stepper.Slots.Single(static slot => slot.Name == "icon").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperItemSlotContext", stepper.Slots.Single(static slot => slot.Name == "title").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperItemSlotContext", stepper.Slots.Single(static slot => slot.Name == "subtitle").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperContentItemSlotContext", stepper.Slots.Single(static slot => slot.Name == "item").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperActionButtonSlotContext", stepper.Slots.Single(static slot => slot.Name == "prev").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VStepperActionButtonSlotContext", stepper.Slots.Single(static slot => slot.Name == "next").Parameters[0].TypeName);
+
+        var colorPicker = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VColorPicker");
+        Assert.AreEqual("modelValue", colorPicker.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", colorPicker.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("mode", colorPicker.Props.Single(static prop => prop.PublicName == "Mode").Name);
+        Assert.AreEqual("update:mode", colorPicker.Emits.Single(static emit => emit.RazorAlias == "ModeChanged").Name);
+        Assert.AreEqual("modes", colorPicker.Props.Single(static prop => prop.PublicName == "Modes").Name);
+        Assert.AreEqual("canvasHeight", colorPicker.Props.Single(static prop => prop.PublicName == "CanvasHeight").Name);
+        Assert.AreEqual("dotSize", colorPicker.Props.Single(static prop => prop.PublicName == "DotSize").Name);
+        Assert.AreEqual("hideCanvas", colorPicker.Props.Single(static prop => prop.PublicName == "HideCanvas").Name);
+        Assert.AreEqual("hideSliders", colorPicker.Props.Single(static prop => prop.PublicName == "HideSliders").Name);
+        Assert.AreEqual("hideInputs", colorPicker.Props.Single(static prop => prop.PublicName == "HideInputs").Name);
+        Assert.AreEqual("showSwatches", colorPicker.Props.Single(static prop => prop.PublicName == "ShowSwatches").Name);
+        Assert.AreEqual("swatches", colorPicker.Props.Single(static prop => prop.PublicName == "Swatches").Name);
+        Assert.AreEqual("swatchesMaxHeight", colorPicker.Props.Single(static prop => prop.PublicName == "SwatchesMaxHeight").Name);
+        Assert.AreEqual("bgColor", colorPicker.Props.Single(static prop => prop.PublicName == "BgColor").Name);
+        Assert.AreEqual("hideHeader", colorPicker.Props.Single(static prop => prop.PublicName == "HideHeader").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyColorValue?", colorPicker.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyColorPickerMode?", colorPicker.Props.Single(static prop => prop.PublicName == "Mode").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyColorPickerModes?", colorPicker.Props.Single(static prop => prop.PublicName == "Modes").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyColorPickerSwatches?", colorPicker.Props.Single(static prop => prop.PublicName == "Swatches").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", colorPicker.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", colorPicker.Props.Single(static prop => prop.PublicName == "Border").TypeName);
+        Assert.IsTrue(colorPicker.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(colorPicker.Slots.Single(static slot => slot.Name == "header").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(colorPicker.Slots.Single(static slot => slot.Name == "actions").Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(colorPicker.Slots.Single(static slot => slot.Name == "title").Parameters.IsDefaultOrEmpty);
+
+        var datePicker = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VDatePicker");
+        Assert.AreEqual("modelValue", datePicker.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", datePicker.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("multiple", datePicker.Props.Single(static prop => prop.PublicName == "Multiple").Name);
+        Assert.AreEqual("min", datePicker.Props.Single(static prop => prop.PublicName == "Min").Name);
+        Assert.AreEqual("max", datePicker.Props.Single(static prop => prop.PublicName == "Max").Name);
+        Assert.AreEqual("year", datePicker.Props.Single(static prop => prop.PublicName == "Year").Name);
+        Assert.AreEqual("update:year", datePicker.Emits.Single(static emit => emit.RazorAlias == "YearChanged").Name);
+        Assert.AreEqual("month", datePicker.Props.Single(static prop => prop.PublicName == "Month").Name);
+        Assert.AreEqual("update:month", datePicker.Emits.Single(static emit => emit.RazorAlias == "MonthChanged").Name);
+        Assert.AreEqual("viewMode", datePicker.Props.Single(static prop => prop.PublicName == "ViewMode").Name);
+        Assert.AreEqual("update:viewMode", datePicker.Emits.Single(static emit => emit.RazorAlias == "ViewModeChanged").Name);
+        Assert.AreEqual("active", datePicker.Props.Single(static prop => prop.PublicName == "Active").Name);
+        Assert.AreEqual("showAdjacentMonths", datePicker.Props.Single(static prop => prop.PublicName == "ShowAdjacentMonths").Name);
+        Assert.AreEqual("weeksInMonth", datePicker.Props.Single(static prop => prop.PublicName == "WeeksInMonth").Name);
+        Assert.AreEqual("firstDayOfWeek", datePicker.Props.Single(static prop => prop.PublicName == "FirstDayOfWeek").Name);
+        Assert.AreEqual("allowedDates", datePicker.Props.Single(static prop => prop.PublicName == "AllowedDates").Name);
+        Assert.AreEqual("hideWeekdays", datePicker.Props.Single(static prop => prop.PublicName == "HideWeekdays").Name);
+        Assert.AreEqual("showWeek", datePicker.Props.Single(static prop => prop.PublicName == "ShowWeek").Name);
+        Assert.AreEqual("reverseTransition", datePicker.Props.Single(static prop => prop.PublicName == "ReverseTransition").Name);
+        Assert.AreEqual("controlHeight", datePicker.Props.Single(static prop => prop.PublicName == "ControlHeight").Name);
+        Assert.AreEqual("modeIcon", datePicker.Props.Single(static prop => prop.PublicName == "ModeIcon").Name);
+        Assert.AreEqual("header", datePicker.Props.Single(static prop => prop.PublicName == "HeaderText").Name);
+        Assert.AreEqual("headerColor", datePicker.Props.Single(static prop => prop.PublicName == "HeaderColor").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDatePickerModelValue?", datePicker.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDatePickerMultipleValue?", datePicker.Props.Single(static prop => prop.PublicName == "Multiple").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDatePickerViewMode?", datePicker.Props.Single(static prop => prop.PublicName == "ViewMode").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyCalendarWeekdays?", datePicker.Props.Single(static prop => prop.PublicName == "Weekdays").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDatePickerAllowedDatesValue?", datePicker.Props.Single(static prop => prop.PublicName == "AllowedDates").TypeName);
+        Assert.IsTrue(datePicker.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+        Assert.IsTrue(datePicker.Slots.Single(static slot => slot.Name == "actions").Parameters.IsDefaultOrEmpty);
+        var datePickerHeaderSlot = datePicker.Slots.Single(static slot => slot.Name == "header");
+        Assert.AreEqual("HeaderContent", datePickerHeaderSlot.PublicName);
+        Assert.AreEqual("ECMAScript.Vuetify.VDatePickerHeaderSlotContext", datePickerHeaderSlot.Parameters[0].TypeName);
+        Assert.IsTrue(datePicker.Slots.Single(static slot => slot.Name == "title").Parameters.IsDefaultOrEmpty);
+
+        var tabsWindow = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTabsWindow");
+        Assert.AreEqual("modelValue", tabsWindow.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", tabsWindow.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", tabsWindow.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.IsTrue(tabsWindow.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var tabsWindowItem = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTabsWindowItem");
+        Assert.AreEqual("value", tabsWindowItem.Props.Single(static prop => prop.PublicName == "Value").Name);
+        Assert.AreEqual("reverseTransition", tabsWindowItem.Props.Single(static prop => prop.PublicName == "ReverseTransition").Name);
+        Assert.AreEqual("group:selected", tabsWindowItem.Emits.Single(static emit => emit.RazorAlias == "GroupSelected").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", tabsWindowItem.Props.Single(static prop => prop.PublicName == "Value").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBooleanStringValue?", tabsWindowItem.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupSelectedEvent", tabsWindowItem.Emits.Single(static emit => emit.RazorAlias == "GroupSelected").PayloadTypeName);
+        Assert.IsTrue(tabsWindowItem.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+
+        var noSsr = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VNoSsr");
+        Assert.IsTrue(noSsr.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var systemBar = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSystemBar");
+        Assert.AreEqual("window", systemBar.Props.Single(static prop => prop.PublicName == "Window").Name);
+        Assert.AreEqual("order", systemBar.Props.Single(static prop => prop.PublicName == "Order").Name);
+        Assert.AreEqual("tile", systemBar.Props.Single(static prop => prop.PublicName == "Tile").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", systemBar.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
+
+        var themeProvider = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VThemeProvider");
+        Assert.AreEqual("withBackground", themeProvider.Props.Single(static prop => prop.PublicName == "WithBackground").Name);
+        Assert.AreEqual("theme", themeProvider.Props.Single(static prop => prop.PublicName == "Theme").Name);
+        Assert.AreEqual("tag", themeProvider.Props.Single(static prop => prop.PublicName == "Tag").Name);
 
         var dialog = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VDialog");
         Assert.AreEqual("persistent", dialog.Props.Single(static prop => prop.PublicName == "Persistent").Name);
@@ -402,6 +1089,7 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", dialog.Props.Single(static prop => prop.PublicName == "Width").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyScrollStrategy?", dialog.Props.Single(static prop => prop.PublicName == "ScrollStrategy").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", dialog.Props.Single(static prop => prop.PublicName == "Location").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", dialog.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
         var activator = dialog.Slots.Single(static slot => slot.Name == "activator");
         Assert.HasCount(1, activator.Parameters);
         Assert.AreEqual("context", activator.Parameters[0].Name);
@@ -447,6 +1135,12 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.IsTrue(toolbar.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", toolbar.Props.Single(static prop => prop.PublicName == "Density").TypeName);
         Assert.IsTrue(toolbar.Slots.Single(static slot => slot.IsDefault).IsDefault);
+
+        var toolbarItems = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VToolbarItems");
+        Assert.AreEqual("color", toolbarItems.Props.Single(static prop => prop.PublicName == "Color").Name);
+        Assert.AreEqual("variant", toolbarItems.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyVariant?", toolbarItems.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
+        Assert.IsTrue(toolbarItems.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var textarea = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTextarea");
         Assert.AreEqual("rows", textarea.Props.Single(static prop => prop.PublicName == "Rows").Name);
@@ -500,9 +1194,25 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("menuProps", select.Props.Single(static prop => prop.PublicName == "MenuProps").Name);
         Assert.AreEqual("density", select.Props.Single(static prop => prop.PublicName == "Density").Name);
         Assert.AreEqual("variant", select.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.AreEqual("placeholder", select.Props.Single(static prop => prop.PublicName == "Placeholder").Name);
+        Assert.AreEqual("persistentPlaceholder", select.Props.Single(static prop => prop.PublicName == "PersistentPlaceholder").Name);
+        Assert.AreEqual("prefix", select.Props.Single(static prop => prop.PublicName == "Prefix").Name);
+        Assert.AreEqual("suffix", select.Props.Single(static prop => prop.PublicName == "Suffix").Name);
+        Assert.AreEqual("prependInnerIcon", select.Props.Single(static prop => prop.PublicName == "PrependInnerIcon").Name);
+        Assert.AreEqual("closableChips", select.Props.Single(static prop => prop.PublicName == "ClosableChips").Name);
+        Assert.AreEqual("hideNoData", select.Props.Single(static prop => prop.PublicName == "HideNoData").Name);
+        Assert.AreEqual("hideSelected", select.Props.Single(static prop => prop.PublicName == "HideSelected").Name);
+        Assert.AreEqual("listProps", select.Props.Single(static prop => prop.PublicName == "ListProps").Name);
+        Assert.AreEqual("menu", select.Props.Single(static prop => prop.PublicName == "Menu").Name);
+        Assert.AreEqual("update:menu", select.Emits.Single(static emit => emit.RazorAlias == "MenuChanged").Name);
+        Assert.AreEqual("update:focused", select.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
+        Assert.AreEqual("closeText", select.Props.Single(static prop => prop.PublicName == "CloseText").Name);
+        Assert.AreEqual("openText", select.Props.Single(static prop => prop.PublicName == "OpenText").Name);
+        Assert.AreEqual("valueComparator", select.Props.Single(static prop => prop.PublicName == "ValueComparator").Name);
         Assert.AreEqual("additionalAttributes", select.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(select.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
-        Assert.AreEqual("ECMAScript.Vue3.VueDictionary?", select.Props.Single(static prop => prop.PublicName == "MenuProps").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueProps?", select.Props.Single(static prop => prop.PublicName == "MenuProps").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueProps?", select.Props.Single(static prop => prop.PublicName == "ListProps").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItems?", select.Props.Single(static prop => prop.PublicName == "Items").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItemKey?", select.Props.Single(static prop => prop.PublicName == "ItemTitle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItemKey?", select.Props.Single(static prop => prop.PublicName == "ItemValue").TypeName);
@@ -510,6 +1220,13 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", select.Props.Single(static prop => prop.PublicName == "Density").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyFieldVariant?", select.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectModelValue?", select.Props.Single(static prop => prop.PublicName == "SelectedValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectValueComparator?", select.Props.Single(static prop => prop.PublicName == "ValueComparator").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectItemSlotContext", select.Slots.Single(static slot => slot.Name == "item").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectChipSlotContext", select.Slots.Single(static slot => slot.Name == "chip").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectSelectionSlotContext", select.Slots.Single(static slot => slot.Name == "selection").Parameters[0].TypeName);
+        Assert.IsTrue(select.Slots.Any(static slot => slot.Name == "prepend-item"));
+        Assert.IsTrue(select.Slots.Any(static slot => slot.Name == "append-item"));
+        Assert.IsTrue(select.Slots.Any(static slot => slot.Name == "no-data"));
 
         var autocomplete = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VAutocomplete");
         Assert.AreEqual("modelValue", autocomplete.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
@@ -531,9 +1248,17 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("density", autocomplete.Props.Single(static prop => prop.PublicName == "Density").Name);
         Assert.AreEqual("variant", autocomplete.Props.Single(static prop => prop.PublicName == "Variant").Name);
         Assert.AreEqual("noDataText", autocomplete.Props.Single(static prop => prop.PublicName == "NoDataText").Name);
+        Assert.AreEqual("search", autocomplete.Props.Single(static prop => prop.PublicName == "Search").Name);
+        Assert.AreEqual("update:search", autocomplete.Emits.Single(static emit => emit.RazorAlias == "SearchChanged").Name);
+        Assert.AreEqual("autoSelectFirst", autocomplete.Props.Single(static prop => prop.PublicName == "AutoSelectFirst").Name);
+        Assert.AreEqual("customFilter", autocomplete.Props.Single(static prop => prop.PublicName == "CustomFilter").Name);
+        Assert.AreEqual("customKeyFilter", autocomplete.Props.Single(static prop => prop.PublicName == "CustomKeyFilter").Name);
+        Assert.AreEqual("filterKeys", autocomplete.Props.Single(static prop => prop.PublicName == "FilterKeys").Name);
+        Assert.AreEqual("filterMode", autocomplete.Props.Single(static prop => prop.PublicName == "FilterMode").Name);
+        Assert.AreEqual("noFilter", autocomplete.Props.Single(static prop => prop.PublicName == "NoFilter").Name);
         Assert.AreEqual("additionalAttributes", autocomplete.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(autocomplete.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
-        Assert.AreEqual("ECMAScript.Vue3.VueDictionary?", autocomplete.Props.Single(static prop => prop.PublicName == "MenuProps").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueProps?", autocomplete.Props.Single(static prop => prop.PublicName == "MenuProps").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItems?", autocomplete.Props.Single(static prop => prop.PublicName == "Items").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItemKey?", autocomplete.Props.Single(static prop => prop.PublicName == "ItemTitle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItemKey?", autocomplete.Props.Single(static prop => prop.PublicName == "ItemValue").TypeName);
@@ -541,6 +1266,13 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyDensity?", autocomplete.Props.Single(static prop => prop.PublicName == "Density").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyFieldVariant?", autocomplete.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectModelValue?", autocomplete.Props.Single(static prop => prop.PublicName == "SelectedValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyFilterFunction?", autocomplete.Props.Single(static prop => prop.PublicName == "CustomFilter").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyFilterKeyFunctions?", autocomplete.Props.Single(static prop => prop.PublicName == "CustomKeyFilter").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyFilterKeys?", autocomplete.Props.Single(static prop => prop.PublicName == "FilterKeys").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyFilterMode?", autocomplete.Props.Single(static prop => prop.PublicName == "FilterMode").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectItemSlotContext", autocomplete.Slots.Single(static slot => slot.Name == "item").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectChipSlotContext", autocomplete.Slots.Single(static slot => slot.Name == "chip").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectSelectionSlotContext", autocomplete.Slots.Single(static slot => slot.Name == "selection").Parameters[0].TypeName);
 
         var combobox = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCombobox");
         Assert.AreEqual("modelValue", combobox.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
@@ -554,10 +1286,19 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("clearOnSelect", combobox.Props.Single(static prop => prop.PublicName == "ClearOnSelect").Name);
         Assert.AreEqual("delimiters", combobox.Props.Single(static prop => prop.PublicName == "Delimiters").Name);
         Assert.AreEqual("hideDetails", combobox.Props.Single(static prop => prop.PublicName == "HideDetails").Name);
+        Assert.AreEqual("search", combobox.Props.Single(static prop => prop.PublicName == "Search").Name);
+        Assert.AreEqual("update:search", combobox.Emits.Single(static emit => emit.RazorAlias == "SearchChanged").Name);
+        Assert.AreEqual("customFilter", combobox.Props.Single(static prop => prop.PublicName == "CustomFilter").Name);
+        Assert.AreEqual("filterMode", combobox.Props.Single(static prop => prop.PublicName == "FilterMode").Name);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyAutoSelectFirstValue?", combobox.Props.Single(static prop => prop.PublicName == "AutoSelectFirst").TypeName);
         Assert.AreEqual("string[]?", combobox.Props.Single(static prop => prop.PublicName == "Delimiters").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectItems?", combobox.Props.Single(static prop => prop.PublicName == "Items").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifySelectModelValue?", combobox.Props.Single(static prop => prop.PublicName == "SelectedValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyFilterFunction?", combobox.Props.Single(static prop => prop.PublicName == "CustomFilter").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyFilterMode?", combobox.Props.Single(static prop => prop.PublicName == "FilterMode").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectItemSlotContext", combobox.Slots.Single(static slot => slot.Name == "item").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectChipSlotContext", combobox.Slots.Single(static slot => slot.Name == "chip").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSelectSelectionSlotContext", combobox.Slots.Single(static slot => slot.Name == "selection").Parameters[0].TypeName);
 
         var fileInput = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VFileInput");
         Assert.AreEqual("accept", fileInput.Props.Single(static prop => prop.PublicName == "Accept").Name);
@@ -728,6 +1469,45 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("loading", dataTable.Slots.Single(static slot => slot.PublicName == "LoadingContent").Name);
         Assert.IsTrue(dataTable.Slots.Any(static slot => slot.Name == "no-data"));
 
+        var dataIterator = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VDataIterator");
+        Assert.AreEqual("modelValue", dataIterator.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", dataIterator.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("items", dataIterator.Props.Single(static prop => prop.PublicName == "Items").Name);
+        Assert.AreEqual("itemValue", dataIterator.Props.Single(static prop => prop.PublicName == "ItemValue").Name);
+        Assert.AreEqual("itemSelectable", dataIterator.Props.Single(static prop => prop.PublicName == "ItemSelectable").Name);
+        Assert.AreEqual("returnObject", dataIterator.Props.Single(static prop => prop.PublicName == "ReturnObject").Name);
+        Assert.AreEqual("page", dataIterator.Props.Single(static prop => prop.PublicName == "Page").Name);
+        Assert.AreEqual("update:page", dataIterator.Emits.Single(static emit => emit.RazorAlias == "PageChanged").Name);
+        Assert.AreEqual("itemsPerPage", dataIterator.Props.Single(static prop => prop.PublicName == "ItemsPerPage").Name);
+        Assert.AreEqual("update:itemsPerPage", dataIterator.Emits.Single(static emit => emit.RazorAlias == "ItemsPerPageChanged").Name);
+        Assert.AreEqual("sortBy", dataIterator.Props.Single(static prop => prop.PublicName == "SortBy").Name);
+        Assert.AreEqual("update:sortBy", dataIterator.Emits.Single(static emit => emit.RazorAlias == "SortByChanged").Name);
+        Assert.AreEqual("groupBy", dataIterator.Props.Single(static prop => prop.PublicName == "GroupBy").Name);
+        Assert.AreEqual("update:groupBy", dataIterator.Emits.Single(static emit => emit.RazorAlias == "GroupByChanged").Name);
+        Assert.AreEqual("expanded", dataIterator.Props.Single(static prop => prop.PublicName == "Expanded").Name);
+        Assert.AreEqual("update:expanded", dataIterator.Emits.Single(static emit => emit.RazorAlias == "ExpandedChanged").Name);
+        Assert.AreEqual("update:options", dataIterator.Emits.Single(static emit => emit.RazorAlias == "OptionsChanged").Name);
+        Assert.AreEqual("update:currentItems", dataIterator.Emits.Single(static emit => emit.RazorAlias == "CurrentItemsChanged").Name);
+        Assert.AreEqual("customKeySort", dataIterator.Props.Single(static prop => prop.PublicName == "CustomKeySort").Name);
+        Assert.AreEqual("customFilter", dataIterator.Props.Single(static prop => prop.PublicName == "CustomFilter").Name);
+        Assert.AreEqual("customKeyFilter", dataIterator.Props.Single(static prop => prop.PublicName == "CustomKeyFilter").Name);
+        Assert.AreEqual("filterKeys", dataIterator.Props.Single(static prop => prop.PublicName == "FilterKeys").Name);
+        Assert.AreEqual("filterMode", dataIterator.Props.Single(static prop => prop.PublicName == "FilterMode").Name);
+        Assert.AreEqual("noFilter", dataIterator.Props.Single(static prop => prop.PublicName == "NoFilter").Name);
+        Assert.AreEqual("transition", dataIterator.Props.Single(static prop => prop.PublicName == "Transition").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDataIteratorSelectedValues?", dataIterator.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDataIteratorItems?", dataIterator.Props.Single(static prop => prop.PublicName == "Items").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", dataIterator.Props.Single(static prop => prop.PublicName == "Page").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDataTableSortItems?", dataIterator.Props.Single(static prop => prop.PublicName == "SortBy").TypeName);
+        Assert.AreEqual("string[]?", dataIterator.Props.Single(static prop => prop.PublicName == "Expanded").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyDataIteratorSortFunctions?", dataIterator.Props.Single(static prop => prop.PublicName == "CustomKeySort").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", dataIterator.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VDataIteratorSlotContext", dataIterator.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VDataIteratorSlotContext", dataIterator.Slots.Single(static slot => slot.Name == "header").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VDataIteratorSlotContext", dataIterator.Slots.Single(static slot => slot.Name == "footer").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyLoaderSlotContext", dataIterator.Slots.Single(static slot => slot.Name == "loader").Parameters[0].TypeName);
+        Assert.IsTrue(dataIterator.Slots.Single(static slot => slot.Name == "no-data").Parameters.IsDefaultOrEmpty);
+
         var sheet = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSheet");
         Assert.AreEqual("height", sheet.Props.Single(static prop => prop.PublicName == "Height").Name);
         Assert.AreEqual("width", sheet.Props.Single(static prop => prop.PublicName == "Width").Name);
@@ -864,6 +1644,53 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", snackbar.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
         Assert.IsTrue(snackbar.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
+        var snackbarQueue = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSnackbarQueue");
+        Assert.AreEqual("modelValue", snackbarQueue.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", snackbarQueue.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("variant", snackbarQueue.Props.Single(static prop => prop.PublicName == "Variant").Name);
+        Assert.AreEqual("closable", snackbarQueue.Props.Single(static prop => prop.PublicName == "Closable").Name);
+        Assert.AreEqual("closeText", snackbarQueue.Props.Single(static prop => prop.PublicName == "CloseText").Name);
+        Assert.AreEqual("offset", snackbarQueue.Props.Single(static prop => prop.PublicName == "Offset").Name);
+        Assert.AreEqual("origin", snackbarQueue.Props.Single(static prop => prop.PublicName == "Origin").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySnackbarQueueMessages?", snackbarQueue.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyBooleanStringValue?", snackbarQueue.Props.Single(static prop => prop.PublicName == "Closable").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSnackbarQueueSlotContext", snackbarQueue.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSnackbarQueueSlotContext", snackbarQueue.Slots.Single(static slot => slot.Name == "text").Parameters[0].TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VSnackbarQueueActionsSlotContext", snackbarQueue.Slots.Single(static slot => slot.Name == "actions").Parameters[0].TypeName);
+
+        var sparkline = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VSparkline");
+        Assert.AreEqual("autoDraw", sparkline.Props.Single(static prop => prop.PublicName == "AutoDraw").Name);
+        Assert.AreEqual("autoDrawDuration", sparkline.Props.Single(static prop => prop.PublicName == "AutoDrawDuration").Name);
+        Assert.AreEqual("gradientDirection", sparkline.Props.Single(static prop => prop.PublicName == "GradientDirection").Name);
+        Assert.AreEqual("labelSize", sparkline.Props.Single(static prop => prop.PublicName == "LabelSize").Name);
+        Assert.AreEqual("itemValue", sparkline.Props.Single(static prop => prop.PublicName == "ItemValue").Name);
+        Assert.AreEqual("modelValue", sparkline.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("showLabels", sparkline.Props.Single(static prop => prop.PublicName == "ShowLabels").Name);
+        Assert.AreEqual("autoLineWidth", sparkline.Props.Single(static prop => prop.PublicName == "AutoLineWidth").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySparklineItems?", sparkline.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySparklineItems?", sparkline.Props.Single(static prop => prop.PublicName == "Labels").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifySparklineSmoothValue?", sparkline.Props.Single(static prop => prop.PublicName == "Smooth").TypeName);
+        Assert.IsTrue(sparkline.Slots.Single(static slot => slot.IsDefault).Parameters.IsDefaultOrEmpty);
+        Assert.AreEqual("ECMAScript.Vuetify.VSparklineLabelSlotContext", sparkline.Slots.Single(static slot => slot.Name == "label").Parameters[0].TypeName);
+
+        var validation = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VValidation");
+        Assert.AreEqual("focused", validation.Props.Single(static prop => prop.PublicName == "Focused").Name);
+        Assert.AreEqual("update:focused", validation.Emits.Single(static emit => emit.RazorAlias == "FocusedChanged").Name);
+        Assert.AreEqual("disabled", validation.Props.Single(static prop => prop.PublicName == "Disabled").Name);
+        Assert.AreEqual("readonly", validation.Props.Single(static prop => prop.PublicName == "Readonly").Name);
+        Assert.AreEqual("errorMessages", validation.Props.Single(static prop => prop.PublicName == "ErrorMessages").Name);
+        Assert.AreEqual("maxErrors", validation.Props.Single(static prop => prop.PublicName == "MaxErrors").Name);
+        Assert.AreEqual("rules", validation.Props.Single(static prop => prop.PublicName == "Rules").Name);
+        Assert.AreEqual("modelValue", validation.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
+        Assert.AreEqual("update:modelValue", validation.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
+        Assert.AreEqual("validateOn", validation.Props.Single(static prop => prop.PublicName == "ValidateOn").Name);
+        Assert.AreEqual("validationValue", validation.Props.Single(static prop => prop.PublicName == "ValidationValue").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyNullableBoolean?", validation.Props.Single(static prop => prop.PublicName == "Disabled").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyMessagesValue?", validation.Props.Single(static prop => prop.PublicName == "ErrorMessages").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", validation.Props.Single(static prop => prop.PublicName == "MaxErrors").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyValidationRule[]?", validation.Props.Single(static prop => prop.PublicName == "Rules").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VValidationSlotContext", validation.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
+
         var tabs = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VTabs");
         Assert.AreEqual("modelValue", tabs.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
         Assert.AreEqual("update:modelValue", tabs.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
@@ -946,6 +1773,44 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VListItemSlotContext", listItem.Slots.Single(static slot => slot.Name == "append").Parameters[0].TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VListItemTitleSlotContext", listItem.Slots.Single(static slot => slot.Name == "title").Parameters[0].TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VListItemSubtitleSlotContext", listItem.Slots.Single(static slot => slot.Name == "subtitle").Parameters[0].TypeName);
+    }
+
+    [TestMethod]
+    public void Vuetify_InputInfrastructureSlotContexts_PreserveOfficialRefContracts()
+    {
+        AssertPropertyType<VInputSlotContext>("Id", typeof(VueComputedRef<string>));
+        AssertPropertyType<VInputSlotContext>("MessagesId", typeof(VueComputedRef<string>));
+        AssertPropertyType<VInputSlotContext>("IsDirty", typeof(VueComputedRef<bool>));
+        AssertPropertyType<VInputSlotContext>("IsDisabled", typeof(VueComputedRef<bool>));
+        AssertPropertyType<VInputSlotContext>("IsReadonly", typeof(VueComputedRef<bool>));
+        AssertPropertyType<VInputSlotContext>("IsPristine", typeof(IVueRef<bool>));
+        AssertPropertyType<VInputSlotContext>("IsValid", typeof(VueComputedRef<bool?>));
+        AssertPropertyType<VInputSlotContext>("IsValidating", typeof(IVueRef<bool>));
+
+        AssertPropertyType<VFieldSlotContext>("IsActive", typeof(IVueRef<bool>));
+        AssertPropertyType<VFieldSlotContext>("IsFocused", typeof(IVueRef<bool>));
+        AssertPropertyType<VFieldSlotContext>("ControlRef", typeof(IVueRef<Element?>));
+        AssertPropertyType<VFieldLabelSlotContext>("IsActive", typeof(IVueRef<bool>));
+        AssertPropertyType<VFieldLabelSlotContext>("IsFocused", typeof(IVueRef<bool>));
+        AssertPropertyType<VFieldLabelSlotContext>("ControlRef", typeof(IVueRef<Element?>));
+
+        AssertPropertyType<VSelectionControlDefaultSlotContext>("BackgroundColorClasses", typeof(IVueRef<string[]>));
+        AssertPropertyType<VSelectionControlDefaultSlotContext>("BackgroundColorStyles", typeof(IVueRef<VuetifyCssProperties>));
+        AssertPropertyType<VSelectionControlInputSlotContext>("Model", typeof(VueWritableComputedRef<bool>));
+        AssertPropertyType<VSelectionControlInputSlotContext>("TextColorClasses", typeof(IVueRef<string[]>));
+        AssertPropertyType<VSelectionControlInputSlotContext>("TextColorStyles", typeof(IVueRef<VuetifyCssProperties>));
+        AssertPropertyType<VSelectionControlInputSlotContext>("BackgroundColorClasses", typeof(IVueRef<string[]>));
+        AssertPropertyType<VSelectionControlInputSlotContext>("BackgroundColorStyles", typeof(IVueRef<VuetifyCssProperties>));
+        AssertPropertyType<VSelectionControlInputDefaultSlotContext>("BackgroundColorClasses", typeof(IVueRef<string[]>));
+        AssertPropertyType<VSelectionControlInputDefaultSlotContext>("BackgroundColorStyles", typeof(IVueRef<VuetifyCssProperties>));
+
+        AssertPropertyType<VSwitchSlotContext>("Model", typeof(IVueRef<bool>));
+        AssertPropertyType<VSwitchSlotContext>("IsValid", typeof(VueComputedRef<bool?>));
+
+        AssertPropertyType<VuetifyWindowGroupProvide>("Selected", typeof(IVueRef<string[]>));
+        AssertPropertyType<VuetifyWindowGroupProvide>("SelectedClass", typeof(IVueRef<string?>));
+        AssertPropertyType<VuetifyWindowGroupProvide>("Items", typeof(VueComputedRef<VuetifyWindowGroupItem[]>));
+        AssertPropertyType<VuetifyWindowGroupProvide>("Disabled", typeof(IVueRef<bool?>));
     }
 
     [TestMethod]
@@ -1482,6 +2347,13 @@ public sealed class RazorVueDescriptorExtractionTests
         var context = RazorVueCompilationContext.TryCreate(compilation);
         Assert.IsNotNull(context);
         return context;
+    }
+
+    private static void AssertPropertyType<TDeclaringType>(string propertyName, Type expectedType)
+    {
+        var property = typeof(TDeclaringType).GetProperty(propertyName);
+        Assert.IsNotNull(property, $"{typeof(TDeclaringType).FullName}.{propertyName}");
+        Assert.AreEqual(expectedType, Nullable.GetUnderlyingType(property!.PropertyType) ?? property.PropertyType);
     }
 
     private static RazorVueSemanticSnapshot CreateSingleSnapshot(string source)

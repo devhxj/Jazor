@@ -131,6 +131,25 @@ public sealed class EcmaScriptVue3LayoutGuardTests
         CollectionAssert.AreEqual(Array.Empty<string>(), misplacedVueFiles, $"Vue3 source files should not flow back into {ecmascriptRoot}");
     }
 
+    [TestMethod]
+    public void Vue3_SafeErasedValueUnions_UseNativeUnionKeyword()
+    {
+        var repoRoot = ResolveRepositoryRoot();
+        var propsSource = File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "Types", "Vue3.Types.Props.cs"));
+        var unionSource = File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Vue3", "Types", "Vue3.Types.Unions.cs"));
+
+        AssertUsesNativeUnion(propsSource, "VueNamesOrOptions");
+        AssertUsesNativeUnion(unionSource, "VueInjectFrom");
+        AssertUsesNativeUnion(unionSource, "VuePropDeclaration");
+        AssertUsesNativeUnion(unionSource, "VueClassValue");
+        AssertUsesNativeUnion(unionSource, "VueStringNumberValue");
+        AssertUsesNativeUnion(unionSource, "VueWatchDeep");
+        AssertUsesNativeUnion(unionSource, "VueTransitionDurationValue");
+        AssertUsesNativeUnion(unionSource, "VueKeepAliveMatch");
+        AssertUsesNativeUnion(unionSource, "VueIntStringValue");
+        AssertUsesNativeUnion(unionSource, "VueTeleportTarget");
+    }
+
     private static string ResolveRepositoryRoot()
     {
         var current = new DirectoryInfo(AppContext.BaseDirectory);
@@ -142,5 +161,15 @@ public sealed class EcmaScriptVue3LayoutGuardTests
         }
 
         throw new InvalidOperationException("Cannot locate repository root (Jazor.slnx).");
+    }
+
+    private static void AssertUsesNativeUnion(string source, string typeName)
+    {
+        Assert.IsTrue(
+            System.Text.RegularExpressions.Regex.IsMatch(source, $@"\bpublic\s+readonly\s+union\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b"),
+            $"{typeName} must be declared with the C# native union keyword.");
+        Assert.IsFalse(
+            System.Text.RegularExpressions.Regex.IsMatch(source, $@"\bpublic\s+readonly\s+struct\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b"),
+            $"{typeName} must stay on the C# native union keyword path.");
     }
 }

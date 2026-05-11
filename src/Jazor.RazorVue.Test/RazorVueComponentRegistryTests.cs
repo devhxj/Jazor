@@ -303,7 +303,7 @@ public sealed class RazorVueComponentRegistryTests
             """);
 
         var registry = context.CreateComponentRegistry();
-        foreach (var componentName in VuetifyTestMetadata.RuntimeComponentExportNames)
+        foreach (var componentName in VuetifyTestMetadata.NormalRuntimeComponentExportNames)
         {
             var result = registry.Resolve(
                 componentName,
@@ -313,6 +313,19 @@ public sealed class RazorVueComponentRegistryTests
             Assert.IsNotNull(result.Descriptor, componentName);
             Assert.AreEqual(VueComponentSourceKind.LibraryComponent, result.Descriptor.SourceKind, componentName);
             Assert.AreEqual("vuetify/components", result.Descriptor.ImportSpecifier, componentName);
+            CollectionAssert.AreEqual(new[] { "vuetify" }, result.Descriptor.PluginRequirements.ToArray(), componentName);
+        }
+
+        foreach (var componentName in VuetifyTestMetadata.LabsRuntimeComponentExportNames)
+        {
+            var result = registry.Resolve(
+                componentName,
+                VueComponentResolutionContext.Create("Demo.Pages", "ECMAScript.Vuetify"));
+
+            Assert.AreEqual(VueComponentResolutionStatus.Resolved, result.Status, componentName);
+            Assert.IsNotNull(result.Descriptor, componentName);
+            Assert.AreEqual(VueComponentSourceKind.LibraryComponent, result.Descriptor.SourceKind, componentName);
+            Assert.AreEqual("vuetify/labs/components", result.Descriptor.ImportSpecifier, componentName);
             CollectionAssert.AreEqual(new[] { "vuetify" }, result.Descriptor.PluginRequirements.ToArray(), componentName);
         }
     }

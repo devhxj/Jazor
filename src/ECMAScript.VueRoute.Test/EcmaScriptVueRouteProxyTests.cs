@@ -83,7 +83,12 @@ public sealed class EcmaScriptVueRouteProxyTests
         foreach (var type in runtimeTypes)
         {
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            {
+                if (IsUnionValueProperty(property))
+                    continue;
+
                 AssertNotObject(property.PropertyType, $"{type.Name}.{property.Name}");
+            }
 
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
                          .Where(static method => !method.IsSpecialName)
@@ -219,6 +224,22 @@ public sealed class EcmaScriptVueRouteProxyTests
         CollectionAssert.AreEquivalent(
             new[] { 4, 8, 16 },
             Enum.GetValues<NavigationFailureType>().Select(static value => (int)value).ToArray());
+    }
+
+    [TestMethod]
+    public void VueRoute_ErasedValueUnions_UseNet11UnionContract()
+    {
+        AssertNet11UnionContract(typeof(RouteRecordName), typeof(string), typeof(Symbol));
+        AssertNet11UnionContract(typeof(RouteRecordAlias), typeof(string), typeof(string[]));
+        AssertNet11UnionContract(typeof(RouteLocationRaw), typeof(string), typeof(RouteLocationAsPath), typeof(RouteLocationAsRelative));
+        AssertNet11UnionContract(typeof(HistoryStateValue), typeof(string), typeof(Number), typeof(bool), typeof(HistoryState), typeof(Array<HistoryStateValue?>));
+        AssertNet11UnionContract(typeof(ScrollPositionTarget), typeof(string), typeof(Element));
+        AssertNet11UnionContract(typeof(RouteRecordRaw), typeof(RouteRecordSingleView), typeof(RouteRecordSingleViewWithChildren), typeof(RouteRecordMultipleViews), typeof(RouteRecordMultipleViewsWithChildren), typeof(RouteRecordRedirect));
+        AssertNet11UnionContract(typeof(MatcherLocationRaw), typeof(MatcherLocationAsPath), typeof(MatcherLocationAsName), typeof(MatcherLocationAsRelative));
+        AssertNet11UnionContract(typeof(RouteParam), typeof(string), typeof(string[]));
+        AssertNet11UnionContract(typeof(RouteParamRaw), typeof(string), typeof(Array<RouteParamRaw>), typeof(Number));
+        AssertNet11UnionContract(typeof(LocationQueryValue), typeof(string), typeof(Array<string>));
+        AssertNet11UnionContract(typeof(LocationQueryValueRaw), typeof(string), typeof(Array<LocationQueryValueRaw?>), typeof(Number));
     }
 
     [TestMethod]
@@ -1256,24 +1277,16 @@ public sealed class EcmaScriptVueRouteProxyTests
         var el = typeof(ScrollPositionElement).GetProperty(nameof(ScrollPositionElement.El), BindingFlags.Public | BindingFlags.Instance);
         var asSelector = targetType.GetProperty(nameof(ScrollPositionTarget.AsSelector), BindingFlags.Public | BindingFlags.Instance);
         var asElement = targetType.GetProperty(nameof(ScrollPositionTarget.AsElement), BindingFlags.Public | BindingFlags.Instance);
-        var selectorOperator = targetType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .SingleOrDefault(static method => method.Name == "op_Implicit" && method.GetParameters().Single().ParameterType == typeof(string));
-        var elementOperator = targetType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .SingleOrDefault(static method => method.Name == "op_Implicit" && method.GetParameters().Single().ParameterType == typeof(Element));
 
         Assert.IsNotNull(el);
         Assert.IsNotNull(asSelector);
         Assert.IsNotNull(asElement);
-        Assert.IsNotNull(selectorOperator);
-        Assert.IsNotNull(elementOperator);
-        Assert.IsTrue(targetType.IsDefined(typeof(ECMAScriptUnionAttribute), inherit: false));
+        AssertNet11UnionContract(targetType, typeof(string), typeof(Element));
         Assert.AreEqual(typeof(ScrollPositionTarget), el!.PropertyType);
         Assert.AreEqual(typeof(string), UnwrapNullable(asSelector!.PropertyType));
         Assert.AreEqual(typeof(Element), UnwrapNullable(asElement!.PropertyType));
         Assert.AreEqual(NullabilityState.Nullable, nullability.Create(asSelector).ReadState);
         Assert.AreEqual(NullabilityState.Nullable, nullability.Create(asElement).ReadState);
-        Assert.AreEqual(typeof(ScrollPositionTarget), selectorOperator!.ReturnType);
-        Assert.AreEqual(typeof(ScrollPositionTarget), elementOperator!.ReturnType);
     }
 
     [TestMethod]
@@ -1301,9 +1314,23 @@ public sealed class EcmaScriptVueRouteProxyTests
 
         Assert.IsNotNull(asNormalized);
         Assert.IsNotNull(normalizedOperator);
+        Assert.IsTrue(typeof(RouterScrollResult).IsDefined(typeof(ECMAScriptUnionAttribute), inherit: false));
+        Assert.IsNull(typeof(RouterScrollResult).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
         Assert.AreEqual(typeof(ScrollPositionNormalized), UnwrapNullable(asNormalized!.PropertyType));
         Assert.AreEqual(NullabilityState.Nullable, nullability.Create(asNormalized).ReadState);
         Assert.AreEqual(typeof(RouterScrollResult), normalizedOperator!.ReturnType);
+    }
+
+    [TestMethod]
+    public void VueRoute_RouterScrollResult_PreservesPreciseProjectionForOverlappingPositionTypes()
+    {
+        RouterScrollResult coordinates = new ScrollPositionCoordinates();
+        RouterScrollResult element = new ScrollPositionElement();
+
+        Assert.IsNotNull(coordinates.AsCoordinates);
+        Assert.IsNull(coordinates.AsElement);
+        Assert.IsNull(element.AsCoordinates);
+        Assert.IsNotNull(element.AsElement);
     }
 
     [TestMethod]
@@ -1540,6 +1567,46 @@ public sealed class EcmaScriptVueRouteProxyTests
         Assert.IsNull(module, type.FullName);
         Assert.IsNull(runtime!.Import, type.FullName);
     }
+
+    private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)
+    {
+        Assert.IsNull(unionType.GetCustomAttribute<ECMAScriptUnionAttribute>(), unionType.FullName);
+        Assert.IsNotNull(unionType.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>(), unionType.FullName);
+        Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(unionType), unionType.FullName);
+
+        var value = unionType.GetProperty(nameof(System.Runtime.CompilerServices.IUnion.Value), BindingFlags.Public | BindingFlags.Instance);
+        Assert.IsNotNull(value, unionType.FullName);
+        Assert.AreEqual(typeof(object), value!.PropertyType);
+
+        CollectionAssert.AreEquivalent(
+            constructorBranchTypes,
+            unionType
+                .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+                .Select(static constructor => constructor.GetParameters().SingleOrDefault()?.ParameterType)
+                .Where(static type => type is not null)
+                .ToArray(),
+            unionType.FullName);
+
+        AssertNoAssignableBranchOverlap(unionType, constructorBranchTypes);
+    }
+
+    private static void AssertNoAssignableBranchOverlap(Type unionType, Type[] constructorBranchTypes)
+    {
+        foreach (var left in constructorBranchTypes)
+        foreach (var right in constructorBranchTypes)
+        {
+            if (left == right)
+                continue;
+
+            Assert.IsFalse(
+                left.IsAssignableFrom(right),
+                $"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged ECMAScriptUnion wrapper to preserve exact AsX projections.");
+        }
+    }
+
+    private static bool IsUnionValueProperty(PropertyInfo property)
+        => property.Name == nameof(System.Runtime.CompilerServices.IUnion.Value) &&
+           typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(property.DeclaringType);
 }
 
 #pragma warning restore CA1416

@@ -7237,6 +7237,100 @@ export function readValue(value) {
     }
 
     [TestMethod]
+    public async Task Convert_ClassUsingVueValueUnionContractProjection_GeneratesNativeValue()
+    {
+        var code = """
+            using ECMAScript;
+            using static ECMAScript.Vue3;
+
+            [ECMAScriptModule("vue/value-union-projection.mjs")]
+            public static class TestClass
+            {
+                public static object? Read(VueStringNumberValue value)
+                    => value.Value;
+
+                public static object? ReadInjectFrom(VueInjectFrom<string> value)
+                    => value.Value;
+
+                public static object? ReadPropDeclaration(VuePropDeclaration<string> value)
+                    => value.Value;
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location));
+        var classSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "TestClass")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(classSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function read(value) {
+  return value;
+}
+
+export function readInjectFrom(value) {
+  return value;
+}
+
+export function readPropDeclaration(value) {
+  return value;
+}
+", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingVueRouteValueUnionContractProjection_GeneratesNativeValue()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScriptModule("vueroute/value-union-projection.mjs")]
+            public static class TestClass
+            {
+                public static object? Read(RouteRecordName value)
+                    => value.Value;
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var classSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "TestClass")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(classSymbol, semanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"export function read(value) {
+  return value;
+}
+", script);
+    }
+
+    [TestMethod]
     public async Task Convert_ClassUsingVueObjectInputConstraintConvenienceMembers_GeneratesFinalAttributeKeys()
     {
         var code = """

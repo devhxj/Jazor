@@ -188,6 +188,15 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(sampleBuildScript, "-p:UseSharedCompilation=false");
 	}
 
+	[TestMethod]
+	public void Pinia_SafeErasedValueUnions_UseNativeUnionKeyword()
+	{
+		var repoRoot = ResolveRepositoryRoot();
+		var source = System.IO.File.ReadAllText(Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "Types", "Pinia.Types.Store.cs"));
+
+		AssertUsesNativeUnion(source, "SubscriptionMutationEvents");
+	}
+
 	private static string ResolveRepositoryRoot()
 	{
 		var current = new DirectoryInfo(AppContext.BaseDirectory);
@@ -199,5 +208,15 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		}
 
 		throw new InvalidOperationException("Cannot locate repository root (Jazor.slnx).");
+	}
+
+	private static void AssertUsesNativeUnion(string source, string typeName)
+	{
+		Assert.IsTrue(
+			System.Text.RegularExpressions.Regex.IsMatch(source, $@"\bpublic\s+readonly\s+union\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b"),
+			$"{typeName} must be declared with the C# native union keyword.");
+		Assert.IsFalse(
+			System.Text.RegularExpressions.Regex.IsMatch(source, $@"\bpublic\s+readonly\s+struct\s+{System.Text.RegularExpressions.Regex.Escape(typeName)}\b"),
+			$"{typeName} must stay on the C# native union keyword path.");
 	}
 }

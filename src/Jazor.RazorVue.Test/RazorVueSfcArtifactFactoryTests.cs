@@ -134,6 +134,58 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersVuetifyCardTitle_DefaultSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dashboard-card")]
+                public class DashboardCard : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VCard>(0);
+                        builder.OpenComponent<VCardTitle>(1);
+                        builder.AddAttribute(2, nameof(VCardTitle.ChildContent), (RenderFragment)((titleBuilder) =>
+                        {
+                            titleBuilder.AddContent(3, "Dashboard");
+                        }));
+                        builder.CloseComponent();
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<VCard>");
+        StringAssert.Contains(artifact.TemplateText, "<VCardTitle>");
+        StringAssert.Contains(artifact.TemplateText, "Dashboard");
+        Assert.IsFalse(artifact.TemplateText.Contains("text=\"Dashboard\"", StringComparison.Ordinal), artifact.TemplateText);
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_CanUseInjectedTemplateFrontend_WhenBuildRenderTreeIsAbsent()
     {
         var context = CreateContext(

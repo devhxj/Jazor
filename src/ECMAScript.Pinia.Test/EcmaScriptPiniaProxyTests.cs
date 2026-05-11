@@ -96,7 +96,12 @@ public sealed class EcmaScriptPiniaProxyTests
 		foreach (var type in runtimeTypes)
 		{
 			foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+			{
+				if (IsUnionValueProperty(property))
+					continue;
+
 				AssertNotObject(property.PropertyType, $"{type.Name}.{property.Name}");
+			}
 
 			foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
 						 .Where(static method => !method.IsSpecialName)
@@ -554,6 +559,15 @@ public sealed class EcmaScriptPiniaProxyTests
 	}
 
 	[TestMethod]
+	public void Pinia_SubscriptionMutationEvents_UsesNet11UnionContract()
+	{
+		AssertNet11UnionContract(
+			typeof(Pinia.SubscriptionMutationEvents),
+			typeof(Vue3.VueDebuggerEvent),
+			typeof(Vue3.VueDebuggerEvent[]));
+	}
+
+	[TestMethod]
 	public void Pinia_RootLifecycleAndHydrationHelpers_ExposeOfficialContracts()
 	{
 		var getActivePinia = typeof(Pinia)
@@ -656,6 +670,46 @@ public sealed class EcmaScriptPiniaProxyTests
 		Assert.IsNull(module, type.FullName);
 		Assert.IsNull(runtime!.Import, type.FullName);
 	}
+
+	private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)
+	{
+		Assert.IsNull(unionType.GetCustomAttribute<ECMAScriptUnionAttribute>(), unionType.FullName);
+		Assert.IsNotNull(unionType.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>(), unionType.FullName);
+		Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(unionType), unionType.FullName);
+
+		var value = unionType.GetProperty(nameof(System.Runtime.CompilerServices.IUnion.Value), BindingFlags.Public | BindingFlags.Instance);
+		Assert.IsNotNull(value, unionType.FullName);
+		Assert.AreEqual(typeof(object), value!.PropertyType);
+
+		CollectionAssert.AreEquivalent(
+			constructorBranchTypes,
+			unionType
+				.GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+				.Select(static constructor => constructor.GetParameters().SingleOrDefault()?.ParameterType)
+				.Where(static type => type is not null)
+				.ToArray(),
+			unionType.FullName);
+
+		AssertNoAssignableBranchOverlap(unionType, constructorBranchTypes);
+	}
+
+	private static void AssertNoAssignableBranchOverlap(Type unionType, Type[] constructorBranchTypes)
+	{
+		foreach (var left in constructorBranchTypes)
+		foreach (var right in constructorBranchTypes)
+		{
+			if (left == right)
+				continue;
+
+			Assert.IsFalse(
+				left.IsAssignableFrom(right),
+				$"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged ECMAScriptUnion wrapper to preserve exact AsX projections.");
+		}
+	}
+
+	private static bool IsUnionValueProperty(PropertyInfo property)
+		=> property.Name == nameof(System.Runtime.CompilerServices.IUnion.Value) &&
+		   typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(property.DeclaringType);
 }
 
 public sealed record TestPiniaState : Pinia.PiniaStateTree

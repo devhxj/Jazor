@@ -34,7 +34,7 @@ public sealed class JazorAnalyzerTests
 			}
 			""");
 
-		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", ".Add(string, ");
+		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", "System.Random");
 	}
 
 	[TestMethod]
@@ -65,7 +65,7 @@ public sealed class JazorAnalyzerTests
 			}
 			""");
 
-		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", ".Add(string, ");
+		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", "System.Random");
 	}
 
 	[TestMethod]
@@ -96,7 +96,7 @@ public sealed class JazorAnalyzerTests
 			}
 			""");
 
-		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", "Bag.Add(string, string)");
+		AssertHasDiagnosticContaining(diagnostics, "JAZOR001", "System.Random");
 	}
 
 	[TestMethod]

@@ -1696,13 +1696,18 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(hostModulePath), $"Host module was not generated: {hostModulePath}");
 
         var sfc = (await File.ReadAllTextAsync(sfcPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(sfc, "<VApp>");
+        StringAssert.Contains(sfc, "<VMain>");
         StringAssert.Contains(sfc, "<VContainer");
+        StringAssert.Contains(sfc, "<VCardTitle>");
+        StringAssert.Contains(sfc, "External RazorVue Consumer");
         StringAssert.Contains(sfc, "<VList");
         StringAssert.Contains(sfc, "item.Title");
         StringAssert.Contains(sfc, "item.Category");
         StringAssert.Contains(sfc, "item.IsPinned");
         StringAssert.Contains(sfc, "from \"vuetify/components\"");
         StringAssert.Contains(sfc, "defineProps<{ items?: any }>()");
+        Assert.IsFalse(sfc.Contains("text=\"External RazorVue Consumer\"", StringComparison.Ordinal), sfc);
 
         var hostRequirementsModule = (await File.ReadAllTextAsync(hostRequirementsModulePath)).ReplaceLineEndings("\n");
         StringAssert.Contains(hostRequirementsModule, "export const razorVueStyles = Object.freeze([\"vuetify/styles\"]);");
@@ -1764,6 +1769,17 @@ public sealed class SdkIntegrationTests
             ["RAZORVUE_DIST_ROOT"] = consumerDistRoot,
             ["RAZORVUE_ROOT_COMPONENT_ID"] = "ExternalRazorVueSfcConsumer.ExternalDashboard",
             ["RAZORVUE_ROOT_COMPONENT_NAME"] = "ExternalDashboard",
+            ["RAZORVUE_BROWSER_EXPECTED_TEXTS_JSON"] = JsonSerializer.Serialize(new[]
+            {
+                "External RazorVue Consumer",
+                "Preview external pure Deno consumer",
+                "Automation | Open",
+                "Validate host requirements",
+                "Runtime | Done",
+                "Pinned"
+            }),
+            ["RAZORVUE_BROWSER_CLICK_BUTTON_TEXT"] = string.Empty,
+            ["RAZORVUE_BROWSER_AFTER_CLICK_EXPECTED_TEXTS_JSON"] = "[]",
             ["JAZOR_DENO_EXE"] = package.DenoExePath
         };
 
@@ -1783,6 +1799,7 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(output, "RazorVue TodoList Deno SSR smoke passed.");
         StringAssert.Contains(output, "RazorVue Deno.bundle() smoke passed");
         StringAssert.Contains(output, "RazorVue Deno build emitted client-entry.js and 1 CSS asset(s).");
+        StringAssert.Contains(output, "RazorVue browser smoke passed.");
         StringAssert.Contains(output, "RazorVue TodoList pure Deno pipeline passed.");
 
         var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
@@ -1798,6 +1815,9 @@ public sealed class SdkIntegrationTests
         var distJs = (await File.ReadAllTextAsync(distJsPath)).ReplaceLineEndings("\n");
         StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
         StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
+        StringAssert.Contains(distJs, "globalThis.__VUE_OPTIONS_API__ = true;");
+        StringAssert.Contains(distJs, "globalThis.__VUE_PROD_DEVTOOLS__ = false;");
+        StringAssert.Contains(distJs, "globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;");
         Assert.IsFalse(
             ContainsVueModuleSpecifier(distJs),
             "Bundled browser entry should not retain unresolved .vue imports.");
@@ -1851,9 +1871,14 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"Expected RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
 
         var todoAppSfc = (await File.ReadAllTextAsync(todoAppSfcPath)).ReplaceLineEndings("\n");
+        StringAssert.Contains(todoAppSfc, "<VApp>");
+        StringAssert.Contains(todoAppSfc, "<VMain>");
+        StringAssert.Contains(todoAppSfc, "<VCardTitle>");
+        StringAssert.Contains(todoAppSfc, "RazorVue Todo Workspace");
         StringAssert.Contains(todoAppSfc, ":fluid=\"true\"");
         StringAssert.Contains(todoAppSfc, ":cols=\"12\"");
         StringAssert.Contains(todoAppSfc, "from \"vuetify/components\"");
+        Assert.IsFalse(todoAppSfc.Contains("text=\"RazorVue Todo Workspace\"", StringComparison.Ordinal), todoAppSfc);
 
         using (var razorVueManifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath)))
         {
@@ -1912,6 +1937,23 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, browserBuild.ExitCode, browserBuild.ToString());
         StringAssert.Contains(browserBuild.StandardOutput + browserBuild.StandardError, "RazorVue Deno build emitted client-entry.js and 1 CSS asset(s).");
 
+        var browserSmokeEnvironment = new Dictionary<string, string>(denoEnvironment, StringComparer.OrdinalIgnoreCase)
+        {
+            ["RAZORVUE_BROWSER_SKIP_BUILD"] = "1"
+        };
+        var browserSmoke = await RunPowerShellAsync(
+            consumerRoot,
+            [
+                "-NoProfile",
+                "-ExecutionPolicy", "Bypass",
+                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "task",
+                "smoke:browser"
+            ],
+            browserSmokeEnvironment);
+        Assert.AreEqual(0, browserSmoke.ExitCode, browserSmoke.ToString());
+        StringAssert.Contains(browserSmoke.StandardOutput + browserSmoke.StandardError, "RazorVue browser smoke passed.");
+
         var distHtmlPath = Path.Combine(consumerDistRoot, "index.html");
         var distJsPath = Path.Combine(consumerDistRoot, "assets", "client-entry.js");
         var distCssPath = Path.Combine(consumerDistRoot, "assets", "client-entry.css");
@@ -1925,6 +1967,9 @@ public sealed class SdkIntegrationTests
         var distJs = (await File.ReadAllTextAsync(distJsPath)).ReplaceLineEndings("\n");
         StringAssert.Contains(distHtml, "<script type=\"module\" src=\"./assets/client-entry.js\"></script>");
         StringAssert.Contains(distHtml, "<link rel=\"stylesheet\" href=\"./assets/client-entry.css\" />");
+        StringAssert.Contains(distJs, "globalThis.__VUE_OPTIONS_API__ = true;");
+        StringAssert.Contains(distJs, "globalThis.__VUE_PROD_DEVTOOLS__ = false;");
+        StringAssert.Contains(distJs, "globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;");
         Assert.IsFalse(
             ContainsVueModuleSpecifier(distJs),
             "Bundled browser entry should not retain unresolved .vue imports.");
@@ -2820,25 +2865,29 @@ public sealed class SdkIntegrationTests
         WriteFile(
             Path.Combine(projectRoot, "ExternalDashboard.razor"),
             """
-            <VContainer Fluid="true">
-                <VCard>
-                    <VCardTitle Text="External RazorVue Consumer" />
-                    <VCardText>
-                        <VList>
-                            @foreach (var item in Items)
-                            {
-                                <VListItem Title="@item.Title"
-                                           Subtitle="@(item.Category + " | " + (item.IsDone ? "Done" : "Open"))">
-                                    @if (item.IsPinned)
+            <VApp>
+                <VMain>
+                    <VContainer Fluid="true">
+                        <VCard>
+                            <VCardTitle>External RazorVue Consumer</VCardTitle>
+                            <VCardText>
+                                <VList>
+                                    @foreach (var item in Items)
                                     {
-                                        <VChip Text='@("Pinned")' Color="primary" />
+                                        <VListItem Title="@item.Title"
+                                                   Subtitle="@(item.Category + " | " + (item.IsDone ? "Done" : "Open"))">
+                                            @if (item.IsPinned)
+                                            {
+                                                <VChip Text='@("Pinned")' Color="primary" />
+                                            }
+                                        </VListItem>
                                     }
-                                </VListItem>
-                            }
-                        </VList>
-                    </VCardText>
-                </VCard>
-            </VContainer>
+                                </VList>
+                            </VCardText>
+                        </VCard>
+                    </VContainer>
+                </VMain>
+            </VApp>
             """);
 
         return projectPath;
@@ -2866,6 +2915,7 @@ public sealed class SdkIntegrationTests
               "tasks": {
                 "build": "deno run -A scripts/build.ts",
                 "smoke:ssr": "deno run -A scripts/smoke-ssr.ts",
+                "smoke:browser": "deno run -A scripts/smoke-browser.ts",
                 "smoke:bundle-api": "deno run -A --unstable-bundle scripts/smoke-bundle-api.ts",
                 "test": "deno run -A --unstable-bundle scripts/test.ts"
               }

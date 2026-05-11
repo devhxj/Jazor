@@ -15,7 +15,10 @@ public sealed class EcmaScriptPiniaImportTests
 
 	private static async Task<string?> ConvertModuleAsync(string code, string className)
 	{
-		var syntaxTree = CSharpSyntaxTree.ParseText(code, path: "/src/TestModule.cs");
+		var syntaxTree = CSharpSyntaxTree.ParseText(
+			code,
+			CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
+			path: "/src/TestModule.cs");
 		var compilation = CSharpCompilation.Create(
 			"TestAssembly",
 			[syntaxTree],
@@ -2134,6 +2137,30 @@ public sealed class EcmaScriptPiniaImportTests
 		Assert.IsNotNull(script);
 		StringAssert.Contains(script, "return mutation.events;");
 		StringAssert.Contains(script, "return mutation.payload;");
+	}
+
+	[TestMethod]
+	public async Task Convert_ClassUsingSubscriptionMutationEventsValueProjection_GeneratesNativeValue()
+	{
+		var code = """
+			using ECMAScript;
+			using static ECMAScript.Pinia;
+
+			namespace Demo
+			{
+				[ECMAScriptModule("stores/subscription-events-value.mjs")]
+				public static class CounterSubscriptionModule
+				{
+					public static object? Read(SubscriptionMutationEvents value)
+						=> value.Value;
+				}
+			}
+			""";
+
+		var script = await ConvertModuleAsync(code, "CounterSubscriptionModule");
+
+		Assert.IsNotNull(script);
+		StringAssert.Contains(script, "return value;");
 	}
 
 	[TestMethod]

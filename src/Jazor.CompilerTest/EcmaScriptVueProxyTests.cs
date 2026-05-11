@@ -55,6 +55,7 @@ public sealed class EcmaScriptVueProxyTests
     {
         AssertEcmaScriptImport(typeof(Vuetify), "npm:vuetify");
         AssertEcmaScriptImport(typeof(VuetifyComponents), "vuetify/components");
+        AssertEcmaScriptImport(typeof(VuetifyLabsComponents), "vuetify/labs/components");
         AssertEcmaScriptImport(typeof(VuetifyDirectives), "vuetify/directives");
     }
 
@@ -75,6 +76,7 @@ public sealed class EcmaScriptVueProxyTests
             typeof(VuetifyLocaleOptions),
             typeof(VuetifyDateOptions),
             typeof(VuetifyComponentRegistry),
+            typeof(VuetifyLabsComponentRegistry),
             typeof(VuetifyDirectiveRegistry),
             typeof(VuetifyDirective)
         };
@@ -106,7 +108,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueNamesOrOptions), canonicalEmits.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalProps.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalEmits.PropertyType.UnwrapNullable());
-        Assert.IsNotNull(typeof(VueNamesOrOptions).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNull(typeof(VueNamesOrOptions).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsNotNull(typeof(VueNamesOrOptions).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
         Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(VueNamesOrOptions)));
         Assert.IsTrue(typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(typeof(VueNamesOrOptions)));
@@ -401,7 +403,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNull(typeof(VueObject).GetProperty("ReadOnly", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(typeof(VueObject).GetProperty("TabIndex", BindingFlags.Public | BindingFlags.Instance));
         Assert.AreEqual(typeof(VueClassValue), @class.PropertyType.UnwrapNullable());
-        Assert.IsNotNull(typeof(VueClassValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNull(typeof(VueClassValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VueClassValue).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
+        Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(VueClassValue)));
 
         var vueKeyImplicitSources = vueKey
             .GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -413,6 +417,20 @@ public sealed class EcmaScriptVueProxyTests
         CollectionAssert.Contains(vueKeyImplicitSources, typeof(int));
         CollectionAssert.Contains(vueKeyImplicitSources, typeof(Number));
         CollectionAssert.Contains(vueKeyImplicitSources, typeof(Symbol));
+    }
+
+    [TestMethod]
+    public void Vue_ErasedValueUnions_UseNet11UnionContract()
+    {
+        AssertNet11UnionContract(typeof(VueInjectFrom<int>), typeof(string), typeof(VueInjectionKey<int>), typeof(Symbol));
+        AssertNet11UnionContract(typeof(VuePropDeclaration<int>), typeof(VuePropType), typeof(VuePropType[]), typeof(VuePropOptions<int>));
+        AssertNet11UnionContract(typeof(VueClassValue), typeof(string), typeof(string[]), typeof(VueProps), typeof(VueValue[]));
+        AssertNet11UnionContract(typeof(VueStringNumberValue), typeof(double), typeof(string));
+        AssertNet11UnionContract(typeof(VueWatchDeep), typeof(bool), typeof(int));
+        AssertNet11UnionContract(typeof(VueTransitionDurationValue), typeof(Number), typeof(VueTransitionDuration));
+        AssertNet11UnionContract(typeof(VueKeepAliveMatch), typeof(string), typeof(RegExp), typeof(string[]), typeof(RegExp[]));
+        AssertNet11UnionContract(typeof(VueIntStringValue), typeof(int), typeof(string));
+        AssertNet11UnionContract(typeof(VueTeleportTarget), typeof(string), typeof(Element));
     }
 
     [TestMethod]
@@ -608,6 +626,7 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueComponentRegistry), vuetifyComponents.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueDirectiveRegistry), vuetifyDirectives.PropertyType.UnwrapNullable());
         Assert.IsTrue(typeof(VueComponentRegistry).IsAssignableFrom(typeof(VuetifyComponentRegistry)));
+        Assert.IsTrue(typeof(VueComponentRegistry).IsAssignableFrom(typeof(VuetifyLabsComponentRegistry)));
         Assert.IsTrue(typeof(VueDirectiveRegistry).IsAssignableFrom(typeof(VuetifyDirectiveRegistry)));
     }
 
@@ -3013,11 +3032,17 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vuetify_ComponentExports_AreConcreteComponentTypes()
     {
-        var exportedComponents = typeof(VuetifyComponents)
+        AssertComponentExportsMatchRegistry(typeof(VuetifyComponents), typeof(VuetifyComponentRegistry));
+        AssertComponentExportsMatchRegistry(typeof(VuetifyLabsComponents), typeof(VuetifyLabsComponentRegistry));
+    }
+
+    private static void AssertComponentExportsMatchRegistry(Type exportHost, Type registryHost)
+    {
+        var exportedComponents = exportHost
             .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
             .OrderBy(static property => property.Name, StringComparer.Ordinal)
             .ToArray();
-        var registryProperties = typeof(VuetifyComponentRegistry)
+        var registryProperties = registryHost
             .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .ToDictionary(static property => property.Name, StringComparer.Ordinal);
 
@@ -3085,10 +3110,7 @@ public sealed class EcmaScriptVueProxyTests
 
         Assert.IsTrue(componentTypes.Length > 0);
         CollectionAssert.AreEquivalent(
-            typeof(VuetifyComponents)
-                .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-                .Where(static property => property.PropertyType == typeof(IVuetifyComponent))
-                .Select(static property => property.Name)
+            GetVuetifyRuntimeComponentNames()
                 .OrderBy(static name => name, StringComparer.Ordinal)
                 .ToArray(),
             componentTypes
@@ -3118,6 +3140,16 @@ public sealed class EcmaScriptVueProxyTests
             }
         }
     }
+
+    private static IEnumerable<string> GetVuetifyRuntimeComponentNames()
+        => GetVuetifyRuntimeComponentNames(typeof(VuetifyComponents))
+            .Concat(GetVuetifyRuntimeComponentNames(typeof(VuetifyLabsComponents)));
+
+    private static IEnumerable<string> GetVuetifyRuntimeComponentNames(Type exportHost)
+        => exportHost
+            .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(static property => property.PropertyType == typeof(IVuetifyComponent))
+            .Select(static property => property.Name);
 
     [TestMethod]
     public void Vuetify_ValueAndUnionTypes_ExposeStronglyTypedContracts()
@@ -3420,7 +3452,12 @@ public sealed class EcmaScriptVueProxyTests
             AssertNotObject(type, type.FullName ?? type.Name);
 
             foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            {
+                if (IsUnionValueProperty(property))
+                    continue;
+
                 AssertNotObject(property.PropertyType, $"{type.Name}.{property.Name}");
+            }
 
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
                          .Where(static method => !method.IsSpecialName && !IsRecordRuntimeMethod(method)))
@@ -3432,9 +3469,49 @@ public sealed class EcmaScriptVueProxyTests
         }
     }
 
+    private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)
+    {
+        Assert.IsNull(unionType.GetCustomAttribute<ECMAScriptUnionAttribute>(), unionType.FullName);
+        Assert.IsNotNull(unionType.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>(), unionType.FullName);
+        Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(unionType), unionType.FullName);
+
+        var value = unionType.GetProperty(nameof(System.Runtime.CompilerServices.IUnion.Value), BindingFlags.Public | BindingFlags.Instance);
+        Assert.IsNotNull(value, unionType.FullName);
+        Assert.AreEqual(typeof(object), value!.PropertyType);
+
+        CollectionAssert.AreEquivalent(
+            constructorBranchTypes,
+            unionType
+                .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+                .Select(static constructor => constructor.GetParameters().SingleOrDefault()?.ParameterType)
+                .Where(static type => type is not null)
+                .ToArray(),
+            unionType.FullName);
+
+        AssertNoAssignableBranchOverlap(unionType, constructorBranchTypes);
+    }
+
+    private static void AssertNoAssignableBranchOverlap(Type unionType, Type[] constructorBranchTypes)
+    {
+        foreach (var left in constructorBranchTypes)
+        foreach (var right in constructorBranchTypes)
+        {
+            if (left == right)
+                continue;
+
+            Assert.IsFalse(
+                left.IsAssignableFrom(right),
+                $"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged ECMAScriptUnion wrapper to preserve exact AsX projections.");
+        }
+    }
+
     private static bool IsRecordRuntimeMethod(MethodInfo method)
         => method.Name is nameof(object.Equals) or nameof(object.GetHashCode) or nameof(ToString) &&
            method.DeclaringType?.IsAssignableTo(typeof(VueProps)) == true;
+
+    private static bool IsUnionValueProperty(PropertyInfo property)
+        => property.Name == nameof(System.Runtime.CompilerServices.IUnion.Value) &&
+           typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(property.DeclaringType);
 
     private static void AssertEcmaScriptImport(Type type, string expectedImport)
     {

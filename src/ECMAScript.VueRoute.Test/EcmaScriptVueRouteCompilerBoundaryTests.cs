@@ -1335,6 +1335,56 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
+    public async Task VueRoute_ErasedValueUnionContractProjection_GeneratesNativeValue()
+    {
+        var code = """
+            using ECMAScript;
+
+            public static class TestClass
+            {
+                public static object? ReadHistoryStateValue(HistoryStateValue value)
+                    => value.Value;
+
+                public static object? ReadRouteParamRaw(RouteParamRaw value)
+                    => value.Value;
+
+                public static object? ReadLocationQueryValue(LocationQueryValue value)
+                    => value.Value;
+
+                public static object? ReadLocationQueryValueRaw(LocationQueryValueRaw value)
+                    => value.Value;
+
+                public static object? ReadScrollPositionTarget(ScrollPositionTarget value)
+                    => value.Value;
+
+                public static object? ReadRouteRecordRaw(RouteRecordRaw value)
+                    => value.Value;
+            }
+            """;
+
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
+
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "export function readHistoryStateValue(value)");
+        StringAssert.Contains(script, "export function readRouteParamRaw(value)");
+        StringAssert.Contains(script, "export function readLocationQueryValue(value)");
+        StringAssert.Contains(script, "export function readLocationQueryValueRaw(value)");
+        StringAssert.Contains(script, "export function readScrollPositionTarget(value)");
+        StringAssert.Contains(script, "export function readRouteRecordRaw(value)");
+        Assert.AreEqual(6, CountOccurrences(script, "return value;"));
+    }
+
+    [TestMethod]
     public async Task VueRoute_RouteMeta_Compile_WithNullableRecursiveValues_AndPropertyKeyAuthoring()
     {
         var code = """
@@ -2903,7 +2953,20 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     private static SyntaxTree[] BuildSyntaxTrees(string code)
-        => new[] { CSharpSyntaxTree.ParseText(code) };
+        => new[] { CSharpSyntaxTree.ParseText(code, CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview)) };
+
+    private static int CountOccurrences(string text, string value)
+    {
+        var count = 0;
+        var index = 0;
+        while ((index = text.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += value.Length;
+        }
+
+        return count;
+    }
 
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(
         string code,
