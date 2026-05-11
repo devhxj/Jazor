@@ -768,9 +768,19 @@ public partial class SemanticWalker
 				if (expr is IInvocationOperation invocation)
 					method = invocation.TargetMethod;
 				else
-					method = (IMethodSymbol)valueType
+				{
+					var candidate = valueType
 						.GetMembers()
-						.First(x => x.Kind == SymbolKind.Method && x.Name == "Deconstruct");
+						.OfType<IMethodSymbol>()
+						.FirstOrDefault(x => x.Name == "Deconstruct" && x.Parameters.Length == args.Count);
+					if (candidate is null)
+					{
+						HandleTransformationFailure<Node>(operation,
+							$"No Deconstruct method with {args.Count} parameters found on type '{valueType.ToDisplayString()}'.");
+						return;
+					}
+					method = candidate;
+				}
 
 				var obj = Translate<Expression>(expr, argument);
 				var prop = new Identifier(Util.GetConfigOrSymbolName(method));

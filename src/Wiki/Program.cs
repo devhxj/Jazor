@@ -1,6 +1,5 @@
 using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJazorDevelopmentReload(options =>
@@ -15,10 +14,10 @@ var configuredPathBase = builder.Configuration["Wiki:PathBase"];
 
 if (!string.IsNullOrWhiteSpace(configuredPathBase))
 {
-    if (!configuredPathBase.StartsWith("/", StringComparison.Ordinal))
+    if (!configuredPathBase.StartsWith('/', StringComparison.Ordinal))
         throw new InvalidOperationException("Wiki:PathBase must start with '/'.");
 
-    if (configuredPathBase.Length > 1 && configuredPathBase.EndsWith("/", StringComparison.Ordinal))
+    if (configuredPathBase.Length > 1 && configuredPathBase.EndsWith('/', StringComparison.Ordinal))
         configuredPathBase = configuredPathBase[..^1];
 
     app.UsePathBase(configuredPathBase);
@@ -53,11 +52,11 @@ app.MapGet("/health", (HttpContext context) =>
     context.Response.Headers["Cache-Control"] = "no-store";
     return Results.Ok("ok");
 });
-app.MapMethods("/robots.txt", ["GET", "HEAD"], async (HttpContext context) =>
+app.MapMethods("/robots.txt", ["GET", "HEAD"], async context =>
 {
     await Wiki.WikiHostDiscoveryDocuments.TryHandleAsync(context, context.RequestAborted);
 });
-app.MapMethods("/sitemap.xml", ["GET", "HEAD"], async (HttpContext context) =>
+app.MapMethods("/sitemap.xml", ["GET", "HEAD"], async context =>
 {
     await Wiki.WikiHostDiscoveryDocuments.TryHandleAsync(context, context.RequestAborted);
 });

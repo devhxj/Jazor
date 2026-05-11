@@ -778,7 +778,8 @@ public partial class SemanticWalker
 					var indexAccess = BuildListPatternIndexerAccess(operation, obj, indexExpr, argument, isIntrinsicArrayCarrier, hostType);
 					var patternArg = argument.WithPatternInput(indexAccess);
 					var expr = Translate<Expression>(pattern, patternArg);
-					result = new LogicalExpression(Operator.LogicalAnd, result, expr);
+					if (expr is not null)
+						result = new LogicalExpression(Operator.LogicalAnd, result, expr);
 				}
 			}
 		}
@@ -1370,7 +1371,10 @@ public partial class SemanticWalker
 
 		Expression? result;
 		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
-			result = TypeOfExpr(value, new StringLiteral("object", "'object'"));
+			result = new LogicalExpression(
+				Operator.LogicalAnd,
+				new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+				TypeOfExpr(value, new StringLiteral("object", "'object'")));
 
 		else
 		{
@@ -1521,7 +1525,10 @@ public partial class SemanticWalker
 						TypeMapper.String => TypeOfExpr(value, new StringLiteral("string", "\"string\"")),
 						TypeMapper.Number => TypeOfExpr(value, new StringLiteral("number", "\"number\"")),
 						TypeMapper.BigInt => TypeOfExpr(value, new StringLiteral("bigint", "\"bigint\"")),
-						TypeMapper.Object => TypeOfExpr(value, new StringLiteral("object", "\"object\"")),
+						TypeMapper.Object => new LogicalExpression(
+							Operator.LogicalAnd,
+							new NonLogicalBinaryExpression(Operator.StrictInequality, value, Null),
+							TypeOfExpr(value, new StringLiteral("object", "\"object\""))),
 						TypeMapper.Boolean => TypeOfExpr(value, new StringLiteral("boolean", "\"boolean\"")),
 						TypeMapper.Date => InstanceOfExpr(value, new Identifier("Date")),
 						TypeMapper.Map => InstanceOfExpr(value, new Identifier("Map")),
@@ -1940,7 +1947,11 @@ public partial class SemanticWalker
 					optional: false)
 				: GetPositionalPropertyExpression(operation, namedType, targetExpr, i);
 			if (propertyExpr is null)
-				return;
+				{
+					HandleTransformationFailure<Node>(operation,
+						$"Cannot resolve positional property at index {i} for type '{namedType.ToDisplayString()}'.");
+					return;
+				}
 
 			// 处理子模式，传递 propertyExpr 作为 PatternInput
 			var subpatternArg = argument.WithPatternInput(propertyExpr);
@@ -2103,11 +2114,16 @@ public partial class SemanticWalker
 			var casePending = new List<Statement>();
 			foreach (var bodyOp in switchCase.Body)
 			{
-				// 此处会下沉检测是否使用了goto
 				var node = Visit(bodyOp, caseCtx);
-				if (bodyOp.Kind == OperationKind.Branch)
-					casePending.Add(new ReturnStatement(null));
-
+				if (bodyOp is IBranchOperation branchOp)
+				{
+					if (branchOp.BranchKind == BranchKind.Break)
+						casePending.Add(new ReturnStatement(null));
+					else if (branchOp.BranchKind == BranchKind.Continue)
+						HandleTransformationFailure<Node>(branchOp, "Continue statements inside pattern-matching switch are not supported (IIFE boundary).");
+					else if (node is Statement branchStmt)
+						casePending.Add(branchStmt);
+				}
 				else if (node is Statement stmt)
 					casePending.Add(stmt);
 
@@ -2117,23 +2133,21 @@ public partial class SemanticWalker
 
 			var bodyStatements = MaterializeScopedStatements(caseCtx, casePending);
 
-			// 如果有条件
 			if (conditions.Count > 0)
 			{
-				// 组合所有条件（同一个 switchCase 的多个 clause 是 OR 关系）
 				Expression combinedCondition = conditions[0];
 				for (int i = 1; i < conditions.Count; i++)
 				{
 					combinedCondition = new LogicalExpression(Operator.LogicalOr, combinedCondition, conditions[i]);
 				}
 
-				// 创建 if 语句
 				var ifStmt = new IfStatement(combinedCondition, new NestedBlockStatement(NodeList.From(bodyStatements)), null);
 				statements.Add(ifStmt);
 			}
-
-			if (hasDefault)
+			else if (hasDefault)
+			{
 				statements.AddRange(bodyStatements);
+			}
 		}
 
 		// 构造 IIFE

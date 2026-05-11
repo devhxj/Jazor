@@ -427,7 +427,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = new Object;
-  let result = typeof obj === ""object"";
+  let result = obj !== null && typeof obj === ""object"";
 }", script);
   }
 
@@ -456,7 +456,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"typeof obj === ""object""", script);
+    Assert.AreEqual(@"obj !== null && typeof obj === ""object""", script);
   }
 
   /// <summary>
