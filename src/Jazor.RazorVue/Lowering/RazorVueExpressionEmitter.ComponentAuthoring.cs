@@ -60,8 +60,8 @@ internal sealed partial class RazorVueExpressionEmitter
         // Library components only accept default child content when the stub
         // explicitly exposes ChildContent as part of the authoring contract.
         ValidateComponentAuthoringAttributes(component, propsByPublicName, slotsByPublicName, emitDescriptorsByAlias);
-        ValidateDefaultLibrarySlotUsage(component, descriptor, slotsByPublicName);
-        ValidateDuplicateLibrarySlotUsage(component, descriptor, slotsByPublicName);
+        ValidateDefaultLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
+        ValidateDuplicateLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
 
         var slotEntries = new List<string>();
         if (!component.Children.Children.IsDefaultOrEmpty)
@@ -82,7 +82,7 @@ internal sealed partial class RazorVueExpressionEmitter
     private void ValidateDefaultLibrarySlotUsage(
         RazorVueComponentNode component,
         VueComponentDescriptor? descriptor,
-        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName)
+        ImmutableArray<VueSlotDescriptor> slots)
     {
         var hasDefaultChildren = !component.Children.Children.IsDefaultOrEmpty;
         if (descriptor is null ||
@@ -95,17 +95,16 @@ internal sealed partial class RazorVueExpressionEmitter
         var origin = CollectOrigins(component.Children).FirstOrDefault() ??
                      component.Origins.FirstOrDefault();
 
-        if (slotsByPublicName is not null &&
-            slotsByPublicName.TryGetValue("ChildContent", out var defaultSlotDescriptor))
+        if (VueSlotResolver.TryResolve(slots, "ChildContent", out var defaultSlot))
         {
-            if (defaultSlotDescriptor.Parameters.IsDefaultOrEmpty)
+            if (defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty)
                 return;
 
             // Implicit child content cannot satisfy a typed slot contract because
             // the template has no callable surface to receive the slot context.
             throw CreateAuthoringIssue(
                 RazorVueIssueCode.SlotContextMisuse,
-                $"Child content parameter 'ChildContent' on component '{descriptor.Name}' expects a callable template that accepts '{DescribeSlotContext(defaultSlotDescriptor)}'.",
+                $"Child content parameter 'ChildContent' on component '{descriptor.Name}' expects a callable template that accepts '{DescribeSlotContext(defaultSlot.Descriptor)}'.",
                 origin);
         }
 
@@ -118,11 +117,11 @@ internal sealed partial class RazorVueExpressionEmitter
     private void ValidateDuplicateLibrarySlotUsage(
         RazorVueComponentNode component,
         VueComponentDescriptor? descriptor,
-        ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName)
+        ImmutableArray<VueSlotDescriptor> slots)
     {
         if (descriptor is null ||
             descriptor.SourceKind != VueComponentSourceKind.LibraryComponent ||
-            slotsByPublicName is null)
+            slots.IsDefaultOrEmpty)
         {
             return;
         }
@@ -131,14 +130,17 @@ internal sealed partial class RazorVueExpressionEmitter
         // slot input would otherwise collapse into duplicate Vue slot keys.
         var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
         if (!component.Children.Children.IsDefaultOrEmpty &&
-            slotsByPublicName.ContainsKey("ChildContent"))
+            VueSlotResolver.TryResolve(slots, "ChildContent", out _))
         {
             assignedSlots.Add("ChildContent");
         }
 
         foreach (var slotTemplate in component.SlotTemplates)
         {
-            if (!assignedSlots.Add(slotTemplate.PublicName))
+            if (!VueSlotResolver.TryResolve(slots, slotTemplate.PublicName, out var slot))
+                continue;
+
+            if (!assignedSlots.Add(slot.SlotName))
             {
                 throw CreateAuthoringIssue(
                     RazorVueIssueCode.DuplicateSlotValue,
@@ -152,10 +154,10 @@ internal sealed partial class RazorVueExpressionEmitter
             if (attributeEntry is not RazorVueAttributeNode attribute)
                 continue;
 
-            if (!slotsByPublicName.ContainsKey(attribute.Name))
+            if (!VueSlotResolver.TryResolve(slots, attribute.Name, out var slot))
                 continue;
 
-            if (assignedSlots.Add(attribute.Name))
+            if (assignedSlots.Add(slot.SlotName))
                 continue;
 
             throw CreateAuthoringIssue(
@@ -285,9 +287,10 @@ internal sealed partial class RazorVueExpressionEmitter
             }
 
             var attribute = (RazorVueAttributeNode)attributeEntry;
-            if (slotsByPublicName is not null &&
-                slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor))
+            if (resolvedDescriptor is not null &&
+                VueSlotResolver.TryResolve(resolvedDescriptor.Slots, attribute.Name, out var slot))
             {
+                var slotDescriptor = slot.Descriptor;
                 if (attribute.Value is null)
                 {
                     throw CreateAuthoringIssue(
@@ -296,7 +299,7 @@ internal sealed partial class RazorVueExpressionEmitter
                         attribute);
                 }
 
-                var slotName = slotDescriptor.Name;
+                var slotName = slot.SlotName;
                 var slotExpression = EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols);
                 if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
                     !IsCallableSlotValue(attribute.Value!))
@@ -371,6 +374,7 @@ internal sealed partial class RazorVueExpressionEmitter
             .OfType<RazorVueAttributeNode>()
             .Select(static attribute => attribute.Name)
             .ToImmutableHashSet(StringComparer.Ordinal);
+        var slots = descriptor.Slots;
 
         ValidateInvalidBindTargets(component, descriptor, propsByPublicName, emitsByAlias, attributeNames);
         ValidateDuplicateMappedComponentAttributes(component, descriptor, propsByPublicName, emitsByAlias);
@@ -384,9 +388,9 @@ internal sealed partial class RazorVueExpressionEmitter
             }
 
             var attribute = (RazorVueAttributeNode)attributeEntry;
-            if (slotsByPublicName is not null &&
-                slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor))
+            if (VueSlotResolver.TryResolve(slots, attribute.Name, out var slot))
             {
+                var slotDescriptor = slot.Descriptor;
                 if (!slotDescriptor.Parameters.IsDefaultOrEmpty &&
                     attribute.Value is not null &&
                     !IsCallableSlotExpression(attribute.Value))
@@ -428,8 +432,7 @@ internal sealed partial class RazorVueExpressionEmitter
 
         foreach (var slotTemplate in component.SlotTemplates)
         {
-            if (slotsByPublicName is null ||
-                !slotsByPublicName.TryGetValue(slotTemplate.PublicName, out var slotDescriptor))
+            if (!VueSlotResolver.TryResolve(slots, slotTemplate.PublicName, out var slot))
             {
                 throw CreateAuthoringIssue(
                     RazorVueIssueCode.UnknownSlot,
@@ -437,6 +440,7 @@ internal sealed partial class RazorVueExpressionEmitter
                     slotTemplate.Origins.IsDefaultOrEmpty ? null : slotTemplate.Origins[0]);
             }
 
+            var slotDescriptor = slot.Descriptor;
             if (slotDescriptor.Parameters.IsDefaultOrEmpty)
             {
                 if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
@@ -641,17 +645,17 @@ internal sealed partial class RazorVueExpressionEmitter
         foreach (var slotTemplate in component.SlotTemplates)
         {
             if (descriptor is not null &&
-                slotsByPublicName is not null &&
-                slotsByPublicName.TryGetValue(slotTemplate.PublicName, out var slotDescriptor))
+                VueSlotResolver.TryResolve(descriptor.Slots, slotTemplate.PublicName, out var slot))
             {
+                var slotDescriptor = slot.Descriptor;
                 if (slotDescriptor.Parameters.IsDefaultOrEmpty)
                 {
-                    slotEntries.Add(FormatObjectPropertyKey(slotDescriptor.Name) + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
+                    slotEntries.Add(FormatObjectPropertyKey(slot.SlotName) + ": () => " + EmitFragment(slotTemplate.Children, allowedLocalSymbols, allowedParameterSymbols));
                 }
                 else
                 {
                     var slotParameterName = slotTemplate.ParameterName ?? slotDescriptor.Parameters[0].Name;
-                    slotEntries.Add(FormatObjectPropertyKey(slotDescriptor.Name) + ": (" + slotParameterName + ") => " +
+                    slotEntries.Add(FormatObjectPropertyKey(slot.SlotName) + ": (" + slotParameterName + ") => " +
                                     EmitFragment(
                                         slotTemplate.Children,
                                         allowedLocalSymbols,

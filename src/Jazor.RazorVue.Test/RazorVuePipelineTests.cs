@@ -2799,6 +2799,342 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyStepperDynamicSlots_WithExactAuthoredSlotKeys()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-dynamic-slots")]
+                public class VuetifyStepperDynamicSlots : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepper>(0);
+                        builder.AddAttribute(1, "header-item.profile", (RenderFragment<VStepperItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(2, "strong");
+                            slotBuilder.AddContent(3, item.Title);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.AddAttribute(4, "item.profile", (RenderFragment<VStepperContentItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(5, "section");
+                            slotBuilder.AddContent(6, item.Value);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { VStepper as VStepperComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", item.Value)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("item: (item) => h(\"section\"", StringComparison.Ordinal), artifact.ModuleCode);
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithUnknownVuetifyStepperDynamicSlot_ThrowsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-invalid-slot")]
+                public class VuetifyStepperInvalidSlot : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepper>(0);
+                        builder.AddAttribute(1, "header.profile", (RenderFragment<VStepperItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.AddContent(2, item.Title);
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "header.profile");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithDuplicateVuetifyStepperConcreteDynamicSlot_ThrowsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-duplicate-slot")]
+                public class VuetifyStepperDuplicateSlot : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepper>(0);
+                        builder.AddAttribute(1, "item.profile", (RenderFragment<VStepperContentItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.AddContent(2, item.Value);
+                        }));
+                        builder.AddAttribute(3, "item.profile", (RenderFragment<VStepperContentItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.AddContent(4, item.Title);
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "item.profile");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyStepperVerticalWithStrongPropsAndDynamicSlots()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using System.Collections.Generic;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-vertical-shell")]
+                public class VuetifyStepperVerticalShell : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public VuetifyGroupModelValue? StepValue { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyGroupModelValue?> StepValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VStepperVerticalSlotContext>? StepperDefault { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VStepperVerticalActionSlotContext>? StepperActions { get; set; }
+
+                    [Parameter(CaptureUnmatchedValues = true)]
+                    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepperVertical>(0);
+                        builder.AddAttribute(1, nameof(VStepperVertical.ModelValue), StepValue);
+                        builder.AddAttribute(2, nameof(VStepperVertical.ModelValueChanged), StepValueChanged);
+                        builder.AddAttribute(3, nameof(VStepperVertical.Flat), true);
+                        builder.AddAttribute(4, nameof(VStepperVertical.Variant), VuetifyExpansionPanelVariant.Popout);
+                        builder.AddAttribute(5, nameof(VStepperVertical.Max), 3);
+                        builder.AddAttribute(6, nameof(VStepperVertical.Color), "primary");
+                        builder.AddAttribute(7, nameof(VStepperVertical.Class), "workflow-stepper");
+                        builder.AddAttribute(8, nameof(VStepperVertical.Style), "min-height: 320px");
+                        builder.AddAttribute(9, nameof(VStepperVertical.Eager), true);
+                        builder.AddAttribute(10, nameof(VStepperVertical.Disabled), false);
+                        builder.AddAttribute(11, nameof(VStepperVertical.Multiple), false);
+                        builder.AddAttribute(12, nameof(VStepperVertical.Readonly), false);
+                        builder.AddAttribute(13, nameof(VStepperVertical.Theme), "dark");
+                        builder.AddAttribute(14, nameof(VStepperVertical.Tag), "section");
+                        builder.AddAttribute(15, nameof(VStepperVertical.Mandatory), VuetifyMandatoryMode.Force);
+                        builder.AddAttribute(16, nameof(VStepperVertical.Elevation), 2);
+                        builder.AddAttribute(17, nameof(VStepperVertical.Focusable), true);
+                        builder.AddAttribute(18, nameof(VStepperVertical.Rounded), "lg");
+                        builder.AddAttribute(19, nameof(VStepperVertical.Tile), false);
+                        builder.AddAttribute(20, nameof(VStepperVertical.SelectedClass), "step-selected");
+                        builder.AddAttribute(21, nameof(VStepperVertical.BgColor), "surface");
+                        builder.AddAttribute(22, nameof(VStepperVertical.Ripple), false);
+                        builder.AddAttribute(23, nameof(VStepperVertical.CollapseIcon), "$collapse");
+                        builder.AddAttribute(24, nameof(VStepperVertical.ExpandIcon), "$expand");
+                        builder.AddAttribute(25, nameof(VStepperVertical.HideActions), false);
+                        builder.AddAttribute(26, nameof(VStepperVertical.Mobile), false);
+                        builder.AddAttribute(27, nameof(VStepperVertical.MobileBreakpoint), 960);
+                        builder.AddAttribute(28, nameof(VStepperVertical.AltLabels), true);
+                        builder.AddAttribute(29, nameof(VStepperVertical.CompleteIcon), "$complete");
+                        builder.AddAttribute(30, nameof(VStepperVertical.EditIcon), "$edit");
+                        builder.AddAttribute(31, nameof(VStepperVertical.Editable), true);
+                        builder.AddAttribute(32, nameof(VStepperVertical.ErrorIcon), "$error");
+                        builder.AddAttribute(33, nameof(VStepperVertical.Items), new VuetifyStepperItemValue[]
+                        {
+                            new VuetifyStepperItem { Title = "Profile", Value = "profile" },
+                            new VuetifyStepperItem { Title = "Billing", Value = "billing" }
+                        });
+                        builder.AddAttribute(34, nameof(VStepperVertical.ItemTitle), "title");
+                        builder.AddAttribute(35, nameof(VStepperVertical.ItemValue), "value");
+                        builder.AddAttribute(36, nameof(VStepperVertical.NonLinear), true);
+                        builder.AddAttribute(37, nameof(VStepperVertical.PrevText), "Back");
+                        builder.AddAttribute(38, nameof(VStepperVertical.NextText), "Continue");
+                        builder.AddAttribute(39, nameof(VStepperVertical.ChildContent), StepperDefault);
+                        builder.AddAttribute(40, nameof(VStepperVertical.Actions), StepperActions);
+                        builder.AddAttribute(41, "header-item.profile", (RenderFragment<VStepperVerticalItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(42, "strong");
+                            slotBuilder.AddContent(43, item.Step);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.AddAttribute(44, "item.profile", (RenderFragment<VStepperVerticalItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(45, "section");
+                            slotBuilder.AddContent(46, item.Title);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.AddMultipleAttributes(47, AdditionalAttributes);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { VStepperVertical as VStepperVerticalComponent } from \"vuetify/labs/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.stepValue");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:stepValue\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"flat\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"popout\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"max\": 3");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"workflow-stepper\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": \"min-height: 320px\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"mandatory\": \"force\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"collapseIcon\": \"$collapse\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"expandIcon\": \"$expand\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"items\": [{");
+        StringAssert.Contains(artifact.ModuleCode, "title: \"Profile\"");
+        StringAssert.Contains(artifact.ModuleCode, "value: \"profile\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", item.Step)");
+        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.stepperDefault(context)");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.stepperActions(context)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("item: (item) => h(\"section\"", StringComparison.Ordinal), artifact.ModuleCode);
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithVuetifyStepperVerticalStaticPatternCarrierSlot_ThrowsUnknownSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-vertical-static-carrier")]
+                public class VuetifyStepperVerticalStaticCarrier : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepperVertical>(0);
+                        builder.AddAttribute(1, nameof(VStepperVertical.Item), (RenderFragment<VStepperVerticalItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.AddContent(2, item.Title);
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreePipeline().Execute(context));
+
+        Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "Item");
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyColorPickerWithStrongProps()
     {
         var context = CreateContext(

@@ -327,6 +327,24 @@ public sealed record VuetifyLabsComponentRegistry : VueComponentRegistry
     [Description("@#VCalendar")]
     public IVuetifyComponent? VCalendar { get; init; }
 
+    [Description("@#VDateInput")]
+    public IVuetifyComponent? VDateInput { get; init; }
+
+    [Description("@#VFileUpload")]
+    public IVuetifyComponent? VFileUpload { get; init; }
+
+    [Description("@#VIconBtn")]
+    public IVuetifyComponent? VIconBtn { get; init; }
+
+    [Description("@#VPicker")]
+    public IVuetifyComponent? VPicker { get; init; }
+
+    [Description("@#VPullToRefresh")]
+    public IVuetifyComponent? VPullToRefresh { get; init; }
+
+    [Description("@#VStepperVertical")]
+    public IVuetifyComponent? VStepperVertical { get; init; }
+
     [Description("@#VTimePicker")]
     public IVuetifyComponent? VTimePicker { get; init; }
 

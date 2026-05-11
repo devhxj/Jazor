@@ -149,6 +149,8 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
             descriptorShape.AppendLine(
                 slot.PublicName + "|" +
                 slot.Name + "|" +
+                (slot.NamePattern ?? string.Empty) + "|" +
+                slot.PatternOnly + "|" +
                 slot.IsDefault + "|" +
                 slot.Required + "|" +
                 string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));

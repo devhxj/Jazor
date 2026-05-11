@@ -293,6 +293,8 @@ internal static class VueComponentDescriptorFactory
         return new VueSlotDescriptor(
             Name: slotOverride?.Name ?? (isDefault ? "default" : ToLowerCamelCase(property.Name)),
             PublicName: property.Name,
+            NamePattern: slotOverride?.NamePattern,
+            PatternOnly: slotOverride?.PatternOnly ?? false,
             IsDefault: isDefault,
             Parameters: parameters,
             Required: slotOverride?.Required ?? false);
@@ -512,12 +514,30 @@ internal static class VueComponentDescriptorFactory
             }
 
             var slotName = GetOptionalNamedStringArgument(attribute, "Name", componentSymbol, "VueLibrarySlot");
+            var namePattern = GetOptionalNamedStringArgument(attribute, "NamePattern", componentSymbol, "VueLibrarySlot");
+            var patternOnly = GetOptionalNamedBoolArgument(attribute, "PatternOnly") ?? false;
             var isDefault = GetOptionalNamedBoolArgument(attribute, "IsDefault");
             if (isDefault == true && slotName is not null && !string.Equals(slotName, "default", StringComparison.Ordinal))
             {
                 throw CreateInvalidLibraryComponentDeclarationException(
                     componentSymbol,
                     $"Library component '{FormatFullName(componentSymbol)}' must use slot name 'default' when [VueLibrarySlot] marks '{publicName}' as the default slot.");
+            }
+
+            if (isDefault == true && namePattern is not null)
+            {
+                throw CreateInvalidLibraryComponentDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' cannot declare [VueLibrarySlot] NamePattern for default slot '{publicName}'.");
+            }
+
+            if (namePattern is not null)
+                ValidateSlotNamePattern(componentSymbol, publicName, namePattern);
+            else if (patternOnly)
+            {
+                throw CreateInvalidLibraryComponentDeclarationException(
+                    componentSymbol,
+                    $"Library component '{FormatFullName(componentSymbol)}' cannot declare [VueLibrarySlot] PatternOnly for '{publicName}' without NamePattern.");
             }
 
             var contextTypeName = GetOptionalNamedStringArgument(attribute, "ContextTypeName", componentSymbol, "VueLibrarySlot");
@@ -528,12 +548,12 @@ internal static class VueComponentDescriptorFactory
                     $"Library component '{FormatFullName(componentSymbol)}' can only declare an explicit slot context type for RenderFragment<T> parameters. '{publicName}' is not typed child content.");
             }
 
-            var contextParameterName = contextTypeName is null
-                ? null
-                : GetOptionalNamedStringArgument(attribute, "ContextParameterName", componentSymbol, "VueLibrarySlot") ?? "context";
+            var contextParameterName = GetOptionalNamedStringArgument(attribute, "ContextParameterName", componentSymbol, "VueLibrarySlot");
 
             builder[publicName] = new LibrarySlotOverride(
                 slotName,
+                namePattern,
+                patternOnly,
                 isDefault,
                 GetOptionalNamedBoolArgument(attribute, "Required"),
                 contextTypeName,
@@ -720,6 +740,23 @@ internal static class VueComponentDescriptorFactory
         => symbols.RenderFragmentOfT is not null &&
            typeSymbol is INamedTypeSymbol namedType &&
            Comparer.Equals(namedType.OriginalDefinition, symbols.RenderFragmentOfT);
+
+    private static void ValidateSlotNamePattern(
+        INamedTypeSymbol componentSymbol,
+        string publicName,
+        string namePattern)
+    {
+        const string wildcard = "${string}";
+        var wildcardIndex = namePattern.IndexOf(wildcard, StringComparison.Ordinal);
+        if (wildcardIndex < 0 ||
+            wildcardIndex != namePattern.LastIndexOf(wildcard, StringComparison.Ordinal) ||
+            namePattern.Length == wildcard.Length)
+        {
+            throw CreateInvalidLibraryComponentDeclarationException(
+                componentSymbol,
+                $"Library component '{FormatFullName(componentSymbol)}' declares invalid [VueLibrarySlot] NamePattern '{namePattern}' for '{publicName}'. Patterns must contain exactly one '${{string}}' placeholder and at least one literal character.");
+        }
+    }
 
     private static bool HasCaptureUnmatchedValues(IPropertySymbol property, RazorVueCompilationSymbols symbols)
     {
@@ -945,6 +982,8 @@ internal static class VueComponentDescriptorFactory
 
     private sealed record LibrarySlotOverride(
         string? Name,
+        string? NamePattern,
+        bool PatternOnly,
         bool? IsDefault,
         bool? Required,
         string? ContextTypeName,

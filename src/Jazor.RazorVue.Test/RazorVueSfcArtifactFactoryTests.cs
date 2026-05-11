@@ -2175,6 +2175,64 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersVuetifyStepperDynamicSlots_WithExactAuthoredSlotKeys()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-stepper-dynamic-sfc")]
+                public class VuetifyStepperDynamicSfc : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VStepper>(0);
+                        builder.AddAttribute(1, "header-item.profile", (RenderFragment<VStepperItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(2, "strong");
+                            slotBuilder.AddContent(3, item.Title);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.AddAttribute(4, "item.profile", (RenderFragment<VStepperContentItemSlotContext>)((item) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(5, "section");
+                            slotBuilder.AddContent(6, item.Value);
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "VuetifyStepperDynamicSfc");
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<template #[`header-item.profile`]=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.Title }}");
+        StringAssert.Contains(artifact.TemplateText, "<template #[`item.profile`]=\"item\">");
+        StringAssert.Contains(artifact.TemplateText, "{{ item.Value }}");
+        Assert.IsFalse(artifact.TemplateText.Contains("<template #header-item=", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.TemplateText.Contains("<template #item=", StringComparison.Ordinal), artifact.TemplateText);
+    }
+
+    [TestMethod]
     public void RazorVue_SfcArtifactFactory_LowersInlineTypedSlotTemplate_ToNestedScopedSlotTemplate()
     {
         var context = CreateContext(

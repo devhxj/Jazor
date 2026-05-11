@@ -838,7 +838,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         foreach (var emit in descriptor.Emits.OrderBy(static item => item.RazorAlias, StringComparer.Ordinal))
             builder.AppendLine(emit.RazorAlias + "|" + emit.Name + "|" + emit.PayloadTypeName + "|" + emit.Kind);
         foreach (var slot in descriptor.Slots.OrderBy(static item => item.Name, StringComparer.Ordinal))
-            builder.AppendLine(slot.PublicName + "|" + slot.Name + "|" + slot.IsDefault + "|" + slot.Required + "|" + string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
+            builder.AppendLine(slot.PublicName + "|" + slot.Name + "|" + (slot.NamePattern ?? string.Empty) + "|" + slot.PatternOnly + "|" + slot.IsDefault + "|" + slot.Required + "|" + string.Join(",", slot.Parameters.Select(static parameter => parameter.Name + ":" + parameter.TypeName)));
         foreach (var pluginRequirement in descriptor.PluginRequirements.OrderBy(static item => item, StringComparer.Ordinal))
             builder.AppendLine("plugin:" + pluginRequirement);
         return builder.ToString();

@@ -90,9 +90,9 @@ public sealed class VuetifyAuthoringSurfaceTests
     [TestMethod]
     public void Vuetify_ComponentExports_MatchLocalVuetifyPackageEntrypoints()
     {
-        var normalExports = ReadVuetifyNamedExports(
+        var normalExports = ReadVuetifyNamedExportsRecursively(
             Path.Combine("node_modules", "vuetify", "lib", "components", "index.d.ts"));
-        var labsExports = ReadVuetifyNamedExports(
+        var labsExports = ReadVuetifyEntrypointExportNames(
             Path.Combine("node_modules", "vuetify", "lib", "labs", "components.d.ts"));
 
         CollectionAssert.IsSubsetOf(NormalVuetifyComponentExportNames, normalExports.ToArray());
@@ -141,7 +141,22 @@ public sealed class VuetifyAuthoringSurfaceTests
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray();
 
-    private static SortedSet<string> ReadVuetifyNamedExports(string entryRelativePath)
+    private static SortedSet<string> ReadVuetifyEntrypointExportNames(string entryRelativePath)
+    {
+        var filePath = FindRepositoryFile(entryRelativePath);
+        Assert.IsTrue(File.Exists(filePath), filePath);
+
+        var names = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var line in File.ReadLines(filePath))
+        {
+            if (TryReadTopLevelReExportName(line, out var exportName))
+                names.Add(exportName);
+        }
+
+        return names;
+    }
+
+    private static SortedSet<string> ReadVuetifyNamedExportsRecursively(string entryRelativePath)
     {
         var names = new SortedSet<string>(StringComparer.Ordinal);
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -191,6 +206,29 @@ public sealed class VuetifyAuthoringSurfaceTests
                 }
             }
         }
+    }
+
+    private static bool TryReadTopLevelReExportName(string line, out string exportName)
+    {
+        const string prefix = "export * from './";
+        exportName = string.Empty;
+        if (!line.StartsWith(prefix, StringComparison.Ordinal))
+            return false;
+
+        var start = prefix.Length;
+        var end = line.IndexOf('/', start);
+        if (end <= start)
+        {
+            end = line.LastIndexOf('/', line.Length - ".js';".Length - 1);
+            if (end <= start)
+                end = line.IndexOf(".js", start, StringComparison.Ordinal);
+        }
+
+        if (end <= start)
+            return false;
+
+        exportName = line[start..end];
+        return !string.IsNullOrWhiteSpace(exportName);
     }
 
     private static string FindRepositoryFile(string relativePath)

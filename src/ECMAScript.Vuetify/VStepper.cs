@@ -12,11 +12,11 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 [VueLibrarySlot(nameof(Actions), Name = "actions")]
 [VueLibrarySlot(nameof(Header), Name = "header")]
-[VueLibrarySlot(nameof(HeaderItem), Name = "header-item")]
+[VueLibrarySlot(nameof(HeaderItem), Name = "header-item", NamePattern = "header-item.${string}")]
 [VueLibrarySlot(nameof(Icon), Name = "icon")]
 [VueLibrarySlot(nameof(TitleContent), Name = "title")]
 [VueLibrarySlot(nameof(SubtitleContent), Name = "subtitle")]
-[VueLibrarySlot(nameof(Item), Name = "item")]
+[VueLibrarySlot(nameof(Item), Name = "item", NamePattern = "item.${string}")]
 [VueLibrarySlot(nameof(Prev), Name = "prev")]
 [VueLibrarySlot(nameof(Next), Name = "next")]
 public sealed class VStepper : ComponentBase, IVueLibraryComponent

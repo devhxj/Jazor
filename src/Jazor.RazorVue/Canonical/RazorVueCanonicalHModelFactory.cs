@@ -317,20 +317,19 @@ internal sealed class RazorVueCanonicalHModelFactory
             return;
         }
 
-        var slotsByPublicName = BuildSlotsByPublicName(descriptor);
         var origin = component.Children.Children
             .SelectMany(static child => child.Origins)
             .FirstOrDefault() ?? component.Origins.FirstOrDefault();
 
-        if (slotsByPublicName.TryGetValue("ChildContent", out var defaultSlotDescriptor))
+        if (VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var defaultSlot))
         {
-            if (defaultSlotDescriptor.Parameters.IsDefaultOrEmpty)
+            if (defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty)
                 return;
 
             throw CreateSlotContextMisuseException(
                 snapshot,
                 descriptor,
-                defaultSlotDescriptor,
+                defaultSlot.Descriptor,
                 "ChildContent",
                 origin);
         }
@@ -346,23 +345,22 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (descriptor.SourceKind != VueComponentSourceKind.LibraryComponent)
             return;
 
-        var slotsByPublicName = BuildSlotsByPublicName(descriptor);
-        if (slotsByPublicName.IsEmpty)
+        if (descriptor.Slots.IsDefaultOrEmpty)
             return;
 
         var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
         if (!component.Children.Children.IsDefaultOrEmpty &&
-            slotsByPublicName.ContainsKey("ChildContent"))
+            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out _))
         {
             assignedSlots.Add("ChildContent");
         }
 
         foreach (var slotTemplate in component.SlotTemplates)
         {
-            if (!slotsByPublicName.ContainsKey(slotTemplate.PublicName))
+            if (!VueSlotResolver.TryResolve(descriptor.Slots, slotTemplate.PublicName, out var slot))
                 continue;
 
-            if (assignedSlots.Add(slotTemplate.PublicName))
+            if (assignedSlots.Add(slot.SlotName))
                 continue;
 
             throw CreateDuplicateSlotValueException(
@@ -375,12 +373,12 @@ internal sealed class RazorVueCanonicalHModelFactory
         foreach (var attributeEntry in component.Attributes)
         {
             if (attributeEntry is not RazorVueAttributeNode attribute ||
-                !slotsByPublicName.ContainsKey(attribute.Name))
+                !VueSlotResolver.TryResolve(descriptor.Slots, attribute.Name, out var slot))
             {
                 continue;
             }
 
-            if (assignedSlots.Add(attribute.Name))
+            if (assignedSlots.Add(slot.SlotName))
                 continue;
 
             throw CreateDuplicateSlotValueException(
@@ -472,7 +470,6 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var propsByName = BuildPropsByName(descriptor);
         var emitsByAlias = BuildEmitsByAlias(descriptor);
-        var slotsByPublicName = BuildSlotsByPublicName(descriptor);
         var unmatchedValuesProp = GetCaptureUnmatchedValuesProp(snapshot, descriptor, component);
         ValidateInvalidBindTargets(snapshot, descriptor, component, propsByName, emitsByAlias);
         ValidateDuplicateMappedComponentAttributes(snapshot, descriptor, component, propsByName, emitsByAlias);
@@ -501,7 +498,7 @@ internal sealed class RazorVueCanonicalHModelFactory
             if (attributeEntry is not RazorVueAttributeNode attribute)
                 throw CreateUnsupportedCanonicalizationException(snapshot, attributeEntry.GetType().Name, attributeEntry.Origins);
 
-            if (slotsByPublicName.ContainsKey(attribute.Name))
+            if (VueSlotResolver.TryResolve(descriptor.Slots, attribute.Name, out _))
                 continue;
 
             if (emitsByAlias.TryGetValue(attribute.Name, out var emitDescriptor))
@@ -667,7 +664,6 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (component.Attributes.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalSlotBinding>.Empty;
 
-        var slotsByPublicName = BuildSlotsByPublicName(descriptor);
         var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalSlotBinding>();
 
         foreach (var attributeEntry in component.Attributes)
@@ -675,9 +671,10 @@ internal sealed class RazorVueCanonicalHModelFactory
             if (attributeEntry is not RazorVueAttributeNode attribute)
                 continue;
 
-            if (!slotsByPublicName.TryGetValue(attribute.Name, out var slotDescriptor))
+            if (!VueSlotResolver.TryResolve(descriptor.Slots, attribute.Name, out var slot))
                 continue;
 
+            var slotDescriptor = slot.Descriptor;
             if (attribute.Value is not null &&
                 !slotDescriptor.Parameters.IsDefaultOrEmpty &&
                 !IsCallableSlotValue(snapshot, attribute.Value))
@@ -694,7 +691,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                 : null;
 
             builder.Add(new RazorVueCanonicalSlotBinding(
-                SlotName: slotDescriptor.Name,
+                SlotName: slot.SlotName,
                 IsDefault: slotDescriptor.IsDefault,
                 ParameterName: slotDescriptor.Parameters.IsDefaultOrEmpty ? null : slotDescriptor.Parameters[0].Name,
                 ValueKind: valueKind,
@@ -721,13 +718,12 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (component.SlotTemplates.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalSlotBinding>.Empty;
 
-        var slotsByPublicName = BuildSlotsByPublicName(descriptor);
         var assignedNames = new HashSet<string>(StringComparer.Ordinal);
         var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalSlotBinding>();
 
         foreach (var slotTemplate in component.SlotTemplates)
         {
-            if (!slotsByPublicName.TryGetValue(slotTemplate.PublicName, out var slotDescriptor))
+            if (!VueSlotResolver.TryResolve(descriptor.Slots, slotTemplate.PublicName, out var slot))
             {
                 throw CreateUnknownSlotException(
                     snapshot,
@@ -736,7 +732,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     slotTemplate.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : slotTemplate.Origins[0]);
             }
 
-            if (!assignedNames.Add(slotTemplate.PublicName))
+            if (!assignedNames.Add(slot.SlotName))
             {
                 throw CreateDuplicateSlotValueException(
                     snapshot,
@@ -745,6 +741,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                     slotTemplate.Origins.IsDefaultOrEmpty ? snapshot.Origins.FirstOrDefault() : slotTemplate.Origins[0]);
             }
 
+            var slotDescriptor = slot.Descriptor;
             if (slotDescriptor.Parameters.IsDefaultOrEmpty)
             {
                 if (!string.IsNullOrWhiteSpace(slotTemplate.ParameterName))
@@ -767,7 +764,7 @@ internal sealed class RazorVueCanonicalHModelFactory
                 ? allowedParameterSymbols
                 : RazorVueTemplateExpressionScopeValidator.AddIfPresent(allowedParameterSymbols, slotTemplate.ParameterSymbol);
             builder.Add(new RazorVueCanonicalSlotBinding(
-                SlotName: slotDescriptor.Name,
+                SlotName: slot.SlotName,
                 IsDefault: slotDescriptor.IsDefault,
                 ParameterName: slotDescriptor.Parameters.IsDefaultOrEmpty ? null : slotTemplate.ParameterName,
                 ValueKind: RazorVueCanonicalSlotValueKind.None,
@@ -1288,9 +1285,6 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         return builder.ToImmutable();
     }
-
-    private static ImmutableDictionary<string, VueSlotDescriptor> BuildSlotsByPublicName(VueComponentDescriptor descriptor)
-        => descriptor.Slots.ToImmutableDictionary(static slot => slot.PublicName, static slot => slot, StringComparer.Ordinal);
 
     private static IOperation? Unwrap(IOperation? operation)
         => RazorVueOperationNormalizer.Unwrap(operation);

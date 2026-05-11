@@ -325,6 +325,24 @@ public static class VuetifyLabsComponents
     [ECMAScriptName("VCalendar")]
     public extern static IVuetifyComponent VCalendar { get; }
 
+    [ECMAScriptName("VDateInput")]
+    public extern static IVuetifyComponent VDateInput { get; }
+
+    [ECMAScriptName("VFileUpload")]
+    public extern static IVuetifyComponent VFileUpload { get; }
+
+    [ECMAScriptName("VIconBtn")]
+    public extern static IVuetifyComponent VIconBtn { get; }
+
+    [ECMAScriptName("VPicker")]
+    public extern static IVuetifyComponent VPicker { get; }
+
+    [ECMAScriptName("VPullToRefresh")]
+    public extern static IVuetifyComponent VPullToRefresh { get; }
+
+    [ECMAScriptName("VStepperVertical")]
+    public extern static IVuetifyComponent VStepperVertical { get; }
+
     [ECMAScriptName("VTimePicker")]
     public extern static IVuetifyComponent VTimePicker { get; }
 

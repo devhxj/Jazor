@@ -56,10 +56,12 @@ internal sealed partial class RazorVueExpressionEmitter
             static prop => prop.PublicName,
             static prop => prop,
             StringComparer.Ordinal);
-        _slotsByPublicName = snapshot.Descriptor.Slots.ToDictionary(
-            static slot => slot.PublicName,
-            static slot => slot,
-            StringComparer.Ordinal);
+        _slotsByPublicName = snapshot.Descriptor.Slots
+            .GroupBy(static slot => slot.PublicName, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.First(),
+                StringComparer.Ordinal);
         _emitsByRazorAlias = snapshot.Descriptor.Emits
             .Where(static emit => !string.IsNullOrWhiteSpace(emit.RazorAlias))
             .ToDictionary(
