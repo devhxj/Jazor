@@ -284,7 +284,10 @@ internal sealed partial class RazorVueExpressionEmitter
 
         var displayName = type.OriginalDefinition.ToDisplayString();
         return string.Equals(displayName, "System.Collections.Generic.List<T>", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Collections.Generic.IList<T>", StringComparison.Ordinal) ||
                string.Equals(displayName, "System.Collections.Generic.ICollection<T>", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Collections.Generic.IReadOnlyList<T>", StringComparison.Ordinal) ||
+               string.Equals(displayName, "System.Collections.Generic.IReadOnlyCollection<T>", StringComparison.Ordinal) ||
                string.Equals(displayName, "System.Collections.ICollection", StringComparison.Ordinal) ||
                string.Equals(displayName, "System.Collections.ObjectModel.ReadOnlyCollection<T>", StringComparison.Ordinal);
     }
@@ -602,6 +605,9 @@ internal sealed partial class RazorVueExpressionEmitter
                     builder.Append(EscapeTemplateText(text.Text.ConstantValue.HasValue && text.Text.ConstantValue.Value is string value ? value : string.Empty));
                     break;
                 case IInterpolationOperation interpolation:
+                    if (interpolation.FormatString is not null)
+                        throw new NotSupportedException(
+                            "Interpolation format specifiers are not supported in RazorVue template expressions.");
                     builder.Append("${").Append(EmitExpression(interpolation.Expression)).Append('}');
                     break;
             }
@@ -905,6 +911,8 @@ internal sealed partial class RazorVueExpressionEmitter
             BinaryOperatorKind.And => "&",
             BinaryOperatorKind.Or => "|",
             BinaryOperatorKind.ExclusiveOr => "^",
+            BinaryOperatorKind.LeftShift => "<<",
+            BinaryOperatorKind.RightShift => ">>",
             _ => throw new NotSupportedException($"Unsupported RazorVue binary operator: {kind}.")
         };
 
@@ -912,6 +920,7 @@ internal sealed partial class RazorVueExpressionEmitter
         => kind switch
         {
             UnaryOperatorKind.Not => "!",
+            UnaryOperatorKind.BitwiseNegation => "~",
             UnaryOperatorKind.Minus => "-",
             UnaryOperatorKind.Plus => "+",
             _ => throw new NotSupportedException($"Unsupported RazorVue unary operator: {kind}.")

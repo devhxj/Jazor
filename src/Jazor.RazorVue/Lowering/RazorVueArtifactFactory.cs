@@ -292,6 +292,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
 
     private static bool HasUnsupportedTemplateNode(RazorVueRenderFragment fragment)
     {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
         foreach (var child in fragment.Children)
         {
             switch (child)
@@ -347,6 +350,9 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
     {
         _ = snapshot;
 
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
         foreach (var child in fragment.Children)
         {
             switch (child)
@@ -355,8 +361,15 @@ internal sealed partial class RazorVueArtifactFactory : IRazorVueArtifactLowerer
                     return true;
                 case RazorVueElementNode element when ContainsComponentName(element.Children, snapshot, componentName):
                     return true;
-                case RazorVueComponentNode component when ContainsComponentName(component.Children, snapshot, componentName):
-                    return true;
+                case RazorVueComponentNode component:
+                    if (ContainsComponentName(component.Children, snapshot, componentName))
+                        return true;
+                    foreach (var slotTemplate in component.SlotTemplates)
+                    {
+                        if (ContainsComponentName(slotTemplate.Children, snapshot, componentName))
+                            return true;
+                    }
+                    break;
                 case RazorVueConditionalNode conditional when ContainsComponentName(conditional.WhenTrue, snapshot, componentName) ||
                                                              ContainsComponentName(conditional.WhenFalse, snapshot, componentName):
                     return true;

@@ -42,44 +42,50 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
             static item => item,
             StringComparer.Ordinal);
         CurrentComponentImportMap.Value = importMap;
-        var bindingSiteMap = semantic.TemplateBlock.BindingSites.ToDictionary(
-            static item => item.SitePath,
-            static item => item.BindingName,
-            StringComparer.Ordinal);
-        var templateText = BuildTemplateBlockText(semantic.TemplateBlock.Template, bindingSiteMap);
-        var scriptSetupText = BuildScriptSetupBlockText(
-            snapshot,
-            semantic,
-            RazorVueAttributeMergeHelper.ContainsInvocation(templateText));
-        CurrentComponentImportMap.Value = null;
-        var styleBlocks = BuildStyleBlocks(semantic.StyleBlocks);
-        var customBlocks = BuildCustomBlocks(semantic.CustomBlocks);
-        var sfcText = BuildSfcText(templateText, scriptSetupText, styleBlocks, customBlocks);
-        var sourceOrigins = semantic.SourceOrigins
-            .AddRange(semantic.TemplateBlock.SourceOrigins)
-            .AddRange(semantic.ScriptSetupBlock.SourceOrigins)
-            .AddRange(styleBlocks.SelectMany(static block => block.SourceOrigins))
-            .AddRange(customBlocks.SelectMany(static block => block.SourceOrigins));
+        try
+        {
+            var bindingSiteMap = semantic.TemplateBlock.BindingSites.ToDictionary(
+                static item => item.SitePath,
+                static item => item.BindingName,
+                StringComparer.Ordinal);
+            var templateText = BuildTemplateBlockText(semantic.TemplateBlock.Template, bindingSiteMap);
+            var scriptSetupText = BuildScriptSetupBlockText(
+                snapshot,
+                semantic,
+                RazorVueAttributeMergeHelper.ContainsInvocation(templateText));
+            var styleBlocks = BuildStyleBlocks(semantic.StyleBlocks);
+            var customBlocks = BuildCustomBlocks(semantic.CustomBlocks);
+            var sfcText = BuildSfcText(templateText, scriptSetupText, styleBlocks, customBlocks);
+            var sourceOrigins = semantic.SourceOrigins
+                .AddRange(semantic.TemplateBlock.SourceOrigins)
+                .AddRange(semantic.ScriptSetupBlock.SourceOrigins)
+                .AddRange(styleBlocks.SelectMany(static block => block.SourceOrigins))
+                .AddRange(customBlocks.SelectMany(static block => block.SourceOrigins));
 
-        return new VueSfcArtifact(
-            ComponentName: semantic.ComponentName,
-            RelativeSfcPath: semantic.RelativeSfcPath,
-            SfcText: sfcText,
-            TemplateBlock: new VueSfcTemplateBlock(
-                templateText,
-                semantic.TemplateBlock.SourceOrigins),
-            ScriptSetupBlock: new VueSfcScriptSetupBlock(
-                scriptSetupText,
-                Language: "ts",
-                semantic.ScriptSetupBlock.SourceOrigins),
-            StyleBlocks: styleBlocks,
-            CustomBlocks: customBlocks,
-            Imports: semantic.Imports,
-            Styles: semantic.Styles,
-            PluginRequirements: semantic.PluginRequirements,
-            Identity: BuildIdentity(semantic, templateText, scriptSetupText, styleBlocks),
-            Hints: semantic.Hints,
-            SourceOrigins: sourceOrigins.Distinct().ToImmutableArray());
+            return new VueSfcArtifact(
+                ComponentName: semantic.ComponentName,
+                RelativeSfcPath: semantic.RelativeSfcPath,
+                SfcText: sfcText,
+                TemplateBlock: new VueSfcTemplateBlock(
+                    templateText,
+                    semantic.TemplateBlock.SourceOrigins),
+                ScriptSetupBlock: new VueSfcScriptSetupBlock(
+                    scriptSetupText,
+                    Language: "ts",
+                    semantic.ScriptSetupBlock.SourceOrigins),
+                StyleBlocks: styleBlocks,
+                CustomBlocks: customBlocks,
+                Imports: semantic.Imports,
+                Styles: semantic.Styles,
+                PluginRequirements: semantic.PluginRequirements,
+                Identity: BuildIdentity(semantic, templateText, scriptSetupText, styleBlocks),
+                Hints: semantic.Hints,
+                SourceOrigins: sourceOrigins.Distinct().ToImmutableArray());
+        }
+        finally
+        {
+            CurrentComponentImportMap.Value = null;
+        }
     }
 
     private static VueSfcArtifactIdentity BuildIdentity(
@@ -862,7 +868,8 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
     private static string EscapeTemplateText(string text)
         => text.Replace("&", "&amp;")
             .Replace("<", "&lt;")
-            .Replace(">", "&gt;");
+            .Replace(">", "&gt;")
+            .Replace("{{", "&#123;&#123;");
 
     private static string EscapeAttributeValue(string value)
         => value.Replace("&", "&amp;")

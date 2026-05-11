@@ -157,8 +157,11 @@ internal sealed partial class RazorVueArtifactFactory
     private static HashSet<RazorVueComponentNode> CollectComponents(RazorVueRenderFragment fragment)
     {
         var result = new HashSet<RazorVueComponentNode>();
-        foreach (var child in fragment.Children)
-            CollectComponents(child, result);
+        if (!fragment.Children.IsDefaultOrEmpty)
+        {
+            foreach (var child in fragment.Children)
+                CollectComponents(child, result);
+        }
         return result;
     }
 

@@ -29,12 +29,15 @@ internal sealed partial class RazorVueExpressionEmitter
     private void AppendFragmentShape(StringBuilder builder, RazorVueRenderFragment fragment)
     {
         builder.Append('[');
-        for (var i = 0; i < fragment.Children.Length; i++)
+        if (!fragment.Children.IsDefaultOrEmpty)
         {
-            if (i > 0)
-                builder.Append(',');
+            for (var i = 0; i < fragment.Children.Length; i++)
+            {
+                if (i > 0)
+                    builder.Append(',');
 
-            AppendNodeShape(builder, fragment.Children[i]);
+                AppendNodeShape(builder, fragment.Children[i]);
+            }
         }
 
         builder.Append(']');

@@ -8,6 +8,9 @@ internal static class RazorVueForLoopLoweringSupport
 {
     public static bool ContainsForLoop(RazorVueRenderFragment fragment)
     {
+        if (fragment.Children.IsDefaultOrEmpty)
+            return false;
+
         foreach (var child in fragment.Children)
         {
             switch (child)

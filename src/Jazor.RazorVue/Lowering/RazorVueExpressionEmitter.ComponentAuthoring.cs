@@ -221,7 +221,7 @@ internal sealed partial class RazorVueExpressionEmitter
             return "h(" + target + ", " + props.Expression + ")";
 
         if (!props.HasValue)
-            return "h(" + target + ", " + children.Expression + ")";
+            return "h(" + target + ", null, " + children.Expression + ")";
 
         return "h(" + target + ", " + props.Expression + ", " + children.Expression + ")";
     }

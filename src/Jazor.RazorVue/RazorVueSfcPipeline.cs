@@ -39,9 +39,12 @@ internal sealed class RazorVueSfcPipeline
         if (context is null || !_semanticFrontend.CanHandle(context))
             return _catalogBuilder.Build(compilation.AssemblyName ?? "Jazor.Assembly", ImmutableArray<VueSfcArtifact>.Empty);
 
-        var artifacts = _semanticFrontend.CreateSemanticSnapshots(context)
-            .Select(snapshot => _artifactLowerer.Lower(context, snapshot))
-            .ToImmutableArray();
+        var snapshots = _semanticFrontend.CreateSemanticSnapshots(context);
+        var artifacts = snapshots.IsDefault
+            ? ImmutableArray<VueSfcArtifact>.Empty
+            : snapshots
+                .Select(snapshot => _artifactLowerer.Lower(context, snapshot))
+                .ToImmutableArray();
 
         return _catalogBuilder.Build(compilation.AssemblyName ?? "Jazor.Assembly", artifacts);
     }
