@@ -327,60 +327,20 @@ public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueRea
 /// RouterView depth value union accepting Number or Vue Ref of Number.
 /// </summary>
 [ECMAScript]
-[Union]
 [Description("@#")]
-public readonly struct RouterViewDepthValue : IUnion
+public readonly union RouterViewDepthValue(Number, Vue3.IVueRef<Number>)
 {
-    private readonly byte _kind;
-    private readonly Number? _number;
-    private readonly Vue3.IVueRef<Number>? _ref;
-
-    /// <summary>
-    /// 从 Number 值初始化。
-    /// Initializes from a Number value.
-    /// </summary>
-    /// <param name="value">深度数值。The depth number value.</param>
-    private RouterViewDepthValue(Number value)
-    {
-        _kind = 1;
-        _number = value;
-        _ref = default;
-    }
-
-    /// <summary>
-    /// 从 Number 的 Vue Ref 初始化。
-    /// Initializes from a Vue Ref of Number.
-    /// </summary>
-    /// <param name="value">Number 的响应式引用。The reactive ref of Number.</param>
-    private RouterViewDepthValue(Vue3.IVueRef<Number> value)
-    {
-        _kind = 2;
-        _number = default;
-        _ref = value;
-    }
-
     /// <summary>
     /// 以 Number 返回，如果不是 Number 变体则返回 default。
     /// Returns as Number, or default if not a Number variant.
     /// </summary>
-    public Number? AsNumber => _kind == 1 ? _number : default;
+    public Number? AsNumber => Value is Number value ? value : default(Number?);
 
     /// <summary>
     /// 以 Vue Ref 返回，如果不是 Ref 变体则返回 default。
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
-    public Vue3.IVueRef<Number>? AsRef => _kind == 2 ? _ref : default;
-
-    /// <summary>
-    /// 获取擦除后的 JavaScript 值。
-    /// Gets the erased JavaScript value.
-    /// </summary>
-    public object? Value => _kind switch
-    {
-        1 => _number,
-        2 => _ref,
-        _ => default
-    };
+    public Vue3.IVueRef<Number>? AsRef => Value as Vue3.IVueRef<Number>;
 
     /// <summary>
     /// 从 Number 隐式转换。

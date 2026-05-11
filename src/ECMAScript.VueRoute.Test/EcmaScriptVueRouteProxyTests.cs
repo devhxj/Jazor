@@ -244,6 +244,7 @@ public sealed class EcmaScriptVueRouteProxyTests
             typeof(Vue3.VueReadonlyRef<RouteLocationAsPath>),
             typeof(Vue3.VueReadonlyRef<RouteLocationAsRelative>));
         AssertNet11UnionContract(typeof(RouteBooleanMaybeRef), typeof(bool), typeof(Vue3.IVueRef<bool>), typeof(Vue3.VueReadonlyRef<bool>));
+        AssertNet11UnionContract(typeof(RouterViewDepthValue), typeof(Number), typeof(Vue3.IVueRef<Number>));
         AssertNet11UnionContract(typeof(RawRouteComponent), typeof(ECMAScript.Vue3.IVueComponent), typeof(RouteComponentLoader));
         AssertNet11UnionContract(typeof(RouteComponent), typeof(ECMAScript.Vue3.IVueComponent), typeof(RouteComponentLoader));
         AssertNet11UnionContract(typeof(RouteRecordProps), typeof(bool), typeof(Vue3.VueProps), typeof(RouteRecordPropsResolver));

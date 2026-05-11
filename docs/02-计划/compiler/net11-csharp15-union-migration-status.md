@@ -9,6 +9,7 @@
 - Roslyn package alignment follows the SDK compiler surface: `CodeAnalysisVersion` is `5.7.0-1.26207.106`. The attempted `5.8.0-1.26257.103` line was rejected because SDK Roslyn `5.7.0.0` skipped newer analyzers with `CS9057`.
 - Preview BCL still lacks the final union runtime contract in this SDK, so `ECMAScript` carries a temporary `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` shim. Remove this only after the target SDK ships the official types.
 - Official union projection is allowed only for safe erased-value host wrappers. Object, interface, delegate, nullable-boundary, or C# binding-hostile branches must keep explicit strong `From(...)` factories or overloads.
+- Sequence/array union authoring must preserve collection-expression ergonomics. Keep the official `System.Runtime.CompilerServices.CollectionBuilderAttribute` plus generated builder classes for collection unions so consumers can write `ConstrainDOMString value = ["a", "b"];`; do not introduce a custom `ArrayAttribute` because the C# compiler recognizes the official collection-builder contract, not project-local aliases.
 - In-memory Roslyn test compilation references are aligned to .NET 11 via `Basic.Reference.Assemblies.Net110`; new tests should not reintroduce `Net100.References.All`.
 - Analyzer support must mirror proven compiler host surfaces narrowly. Do not suppress `JAZOR001` or widen arbitrary CLR indexers to make Vue/WebIDL authoring compile.
 
@@ -16,9 +17,11 @@
 
 - Solution/project target migration is on the `net11.0` preview path where needed.
 - Compiler recognizes `[Union]` / `IUnion` as host-erased union markers without widening arbitrary object contracts.
-- WebIDL generator emits `[Union] + IUnion + Value + public case constructors` for safe union branches and preserves explicit factories for unsafe branches.
+- WebIDL generator emits C# native `readonly union` for safe non-nullable union branches, retains official collection-builder support for sequence branches, keeps nullable branch sets on the hand-tagged fallback, and preserves explicit factories for unsafe object/interface/delegate branches.
 - Generated WebIDL output was refreshed and passed ECMAScript build validation.
 - Representative Vue union `VueNamesOrOptions` now uses the official-preview union contract while retaining collection-builder authoring.
+- VueRoute `RouterViewDepthValue` now uses the C# native `readonly union` contract for the safe erased `Number | IVueRef<Number>` value domain while retaining existing numeric convenience conversions and strongly typed `IVueRef<TNumber>` factory helpers.
+- VueRoute hand-tagged wrappers that still require precise branch identity remain intentionally unmigrated: `RouterErrorValue` keeps the `IObject` object-boundary factory, `RouterScrollResult` keeps exact projections across overlapping `ScrollPositionCoordinates` / `ScrollPositionElement`, and `RouterScrollHandler` keeps delegate factory entry points.
 - Roslyn operation-surface audit now explicitly rejects the new collection-expression placeholder operation and has a reflection guard for visitor coverage drift.
 - Root `NuGet.config` is present for `nuget.org` plus the preview `dotnet-tools` feed.
 - Roslyn packages are aligned to SDK compiler version `5.7.0-1.26207.106`, restoring analyzer execution instead of `CS9057` analyzer skips.
@@ -69,7 +72,10 @@
   - `Convert_ClassUsingSystemUnionMarkerProjection_GeneratesNativeValue`
   - `Convert_ClassUsingSystemUnionMarkerWithoutECMAScriptMarker_ThrowsUnsupportedExternalPropertyAccess`
   - `Convert_ClassUsingVueNamesOrOptionsValueProjection_GeneratesNativeValue`
-- `dotnet test src\ECMAScript.WebIDL.GeneratorTest\ECMAScript.WebIDL.GeneratorTest.csproj --no-restore --filter 'FullyQualifiedName~PreviewBindingEmitterTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 25/25 tests.
+- `dotnet test src\ECMAScript.WebIDL.GeneratorTest\ECMAScript.WebIDL.GeneratorTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 27/27 tests. This includes the Roslyn compile probe proving `ConstrainDOMString value = ["a", "b"];` binds through the generated native union collection-builder contract.
+- `dotnet build src\ECMAScript\ECMAScript.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after regenerating WebIDL native unions.
+- `dotnet build src\Wiki\Wiki.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after enabling preview language version for Wiki's native-union authoring.
+- `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the WebIDL native-union generator migration and Wiki preview language-version fix.
 - `dotnet build src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after removing the redundant `Microsoft.AspNetCore.Components` package reference covered by `Microsoft.AspNetCore.App`.
 - `dotnet build src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after explicit nullable guards.
 - `dotnet build src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the same Razor source-document path guard.
@@ -96,6 +102,8 @@
 - `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RazorSdkToolsetProbeTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 2/2 tests.
 - `dotnet test src\Jazor.RazorVue.RazorIr.Test\Jazor.RazorVue.RazorIr.Test.csproj --filter 'FullyQualifiedName~RazorSourceGeneratorLoadTimingTests' -v minimal -p:UseSharedCompilation=false -m:1 -p:JazorIsolatedBaseOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-out\razorir-loadtiming-net11\' -p:JazorIsolatedBaseIntermediateOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-obj\razorir-loadtiming-net11\'` passed: 1/1 test.
 - `dotnet test src\ECMAScript.VueRoute.Test\ECMAScript.VueRoute.Test.csproj --filter 'FullyQualifiedName~VueRoute_JazorPackageProject_IncludesLibraryArtifactsAndBuildTarget' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
+- `dotnet test src\ECMAScript.VueRoute.Test\ECMAScript.VueRoute.Test.csproj --filter 'FullyQualifiedName~VueRoute_ErasedValueUnions_UseNet11UnionContract|FullyQualifiedName~VueRoute_ViewDepthInjectionKey_UsesStronglyTypedNumberOrWritableRefContract|FullyQualifiedName~VueRoute_SafeErasedValueUnions_UseNativeUnionKeyword|FullyQualifiedName~VueRoute_ErasedValueUnionContractProjection_GeneratesNativeValue' -v minimal -p:UseSharedCompilation=false -m:1` passed: 4/4 tests after migrating `RouterViewDepthValue` to the native union contract.
+- `dotnet build src\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the `RouterViewDepthValue` migration.
 - `dotnet test src\ECMAScript.Pinia.Testing.Test\ECMAScript.Pinia.Testing.Test.csproj --filter 'FullyQualifiedName~PiniaTesting_JazorPackageProject_IncludesLibraryArtifactsAndBuildTarget' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
 - `dotnet test src\ECMAScript.WebIDL.GeneratorTest\ECMAScript.WebIDL.GeneratorTest.csproj --filter 'FullyQualifiedName~RepositoryLayoutTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
 - `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltWorkspaceResolverTests|FullyQualifiedName~JoltSharedLspProcessTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 20/20 tests.

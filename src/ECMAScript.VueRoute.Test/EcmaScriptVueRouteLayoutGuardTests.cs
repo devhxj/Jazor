@@ -129,6 +129,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         AssertUsesNativeUnion(unionSource, "RouteRecordName");
         AssertUsesNativeUnion(unionSource, "RouteRecordAlias");
         AssertUsesNativeUnion(unionSource, "RouteLocationRaw");
+        AssertUsesNativeUnion(unionSource, "RouterViewDepthValue");
         AssertUsesNativeUnion(unionSource, "HistoryStateValue");
         AssertUsesNativeUnion(unionSource, "RouteRecordRaw");
         AssertUsesNativeUnion(unionSource, "MatcherLocationRaw");

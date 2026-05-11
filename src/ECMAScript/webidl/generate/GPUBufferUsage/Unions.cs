@@ -6,66 +6,16 @@ namespace ECMAScript.GPUBufferUsage;
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct GPUBindingResource : System.Runtime.CompilerServices.IUnion
+public readonly union GPUBindingResource(GPUSampler, GPUTextureView, GPUBufferBinding, GPUExternalTexture)
 {
-    private readonly byte _kind;
-    private readonly GPUSampler? _value1;
-    private readonly GPUTextureView? _value2;
-    private readonly GPUBufferBinding? _value3;
-    private readonly GPUExternalTexture? _value4;
 
-    public GPUBindingResource(GPUSampler value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-        _value3 = default;
-        _value4 = default;
-    }
+    public GPUSampler? AsGPUSampler => Value is GPUSampler value ? value : default(GPUSampler?);
 
-    public GPUBindingResource(GPUTextureView value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-        _value3 = default;
-        _value4 = default;
-    }
+    public GPUTextureView? AsGPUTextureView => Value is GPUTextureView value ? value : default(GPUTextureView?);
 
-    public GPUBindingResource(GPUBufferBinding value)
-    {
-        _kind = 3;
-        _value1 = default;
-        _value2 = default;
-        _value3 = value;
-        _value4 = default;
-    }
+    public GPUBufferBinding? AsGPUBufferBinding => Value is GPUBufferBinding value ? value : default(GPUBufferBinding?);
 
-    public GPUBindingResource(GPUExternalTexture value)
-    {
-        _kind = 4;
-        _value1 = default;
-        _value2 = default;
-        _value3 = default;
-        _value4 = value;
-    }
-
-    public GPUSampler? AsGPUSampler => _kind == 1 ? _value1 : default;
-
-    public GPUTextureView? AsGPUTextureView => _kind == 2 ? _value2 : default;
-
-    public GPUBufferBinding? AsGPUBufferBinding => _kind == 3 ? _value3 : default;
-
-    public GPUExternalTexture? AsGPUExternalTexture => _kind == 4 ? _value4 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        3 => _value3,
-        4 => _value4,
-        _ => default
-    };
+    public GPUExternalTexture? AsGPUExternalTexture => Value is GPUExternalTexture value ? value : default(GPUExternalTexture?);
 
     public static implicit operator GPUBindingResource(GPUSampler value)
         => new(value);
@@ -86,36 +36,12 @@ public readonly struct GPUBindingResource : System.Runtime.CompilerServices.IUni
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct GPUCanvasContextCanvas : System.Runtime.CompilerServices.IUnion
+public readonly union GPUCanvasContextCanvas(HTMLCanvasElement, OffscreenCanvas)
 {
-    private readonly byte _kind;
-    private readonly HTMLCanvasElement? _value1;
-    private readonly OffscreenCanvas? _value2;
 
-    public GPUCanvasContextCanvas(HTMLCanvasElement value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
 
-    public GPUCanvasContextCanvas(OffscreenCanvas value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public HTMLCanvasElement? AsHTMLCanvasElement => _kind == 1 ? _value1 : default;
-
-    public OffscreenCanvas? AsOffscreenCanvas => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
 
     public static implicit operator GPUCanvasContextCanvas(HTMLCanvasElement value)
         => new(value);
@@ -131,36 +57,12 @@ public readonly struct GPUCanvasContextCanvas : System.Runtime.CompilerServices.
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUColorCollectionBuilder), nameof(GPUColorCollectionBuilder.Create))]
-public readonly struct GPUColor : System.Runtime.CompilerServices.IUnion, IEnumerable<double>
+public readonly union GPUColor(double[], GPUColorDict) : IEnumerable<double>
 {
-    private readonly byte _kind;
-    private readonly double[]? _value1;
-    private readonly GPUColorDict? _value2;
 
-    public GPUColor(double[] value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public double[]? AsDoubleArray => Value is double[] value ? value : default(double[]?);
 
-    public GPUColor(GPUColorDict value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public double[]? AsDoubleArray => _kind == 1 ? _value1 : default;
-
-    public GPUColorDict? AsGPUColorDict => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public GPUColorDict? AsGPUColorDict => Value is GPUColorDict value ? value : default(GPUColorDict?);
 
     public static implicit operator GPUColor(double[] value)
         => new(value);
@@ -189,36 +91,12 @@ public static class GPUColorCollectionBuilder
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUExtent3DCollectionBuilder), nameof(GPUExtent3DCollectionBuilder.Create))]
-public readonly struct GPUExtent3D : System.Runtime.CompilerServices.IUnion, IEnumerable<GPUIntegerCoordinate>
+public readonly union GPUExtent3D(GPUIntegerCoordinate[], GPUExtent3DDict) : IEnumerable<GPUIntegerCoordinate>
 {
-    private readonly byte _kind;
-    private readonly GPUIntegerCoordinate[]? _value1;
-    private readonly GPUExtent3DDict? _value2;
 
-    public GPUExtent3D(GPUIntegerCoordinate[] value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public GPUIntegerCoordinate[]? AsGPUIntegerCoordinateArray => Value is GPUIntegerCoordinate[] value ? value : default(GPUIntegerCoordinate[]?);
 
-    public GPUExtent3D(GPUExtent3DDict value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public GPUIntegerCoordinate[]? AsGPUIntegerCoordinateArray => _kind == 1 ? _value1 : default;
-
-    public GPUExtent3DDict? AsGPUExtent3DDict => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public GPUExtent3DDict? AsGPUExtent3DDict => Value is GPUExtent3DDict value ? value : default(GPUExtent3DDict?);
 
     public static implicit operator GPUExtent3D(GPUIntegerCoordinate[] value)
         => new(value);
@@ -246,36 +124,12 @@ public static class GPUExtent3DCollectionBuilder
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct GPUExternalTextureDescriptorSource : System.Runtime.CompilerServices.IUnion
+public readonly union GPUExternalTextureDescriptorSource(HTMLVideoElement, VideoFrame)
 {
-    private readonly byte _kind;
-    private readonly HTMLVideoElement? _value1;
-    private readonly VideoFrame? _value2;
 
-    public GPUExternalTextureDescriptorSource(HTMLVideoElement value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public HTMLVideoElement? AsHTMLVideoElement => Value is HTMLVideoElement value ? value : default(HTMLVideoElement?);
 
-    public GPUExternalTextureDescriptorSource(VideoFrame value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public HTMLVideoElement? AsHTMLVideoElement => _kind == 1 ? _value1 : default;
-
-    public VideoFrame? AsVideoFrame => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public VideoFrame? AsVideoFrame => Value is VideoFrame value ? value : default(VideoFrame?);
 
     public static implicit operator GPUExternalTextureDescriptorSource(HTMLVideoElement value)
         => new(value);
@@ -290,126 +144,22 @@ public readonly struct GPUExternalTextureDescriptorSource : System.Runtime.Compi
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct GPUImageCopyExternalImageSource : System.Runtime.CompilerServices.IUnion
+public readonly union GPUImageCopyExternalImageSource(ImageBitmap, ImageData, HTMLImageElement, HTMLVideoElement, VideoFrame, HTMLCanvasElement, OffscreenCanvas)
 {
-    private readonly byte _kind;
-    private readonly ImageBitmap? _value1;
-    private readonly ImageData? _value2;
-    private readonly HTMLImageElement? _value3;
-    private readonly HTMLVideoElement? _value4;
-    private readonly VideoFrame? _value5;
-    private readonly HTMLCanvasElement? _value6;
-    private readonly OffscreenCanvas? _value7;
 
-    public GPUImageCopyExternalImageSource(ImageBitmap value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-        _value3 = default;
-        _value4 = default;
-        _value5 = default;
-        _value6 = default;
-        _value7 = default;
-    }
+    public ImageBitmap? AsImageBitmap => Value is ImageBitmap value ? value : default(ImageBitmap?);
 
-    public GPUImageCopyExternalImageSource(ImageData value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-        _value3 = default;
-        _value4 = default;
-        _value5 = default;
-        _value6 = default;
-        _value7 = default;
-    }
+    public ImageData? AsImageData => Value is ImageData value ? value : default(ImageData?);
 
-    public GPUImageCopyExternalImageSource(HTMLImageElement value)
-    {
-        _kind = 3;
-        _value1 = default;
-        _value2 = default;
-        _value3 = value;
-        _value4 = default;
-        _value5 = default;
-        _value6 = default;
-        _value7 = default;
-    }
+    public HTMLImageElement? AsHTMLImageElement => Value is HTMLImageElement value ? value : default(HTMLImageElement?);
 
-    public GPUImageCopyExternalImageSource(HTMLVideoElement value)
-    {
-        _kind = 4;
-        _value1 = default;
-        _value2 = default;
-        _value3 = default;
-        _value4 = value;
-        _value5 = default;
-        _value6 = default;
-        _value7 = default;
-    }
+    public HTMLVideoElement? AsHTMLVideoElement => Value is HTMLVideoElement value ? value : default(HTMLVideoElement?);
 
-    public GPUImageCopyExternalImageSource(VideoFrame value)
-    {
-        _kind = 5;
-        _value1 = default;
-        _value2 = default;
-        _value3 = default;
-        _value4 = default;
-        _value5 = value;
-        _value6 = default;
-        _value7 = default;
-    }
+    public VideoFrame? AsVideoFrame => Value is VideoFrame value ? value : default(VideoFrame?);
 
-    public GPUImageCopyExternalImageSource(HTMLCanvasElement value)
-    {
-        _kind = 6;
-        _value1 = default;
-        _value2 = default;
-        _value3 = default;
-        _value4 = default;
-        _value5 = default;
-        _value6 = value;
-        _value7 = default;
-    }
+    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
 
-    public GPUImageCopyExternalImageSource(OffscreenCanvas value)
-    {
-        _kind = 7;
-        _value1 = default;
-        _value2 = default;
-        _value3 = default;
-        _value4 = default;
-        _value5 = default;
-        _value6 = default;
-        _value7 = value;
-    }
-
-    public ImageBitmap? AsImageBitmap => _kind == 1 ? _value1 : default;
-
-    public ImageData? AsImageData => _kind == 2 ? _value2 : default;
-
-    public HTMLImageElement? AsHTMLImageElement => _kind == 3 ? _value3 : default;
-
-    public HTMLVideoElement? AsHTMLVideoElement => _kind == 4 ? _value4 : default;
-
-    public VideoFrame? AsVideoFrame => _kind == 5 ? _value5 : default;
-
-    public HTMLCanvasElement? AsHTMLCanvasElement => _kind == 6 ? _value6 : default;
-
-    public OffscreenCanvas? AsOffscreenCanvas => _kind == 7 ? _value7 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        3 => _value3,
-        4 => _value4,
-        5 => _value5,
-        6 => _value6,
-        7 => _value7,
-        _ => default
-    };
+    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
 
     public static implicit operator GPUImageCopyExternalImageSource(ImageBitmap value)
         => new(value);
@@ -440,36 +190,12 @@ public readonly struct GPUImageCopyExternalImageSource : System.Runtime.Compiler
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin2DCollectionBuilder), nameof(GPUOrigin2DCollectionBuilder.Create))]
-public readonly struct GPUOrigin2D : System.Runtime.CompilerServices.IUnion, IEnumerable<GPUIntegerCoordinate>
+public readonly union GPUOrigin2D(GPUIntegerCoordinate[], GPUOrigin2DDict) : IEnumerable<GPUIntegerCoordinate>
 {
-    private readonly byte _kind;
-    private readonly GPUIntegerCoordinate[]? _value1;
-    private readonly GPUOrigin2DDict? _value2;
 
-    public GPUOrigin2D(GPUIntegerCoordinate[] value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public GPUIntegerCoordinate[]? AsGPUIntegerCoordinateArray => Value is GPUIntegerCoordinate[] value ? value : default(GPUIntegerCoordinate[]?);
 
-    public GPUOrigin2D(GPUOrigin2DDict value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public GPUIntegerCoordinate[]? AsGPUIntegerCoordinateArray => _kind == 1 ? _value1 : default;
-
-    public GPUOrigin2DDict? AsGPUOrigin2DDict => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public GPUOrigin2DDict? AsGPUOrigin2DDict => Value is GPUOrigin2DDict value ? value : default(GPUOrigin2DDict?);
 
     public static implicit operator GPUOrigin2D(GPUIntegerCoordinate[] value)
         => new(value);
@@ -498,36 +224,12 @@ public static class GPUOrigin2DCollectionBuilder
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin3DCollectionBuilder), nameof(GPUOrigin3DCollectionBuilder.Create))]
-public readonly struct GPUOrigin3D : System.Runtime.CompilerServices.IUnion, IEnumerable<GPUIntegerCoordinate>
+public readonly union GPUOrigin3D(GPUIntegerCoordinate[], GPUOrigin3DDict) : IEnumerable<GPUIntegerCoordinate>
 {
-    private readonly byte _kind;
-    private readonly GPUIntegerCoordinate[]? _value1;
-    private readonly GPUOrigin3DDict? _value2;
 
-    public GPUOrigin3D(GPUIntegerCoordinate[] value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public GPUIntegerCoordinate[]? AsGPUIntegerCoordinateArray => Value is GPUIntegerCoordinate[] value ? value : default(GPUIntegerCoordinate[]?);
 
-    public GPUOrigin3D(GPUOrigin3DDict value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public GPUIntegerCoordinate[]? AsGPUIntegerCoordinateArray => _kind == 1 ? _value1 : default;
-
-    public GPUOrigin3DDict? AsGPUOrigin3DDict => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public GPUOrigin3DDict? AsGPUOrigin3DDict => Value is GPUOrigin3DDict value ? value : default(GPUOrigin3DDict?);
 
     public static implicit operator GPUOrigin3D(GPUIntegerCoordinate[] value)
         => new(value);
@@ -555,36 +257,12 @@ public static class GPUOrigin3DCollectionBuilder
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct GPUPipelineDescriptorBaseLayout : System.Runtime.CompilerServices.IUnion
+public readonly union GPUPipelineDescriptorBaseLayout(GPUPipelineLayout, GPUAutoLayoutMode)
 {
-    private readonly byte _kind;
-    private readonly GPUPipelineLayout? _value1;
-    private readonly GPUAutoLayoutMode? _value2;
 
-    public GPUPipelineDescriptorBaseLayout(GPUPipelineLayout value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public GPUPipelineLayout? AsGPUPipelineLayout => Value is GPUPipelineLayout value ? value : default(GPUPipelineLayout?);
 
-    public GPUPipelineDescriptorBaseLayout(GPUAutoLayoutMode value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public GPUPipelineLayout? AsGPUPipelineLayout => _kind == 1 ? _value1 : default;
-
-    public GPUAutoLayoutMode? AsGPUAutoLayoutMode => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public GPUAutoLayoutMode? AsGPUAutoLayoutMode => Value is GPUAutoLayoutMode value ? value : default(GPUAutoLayoutMode?);
 
     public static implicit operator GPUPipelineDescriptorBaseLayout(GPUPipelineLayout value)
         => new(value);
@@ -599,36 +277,12 @@ public readonly struct GPUPipelineDescriptorBaseLayout : System.Runtime.Compiler
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct GPUShaderModuleCompilationHintLayout : System.Runtime.CompilerServices.IUnion
+public readonly union GPUShaderModuleCompilationHintLayout(GPUPipelineLayout, GPUAutoLayoutMode)
 {
-    private readonly byte _kind;
-    private readonly GPUPipelineLayout? _value1;
-    private readonly GPUAutoLayoutMode? _value2;
 
-    public GPUShaderModuleCompilationHintLayout(GPUPipelineLayout value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public GPUPipelineLayout? AsGPUPipelineLayout => Value is GPUPipelineLayout value ? value : default(GPUPipelineLayout?);
 
-    public GPUShaderModuleCompilationHintLayout(GPUAutoLayoutMode value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public GPUPipelineLayout? AsGPUPipelineLayout => _kind == 1 ? _value1 : default;
-
-    public GPUAutoLayoutMode? AsGPUAutoLayoutMode => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public GPUAutoLayoutMode? AsGPUAutoLayoutMode => Value is GPUAutoLayoutMode value ? value : default(GPUAutoLayoutMode?);
 
     public static implicit operator GPUShaderModuleCompilationHintLayout(GPUPipelineLayout value)
         => new(value);
@@ -643,36 +297,12 @@ public readonly struct GPUShaderModuleCompilationHintLayout : System.Runtime.Com
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct StructuralCache : System.Runtime.CompilerServices.IUnion
+public readonly union StructuralCache(HTMLCanvasElement, OffscreenCanvas)
 {
-    private readonly byte _kind;
-    private readonly HTMLCanvasElement? _value1;
-    private readonly OffscreenCanvas? _value2;
 
-    public StructuralCache(HTMLCanvasElement value)
-    {
-        _kind = 1;
-        _value1 = value;
-        _value2 = default;
-    }
+    public HTMLCanvasElement? AsHTMLCanvasElement => Value is HTMLCanvasElement value ? value : default(HTMLCanvasElement?);
 
-    public StructuralCache(OffscreenCanvas value)
-    {
-        _kind = 2;
-        _value1 = default;
-        _value2 = value;
-    }
-
-    public HTMLCanvasElement? AsHTMLCanvasElement => _kind == 1 ? _value1 : default;
-
-    public OffscreenCanvas? AsOffscreenCanvas => _kind == 2 ? _value2 : default;
-
-    public object? Value => _kind switch
-    {
-        1 => _value1,
-        2 => _value2,
-        _ => default
-    };
+    public OffscreenCanvas? AsOffscreenCanvas => Value is OffscreenCanvas value ? value : default(OffscreenCanvas?);
 
     public static implicit operator StructuralCache(HTMLCanvasElement value)
         => new(value);

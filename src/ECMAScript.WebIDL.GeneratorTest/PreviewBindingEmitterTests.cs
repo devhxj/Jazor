@@ -1,5 +1,8 @@
 using System.Text.Json;
+using Basic.Reference.Assemblies;
 using ECMAScript.WebIDL.Generator;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace ECMAScript.WebIDL.GeneratorTest;
 
@@ -21,14 +24,50 @@ public sealed class PreviewBindingEmitterTests
                 }
                 """));
 
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : System.Runtime.CompilerServices.IUnion, IEnumerable<string>");
-        StringAssert.Contains(files["Unions.cs"], "[System.Runtime.CompilerServices.Union]");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : System.Runtime.CompilerServices.IUnion, IEnumerable<string>");
-        StringAssert.Contains(files["Unions.cs"], "public ConstrainDOMString(string value)");
-        StringAssert.Contains(files["Unions.cs"], "public ConstrainDOMString(string[] value)");
-        StringAssert.Contains(files["Unions.cs"], "public object? Value => _kind switch");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ConstrainDOMString(string, string[], ConstrainDOMStringParameters) : IEnumerable<string>");
+        StringAssert.Contains(files["Unions.cs"], "[System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringCollectionBuilder), nameof(ConstrainDOMStringCollectionBuilder.Create))]");
+        StringAssert.Contains(files["Unions.cs"], "public string? AsString => Value is string value ? value : default(string?);");
+        StringAssert.Contains(files["Unions.cs"], "public string[]? AsStringArray => Value is string[] value ? value : default(string[]?);");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator ConstrainDOMString(string[] value)");
         StringAssert.Contains(files["Unions.cs"], "public static class ConstrainDOMStringCollectionBuilder");
+    }
+
+    [TestMethod]
+    public async Task EmitAsync_TypedefUnionWithSequenceBranch_AllowsCollectionExpressionAssignment()
+    {
+        var files = await EmitGeneratedFilesAsync(
+            Typedef("ConstrainDOMString", """
+                {
+                  "union": true,
+                  "idlType": [
+                    { "idlType": "DOMString" },
+                    { "generic": "sequence", "idlType": [ { "idlType": "DOMString" } ] },
+                    { "idlType": "ConstrainDOMStringParameters" }
+                  ]
+                }
+                """));
+
+        var diagnostics = CompileGeneratedFiles(
+            files,
+            """
+            namespace ECMAScript;
+
+            public record ConstrainDOMStringParameters;
+            """,
+            """
+            using ECMAScript;
+
+            public static class CollectionExpressionConsumer
+            {
+                public static ConstrainDOMString Build()
+                {
+                    ConstrainDOMString value = ["a", "b"];
+                    return value;
+                }
+            }
+            """);
+
+        Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
     }
 
     [TestMethod]
@@ -51,7 +90,7 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["GlobalUsings.cs"], "global using ClipboardItemData = ECMAScript.PromiseResult<ECMAScript.ClipboardItemDataValue>;");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ClipboardItemDataValue");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ClipboardItemDataValue(string, Blob)");
     }
 
     [TestMethod]
@@ -86,7 +125,7 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#threshold\")]IntersectionObserverInitThreshold? Threshold = default");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : System.Runtime.CompilerServices.IUnion, IEnumerable<double>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union IntersectionObserverInitThreshold(double, double[]) : IEnumerable<double>");
     }
 
     [TestMethod]
@@ -129,7 +168,7 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern URLSearchParams(URLSearchParamsInit init);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : System.Runtime.CompilerServices.IUnion, IEnumerable<string[]>");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union URLSearchParamsInit(string[][], Dictionary<string, string>, string) : IEnumerable<string[]>");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator URLSearchParamsInit(string[][] value)");
     }
 
@@ -170,7 +209,7 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern void AddEventListener(string type, EventTargetAddEventListenerOptionsValue? options = default);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct EventTargetAddEventListenerOptionsValue");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union EventTargetAddEventListenerOptionsValue(EventTargetAddEventListenerOptions, bool)");
     }
 
     [TestMethod]
@@ -255,7 +294,8 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["GlobalUsings.cs"], "global using EventListener = ECMAScript.EventListenerValue;");
         StringAssert.Contains(files["Callbacks.cs"], "public sealed class EventListenerLiteral");
-        StringAssert.Contains(files["Unions.cs"], "private readonly EventListenerLiteral? _value1;");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union EventListenerValue(EventListenerLiteral, HandleEventCallback)");
+        StringAssert.Contains(files["Unions.cs"], "public EventListenerLiteral? AsEventListenerLiteral => Value is EventListenerLiteral value ? value : default(EventListenerLiteral?);");
         Assert.IsFalse(files["Unions.cs"].Contains("private readonly EventListener? _value1;", StringComparison.Ordinal));
         Assert.IsFalse(files["Unions.cs"].Contains("public static implicit operator EventListenerValue(EventListener value)", StringComparison.Ordinal));
     }
@@ -424,8 +464,8 @@ public sealed class PreviewBindingEmitterTests
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, File state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, string state);");
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FormData state);");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValue");
-        StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValueState");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValue(File, string, FormData)");
+        StringAssert.Contains(files["Unions.cs"], "public readonly union ElementInternalsSetFormValueState(File, string, FormData)");
         Assert.IsFalse(files["Interfaces.cs"].Contains("ElementInternalsSetFormValue? state", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("public extern void SetFormValue(SetFormValue", StringComparison.Ordinal));
     }
@@ -946,6 +986,64 @@ public sealed class PreviewBindingEmitterTests
             Assert.IsFalse(content.Contains(": IEither", StringComparison.Ordinal), path);
             Assert.IsFalse(content.Contains("[ECMAScriptUnion]", StringComparison.Ordinal), path);
         }
+    }
+
+    private static Diagnostic[] CompileGeneratedFiles(IReadOnlyDictionary<string, string> files, params string[] additionalSources)
+    {
+        const string infrastructureSource = """
+            namespace ECMAScript
+            {
+                [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = false)]
+                public sealed class ECMAScriptAttribute : System.Attribute;
+            }
+
+            namespace ECMAScript.Contract
+            {
+                public interface IUIComponent;
+            }
+
+            namespace ECMAScript.CSS
+            {
+                public static class CssNamespaceStub;
+            }
+
+            namespace ECMAScript.GPUBufferUsage
+            {
+                public static class GpuBufferUsageNamespaceStub;
+            }
+
+            namespace ECMAScript.WebAssembly
+            {
+                public static class WebAssemblyNamespaceStub;
+            }
+
+            namespace System.Runtime.CompilerServices
+            {
+                [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct, AllowMultiple = false)]
+                public sealed class UnionAttribute : System.Attribute;
+
+                public interface IUnion
+                {
+                    object? Value { get; }
+                }
+            }
+            """;
+        var parseOptions = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
+        var syntaxTrees = files
+            .Where(static pair => pair.Key is "GlobalUsings.cs" or "Unions.cs")
+            .Select(pair => CSharpSyntaxTree.ParseText(pair.Value, parseOptions, pair.Key))
+            .Concat(additionalSources.Select((source, index) => CSharpSyntaxTree.ParseText(source, parseOptions, $"Additional{index}.cs")))
+            .Append(CSharpSyntaxTree.ParseText(infrastructureSource, parseOptions, "Infrastructure.cs"))
+            .ToArray();
+        var compilation = CSharpCompilation.Create(
+            "ECMAScript.WebIDL.GeneratorTest.GeneratedPreview",
+            syntaxTrees,
+            Net110.References.All,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        return compilation.GetDiagnostics()
+            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .ToArray();
     }
 
     private static WebIdlInventory CreateInventory(params WebIdlDeclarationInventory[] declarations)

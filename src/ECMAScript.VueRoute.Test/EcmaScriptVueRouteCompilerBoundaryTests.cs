@@ -1356,6 +1356,9 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                 public static object? ReadScrollPositionTarget(ScrollPositionTarget value)
                     => value.Value;
 
+                public static object? ReadRouterViewDepthValue(RouterViewDepthValue value)
+                    => value.Value;
+
                 public static object? ReadRouterScrollResult(RouterScrollResult value)
                     => value.Value;
 
@@ -1385,10 +1388,11 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "export function readLocationQueryValue(value)");
         StringAssert.Contains(script, "export function readLocationQueryValueRaw(value)");
         StringAssert.Contains(script, "export function readScrollPositionTarget(value)");
+        StringAssert.Contains(script, "export function readRouterViewDepthValue(value)");
         StringAssert.Contains(script, "export function readRouterScrollResult(value)");
         StringAssert.Contains(script, "export function readRouterScrollHandler(value)");
         StringAssert.Contains(script, "export function readRouteRecordRaw(value)");
-        Assert.AreEqual(8, CountOccurrences(script, "return value;"));
+        Assert.AreEqual(9, CountOccurrences(script, "return value;"));
     }
 
     [TestMethod]

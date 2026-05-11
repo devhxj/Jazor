@@ -1739,6 +1739,38 @@ internal sealed class PreviewBindingEmitter
             interfaces.Add($"IEnumerable<{union.CollectionElementType}>");
         }
 
+        if (union.SupportsSystemUnionContract && union.SupportsNativeUnionSyntax)
+        {
+            builder.Append($"public readonly union {union.Name}(");
+            builder.Append(string.Join(", ", union.Branches.Select(static branch => branch.Type)));
+            builder.Append(')');
+            if (union.CollectionElementType is not null)
+            {
+                builder.Append($" : IEnumerable<{union.CollectionElementType}>");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("{");
+
+            foreach (var branch in union.Branches)
+            {
+                builder.AppendLine();
+                builder.AppendLine($"    public {ToOptionalType(branch.Type)} {branch.AccessorName} => Value {BuildNativeUnionAccessorExpression(branch.Type)};");
+            }
+
+            foreach (var branch in union.Branches)
+            {
+                builder.AppendLine();
+                builder.AppendLine($"    public static implicit operator {union.Name}({branch.Type} value)");
+                builder.AppendLine("        => new(value);");
+            }
+
+            AppendUnionCollectionMembers(builder, union);
+            builder.Append('}');
+            AppendUnionCollectionBuilder(builder, union);
+            return builder.ToString();
+        }
+
         builder.AppendLine(interfaces.Count == 0
             ? $"public readonly struct {union.Name}"
             : $"public readonly struct {union.Name} : {string.Join(", ", interfaces)}");
@@ -1805,6 +1837,15 @@ internal sealed class PreviewBindingEmitter
             }
         }
 
+        AppendUnionCollectionMembers(builder, union);
+        builder.Append('}');
+        AppendUnionCollectionBuilder(builder, union);
+
+        return builder.ToString();
+    }
+
+    private static void AppendUnionCollectionMembers(StringBuilder builder, GeneratedUnionDefinition union)
+    {
         if (union.CollectionElementType is not null && union.CollectionBranch is not null)
         {
             builder.AppendLine();
@@ -1814,9 +1855,10 @@ internal sealed class PreviewBindingEmitter
             builder.AppendLine("    IEnumerator IEnumerable.GetEnumerator()");
             builder.AppendLine($"        => ((IEnumerable<{union.CollectionElementType}>)this).GetEnumerator();");
         }
+    }
 
-        builder.Append('}');
-
+    private static void AppendUnionCollectionBuilder(StringBuilder builder, GeneratedUnionDefinition union)
+    {
         if (union.CollectionElementType is not null)
         {
             builder.AppendLine();
@@ -1828,9 +1870,10 @@ internal sealed class PreviewBindingEmitter
             builder.AppendLine("        => items.ToArray();");
             builder.Append('}');
         }
-
-        return builder.ToString();
     }
+
+    private static string BuildNativeUnionAccessorExpression(string type)
+        => $"is {type} value ? value : default({ToOptionalType(type)})";
 
     private static UnionNameContext CreateUnionNameContext(string baseName, JsonElement idlType, bool preferRequestedNameForFirstUnion)
         => new(
@@ -1873,6 +1916,9 @@ internal sealed class PreviewBindingEmitter
 
     private static bool SupportsSystemUnionContract(IReadOnlyList<GeneratedUnionBranch> branches)
         => branches.All(static branch => branch.SupportsImplicitConversion);
+
+    private static bool SupportsNativeUnionSyntax(IReadOnlyList<GeneratedUnionBranch> branches)
+        => branches.All(static branch => !branch.Type.Contains('?', StringComparison.Ordinal));
 
     private static string GetUnionConstructorAccessibility(GeneratedUnionDefinition union)
         => union.SupportsSystemUnionContract ? "public" : "private";
@@ -2116,6 +2162,7 @@ internal sealed class PreviewBindingEmitter
         string? CollectionElementType)
     {
         public bool SupportsSystemUnionContract { get; } = PreviewBindingEmitter.SupportsSystemUnionContract(Branches);
+        public bool SupportsNativeUnionSyntax { get; } = PreviewBindingEmitter.SupportsNativeUnionSyntax(Branches);
     }
 
     private sealed record GeneratedUnionBranch(
