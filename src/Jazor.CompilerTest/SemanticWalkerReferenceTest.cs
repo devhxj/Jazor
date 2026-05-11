@@ -34,8 +34,8 @@ public sealed class SemanticWalkerReferenceTest
 		var compilation = CSharpCompilation.Create(
 			assemblyName: assemblyName,
 			syntaxTrees: [
-			  CSharpSyntaxTree.ParseText(usings),
-			  CSharpSyntaxTree.ParseText(code)
+			  CSharpSyntaxTree.ParseText(usings, TestMetadataReferences.PreviewParseOptions),
+			  CSharpSyntaxTree.ParseText(code, TestMetadataReferences.PreviewParseOptions)
 			],
 			references: references,
 			options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

@@ -14,7 +14,7 @@
 真正不平衡的地方在于：
 
 - default-slot sugar 已移出 `SemanticWalker` 的 Vue 命名分块，当前由通用 `ChildrenToSlotIntrinsic` 基于 imported `h` 和同宿主 slot contract 处理；
-- `VueObject.Class` 已收敛为命名 union `VueClassValue`；这类对象成员值上的 union 应继续走显式 `[ECMAScriptUnion]` contract，而不是回退到泛型 union wrapper 或再包一层无语义 wrapper；
+- `VueObject.Class` 已收敛为命名 native union `VueClassValue`；这类对象成员值上的 union 应继续走显式强类型 union contract，而不是回退到泛型 union wrapper 或再包一层无语义 wrapper；
 - `VueSetupContext.Attrs` / `Slots` 已有真实 read-side bag，且补齐了 `VueAttributeListeners*` / `VueScopedSlots<TScope>` helper；后续应继续按使用反馈收敛 helper 族；
 - `H(...)` overload 已完成第一轮 canonical 收敛（`IVNode` + `VueChild`），但仍需要持续约束后续新增 API 不回到示例镜像扩张；
 - `Dataset`、`Style`、slot、directive value 这些高频面还缺少统一的 helper 形状。
@@ -108,7 +108,7 @@ structural-lowered record 的静态 `null` 省略应该继续作为通用优化�
 
 - compiler 只认稳定特性，不认 Vue 名字本身；
 - public surface 尽量用 C# 自己的类型系统说话；
-- 真正需要桥接的 union 继续用命名 `[ECMAScriptUnion]` 类型表达；native union 落地后再迁移到语言原生形态；
+- 真正需要桥接的 union 优先用命名 native `union` 类型表达；native union 无法保留精确 tagged projection 时使用 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback；
 - 不用 `OptionalAttribute` 这种新语法去补当前已经能由 lowering 解决的问题；
 - Vue 只作为被投影的 host contract，而不是 compiler 的特例命名空间。
 
@@ -121,4 +121,3 @@ structural-lowered record 的静态 `null` 省略应该继续作为通用优化�
 - [src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs](../../../src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs)
 - [src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs](../../../src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-

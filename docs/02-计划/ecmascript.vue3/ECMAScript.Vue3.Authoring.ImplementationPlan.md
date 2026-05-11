@@ -119,9 +119,9 @@
 
 **Status**
 
-- 已落地 `VueClassValue` 命名 `[ECMAScriptUnion]`。
-- active public surface 不再把泛型 `Either` 作为主路径。
-- 兼容层仅保留最小 `IEither` marker，用于历史识别与平滑过渡。
+- 已落地 `VueClassValue` 命名 union，并迁移到 native `union` 优先路径。
+- active public surface 不再暴露旧泛型 union wrapper 或旧 marker。
+- 旧兼容 marker 已移除；需要精确 tagged projection 的场景使用 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback。
 
 **目标**
 
@@ -322,4 +322,3 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "FullyQual
 - [docs/01-目标/ecmascript.vue3/vue3-mapping-details.md](../../01-目标/ecmascript.vue3/vue3-mapping-details.md)
 - [docs/01-目标/ecmascript/host-alignment.md](../../01-目标/ecmascript/host-alignment.md)
 - [docs/02-计划/workstream-dashboard.md](../workstream-dashboard.md)
-

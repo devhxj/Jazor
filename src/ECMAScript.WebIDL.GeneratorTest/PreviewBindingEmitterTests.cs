@@ -21,9 +21,7 @@ public sealed class PreviewBindingEmitterTests
                 }
                 """));
 
-        Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
         StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : System.Runtime.CompilerServices.IUnion, IEnumerable<string>");
-        StringAssert.Contains(files["Unions.cs"], "[ECMAScriptUnion]");
         StringAssert.Contains(files["Unions.cs"], "[System.Runtime.CompilerServices.Union]");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct ConstrainDOMString : System.Runtime.CompilerServices.IUnion, IEnumerable<string>");
         StringAssert.Contains(files["Unions.cs"], "public ConstrainDOMString(string value)");
@@ -54,8 +52,6 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["GlobalUsings.cs"], "global using ClipboardItemData = ECMAScript.PromiseResult<ECMAScript.ClipboardItemDataValue>;");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct ClipboardItemDataValue");
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct ClipboardItemDataValue : IEither", StringComparison.Ordinal));
-        Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -90,7 +86,6 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Dictionaries.cs"], "[property: Description(\"@#threshold\")]IntersectionObserverInitThreshold? Threshold = default");
-        Assert.IsFalse(files["Dictionaries.cs"].Contains("Either<", StringComparison.Ordinal));
         StringAssert.Contains(files["Unions.cs"], "public readonly struct IntersectionObserverInitThreshold : System.Runtime.CompilerServices.IUnion, IEnumerable<double>");
     }
 
@@ -134,7 +129,6 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern URLSearchParams(URLSearchParamsInit init);");
-        Assert.IsFalse(files["Interfaces.cs"].Contains("Either<", StringComparison.Ordinal));
         StringAssert.Contains(files["Unions.cs"], "public readonly struct URLSearchParamsInit : System.Runtime.CompilerServices.IUnion, IEnumerable<string[]>");
         StringAssert.Contains(files["Unions.cs"], "public static implicit operator URLSearchParamsInit(string[][] value)");
     }
@@ -177,8 +171,6 @@ public sealed class PreviewBindingEmitterTests
 
         StringAssert.Contains(files["Interfaces.cs"], "public extern void AddEventListener(string type, EventTargetAddEventListenerOptionsValue? options = default);");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct EventTargetAddEventListenerOptionsValue");
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct EventTargetAddEventListenerOptionsValue : IEither", StringComparison.Ordinal));
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct EventTargetAddEventListenerOptions : IEither", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -204,7 +196,6 @@ public sealed class PreviewBindingEmitterTests
                 }
                 """));
 
-        Assert.IsFalse(files["GlobalUsings.cs"].Contains("Either<", StringComparison.Ordinal));
         StringAssert.Contains(files["Unions.cs"], "public readonly struct BufferSource");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct AlgorithmIdentifier");
         Assert.IsFalse(files["Unions.cs"].Contains("[System.Runtime.CompilerServices.Union]", StringComparison.Ordinal));
@@ -384,8 +375,6 @@ public sealed class PreviewBindingEmitterTests
         StringAssert.Contains(files["Interfaces.cs"], "public extern void RoundRect(double x, double y, double w, double h, RoundRectRadii[] radii);");
         Assert.IsFalse(files["Interfaces.cs"].Contains("RoundRectRadiiValueValue2", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("RoundRectRadiiValueValue3", StringComparison.Ordinal));
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct RoundRectRadiiValueValue2 : IEither", StringComparison.Ordinal));
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct RoundRectRadiiValueValue3 : IEither", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -437,8 +426,6 @@ public sealed class PreviewBindingEmitterTests
         StringAssert.Contains(files["Interfaces.cs"], "public extern void SetFormValue(ElementInternalsSetFormValue value, FormData state);");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValue");
         StringAssert.Contains(files["Unions.cs"], "public readonly struct ElementInternalsSetFormValueState");
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct ElementInternalsSetFormValue : IEither", StringComparison.Ordinal));
-        Assert.IsFalse(files["Unions.cs"].Contains("public readonly struct ElementInternalsSetFormValueState : IEither", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("ElementInternalsSetFormValue? state", StringComparison.Ordinal));
         Assert.IsFalse(files["Interfaces.cs"].Contains("public extern void SetFormValue(SetFormValue", StringComparison.Ordinal));
     }
@@ -917,6 +904,7 @@ public sealed class PreviewBindingEmitterTests
                 files[relativePath] = await File.ReadAllTextAsync(file);
             }
 
+            AssertNoLegacyUnionArtifacts(files);
             return files;
         }
         finally
@@ -947,6 +935,16 @@ public sealed class PreviewBindingEmitterTests
         finally
         {
             tempDirectory.Delete(recursive: true);
+        }
+    }
+
+    private static void AssertNoLegacyUnionArtifacts(IReadOnlyDictionary<string, string> files)
+    {
+        foreach (var (path, content) in files)
+        {
+            Assert.IsFalse(content.Contains("Either<", StringComparison.Ordinal), path);
+            Assert.IsFalse(content.Contains(": IEither", StringComparison.Ordinal), path);
+            Assert.IsFalse(content.Contains("[ECMAScriptUnion]", StringComparison.Ordinal), path);
         }
     }
 

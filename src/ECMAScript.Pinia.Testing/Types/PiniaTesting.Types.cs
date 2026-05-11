@@ -52,71 +52,26 @@ public static partial class PiniaTesting
 	/// should be stubbed.
 	/// </summary>
 	[ECMAScript]
-	[ECMAScriptUnion]
 	[Description("@#")]
-	public readonly struct TestingStubActions
+	public readonly union TestingStubActions(bool, string[], PiniaTestingStubActionPredicate)
 	{
-		private readonly byte _kind;
-		private readonly bool _boolean;
-		private readonly string[]? _names;
-		private readonly PiniaTestingStubActionPredicate? _predicate;
-
-		/// <summary>
-		/// 从布尔值初始化 TestingStubActions 实例。
-		/// Initializes a TestingStubActions instance from a boolean value.
-		/// </summary>
-		/// <param name="value">是否 stub 所有 action。Whether to stub all actions.</param>
-		private TestingStubActions(bool value)
-		{
-			_kind = 1;
-			_boolean = value;
-			_names = default;
-			_predicate = default;
-		}
-
-		/// <summary>
-		/// 从 action 名称数组初始化 TestingStubActions 实例。
-		/// Initializes a TestingStubActions instance from an action name array.
-		/// </summary>
-		/// <param name="value">要 stub 的 action 名称列表。The list of action names to stub.</param>
-		private TestingStubActions(string[] value)
-		{
-			_kind = 2;
-			_boolean = default;
-			_names = value;
-			_predicate = default;
-		}
-
-		/// <summary>
-		/// 从谓词函数初始化 TestingStubActions 实例。
-		/// Initializes a TestingStubActions instance from a predicate function.
-		/// </summary>
-		/// <param name="value">用于按 action/store 粒度决定是否 stub 的谓词。The predicate that decides whether to stub on a per-action/per-store basis.</param>
-		private TestingStubActions(PiniaTestingStubActionPredicate value)
-		{
-			_kind = 3;
-			_boolean = default;
-			_names = default;
-			_predicate = value;
-		}
-
 		/// <summary>
 		/// 以布尔值形式返回，如果不是布尔变体则返回 default。
 		/// Returns the value as a boolean, or default if not a boolean variant.
 		/// </summary>
-		public bool? AsBoolean => _kind == 1 ? _boolean : default(bool?);
+		public bool? AsBoolean => Value is bool value ? value : default(bool?);
 
 		/// <summary>
 		/// 以 action 名称数组形式返回，如果不是名称列表变体则返回 default。
 		/// Returns the value as an action name array, or default if not a names variant.
 		/// </summary>
-		public string[]? AsNames => _kind == 2 ? _names : default;
+		public string[]? AsNames => Value as string[];
 
 		/// <summary>
 		/// 以谓词函数形式返回，如果不是谓词变体则返回 default。
 		/// Returns the value as a predicate, or default if not a predicate variant.
 		/// </summary>
-		public PiniaTestingStubActionPredicate? AsPredicate => _kind == 3 ? _predicate : default;
+		public PiniaTestingStubActionPredicate? AsPredicate => Value as PiniaTestingStubActionPredicate;
 
 		/// <summary>
 		/// 从布尔值创建 TestingStubActions。
@@ -145,29 +100,6 @@ public static partial class PiniaTesting
 		[ECMAScriptInline("__arg1")]
 		public extern static TestingStubActions From(PiniaTestingStubActionPredicate value);
 
-		/// <summary>
-		/// 从布尔值隐式转换为 TestingStubActions。
-		/// Implicitly converts a boolean to TestingStubActions.
-		/// </summary>
-		/// <param name="value">是否 stub 所有 action。Whether to stub all actions.</param>
-		public static implicit operator TestingStubActions(bool value)
-			=> new(value);
-
-		/// <summary>
-		/// 从 action 名称数组隐式转换为 TestingStubActions。
-		/// Implicitly converts an action name array to TestingStubActions.
-		/// </summary>
-		/// <param name="value">要 stub 的 action 名称列表。The list of action names to stub.</param>
-		public static implicit operator TestingStubActions(string[] value)
-			=> new(value);
-
-		/// <summary>
-		/// 从谓词函数隐式转换为 TestingStubActions。
-		/// Implicitly converts a predicate to TestingStubActions.
-		/// </summary>
-		/// <param name="value">用于按 action/store 粒度决定是否 stub 的谓词。The predicate that decides whether to stub on a per-action/per-store basis.</param>
-		public static implicit operator TestingStubActions(PiniaTestingStubActionPredicate value)
-			=> new(value);
 	}
 
 	/// <summary>
@@ -182,72 +114,27 @@ public static partial class PiniaTesting
 	/// </summary>
 	/// <typeparam name="TStore">谓词分支所期望的具体 store 投影类型。The concrete store projection expected by the predicate branch.</typeparam>
 	[ECMAScript]
-	[ECMAScriptUnion]
 	[Description("@#")]
-	public readonly struct TestingStubActions<TStore>
+	public readonly union TestingStubActions<TStore>(bool, string[], PiniaTestingStubActionPredicate<TStore>)
 		where TStore : class
 	{
-		private readonly byte _kind;
-		private readonly bool _boolean;
-		private readonly string[]? _names;
-		private readonly PiniaTestingStubActionPredicate<TStore>? _predicate;
-
-		/// <summary>
-		/// 从布尔值初始化 TestingStubActions&lt;TStore&gt; 实例。
-		/// Initializes a TestingStubActions&lt;TStore&gt; instance from a boolean value.
-		/// </summary>
-		/// <param name="value">是否 stub 所有 action。Whether to stub all actions.</param>
-		private TestingStubActions(bool value)
-		{
-			_kind = 1;
-			_boolean = value;
-			_names = default;
-			_predicate = default;
-		}
-
-		/// <summary>
-		/// 从 action 名称数组初始化 TestingStubActions&lt;TStore&gt; 实例。
-		/// Initializes a TestingStubActions&lt;TStore&gt; instance from an action name array.
-		/// </summary>
-		/// <param name="value">要 stub 的 action 名称列表。The list of action names to stub.</param>
-		private TestingStubActions(string[] value)
-		{
-			_kind = 2;
-			_boolean = default;
-			_names = value;
-			_predicate = default;
-		}
-
-		/// <summary>
-		/// 从谓词函数初始化 TestingStubActions&lt;TStore&gt; 实例。
-		/// Initializes a TestingStubActions&lt;TStore&gt; instance from a predicate function.
-		/// </summary>
-		/// <param name="value">用于按 action/store 粒度决定是否 stub 的强类型谓词。The strongly typed predicate that decides whether to stub on a per-action/per-store basis.</param>
-		private TestingStubActions(PiniaTestingStubActionPredicate<TStore> value)
-		{
-			_kind = 3;
-			_boolean = default;
-			_names = default;
-			_predicate = value;
-		}
-
 		/// <summary>
 		/// 以布尔值形式返回，如果不是布尔变体则返回 default。
 		/// Returns the value as a boolean, or default if not a boolean variant.
 		/// </summary>
-		public bool? AsBoolean => _kind == 1 ? _boolean : default(bool?);
+		public bool? AsBoolean => Value is bool value ? value : default(bool?);
 
 		/// <summary>
 		/// 以 action 名称数组形式返回，如果不是名称列表变体则返回 default。
 		/// Returns the value as an action name array, or default if not a names variant.
 		/// </summary>
-		public string[]? AsNames => _kind == 2 ? _names : default;
+		public string[]? AsNames => Value as string[];
 
 		/// <summary>
 		/// 以强类型谓词形式返回，如果不是谓词变体则返回 default。
 		/// Returns the value as a strongly typed predicate, or default if not a predicate variant.
 		/// </summary>
-		public PiniaTestingStubActionPredicate<TStore>? AsPredicate => _kind == 3 ? _predicate : default;
+		public PiniaTestingStubActionPredicate<TStore>? AsPredicate => Value as PiniaTestingStubActionPredicate<TStore>;
 
 		/// <summary>
 		/// 从布尔值创建 TestingStubActions&lt;TStore&gt;。
@@ -276,29 +163,6 @@ public static partial class PiniaTesting
 		[ECMAScriptInline("__arg1")]
 		public extern static TestingStubActions<TStore> From(PiniaTestingStubActionPredicate<TStore> value);
 
-		/// <summary>
-		/// 从布尔值隐式转换为 TestingStubActions&lt;TStore&gt;。
-		/// Implicitly converts a boolean to TestingStubActions&lt;TStore&gt;.
-		/// </summary>
-		/// <param name="value">是否 stub 所有 action。Whether to stub all actions.</param>
-		public static implicit operator TestingStubActions<TStore>(bool value)
-			=> new(value);
-
-		/// <summary>
-		/// 从 action 名称数组隐式转换为 TestingStubActions&lt;TStore&gt;。
-		/// Implicitly converts an action name array to TestingStubActions&lt;TStore&gt;.
-		/// </summary>
-		/// <param name="value">要 stub 的 action 名称列表。The list of action names to stub.</param>
-		public static implicit operator TestingStubActions<TStore>(string[] value)
-			=> new(value);
-
-		/// <summary>
-		/// 从强类型谓词隐式转换为 TestingStubActions&lt;TStore&gt;。
-		/// Implicitly converts a strongly typed predicate to TestingStubActions&lt;TStore&gt;.
-		/// </summary>
-		/// <param name="value">用于按 action/store 粒度决定是否 stub 的强类型谓词。The strongly typed predicate that decides whether to stub on a per-action/per-store basis.</param>
-		public static implicit operator TestingStubActions<TStore>(PiniaTestingStubActionPredicate<TStore> value)
-			=> new(value);
 	}
 
 	/// <summary>

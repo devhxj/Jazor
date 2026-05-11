@@ -165,7 +165,7 @@ Source: <https://vuejs.org/api/reactivity-utilities.html>
 | `isReactive()` | Covered | `bool IsReactive<T>(T value)` |
 | `isReadonly()` | Covered | `bool IsReadonly<T>(T value)` |
 
-这里最适合利用未来 C# union。当前版本保持 overload 优先；只有无法用 overload 表达的 object member / normalization boundary 才使用命名 `[ECMAScriptUnion]` contract。
+这里优先利用 C# native `union`。当前版本保持 overload 优先；只有无法用 overload 表达的 object member / normalization boundary 才使用命名 union contract，native union 不安全时才退到 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback。
 
 ## 10. Composition API: Reactivity Advanced
 
@@ -404,4 +404,3 @@ Status: 第一批已落地到 `src/ECMAScript.Vue3/Vue3.cs`，并由 `EcmaScript
 - [ECMAScript.Vue3 映射细节设计](./vue3-mapping-details.md)
 - [ECMAScript.Vue3 模块映射规则](./vue3-module-mapping-rules.md)
 - [src/ECMAScript.Vue3/Vue3.cs](../../../src/ECMAScript.Vue3/Vue3.cs)
-

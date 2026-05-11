@@ -42,7 +42,7 @@
 设计约束：
 
 - `string | number` 类 props 使用现有 `VueStringNumberValue`。
-- `bool | string` 类 Vuetify props 使用专用 `[ECMAScriptUnion]` 类型，例如 `VuetifyScrimValue` / `VuetifyBooleanStringValue`。
+- `bool | string` 类 Vuetify props 使用专用 union 类型，例如 `VuetifyScrimValue` / `VuetifyBooleanStringValue`；新代码优先 native `union`，需要保留精确 tagged projection 时使用 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback。
 - `bool | number | string` 类 props 按语义拆分为专用 union，例如 `VuetifyCounterValue` 和 `VuetifyRoundedValue`，避免一个过宽的通用类型掩盖 prop 语义。
 - `transition` 类 props 使用 `VuetifyTransitionValue` 覆盖 `bool | string | VueTransitionProps`，支持禁用 transition、命名 transition 和对象形式 transition props，不退回到弱 `object`。
 - 集合 item 对象使用 `[ECMAScript]` class 和 collection initializer 友好的 indexer / `Add(...)`，避免弱化为 `object`。

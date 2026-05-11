@@ -6874,197 +6874,6 @@ export function readFile(value) {
     }
 
     [TestMethod]
-    public async Task Convert_ClassUsingECMAScriptUnionMarkerProjection_GeneratesNativeValue()
-    {
-        var code = """
-            using ECMAScript;
-
-            namespace Demo
-            {
-                [ECMAScriptModule("webidl/union-marker-projection.mjs")]
-                public static class UnionMarkerProjectionModule
-                {
-                    public static string? ReadValue(UnionMarkerValue value)
-                        => value.AsString;
-                }
-
-                [ECMAScriptUnion]
-                public interface IUnionMarker
-                {
-                }
-
-                public readonly struct UnionMarkerValue : IUnionMarker
-                {
-                    public string? AsString => default;
-                }
-            }
-            """;
-
-        var (_, semanticModel) = CompileAndGetSymbol(
-            code,
-            "UnionMarkerProjectionModule",
-            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
-        var moduleSymbol = semanticModel.SyntaxTree
-            .GetRoot()
-            .DescendantNodes()
-            .OfType<ClassDeclarationSyntax>()
-            .Where(static x => x.Identifier.Text == "UnionMarkerProjectionModule")
-            .Select(x => semanticModel.GetDeclaredSymbol(x))
-            .OfType<INamedTypeSymbol>()
-            .Single();
-
-        var converter = new AstConverter(moduleSymbol, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
-        AssertScriptEqual(
-@"export function readValue(value) {
-  return value;
-}
-", script);
-    }
-
-    [TestMethod]
-    public async Task Convert_ClassUsingIEitherCompatibilityMarkerProjection_GeneratesNativeValue()
-    {
-        var code = """
-            using ECMAScript;
-
-            namespace Demo
-            {
-                [ECMAScriptModule("webidl/ieither-compatibility-marker-projection.mjs")]
-                public static class IEitherCompatibilityMarkerProjectionModule
-                {
-                    public static string? ReadValue(CompatUnionValue value)
-                        => value.AsString;
-                }
-
-                public readonly struct CompatUnionValue : IEither
-                {
-                    public string? AsString => default;
-                }
-            }
-            """;
-
-        var (_, semanticModel) = CompileAndGetSymbol(
-            code,
-            "IEitherCompatibilityMarkerProjectionModule",
-            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
-        var moduleSymbol = semanticModel.SyntaxTree
-            .GetRoot()
-            .DescendantNodes()
-            .OfType<ClassDeclarationSyntax>()
-            .Where(static x => x.Identifier.Text == "IEitherCompatibilityMarkerProjectionModule")
-            .Select(x => semanticModel.GetDeclaredSymbol(x))
-            .OfType<INamedTypeSymbol>()
-            .Single();
-
-        var converter = new AstConverter(moduleSymbol, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
-        AssertScriptEqual(
-@"export function readValue(value) {
-  return value;
-}
-", script);
-    }
-
-    [TestMethod]
-    public async Task Convert_ClassUsingECMAScriptUnionMarkerOnInterfaceProjection_GeneratesNativeValue()
-    {
-        var code = """
-            using ECMAScript;
-
-            namespace Demo
-            {
-                [ECMAScriptModule("webidl/interface-union-marker-projection.mjs")]
-                public static class InterfaceUnionMarkerProjectionModule
-                {
-                    public static string? ReadValue(InterfaceUnionMarker value)
-                        => value.AsString;
-                }
-
-                [ECMAScriptUnion]
-                public interface InterfaceUnionMarker
-                {
-                    string? AsString { get; }
-                }
-            }
-            """;
-
-        var (_, semanticModel) = CompileAndGetSymbol(
-            code,
-            "InterfaceUnionMarkerProjectionModule",
-            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
-        var moduleSymbol = semanticModel.SyntaxTree
-            .GetRoot()
-            .DescendantNodes()
-            .OfType<ClassDeclarationSyntax>()
-            .Where(static x => x.Identifier.Text == "InterfaceUnionMarkerProjectionModule")
-            .Select(x => semanticModel.GetDeclaredSymbol(x))
-            .OfType<INamedTypeSymbol>()
-            .Single();
-
-        var converter = new AstConverter(moduleSymbol, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
-        AssertScriptEqual(
-@"export function readValue(value) {
-  return value;
-}
-", script);
-    }
-
-    [TestMethod]
-    public async Task Convert_ClassUsingECMAScriptUnionMarkerDirectlyOnStructProjection_GeneratesNativeValue()
-    {
-        var code = """
-            using ECMAScript;
-
-            namespace Demo
-            {
-                [ECMAScriptModule("webidl/struct-union-marker-projection.mjs")]
-                public static class StructUnionMarkerProjectionModule
-                {
-                    public static string? ReadValue(StructUnionMarker value)
-                        => value.AsString;
-                }
-
-                [ECMAScriptUnion]
-                public readonly struct StructUnionMarker
-                {
-                    public string? AsString => default;
-                }
-            }
-            """;
-
-        var (_, semanticModel) = CompileAndGetSymbol(
-            code,
-            "StructUnionMarkerProjectionModule",
-            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
-        var moduleSymbol = semanticModel.SyntaxTree
-            .GetRoot()
-            .DescendantNodes()
-            .OfType<ClassDeclarationSyntax>()
-            .Where(static x => x.Identifier.Text == "StructUnionMarkerProjectionModule")
-            .Select(x => semanticModel.GetDeclaredSymbol(x))
-            .OfType<INamedTypeSymbol>()
-            .Single();
-
-        var converter = new AstConverter(moduleSymbol, semanticModel);
-        var module = await converter.Convert();
-        var script = module?.ToKnRECMAScript();
-
-        AssertScriptEqual(
-@"export function readValue(value) {
-  return value;
-}
-", script);
-    }
-
-    [TestMethod]
     public async Task Convert_ClassUsingSystemUnionMarkerProjection_GeneratesNativeValue()
     {
         var code = """
@@ -7132,6 +6941,60 @@ export function readValue(value) {
   return value;
 }
 ", script);
+    }
+
+    [TestMethod]
+    public async Task Convert_ClassUsingRuntimeIUnionWithoutSystemUnionAttribute_ThrowsUnsupportedExternalPropertyAccess()
+    {
+        var code = """
+            using System;
+            using ECMAScript;
+
+            namespace System.Runtime.CompilerServices
+            {
+                public interface IUnion
+                {
+                    object? Value { get; }
+                }
+            }
+
+            namespace Demo
+            {
+                [ECMAScriptModule("webidl/runtime-iunion-without-union-attribute-projection.mjs")]
+                public static class RuntimeIUnionProjectionModule
+                {
+                    public static object? ReadValue(RuntimeIUnionValue value)
+                        => value.Value;
+                }
+
+                [ECMAScript]
+                public readonly struct RuntimeIUnionValue : System.Runtime.CompilerServices.IUnion
+                {
+                    public string? AsString => default;
+
+                    public object? Value => default;
+                }
+            }
+            """;
+
+        var (_, semanticModel) = CompileAndGetSymbol(
+            code,
+            "RuntimeIUnionProjectionModule",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var moduleSymbol = semanticModel.SyntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(static x => x.Identifier.Text == "RuntimeIUnionProjectionModule")
+            .Select(x => semanticModel.GetDeclaredSymbol(x))
+            .OfType<INamedTypeSymbol>()
+            .Single();
+
+        var converter = new AstConverter(moduleSymbol, semanticModel);
+
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+        StringAssert.Contains(exception.Message, "External member 'Demo.RuntimeIUnionValue.Value.get' is not supported");
+        StringAssert.Contains(exception.Message, "property access");
     }
 
     [TestMethod]
@@ -7246,6 +7109,12 @@ export function readValue(value) {
             [ECMAScriptModule("vue/value-union-projection.mjs")]
             public static class TestClass
             {
+                public static object? ReadComputed(VueComputedValue<string> value)
+                    => value.Value;
+
+                public static object? ReadWatch(VueWatchDeclaration<string> value)
+                    => value.Value;
+
                 public static object? Read(VueStringNumberValue value)
                     => value.Value;
 
@@ -7275,15 +7144,19 @@ export function readValue(value) {
         var module = await converter.Convert();
         var script = module?.ToKnRECMAScript();
 
-        AssertScriptEqual(
-@"export function read(value) {
+AssertScriptEqual(
+@"export function readComputed(value) {
   return value;
 }
-
+export function readWatch(value) {
+  return value;
+}
+export function read(value) {
+  return value;
+}
 export function readInjectFrom(value) {
   return value;
 }
-
 export function readPropDeclaration(value) {
   return value;
 }

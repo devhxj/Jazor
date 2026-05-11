@@ -108,7 +108,6 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VueNamesOrOptions), canonicalEmits.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalProps.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VueNamesOrOptions), slotCanonicalEmits.PropertyType.UnwrapNullable());
-        Assert.IsNull(typeof(VueNamesOrOptions).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsNotNull(typeof(VueNamesOrOptions).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
         Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(VueNamesOrOptions)));
         Assert.IsTrue(typeof(System.Collections.Generic.IEnumerable<string>).IsAssignableFrom(typeof(VueNamesOrOptions)));
@@ -141,18 +140,6 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(typeof(IAllowSharedBufferSource).IsAssignableFrom(typeof(ArrayBuffer)));
         Assert.IsTrue(typeof(IAllowSharedBufferSource).IsAssignableFrom(typeof(SharedArrayBuffer)));
         Assert.IsTrue(typeof(IAllowSharedBufferSource).IsAssignableFrom(typeof(Uint8Array)));
-    }
-
-    [TestMethod]
-    public void ECMAScript_IEither_IsHiddenCompatibilityUnionMarker()
-    {
-        var marker = typeof(IEither);
-        var editorBrowsable = marker.GetCustomAttribute<System.ComponentModel.EditorBrowsableAttribute>();
-
-        Assert.IsNotNull(marker.GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNull(marker.GetCustomAttribute<ECMAScriptAttribute>());
-        Assert.IsNotNull(editorBrowsable);
-        Assert.AreEqual(System.ComponentModel.EditorBrowsableState.Never, editorBrowsable!.State);
     }
 
     [TestMethod]
@@ -403,7 +390,6 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsNull(typeof(VueObject).GetProperty("ReadOnly", BindingFlags.Public | BindingFlags.Instance));
         Assert.IsNull(typeof(VueObject).GetProperty("TabIndex", BindingFlags.Public | BindingFlags.Instance));
         Assert.AreEqual(typeof(VueClassValue), @class.PropertyType.UnwrapNullable());
-        Assert.IsNull(typeof(VueClassValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsNotNull(typeof(VueClassValue).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
         Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(VueClassValue)));
 
@@ -422,6 +408,16 @@ public sealed class EcmaScriptVueProxyTests
     [TestMethod]
     public void Vue_ErasedValueUnions_UseNet11UnionContract()
     {
+        AssertNet11UnionContract(typeof(VueComputedValue<int>), typeof(Func<int>), typeof(VueWritableComputedOptions<int>));
+        AssertNet11UnionContract(
+            typeof(VueWatchDeclaration<int>),
+            typeof(string),
+            typeof(Action<int, int>),
+            typeof(VueWatchCleanupCallback<int>),
+            typeof(VueWatchHandlerOptions<int>),
+            typeof(VueWatchCleanupHandlerOptions<int>),
+            typeof(VueWatchNamedHandlerOptions),
+            typeof(VueWatchEntries<int>));
         AssertNet11UnionContract(typeof(VueInjectFrom<int>), typeof(string), typeof(VueInjectionKey<int>), typeof(Symbol));
         AssertNet11UnionContract(typeof(VuePropDeclaration<int>), typeof(VuePropType), typeof(VuePropType[]), typeof(VuePropOptions<int>));
         AssertNet11UnionContract(typeof(VueClassValue), typeof(string), typeof(string[]), typeof(VueProps), typeof(VueValue[]));
@@ -1960,28 +1956,6 @@ public sealed class EcmaScriptVueProxyTests
     {
         var computedUnionType = typeof(VueComputedValue<int>);
         var watchDeclarationType = typeof(VueWatchDeclaration<int>);
-        var injectFromType = typeof(VueInjectFrom<int>);
-        var propDeclarationType = typeof(VuePropDeclaration<int>);
-        var computedImplicitSources = computedUnionType
-            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VueComputedValue<int>))
-            .Select(static method => method.GetParameters().Single().ParameterType)
-            .ToArray();
-        var watchImplicitSources = watchDeclarationType
-            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VueWatchDeclaration<int>))
-            .Select(static method => method.GetParameters().Single().ParameterType)
-            .ToArray();
-        var injectImplicitSources = injectFromType
-            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VueInjectFrom<int>))
-            .Select(static method => method.GetParameters().Single().ParameterType)
-            .ToArray();
-        var propImplicitSources = propDeclarationType
-            .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(static method => method.Name == "op_Implicit" && method.ReturnType == typeof(VuePropDeclaration<int>))
-            .Select(static method => method.GetParameters().Single().ParameterType)
-            .ToArray();
         var componentRegistryIndexer = typeof(VueComponentRegistry).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
         var eventHandlersIndexer = typeof(VueEventHandlers).GetProperty("Item", BindingFlags.Public | BindingFlags.Instance);
         var typedEventHandlersIndexer = typeof(VueEventHandlers<>)
@@ -1994,7 +1968,7 @@ public sealed class EcmaScriptVueProxyTests
 
         CollectionAssert.AreEquivalent(
             new[] { typeof(Func<int>), typeof(VueWritableComputedOptions<int>) },
-            computedImplicitSources);
+            GetUnionConstructorBranchTypes(computedUnionType));
         CollectionAssert.AreEquivalent(
             new[]
             {
@@ -2006,13 +1980,7 @@ public sealed class EcmaScriptVueProxyTests
                 typeof(VueWatchNamedHandlerOptions),
                 typeof(VueWatchEntries<int>)
             },
-            watchImplicitSources);
-        CollectionAssert.AreEquivalent(
-            new[] { typeof(string), typeof(VueInjectionKey<int>), typeof(Symbol) },
-            injectImplicitSources);
-        CollectionAssert.AreEquivalent(
-            new[] { typeof(VuePropType), typeof(VuePropType[]), typeof(VuePropOptions<int>) },
-            propImplicitSources);
+            GetUnionConstructorBranchTypes(watchDeclarationType));
 
         Assert.IsNotNull(componentRegistryIndexer);
         Assert.IsNotNull(eventHandlersIndexer);
@@ -2477,7 +2445,8 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(
             typeof(VueWatchDeclaration<int>),
             indexer!.PropertyType.UnwrapNullable());
-        Assert.IsNotNull(typeof(VueWatchDeclaration<int>).GetCustomAttribute<ECMAScriptUnionAttribute>());
+        Assert.IsNotNull(typeof(VueWatchDeclaration<int>).GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>());
+        Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(typeof(VueWatchDeclaration<int>)));
         CollectionAssert.AreEqual(new[] { typeof(string) }, indexer.GetIndexParameters().Select(static parameter => parameter.ParameterType).ToArray());
         Assert.AreEqual(7, addMethods.Length);
         Assert.IsTrue(addMethods.Any(method =>
@@ -3090,6 +3059,9 @@ public sealed class EcmaScriptVueProxyTests
         Assert.IsTrue(optionTypes.Length > 0);
         foreach (var property in optionTypes.SelectMany(static type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)))
         {
+            if (IsUnionValueProperty(property))
+                continue;
+
             Assert.AreNotEqual(typeof(object), property.PropertyType.UnwrapNullable(), $"{property.DeclaringType?.Name}.{property.Name}");
         }
     }
@@ -3155,13 +3127,9 @@ public sealed class EcmaScriptVueProxyTests
     public void Vuetify_ValueAndUnionTypes_ExposeStronglyTypedContracts()
     {
         Assert.IsNotNull(typeof(VuetifyHideDetailsValue).GetCustomAttribute<ECMAScriptAttribute>());
-        Assert.IsNotNull(typeof(VuetifyHideDetailsValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsNotNull(typeof(VuetifyMessagesValue).GetCustomAttribute<ECMAScriptAttribute>());
-        Assert.IsNotNull(typeof(VuetifyMessagesValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsNotNull(typeof(VuetifyScrimValue).GetCustomAttribute<ECMAScriptAttribute>());
-        Assert.IsNotNull(typeof(VuetifyScrimValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.IsNotNull(typeof(VuetifyDisplayBreakpoint).GetCustomAttribute<ECMAScriptAttribute>());
-        Assert.IsNotNull(typeof(VuetifyDisplayBreakpoint).GetCustomAttribute<ECMAScriptUnionAttribute>());
         CollectionAssert.AreEqual(
             new[] { "elevated", "flat", "outlined", "plain", "text", "tonal" },
             GetStringEnumRuntimeValues(typeof(VuetifyVariant)));
@@ -3219,11 +3187,6 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual("__arg1", typeof(VuetifyDisplayBreakpoint).GetMethod(nameof(VuetifyDisplayBreakpoint.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
         Assert.AreEqual("__arg1", typeof(VuetifyDisplayBreakpoint).GetMethod(nameof(VuetifyDisplayBreakpoint.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 
-        Assert.IsNotNull(typeof(VuetifyAutoSelectFirstValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyFileShowSizeValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyBooleanAlwaysValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyFileModelValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyRangeSliderModelValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.AreEqual(typeof(bool), typeof(VuetifyAutoSelectFirstValue).GetProperty(nameof(VuetifyAutoSelectFirstValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyAutoSelectFirstMode), typeof(VuetifyAutoSelectFirstValue).GetProperty(nameof(VuetifyAutoSelectFirstValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyAutoSelectFirstValue), typeof(VuetifyAutoSelectFirstValue).GetMethod(nameof(VuetifyAutoSelectFirstValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
@@ -3238,13 +3201,11 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VuetifyAlwaysMode), typeof(VuetifyBooleanAlwaysValue).GetProperty(nameof(VuetifyBooleanAlwaysValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyBooleanAlwaysValue), typeof(VuetifyBooleanAlwaysValue).GetMethod(nameof(VuetifyBooleanAlwaysValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
         Assert.AreEqual(typeof(VuetifyBooleanAlwaysValue), typeof(VuetifyBooleanAlwaysValue).GetMethod(nameof(VuetifyBooleanAlwaysValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(VuetifyAlwaysMode)])!.ReturnType);
-        Assert.IsNotNull(typeof(VuetifyBooleanStringValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.AreEqual(typeof(bool), typeof(VuetifyBooleanStringValue).GetProperty(nameof(VuetifyBooleanStringValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyBooleanStringValue).GetProperty(nameof(VuetifyBooleanStringValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyBooleanStringValue), typeof(VuetifyBooleanStringValue).GetMethod(nameof(VuetifyBooleanStringValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
         Assert.AreEqual(typeof(VuetifyBooleanStringValue), typeof(VuetifyBooleanStringValue).GetMethod(nameof(VuetifyBooleanStringValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
         Assert.AreEqual("__arg1", typeof(VuetifyBooleanStringValue).GetMethod(nameof(VuetifyBooleanStringValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.IsNotNull(typeof(VuetifyCounterValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.AreEqual(typeof(bool), typeof(VuetifyCounterValue).GetProperty(nameof(VuetifyCounterValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyCounterValue).GetProperty(nameof(VuetifyCounterValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyCounterValue).GetProperty(nameof(VuetifyCounterValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
@@ -3252,18 +3213,15 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VuetifyCounterValue), typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
         Assert.AreEqual(typeof(VuetifyCounterValue), typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(string)])!.ReturnType);
         Assert.AreEqual("__arg1", typeof(VuetifyCounterValue).GetMethod(nameof(VuetifyCounterValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-        Assert.IsNotNull(typeof(VuetifyTextValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.AreEqual(typeof(string), typeof(VuetifyTextValue).GetProperty(nameof(VuetifyTextValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyTextValue).GetProperty(nameof(VuetifyTextValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(bool), typeof(VuetifyTextValue).GetProperty(nameof(VuetifyTextValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyTextValue), typeof(VuetifyTextValue).GetMethod(nameof(VuetifyTextValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
-        Assert.IsNotNull(typeof(VuetifyRoundedValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.AreEqual(typeof(bool), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(Number), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsNumber), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(string), typeof(VuetifyRoundedValue).GetProperty(nameof(VuetifyRoundedValue.AsString), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyRoundedValue), typeof(VuetifyRoundedValue).GetMethod(nameof(VuetifyRoundedValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
         Assert.AreEqual(typeof(VuetifyRoundedValue), typeof(VuetifyRoundedValue).GetMethod(nameof(VuetifyRoundedValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number)])!.ReturnType);
-        Assert.IsNotNull(typeof(VuetifyProgressCircularIndeterminateValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
         Assert.AreEqual(typeof(bool), typeof(VuetifyProgressCircularIndeterminateValue).GetProperty(nameof(VuetifyProgressCircularIndeterminateValue.AsBool), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyProgressCircularIndeterminateMode), typeof(VuetifyProgressCircularIndeterminateValue).GetProperty(nameof(VuetifyProgressCircularIndeterminateValue.AsMode), BindingFlags.Public | BindingFlags.Instance)!.PropertyType.UnwrapNullable());
         Assert.AreEqual(typeof(VuetifyProgressCircularIndeterminateValue), typeof(VuetifyProgressCircularIndeterminateValue).GetMethod(nameof(VuetifyProgressCircularIndeterminateValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(bool)])!.ReturnType);
@@ -3277,16 +3235,6 @@ public sealed class EcmaScriptVueProxyTests
         Assert.AreEqual(typeof(VuetifyRangeSliderModelValue), typeof(VuetifyRangeSliderModelValue).GetMethod(nameof(VuetifyRangeSliderModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number), typeof(Number)])!.ReturnType);
         Assert.AreEqual("[__arg1, __arg2]", typeof(VuetifyRangeSliderModelValue).GetMethod(nameof(VuetifyRangeSliderModelValue.From), BindingFlags.Public | BindingFlags.Static, [typeof(Number), typeof(Number)])!.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 
-        Assert.IsNotNull(typeof(VuetifySelectItems).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifySelectModelValues).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifySelectModelValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifySelectItemValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifySelectItemKey).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifySelectItemPropsSelector).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyBreadcrumbItems).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyBreadcrumbItemValue).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyDataTableHeaders).GetCustomAttribute<ECMAScriptUnionAttribute>());
-        Assert.IsNotNull(typeof(VuetifyDataTableItems).GetCustomAttribute<ECMAScriptUnionAttribute>());
         var selectModelValuesCollectionBuilder = typeof(VuetifySelectModelValues).GetCustomAttribute<System.Runtime.CompilerServices.CollectionBuilderAttribute>();
         Assert.IsNotNull(selectModelValuesCollectionBuilder);
         Assert.AreEqual(typeof(VuetifySelectModelValuesCollectionBuilder), selectModelValuesCollectionBuilder!.BuilderType);
@@ -3471,7 +3419,6 @@ public sealed class EcmaScriptVueProxyTests
 
     private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)
     {
-        Assert.IsNull(unionType.GetCustomAttribute<ECMAScriptUnionAttribute>(), unionType.FullName);
         Assert.IsNotNull(unionType.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>(), unionType.FullName);
         Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(unionType), unionType.FullName);
 
@@ -3501,7 +3448,7 @@ public sealed class EcmaScriptVueProxyTests
 
             Assert.IsFalse(
                 left.IsAssignableFrom(right),
-                $"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged ECMAScriptUnion wrapper to preserve exact AsX projections.");
+                $"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged [Union] + IUnion wrapper to preserve exact AsX projections.");
         }
     }
 
@@ -3512,6 +3459,13 @@ public sealed class EcmaScriptVueProxyTests
     private static bool IsUnionValueProperty(PropertyInfo property)
         => property.Name == nameof(System.Runtime.CompilerServices.IUnion.Value) &&
            typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(property.DeclaringType);
+
+    private static Type[] GetUnionConstructorBranchTypes(Type unionType)
+        => unionType
+            .GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+            .Select(static constructor => constructor.GetParameters().SingleOrDefault()?.ParameterType)
+            .Where(static type => type is not null)
+            .ToArray()!;
 
     private static void AssertEcmaScriptImport(Type type, string expectedImport)
     {

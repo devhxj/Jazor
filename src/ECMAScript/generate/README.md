@@ -1,8 +1,8 @@
 # Historical Generate Directory
 
 `src/ECMAScript/generate/` is a historical repository artifact. The legacy generated
-C# files were removed when the public union surface moved off `Either<...>` /
-`IEither` and onto named native/fallback union contracts.
+C# files were removed when the public union surface moved onto named native/fallback
+union contracts.
 
 - It is excluded by [`src/ECMAScript/ECMAScript.csproj`](../ECMAScript.csproj).
 - It does not participate in the current `ECMAScript` compile pipeline.

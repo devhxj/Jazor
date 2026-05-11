@@ -14,7 +14,7 @@ Vue3 映射不是把 Vue 文档示例逐字镜像成 C# API，而是在 C# autho
 | C# authoring | 优先使用 record、overload、generic、delegate、attribute、nullable、IntelliSense |
 | compiler 参与 | 只识别通用 lowering、基础绑定特性和少量稳定 host contract |
 | Vue 专用逻辑 | 只能作为无法用通用能力表达时的最后手段，并且要有迁移退出路径 |
-| union 表达 | 方法边界优先 overload；对象成员值或 normalization boundary 无法 overload 时使用命名 `[ECMAScriptUnion]` contract，未来可迁移到 C# native union |
+| union 表达 | 方法边界优先 overload；对象成员值或 normalization boundary 无法 overload 时优先使用命名 native `union` contract；native union 无法保留精确 tagged projection 时使用 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback |
 
 这意味着：
 
@@ -294,7 +294,7 @@ H("button", new Vue3.VueObject
 设计约束：
 
 - 方法参数边界如果 overload 能表达，优先 overload。
-- object 成员值无法 overload 时，使用命名的 `[ECMAScriptUnion]` bridge type，例如 `VueValue`、`VueClassValue`、`VueComputedValue<TValue>`。
+- object 成员值无法 overload 时，使用命名的 native `union` bridge type，例如 `VueValue`、`VueClassValue`、`VueComputedValue<TValue>`；native union 不安全时才使用 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback。
 - 不引入只有“给旧的泛型 union wrapper 换个名字”但没有稳定公共语义的包装；命名 union 必须对应一个真实、可复用的 host contract。
 
 ### 5.4 `VueEventHandlers`
@@ -1396,4 +1396,3 @@ app.use(installFeature, { enabled: true });
 - [src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs](../../../src/Jazor.Compiler/core/SemanticWalker.cs.Creation.cs)
 - [src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs](../../../src/Jazor.Compiler/core/ChildrenToSlotIntrinsic.cs)
 - [src/Jazor.Compiler/ImplementationPrinciples.md](../../../src/Jazor.Compiler/ImplementationPrinciples.md)
-

@@ -1717,7 +1717,6 @@ internal sealed class PreviewBindingEmitter
         builder.AppendLine($"/// {union.Name}");
         builder.AppendLine("/// </summary>");
         builder.AppendLine("[ECMAScript]");
-        builder.AppendLine("[ECMAScriptUnion]");
         if (union.SupportsSystemUnionContract)
         {
             builder.AppendLine("[System.Runtime.CompilerServices.Union]");
