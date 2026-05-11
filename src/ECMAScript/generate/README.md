@@ -1,6 +1,8 @@
 # Historical Generate Directory
 
-`src/ECMAScript/generate/` is a historical repository artifact.
+`src/ECMAScript/generate/` is a historical repository artifact. The legacy generated
+C# files were removed when the public union surface moved off `Either<...>` /
+`IEither` and onto named native/fallback union contracts.
 
 - It is excluded by [`src/ECMAScript/ECMAScript.csproj`](../ECMAScript.csproj).
 - It does not participate in the current `ECMAScript` compile pipeline.
@@ -12,4 +14,4 @@ Do not treat files in this directory as the current source of truth for:
 - current union strategy
 - active generated binding shape
 
-If a binding or union behavior needs to change, update the active generator and the active `webidl/generate` output instead of patching this directory.
+If a binding or union behavior needs to change, update the active generator and the active `webidl/generate` output instead of restoring or patching archived generated files here.

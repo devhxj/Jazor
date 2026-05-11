@@ -4,7 +4,6 @@ namespace ECMAScript;
 /// AddBefore
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AddBefore : System.Runtime.CompilerServices.IUnion
@@ -49,7 +48,6 @@ public readonly struct AddBefore : System.Runtime.CompilerServices.IUnion
 /// AddEventListenerOptionsValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AddEventListenerOptionsValue : System.Runtime.CompilerServices.IUnion
@@ -94,7 +92,6 @@ public readonly struct AddEventListenerOptionsValue : System.Runtime.CompilerSer
 /// AddRoutesRules
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(AddRoutesRulesCollectionBuilder), nameof(AddRoutesRulesCollectionBuilder.Create))]
@@ -153,7 +150,6 @@ public static class AddRoutesRulesCollectionBuilder
 /// AfterNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AfterNodes : System.Runtime.CompilerServices.IUnion
@@ -198,7 +194,6 @@ public readonly struct AfterNodes : System.Runtime.CompilerServices.IUnion
 /// AlgorithmIdentifier
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct AlgorithmIdentifier
 {
@@ -235,7 +230,6 @@ public readonly struct AlgorithmIdentifier
 /// AllowSharedBufferSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct AllowSharedBufferSource
 {
@@ -327,7 +321,6 @@ public readonly struct AllowSharedBufferSource
 /// AllowedBluetoothDeviceAllowedServices
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(AllowedBluetoothDeviceAllowedServicesCollectionBuilder), nameof(AllowedBluetoothDeviceAllowedServicesCollectionBuilder.Create))]
@@ -386,7 +379,6 @@ public static class AllowedBluetoothDeviceAllowedServicesCollectionBuilder
 /// AnimateOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AnimateOptions : System.Runtime.CompilerServices.IUnion
@@ -431,7 +423,6 @@ public readonly struct AnimateOptions : System.Runtime.CompilerServices.IUnion
 /// AppendNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AppendNodes : System.Runtime.CompilerServices.IUnion
@@ -476,7 +467,6 @@ public readonly struct AppendNodes : System.Runtime.CompilerServices.IUnion
 /// ArrayBufferView
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ArrayBufferView : System.Runtime.CompilerServices.IUnion
@@ -818,7 +808,6 @@ public readonly struct ArrayBufferView : System.Runtime.CompilerServices.IUnion
 /// AssignNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AssignNodes : System.Runtime.CompilerServices.IUnion
@@ -863,7 +852,6 @@ public readonly struct AssignNodes : System.Runtime.CompilerServices.IUnion
 /// AudioContextOptionsLatencyHint
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AudioContextOptionsLatencyHint : System.Runtime.CompilerServices.IUnion
@@ -908,7 +896,6 @@ public readonly struct AudioContextOptionsLatencyHint : System.Runtime.CompilerS
 /// AudioContextOptionsRenderSizeHint
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AudioContextOptionsRenderSizeHint : System.Runtime.CompilerServices.IUnion
@@ -953,7 +940,6 @@ public readonly struct AudioContextOptionsRenderSizeHint : System.Runtime.Compil
 /// AudioContextOptionsSinkId
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AudioContextOptionsSinkId : System.Runtime.CompilerServices.IUnion
@@ -998,7 +984,6 @@ public readonly struct AudioContextOptionsSinkId : System.Runtime.CompilerServic
 /// AudioContextSetSinkId
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AudioContextSetSinkId : System.Runtime.CompilerServices.IUnion
@@ -1043,7 +1028,6 @@ public readonly struct AudioContextSetSinkId : System.Runtime.CompilerServices.I
 /// AudioContextSinkId
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AudioContextSinkId : System.Runtime.CompilerServices.IUnion
@@ -1088,7 +1072,6 @@ public readonly struct AudioContextSinkId : System.Runtime.CompilerServices.IUni
 /// BackgroundFetchManagerFetchRequests
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BackgroundFetchManagerFetchRequestsCollectionBuilder), nameof(BackgroundFetchManagerFetchRequestsCollectionBuilder.Create))]
@@ -1147,7 +1130,6 @@ public static class BackgroundFetchManagerFetchRequestsCollectionBuilder
 /// BasePropertyIndexedKeyframeComposite
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeCompositeCollectionBuilder), nameof(BasePropertyIndexedKeyframeCompositeCollectionBuilder.Create))]
@@ -1206,7 +1188,6 @@ public static class BasePropertyIndexedKeyframeCompositeCollectionBuilder
 /// BasePropertyIndexedKeyframeEasing
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeEasingCollectionBuilder), nameof(BasePropertyIndexedKeyframeEasingCollectionBuilder.Create))]
@@ -1265,7 +1246,6 @@ public static class BasePropertyIndexedKeyframeEasingCollectionBuilder
 /// BasePropertyIndexedKeyframeOffset
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeOffsetCollectionBuilder), nameof(BasePropertyIndexedKeyframeOffsetCollectionBuilder.Create))]
@@ -1324,7 +1304,6 @@ public static class BasePropertyIndexedKeyframeOffsetCollectionBuilder
 /// BeforeNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BeforeNodes : System.Runtime.CompilerServices.IUnion
@@ -1369,7 +1348,6 @@ public readonly struct BeforeNodes : System.Runtime.CompilerServices.IUnion
 /// BinaryData
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct BinaryData
 {
@@ -1445,7 +1423,6 @@ public readonly struct BinaryData
 /// BlobPart
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct BlobPart
 {
@@ -1540,7 +1517,6 @@ public readonly struct BlobPart
 /// BluetoothAdvertisingEventInitUUIDs
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothAdvertisingEventInitUUIDs : System.Runtime.CompilerServices.IUnion
@@ -1585,7 +1561,6 @@ public readonly struct BluetoothAdvertisingEventInitUUIDs : System.Runtime.Compi
 /// BluetoothCharacteristicUUID
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothCharacteristicUUID : System.Runtime.CompilerServices.IUnion
@@ -1630,7 +1605,6 @@ public readonly struct BluetoothCharacteristicUUID : System.Runtime.CompilerServ
 /// BluetoothDescriptorUUID
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothDescriptorUUID : System.Runtime.CompilerServices.IUnion
@@ -1675,7 +1649,6 @@ public readonly struct BluetoothDescriptorUUID : System.Runtime.CompilerServices
 /// BluetoothServiceUUID
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothServiceUUID : System.Runtime.CompilerServices.IUnion
@@ -1720,7 +1693,6 @@ public readonly struct BluetoothServiceUUID : System.Runtime.CompilerServices.IU
 /// BluetoothUUIDGetCharacteristicName
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothUUIDGetCharacteristicName : System.Runtime.CompilerServices.IUnion
@@ -1765,7 +1737,6 @@ public readonly struct BluetoothUUIDGetCharacteristicName : System.Runtime.Compi
 /// BluetoothUUIDGetDescriptorName
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothUUIDGetDescriptorName : System.Runtime.CompilerServices.IUnion
@@ -1810,7 +1781,6 @@ public readonly struct BluetoothUUIDGetDescriptorName : System.Runtime.CompilerS
 /// BluetoothUUIDGetServiceName
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BluetoothUUIDGetServiceName : System.Runtime.CompilerServices.IUnion
@@ -1855,7 +1825,6 @@ public readonly struct BluetoothUUIDGetServiceName : System.Runtime.CompilerServ
 /// BodyInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct BodyInit : System.Runtime.CompilerServices.IUnion
@@ -1900,7 +1869,6 @@ public readonly struct BodyInit : System.Runtime.CompilerServices.IUnion
 /// BufferSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct BufferSource
 {
@@ -1976,7 +1944,6 @@ public readonly struct BufferSource
 /// CSSFontFeatureValuesMapSetValues
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CSSFontFeatureValuesMapSetValuesCollectionBuilder), nameof(CSSFontFeatureValuesMapSetValuesCollectionBuilder.Create))]
@@ -2035,7 +2002,6 @@ public static class CSSFontFeatureValuesMapSetValuesCollectionBuilder
 /// CSSPseudoElementParent
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSPseudoElementParent : System.Runtime.CompilerServices.IUnion
@@ -2080,7 +2046,6 @@ public readonly struct CSSPseudoElementParent : System.Runtime.CompilerServices.
 /// CanvasImageSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CanvasImageSource : System.Runtime.CompilerServices.IUnion
@@ -2205,7 +2170,6 @@ public readonly struct CanvasImageSource : System.Runtime.CompilerServices.IUnio
 /// CanvasRenderingContext2DFillStyle
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CanvasRenderingContext2DFillStyle : System.Runtime.CompilerServices.IUnion
@@ -2267,7 +2231,6 @@ public readonly struct CanvasRenderingContext2DFillStyle : System.Runtime.Compil
 /// CanvasRenderingContext2DRoundRectRadii
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CanvasRenderingContext2DRoundRectRadii : System.Runtime.CompilerServices.IUnion
@@ -2312,7 +2275,6 @@ public readonly struct CanvasRenderingContext2DRoundRectRadii : System.Runtime.C
 /// CanvasRenderingContext2DRoundRectRadiiValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder), nameof(CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder.Create))]
@@ -2388,7 +2350,6 @@ public static class CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder
 /// CanvasRenderingContext2DStrokeStyle
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CanvasRenderingContext2DStrokeStyle : System.Runtime.CompilerServices.IUnion
@@ -2450,7 +2411,6 @@ public readonly struct CanvasRenderingContext2DStrokeStyle : System.Runtime.Comp
 /// CharacterDataAfterNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CharacterDataAfterNodes : System.Runtime.CompilerServices.IUnion
@@ -2495,7 +2455,6 @@ public readonly struct CharacterDataAfterNodes : System.Runtime.CompilerServices
 /// CharacterDataBeforeNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CharacterDataBeforeNodes : System.Runtime.CompilerServices.IUnion
@@ -2540,7 +2499,6 @@ public readonly struct CharacterDataBeforeNodes : System.Runtime.CompilerService
 /// CharacterDataReplaceWithNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CharacterDataReplaceWithNodes : System.Runtime.CompilerServices.IUnion
@@ -2585,7 +2543,6 @@ public readonly struct CharacterDataReplaceWithNodes : System.Runtime.CompilerSe
 /// ClipboardItemDataValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ClipboardItemDataValue : System.Runtime.CompilerServices.IUnion
@@ -2630,7 +2587,6 @@ public readonly struct ClipboardItemDataValue : System.Runtime.CompilerServices.
 /// ConstrainBoolean
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ConstrainBoolean : System.Runtime.CompilerServices.IUnion
@@ -2675,7 +2631,6 @@ public readonly struct ConstrainBoolean : System.Runtime.CompilerServices.IUnion
 /// ConstrainDOMString
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringCollectionBuilder), nameof(ConstrainDOMStringCollectionBuilder.Create))]
@@ -2751,7 +2706,6 @@ public static class ConstrainDOMStringCollectionBuilder
 /// ConstrainDOMStringParametersExact
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringParametersExactCollectionBuilder), nameof(ConstrainDOMStringParametersExactCollectionBuilder.Create))]
@@ -2810,7 +2764,6 @@ public static class ConstrainDOMStringParametersExactCollectionBuilder
 /// ConstrainDOMStringParametersIdeal
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringParametersIdealCollectionBuilder), nameof(ConstrainDOMStringParametersIdealCollectionBuilder.Create))]
@@ -2869,7 +2822,6 @@ public static class ConstrainDOMStringParametersIdealCollectionBuilder
 /// ConstrainDouble
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ConstrainDouble : System.Runtime.CompilerServices.IUnion
@@ -2914,7 +2866,6 @@ public readonly struct ConstrainDouble : System.Runtime.CompilerServices.IUnion
 /// ConstrainPoint2D
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainPoint2DCollectionBuilder), nameof(ConstrainPoint2DCollectionBuilder.Create))]
@@ -2973,7 +2924,6 @@ public static class ConstrainPoint2DCollectionBuilder
 /// ConstrainULong
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ConstrainULong : System.Runtime.CompilerServices.IUnion
@@ -3018,7 +2968,6 @@ public readonly struct ConstrainULong : System.Runtime.CompilerServices.IUnion
 /// CreateElementNSOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CreateElementNSOptions : System.Runtime.CompilerServices.IUnion
@@ -3063,7 +3012,6 @@ public readonly struct CreateElementNSOptions : System.Runtime.CompilerServices.
 /// CreateElementOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CreateElementOptions : System.Runtime.CompilerServices.IUnion
@@ -3108,7 +3056,6 @@ public readonly struct CreateElementOptions : System.Runtime.CompilerServices.IU
 /// CreateObjectURLObj
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CreateObjectURLObj : System.Runtime.CompilerServices.IUnion
@@ -3153,7 +3100,6 @@ public readonly struct CreateObjectURLObj : System.Runtime.CompilerServices.IUni
 /// CryptoKeyID
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CryptoKeyID : System.Runtime.CompilerServices.IUnion
@@ -3198,7 +3144,6 @@ public readonly struct CryptoKeyID : System.Runtime.CompilerServices.IUnion
 /// DOMMatrixInitValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DOMMatrixInitValueCollectionBuilder), nameof(DOMMatrixInitValueCollectionBuilder.Create))]
@@ -3257,7 +3202,6 @@ public static class DOMMatrixInitValueCollectionBuilder
 /// DOMMatrixReadOnlyInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DOMMatrixReadOnlyInitCollectionBuilder), nameof(DOMMatrixReadOnlyInitCollectionBuilder.Create))]
@@ -3316,7 +3260,6 @@ public static class DOMMatrixReadOnlyInitCollectionBuilder
 /// DefaultValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueCollectionBuilder), nameof(DefaultValueCollectionBuilder.Create))]
@@ -3375,7 +3318,6 @@ public static class DefaultValueCollectionBuilder
 /// DefaultValueValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValueCollectionBuilder), nameof(DefaultValueValueCollectionBuilder.Create))]
@@ -3434,7 +3376,6 @@ public static class DefaultValueValueCollectionBuilder
 /// DefaultValueValue2
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValue2CollectionBuilder), nameof(DefaultValueValue2CollectionBuilder.Create))]
@@ -3493,7 +3434,6 @@ public static class DefaultValueValue2CollectionBuilder
 /// DefaultValueValue3
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValue3CollectionBuilder), nameof(DefaultValueValue3CollectionBuilder.Create))]
@@ -3552,7 +3492,6 @@ public static class DefaultValueValue3CollectionBuilder
 /// DisplayMediaStreamOptionsAudio
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DisplayMediaStreamOptionsAudio : System.Runtime.CompilerServices.IUnion
@@ -3597,7 +3536,6 @@ public readonly struct DisplayMediaStreamOptionsAudio : System.Runtime.CompilerS
 /// DisplayMediaStreamOptionsVideo
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DisplayMediaStreamOptionsVideo : System.Runtime.CompilerServices.IUnion
@@ -3642,7 +3580,6 @@ public readonly struct DisplayMediaStreamOptionsVideo : System.Runtime.CompilerS
 /// DocumentAppendNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentAppendNodes : System.Runtime.CompilerServices.IUnion
@@ -3687,7 +3624,6 @@ public readonly struct DocumentAppendNodes : System.Runtime.CompilerServices.IUn
 /// DocumentCreateElementNSOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentCreateElementNSOptions : System.Runtime.CompilerServices.IUnion
@@ -3732,7 +3668,6 @@ public readonly struct DocumentCreateElementNSOptions : System.Runtime.CompilerS
 /// DocumentCreateElementOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentCreateElementOptions : System.Runtime.CompilerServices.IUnion
@@ -3777,7 +3712,6 @@ public readonly struct DocumentCreateElementOptions : System.Runtime.CompilerSer
 /// DocumentFragmentAppendNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentFragmentAppendNodes : System.Runtime.CompilerServices.IUnion
@@ -3822,7 +3756,6 @@ public readonly struct DocumentFragmentAppendNodes : System.Runtime.CompilerServ
 /// DocumentFragmentPrependNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentFragmentPrependNodes : System.Runtime.CompilerServices.IUnion
@@ -3867,7 +3800,6 @@ public readonly struct DocumentFragmentPrependNodes : System.Runtime.CompilerSer
 /// DocumentFragmentReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentFragmentReplaceChildrenNodes : System.Runtime.CompilerServices.IUnion
@@ -3912,7 +3844,6 @@ public readonly struct DocumentFragmentReplaceChildrenNodes : System.Runtime.Com
 /// DocumentPrependNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentPrependNodes : System.Runtime.CompilerServices.IUnion
@@ -3957,7 +3888,6 @@ public readonly struct DocumentPrependNodes : System.Runtime.CompilerServices.IU
 /// DocumentReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentReplaceChildrenNodes : System.Runtime.CompilerServices.IUnion
@@ -4002,7 +3932,6 @@ public readonly struct DocumentReplaceChildrenNodes : System.Runtime.CompilerSer
 /// DocumentStartViewTransitionCallbackOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentStartViewTransitionCallbackOptions : System.Runtime.CompilerServices.IUnion
@@ -4047,7 +3976,6 @@ public readonly struct DocumentStartViewTransitionCallbackOptions : System.Runti
 /// DocumentTypeAfterNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentTypeAfterNodes : System.Runtime.CompilerServices.IUnion
@@ -4092,7 +4020,6 @@ public readonly struct DocumentTypeAfterNodes : System.Runtime.CompilerServices.
 /// DocumentTypeBeforeNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentTypeBeforeNodes : System.Runtime.CompilerServices.IUnion
@@ -4137,7 +4064,6 @@ public readonly struct DocumentTypeBeforeNodes : System.Runtime.CompilerServices
 /// DocumentTypeReplaceWithNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct DocumentTypeReplaceWithNodes : System.Runtime.CompilerServices.IUnion
@@ -4182,7 +4108,6 @@ public readonly struct DocumentTypeReplaceWithNodes : System.Runtime.CompilerSer
 /// EffectTimingDuration
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct EffectTimingDuration : System.Runtime.CompilerServices.IUnion
@@ -4244,7 +4169,6 @@ public readonly struct EffectTimingDuration : System.Runtime.CompilerServices.IU
 /// ElementAfterNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementAfterNodes : System.Runtime.CompilerServices.IUnion
@@ -4289,7 +4213,6 @@ public readonly struct ElementAfterNodes : System.Runtime.CompilerServices.IUnio
 /// ElementAnimateOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementAnimateOptions : System.Runtime.CompilerServices.IUnion
@@ -4334,7 +4257,6 @@ public readonly struct ElementAnimateOptions : System.Runtime.CompilerServices.I
 /// ElementAppendNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementAppendNodes : System.Runtime.CompilerServices.IUnion
@@ -4379,7 +4301,6 @@ public readonly struct ElementAppendNodes : System.Runtime.CompilerServices.IUni
 /// ElementBeforeNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementBeforeNodes : System.Runtime.CompilerServices.IUnion
@@ -4424,7 +4345,6 @@ public readonly struct ElementBeforeNodes : System.Runtime.CompilerServices.IUni
 /// ElementInternalsSetFormValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementInternalsSetFormValue : System.Runtime.CompilerServices.IUnion
@@ -4486,7 +4406,6 @@ public readonly struct ElementInternalsSetFormValue : System.Runtime.CompilerSer
 /// ElementInternalsSetFormValueState
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementInternalsSetFormValueState : System.Runtime.CompilerServices.IUnion
@@ -4548,7 +4467,6 @@ public readonly struct ElementInternalsSetFormValueState : System.Runtime.Compil
 /// ElementPrependNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementPrependNodes : System.Runtime.CompilerServices.IUnion
@@ -4593,7 +4511,6 @@ public readonly struct ElementPrependNodes : System.Runtime.CompilerServices.IUn
 /// ElementReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementReplaceChildrenNodes : System.Runtime.CompilerServices.IUnion
@@ -4638,7 +4555,6 @@ public readonly struct ElementReplaceChildrenNodes : System.Runtime.CompilerServ
 /// ElementReplaceWithNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementReplaceWithNodes : System.Runtime.CompilerServices.IUnion
@@ -4683,7 +4599,6 @@ public readonly struct ElementReplaceWithNodes : System.Runtime.CompilerServices
 /// ElementScrollIntoViewArg
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ElementScrollIntoViewArg : System.Runtime.CompilerServices.IUnion
@@ -4728,7 +4643,6 @@ public readonly struct ElementScrollIntoViewArg : System.Runtime.CompilerService
 /// EventListenerValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct EventListenerValue : System.Runtime.CompilerServices.IUnion
@@ -4773,7 +4687,6 @@ public readonly struct EventListenerValue : System.Runtime.CompilerServices.IUni
 /// EventTargetAddEventListenerOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct EventTargetAddEventListenerOptions : System.Runtime.CompilerServices.IUnion
@@ -4818,7 +4731,6 @@ public readonly struct EventTargetAddEventListenerOptions : System.Runtime.Compi
 /// EventTargetRemoveEventListenerOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct EventTargetRemoveEventListenerOptions : System.Runtime.CompilerServices.IUnion
@@ -4863,7 +4775,6 @@ public readonly struct EventTargetRemoveEventListenerOptions : System.Runtime.Co
 /// ExtendableMessageEventInitSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ExtendableMessageEventInitSource : System.Runtime.CompilerServices.IUnion
@@ -4925,7 +4836,6 @@ public readonly struct ExtendableMessageEventInitSource : System.Runtime.Compile
 /// ExtendableMessageEventSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ExtendableMessageEventSource : System.Runtime.CompilerServices.IUnion
@@ -4987,7 +4897,6 @@ public readonly struct ExtendableMessageEventSource : System.Runtime.CompilerSer
 /// FencedFrameConfigSize
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct FencedFrameConfigSize : System.Runtime.CompilerServices.IUnion
@@ -5032,7 +4941,6 @@ public readonly struct FencedFrameConfigSize : System.Runtime.CompilerServices.I
 /// FilePickerAcceptTypeAcceptValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(FilePickerAcceptTypeAcceptValueCollectionBuilder), nameof(FilePickerAcceptTypeAcceptValueCollectionBuilder.Create))]
@@ -5091,7 +4999,6 @@ public static class FilePickerAcceptTypeAcceptValueCollectionBuilder
 /// FileReaderResult
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct FileReaderResult : System.Runtime.CompilerServices.IUnion
@@ -5136,7 +5043,6 @@ public readonly struct FileReaderResult : System.Runtime.CompilerServices.IUnion
 /// FileSystemWriteChunkType
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct FileSystemWriteChunkType
 {
@@ -5249,7 +5155,6 @@ public readonly struct FileSystemWriteChunkType
 /// Float32List
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Float32ListCollectionBuilder), nameof(Float32ListCollectionBuilder.Create))]
@@ -5308,7 +5213,6 @@ public static class Float32ListCollectionBuilder
 /// FontFaceSourceValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct FontFaceSourceValue : System.Runtime.CompilerServices.IUnion
@@ -5353,7 +5257,6 @@ public readonly struct FontFaceSourceValue : System.Runtime.CompilerServices.IUn
 /// FormDataEntryValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct FormDataEntryValue : System.Runtime.CompilerServices.IUnion
@@ -5398,7 +5301,6 @@ public readonly struct FormDataEntryValue : System.Runtime.CompilerServices.IUni
 /// GenerateBidOutputAdComponents
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GenerateBidOutputAdComponents : System.Runtime.CompilerServices.IUnion
@@ -5443,7 +5345,6 @@ public readonly struct GenerateBidOutputAdComponents : System.Runtime.CompilerSe
 /// GenerateBidOutputRender
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GenerateBidOutputRender : System.Runtime.CompilerServices.IUnion
@@ -5488,7 +5389,6 @@ public readonly struct GenerateBidOutputRender : System.Runtime.CompilerServices
 /// GeometryNode
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GeometryNode : System.Runtime.CompilerServices.IUnion
@@ -5569,7 +5469,6 @@ public readonly struct GeometryNode : System.Runtime.CompilerServices.IUnion
 /// GetCharacteristicName
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GetCharacteristicName : System.Runtime.CompilerServices.IUnion
@@ -5614,7 +5513,6 @@ public readonly struct GetCharacteristicName : System.Runtime.CompilerServices.I
 /// GetDescriptorName
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GetDescriptorName : System.Runtime.CompilerServices.IUnion
@@ -5659,7 +5557,6 @@ public readonly struct GetDescriptorName : System.Runtime.CompilerServices.IUnio
 /// GetServiceName
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GetServiceName : System.Runtime.CompilerServices.IUnion
@@ -5704,7 +5601,6 @@ public readonly struct GetServiceName : System.Runtime.CompilerServices.IUnion
 /// GroupEffectTiming
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GroupEffectTiming : System.Runtime.CompilerServices.IUnion
@@ -5749,7 +5645,6 @@ public readonly struct GroupEffectTiming : System.Runtime.CompilerServices.IUnio
 /// HTMLAllCollectionItemResult
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLAllCollectionItemResult : System.Runtime.CompilerServices.IUnion
@@ -5794,7 +5689,6 @@ public readonly struct HTMLAllCollectionItemResult : System.Runtime.CompilerServ
 /// HTMLAllCollectionNamedItemResult
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLAllCollectionNamedItemResult : System.Runtime.CompilerServices.IUnion
@@ -5839,7 +5733,6 @@ public readonly struct HTMLAllCollectionNamedItemResult : System.Runtime.Compile
 /// HTMLElementHidden
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLElementHidden : System.Runtime.CompilerServices.IUnion
@@ -5901,7 +5794,6 @@ public readonly struct HTMLElementHidden : System.Runtime.CompilerServices.IUnio
 /// HTMLFormControlsCollectionNamedItemResult
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLFormControlsCollectionNamedItemResult : System.Runtime.CompilerServices.IUnion
@@ -5946,7 +5838,6 @@ public readonly struct HTMLFormControlsCollectionNamedItemResult : System.Runtim
 /// HTMLFormElementResult
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLFormElementResult : System.Runtime.CompilerServices.IUnion
@@ -5991,7 +5882,6 @@ public readonly struct HTMLFormElementResult : System.Runtime.CompilerServices.I
 /// HTMLOptionsCollectionAddBefore
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLOptionsCollectionAddBefore : System.Runtime.CompilerServices.IUnion
@@ -6036,7 +5926,6 @@ public readonly struct HTMLOptionsCollectionAddBefore : System.Runtime.CompilerS
 /// HTMLOptionsCollectionAddElement
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLOptionsCollectionAddElement : System.Runtime.CompilerServices.IUnion
@@ -6081,7 +5970,6 @@ public readonly struct HTMLOptionsCollectionAddElement : System.Runtime.Compiler
 /// HTMLOrSVGImageElement
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLOrSVGImageElement : System.Runtime.CompilerServices.IUnion
@@ -6126,7 +6014,6 @@ public readonly struct HTMLOrSVGImageElement : System.Runtime.CompilerServices.I
 /// HTMLOrSVGScriptElement
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLOrSVGScriptElement : System.Runtime.CompilerServices.IUnion
@@ -6171,7 +6058,6 @@ public readonly struct HTMLOrSVGScriptElement : System.Runtime.CompilerServices.
 /// HTMLSelectElementAddBefore
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLSelectElementAddBefore : System.Runtime.CompilerServices.IUnion
@@ -6216,7 +6102,6 @@ public readonly struct HTMLSelectElementAddBefore : System.Runtime.CompilerServi
 /// HTMLSelectElementAddElement
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLSelectElementAddElement : System.Runtime.CompilerServices.IUnion
@@ -6261,7 +6146,6 @@ public readonly struct HTMLSelectElementAddElement : System.Runtime.CompilerServ
 /// HTMLSlotElementAssignNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct HTMLSlotElementAssignNodes : System.Runtime.CompilerServices.IUnion
@@ -6306,7 +6190,6 @@ public readonly struct HTMLSlotElementAssignNodes : System.Runtime.CompilerServi
 /// HeadersInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(HeadersInitCollectionBuilder), nameof(HeadersInitCollectionBuilder.Create))]
@@ -6365,7 +6248,6 @@ public static class HeadersInitCollectionBuilder
 /// IDBCursorSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct IDBCursorSource
 {
@@ -6402,7 +6284,6 @@ public readonly struct IDBCursorSource
 /// IDBDatabaseTransactionStoreNames
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBDatabaseTransactionStoreNamesCollectionBuilder), nameof(IDBDatabaseTransactionStoreNamesCollectionBuilder.Create))]
@@ -6461,7 +6342,6 @@ public static class IDBDatabaseTransactionStoreNamesCollectionBuilder
 /// IDBObjectStoreCreateIndexKeyPath
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBObjectStoreCreateIndexKeyPathCollectionBuilder), nameof(IDBObjectStoreCreateIndexKeyPathCollectionBuilder.Create))]
@@ -6520,7 +6400,6 @@ public static class IDBObjectStoreCreateIndexKeyPathCollectionBuilder
 /// IDBObjectStoreParametersKeyPath
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBObjectStoreParametersKeyPathCollectionBuilder), nameof(IDBObjectStoreParametersKeyPathCollectionBuilder.Create))]
@@ -6579,7 +6458,6 @@ public static class IDBObjectStoreParametersKeyPathCollectionBuilder
 /// IDBRequestSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct IDBRequestSource
 {
@@ -6632,7 +6510,6 @@ public readonly struct IDBRequestSource
 /// ImageBitmapRenderingContextCanvas
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ImageBitmapRenderingContextCanvas : System.Runtime.CompilerServices.IUnion
@@ -6677,7 +6554,6 @@ public readonly struct ImageBitmapRenderingContextCanvas : System.Runtime.Compil
 /// ImageBitmapSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ImageBitmapSource : System.Runtime.CompilerServices.IUnion
@@ -6739,7 +6615,6 @@ public readonly struct ImageBitmapSource : System.Runtime.CompilerServices.IUnio
 /// ImageBufferSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct ImageBufferSource
 {
@@ -6818,7 +6693,6 @@ public readonly struct ImageBufferSource
 /// InstallEventAddRoutesRules
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(InstallEventAddRoutesRulesCollectionBuilder), nameof(InstallEventAddRoutesRulesCollectionBuilder.Create))]
@@ -6877,7 +6751,6 @@ public static class InstallEventAddRoutesRulesCollectionBuilder
 /// Int32List
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Int32ListCollectionBuilder), nameof(Int32ListCollectionBuilder.Create))]
@@ -6936,7 +6809,6 @@ public static class Int32ListCollectionBuilder
 /// IntersectionObserverInitRoot
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct IntersectionObserverInitRoot : System.Runtime.CompilerServices.IUnion
@@ -6981,7 +6853,6 @@ public readonly struct IntersectionObserverInitRoot : System.Runtime.CompilerSer
 /// IntersectionObserverInitThreshold
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IntersectionObserverInitThresholdCollectionBuilder), nameof(IntersectionObserverInitThresholdCollectionBuilder.Create))]
@@ -7040,7 +6911,6 @@ public static class IntersectionObserverInitThresholdCollectionBuilder
 /// IntersectionObserverRoot
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct IntersectionObserverRoot : System.Runtime.CompilerServices.IUnion
@@ -7085,7 +6955,6 @@ public readonly struct IntersectionObserverRoot : System.Runtime.CompilerService
 /// KeyframeAnimationOptionsRangeEnd
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct KeyframeAnimationOptionsRangeEnd : System.Runtime.CompilerServices.IUnion
@@ -7166,7 +7035,6 @@ public readonly struct KeyframeAnimationOptionsRangeEnd : System.Runtime.Compile
 /// KeyframeAnimationOptionsRangeStart
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct KeyframeAnimationOptionsRangeStart : System.Runtime.CompilerServices.IUnion
@@ -7247,7 +7115,6 @@ public readonly struct KeyframeAnimationOptionsRangeStart : System.Runtime.Compi
 /// KeyframeEffectOptionsValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct KeyframeEffectOptionsValue : System.Runtime.CompilerServices.IUnion
@@ -7292,7 +7159,6 @@ public readonly struct KeyframeEffectOptionsValue : System.Runtime.CompilerServi
 /// LineAndPositionSetting
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct LineAndPositionSetting : System.Runtime.CompilerServices.IUnion
@@ -7337,7 +7203,6 @@ public readonly struct LineAndPositionSetting : System.Runtime.CompilerServices.
 /// MLGraphBuilderSplitSplits
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(MLGraphBuilderSplitSplitsCollectionBuilder), nameof(MLGraphBuilderSplitSplitsCollectionBuilder.Create))]
@@ -7396,7 +7261,6 @@ public static class MLGraphBuilderSplitSplitsCollectionBuilder
 /// MediaProvider
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MediaProvider : System.Runtime.CompilerServices.IUnion
@@ -7458,7 +7322,6 @@ public readonly struct MediaProvider : System.Runtime.CompilerServices.IUnion
 /// MediaStreamConstraintsAudio
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MediaStreamConstraintsAudio : System.Runtime.CompilerServices.IUnion
@@ -7503,7 +7366,6 @@ public readonly struct MediaStreamConstraintsAudio : System.Runtime.CompilerServ
 /// MediaStreamConstraintsVideo
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MediaStreamConstraintsVideo : System.Runtime.CompilerServices.IUnion
@@ -7548,7 +7410,6 @@ public readonly struct MediaStreamConstraintsVideo : System.Runtime.CompilerServ
 /// MediaTrackConstraintSetPan
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MediaTrackConstraintSetPan : System.Runtime.CompilerServices.IUnion
@@ -7593,7 +7454,6 @@ public readonly struct MediaTrackConstraintSetPan : System.Runtime.CompilerServi
 /// MediaTrackConstraintSetTilt
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MediaTrackConstraintSetTilt : System.Runtime.CompilerServices.IUnion
@@ -7638,7 +7498,6 @@ public readonly struct MediaTrackConstraintSetTilt : System.Runtime.CompilerServ
 /// MediaTrackConstraintSetZoom
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MediaTrackConstraintSetZoom : System.Runtime.CompilerServices.IUnion
@@ -7683,7 +7542,6 @@ public readonly struct MediaTrackConstraintSetZoom : System.Runtime.CompilerServ
 /// MessageEventSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct MessageEventSource : System.Runtime.CompilerServices.IUnion
@@ -7745,7 +7603,6 @@ public readonly struct MessageEventSource : System.Runtime.CompilerServices.IUni
 /// NDEFMessageSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct NDEFMessageSource
 {
@@ -7840,7 +7697,6 @@ public readonly struct NDEFMessageSource
 /// NavigatorRunAdAuctionResultValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct NavigatorRunAdAuctionResultValue : System.Runtime.CompilerServices.IUnion
@@ -7885,7 +7741,6 @@ public readonly struct NavigatorRunAdAuctionResultValue : System.Runtime.Compile
 /// NodeFilterValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct NodeFilterValue : System.Runtime.CompilerServices.IUnion
@@ -7930,7 +7785,6 @@ public readonly struct NodeFilterValue : System.Runtime.CompilerServices.IUnion
 /// OfflineAudioContextOptionsRenderSizeHint
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct OfflineAudioContextOptionsRenderSizeHint : System.Runtime.CompilerServices.IUnion
@@ -7975,7 +7829,6 @@ public readonly struct OfflineAudioContextOptionsRenderSizeHint : System.Runtime
 /// OffscreenCanvasRenderingContext2DFillStyle
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct OffscreenCanvasRenderingContext2DFillStyle : System.Runtime.CompilerServices.IUnion
@@ -8037,7 +7890,6 @@ public readonly struct OffscreenCanvasRenderingContext2DFillStyle : System.Runti
 /// OffscreenCanvasRenderingContext2DRoundRectRadii
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadii : System.Runtime.CompilerServices.IUnion
@@ -8082,7 +7934,6 @@ public readonly struct OffscreenCanvasRenderingContext2DRoundRectRadii : System.
 /// OffscreenCanvasRenderingContext2DRoundRectRadiiValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder), nameof(OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder.Create))]
@@ -8158,7 +8009,6 @@ public static class OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollecti
 /// OffscreenCanvasRenderingContext2DStrokeStyle
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct OffscreenCanvasRenderingContext2DStrokeStyle : System.Runtime.CompilerServices.IUnion
@@ -8220,7 +8070,6 @@ public readonly struct OffscreenCanvasRenderingContext2DStrokeStyle : System.Run
 /// OffscreenRenderingContext
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct OffscreenRenderingContext : System.Runtime.CompilerServices.IUnion
@@ -8322,7 +8171,6 @@ public readonly struct OffscreenRenderingContext : System.Runtime.CompilerServic
 /// OptionalEffectTimingDuration
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct OptionalEffectTimingDuration : System.Runtime.CompilerServices.IUnion
@@ -8367,7 +8215,6 @@ public readonly struct OptionalEffectTimingDuration : System.Runtime.CompilerSer
 /// ParameterCurrentTarget
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ParameterCurrentTarget : System.Runtime.CompilerServices.IUnion
@@ -8412,7 +8259,6 @@ public readonly struct ParameterCurrentTarget : System.Runtime.CompilerServices.
 /// ParameterEvent
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ParameterEvent : System.Runtime.CompilerServices.IUnion
@@ -8457,7 +8303,6 @@ public readonly struct ParameterEvent : System.Runtime.CompilerServices.IUnion
 /// PasswordCredentialInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct PasswordCredentialInit : System.Runtime.CompilerServices.IUnion
@@ -8502,7 +8347,6 @@ public readonly struct PasswordCredentialInit : System.Runtime.CompilerServices.
 /// Path2DPath
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct Path2DPath : System.Runtime.CompilerServices.IUnion
@@ -8547,7 +8391,6 @@ public readonly struct Path2DPath : System.Runtime.CompilerServices.IUnion
 /// Path2DRoundRectRadii
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct Path2DRoundRectRadii : System.Runtime.CompilerServices.IUnion
@@ -8592,7 +8435,6 @@ public readonly struct Path2DRoundRectRadii : System.Runtime.CompilerServices.IU
 /// Path2DRoundRectRadiiValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Path2DRoundRectRadiiValueCollectionBuilder), nameof(Path2DRoundRectRadiiValueCollectionBuilder.Create))]
@@ -8668,7 +8510,6 @@ public static class Path2DRoundRectRadiiValueCollectionBuilder
 /// PerformanceMeasureOptionsEnd
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct PerformanceMeasureOptionsEnd : System.Runtime.CompilerServices.IUnion
@@ -8713,7 +8554,6 @@ public readonly struct PerformanceMeasureOptionsEnd : System.Runtime.CompilerSer
 /// PerformanceMeasureOptionsStart
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct PerformanceMeasureOptionsStart : System.Runtime.CompilerServices.IUnion
@@ -8758,7 +8598,6 @@ public readonly struct PerformanceMeasureOptionsStart : System.Runtime.CompilerS
 /// PerformanceMeasureStartOrMeasureOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct PerformanceMeasureStartOrMeasureOptions : System.Runtime.CompilerServices.IUnion
@@ -8803,7 +8642,6 @@ public readonly struct PerformanceMeasureStartOrMeasureOptions : System.Runtime.
 /// PrependNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct PrependNodes : System.Runtime.CompilerServices.IUnion
@@ -8848,7 +8686,6 @@ public readonly struct PrependNodes : System.Runtime.CompilerServices.IUnion
 /// PushMessageDataInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct PushMessageDataInit
 {
@@ -8927,7 +8764,6 @@ public readonly struct PushMessageDataInit
 /// PushSubscriptionOptionsInitApplicationServerKey
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct PushSubscriptionOptionsInitApplicationServerKey
 {
@@ -9006,7 +8842,6 @@ public readonly struct PushSubscriptionOptionsInitApplicationServerKey
 /// RTCIceServerUrls
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(RTCIceServerUrlsCollectionBuilder), nameof(RTCIceServerUrlsCollectionBuilder.Create))]
@@ -9065,7 +8900,6 @@ public static class RTCIceServerUrlsCollectionBuilder
 /// RTCPeerConnectionAddTransceiverTrackOrKind
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RTCPeerConnectionAddTransceiverTrackOrKind : System.Runtime.CompilerServices.IUnion
@@ -9110,7 +8944,6 @@ public readonly struct RTCPeerConnectionAddTransceiverTrackOrKind : System.Runti
 /// RTCRtpTransform
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RTCRtpTransform : System.Runtime.CompilerServices.IUnion
@@ -9155,7 +8988,6 @@ public readonly struct RTCRtpTransform : System.Runtime.CompilerServices.IUnion
 /// ReadableStreamController
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ReadableStreamController : System.Runtime.CompilerServices.IUnion
@@ -9200,7 +9032,6 @@ public readonly struct ReadableStreamController : System.Runtime.CompilerService
 /// ReadableStreamReader
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ReadableStreamReader : System.Runtime.CompilerServices.IUnion
@@ -9245,7 +9076,6 @@ public readonly struct ReadableStreamReader : System.Runtime.CompilerServices.IU
 /// RemoveEventListenerOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RemoveEventListenerOptions : System.Runtime.CompilerServices.IUnion
@@ -9290,7 +9120,6 @@ public readonly struct RemoveEventListenerOptions : System.Runtime.CompilerServi
 /// RenderingContext
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RenderingContext : System.Runtime.CompilerServices.IUnion
@@ -9392,7 +9221,6 @@ public readonly struct RenderingContext : System.Runtime.CompilerServices.IUnion
 /// ReplaceChildrenNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ReplaceChildrenNodes : System.Runtime.CompilerServices.IUnion
@@ -9437,7 +9265,6 @@ public readonly struct ReplaceChildrenNodes : System.Runtime.CompilerServices.IU
 /// ReplaceWithNodes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ReplaceWithNodes : System.Runtime.CompilerServices.IUnion
@@ -9482,7 +9309,6 @@ public readonly struct ReplaceWithNodes : System.Runtime.CompilerServices.IUnion
 /// ReportEventType
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ReportEventType : System.Runtime.CompilerServices.IUnion
@@ -9527,7 +9353,6 @@ public readonly struct ReportEventType : System.Runtime.CompilerServices.IUnion
 /// RequestInfo
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RequestInfo : System.Runtime.CompilerServices.IUnion
@@ -9572,7 +9397,6 @@ public readonly struct RequestInfo : System.Runtime.CompilerServices.IUnion
 /// RotationMatrixType
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RotationMatrixType : System.Runtime.CompilerServices.IUnion
@@ -9634,7 +9458,6 @@ public readonly struct RotationMatrixType : System.Runtime.CompilerServices.IUni
 /// RoundRectRadii
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RoundRectRadii : System.Runtime.CompilerServices.IUnion
@@ -9679,7 +9502,6 @@ public readonly struct RoundRectRadii : System.Runtime.CompilerServices.IUnion
 /// RoundRectRadiiValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(RoundRectRadiiValueCollectionBuilder), nameof(RoundRectRadiiValueCollectionBuilder.Create))]
@@ -9755,7 +9577,6 @@ public static class RoundRectRadiiValueCollectionBuilder
 /// RouterSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct RouterSource : System.Runtime.CompilerServices.IUnion
@@ -9800,7 +9621,6 @@ public readonly struct RouterSource : System.Runtime.CompilerServices.IUnion
 /// SanitizerAttribute
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SanitizerAttribute : System.Runtime.CompilerServices.IUnion
@@ -9845,7 +9665,6 @@ public readonly struct SanitizerAttribute : System.Runtime.CompilerServices.IUni
 /// SanitizerElement
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SanitizerElement : System.Runtime.CompilerServices.IUnion
@@ -9890,7 +9709,6 @@ public readonly struct SanitizerElement : System.Runtime.CompilerServices.IUnion
 /// SanitizerElementWithAttributes
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SanitizerElementWithAttributes : System.Runtime.CompilerServices.IUnion
@@ -9935,7 +9753,6 @@ public readonly struct SanitizerElementWithAttributes : System.Runtime.CompilerS
 /// ScrollIntoViewArg
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ScrollIntoViewArg : System.Runtime.CompilerServices.IUnion
@@ -9980,7 +9797,6 @@ public readonly struct ScrollIntoViewArg : System.Runtime.CompilerServices.IUnio
 /// SendBody
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SendBody : System.Runtime.CompilerServices.IUnion
@@ -10025,7 +9841,6 @@ public readonly struct SendBody : System.Runtime.CompilerServices.IUnion
 /// SendData
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct SendData
 {
@@ -10120,7 +9935,6 @@ public readonly struct SendData
 /// SequenceEffectTiming
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SequenceEffectTiming : System.Runtime.CompilerServices.IUnion
@@ -10165,7 +9979,6 @@ public readonly struct SequenceEffectTiming : System.Runtime.CompilerServices.IU
 /// SetFormValueState
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SetFormValueState : System.Runtime.CompilerServices.IUnion
@@ -10227,7 +10040,6 @@ public readonly struct SetFormValueState : System.Runtime.CompilerServices.IUnio
 /// SetSinkId
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SetSinkId : System.Runtime.CompilerServices.IUnion
@@ -10272,7 +10084,6 @@ public readonly struct SetSinkId : System.Runtime.CompilerServices.IUnion
 /// SetValues
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(SetValuesCollectionBuilder), nameof(SetValuesCollectionBuilder.Create))]
@@ -10331,7 +10142,6 @@ public static class SetValuesCollectionBuilder
 /// ShadowAnimationNewTarget
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ShadowAnimationNewTarget : System.Runtime.CompilerServices.IUnion
@@ -10376,7 +10186,6 @@ public readonly struct ShadowAnimationNewTarget : System.Runtime.CompilerService
 /// SharedStorageResponse
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SharedStorageResponse : System.Runtime.CompilerServices.IUnion
@@ -10421,7 +10230,6 @@ public readonly struct SharedStorageResponse : System.Runtime.CompilerServices.I
 /// SharedWorkerOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SharedWorkerOptions : System.Runtime.CompilerServices.IUnion
@@ -10466,7 +10274,6 @@ public readonly struct SharedWorkerOptions : System.Runtime.CompilerServices.IUn
 /// StartInDirectory
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StartInDirectory : System.Runtime.CompilerServices.IUnion
@@ -10511,7 +10318,6 @@ public readonly struct StartInDirectory : System.Runtime.CompilerServices.IUnion
 /// StartViewTransitionCallbackOptions
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StartViewTransitionCallbackOptions : System.Runtime.CompilerServices.IUnion
@@ -10556,7 +10362,6 @@ public readonly struct StartViewTransitionCallbackOptions : System.Runtime.Compi
 /// StructuralCache
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCache : System.Runtime.CompilerServices.IUnion
@@ -10601,7 +10406,6 @@ public readonly struct StructuralCache : System.Runtime.CompilerServices.IUnion
 /// StructuralCacheValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue : System.Runtime.CompilerServices.IUnion
@@ -10663,7 +10467,6 @@ public readonly struct StructuralCacheValue : System.Runtime.CompilerServices.IU
 /// StructuralCacheValue10
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue10 : System.Runtime.CompilerServices.IUnion
@@ -10708,7 +10511,6 @@ public readonly struct StructuralCacheValue10 : System.Runtime.CompilerServices.
 /// StructuralCacheValue11
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue11 : System.Runtime.CompilerServices.IUnion
@@ -10753,7 +10555,6 @@ public readonly struct StructuralCacheValue11 : System.Runtime.CompilerServices.
 /// StructuralCacheValue12
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue12 : System.Runtime.CompilerServices.IUnion
@@ -10798,7 +10599,6 @@ public readonly struct StructuralCacheValue12 : System.Runtime.CompilerServices.
 /// StructuralCacheValue13
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue13 : System.Runtime.CompilerServices.IUnion
@@ -10843,7 +10643,6 @@ public readonly struct StructuralCacheValue13 : System.Runtime.CompilerServices.
 /// StructuralCacheValue14
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue14 : System.Runtime.CompilerServices.IUnion
@@ -10905,7 +10704,6 @@ public readonly struct StructuralCacheValue14 : System.Runtime.CompilerServices.
 /// StructuralCacheValue15
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue15 : System.Runtime.CompilerServices.IUnion
@@ -10950,7 +10748,6 @@ public readonly struct StructuralCacheValue15 : System.Runtime.CompilerServices.
 /// StructuralCacheValue16
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue16 : System.Runtime.CompilerServices.IUnion
@@ -10995,7 +10792,6 @@ public readonly struct StructuralCacheValue16 : System.Runtime.CompilerServices.
 /// StructuralCacheValue17
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue17 : System.Runtime.CompilerServices.IUnion
@@ -11040,7 +10836,6 @@ public readonly struct StructuralCacheValue17 : System.Runtime.CompilerServices.
 /// StructuralCacheValue18
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue18 : System.Runtime.CompilerServices.IUnion
@@ -11085,7 +10880,6 @@ public readonly struct StructuralCacheValue18 : System.Runtime.CompilerServices.
 /// StructuralCacheValue19
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue19 : System.Runtime.CompilerServices.IUnion
@@ -11130,7 +10924,6 @@ public readonly struct StructuralCacheValue19 : System.Runtime.CompilerServices.
 /// StructuralCacheValue2
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue2 : System.Runtime.CompilerServices.IUnion
@@ -11175,7 +10968,6 @@ public readonly struct StructuralCacheValue2 : System.Runtime.CompilerServices.I
 /// StructuralCacheValue20
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue20CollectionBuilder), nameof(StructuralCacheValue20CollectionBuilder.Create))]
@@ -11234,7 +11026,6 @@ public static class StructuralCacheValue20CollectionBuilder
 /// StructuralCacheValue21
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue21 : System.Runtime.CompilerServices.IUnion
@@ -11279,7 +11070,6 @@ public readonly struct StructuralCacheValue21 : System.Runtime.CompilerServices.
 /// StructuralCacheValue22
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue22 : System.Runtime.CompilerServices.IUnion
@@ -11324,7 +11114,6 @@ public readonly struct StructuralCacheValue22 : System.Runtime.CompilerServices.
 /// StructuralCacheValue23
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue23 : System.Runtime.CompilerServices.IUnion
@@ -11369,7 +11158,6 @@ public readonly struct StructuralCacheValue23 : System.Runtime.CompilerServices.
 /// StructuralCacheValue24
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue24 : System.Runtime.CompilerServices.IUnion
@@ -11414,7 +11202,6 @@ public readonly struct StructuralCacheValue24 : System.Runtime.CompilerServices.
 /// StructuralCacheValue25
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue25 : System.Runtime.CompilerServices.IUnion
@@ -11476,7 +11263,6 @@ public readonly struct StructuralCacheValue25 : System.Runtime.CompilerServices.
 /// StructuralCacheValue26
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue26 : System.Runtime.CompilerServices.IUnion
@@ -11521,7 +11307,6 @@ public readonly struct StructuralCacheValue26 : System.Runtime.CompilerServices.
 /// StructuralCacheValue27
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue27 : System.Runtime.CompilerServices.IUnion
@@ -11566,7 +11351,6 @@ public readonly struct StructuralCacheValue27 : System.Runtime.CompilerServices.
 /// StructuralCacheValue28
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue28 : System.Runtime.CompilerServices.IUnion
@@ -11611,7 +11395,6 @@ public readonly struct StructuralCacheValue28 : System.Runtime.CompilerServices.
 /// StructuralCacheValue29
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue29 : System.Runtime.CompilerServices.IUnion
@@ -11673,7 +11456,6 @@ public readonly struct StructuralCacheValue29 : System.Runtime.CompilerServices.
 /// StructuralCacheValue3
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue3CollectionBuilder), nameof(StructuralCacheValue3CollectionBuilder.Create))]
@@ -11749,7 +11531,6 @@ public static class StructuralCacheValue3CollectionBuilder
 /// StructuralCacheValue30
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue30 : System.Runtime.CompilerServices.IUnion
@@ -11794,7 +11575,6 @@ public readonly struct StructuralCacheValue30 : System.Runtime.CompilerServices.
 /// StructuralCacheValue31
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct StructuralCacheValue31
 {
@@ -11847,7 +11627,6 @@ public readonly struct StructuralCacheValue31
 /// StructuralCacheValue32
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue32CollectionBuilder), nameof(StructuralCacheValue32CollectionBuilder.Create))]
@@ -11906,7 +11685,6 @@ public static class StructuralCacheValue32CollectionBuilder
 /// StructuralCacheValue33
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct StructuralCacheValue33
 {
@@ -11943,7 +11721,6 @@ public readonly struct StructuralCacheValue33
 /// StructuralCacheValue34
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue34 : System.Runtime.CompilerServices.IUnion
@@ -11988,7 +11765,6 @@ public readonly struct StructuralCacheValue34 : System.Runtime.CompilerServices.
 /// StructuralCacheValue35
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue35CollectionBuilder), nameof(StructuralCacheValue35CollectionBuilder.Create))]
@@ -12047,7 +11823,6 @@ public static class StructuralCacheValue35CollectionBuilder
 /// StructuralCacheValue36
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue36 : System.Runtime.CompilerServices.IUnion
@@ -12109,7 +11884,6 @@ public readonly struct StructuralCacheValue36 : System.Runtime.CompilerServices.
 /// StructuralCacheValue37
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue37 : System.Runtime.CompilerServices.IUnion
@@ -12154,7 +11928,6 @@ public readonly struct StructuralCacheValue37 : System.Runtime.CompilerServices.
 /// StructuralCacheValue38
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue38CollectionBuilder), nameof(StructuralCacheValue38CollectionBuilder.Create))]
@@ -12230,7 +12003,6 @@ public static class StructuralCacheValue38CollectionBuilder
 /// StructuralCacheValue39
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue39 : System.Runtime.CompilerServices.IUnion
@@ -12275,7 +12047,6 @@ public readonly struct StructuralCacheValue39 : System.Runtime.CompilerServices.
 /// StructuralCacheValue4
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue4 : System.Runtime.CompilerServices.IUnion
@@ -12320,7 +12091,6 @@ public readonly struct StructuralCacheValue4 : System.Runtime.CompilerServices.I
 /// StructuralCacheValue40
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue40 : System.Runtime.CompilerServices.IUnion
@@ -12365,7 +12135,6 @@ public readonly struct StructuralCacheValue40 : System.Runtime.CompilerServices.
 /// StructuralCacheValue41
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue41 : System.Runtime.CompilerServices.IUnion
@@ -12410,7 +12179,6 @@ public readonly struct StructuralCacheValue41 : System.Runtime.CompilerServices.
 /// StructuralCacheValue42
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue42 : System.Runtime.CompilerServices.IUnion
@@ -12455,7 +12223,6 @@ public readonly struct StructuralCacheValue42 : System.Runtime.CompilerServices.
 /// StructuralCacheValue43
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue43 : System.Runtime.CompilerServices.IUnion
@@ -12500,7 +12267,6 @@ public readonly struct StructuralCacheValue43 : System.Runtime.CompilerServices.
 /// StructuralCacheValue44
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct StructuralCacheValue44
 {
@@ -12579,7 +12345,6 @@ public readonly struct StructuralCacheValue44
 /// StructuralCacheValue45
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue45CollectionBuilder), nameof(StructuralCacheValue45CollectionBuilder.Create))]
@@ -12638,7 +12403,6 @@ public static class StructuralCacheValue45CollectionBuilder
 /// StructuralCacheValue46
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue46CollectionBuilder), nameof(StructuralCacheValue46CollectionBuilder.Create))]
@@ -12697,7 +12461,6 @@ public static class StructuralCacheValue46CollectionBuilder
 /// StructuralCacheValue47
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue47CollectionBuilder), nameof(StructuralCacheValue47CollectionBuilder.Create))]
@@ -12756,7 +12519,6 @@ public static class StructuralCacheValue47CollectionBuilder
 /// StructuralCacheValue48
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue48CollectionBuilder), nameof(StructuralCacheValue48CollectionBuilder.Create))]
@@ -12815,7 +12577,6 @@ public static class StructuralCacheValue48CollectionBuilder
 /// StructuralCacheValue49
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue49 : System.Runtime.CompilerServices.IUnion
@@ -12860,7 +12621,6 @@ public readonly struct StructuralCacheValue49 : System.Runtime.CompilerServices.
 /// StructuralCacheValue5
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue5 : System.Runtime.CompilerServices.IUnion
@@ -12905,7 +12665,6 @@ public readonly struct StructuralCacheValue5 : System.Runtime.CompilerServices.I
 /// StructuralCacheValue50
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct StructuralCacheValue50
 {
@@ -13000,7 +12759,6 @@ public readonly struct StructuralCacheValue50
 /// StructuralCacheValue6
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue6 : System.Runtime.CompilerServices.IUnion
@@ -13045,7 +12803,6 @@ public readonly struct StructuralCacheValue6 : System.Runtime.CompilerServices.I
 /// StructuralCacheValue7
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue7CollectionBuilder), nameof(StructuralCacheValue7CollectionBuilder.Create))]
@@ -13104,7 +12861,6 @@ public static class StructuralCacheValue7CollectionBuilder
 /// StructuralCacheValue8
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue8 : System.Runtime.CompilerServices.IUnion
@@ -13149,7 +12905,6 @@ public readonly struct StructuralCacheValue8 : System.Runtime.CompilerServices.I
 /// StructuralCacheValue9
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue9CollectionBuilder), nameof(StructuralCacheValue9CollectionBuilder.Create))]
@@ -13208,7 +12963,6 @@ public static class StructuralCacheValue9CollectionBuilder
 /// StructuralCacheValueValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValueValue : System.Runtime.CompilerServices.IUnion
@@ -13253,7 +13007,6 @@ public readonly struct StructuralCacheValueValue : System.Runtime.CompilerServic
 /// SubtleCryptoImportKeyKeyData
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct SubtleCryptoImportKeyKeyData
 {
@@ -13332,7 +13085,6 @@ public readonly struct SubtleCryptoImportKeyKeyData
 /// TaskSignalAnyInitPriority
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct TaskSignalAnyInitPriority : System.Runtime.CompilerServices.IUnion
@@ -13377,7 +13129,6 @@ public readonly struct TaskSignalAnyInitPriority : System.Runtime.CompilerServic
 /// TexImageSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct TexImageSource : System.Runtime.CompilerServices.IUnion
@@ -13527,7 +13278,6 @@ public readonly struct TexImageSource : System.Runtime.CompilerServices.IUnion
 /// TimerHandler
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct TimerHandler : System.Runtime.CompilerServices.IUnion
@@ -13572,7 +13322,6 @@ public readonly struct TimerHandler : System.Runtime.CompilerServices.IUnion
 /// TrackEventInitTrack
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct TrackEventInitTrack : System.Runtime.CompilerServices.IUnion
@@ -13634,7 +13383,6 @@ public readonly struct TrackEventInitTrack : System.Runtime.CompilerServices.IUn
 /// TrackEventTrack
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct TrackEventTrack : System.Runtime.CompilerServices.IUnion
@@ -13696,7 +13444,6 @@ public readonly struct TrackEventTrack : System.Runtime.CompilerServices.IUnion
 /// TrustedType
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct TrustedType : System.Runtime.CompilerServices.IUnion
@@ -13758,7 +13505,6 @@ public readonly struct TrustedType : System.Runtime.CompilerServices.IUnion
 /// URLCreateObjectURLObj
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct URLCreateObjectURLObj : System.Runtime.CompilerServices.IUnion
@@ -13803,7 +13549,6 @@ public readonly struct URLCreateObjectURLObj : System.Runtime.CompilerServices.I
 /// URLPatternCompatible
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct URLPatternCompatible : System.Runtime.CompilerServices.IUnion
@@ -13865,7 +13610,6 @@ public readonly struct URLPatternCompatible : System.Runtime.CompilerServices.IU
 /// URLPatternInput
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct URLPatternInput : System.Runtime.CompilerServices.IUnion
@@ -13910,7 +13654,6 @@ public readonly struct URLPatternInput : System.Runtime.CompilerServices.IUnion
 /// URLSearchParamsInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(URLSearchParamsInitCollectionBuilder), nameof(URLSearchParamsInitCollectionBuilder.Create))]
@@ -13986,7 +13729,6 @@ public static class URLSearchParamsInitCollectionBuilder
 /// Uint32List
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Uint32ListCollectionBuilder), nameof(Uint32ListCollectionBuilder.Create))]
@@ -14045,7 +13787,6 @@ public static class Uint32ListCollectionBuilder
 /// UrnOrConfig
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct UrnOrConfig : System.Runtime.CompilerServices.IUnion
@@ -14090,7 +13831,6 @@ public readonly struct UrnOrConfig : System.Runtime.CompilerServices.IUnion
 /// VibratePattern
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(VibratePatternCollectionBuilder), nameof(VibratePatternCollectionBuilder.Create))]
@@ -14149,7 +13889,6 @@ public static class VibratePatternCollectionBuilder
 /// ViewTimelineOptionsInset
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ViewTimelineOptionsInset : System.Runtime.CompilerServices.IUnion
@@ -14194,7 +13933,6 @@ public readonly struct ViewTimelineOptionsInset : System.Runtime.CompilerService
 /// ViewTimelineOptionsInsetValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ViewTimelineOptionsInsetValueCollectionBuilder), nameof(ViewTimelineOptionsInsetValueCollectionBuilder.Create))]
@@ -14253,7 +13991,6 @@ public static class ViewTimelineOptionsInsetValueCollectionBuilder
 /// ViewportMediaStreamConstraintsAudio
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ViewportMediaStreamConstraintsAudio : System.Runtime.CompilerServices.IUnion
@@ -14298,7 +14035,6 @@ public readonly struct ViewportMediaStreamConstraintsAudio : System.Runtime.Comp
 /// ViewportMediaStreamConstraintsVideo
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct ViewportMediaStreamConstraintsVideo : System.Runtime.CompilerServices.IUnion
@@ -14343,7 +14079,6 @@ public readonly struct ViewportMediaStreamConstraintsVideo : System.Runtime.Comp
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesListCollectionBuilder.Create))]
@@ -14402,7 +14137,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsListCollectionBuilder.Create))]
@@ -14461,7 +14195,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsListCollectionBuilder.Create))]
@@ -14520,7 +14253,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsListCollectionBuilder.Create))]
@@ -14579,7 +14311,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArrays
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesListCollectionBuilder.Create))]
@@ -14638,7 +14369,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesListCollectionBuilder.Create))]
@@ -14697,7 +14427,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsListCollectionBuilder.Create))]
@@ -14756,7 +14485,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsListCollectionBuilder.Create))]
@@ -14815,7 +14543,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsListCollectionBuilder.Create))]
@@ -14874,7 +14601,6 @@ public static class WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElemen
 /// WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollectionBuilder.Create))]
@@ -14933,7 +14659,6 @@ public static class WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollect
 /// WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollectionBuilder.Create))]
@@ -14992,7 +14717,6 @@ public static class WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollect
 /// WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsListCollectionBuilder.Create))]
@@ -15051,7 +14775,6 @@ public static class WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsLis
 /// WEBGLMultiDrawMultiDrawArraysWEBGLCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilder.Create))]
@@ -15110,7 +14833,6 @@ public static class WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilde
 /// WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilder.Create))]
@@ -15169,7 +14891,6 @@ public static class WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilde
 /// WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListCollectionBuilder.Create))]
@@ -15228,7 +14949,6 @@ public static class WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListColle
 /// WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsListCollectionBuilder.Create))]
@@ -15287,7 +15007,6 @@ public static class WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsL
 /// WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListCollectionBuilder.Create))]
@@ -15346,7 +15065,6 @@ public static class WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListColl
 /// WEBGLMultiDrawMultiDrawElementsWEBGLCountsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuilder.Create))]
@@ -15405,7 +15123,6 @@ public static class WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuil
 /// WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBuilder.Create))]
@@ -15464,7 +15181,6 @@ public static class WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBui
 /// WebGL2RenderingContextCanvas
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct WebGL2RenderingContextCanvas : System.Runtime.CompilerServices.IUnion
@@ -15509,7 +15225,6 @@ public readonly struct WebGL2RenderingContextCanvas : System.Runtime.CompilerSer
 /// WebGLRenderingContextCanvas
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct WebGLRenderingContextCanvas : System.Runtime.CompilerServices.IUnion
@@ -15554,7 +15269,6 @@ public readonly struct WebGLRenderingContextCanvas : System.Runtime.CompilerServ
 /// WebSocketProtocols
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WebSocketProtocolsCollectionBuilder), nameof(WebSocketProtocolsCollectionBuilder.Create))]
@@ -15613,7 +15327,6 @@ public static class WebSocketProtocolsCollectionBuilder
 /// WebSocketSendData
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct WebSocketSendData
 {
@@ -15708,7 +15421,6 @@ public readonly struct WebSocketSendData
 /// WriteParamsData
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct WriteParamsData
 {
@@ -15803,7 +15515,6 @@ public readonly struct WriteParamsData
 /// XMLHttpRequestBodyInit
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
 public readonly struct XMLHttpRequestBodyInit
 {
@@ -15936,7 +15647,6 @@ public readonly struct XMLHttpRequestBodyInit
 /// XMLHttpRequestSendBody
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct XMLHttpRequestSendBody : System.Runtime.CompilerServices.IUnion
@@ -15981,7 +15691,6 @@ public readonly struct XMLHttpRequestSendBody : System.Runtime.CompilerServices.
 /// XPathNSResolverValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct XPathNSResolverValue : System.Runtime.CompilerServices.IUnion
@@ -16026,7 +15735,6 @@ public readonly struct XPathNSResolverValue : System.Runtime.CompilerServices.IU
 /// XRWebGLRenderingContext
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct XRWebGLRenderingContext : System.Runtime.CompilerServices.IUnion

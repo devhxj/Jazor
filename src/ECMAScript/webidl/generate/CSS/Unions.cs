@@ -4,7 +4,6 @@ namespace ECMAScript.CSS;
 /// AppendValues
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct AppendValues : System.Runtime.CompilerServices.IUnion
@@ -49,7 +48,6 @@ public readonly struct AppendValues : System.Runtime.CompilerServices.IUnion
 /// CSSColorAngle
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSColorAngle : System.Runtime.CompilerServices.IUnion
@@ -94,7 +92,6 @@ public readonly struct CSSColorAngle : System.Runtime.CompilerServices.IUnion
 /// CSSColorNumber
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSColorNumber : System.Runtime.CompilerServices.IUnion
@@ -139,7 +136,6 @@ public readonly struct CSSColorNumber : System.Runtime.CompilerServices.IUnion
 /// CSSColorPercent
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSColorPercent : System.Runtime.CompilerServices.IUnion
@@ -184,7 +180,6 @@ public readonly struct CSSColorPercent : System.Runtime.CompilerServices.IUnion
 /// CSSColorRGBComp
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSColorRGBComp : System.Runtime.CompilerServices.IUnion
@@ -229,7 +224,6 @@ public readonly struct CSSColorRGBComp : System.Runtime.CompilerServices.IUnion
 /// CSSColorValueParseResult
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSColorValueParseResult : System.Runtime.CompilerServices.IUnion
@@ -274,7 +268,6 @@ public readonly struct CSSColorValueParseResult : System.Runtime.CompilerService
 /// CSSKeywordish
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSKeywordish : System.Runtime.CompilerServices.IUnion
@@ -319,7 +312,6 @@ public readonly struct CSSKeywordish : System.Runtime.CompilerServices.IUnion
 /// CSSNumberish
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSNumberish : System.Runtime.CompilerServices.IUnion
@@ -364,7 +356,6 @@ public readonly struct CSSNumberish : System.Runtime.CompilerServices.IUnion
 /// CSSPerspectiveValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSPerspectiveValue : System.Runtime.CompilerServices.IUnion
@@ -409,7 +400,6 @@ public readonly struct CSSPerspectiveValue : System.Runtime.CompilerServices.IUn
 /// CSSStringSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSStringSource : System.Runtime.CompilerServices.IUnion
@@ -454,7 +444,6 @@ public readonly struct CSSStringSource : System.Runtime.CompilerServices.IUnion
 /// CSSStyleSheetInitMedia
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSStyleSheetInitMedia : System.Runtime.CompilerServices.IUnion
@@ -499,7 +488,6 @@ public readonly struct CSSStyleSheetInitMedia : System.Runtime.CompilerServices.
 /// CSSToken
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSToken : System.Runtime.CompilerServices.IUnion
@@ -561,7 +549,6 @@ public readonly struct CSSToken : System.Runtime.CompilerServices.IUnion
 /// CSSUnparsedSegment
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct CSSUnparsedSegment : System.Runtime.CompilerServices.IUnion
@@ -606,7 +593,6 @@ public readonly struct CSSUnparsedSegment : System.Runtime.CompilerServices.IUni
 /// SetValues
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct SetValues : System.Runtime.CompilerServices.IUnion
@@ -651,7 +637,6 @@ public readonly struct SetValues : System.Runtime.CompilerServices.IUnion
 /// StructuralCache
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheCollectionBuilder), nameof(StructuralCacheCollectionBuilder.Create))]
@@ -710,7 +695,6 @@ public static class StructuralCacheCollectionBuilder
 /// StructuralCacheValue
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue : System.Runtime.CompilerServices.IUnion
@@ -755,7 +739,6 @@ public readonly struct StructuralCacheValue : System.Runtime.CompilerServices.IU
 /// StructuralCacheValue2
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue2 : System.Runtime.CompilerServices.IUnion
@@ -800,7 +783,6 @@ public readonly struct StructuralCacheValue2 : System.Runtime.CompilerServices.I
 /// StructuralCacheValue3
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCacheValue3 : System.Runtime.CompilerServices.IUnion
@@ -845,7 +827,6 @@ public readonly struct StructuralCacheValue3 : System.Runtime.CompilerServices.I
 /// StylePropertyMapAppendValues
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StylePropertyMapAppendValues : System.Runtime.CompilerServices.IUnion
@@ -890,7 +871,6 @@ public readonly struct StylePropertyMapAppendValues : System.Runtime.CompilerSer
 /// StylePropertyMapSetValues
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StylePropertyMapSetValues : System.Runtime.CompilerServices.IUnion
@@ -935,7 +915,6 @@ public readonly struct StylePropertyMapSetValues : System.Runtime.CompilerServic
 /// StyleSheetOwnerNode
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StyleSheetOwnerNode : System.Runtime.CompilerServices.IUnion
@@ -980,7 +959,6 @@ public readonly struct StyleSheetOwnerNode : System.Runtime.CompilerServices.IUn
 /// WorkletAnimationEffects
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WorkletAnimationEffectsCollectionBuilder), nameof(WorkletAnimationEffectsCollectionBuilder.Create))]

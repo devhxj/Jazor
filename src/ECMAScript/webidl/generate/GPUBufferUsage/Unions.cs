@@ -4,7 +4,6 @@ namespace ECMAScript.GPUBufferUsage;
 /// GPUBindingResource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GPUBindingResource : System.Runtime.CompilerServices.IUnion
@@ -85,7 +84,6 @@ public readonly struct GPUBindingResource : System.Runtime.CompilerServices.IUni
 /// GPUCanvasContextCanvas
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GPUCanvasContextCanvas : System.Runtime.CompilerServices.IUnion
@@ -130,7 +128,6 @@ public readonly struct GPUCanvasContextCanvas : System.Runtime.CompilerServices.
 /// GPUColor
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUColorCollectionBuilder), nameof(GPUColorCollectionBuilder.Create))]
@@ -189,7 +186,6 @@ public static class GPUColorCollectionBuilder
 /// GPUExtent3D
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUExtent3DCollectionBuilder), nameof(GPUExtent3DCollectionBuilder.Create))]
@@ -248,7 +244,6 @@ public static class GPUExtent3DCollectionBuilder
 /// GPUExternalTextureDescriptorSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GPUExternalTextureDescriptorSource : System.Runtime.CompilerServices.IUnion
@@ -293,7 +288,6 @@ public readonly struct GPUExternalTextureDescriptorSource : System.Runtime.Compi
 /// GPUImageCopyExternalImageSource
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GPUImageCopyExternalImageSource : System.Runtime.CompilerServices.IUnion
@@ -443,7 +437,6 @@ public readonly struct GPUImageCopyExternalImageSource : System.Runtime.Compiler
 /// GPUOrigin2D
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin2DCollectionBuilder), nameof(GPUOrigin2DCollectionBuilder.Create))]
@@ -502,7 +495,6 @@ public static class GPUOrigin2DCollectionBuilder
 /// GPUOrigin3D
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin3DCollectionBuilder), nameof(GPUOrigin3DCollectionBuilder.Create))]
@@ -561,7 +553,6 @@ public static class GPUOrigin3DCollectionBuilder
 /// GPUPipelineDescriptorBaseLayout
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GPUPipelineDescriptorBaseLayout : System.Runtime.CompilerServices.IUnion
@@ -606,7 +597,6 @@ public readonly struct GPUPipelineDescriptorBaseLayout : System.Runtime.Compiler
 /// GPUShaderModuleCompilationHintLayout
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct GPUShaderModuleCompilationHintLayout : System.Runtime.CompilerServices.IUnion
@@ -651,7 +641,6 @@ public readonly struct GPUShaderModuleCompilationHintLayout : System.Runtime.Com
 /// StructuralCache
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
 public readonly struct StructuralCache : System.Runtime.CompilerServices.IUnion

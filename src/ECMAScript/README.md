@@ -7,7 +7,7 @@
 
 - 全局宿主表面（`Global.cs`）
 - Vue 运行时 authoring surface（`Vue3.cs`）
-- 命名 `[ECMAScriptUnion]` 类型、DOM、Web API 等核心契约
+- 命名 native `union` / `[System.Runtime.CompilerServices.Union]` host union 类型、DOM、Web API 等核心契约
 
 ## Responsibilities
 
@@ -181,9 +181,8 @@
 
 - `Global.cs`: JavaScript 全局对象与基础函数投影。
 - `Vue3.cs`: Vue 运行时 authoring 合同。
-- `internal/UnionTypes.cs`: 手写 JS union-like host contract。
-- `internal/LegacyUnionMarker.cs`: 历史兼容 union marker（`IEither`），不作为新 public surface 设计入口。
-- `webidl/generate/Unions.cs`: WebIDL 生成的命名 union 产物。
+- `internal/UnionTypes.cs`: 手写 JS union-like host contract，使用 native `union` 优先表达。
+- `webidl/generate/Unions.cs`: WebIDL 生成的命名 union 产物，使用 native `union` 或 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback。
 
 ## Generated Boundary
 

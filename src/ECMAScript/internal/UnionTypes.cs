@@ -5,339 +5,86 @@ using System.ComponentModel;
 namespace ECMAScript;
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct PropertyKey
+public readonly union PropertyKey(string, Number, Symbol)
 {
-	private readonly byte _kind;
-	private readonly string? _string;
-	private readonly Number? _number;
-	private readonly Symbol? _symbol;
+	public string? AsString => Value as string;
 
-	private PropertyKey(string value)
-	{
-		_kind = 1;
-		_string = value;
-		_number = default;
-		_symbol = default;
-	}
+	public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-	private PropertyKey(Number value)
-	{
-		_kind = 2;
-		_string = default;
-		_number = value;
-		_symbol = default;
-	}
-
-	private PropertyKey(Symbol value)
-	{
-		_kind = 3;
-		_string = default;
-		_number = default;
-		_symbol = value;
-	}
-
-	public string? AsString => _kind == 1 ? _string : default;
-
-	public Number? AsNumber => _kind == 2 ? _number : default;
-
-	public Symbol? AsSymbol => _kind == 3 ? _symbol : default;
-
-	public static implicit operator PropertyKey(string value)
-		=> new(value);
-
-	public static implicit operator PropertyKey(Number value)
-		=> new(value);
-
-	public static implicit operator PropertyKey(Symbol value)
-		=> new(value);
+	public Symbol? AsSymbol => Value as Symbol;
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct DatePrimitive
+public readonly union DatePrimitive(string, Number)
 {
-	private readonly byte _kind;
-	private readonly string? _string;
-	private readonly Number? _number;
+	public string? AsString => Value as string;
 
-	private DatePrimitive(string value)
-	{
-		_kind = 1;
-		_string = value;
-		_number = default;
-	}
-
-	private DatePrimitive(Number value)
-	{
-		_kind = 2;
-		_string = default;
-		_number = value;
-	}
-
-	public string? AsString => _kind == 1 ? _string : default;
-
-	public Number? AsNumber => _kind == 2 ? _number : default;
-
-	public static implicit operator DatePrimitive(string value)
-		=> new(value);
-
-	public static implicit operator DatePrimitive(Number value)
-		=> new(value);
+	public Number? AsNumber => Value is Number value ? value : default(Number?);
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct AtomicsWaitAsyncValue
+public readonly union AtomicsWaitAsyncValue(string, Promise<string>)
 {
-	private readonly byte _kind;
-	private readonly string? _string;
-	private readonly Promise<string>? _promise;
+	public string? AsString => Value as string;
 
-	private AtomicsWaitAsyncValue(string value)
-	{
-		_kind = 1;
-		_string = value;
-		_promise = default;
-	}
-
-	private AtomicsWaitAsyncValue(Promise<string> value)
-	{
-		_kind = 2;
-		_string = default;
-		_promise = value;
-	}
-
-	public string? AsString => _kind == 1 ? _string : default;
-
-	public Promise<string>? AsPromise => _kind == 2 ? _promise : default;
-
-	public static implicit operator AtomicsWaitAsyncValue(string value)
-		=> new(value);
-
-	public static implicit operator AtomicsWaitAsyncValue(Promise<string> value)
-		=> new(value);
+	public Promise<string>? AsPromise => Value as Promise<string>;
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntlUseGrouping
+public readonly union IntlUseGrouping(bool, Intl.NumberFormatUseGrouping)
 {
-	private readonly byte _kind;
-	private readonly bool? _bool;
-	private readonly Intl.NumberFormatUseGrouping? _mode;
+	public bool? AsBool => Value is bool value ? value : default(bool?);
 
-	private IntlUseGrouping(bool value)
-	{
-		_kind = 1;
-		_bool = value;
-		_mode = default;
-	}
-
-	private IntlUseGrouping(Intl.NumberFormatUseGrouping value)
-	{
-		_kind = 2;
-		_bool = default;
-		_mode = value;
-	}
-
-	public bool? AsBool => _kind == 1 ? _bool : default;
-
-	public Intl.NumberFormatUseGrouping? AsMode => _kind == 2 ? _mode : default;
-
-	public static implicit operator IntlUseGrouping(bool value)
-		=> new(value);
-
-	public static implicit operator IntlUseGrouping(Intl.NumberFormatUseGrouping value)
-		=> new(value);
+	public Intl.NumberFormatUseGrouping? AsMode => Value is Intl.NumberFormatUseGrouping value ? value : default(Intl.NumberFormatUseGrouping?);
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntlNumberInput
+public readonly union IntlNumberInput(Number, BigInt, string)
 {
-	private readonly byte _kind;
-	private readonly Number? _number;
-	private readonly BigInt? _bigInt;
-	private readonly string? _string;
+	public Number? AsNumber => Value is Number value ? value : default(Number?);
 
-	private IntlNumberInput(Number value)
-	{
-		_kind = 1;
-		_number = value;
-		_bigInt = default;
-		_string = default;
-	}
+	public BigInt? AsBigInt => Value as BigInt;
 
-	private IntlNumberInput(BigInt value)
-	{
-		_kind = 2;
-		_number = default;
-		_bigInt = value;
-		_string = default;
-	}
-
-	private IntlNumberInput(string value)
-	{
-		_kind = 3;
-		_number = default;
-		_bigInt = default;
-		_string = value;
-	}
-
-	public Number? AsNumber => _kind == 1 ? _number : default;
-
-	public BigInt? AsBigInt => _kind == 2 ? _bigInt : default;
-
-	public string? AsString => _kind == 3 ? _string : default;
-
-	public static implicit operator IntlNumberInput(Number value)
-		=> new(value);
-
-	public static implicit operator IntlNumberInput(BigInt value)
-		=> new(value);
-
-	public static implicit operator IntlNumberInput(string value)
-		=> new(value);
+	public string? AsString => Value as string;
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntlDateTimeInput
+public readonly union IntlDateTimeInput(Date, Number)
 {
-	private readonly byte _kind;
-	private readonly Date? _date;
-	private readonly Number? _number;
+	public Date? AsDate => Value as Date;
 
-	private IntlDateTimeInput(Date value)
-	{
-		_kind = 1;
-		_date = value;
-		_number = default;
-	}
-
-	private IntlDateTimeInput(Number value)
-	{
-		_kind = 2;
-		_date = default;
-		_number = value;
-	}
-
-	public Date? AsDate => _kind == 1 ? _date : default;
-
-	public Number? AsNumber => _kind == 2 ? _number : default;
-
-	public static implicit operator IntlDateTimeInput(Date value)
-		=> new(value);
-
-	public static implicit operator IntlDateTimeInput(Number value)
-		=> new(value);
+	public Number? AsNumber => Value is Number value ? value : default(Number?);
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntlMonthStyle
+public readonly union IntlMonthStyle(Intl.NumericTwoDigit, Intl.LongShortNarrow)
 {
-	private readonly byte _kind;
-	private readonly Intl.NumericTwoDigit? _numeric;
-	private readonly Intl.LongShortNarrow? _text;
+	public Intl.NumericTwoDigit? AsNumeric => Value is Intl.NumericTwoDigit value ? value : default(Intl.NumericTwoDigit?);
 
-	private IntlMonthStyle(Intl.NumericTwoDigit value)
-	{
-		_kind = 1;
-		_numeric = value;
-		_text = default;
-	}
-
-	private IntlMonthStyle(Intl.LongShortNarrow value)
-	{
-		_kind = 2;
-		_numeric = default;
-		_text = value;
-	}
-
-	public Intl.NumericTwoDigit? AsNumeric => _kind == 1 ? _numeric : default;
-
-	public Intl.LongShortNarrow? AsText => _kind == 2 ? _text : default;
-
-	public static implicit operator IntlMonthStyle(Intl.NumericTwoDigit value)
-		=> new(value);
-
-	public static implicit operator IntlMonthStyle(Intl.LongShortNarrow value)
-		=> new(value);
+	public Intl.LongShortNarrow? AsText => Value is Intl.LongShortNarrow value ? value : default(Intl.LongShortNarrow?);
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntlDurationTextStyle
+public readonly union IntlDurationTextStyle(Intl.LongShortNarrow, Intl.NumericTwoDigit)
 {
-	private readonly byte _kind;
-	private readonly Intl.LongShortNarrow? _text;
-	private readonly Intl.NumericTwoDigit? _numeric;
+	public Intl.LongShortNarrow? AsText => Value is Intl.LongShortNarrow value ? value : default(Intl.LongShortNarrow?);
 
-	private IntlDurationTextStyle(Intl.LongShortNarrow value)
-	{
-		_kind = 1;
-		_text = value;
-		_numeric = default;
-	}
-
-	private IntlDurationTextStyle(Intl.NumericTwoDigit value)
-	{
-		_kind = 2;
-		_text = default;
-		_numeric = value;
-	}
-
-	public Intl.LongShortNarrow? AsText => _kind == 1 ? _text : default;
-
-	public Intl.NumericTwoDigit? AsNumeric => _kind == 2 ? _numeric : default;
-
-	public static implicit operator IntlDurationTextStyle(Intl.LongShortNarrow value)
-		=> new(value);
-
-	public static implicit operator IntlDurationTextStyle(Intl.NumericTwoDigit value)
-		=> new(value);
+	public Intl.NumericTwoDigit? AsNumeric => Value is Intl.NumericTwoDigit value ? value : default(Intl.NumericTwoDigit?);
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct IntlDurationFractionStyle
+public readonly union IntlDurationFractionStyle(Intl.LongShortNarrow, Intl.DurationNumericStyle)
 {
-	private readonly byte _kind;
-	private readonly Intl.LongShortNarrow? _text;
-	private readonly Intl.DurationNumericStyle? _numeric;
+	public Intl.LongShortNarrow? AsText => Value is Intl.LongShortNarrow value ? value : default(Intl.LongShortNarrow?);
 
-	private IntlDurationFractionStyle(Intl.LongShortNarrow value)
-	{
-		_kind = 1;
-		_text = value;
-		_numeric = default;
-	}
-
-	private IntlDurationFractionStyle(Intl.DurationNumericStyle value)
-	{
-		_kind = 2;
-		_text = default;
-		_numeric = value;
-	}
-
-	public Intl.LongShortNarrow? AsText => _kind == 1 ? _text : default;
-
-	public Intl.DurationNumericStyle? AsNumeric => _kind == 2 ? _numeric : default;
-
-	public static implicit operator IntlDurationFractionStyle(Intl.LongShortNarrow value)
-		=> new(value);
-
-	public static implicit operator IntlDurationFractionStyle(Intl.DurationNumericStyle value)
-		=> new(value);
+	public Intl.DurationNumericStyle? AsNumeric => Value is Intl.DurationNumericStyle value ? value : default(Intl.DurationNumericStyle?);
 }
