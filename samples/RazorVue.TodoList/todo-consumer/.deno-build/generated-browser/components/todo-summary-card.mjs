@@ -17,22 +17,28 @@ const _sfc_main = /*@__PURE__*/ _defineComponent({
         __expose();
         const props = __props;
         const emit = __emit;
-        const __jazorVueSfcBinding0 = computed(() => (props.pinnedCount > 0));
-        const __returned__ = { props, emit, __jazorVueSfcBinding0, get VCard() { return VCard; }, get VCardText() { return VCardText; }, get VCardTitle() { return VCardTitle; }, get VList() { return VList; }, get VListItem() { return VListItem; } };
+        const __jazorVueSfcBinding0 = computed(() => "compact");
+        const __jazorVueSfcBinding1 = computed(() => (props.pinnedCount > 0));
+        const __returned__ = { props, emit, __jazorVueSfcBinding0, __jazorVueSfcBinding1, get VCard() { return VCard; }, get VCardText() { return VCardText; }, get VCardTitle() { return VCardTitle; }, get VList() { return VList; }, get VListItem() { return VListItem; } };
         Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });
         return __returned__;
     }
 });
 
-import { createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from "vue"
+import { createTextVNode as _createTextVNode, withCtx as _withCtx, createVNode as _createVNode, openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 export function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createBlock($setup["VCard"], null, {
     default: _withCtx(() => [
-      _createVNode($setup["VCardTitle"], { text: "Overview" }),
+      _createVNode($setup["VCardTitle"], null, {
+        default: _withCtx(() => [...(_cache[0] || (_cache[0] = [
+          _createTextVNode(" Overview ", -1 /* CACHED */)
+        ]))]),
+        _: 1 /* STABLE */
+      }),
       _createVNode($setup["VCardText"], null, {
         default: _withCtx(() => [
-          _createVNode($setup["VList"], { density: "compact" }, {
+          _createVNode($setup["VList"], { density: $setup.__jazorVueSfcBinding0 }, {
             default: _withCtx(() => [
               _createVNode($setup["VListItem"], {
                 title: "All tasks",
@@ -46,7 +52,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
                 title: "Open",
                 subtitle: $setup.props.openText
               }, null, 8 /* PROPS */, ["subtitle"]),
-              ($setup.__jazorVueSfcBinding0)
+              ($setup.__jazorVueSfcBinding1)
                 ? (_openBlock(), _createBlock($setup["VListItem"], {
                     key: 0,
                     title: "Pinned",
@@ -55,7 +61,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
                 : _createCommentVNode("v-if", true)
             ]),
             _: 1 /* STABLE */
-          })
+          }, 8 /* PROPS */, ["density"])
         ]),
         _: 1 /* STABLE */
       })

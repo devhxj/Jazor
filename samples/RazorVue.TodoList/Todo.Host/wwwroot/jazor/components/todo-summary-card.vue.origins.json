@@ -4,17 +4,17 @@
   "componentName": "TodoSummaryCard",
   "relativeSfcPath": "components/todo-summary-card.vue",
   "descriptorHash": "70F8B3CCA999CA2D23DCF0ADDEA7DCA37AC80FBFF9E44271D795D09CCDAE2F89",
-  "templateHash": "DF63C0A286DF4B26F89934CEF7D00E830C1F67CCD039E28AD01DEB6541F2DB08",
+  "templateHash": "3C748571BAFA789CD5786020CFFF49C080C4EAA4EEA297C4D66A545F26D5F107",
   "logicHash": "4C5C01C83134E5DBF4F743748AA7415667B9142D2DA4E72F67BC4F5CC785974E",
   "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
   "templateBlock": {
-    "textLength": 511,
+    "textLength": 522,
     "origins": [
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
         "sourceSpanStart": 0,
-        "sourceSpanLength": 497,
+        "sourceSpanLength": 500,
         "generatedFilePath": null,
         "generatedSpanStart": null,
         "generatedSpanLength": null,
@@ -46,7 +46,7 @@
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
         "sourceSpanStart": 0,
-        "sourceSpanLength": 497,
+        "sourceSpanLength": 500,
         "generatedFilePath": null,
         "generatedSpanStart": null,
         "generatedSpanLength": null,
@@ -59,7 +59,7 @@
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
         "sourceSpanStart": 12,
-        "sourceSpanLength": 30,
+        "sourceSpanLength": 33,
         "generatedFilePath": null,
         "generatedSpanStart": null,
         "generatedSpanLength": null,
@@ -71,33 +71,33 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 30,
+        "sourceSpanStart": 24,
         "sourceSpanLength": 8,
         "generatedFilePath": null,
         "generatedSpanStart": null,
         "generatedSpanLength": null,
         "startLine": 2,
-        "startColumn": 23,
+        "startColumn": 17,
         "mappingQuality": "ExactSource",
         "provenance": "RazorSourceMap"
       },
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 42,
+        "sourceSpanStart": 45,
         "sourceSpanLength": 5,
         "generatedFilePath": null,
         "generatedSpanStart": null,
         "generatedSpanLength": null,
         "startLine": 2,
-        "startColumn": 35,
+        "startColumn": 38,
         "mappingQuality": "ExactSource",
         "provenance": "RazorSourceMap"
       },
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 47,
+        "sourceSpanStart": 50,
         "sourceSpanLength": 441,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -110,7 +110,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 67,
+        "sourceSpanStart": 70,
         "sourceSpanLength": 404,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -123,7 +123,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 83,
+        "sourceSpanStart": 86,
         "sourceSpanLength": 23,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -136,7 +136,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 121,
+        "sourceSpanStart": 124,
         "sourceSpanLength": 58,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -149,7 +149,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 139,
+        "sourceSpanStart": 142,
         "sourceSpanLength": 14,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -162,7 +162,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 165,
+        "sourceSpanStart": 168,
         "sourceSpanLength": 10,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -175,7 +175,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 179,
+        "sourceSpanStart": 182,
         "sourceSpanLength": 13,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -188,7 +188,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 192,
+        "sourceSpanStart": 195,
         "sourceSpanLength": 62,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -201,7 +201,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 210,
+        "sourceSpanStart": 213,
         "sourceSpanLength": 14,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -214,7 +214,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 236,
+        "sourceSpanStart": 239,
         "sourceSpanLength": 14,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -227,7 +227,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 254,
+        "sourceSpanStart": 257,
         "sourceSpanLength": 13,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -240,7 +240,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 267,
+        "sourceSpanStart": 270,
         "sourceSpanLength": 52,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -253,7 +253,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 285,
+        "sourceSpanStart": 288,
         "sourceSpanLength": 9,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -266,7 +266,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 306,
+        "sourceSpanStart": 309,
         "sourceSpanLength": 9,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -279,7 +279,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 333,
+        "sourceSpanStart": 336,
         "sourceSpanLength": 35,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -292,7 +292,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 384,
+        "sourceSpanStart": 387,
         "sourceSpanLength": 56,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -305,7 +305,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 402,
+        "sourceSpanStart": 405,
         "sourceSpanLength": 11,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -318,7 +318,7 @@
       {
         "originKind": "Template",
         "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-        "sourceSpanStart": 425,
+        "sourceSpanStart": 428,
         "sourceSpanLength": 11,
         "generatedFilePath": null,
         "generatedSpanStart": null,
@@ -350,7 +350,7 @@
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
       "sourceSpanStart": 0,
-      "sourceSpanLength": 497,
+      "sourceSpanLength": 500,
       "generatedFilePath": null,
       "generatedSpanStart": null,
       "generatedSpanLength": null,
@@ -363,7 +363,7 @@
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
       "sourceSpanStart": 12,
-      "sourceSpanLength": 30,
+      "sourceSpanLength": 33,
       "generatedFilePath": null,
       "generatedSpanStart": null,
       "generatedSpanLength": null,
@@ -375,33 +375,33 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 30,
+      "sourceSpanStart": 24,
       "sourceSpanLength": 8,
       "generatedFilePath": null,
       "generatedSpanStart": null,
       "generatedSpanLength": null,
       "startLine": 2,
-      "startColumn": 23,
+      "startColumn": 17,
       "mappingQuality": "ExactSource",
       "provenance": "RazorSourceMap"
     },
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 42,
+      "sourceSpanStart": 45,
       "sourceSpanLength": 5,
       "generatedFilePath": null,
       "generatedSpanStart": null,
       "generatedSpanLength": null,
       "startLine": 2,
-      "startColumn": 35,
+      "startColumn": 38,
       "mappingQuality": "ExactSource",
       "provenance": "RazorSourceMap"
     },
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 47,
+      "sourceSpanStart": 50,
       "sourceSpanLength": 441,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -414,7 +414,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 67,
+      "sourceSpanStart": 70,
       "sourceSpanLength": 404,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -427,7 +427,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 83,
+      "sourceSpanStart": 86,
       "sourceSpanLength": 23,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -440,7 +440,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 121,
+      "sourceSpanStart": 124,
       "sourceSpanLength": 58,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -453,7 +453,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 139,
+      "sourceSpanStart": 142,
       "sourceSpanLength": 14,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -466,7 +466,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 165,
+      "sourceSpanStart": 168,
       "sourceSpanLength": 10,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -479,7 +479,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 179,
+      "sourceSpanStart": 182,
       "sourceSpanLength": 13,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -492,7 +492,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 192,
+      "sourceSpanStart": 195,
       "sourceSpanLength": 62,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -505,7 +505,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 210,
+      "sourceSpanStart": 213,
       "sourceSpanLength": 14,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -518,7 +518,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 236,
+      "sourceSpanStart": 239,
       "sourceSpanLength": 14,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -531,7 +531,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 254,
+      "sourceSpanStart": 257,
       "sourceSpanLength": 13,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -544,7 +544,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 267,
+      "sourceSpanStart": 270,
       "sourceSpanLength": 52,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -557,7 +557,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 285,
+      "sourceSpanStart": 288,
       "sourceSpanLength": 9,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -570,7 +570,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 306,
+      "sourceSpanStart": 309,
       "sourceSpanLength": 9,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -583,7 +583,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 333,
+      "sourceSpanStart": 336,
       "sourceSpanLength": 35,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -596,7 +596,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 384,
+      "sourceSpanStart": 387,
       "sourceSpanLength": 56,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -609,7 +609,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 402,
+      "sourceSpanStart": 405,
       "sourceSpanLength": 11,
       "generatedFilePath": null,
       "generatedSpanStart": null,
@@ -622,7 +622,7 @@
     {
       "originKind": "Template",
       "sourceFilePath": "D:\\repository\\own\\jazor\\Jazor\\samples\\RazorVue.TodoList\\Todo.Library\\TodoSummaryCard.razor",
-      "sourceSpanStart": 425,
+      "sourceSpanStart": 428,
       "sourceSpanLength": 11,
       "generatedFilePath": null,
       "generatedSpanStart": null,

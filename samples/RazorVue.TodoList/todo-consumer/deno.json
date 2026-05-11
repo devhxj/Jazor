@@ -12,6 +12,7 @@
   "tasks": {
     "build": "deno run -A scripts/build.ts",
     "smoke:ssr": "deno run -A scripts/smoke-ssr.ts",
+    "smoke:browser": "deno run -A scripts/smoke-browser.ts",
     "smoke:bundle-api": "deno run -A --unstable-bundle scripts/smoke-bundle-api.ts",
     "test": "deno run -A --unstable-bundle scripts/test.ts"
   }

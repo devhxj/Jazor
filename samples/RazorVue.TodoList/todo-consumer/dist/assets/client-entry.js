@@ -1,3 +1,8 @@
+// .deno-build/vue-feature-flags.mjs
+globalThis.__VUE_OPTIONS_API__ = true;
+globalThis.__VUE_PROD_DEVTOOLS__ = false;
+globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;
+
 // node_modules/.deno/@vue+shared@3.5.13/node_modules/@vue/shared/dist/shared.esm-bundler.js
 // @__NO_SIDE_EFFECTS__
 function makeMap(str) {
@@ -38026,11 +38031,13 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
     __expose();
     const props = __props;
     const emit2 = __emit;
-    const __jazorVueSfcBinding0 = computed2(() => props.pinnedCount > 0);
+    const __jazorVueSfcBinding0 = computed2(() => "compact");
+    const __jazorVueSfcBinding1 = computed2(() => props.pinnedCount > 0);
     const __returned__ = {
       props,
       emit: emit2,
       __jazorVueSfcBinding0,
+      __jazorVueSfcBinding1,
       get VCard() {
         return VCard;
       },
@@ -38057,13 +38064,23 @@ var _sfc_main = /* @__PURE__ */ defineComponent({
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createBlock($setup["VCard"], null, {
     default: withCtx(() => [
-      createVNode($setup["VCardTitle"], {
-        text: "Overview"
+      createVNode($setup["VCardTitle"], null, {
+        default: withCtx(() => [
+          ..._cache[0] || (_cache[0] = [
+            createTextVNode(
+              " Overview ",
+              -1
+              /* CACHED */
+            )
+          ])
+        ]),
+        _: 1
+        /* STABLE */
       }),
       createVNode($setup["VCardText"], null, {
         default: withCtx(() => [
           createVNode($setup["VList"], {
-            density: "compact"
+            density: $setup.__jazorVueSfcBinding0
           }, {
             default: withCtx(() => [
               createVNode($setup["VListItem"], {
@@ -38084,7 +38101,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               }, null, 8, [
                 "subtitle"
               ]),
-              $setup.__jazorVueSfcBinding0 ? (openBlock(), createBlock($setup["VListItem"], {
+              $setup.__jazorVueSfcBinding1 ? (openBlock(), createBlock($setup["VListItem"], {
                 key: 0,
                 title: "Pinned",
                 subtitle: $setup.props.pinnedText
@@ -38094,7 +38111,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             ]),
             _: 1
             /* STABLE */
-          })
+          }, 8, [
+            "density"
+          ])
         ]),
         _: 1
         /* STABLE */
@@ -38140,7 +38159,10 @@ var _sfc_main2 = /* @__PURE__ */ defineComponent({
     const __jazorVueSfcBinding3 = computed2(() => `${props.openCount} still active`);
     const __jazorVueSfcBinding4 = computed2(() => `${props.pinnedCount} pinned for focus`);
     const __jazorVueSfcBinding5 = computed2(() => props.visibleCount === 0);
-    const __jazorVueSfcBinding6 = computed2(() => props.tasks);
+    const __jazorVueSfcBinding6 = computed2(() => "info");
+    const __jazorVueSfcBinding7 = computed2(() => "tonal");
+    const __jazorVueSfcBinding8 = computed2(() => "comfortable");
+    const __jazorVueSfcBinding9 = computed2(() => props.tasks);
     const __returned__ = {
       props,
       emit: emit2,
@@ -38151,9 +38173,15 @@ var _sfc_main2 = /* @__PURE__ */ defineComponent({
       __jazorVueSfcBinding4,
       __jazorVueSfcBinding5,
       __jazorVueSfcBinding6,
+      __jazorVueSfcBinding7,
+      __jazorVueSfcBinding8,
+      __jazorVueSfcBinding9,
       TodoSummaryCardComponent: todo_summary_card_default,
       get VAlert() {
         return VAlert;
+      },
+      get VApp() {
+        return VApp;
       },
       get VBtn() {
         return VBtn;
@@ -38185,6 +38213,9 @@ var _sfc_main2 = /* @__PURE__ */ defineComponent({
       get VListItem() {
         return VListItem;
       },
+      get VMain() {
+        return VMain;
+      },
       get VRow() {
         return VRow;
       },
@@ -38206,57 +38237,137 @@ var _hoisted_1 = {
   key: 0
 };
 function render2(_ctx, _cache, $props, $setup, $data, $options) {
-  return openBlock(), createBlock($setup["VContainer"], {
-    fluid: true
-  }, {
+  return openBlock(), createBlock($setup["VApp"], null, {
     default: withCtx(() => [
-      createVNode($setup["VRow"], {
-        justify: "center"
-      }, {
+      createVNode($setup["VMain"], null, {
         default: withCtx(() => [
-          createVNode($setup["VCol"], {
-            cols: 12,
-            md: 10,
-            lg: 8
+          createVNode($setup["VContainer"], {
+            fluid: true
           }, {
             default: withCtx(() => [
-              createVNode($setup["VCard"], null, {
+              createVNode($setup["VRow"], {
+                justify: "center"
+              }, {
                 default: withCtx(() => [
-                  createVNode($setup["VCardTitle"], {
-                    text: "RazorVue Todo Workspace"
-                  }),
-                  createVNode($setup["VCardText"], null, {
+                  createVNode($setup["VCol"], {
+                    cols: 12,
+                    md: 10,
+                    lg: 8
+                  }, {
                     default: withCtx(() => [
-                      createVNode($setup["VRow"], null, {
+                      createVNode($setup["VCard"], null, {
                         default: withCtx(() => [
-                          createVNode($setup["VCol"], {
-                            cols: 12,
-                            md: 8
-                          }, {
+                          createVNode($setup["VCardTitle"], null, {
                             default: withCtx(() => [
-                              createVNode($setup["VTextField"], {
-                                label: "New task title",
-                                modelValue: $setup.props.draftTitle,
-                                "onUpdate:modelValue": _cache[0] || (_cache[0] = (__value) => $setup.emit("update:draftTitle", __value))
-                              }, null, 8, [
-                                "modelValue"
+                              ..._cache[5] || (_cache[5] = [
+                                createTextVNode(
+                                  " RazorVue Todo Workspace ",
+                                  -1
+                                  /* CACHED */
+                                )
                               ])
                             ]),
                             _: 1
                             /* STABLE */
                           }),
-                          createVNode($setup["VCol"], {
-                            cols: 12,
-                            md: 4
-                          }, {
+                          createVNode($setup["VCardText"], null, {
                             default: withCtx(() => [
-                              createVNode($setup["VTextField"], {
-                                label: "Category",
-                                modelValue: $setup.props.draftCategory,
-                                "onUpdate:modelValue": _cache[1] || (_cache[1] = (__value) => $setup.emit("update:draftCategory", __value))
-                              }, null, 8, [
-                                "modelValue"
-                              ])
+                              createVNode($setup["VRow"], null, {
+                                default: withCtx(() => [
+                                  createVNode($setup["VCol"], {
+                                    cols: 12,
+                                    md: 8
+                                  }, {
+                                    default: withCtx(() => [
+                                      createVNode($setup["VTextField"], {
+                                        label: "New task title",
+                                        modelValue: $setup.props.draftTitle,
+                                        "onUpdate:modelValue": _cache[0] || (_cache[0] = (__value) => $setup.emit("update:draftTitle", __value))
+                                      }, null, 8, [
+                                        "modelValue"
+                                      ])
+                                    ]),
+                                    _: 1
+                                    /* STABLE */
+                                  }),
+                                  createVNode($setup["VCol"], {
+                                    cols: 12,
+                                    md: 4
+                                  }, {
+                                    default: withCtx(() => [
+                                      createVNode($setup["VTextField"], {
+                                        label: "Category",
+                                        modelValue: $setup.props.draftCategory,
+                                        "onUpdate:modelValue": _cache[1] || (_cache[1] = (__value) => $setup.emit("update:draftCategory", __value))
+                                      }, null, 8, [
+                                        "modelValue"
+                                      ])
+                                    ]),
+                                    _: 1
+                                    /* STABLE */
+                                  })
+                                ]),
+                                _: 1
+                                /* STABLE */
+                              }),
+                              createVNode($setup["VRow"], null, {
+                                default: withCtx(() => [
+                                  createVNode($setup["VCol"], {
+                                    cols: 12,
+                                    md: 4
+                                  }, {
+                                    default: withCtx(() => [
+                                      createVNode($setup["VCheckbox"], {
+                                        label: "Create pinned task",
+                                        modelValue: $setup.props.draftPinned,
+                                        "onUpdate:modelValue": _cache[2] || (_cache[2] = (__value) => $setup.emit("update:draftPinned", __value))
+                                      }, null, 8, [
+                                        "modelValue"
+                                      ])
+                                    ]),
+                                    _: 1
+                                    /* STABLE */
+                                  }),
+                                  createVNode($setup["VCol"], {
+                                    cols: 12,
+                                    md: 4
+                                  }, {
+                                    default: withCtx(() => [
+                                      createVNode($setup["VSwitch"], {
+                                        label: "Show completed",
+                                        modelValue: $setup.props.showCompleted,
+                                        "onUpdate:modelValue": _cache[3] || (_cache[3] = (__value) => $setup.emit("update:showCompleted", __value))
+                                      }, null, 8, [
+                                        "modelValue"
+                                      ])
+                                    ]),
+                                    _: 1
+                                    /* STABLE */
+                                  }),
+                                  createVNode($setup["VCol"], {
+                                    cols: 12,
+                                    md: 4
+                                  }, {
+                                    default: withCtx(() => [
+                                      createVNode($setup["VBtn"], {
+                                        text: "Add task",
+                                        onClick: _cache[4] || (_cache[4] = () => $setup.emit("addRequested"))
+                                      })
+                                    ]),
+                                    _: 1
+                                    /* STABLE */
+                                  })
+                                ]),
+                                _: 1
+                                /* STABLE */
+                              }),
+                              $setup.__jazorVueSfcBinding0 ? (openBlock(), createElementBlock(
+                                "p",
+                                _hoisted_1,
+                                toDisplayString($setup.props.statusMessage),
+                                1
+                                /* TEXT */
+                              )) : createCommentVNode("v-if", true)
                             ]),
                             _: 1
                             /* STABLE */
@@ -38264,65 +38375,7 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                         ]),
                         _: 1
                         /* STABLE */
-                      }),
-                      createVNode($setup["VRow"], null, {
-                        default: withCtx(() => [
-                          createVNode($setup["VCol"], {
-                            cols: 12,
-                            md: 4
-                          }, {
-                            default: withCtx(() => [
-                              createVNode($setup["VCheckbox"], {
-                                label: "Create pinned task",
-                                modelValue: $setup.props.draftPinned,
-                                "onUpdate:modelValue": _cache[2] || (_cache[2] = (__value) => $setup.emit("update:draftPinned", __value))
-                              }, null, 8, [
-                                "modelValue"
-                              ])
-                            ]),
-                            _: 1
-                            /* STABLE */
-                          }),
-                          createVNode($setup["VCol"], {
-                            cols: 12,
-                            md: 4
-                          }, {
-                            default: withCtx(() => [
-                              createVNode($setup["VSwitch"], {
-                                label: "Show completed",
-                                modelValue: $setup.props.showCompleted,
-                                "onUpdate:modelValue": _cache[3] || (_cache[3] = (__value) => $setup.emit("update:showCompleted", __value))
-                              }, null, 8, [
-                                "modelValue"
-                              ])
-                            ]),
-                            _: 1
-                            /* STABLE */
-                          }),
-                          createVNode($setup["VCol"], {
-                            cols: 12,
-                            md: 4
-                          }, {
-                            default: withCtx(() => [
-                              createVNode($setup["VBtn"], {
-                                text: "Add task",
-                                onClick: _cache[4] || (_cache[4] = () => $setup.emit("addRequested"))
-                              })
-                            ]),
-                            _: 1
-                            /* STABLE */
-                          })
-                        ]),
-                        _: 1
-                        /* STABLE */
-                      }),
-                      $setup.__jazorVueSfcBinding0 ? (openBlock(), createElementBlock(
-                        "p",
-                        _hoisted_1,
-                        toDisplayString($setup.props.statusMessage),
-                        1
-                        /* TEXT */
-                      )) : createCommentVNode("v-if", true)
+                      })
                     ]),
                     _: 1
                     /* STABLE */
@@ -38330,117 +38383,132 @@ function render2(_ctx, _cache, $props, $setup, $data, $options) {
                 ]),
                 _: 1
                 /* STABLE */
-              })
-            ]),
-            _: 1
-            /* STABLE */
-          })
-        ]),
-        _: 1
-        /* STABLE */
-      }),
-      createVNode($setup["VRow"], {
-        justify: "center"
-      }, {
-        default: withCtx(() => [
-          createVNode($setup["VCol"], {
-            cols: 12,
-            md: 10,
-            lg: 8
-          }, {
-            default: withCtx(() => [
-              createVNode($setup["TodoSummaryCardComponent"], {
-                totalCount: $setup.props.totalCount,
-                completedCount: $setup.props.completedCount,
-                openCount: $setup.props.openCount,
-                pinnedCount: $setup.props.pinnedCount,
-                totalText: $setup.__jazorVueSfcBinding1,
-                completedText: $setup.__jazorVueSfcBinding2,
-                openText: $setup.__jazorVueSfcBinding3,
-                pinnedText: $setup.__jazorVueSfcBinding4
-              }, null, 8, [
-                "totalCount",
-                "completedCount",
-                "openCount",
-                "pinnedCount",
-                "totalText",
-                "completedText",
-                "openText",
-                "pinnedText"
-              ])
-            ]),
-            _: 1
-            /* STABLE */
-          })
-        ]),
-        _: 1
-        /* STABLE */
-      }),
-      createVNode($setup["VRow"], {
-        justify: "center"
-      }, {
-        default: withCtx(() => [
-          createVNode($setup["VCol"], {
-            cols: 12,
-            md: 10,
-            lg: 8
-          }, {
-            default: withCtx(() => [
-              createVNode($setup["VCard"], null, {
+              }),
+              createVNode($setup["VRow"], {
+                justify: "center"
+              }, {
                 default: withCtx(() => [
-                  createVNode($setup["VCardTitle"], {
-                    text: "Tasks"
-                  }),
-                  createVNode($setup["VCardText"], null, {
+                  createVNode($setup["VCol"], {
+                    cols: 12,
+                    md: 10,
+                    lg: 8
+                  }, {
                     default: withCtx(() => [
-                      $setup.__jazorVueSfcBinding5 ? (openBlock(), createBlock($setup["VAlert"], {
-                        key: 0,
-                        type: "info",
-                        variant: "tonal",
-                        text: "No tasks match the current filter."
-                      })) : (openBlock(), createBlock($setup["VList"], {
-                        key: 1,
-                        density: "comfortable"
-                      }, {
+                      createVNode($setup["TodoSummaryCardComponent"], {
+                        totalCount: $setup.props.totalCount,
+                        completedCount: $setup.props.completedCount,
+                        openCount: $setup.props.openCount,
+                        pinnedCount: $setup.props.pinnedCount,
+                        totalText: $setup.__jazorVueSfcBinding1,
+                        completedText: $setup.__jazorVueSfcBinding2,
+                        openText: $setup.__jazorVueSfcBinding3,
+                        pinnedText: $setup.__jazorVueSfcBinding4
+                      }, null, 8, [
+                        "totalCount",
+                        "completedCount",
+                        "openCount",
+                        "pinnedCount",
+                        "totalText",
+                        "completedText",
+                        "openText",
+                        "pinnedText"
+                      ])
+                    ]),
+                    _: 1
+                    /* STABLE */
+                  })
+                ]),
+                _: 1
+                /* STABLE */
+              }),
+              createVNode($setup["VRow"], {
+                justify: "center"
+              }, {
+                default: withCtx(() => [
+                  createVNode($setup["VCol"], {
+                    cols: 12,
+                    md: 10,
+                    lg: 8
+                  }, {
+                    default: withCtx(() => [
+                      createVNode($setup["VCard"], null, {
                         default: withCtx(() => [
-                          (openBlock(true), createElementBlock(
-                            Fragment,
-                            null,
-                            renderList($setup.__jazorVueSfcBinding6, (item) => {
-                              return openBlock(), createElementBlock(
-                                Fragment,
-                                null,
-                                [
-                                  $setup.props.showCompleted || !item.IsDone ? (openBlock(), createBlock($setup["VListItem"], {
-                                    key: 0,
-                                    title: item.Title,
-                                    subtitle: item.Category + " | " + (item.IsDone ? "Completed" : "Active")
-                                  }, {
-                                    default: withCtx(() => [
-                                      item.IsPinned ? (openBlock(), createBlock($setup["VChip"], {
-                                        key: 0,
-                                        text: "Pinned",
-                                        color: "primary"
-                                      })) : createCommentVNode("v-if", true)
-                                    ]),
-                                    _: 2
-                                    /* DYNAMIC */
-                                  }, 1032, [
-                                    "title",
-                                    "subtitle"
-                                  ])) : createCommentVNode("v-if", true)
-                                ],
-                                64
-                                /* STABLE_FRAGMENT */
-                              );
-                            }),
-                            256
-                            /* UNKEYED_FRAGMENT */
-                          ))
+                          createVNode($setup["VCardTitle"], null, {
+                            default: withCtx(() => [
+                              ..._cache[6] || (_cache[6] = [
+                                createTextVNode(
+                                  " Tasks ",
+                                  -1
+                                  /* CACHED */
+                                )
+                              ])
+                            ]),
+                            _: 1
+                            /* STABLE */
+                          }),
+                          createVNode($setup["VCardText"], null, {
+                            default: withCtx(() => [
+                              $setup.__jazorVueSfcBinding5 ? (openBlock(), createBlock($setup["VAlert"], {
+                                key: 0,
+                                type: $setup.__jazorVueSfcBinding6,
+                                variant: $setup.__jazorVueSfcBinding7,
+                                text: "No tasks match the current filter."
+                              }, null, 8, [
+                                "type",
+                                "variant"
+                              ])) : (openBlock(), createBlock($setup["VList"], {
+                                key: 1,
+                                density: $setup.__jazorVueSfcBinding8
+                              }, {
+                                default: withCtx(() => [
+                                  (openBlock(true), createElementBlock(
+                                    Fragment,
+                                    null,
+                                    renderList($setup.__jazorVueSfcBinding9, (item) => {
+                                      return openBlock(), createElementBlock(
+                                        Fragment,
+                                        null,
+                                        [
+                                          $setup.props.showCompleted || !item.IsDone ? (openBlock(), createBlock($setup["VListItem"], {
+                                            key: 0,
+                                            title: item.Title,
+                                            subtitle: item.Category + " | " + (item.IsDone ? "Completed" : "Active")
+                                          }, {
+                                            default: withCtx(() => [
+                                              item.IsPinned ? (openBlock(), createBlock($setup["VChip"], {
+                                                key: 0,
+                                                text: "Pinned",
+                                                color: "primary"
+                                              })) : createCommentVNode("v-if", true)
+                                            ]),
+                                            _: 2
+                                            /* DYNAMIC */
+                                          }, 1032, [
+                                            "title",
+                                            "subtitle"
+                                          ])) : createCommentVNode("v-if", true)
+                                        ],
+                                        64
+                                        /* STABLE_FRAGMENT */
+                                      );
+                                    }),
+                                    256
+                                    /* UNKEYED_FRAGMENT */
+                                  ))
+                                ]),
+                                _: 1
+                                /* STABLE */
+                              }, 8, [
+                                "density"
+                              ]))
+                            ]),
+                            _: 1
+                            /* STABLE */
+                          })
                         ]),
                         _: 1
                         /* STABLE */
-                      }))
+                      })
                     ]),
                     _: 1
                     /* STABLE */
@@ -38467,7 +38535,7 @@ var todo_app_default = _sfc_main2;
 
 // ../Todo.Host/wwwroot/jazor/__jazor/razorvue-host.mjs
 var razorVueHostAssemblyName = "Todo.Library";
-var razorVueHostGeneratedAtUtc = "2026-05-09T07:43:17.7456723Z";
+var razorVueHostGeneratedAtUtc = "2026-05-10T14:49:22.3127635Z";
 var razorVueStyles = Object.freeze([
   "vuetify/styles"
 ]);
@@ -38490,9 +38558,9 @@ var razorVueHostModules = Object.freeze([
       "vuetify"
     ],
     "descriptorHash": "CFA06F2B1992F6CC41900EDAEE989F6BAE551E116408F3D08572BBE46E88BA97",
-    "templateHash": "78180F9E81F17F42D651B7DC8E91332A1EDB5DC7179CBFFCEF61376755AE7E63",
-    "logicHash": "DA2A45565CB93C6CA4A27D4705BE8CBE614DF09FE7C0DF971492FD98C8E737C9",
-    "contentHash": "412FD85EE4988098750DCEAEE5544AD9E87E22D469CA3BFC5ECE89147CDD35FA",
+    "templateHash": "576056A027C643A025B0167368DD718AC1DFC43DFBD55BF0E1E0E34C388FA402",
+    "logicHash": "CE953F8F70EA24752DCB72EA445879CFEA984298BFE2A0717C4D8539D3FE31FA",
+    "contentHash": "9C648D1673583AA778B89B76E31C88840F837406932859A70E75EFC6108E6A24",
     "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
     "hmrBoundaryKind": 2,
     "requiresHydration": false,
@@ -38512,10 +38580,10 @@ var razorVueHostModules = Object.freeze([
     "pluginRequirements": [
       "vuetify"
     ],
-    "descriptorHash": "6E86E70E4861C2559984F9BC9B44A10BB89759804494D06709D8F263365C190C",
-    "templateHash": "22F336C53D6840572B11AAC45CD5313DDBDE624BAB3C81F84C2A1E5104BFD08D",
-    "logicHash": "F48C3484D162D573A9D7B5E26D6586E0141164EFB1CED2BC7A7CF36878DB70F6",
-    "contentHash": "2065788B4406235A446C83CEADC54F23AB1F87F80A828CD589052C360313CA58",
+    "descriptorHash": "70F8B3CCA999CA2D23DCF0ADDEA7DCA37AC80FBFF9E44271D795D09CCDAE2F89",
+    "templateHash": "3C748571BAFA789CD5786020CFFF49C080C4EAA4EEA297C4D66A545F26D5F107",
+    "logicHash": "4C5C01C83134E5DBF4F743748AA7415667B9142D2DA4E72F67BC4F5CC785974E",
+    "contentHash": "CD47B1AEC985576981D5F67C9B32797193C26B4AE2C7CA776CEA4FA29B49512A",
     "styleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
     "hmrBoundaryKind": 2,
     "requiresHydration": false,

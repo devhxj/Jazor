@@ -25,6 +25,7 @@ type PreparedWorkspace = {
   distRoot: string;
   clientEntryPath: string;
   ssrEntryPath: string;
+  vueFeatureFlagsPath: string;
   assetsDirectory: string;
 };
 
@@ -79,10 +80,20 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
 
   const clientEntryPath = resolve(buildRoot, "client-entry.mjs");
   const ssrEntryPath = resolve(buildRoot, "ssr-entry.mjs");
+  const vueFeatureFlagsPath = resolve(buildRoot, "vue-feature-flags.mjs");
   const assetsDirectory = resolve(distRoot, "assets");
+  await writeText(
+    vueFeatureFlagsPath,
+    [
+      "globalThis.__VUE_OPTIONS_API__ = true;",
+      "globalThis.__VUE_PROD_DEVTOOLS__ = false;",
+      "globalThis.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__ = false;",
+      ""
+    ].join("\n"));
   await writeText(
     clientEntryPath,
     [
+      `import ${JSON.stringify(toModuleSpecifier(clientEntryPath, vueFeatureFlagsPath))};`,
       `import TodoApp from ${JSON.stringify(toModuleSpecifier(clientEntryPath, browserRootModuleOutputPath))};`,
       `import { razorVueHostRequirements } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, hostRequirementsModulePath))};`,
       `import { mountRootComponent } from ${JSON.stringify(toModuleSpecifier(clientEntryPath, resolve(consumerRoot, "src", "runtime-client.js")))};`,
@@ -113,6 +124,7 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     distRoot,
     clientEntryPath,
     ssrEntryPath,
+    vueFeatureFlagsPath,
     assetsDirectory
   };
 }

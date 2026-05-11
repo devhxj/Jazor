@@ -1,6 +1,8 @@
 <template>
 <VCard>
-  <VCardTitle text="Overview" />
+  <VCardTitle>
+    Overview
+  </VCardTitle>
   
     
   <VCardText>
