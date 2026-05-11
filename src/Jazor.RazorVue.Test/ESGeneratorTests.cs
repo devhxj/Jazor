@@ -11219,7 +11219,7 @@ public sealed class ESGeneratorTests
         CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
         var generatedSource = GetGeneratedSource(runResult, "Jazor.Generated.RazorVueCatalog.g.cs");
         StringAssert.Contains(generatedSource, "let _count = 1;");
-        StringAssert.Contains(generatedSource, "h(\\\"span\\\", _count)");
+        StringAssert.Contains(generatedSource, "h(\\\"span\\\", null, _count)");
     }
 
     private static Compilation CreateCompilation(string assemblyName, string source, params MetadataReference[] extraReferences)

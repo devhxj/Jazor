@@ -123,7 +123,7 @@ public sealed class RazorVuePipelineTests
         var pipeline = new RazorVuePipeline(frontend);
         var artifact = pipeline.Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", \"Injected by template frontend\");");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, \"Injected by template frontend\");");
         Assert.AreEqual("InjectedCard", artifact.ComponentName);
         Assert.IsFalse(string.IsNullOrWhiteSpace(artifact.Identity.TemplateHash));
     }
@@ -1371,6 +1371,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Collections.Generic;
+            using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -1648,6 +1649,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Collections.Generic;
+            using ECMAScript;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
             using Microsoft.AspNetCore.Components.Rendering;
@@ -1697,6 +1699,18 @@ public sealed class RazorVuePipelineTests
 
                     [Parameter]
                     public EventCallback<bool> DialogOpenChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback DialogAfterEnter { get; set; }
+
+                    [Parameter]
+                    public EventCallback DialogAfterLeave { get; set; }
+
+                    [Parameter]
+                    public EventCallback<MouseEvent> DialogClickOutside { get; set; }
+
+                    [Parameter]
+                    public EventCallback<KeyboardEvent> DialogKeydown { get; set; }
 
                     [Parameter]
                     public bool MenuOpen { get; set; }
@@ -1861,6 +1875,47 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(56, nameof(VDialog.Location), VuetifyLocation.TopCenter);
                         builder.AddAttribute(57, nameof(VDialog.Transition), "dialog-transition");
                         builder.AddMultipleAttributes(58, AdditionalAttributes);
+                        builder.AddAttribute(85, nameof(VDialog.AfterEnter), DialogAfterEnter);
+                        builder.AddAttribute(86, nameof(VDialog.AfterLeave), DialogAfterLeave);
+                        builder.AddAttribute(87, nameof(VDialog.ClickOutside), DialogClickOutside);
+                        builder.AddAttribute(88, nameof(VDialog.Keydown), DialogKeydown);
+                        builder.AddAttribute(89, nameof(VDialog.Fullscreen), true);
+                        builder.AddAttribute(90, nameof(VDialog.Scrollable), true);
+                        builder.AddAttribute(91, nameof(VDialog.RetainFocus), false);
+                        builder.AddAttribute(92, nameof(VDialog.CloseOnBack), false);
+                        builder.AddAttribute(93, nameof(VDialog.CloseOnContentClick), true);
+                        builder.AddAttribute(94, nameof(VDialog.OpenOnClick), true);
+                        builder.AddAttribute(95, nameof(VDialog.OpenOnFocus), false);
+                        builder.AddAttribute(96, nameof(VDialog.OpenOnHover), true);
+                        builder.AddAttribute(97, nameof(VDialog.OpenDelay), 10);
+                        builder.AddAttribute(98, nameof(VDialog.CloseDelay), 20);
+                        builder.AddAttribute(99, nameof(VDialog.ActivatorProps), new VueDictionary
+                        {
+                            ["class"] = "dialog-activator"
+                        });
+                        builder.AddAttribute(100, nameof(VDialog.ContentProps), new VueDictionary
+                        {
+                            ["class"] = "dialog-content"
+                        });
+                        builder.AddAttribute(101, nameof(VDialog.ContentClass), "dialog-surface");
+                        builder.AddAttribute(102, nameof(VDialog.Origin), VuetifyOriginMode.Overlap);
+                        builder.AddAttribute(103, nameof(VDialog.Offset), VuetifyOverlayOffsetValue.From(new Number[] { 4, 8 }));
+                        builder.AddAttribute(104, nameof(VDialog.LocationStrategy), VuetifyLocationStrategy.Static);
+                        builder.AddAttribute(105, nameof(VDialog.Scrim), "rgba(0,0,0,.6)");
+                        builder.AddAttribute(106, nameof(VDialog.Theme), "dark");
+                        builder.AddAttribute(107, nameof(VDialog.ZIndex), 2500);
+                        builder.AddAttribute(108, nameof(VDialog.Class), "dialog-root");
+                        builder.AddAttribute(109, nameof(VDialog.Style), new VueDictionary
+                        {
+                            ["--dialog-gap"] = "12px"
+                        });
+                        builder.AddAttribute(110, nameof(VDialog.Height), 480);
+                        builder.AddAttribute(111, nameof(VDialog.MaxHeight), "90vh");
+                        builder.AddAttribute(112, nameof(VDialog.MinHeight), 320);
+                        builder.AddAttribute(113, nameof(VDialog.MinWidth), 360);
+                        builder.AddAttribute(114, nameof(VDialog.Opacity), 0.85);
+                        builder.AddAttribute(115, nameof(VDialog.Target), VuetifyDialogTarget.Cursor());
+                        builder.AddAttribute(116, nameof(VDialog.ActivatorTarget), VuetifyDialogActivatorTarget.Parent());
                         builder.CloseComponent();
 
                         builder.CloseComponent();
@@ -1919,6 +1974,38 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"scrollStrategy\": \"block\"");
         StringAssert.Contains(artifact.ModuleCode, "\"location\": \"top center\"");
         StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"dialog-transition\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"onAfterEnter\": () => emit(\"dialogAfterEnter\")");
+        StringAssert.Contains(artifact.ModuleCode, "\"onAfterLeave\": () => emit(\"dialogAfterLeave\")");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick:outside\": (__value) => emit(\"dialogClickOutside\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onKeydown\": (__value) => emit(\"dialogKeydown\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"fullscreen\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"scrollable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"retainFocus\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeOnBack\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeOnContentClick\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnClick\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnFocus\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnHover\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"openDelay\": 10");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeDelay\": 20");
+        StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { class: \"dialog-activator\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { class: \"dialog-content\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"contentClass\": \"dialog-surface\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"origin\": \"overlap\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"offset\": [4, 8]");
+        StringAssert.Contains(artifact.ModuleCode, "\"locationStrategy\": \"static\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"scrim\": \"rgba(0,0,0,.6)\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"dark\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"zIndex\": 2500");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"dialog-root\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--dialog-gap\": \"12px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 480");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxHeight\": \"90vh\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": 320");
+        StringAssert.Contains(artifact.ModuleCode, "\"minWidth\": 360");
+        StringAssert.Contains(artifact.ModuleCode, "\"opacity\": 0.85");
+        StringAssert.Contains(artifact.ModuleCode, "\"target\": 'cursor'");
+        StringAssert.Contains(artifact.ModuleCode, "\"activator\": 'parent'");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:isValid\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:role\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "emit(\"update:query\", __value)");
@@ -2850,8 +2937,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(
             artifact.ModuleCode,
             "import { VStepper as VStepperComponent } from \"vuetify/components\";");
-        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", item.Title)");
-        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", item.Value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.Value)");
         Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
         Assert.IsFalse(artifact.ModuleCode.Contains("item: (item) => h(\"section\"", StringComparison.Ordinal), artifact.ModuleCode);
     }
@@ -3078,8 +3165,8 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"items\": [{");
         StringAssert.Contains(artifact.ModuleCode, "title: \"Profile\"");
         StringAssert.Contains(artifact.ModuleCode, "value: \"profile\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", item.Step)");
-        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", item.Title)");
+        StringAssert.Contains(artifact.ModuleCode, "\"header-item.profile\": (item) => h(\"strong\", null, item.Step)");
+        StringAssert.Contains(artifact.ModuleCode, "\"item.profile\": (item) => h(\"section\", null, item.Title)");
         StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.stepperDefault(context)");
         StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.stepperActions(context)");
         Assert.IsFalse(artifact.ModuleCode.Contains("\"header-item\": (item) => h(\"strong\"", StringComparison.Ordinal), artifact.ModuleCode);
@@ -3884,18 +3971,17 @@ public sealed class RazorVuePipelineTests
                         builder.CloseComponent();
 
                         builder.OpenComponent<VBottomNavigation>(18);
-                        builder.AddAttribute(19, nameof(VBottomNavigation.ModelValue), BottomNavigationOpen);
-                        builder.AddAttribute(20, nameof(VBottomNavigation.ModelValueChanged), BottomNavigationOpenChanged);
-                        builder.AddAttribute(21, nameof(VBottomNavigation.SelectedValue), SelectedNavigationValue);
-                        builder.AddAttribute(22, nameof(VBottomNavigation.SelectedValueChanged), SelectedNavigationValueChanged);
-                        builder.AddAttribute(23, nameof(VBottomNavigation.ActiveColor), "primary");
+                        builder.AddAttribute(19, nameof(VBottomNavigation.ModelValue), SelectedNavigationValue);
+                        builder.AddAttribute(20, nameof(VBottomNavigation.ModelValueChanged), SelectedNavigationValueChanged);
+                        builder.AddAttribute(21, nameof(VBottomNavigation.Active), BottomNavigationOpen);
+                        builder.AddAttribute(22, nameof(VBottomNavigation.ActiveChanged), BottomNavigationOpenChanged);
+                        builder.AddAttribute(23, nameof(VBottomNavigation.Color), "primary");
                         builder.AddAttribute(24, nameof(VBottomNavigation.BgColor), "surface");
                         builder.AddAttribute(25, nameof(VBottomNavigation.Grow), true);
                         builder.AddAttribute(26, nameof(VBottomNavigation.Height), 64);
                         builder.AddAttribute(27, nameof(VBottomNavigation.Mandatory), true);
-                        builder.AddAttribute(28, nameof(VBottomNavigation.Mode), "shift");
+                        builder.AddAttribute(28, nameof(VBottomNavigation.Mode), VuetifyBottomNavigationMode.Shift);
                         builder.AddAttribute(29, nameof(VBottomNavigation.SelectedClass), "is-selected");
-                        builder.AddAttribute(30, nameof(VBottomNavigation.Shift), true);
                         builder.CloseComponent();
 
                         builder.OpenComponent<VBottomSheet>(31);
@@ -3973,12 +4059,16 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"position\": \"sticky\"");
         StringAssert.Contains(artifact.ModuleCode, "\"stacked\": true");
         StringAssert.Contains(artifact.ModuleCode, "actions: () => props.bannerActions");
-        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.bottomNavigationOpen");
-        StringAssert.Contains(artifact.ModuleCode, "\"selectedValue\": props.selectedNavigationValue");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.selectedNavigationValue");
+        StringAssert.Contains(artifact.ModuleCode, "\"active\": props.bottomNavigationOpen");
+        StringAssert.Contains(artifact.ModuleCode, "\"color\": \"primary\"");
         StringAssert.Contains(artifact.ModuleCode, "\"mandatory\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"mode\": \"shift\"");
         StringAssert.Contains(artifact.ModuleCode, "\"selectedClass\": \"is-selected\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:bottomNavigationOpen\", __value)");
-        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:selectedValue\": (__value) => emit(\"update:selectedNavigationValue\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:selectedNavigationValue\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:active\": (__value) => emit(\"update:bottomNavigationOpen\", __value)");
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"selectedValue\"", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("\"activeColor\"", StringComparison.Ordinal), artifact.ModuleCode);
         StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"scrollStrategy\": \"block\"");
         StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { class: \"sheet-trigger\" }");
@@ -4051,6 +4141,9 @@ public sealed class RazorVuePipelineTests
                     public EventCallback<MouseEvent> OverlayClickOutside { get; set; }
 
                     [Parameter]
+                    public EventCallback<KeyboardEvent> OverlayKeydown { get; set; }
+
+                    [Parameter]
                     public RenderFragment<VOverlayActivatorContext>? OverlayActivator { get; set; }
 
                     [Parameter]
@@ -4104,41 +4197,42 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(4, nameof(VOverlay.AfterEnter), OverlayAfterEnter);
                         builder.AddAttribute(5, nameof(VOverlay.AfterLeave), OverlayAfterLeave);
                         builder.AddAttribute(6, nameof(VOverlay.ClickOutside), OverlayClickOutside);
-                        builder.AddAttribute(7, nameof(VOverlay.Absolute), true);
-                        builder.AddAttribute(8, nameof(VOverlay.Attach), "#app");
-                        builder.AddAttribute(9, nameof(VOverlay.Contained), true);
-                        builder.AddAttribute(10, nameof(VOverlay.CloseOnBack), true);
-                        builder.AddAttribute(11, nameof(VOverlay.CloseOnContentClick), true);
-                        builder.AddAttribute(12, nameof(VOverlay.CloseOnClick), true);
-                        builder.AddAttribute(13, nameof(VOverlay.OpenOnClick), true);
-                        builder.AddAttribute(14, nameof(VOverlay.OpenOnFocus), true);
-                        builder.AddAttribute(15, nameof(VOverlay.OpenOnHover), true);
-                        builder.AddAttribute(16, nameof(VOverlay.OpenDelay), 25);
-                        builder.AddAttribute(17, nameof(VOverlay.CloseDelay), 50);
-                        builder.AddAttribute(18, nameof(VOverlay.ActivatorProps), new VueDictionary
+                        builder.AddAttribute(7, nameof(VOverlay.Keydown), OverlayKeydown);
+                        builder.AddAttribute(8, nameof(VOverlay.Absolute), true);
+                        builder.AddAttribute(9, nameof(VOverlay.Attach), "#app");
+                        builder.AddAttribute(10, nameof(VOverlay.Contained), true);
+                        builder.AddAttribute(11, nameof(VOverlay.CloseOnBack), true);
+                        builder.AddAttribute(12, nameof(VOverlay.CloseOnContentClick), true);
+                        builder.AddAttribute(13, nameof(VOverlay.CloseOnClick), true);
+                        builder.AddAttribute(14, nameof(VOverlay.OpenOnClick), true);
+                        builder.AddAttribute(15, nameof(VOverlay.OpenOnFocus), true);
+                        builder.AddAttribute(16, nameof(VOverlay.OpenOnHover), true);
+                        builder.AddAttribute(17, nameof(VOverlay.OpenDelay), 25);
+                        builder.AddAttribute(18, nameof(VOverlay.CloseDelay), 50);
+                        builder.AddAttribute(19, nameof(VOverlay.ActivatorProps), new VueDictionary
                         {
                             ["class"] = "overlay-activator"
                         });
-                        builder.AddAttribute(19, nameof(VOverlay.ContentProps), new VueDictionary
+                        builder.AddAttribute(20, nameof(VOverlay.ContentProps), new VueDictionary
                         {
                             ["class"] = "overlay-content"
                         });
-                        builder.AddAttribute(20, nameof(VOverlay.Id), "settings-overlay");
-                        builder.AddAttribute(21, nameof(VOverlay.Location), VuetifyLocation.BottomEnd);
-                        builder.AddAttribute(22, nameof(VOverlay.Origin), VuetifyLocation.TopEnd);
-                        builder.AddAttribute(23, nameof(VOverlay.Offset), 12);
-                        builder.AddAttribute(24, nameof(VOverlay.LocationStrategy), VuetifyLocationStrategy.Connected);
-                        builder.AddAttribute(25, nameof(VOverlay.ScrollStrategy), VuetifyScrollStrategy.Reposition);
-                        builder.AddAttribute(26, nameof(VOverlay.Scrim), false);
-                        builder.AddAttribute(27, nameof(VOverlay.Transition), new VueTransitionProps
+                        builder.AddAttribute(21, nameof(VOverlay.Id), "settings-overlay");
+                        builder.AddAttribute(22, nameof(VOverlay.Location), VuetifyLocation.BottomEnd);
+                        builder.AddAttribute(23, nameof(VOverlay.Origin), VuetifyLocation.TopEnd);
+                        builder.AddAttribute(24, nameof(VOverlay.Offset), 12);
+                        builder.AddAttribute(25, nameof(VOverlay.LocationStrategy), VuetifyLocationStrategy.Connected);
+                        builder.AddAttribute(26, nameof(VOverlay.ScrollStrategy), VuetifyScrollStrategy.Reposition);
+                        builder.AddAttribute(27, nameof(VOverlay.Scrim), false);
+                        builder.AddAttribute(28, nameof(VOverlay.Transition), new VueTransitionProps
                         {
                             Name = "fade-transition",
                             Appear = true
                         });
-                        builder.AddAttribute(28, nameof(VOverlay.ZIndex), 2400);
-                        builder.AddAttribute(29, nameof(VOverlay.MaxWidth), 480);
-                        builder.AddAttribute(30, nameof(VOverlay.Activator), OverlayActivator);
-                        builder.AddMultipleAttributes(31, AdditionalAttributes);
+                        builder.AddAttribute(29, nameof(VOverlay.ZIndex), 2400);
+                        builder.AddAttribute(30, nameof(VOverlay.MaxWidth), 480);
+                        builder.AddAttribute(31, nameof(VOverlay.Activator), OverlayActivator);
+                        builder.AddMultipleAttributes(32, AdditionalAttributes);
                         builder.CloseComponent();
 
                         builder.OpenComponent<VHover>(32);
@@ -4235,6 +4329,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"onAfterEnter\": () => emit(\"overlayAfterEnter\")");
         StringAssert.Contains(artifact.ModuleCode, "\"onAfterLeave\": () => emit(\"overlayAfterLeave\")");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick:outside\": (__value) => emit(\"overlayClickOutside\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onKeydown\": (__value) => emit(\"overlayKeydown\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"attach\": \"#app\"");
         StringAssert.Contains(artifact.ModuleCode, "\"locationStrategy\": \"connected\"");
         StringAssert.Contains(artifact.ModuleCode, "\"scrollStrategy\": \"reposition\"");
@@ -5032,6 +5127,18 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
                         builder.AddContent(2, ChildContent);
                         builder.CloseComponent();
+
+                        builder.OpenComponent<VDialog>(3);
+                        builder.AddAttribute(4, nameof(VDialog.Activator), (RenderFragment<VDialogActivatorContext>)((context) => (slotBuilder) =>
+                        {
+                            slotBuilder.OpenElement(5, "button");
+                            slotBuilder.AddAttribute(6, "data-active", context.IsActive);
+                            slotBuilder.AddAttribute(7, "data-props", context.Props);
+                            slotBuilder.AddAttribute(8, "data-target", context.TargetRef);
+                            slotBuilder.AddContent(9, "Open");
+                            slotBuilder.CloseElement();
+                        }));
+                        builder.CloseComponent();
                     }
                 }
             }
@@ -5041,6 +5148,9 @@ public sealed class RazorVuePipelineTests
 
         StringAssert.Contains(artifact.ModuleCode, "import { VDialog as VDialogComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.activator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-active\": context.IsActive");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-props\": context.Props");
+        StringAssert.Contains(artifact.ModuleCode, "\"data-target\": context.TargetRef");
         StringAssert.Contains(artifact.ModuleCode, "default: () => slots.default ? slots.default() : null");
         CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
@@ -5108,7 +5218,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"align\": \"center\"");
         StringAssert.Contains(artifact.ModuleCode, "\"cols\": 12");
         StringAssert.Contains(artifact.ModuleCode, "\"md\": 6");
-        StringAssert.Contains(artifact.ModuleCode, "h(VCardTitleComponent, { default: () => \"Dashboard\" })");
+        StringAssert.Contains(artifact.ModuleCode, "h(VCardTitleComponent, null, { default: () => \"Dashboard\" })");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -5303,6 +5413,7 @@ public sealed class RazorVuePipelineTests
             """
             using System;
             using System.Collections.Generic;
+            using ECMAScript;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -5330,6 +5441,15 @@ public sealed class RazorVuePipelineTests
                     public EventCallback<bool> EnabledChanged { get; set; }
 
                     [Parameter]
+                    public bool AlertVisible { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> AlertVisibleChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<MouseEvent> AlertClosed { get; set; }
+
+                    [Parameter]
                     public string? Notes { get; set; }
 
                     [Parameter]
@@ -5337,6 +5457,21 @@ public sealed class RazorVuePipelineTests
 
                     [Parameter]
                     public EventCallback OnPin { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? AlertPrepend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? AlertTitle { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? AlertText { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? AlertAppend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VAlertCloseSlotContext>? AlertClose { get; set; }
 
                     [Parameter]
                     public RenderFragment<VListItemSlotContext>? ListItemAppend { get; set; }
@@ -5347,22 +5482,56 @@ public sealed class RazorVuePipelineTests
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VAlert>(0);
-                        builder.AddAttribute(1, nameof(VAlert.Type), VuetifyAlertType.Info);
-                        builder.AddAttribute(2, nameof(VAlert.Variant), VuetifyVariant.Tonal);
-                        builder.AddAttribute(3, nameof(VAlert.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(4, nameof(VAlert.Closable), true);
-                        builder.AddAttribute(5, nameof(VAlert.Text), "Saved");
-                        builder.AddMultipleAttributes(6, AdditionalAttributes);
+                        builder.AddAttribute(1, nameof(VAlert.ModelValue), AlertVisible);
+                        builder.AddAttribute(2, nameof(VAlert.ModelValueChanged), AlertVisibleChanged);
+                        builder.AddAttribute(3, nameof(VAlert.ClickClose), AlertClosed);
+                        builder.AddAttribute(4, nameof(VAlert.Type), VuetifyAlertType.Info);
+                        builder.AddAttribute(5, nameof(VAlert.Variant), VuetifyVariant.Tonal);
+                        builder.AddAttribute(6, nameof(VAlert.Color), "primary");
+                        builder.AddAttribute(7, nameof(VAlert.Theme), "dark");
+                        builder.AddAttribute(8, nameof(VAlert.Tag), "section");
+                        builder.AddAttribute(9, nameof(VAlert.Rounded), "lg");
+                        builder.AddAttribute(10, nameof(VAlert.Tile), true);
+                        builder.AddAttribute(11, nameof(VAlert.Position), VuetifyPosition.Sticky);
+                        builder.AddAttribute(12, nameof(VAlert.Location), VuetifyLocation.TopCenter);
+                        builder.AddAttribute(13, nameof(VAlert.Elevation), 2);
+                        builder.AddAttribute(14, nameof(VAlert.Height), 64);
+                        builder.AddAttribute(15, nameof(VAlert.MaxHeight), "20vh");
+                        builder.AddAttribute(16, nameof(VAlert.MaxWidth), 960);
+                        builder.AddAttribute(17, nameof(VAlert.MinHeight), 48);
+                        builder.AddAttribute(18, nameof(VAlert.MinWidth), 320);
+                        builder.AddAttribute(19, nameof(VAlert.Width), "100%");
+                        builder.AddAttribute(20, nameof(VAlert.Density), VuetifyDensity.Comfortable);
+                        builder.AddAttribute(21, nameof(VAlert.Class), "saved-alert");
+                        builder.AddAttribute(22, nameof(VAlert.Style), new VueDictionary
+                        {
+                            ["--alert-gap"] = "8px"
+                        });
+                        builder.AddAttribute(23, nameof(VAlert.Border), VuetifyAlertBorderSide.Start);
+                        builder.AddAttribute(24, nameof(VAlert.BorderColor), "primary");
+                        builder.AddAttribute(25, nameof(VAlert.Closable), true);
+                        builder.AddAttribute(26, nameof(VAlert.CloseIcon), "$close");
+                        builder.AddAttribute(27, nameof(VAlert.CloseLabel), "Dismiss notification");
+                        builder.AddAttribute(28, nameof(VAlert.Icon), VuetifyAlertIconValue.None());
+                        builder.AddAttribute(29, nameof(VAlert.Prominent), true);
+                        builder.AddAttribute(30, nameof(VAlert.Title), "Saved");
+                        builder.AddAttribute(31, nameof(VAlert.Text), "Settings were saved");
+                        builder.AddAttribute(32, nameof(VAlert.Prepend), AlertPrepend);
+                        builder.AddAttribute(33, nameof(VAlert.TitleContent), AlertTitle);
+                        builder.AddAttribute(34, nameof(VAlert.TextContent), AlertText);
+                        builder.AddAttribute(35, nameof(VAlert.Append), AlertAppend);
+                        builder.AddAttribute(36, nameof(VAlert.Close), AlertClose);
+                        builder.AddMultipleAttributes(37, AdditionalAttributes);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VList>(7);
-                        builder.AddAttribute(8, nameof(VList.Density), VuetifyDensity.Compact);
-                        builder.AddAttribute(9, nameof(VList.Nav), true);
-                        builder.AddAttribute(10, nameof(VList.Lines), VuetifyListLineMode.Two);
-                        builder.AddAttribute(11, nameof(VList.Slim), true);
-                        builder.AddAttribute(12, nameof(VList.BgColor), "surface");
-                        builder.AddAttribute(13, nameof(VList.Variant), VuetifyVariant.Text);
-                        builder.AddAttribute(14, nameof(VList.Items), new VuetifySelectItemValue[]
+                        builder.OpenComponent<VList>(38);
+                        builder.AddAttribute(39, nameof(VList.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(40, nameof(VList.Nav), true);
+                        builder.AddAttribute(41, nameof(VList.Lines), VuetifyListLineMode.Two);
+                        builder.AddAttribute(42, nameof(VList.Slim), true);
+                        builder.AddAttribute(43, nameof(VList.BgColor), "surface");
+                        builder.AddAttribute(44, nameof(VList.Variant), VuetifyVariant.Text);
+                        builder.AddAttribute(45, nameof(VList.Items), new VuetifySelectItemValue[]
                         {
                             "Inbox",
                             new VuetifySelectItem
@@ -5375,50 +5544,50 @@ public sealed class RazorVuePipelineTests
                                 ]
                             }
                         });
-                        builder.AddAttribute(15, nameof(VList.ItemTitle), "title");
-                        builder.AddAttribute(16, nameof(VList.ItemValue), "value");
-                        builder.AddAttribute(17, nameof(VList.ItemChildren), "children");
-                        builder.AddAttribute(18, nameof(VList.ItemProps), true);
-                        builder.AddMultipleAttributes(19, AdditionalAttributes);
-                        builder.OpenComponent<VListItem>(20);
-                        builder.AddAttribute(21, nameof(VListItem.Title), "General");
-                        builder.AddAttribute(22, nameof(VListItem.Value), "general");
-                        builder.AddAttribute(23, nameof(VListItem.Subtitle), "Workspace defaults");
-                        builder.AddAttribute(24, nameof(VListItem.PrependIcon), "$settings");
-                        builder.AddAttribute(25, nameof(VListItem.AppendIcon), "$chevronRight");
-                        builder.AddAttribute(26, nameof(VListItem.Active), true);
-                        builder.AddAttribute(27, nameof(VListItem.ActiveClass), "active-nav");
-                        builder.AddAttribute(28, nameof(VListItem.Lines), false);
-                        builder.AddAttribute(29, nameof(VListItem.Ripple), false);
-                        builder.AddAttribute(30, nameof(VListItem.Link), true);
-                        builder.AddAttribute(31, nameof(VListItem.Href), "/settings");
-                        builder.AddAttribute(32, nameof(VListItem.Color), "primary");
-                        builder.AddAttribute(33, nameof(VListItem.Variant), VuetifyVariant.Tonal);
-                        builder.AddAttribute(34, nameof(VListItem.OnClick), OnPin);
-                        builder.AddAttribute(35, nameof(VListItem.Append), ListItemAppend);
+                        builder.AddAttribute(46, nameof(VList.ItemTitle), "title");
+                        builder.AddAttribute(47, nameof(VList.ItemValue), "value");
+                        builder.AddAttribute(48, nameof(VList.ItemChildren), "children");
+                        builder.AddAttribute(49, nameof(VList.ItemProps), true);
+                        builder.AddMultipleAttributes(50, AdditionalAttributes);
+                        builder.OpenComponent<VListItem>(51);
+                        builder.AddAttribute(52, nameof(VListItem.Title), "General");
+                        builder.AddAttribute(53, nameof(VListItem.Value), "general");
+                        builder.AddAttribute(54, nameof(VListItem.Subtitle), "Workspace defaults");
+                        builder.AddAttribute(55, nameof(VListItem.PrependIcon), "$settings");
+                        builder.AddAttribute(56, nameof(VListItem.AppendIcon), "$chevronRight");
+                        builder.AddAttribute(57, nameof(VListItem.Active), true);
+                        builder.AddAttribute(58, nameof(VListItem.ActiveClass), "active-nav");
+                        builder.AddAttribute(59, nameof(VListItem.Lines), false);
+                        builder.AddAttribute(60, nameof(VListItem.Ripple), false);
+                        builder.AddAttribute(61, nameof(VListItem.Link), true);
+                        builder.AddAttribute(62, nameof(VListItem.Href), "/settings");
+                        builder.AddAttribute(63, nameof(VListItem.Color), "primary");
+                        builder.AddAttribute(64, nameof(VListItem.Variant), VuetifyVariant.Tonal);
+                        builder.AddAttribute(65, nameof(VListItem.OnClick), OnPin);
+                        builder.AddAttribute(66, nameof(VListItem.Append), ListItemAppend);
 
-                        builder.OpenComponent<VChip>(37);
-                        builder.AddAttribute(38, nameof(VChip.Color), "success");
-                        builder.AddAttribute(39, nameof(VChip.Text), true);
-                        builder.AddAttribute(40, nameof(VChip.OnClick), OnPin);
-                        builder.AddAttribute(41, nameof(VChip.PrependIcon), "$pin");
-                        builder.AddAttribute(42, nameof(VChip.Size), "small");
-                        builder.AddAttribute(43, nameof(VChip.Rounded), "pill");
+                        builder.OpenComponent<VChip>(67);
+                        builder.AddAttribute(68, nameof(VChip.Color), "success");
+                        builder.AddAttribute(69, nameof(VChip.Text), true);
+                        builder.AddAttribute(70, nameof(VChip.OnClick), OnPin);
+                        builder.AddAttribute(71, nameof(VChip.PrependIcon), "$pin");
+                        builder.AddAttribute(72, nameof(VChip.Size), "small");
+                        builder.AddAttribute(73, nameof(VChip.Rounded), "pill");
                         builder.CloseComponent();
                         builder.CloseComponent();
-                        builder.CloseComponent();
-
-                        builder.OpenComponent<VSwitch>(44);
-                        builder.AddAttribute(45, nameof(VSwitch.Label), "Notifications");
-                        builder.AddAttribute(46, nameof(VSwitch.ModelValue), Enabled);
-                        builder.AddAttribute(47, nameof(VSwitch.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VTextarea>(48);
-                        builder.AddAttribute(49, nameof(VTextarea.Label), "Notes");
-                        builder.AddAttribute(50, nameof(VTextarea.Rows), 4);
-                        builder.AddAttribute(51, nameof(VTextarea.ModelValue), Notes);
-                        builder.AddAttribute(52, nameof(VTextarea.ModelValueChanged), NotesChanged);
+                        builder.OpenComponent<VSwitch>(74);
+                        builder.AddAttribute(75, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(76, nameof(VSwitch.ModelValue), Enabled);
+                        builder.AddAttribute(77, nameof(VSwitch.ModelValueChanged), EnabledChanged);
+                        builder.CloseComponent();
+
+                        builder.OpenComponent<VTextarea>(78);
+                        builder.AddAttribute(79, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(80, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(81, nameof(VTextarea.ModelValue), Notes);
+                        builder.AddAttribute(82, nameof(VTextarea.ModelValueChanged), NotesChanged);
                         builder.CloseComponent();
                     }
                 }
@@ -5428,10 +5597,42 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "import { VAlert as VAlertComponent, VChip as VChipComponent, VList as VListComponent, VListItem as VListItemComponent, VSwitch as VSwitchComponent, VTextarea as VTextareaComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.alertVisible");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:alertVisible\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick:close\": (__value) => emit(\"alertClosed\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"type\": \"info\"");
         StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"tonal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"color\": \"primary\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"dark\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"section\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"lg\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"position\": \"sticky\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"top center\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"elevation\": 2");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 64");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxHeight\": \"20vh\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 960");
+        StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": 48");
+        StringAssert.Contains(artifact.ModuleCode, "\"minWidth\": 320");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"100%\"");
         StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"saved-alert\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--alert-gap\": \"8px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"border\": \"start\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"borderColor\": \"primary\"");
         StringAssert.Contains(artifact.ModuleCode, "\"closable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeIcon\": \"$close\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeLabel\": \"Dismiss notification\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"icon\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"prominent\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Saved\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Settings were saved\"");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: () => props.alertPrepend");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => props.alertTitle");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => props.alertText");
+        StringAssert.Contains(artifact.ModuleCode, "append: () => props.alertAppend");
+        StringAssert.Contains(artifact.ModuleCode, "close: (context) => props.alertClose(context)");
         StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
         StringAssert.Contains(artifact.ModuleCode, "props.additionalAttributes");
         StringAssert.Contains(artifact.ModuleCode, "\"nav\": true");
@@ -7348,17 +7549,17 @@ public sealed class RazorVuePipelineTests
 
             namespace Demo.Components
             {
-                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
-                public class DialogHost : ComponentBase, IVueComponent
+                [ECMAScript.ECMAScriptModule("./components/alert-host")]
+                public class AlertHost : ComponentBase, IVueComponent
                 {
                     [Parameter]
-                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+                    public RenderFragment? Prepend { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
-                        builder.OpenComponent<VDialog>(0);
-                        builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
-                        builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                        builder.OpenComponent<VAlert>(0);
+                        builder.AddAttribute(1, nameof(VAlert.Prepend), Prepend);
+                        builder.AddAttribute(2, nameof(VAlert.Prepend), Prepend);
                         builder.CloseComponent();
                     }
                 }
@@ -7368,8 +7569,8 @@ public sealed class RazorVuePipelineTests
         var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "Activator");
-        StringAssert.Contains(exception.Issue.Message, "VDialog");
+        StringAssert.Contains(exception.Issue.Message, "Prepend");
+        StringAssert.Contains(exception.Issue.Message, "VAlert");
     }
 
     [TestMethod]
@@ -7787,7 +7988,7 @@ public sealed class RazorVuePipelineTests
             .Artifacts
             .Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, { default: () => \"inner\" });");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(ChildCardComponent, null, { default: () => \"inner\" });");
     }
 
     [TestMethod]
@@ -7853,7 +8054,7 @@ public sealed class RazorVuePipelineTests
         var artifact = catalog.Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
         StringAssert.Contains(artifact.ModuleCode, "(props.value > 0) ? h(ChildCardComponent, { \"value\": props.value }) : null");
-        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) => h(\"li\", item))");
+        StringAssert.Contains(artifact.ModuleCode, "props.items.map((item) => h(\"li\", null, item))");
     }
 
     [TestMethod]
@@ -7954,7 +8155,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", slots.default ? slots.default() : null);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, slots.default ? slots.default() : null);");
     }
 
     [TestMethod]
@@ -8119,7 +8320,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         StringAssert.Contains(artifact.ModuleCode, "const __jazorVueForRange = (start, limit, conditionOperator, stepOperator, stepValue) => {");
-        StringAssert.Contains(artifact.ModuleCode, "__jazorVueForRange(0, props.count, \"<\", \"++\", null).map((i) => h(\"li\", i))");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorVueForRange(0, props.count, \"<\", \"++\", null).map((i) => h(\"li\", null, i))");
     }
 
     [TestMethod]
@@ -8171,7 +8372,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "__jazorVueForRange(props.start, props.count, \"<=\", \"+=\", props.step).map((i) => h(\"li\", i))");
+        StringAssert.Contains(artifact.ModuleCode, "__jazorVueForRange(props.start, props.count, \"<=\", \"+=\", props.step).map((i) => h(\"li\", null, i))");
         StringAssert.Contains(artifact.ModuleCode, "const stepDelta = stepOperator === \"++\" ? 1");
         StringAssert.Contains(artifact.ModuleCode, "requires a finite non-zero effective step value");
     }
@@ -8367,7 +8568,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", props.title)");
+        StringAssert.Contains(artifact.ModuleCode, "header: () => h(\"h1\", null, props.title)");
     }
 
     [TestMethod]
@@ -8419,7 +8620,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single(static artifact => artifact.ComponentName == "ParentCard");
 
-        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", item)");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => h(\"p\", null, item)");
     }
 
     [TestMethod]
@@ -8526,7 +8727,7 @@ public sealed class RazorVuePipelineTests
 
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/item-editor.mjs");
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/list-card.mjs");
-        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((item > props.threshold) ? h(ItemEditorComponent, { \"modelValue\": item, \"onUpdate:modelValue\": (__value) => emit(\"valueChanged\", __value) }) : h(\"span\", item))");
+        StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((item > props.threshold) ? h(ItemEditorComponent, { \"modelValue\": item, \"onUpdate:modelValue\": (__value) => emit(\"valueChanged\", __value) }) : h(\"span\", null, item))");
         Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueSfcBinding", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
@@ -8692,7 +8893,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
         Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", props.value);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, props.value);");
     }
 
     [TestMethod]
@@ -10224,7 +10425,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "let _count = 1;");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", _count);");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, _count);");
     }
 
     [TestMethod]
@@ -10269,7 +10470,7 @@ public sealed class RazorVuePipelineTests
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
         StringAssert.Contains(artifact.ModuleCode, "function calculate()");
         StringAssert.Contains(artifact.ModuleCode, "return 42;");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", calculate());");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, calculate());");
     }
 
     [TestMethod]
@@ -10321,7 +10522,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value)");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + value);");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", formatTitle(props.value));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, formatTitle(props.value));");
     }
 
     [TestMethod]
@@ -10373,7 +10574,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle(value, scale)");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + (value * scale));");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", formatTitle(props.value, 2));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"span\", null, formatTitle(props.value, 2));");
     }
 
     [TestMethod]
@@ -10423,7 +10624,7 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", h(\"span\", props.title));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, h(\"span\", null, props.title));");
     }
 
     [TestMethod]
@@ -14616,7 +14817,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "const titleText = \"Count: \";");
         StringAssert.Contains(artifact.ModuleCode, "function formatTitle()");
         StringAssert.Contains(artifact.ModuleCode, "return (titleText + props.value);");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", formatTitle());");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatTitle());");
     }
 
     [TestMethod]
@@ -14669,7 +14870,7 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "function formatInner(value)");
         StringAssert.Contains(artifact.ModuleCode, "return (\"Value: \" + formatInner(value));");
         StringAssert.Contains(artifact.ModuleCode, "return ((value * 2)).toString();");
-        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", formatOuter(props.value));");
+        StringAssert.Contains(artifact.ModuleCode, "return () => h(\"section\", null, formatOuter(props.value));");
     }
 
     [TestMethod]
