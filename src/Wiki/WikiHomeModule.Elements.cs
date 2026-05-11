@@ -1,3 +1,4 @@
+// WikiHomeModule.Elements.cs - 共享 UI 元素（按钮、链接、卡片、代码块等） / Shared UI elements (buttons, links, cards, code blocks, etc.)
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue3;
@@ -6,6 +7,7 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    // ── 事件处理器工厂 / Event handler factories ──
     private static VueEventHandlers<MouseEvent> CreateRouteClickEvents()
         => new()
         {
@@ -90,6 +92,7 @@ public static partial class WikiHomeModule
             ["onClick"] = OnPageFeedbackClick
         };
 
+    // 头部导航链接 / Header navigation link
     private static IVNode HeaderLink(string path, string label)
         => H("a", new VueObject
         {
@@ -98,6 +101,7 @@ public static partial class WikiHomeModule
             Events = CreateRouteClickEvents()
         }, label);
 
+    // 抽屉按钮（移动端导航/目录切换） / Drawer button for mobile nav/TOC toggle
     private static IVNode DrawerButton(string label, string className, string controlsId, bool isExpanded, bool isDisabled, VueEventHandlers<MouseEvent> events)
         => H("button", new VueObject
         {
@@ -112,6 +116,7 @@ public static partial class WikiHomeModule
             }
         }, label);
 
+    // 导航分组（按主题归类链接） / Navigation group (links grouped by topic)
     private static IVNode NavGroup(string title, IVNode[] links)
         => H("section", new VueObject { Class = "nav-group" },
         [
@@ -119,6 +124,7 @@ public static partial class WikiHomeModule
             H("div", new VueObject { Class = "nav-group-links" }, links)
         ]);
 
+    // 导航链接（带高亮当前页面状态） / Navigation link with active page highlight
     private static IVNode NavLink(string path, string title, string summary, string currentPath)
     {
         var className = "nav-link";
@@ -145,6 +151,7 @@ public static partial class WikiHomeModule
         ]);
     }
 
+    // 目录侧边栏（右侧 TOC 导航） / Table of contents rail (right-side TOC navigation)
     private static IVNode TocRail(string title, IVNode[] links)
     {
         var className = "toc-rail";
@@ -171,16 +178,17 @@ public static partial class WikiHomeModule
                     {
                         Class = "drawer-close",
                         Type = "button",
-                        Title = "Close table of contents",
+                        Title = "关闭目录",
                         Events = CreateCloseDrawersEvents()
-                    }, "Close")
+                    }, "关闭")
                 ]),
-                H("p", new VueObject { Class = "rail-copy" }, "Stable anchors are part of the docs contract. Treat them as user-facing entry points."),
+                H("p", new VueObject { Class = "rail-copy" }, "稳定的锚点是文档契约的一部分，应视为面向用户的入口点。"),
                 H("div", new VueObject { Class = "toc-links" }, links)
             ])
         ]);
     }
 
+    // 空目录侧边栏（页面未注册时显示） / Empty TOC rail (shown when page is not registered)
     private static IVNode EmptyTocRail()
     {
         var className = "toc-rail toc-rail-empty";
@@ -197,20 +205,21 @@ public static partial class WikiHomeModule
             [
                 H("div", new VueObject { Class = "toc-drawer-head" },
                 [
-                    H("p", new VueObject { Class = "rail-kicker" }, "Missing page"),
+                    H("p", new VueObject { Class = "rail-kicker" }, "缺失页面"),
                     H("button", new VueObject
                     {
                         Class = "drawer-close",
                         Type = "button",
-                        Title = "Close table of contents",
+                        Title = "关闭目录",
                         Events = CreateCloseDrawersEvents()
-                    }, "Close")
+                    }, "关闭")
                 ]),
-                H("p", new VueObject { Class = "rail-copy" }, "The requested route is not registered in the current Wiki route map.")
+                H("p", new VueObject { Class = "rail-copy" }, "请求的路由未在当前 Wiki 路由映射中注册。")
             ])
         ]);
     }
 
+    // 目录链接（带当前锚点高亮） / TOC link with active anchor highlight
     private static IVNode TocLink(string path, string id, string title, string currentHash)
     {
         var className = "toc-link";
@@ -233,6 +242,7 @@ public static partial class WikiHomeModule
         }, title);
     }
 
+    // 分页链接（上一页/下一页） / Pager link (previous/next)
     private static IVNode PagerLink(string direction, string path, string title)
         => H("a", new VueObject
         {
@@ -245,9 +255,11 @@ public static partial class WikiHomeModule
             H("span", new VueObject { Class = "pager-title" }, title)
         ]);
 
+    // 空分页槽位（占位） / Empty pager slot placeholder
     private static IVNode EmptyPagerSlot()
         => H("div", new VueObject { Class = "pager-slot" }, "");
 
+    // 路由卡片网格（相关页面展示） / Route card grid for related pages
     private static IVNode RouteCardGrid(string[] paths)
     {
         var routeCards = new List<IVNode>();
@@ -271,6 +283,7 @@ public static partial class WikiHomeModule
         return H("div", new VueObject { Class = "route-grid" }, routeCards.ToArray());
     }
 
+    // 标签链接（点击跳转搜索） / Tag link (click to search)
     private static IVNode TagLink(string tag)
         => H("a", new VueObject
         {
@@ -279,6 +292,7 @@ public static partial class WikiHomeModule
             Events = CreateRouteClickEvents()
         }, tag);
 
+    // 元数据卡片（Owner/Audience/Updated 等信息展示） / Metadata card for Owner/Audience/Updated etc.
     private static IVNode MetaCard(string title, string value, string summary)
         => H("article", new VueObject { Class = "meta-card" },
         [
@@ -287,6 +301,7 @@ public static partial class WikiHomeModule
             H("p", new VueObject { Class = "meta-card-summary" }, summary)
         ]);
 
+    // 反馈按钮（有帮助/需改进） / Feedback button (helpful/needs-work)
     private static IVNode FeedbackButton(string label, string value, string currentValue)
     {
         var className = "feedback-button";
@@ -302,26 +317,27 @@ public static partial class WikiHomeModule
         }, label);
     }
 
+    // 文档段落（带锚点和复制链接功能） / Document section with anchor and copy-link feature
     private static IVNode PageSection(string id, string title, IVNode[] content)
     {
         var className = "doc-section";
         if (GetCurrentHashRef()?.Value == id)
             className = "doc-section doc-section-active";
 
-        var permalinkLabel = "Copy link";
+        var permalinkLabel = "复制链接";
         var permalinkClassName = "section-permalink";
-        var permalinkTitle = "Copy direct link to this section";
+        var permalinkTitle = "复制此段落的直接链接";
         if (GetCopiedSectionRef()?.Value == id)
         {
-            permalinkLabel = "Copied";
+            permalinkLabel = "已复制";
             permalinkClassName = "section-permalink section-permalink-copied";
-            permalinkTitle = "Direct link copied to clipboard";
+            permalinkTitle = "直接链接已复制到剪贴板";
         }
         else if (GetPermalinkReadySectionRef()?.Value == id)
         {
-            permalinkLabel = "Link ready";
+            permalinkLabel = "链接已就绪";
             permalinkClassName = "section-permalink section-permalink-ready";
-            permalinkTitle = "Direct link is ready in the address bar; clipboard copy was not available";
+            permalinkTitle = "直接链接已在地址栏就绪；剪贴板复制不可用";
         }
 
         return H("section", new VueObject
@@ -347,6 +363,7 @@ public static partial class WikiHomeModule
         ]);
     }
 
+    // 指标卡片（数值+标题+描述） / Metric card (value + title + summary)
     private static IVNode MetricCard(string value, string title, string summary)
         => H("article", new VueObject { Class = "metric-card" },
         [
@@ -355,6 +372,7 @@ public static partial class WikiHomeModule
             H("p", new VueObject { Class = "metric-summary" }, summary)
         ]);
 
+    // 检查卡片（标题+描述） / Check card (title + summary)
     private static IVNode CheckCard(string title, string summary)
         => H("article", new VueObject { Class = "check-card" },
         [
@@ -362,6 +380,7 @@ public static partial class WikiHomeModule
             H("p", new VueObject { Class = "check-summary" }, summary)
         ]);
 
+    // 提示框（标题+描述） / Callout box (title + summary)
     private static IVNode Callout(string title, string summary)
         => H("div", new VueObject { Class = "callout" },
         [
@@ -369,24 +388,25 @@ public static partial class WikiHomeModule
             H("p", new VueObject { Class = "callout-summary" }, summary)
         ]);
 
+    // 代码块（带复制按钮） / Code block with copy button
     private static IVNode CodeBlock(string label, string code)
     {
         var codeBlockId = BuildCodeBlockId(label, code);
-        var copyLabel = "Copy code";
+        var copyLabel = "复制代码";
         var copyClassName = "code-copy-button";
-        var copyTitle = "Copy this code block";
+        var copyTitle = "复制此代码块";
 
         if (GetCopiedCodeBlockRef()?.Value == codeBlockId)
         {
-            copyLabel = "Copied";
+            copyLabel = "已复制";
             copyClassName = "code-copy-button code-copy-button-copied";
-            copyTitle = "Code block copied to clipboard";
+            copyTitle = "代码块已复制到剪贴板";
         }
         else if (GetUnavailableCodeBlockRef()?.Value == codeBlockId)
         {
-            copyLabel = "Copy unavailable";
+            copyLabel = "复制不可用";
             copyClassName = "code-copy-button code-copy-button-unavailable";
-            copyTitle = "Clipboard copy is not available in this browser";
+            copyTitle = "当前浏览器不支持剪贴板复制";
         }
 
         return H("div", new VueObject { Class = "code-frame" },

@@ -1,3 +1,4 @@
+// WikiHomeModule.ProjectLines.cs - 项目线路 / Project Lines
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -5,43 +6,44 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    // 构建项目线路页面主体 / Build the project lines page body
     private static IVNode ProjectLinesBody()
         => H("div", new VueObject { Class = "doc-body" },
         [
-            PageSection("two-lines", "Two active lines",
+            PageSection("two-lines", "两条活跃线路",
             [
-                H("p", "Jazor now has two active technical lines, and they solve different product problems. Readers should choose based on authoring mode and runtime expectations, not on historical naming."),
+                H("p", "Jazor 现在有两条活跃的技术线路，它们解决不同的产品问题。读者应根据编写模式和运行时预期来选择，而非依据历史命名。"),
                 H("div", new VueObject { Class = "check-grid" },
                 [
-                    CheckCard("RazorVue library mode", "Compile Razor components into JavaScript modules during `dotnet build` and ship them as normal library artifacts."),
-                    CheckCard("Jolt full host", "Use `.jazor` authoring with LSP, preview, HMR, build, and debug support when the project needs a full development-time host.")
+                    CheckCard("RazorVue 库模式", "在 `dotnet build` 期间将 Razor 组件编译为 JavaScript 模块，并作为普通库制品交付。"),
+                    CheckCard("Jolt 完整宿主", "当项目需要完整的开发时宿主时，使用 `.jazor` 编写，支持 LSP、预览、HMR、构建和调试。")
                 ])
             ]),
-            PageSection("choose-a-path", "Choose the right path",
+            PageSection("choose-a-path", "选择正确的路径",
             [
-                H("p", "The fastest way to get unstuck is to decide whether your problem is build-time artifact generation or full application development flow."),
+                H("p", "最快的解题方式是判断你的问题属于构建时制品生成还是完整应用开发流程。"),
                 H("ul",
                 [
-                    H("li", "Choose RazorVue when the deliverable is a library or component package and the authoring surface can stay inside Razor components."),
-                    H("li", "Choose Jolt when the deliverable needs a live app host, workspace graph, and browser-first development loop."),
-                    H("li", "Treat both lines as consumers of the same compiler, emit, and source-origin foundations.")
+                    H("li", "当交付物是库或组件包，且编写表面可以保持在 Razor 组件内时，选择 RazorVue。"),
+                    H("li", "当交付物需要实时应用宿主、工作区图谱和浏览器优先的开发循环时，选择 Jolt。"),
+                    H("li", "将两条线路视为同一编译器、Emit 和源起源基础的消费者。")
                 ])
             ]),
-            PageSection("shared-core", "Shared core",
+            PageSection("shared-core", "共享核心",
             [
-                H("p", "The lines diverge at authoring and host behavior, but they intentionally share the compiler and emit substrate so semantics do not drift."),
-                CodeBlock("Shared modules", """
+                H("p", "两条线路在编写和宿主行为上分道扬镳，但刻意共享编译器和 Emit 基础，以避免语义漂移。"),
+                CodeBlock("共享模块", """
 src/Jazor.Compiler/
 src/Jazor.Emit/
 src/Jazor.Common/
 src/Jazor.Name/
 src/Jazor.Analyzer/
 """),
-                H("p", "That shared core is why compiler boundary pages, runtime-catalog pages, and emit-contract pages matter to both lines.")
+                H("p", "这正是编译器边界页面、运行时目录页面和 Emit 契约页面对两条线路都重要的原因。")
             ]),
-            PageSection("where-to-read-next", "Where to read next",
+            PageSection("where-to-read-next", "推荐后续阅读",
             [
-                H("p", "Use the line-specific pages below to go deeper instead of flattening all architecture questions into one overview."),
+                H("p", "使用下方的线路专用页面深入了解，而非将所有架构问题压入一个概览。"),
                 RouteCardGrid([RazorVueLibraryModePath, JoltHostPath, CompilerOverviewPath])
             ])
         ]);

@@ -1,3 +1,4 @@
+// WikiHomeModule.Faq.cs - 常见问题 / FAQ
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -5,36 +6,37 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    // 构建常见问题页面主体 / Build the FAQ page body
     private static IVNode FaqBody()
         => H("div", new VueObject { Class = "doc-body" },
         [
-            PageSection("using-jazor", "Using Jazor",
+            PageSection("using-jazor", "使用 Jazor",
             [
-                H("p", "Q: Should a new project start with RazorVue or Jolt?"),
-                H("p", "A: Start with RazorVue if the work is library-mode component emission during `dotnet build`. Start with Jolt if the project needs `.jazor` authoring, preview, HMR, or multi-language workspace tooling."),
-                H("p", "Q: Is the Wiki itself proof that H-function authoring is production-safe?"),
-                H("p", "A: Yes. The current shell, navigation, route fallback, and runtime-module imports all run on the same H-function authoring surface that production code uses.")
+                H("p", "问：新项目应该从 RazorVue 还是 Jolt 开始？"),
+                H("p", "答：如果工作是在 `dotnet build` 期间的库模式组件发射，从 RazorVue 开始。如果项目需要 `.jazor` 编写、预览、HMR 或多语言工作区工具，从 Jolt 开始。"),
+                H("p", "问：Wiki 本身是否证明了 H-function 编写是生产安全的？"),
+                H("p", "答：是的。当前的外壳、导航、路由回退和运行时模块导入都运行在与生产代码相同的 H-function 编写表面上。")
             ]),
-            PageSection("compiler-boundaries", "Compiler boundaries",
+            PageSection("compiler-boundaries", "编译器边界",
             [
-                H("p", "Q: Why does the analyzer sometimes complain earlier than the compiler fails?"),
-                H("p", "A: That asymmetry is intentional. The analyzer is allowed to be stricter in erased positions so unsupported concrete external types surface earlier, while the compiler still decides final acceptance at the runtime-sensitive lowering site."),
-                H("p", "Q: Why not silently fall back to raw JavaScript?"),
-                H("p", "A: Because unsupported runtime-sensitive behavior must fail explicitly. Silent raw-JS fallback erodes determinism and makes the supported boundary impossible to reason about.")
+                H("p", "问：为什么分析器有时比编译器更早报错？"),
+                H("p", "答：这种不对称是有意设计。分析器允许在擦除位置更严格，使不受支持的具体外部类型更早暴露，而编译器仍在运行时敏感的 Lowering 点决定最终接受。"),
+                H("p", "问：为什么不静默回退到原始 JavaScript？"),
+                H("p", "答：因为不受支持的运行时敏感行为必须显式失败。静默的原始 JS 回退会侵蚀确定性，使支持边界无法推理。")
             ]),
-            PageSection("runtime-and-host", "Runtime and host behavior",
+            PageSection("runtime-and-host", "运行时与宿主行为",
             [
-                H("p", "Q: Why are `System/*` helpers explicit browser modules instead of hidden runtime glue?"),
-                H("p", "A: Because production output must be inspectable, importable, and smoke-verifiable. Explicit modules keep the browser contract visible."),
-                H("p", "Q: Why does the docs host still serve `index.html` on unknown routes?"),
-                H("p", "A: So direct refreshes and typed URLs still boot the SPA shell, which can then recover into a not-found page with route suggestions.")
+                H("p", "问：为什么 `System/*` 辅助函数是显式浏览器模块而非隐藏的运行时胶水？"),
+                H("p", "答：因为生产输出必须是可检查、可导入和可冒烟验证的。显式模块保持浏览器契约可见。"),
+                H("p", "问：为什么文档宿主在未知路由上仍然提供 `index.html`？"),
+                H("p", "答：这样直接刷新和手动输入的 URL 仍然能启动 SPA 外壳，然后可以恢复到带有路由建议的未找到页面。")
             ]),
-            PageSection("wiki-workflow", "Wiki workflow",
+            PageSection("wiki-workflow", "Wiki 工作流",
             [
-                H("p", "Q: Is Wiki a CMS?"),
-                H("p", "A: No. It is a code-first documentation product with explicit ownership, generated browser artifacts, and operational verification."),
-                H("p", "Q: What makes a docs change complete?"),
-                H("p", "A: The source page, central route catalog, emitted browser output, and smoke verification all need to agree before the page is treated as ready.")
+                H("p", "问：Wiki 是 CMS 吗？"),
+                H("p", "答：不是。它是一个代码优先的文档产品，具有显式所有权、生成的浏览器制品和操作验证。"),
+                H("p", "问：什么使文档变更完成？"),
+                H("p", "答：源页面、中央路由目录、发射的浏览器输出和冒烟验证都需要一致，然后页面才被视为就绪。")
             ])
         ]);
 }

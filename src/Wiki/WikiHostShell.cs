@@ -1,3 +1,7 @@
+// WikiHostShell.cs - 服务端 HTML 外壳渲染器 / Server-side HTML shell renderer
+// 负责 HTML 模板渲染、安全头注入、CSP 策略、元数据 token 替换
+// Handles HTML template rendering, security headers, CSP policy, metadata token replacement
+
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.StaticFiles;
@@ -6,7 +10,10 @@ namespace Wiki;
 
 internal static class WikiHostShell
 {
+    // 模板 token 前缀 / Template token prefix
     private const string MetadataTokenPrefix = "__WIKI_";
+
+    // 文档元数据 token / Document metadata tokens
     private const string TitleToken = "__WIKI_DOCUMENT_TITLE__";
     private const string DescriptionToken = "__WIKI_DOCUMENT_DESCRIPTION__";
     private const string CanonicalUrlToken = "__WIKI_DOCUMENT_CANONICAL_URL__";
@@ -23,11 +30,15 @@ internal static class WikiHostShell
     private const string MainModuleUrlToken = "__WIKI_MAIN_MODULE_URL__";
     private const string SystemImportBaseToken = "__WIKI_SYSTEM_IMPORT_BASE__";
     private const string VendorVueUrlToken = "__WIKI_VENDOR_VUE_URL__";
+    // 缓存策略常量 / Cache policy constants
     private const string HtmlCacheControl = "no-cache, must-revalidate";
     private const string DiscoveryCacheControl = "public, max-age=300, must-revalidate";
     private const string MutableAssetCacheControl = "no-cache, must-revalidate";
     private const string ImmutableVersionedAssetCacheControl = "public, max-age=31536000, immutable";
+
     internal const string WikiPathBaseAttributeName = "data-wiki-path-base";
+
+    // 权限策略 / Permissions policy
     private const string PermissionsPolicy =
         "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +
         "hid=(), microphone=(), payment=(), usb=(), clipboard-read=(self), clipboard-write=(self)";

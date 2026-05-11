@@ -1,3 +1,4 @@
+// WikiHomeModule.VueRouteBindings.cs - VueRoute 绑定 / VueRoute Bindings
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -5,23 +6,24 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    // 构建 VueRoute 绑定页面主体 / Build the VueRoute bindings page body
     private static IVNode VueRouteBindingsBody()
         => H("div", new VueObject { Class = "doc-body" },
         [
-            PageSection("why-vueroute-exists", "Why VueRoute bindings exist",
+            PageSection("why-vueroute-exists", "为什么存在 VueRoute 绑定",
             [
-                H("p", "`ECMAScript.VueRoute` exists so Vue Router 4 can be authored through the same typed C# host-binding model as `ECMAScript.Vue3`, instead of relying on ad-hoc string imports or compiler special cases."),
+                H("p", "`ECMAScript.VueRoute` 的存在使 Vue Router 4 可以通过与 `ECMAScript.Vue3` 相同的类型化 C# 宿主绑定模型编写，而非依赖临时字符串导入或编译器特殊情况。"),
                 H("ul",
                 [
-                    H("li", "Keep `vue-router` imports explicit and local to the binding library."),
-                    H("li", "Expose the high-frequency authoring surface that real app code reaches first."),
-                    H("li", "Let compiler, emit, package, and consumer tests validate the integration without hard-wiring router semantics into the compiler.")
+                    H("li", "保持 `vue-router` 导入显式且局限于绑定库。"),
+                    H("li", "暴露真实应用代码最先需要的高频编写表面。"),
+                    H("li", "让编译器、Emit、包和消费者测试验证集成，而无需将路由器语义硬编码到编译器中。")
                 ])
             ]),
-            PageSection("current-surface", "Current surface",
+            PageSection("current-surface", "当前表面",
             [
-                H("p", "The current project deliberately covers the first slice of route authoring that most Jazor apps need."),
-                CodeBlock("Current `ECMAScript.VueRoute` scope", """
+                H("p", "当前项目刻意覆盖大多数 Jazor 应用需要的路由编写的第一个切片。"),
+                CodeBlock("当前 `ECMAScript.VueRoute` 范围", """
 src/ECMAScript.VueRoute/
   VueRoute.cs
   Api/VueRoute.Api.cs
@@ -38,23 +40,23 @@ useLink(...)
 RouterLink
 RouterView
 """),
-                H("p", "That scope already covers route creation, history creation, route-read access, common navigation calls, and component-level router entry points.")
+                H("p", "该范围已涵盖路由创建、历史创建、路由读取访问、常见导航调用和组件级路由器入口点。")
             ]),
-            PageSection("authoring-boundary", "Authoring boundary",
+            PageSection("authoring-boundary", "编写边界",
             [
-                H("p", "The library is intentionally a host-binding surface, not a place to hide framework policy."),
+                H("p", "该库刻意作为宿主绑定表面，而非隐藏框架策略的地方。"),
                 H("div", new VueObject { Class = "check-grid" },
                 [
-                    CheckCard("Binding only", "The project maps official Vue Router API roots into typed C# names and host records."),
-                    CheckCard("No compiler carve-outs", "`Jazor.Compiler` still treats VueRoute like a normal external host-binding library."),
-                    CheckCard("Layered verification", "Structure, proxy surface, compiler-boundary behavior, and nupkg consumption are verified in separate test layers.")
+                    CheckCard("仅绑定", "该项目将官方 Vue Router API 根映射到类型化的 C# 名称和宿主记录。"),
+                    CheckCard("无编译器特殊处理", "`Jazor.Compiler` 仍将 VueRoute 视为普通的外部宿主绑定库。"),
+                    CheckCard("分层验证", "结构、代理表面、编译器边界行为和 nupkg 消费在独立的测试层中验证。")
                 ]),
-                Callout("Practical rule", "If a router feature can only work by teaching the compiler about `vue-router`, the binding design regressed.")
+                Callout("实用规则", "如果路由器特性只能通过教会编译器关于 `vue-router` 的知识来工作，绑定设计就退化了。")
             ]),
-            PageSection("verification-path", "Verification path",
+            PageSection("verification-path", "验证路径",
             [
-                H("p", "VueRoute is wired as a first-class project, and its regression coverage is intentionally split out of `Jazor.CompilerTest`."),
-                CodeBlock("Current verification chain", """
+                H("p", "VueRoute 作为一等项目接入，其回归覆盖刻意从 `Jazor.CompilerTest` 中拆分出来。"),
+                CodeBlock("当前验证链", """
 src/ECMAScript.VueRoute.Test/
   EcmaScriptVueRouteLayoutGuardTests.cs
   EcmaScriptVueRouteProxyTests.cs
@@ -66,14 +68,14 @@ src/Jazor/Jazor.csproj
 """),
                 H("ul",
                 [
-                    H("li", "The standalone test project locks structure, reflection surface, and compiler-boundary behavior."),
-                    H("li", "The emit integration test proves a local packed `Jazor` package can restore, build, and emit Vue Router imports in a consumer project."),
-                    H("li", "Packaging wires `ECMAScript.VueRoute.dll` into the shipped `Jazor` package alongside the existing runtime libraries.")
+                    H("li", "独立测试项目锁定结构、反射表面和编译器边界行为。"),
+                    H("li", "Emit 集成测试证明本地打包的 `Jazor` 包可以在消费者项目中恢复、构建和发射 Vue Router 导入。"),
+                    H("li", "打包将 `ECMAScript.VueRoute.dll` 与现有运行时库一起打包到交付的 `Jazor` 包中。")
                 ])
             ]),
-            PageSection("where-to-extend-next", "Where to extend next",
+            PageSection("where-to-extend-next", "下一步扩展方向",
             [
-                H("p", "Additions should follow the common-path-first rule: strengthen the public route authoring path before chasing long-tail TypeScript precision."),
+                H("p", "添加应遵循公共路径优先规则：在追求长尾 TypeScript 精度之前，先加强公共路由编写路径。"),
                 RouteCardGrid([ProjectLinesPath, RazorVueLibraryModePath, ImportEmitContractPath, TestingVerificationPath])
             ])
         ]);

@@ -1,3 +1,4 @@
+// WikiHomeModule.TopicIndex.cs - 主题索引页正文 / Topic index page body
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -8,24 +9,24 @@ public static partial class WikiHomeModule
     private static IVNode TopicIndexBody()
         => H("div", new VueObject { Class = "doc-body" },
         [
-            PageSection("topic-clusters", "Topic clusters",
+            PageSection("topic-clusters", "主题集群",
             [
-                H("p", "The Wiki is easier to scan when pages are grouped by the problem you are solving, not just by source folder. Use this index when you know the theme but not the exact route name."),
+                H("p", "当你知道主题但不确定确切路由名称时，使用此索引按关注点浏览 Wiki。页面按解决的问题分组，而非按源文件夹排列，更容易浏览。"),
                 H("div", new VueObject { Class = "check-grid" },
                 [
-                    CheckCard("Orientation", "Overview, getting started, and project-line pages explain what exists and where to begin."),
-                    CheckCard("Engineering contracts", "Compiler, host seam, import, runtime, and route-catalog pages explain the stable technical boundaries."),
-                    CheckCard("Operational flow", "Governance, deployment, and verification pages explain how to keep the docs and emitted product stable.")
+                    CheckCard("导向", "概览、快速开始和项目线路页面解释存在什么以及从哪里开始。"),
+                    CheckCard("工程契约", "编译器、宿主接缝、导入、运行时和路由目录页面解释稳定的技术边界。"),
+                    CheckCard("运维流程", "治理、部署和验证页面解释如何保持文档和发射产品的稳定性。")
                 ])
             ]),
-            PageSection("core-runtime", "Core runtime and architecture",
+            PageSection("core-runtime", "核心运行时与架构",
             [
-                H("p", "Start here if you need to understand how the major Jazor subsystems fit together."),
+                H("p", "如果你需要了解 Jazor 主要子系统如何协同工作，请从这里开始。"),
                 RouteCardGrid([ProjectLinesPath, CompilerOverviewPath, RuntimeCatalogPath, JoltHostPath, RazorVueLibraryModePath, VueRouteBindingsPath])
             ]),
-            PageSection("operating-and-writing", "Operating and writing",
+            PageSection("operating-and-writing", "运维与编写",
             [
-                H("p", "Start here if your immediate work is adding docs, validating output, or diagnosing broken local loops."),
+                H("p", "如果你当前的工作是添加文档、验证输出或诊断损坏的本地循环，请从这里开始。"),
                 RouteCardGrid([GettingStartedPath, ContentModelPath, NavigationDiscoveryPath, ContentGovernancePath, TroubleshootingPath, TestingVerificationPath])
             ])
         ]);

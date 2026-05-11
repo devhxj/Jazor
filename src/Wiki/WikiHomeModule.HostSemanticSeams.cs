@@ -1,3 +1,4 @@
+// WikiHomeModule.HostSemanticSeams.cs - 宿主语义接缝 / Host Semantic Seams
 using ECMAScript;
 using static ECMAScript.Vue3;
 
@@ -5,34 +6,35 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    // 构建宿主语义接缝页面主体 / Build the host semantic seams page body
     private static IVNode HostSemanticSeamsBody()
         => H("div", new VueObject { Class = "doc-body" },
         [
-            PageSection("why-seams-exist", "Why seams exist",
+            PageSection("why-seams-exist", "为什么存在接缝",
             [
-                H("p", "Host semantics are not an escape hatch for arbitrary JavaScript. They are the declared seam between compiler lowering and supported external runtime behavior."),
+                H("p", "宿主语义不是任意 JavaScript 的逃生舱。它们是编译器 Lowering 和受支持的外部运行时行为之间的声明式接缝。"),
                 H("ul",
                 [
-                    H("li", "`WhiteList` declares which external types and members are supported."),
-                    H("li", "Consumer dispatch stays ordered as `Allowed/Alias -> Inline -> Import -> Compile`."),
-                    H("li", "Unsupported runtime-sensitive behavior should fail explicitly instead of degrading to raw JavaScript.")
+                    H("li", "`WhiteList` 声明哪些外部类型和成员受支持。"),
+                    H("li", "消费者分派保持有序：`Allowed/Alias -> Inline -> Import -> Compile`。"),
+                    H("li", "不受支持的运行时敏感行为应显式失败，而非降级为原始 JavaScript。")
                 ])
             ]),
-            PageSection("choose-the-right-seam", "Choose the right seam",
+            PageSection("choose-the-right-seam", "选择正确的接缝",
             [
-                H("p", "The main engineering decision is not whether to add a mapping. It is which seam owns the behavior."),
+                H("p", "主要工程决策不是是否添加映射，而是哪个接缝拥有该行为。"),
                 H("div", new VueObject { Class = "check-grid" },
                 [
-                    CheckCard("Alias", "Use for stable name remaps such as type/runtime name projection or obvious member rename cases like `ToString -> toString`."),
-                    CheckCard("Inline", "Use for short, readable expression templates with stable local semantics and no complex control flow."),
-                    CheckCard("Import", "Use for shared helper logic, repeated guards, non-trivial branching, or behavior that is clearer as an explicit runtime module."),
-                    CheckCard("Compile", "Use when the host behavior needs AST-level construction, context-sensitive lowering, temps, imports, or protocol-aware structure.")
+                    CheckCard("Alias", "用于稳定的名称重映射，如类型/运行时名称投影或明显的成员重命名情况如 `ToString -> toString`。"),
+                    CheckCard("Inline", "用于简短、可读的表达式模板，具有稳定的本地语义且无复杂控制流。"),
+                    CheckCard("Import", "用于共享辅助逻辑、重复守卫、非平凡分支，或作为显式运行时模块更清晰的行为。"),
+                    CheckCard("Compile", "当宿主行为需要 AST 级构造、上下文敏感的 Lowering、临时变量、导入或协议感知结构时使用。")
                 ])
             ]),
-            PageSection("whitelist-contract", "WhiteList contract",
+            PageSection("whitelist-contract", "WhiteList 契约",
             [
-                H("p", "`WhiteList` is not just a string replacement table. It is the compiler's formal host capability surface, generated from source declarations in `Jazor.CLR` and related mappings."),
-                CodeBlock("Current host-mapping sources", """
+                H("p", "`WhiteList` 不仅是字符串替换表。它是编译器的正式宿主能力表面，从 `Jazor.CLR` 和相关映射中的源声明生成。"),
+                CodeBlock("当前宿主映射来源", """
 src/Jazor.CLR/module/*.cs
 src/Jazor.Compiler/WhiteList.cs.Generate.cs
 src/Jazor.Compiler.Generator/Program.cs
@@ -40,32 +42,32 @@ src/Jazor.Compiler/core/SemanticWalker.cs
 """),
                 H("ul",
                 [
-                    H("li", "Change the declaration source first; do not hand-edit generated whitelist output."),
-                    H("li", "Keep producer and consumer semantics aligned so the same API surface does not drift between CLR source and compiler dispatch."),
-                    H("li", "Treat `Op.Discard` and explicit unsupported cases as product boundary markers, not as temporary embarrassment to hide.")
+                    H("li", "先修改声明源；不要手工编辑生成的白名单输出。"),
+                    H("li", "保持生产者和消费者语义对齐，使同一 API 表面不会在 CLR 源和编译器分派之间漂移。"),
+                    H("li", "将 `Op.Discard` 和显式不支持的情况视为产品边界标记，而非需要隐藏的临时尴尬。")
                 ])
             ]),
-            PageSection("inline-vs-compile", "Inline versus Compile",
+            PageSection("inline-vs-compile", "Inline 与 Compile",
             [
-                H("p", "A common failure mode is leaving complex behavior in `Inline` for too long. The readability bar matters as much as the semantic bar."),
+                H("p", "一个常见的失败模式是将复杂行为留在 `Inline` 中太久。可读性门槛与语义门槛同样重要。"),
                 H("ul",
                 [
-                    H("li", "Prefer `Inline` when one expression stays short, reviewable, and semantically obvious."),
-                    H("li", "Upgrade to `Import` when behavior needs shared helper code or would become a long, branch-heavy template."),
-                    H("li", "Upgrade to `Compile` when the host semantics need AST nodes, expression or statement restructuring, or contextual lowering decisions."),
-                    H("li", "Do not push public authoring sugar into ad-hoc `[Jazor]` compile hooks if the behavior should really be an intrinsic compiler rule.")
+                    H("li", "当一个表达式保持简短、可审查且语义明显时，优先使用 `Inline`。"),
+                    H("li", "当行为需要共享辅助代码或会变成长而多分支的模板时，升级到 `Import`。"),
+                    H("li", "当宿主语义需要 AST 节点、表达式或语句重构或上下文 Lowering 决策时，升级到 `Compile`。"),
+                    H("li", "如果行为应该是编译器固有规则，不要将公开编写语法糖推入临时 `[Jazor]` 编译钩子。")
                 ]),
-                Callout("Practical rule", "If reviewers have to mentally simulate placeholder substitution to trust the behavior, the seam is probably too weak.")
+                Callout("实用规则", "如果审查者需要心智模拟占位符替换才能信任行为，接缝可能太弱了。")
             ]),
-            PageSection("verification-surface", "Verification surface",
+            PageSection("verification-surface", "验证表面",
             [
-                H("p", "Every seam change should prove both mapping metadata and emitted behavior."),
+                H("p", "每个接缝变更都应同时证明映射元数据和发射行为。"),
                 H("ul",
                 [
-                    H("li", "Add CLR whitelist tests when a type alias or member mapping changes."),
-                    H("li", "Add compiler tests when dispatch order, inline emission, import binding, or compile-hook behavior changes."),
-                    H("li", "Use Wiki smoke when the change affects browser-served modules, import-map assumptions, or emitted docs shell output."),
-                    H("li", "Keep concrete and interface surfaces aligned when they represent one runtime contract family.")
+                    H("li", "当类型别名或成员映射变更时，添加 CLR 白名单测试。"),
+                    H("li", "当分派顺序、Inline 发射、Import 绑定或 Compile 钩子行为变更时，添加编译器测试。"),
+                    H("li", "当变更影响浏览器提供的模块、import-map 假设或发射的文档外壳输出时，使用 Wiki 冒烟测试。"),
+                    H("li", "当具体类型和接口表面代表一个运行时契约族时，保持它们对齐。")
                 ])
             ])
         ]);

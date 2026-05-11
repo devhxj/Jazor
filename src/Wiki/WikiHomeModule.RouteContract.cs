@@ -1,3 +1,4 @@
+// WikiHomeModule.RouteContract.cs - Wiki 页面路由元数据目录 / Wiki page route metadata catalog
 using System;
 using ECMAScript;
 using static ECMAScript.Vue3;
@@ -6,6 +7,7 @@ namespace Wiki;
 
 public static partial class WikiHomeModule
 {
+    // 页面路由路径 / Page route paths
     internal static readonly string[] PagePaths =
     [
         OverviewPath,
@@ -34,6 +36,7 @@ public static partial class WikiHomeModule
         TestingVerificationPath
     ];
 
+    // 页面分组标识（Foundation/Engineering/Operations）/ Page group identifiers
     internal static readonly string[] PageGroups =
     [
         "Foundation",
@@ -62,146 +65,152 @@ public static partial class WikiHomeModule
         "Operations"
     ];
 
+    // 页面标题 / Page titles
     internal static readonly string[] PageTitles =
     [
-        "Overview",
-        "Search",
-        "Getting Started",
-        "Project Lines",
-        "Content Model",
-        "Navigation and Discovery",
-        "Information Architecture",
-        "Topic Index",
-        "Glossary",
-        "FAQ",
-        "Troubleshooting",
-        "H-Function Authoring",
-        "Compiler Overview",
-        "Compiler Support Boundary",
-        "Route Catalog Contract",
-        "Host Semantic Seams",
-        "Import and Emit Contract",
-        "CLR Runtime Catalog",
-        "Jolt Host",
-        "RazorVue Library Mode",
-        "VueRoute Bindings",
-        "Content Governance",
-        "Deployment",
-        "Testing and Verification"
+        "概览",
+        "搜索",
+        "快速开始",
+        "项目线路",
+        "内容模型",
+        "导航与发现",
+        "信息架构",
+        "主题索引",
+        "术语表",
+        "常见问题",
+        "故障排除",
+        "H 函数编写",
+        "编译器概览",
+        "编译器支持边界",
+        "路由目录契约",
+        "宿主语义接缝",
+        "导入与发射契约",
+        "CLR 运行时目录",
+        "Jolt 宿主",
+        "RazorVue 库模式",
+        "VueRoute 绑定",
+        "内容治理",
+        "部署",
+        "测试与验证"
     ];
 
+    // 页面摘要 / Page summaries
     internal static readonly string[] PageSummaries =
     [
-        "A production-oriented docs shell for Jazor, authored entirely with ECMAScript.Vue3 H functions.",
-        "URL-driven full-text search across route metadata, tags, curated page body text, and section titles.",
-        "Run the site locally, understand the route model, and validate the emitted Wiki host end to end.",
-        "Understand the two active Jazor lines, when to choose them, and which shared compiler foundations they consume.",
-        "Code-first page metadata, explicit sections, and a navigation contract that stays readable in C#.",
-        "How readers move through the docs shell with grouped navigation, section TOCs, related pages, and not-found recovery.",
-        "How routes, concern groups, page order, and naming rules keep the docs surface coherent as it grows.",
-        "Use a route-first index to jump into Jazor topics by concern instead of memorizing exact URLs.",
-        "Shared vocabulary for compiler, runtime, host, and documentation terms used across the repository.",
-        "Short answers to the questions that recur most often when contributors first touch Jazor or Wiki.",
-        "Recover from the most common local Wiki, runtime-module, and compiler-boundary failures.",
-        "Why H functions are the production authoring surface for this Wiki, and the conventions that keep it maintainable.",
-        "A high-level view of the compiler pipeline, active contracts, and where to read deeper.",
-        "The active compiler contract for controlled input, usage-site validation, semantic erasure, and explicit failure boundaries.",
-        "Why `WikiHomeModule.RouteContract.cs` is the single registration surface for route metadata, body dispatch, TOC anchors, and adjacent-page flow.",
-        "How WhiteList, Alias, Inline, Import, and Compile divide responsibility across the supported host semantic surface.",
-        "The stable boundary between import discovery, module AST assembly, generated catalogs, and host-facing file materialization.",
-        "How CLR import helpers become browser-ready `System/*` runtime modules, and what guarantees keep that catalog safe to ship.",
-        "The full-featured `.jazor` development host for editing, preview, build, and debug workflows.",
-        "The build-time library mode for compiling Razor components into JavaScript artifacts without a full development host.",
-        "The standalone Vue Router binding library, its host-surface scope, and the split verification path that keeps tests out of the compiler suite.",
-        "How code-first docs content is owned, edited, reviewed, and released without drifting away from the emitted product shell.",
-        "Build outputs, fallback routing, smoke verification, and the static delivery contract for Wiki.",
-        "How compiler, emit, and operational smoke checks fit together to protect the production docs surface."
+        "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue3 H 函数编写。",
+        "基于 URL 的全文搜索，覆盖路由元数据、标签、精选页面正文和章节标题。",
+        "本地运行站点，理解路由模型，并端到端验证发射的 Wiki 宿主。",
+        "了解两条活跃的 Jazor 线路，何时选择它们，以及它们依赖哪些共享编译器基础设施。",
+        "代码优先的页面元数据、显式章节和保持可读性的 C# 导航契约。",
+        "读者如何通过分组导航、章节目录、相关页面和 404 恢复在文档外壳中移动。",
+        "路由、关注组、页面顺序和命名规则如何保持文档表面在增长时保持一致性。",
+        "使用以路由为先的索引，按关注点跳转到 Jazor 主题，而无需记住确切 URL。",
+        "编译器、运行时、宿主和文档术语在仓库中使用的共享词汇表。",
+        "贡献者首次接触 Jazor 或 Wiki 时最常见问题的简短回答。",
+        "从最常见的本地 Wiki、运行时模块和编译器边界故障中恢复。",
+        "为什么 H 函数是此 Wiki 的生产编写表面，以及保持其可维护性的约定。",
+        "编译器管线、活动契约和深入阅读方向的高级概览。",
+        "受控输入、使用点验证、语义擦除和显式失败边界的活动编译器契约。",
+        "为什么 `WikiHomeModule.RouteContract.cs` 是路由元数据、正文分发、目录锚点和相邻页面流的唯一注册面。",
+        "WhiteList、Alias、Inline、Import 和 Compile 如何在支持的宿主语义面上划分职责。",
+        "导入发现、模块 AST 组装、生成的目录和面向宿主的文件物化之间的稳定边界。",
+        "CLR 导入 helper 如何变为浏览器可用的 `System/*` 运行时模块，以及哪些保障使该目录可安全发布。",
+        "用于编辑、预览、构建和调试工作流的功能完备的 `.jazor` 开发宿主。",
+        "用于将 Razor 组件编译为 JavaScript 产物的构建时库模式，无需完整开发宿主。",
+        "独立的 Vue Router 绑定库、其宿主表面范围，以及将测试排除在编译器套件之外的拆分验证路径。",
+        "代码优先文档内容如何被拥有、编辑、审查和发布，而不偏离发射的产品外壳。",
+        "构建输出、回退路由、冒烟验证和 Wiki 的静态交付契约。",
+        "编译器、发射和运维冒烟检查如何协同保护生产文档表面。"
     ];
 
+    // 页面状态标签 / Page status labels
     internal static readonly string[] PageStatuses =
     [
-        "Real Project MVP",
-        "Utility",
-        "Foundation",
-        "Orientation",
-        "Authoring",
-        "Discovery",
-        "IA",
-        "Taxonomy",
-        "Reference",
-        "Help",
-        "Support",
-        "Engineering",
-        "Core",
-        "Boundary",
-        "Catalog",
-        "Host Seam",
-        "Pipeline",
-        "Runtime",
-        "Host",
-        "Library",
-        "Bindings",
-        "Governance",
-        "Operations",
-        "Verification"
+        "真实项目 MVP",
+        "工具",
+        "基础",
+        "导向",
+        "编写",
+        "发现",
+        "信息架构",
+        "分类",
+        "参考",
+        "帮助",
+        "支持",
+        "工程",
+        "核心",
+        "边界",
+        "目录",
+        "宿主接缝",
+        "管线",
+        "运行时",
+        "宿主",
+        "库",
+        "绑定",
+        "治理",
+        "运维",
+        "验证"
     ];
 
+    // 页面负责人 / Page owners
     internal static readonly string[] PageOwners =
     [
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Docs",
-        "Compiler",
-        "Compiler",
-        "Docs",
-        "Compiler",
-        "Compiler",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "文档",
+        "编译器",
+        "编译器",
+        "文档",
+        "编译器",
+        "编译器",
         "CLR",
         "Jolt",
         "RazorVue",
-        "Runtime",
-        "Docs",
-        "Ops",
-        "Ops"
+        "运行时",
+        "文档",
+        "运维",
+        "运维"
     ];
 
+    // 页面目标读者 / Page audiences
     internal static readonly string[] PageAudiences =
     [
-        "All readers",
-        "All readers",
-        "New readers",
-        "New readers",
-        "Docs contributors",
-        "Docs contributors",
-        "Docs contributors",
-        "All readers",
-        "All readers",
-        "All readers",
-        "Contributors",
-        "UI authors",
-        "Compiler contributors",
-        "Compiler contributors",
-        "Docs contributors",
-        "Compiler contributors",
-        "Compiler contributors",
-        "Runtime contributors",
-        "App authors",
-        "Library authors",
-        "Library authors",
-        "Maintainers",
-        "Maintainers",
-        "Maintainers"
+        "所有读者",
+        "所有读者",
+        "新读者",
+        "新读者",
+        "文档贡献者",
+        "文档贡献者",
+        "文档贡献者",
+        "所有读者",
+        "所有读者",
+        "所有读者",
+        "贡献者",
+        "UI 编写者",
+        "编译器贡献者",
+        "编译器贡献者",
+        "文档贡献者",
+        "编译器贡献者",
+        "编译器贡献者",
+        "运行时贡献者",
+        "应用编写者",
+        "库编写者",
+        "库编写者",
+        "维护者",
+        "维护者",
+        "维护者"
     ];
 
+    // 页面源文件路径（不翻译）/ Page source file paths
     internal static readonly string[] PageSourceFiles =
     [
         "src/Wiki/WikiHomeModule.Overview.cs",
@@ -230,6 +239,7 @@ public static partial class WikiHomeModule
         "src/Wiki/WikiHomeModule.TestingVerification.cs"
     ];
 
+    // 页面最后更新日期 / Page last-updated dates
     internal static readonly string[] PageLastUpdatedDates =
     [
         "2026-05-04",
@@ -258,6 +268,7 @@ public static partial class WikiHomeModule
         "2026-05-04"
     ];
 
+    // 页面预计阅读时间（分钟）/ Page estimated reading minutes
     internal static readonly int[] PageReadingMinutes =
     [
         5,
@@ -286,34 +297,36 @@ public static partial class WikiHomeModule
         4
     ];
 
+    // 页面搜索索引文本 / Page search index text
     internal static readonly string[] PageSearchBodies =
     [
-        "Introduces jazor.wiki as a production docs shell built with Vue 3 H functions, route fallback, central catalog metadata, and browser-served runtime modules.",
-        "Provides shareable full-text search across page metadata, tags, body summaries, and section titles, with result highlighting and section-level matches.",
-        "Shows the local build, serve, and smoke loop; explains route structure, page registration, and how to verify emitted output after each change.",
-        "Explains the two active lines, RazorVue library mode and Jolt full host, and how both depend on the shared compiler and emit core.",
-        "Describes the explicit page contract, central route metadata, section ownership, and editing rules that keep code-first docs readable.",
-        "Covers left-rail discovery, section TOCs, related pages, not-found recovery, and the authoring implications of discoverable docs.",
-        "Defines concern groups, stable route shape, naming rules, ordering rules, and how the docs can grow without route drift.",
-        "Collects the major topic clusters so readers can jump by concern into orientation, engineering contracts, or operations workflows.",
-        "Defines common terms such as SemanticWalker, AstConverter, WhiteList, import maps, CLR catalog, Jolt, RazorVue, and smoke verification.",
-        "Answers recurring contributor questions about choosing Jolt or RazorVue, analyzer versus compiler boundaries, runtime helper modules, and Wiki workflow.",
-        "Provides fast recovery steps for route fallback failures, missing System modules, compiler diagnostics, and broken local verification loops.",
-        "Explains why H functions are the production authoring surface, how layout helpers stay explicit, and what rules keep UI composition maintainable.",
-        "Summarizes the compiler's purpose, the SemanticWalker to AstConverter pipeline, and the hard contracts around tuples, interfaces, imports, and explicit failure.",
-        "Details the support boundary, behavior-priority order, stabilized semantic routes, and why unsupported runtime-sensitive behavior fails explicitly.",
-        "Explains why route registration, TOC anchors, related links, and page order must all stay in one route contract instead of drifting across files.",
-        "Shows how WhiteList, Alias, Inline, Import, and Compile divide host responsibility and how to choose the right seam for a mapping.",
-        "Describes import discovery, module-header assembly, output layering, and how emit materializes stable browser files from compiler carriers.",
-        "Explains why the CLR runtime catalog exists, how helpers become System modules, and which guardrails keep browser runtime imports shippable.",
-        "Describes Jolt as the full-featured `.jazor` development host with Jazor, Roslyn, and Volar lanes, preview, HMR, build, and debug support.",
-        "Describes RazorVue as the build-time library mode with split ownership across shared semantics, analyzer host logic, and library component bindings.",
-        "Explains `ECMAScript.VueRoute` as a standalone Vue Router binding project, its current API slice, and the test and packaging boundaries that keep it independent from compiler-suite growth.",
-        "Defines ownership, source boundaries, generated asset review, and the safe change flow for code-first docs pages.",
-        "Describes local build output, route fallback, operational checks, and the static hosting contract for the Wiki shell.",
-        "Explains verification layers, focused commands, coverage expectations, and why smoke verification is the minimum release gate."
+        "介绍 jazor.wiki 作为使用 Vue 3 H 函数构建的生产文档外壳，包含路由回退、集中目录元数据和浏览器提供的运行时模块。",
+        "提供可分享的全文搜索，覆盖页面元数据、标签、正文摘要和章节标题，支持结果高亮和章节级匹配。",
+        "展示本地构建、服务和冒烟循环；解释路由结构、页面注册以及如何在每次更改后验证发射输出。",
+        "解释两条活跃线路——RazorVue 库模式和 Jolt 完整宿主——以及它们如何依赖共享编译器和发射核心。",
+        "描述显式页面契约、集中路由元数据、章节所有权和保持代码优先文档可读性的编辑规则。",
+        "涵盖左侧导航发现、章节目录、相关页面、404 恢复以及可发现文档的编写含义。",
+        "定义关注组、稳定的路由形态、命名规则、排序规则以及文档如何在不发生路由漂移的情况下增长。",
+        "收集主要主题集群，让读者可以按关注点跳转到导向、工程契约或运维工作流。",
+        "定义常用术语，如 SemanticWalker、AstConverter、WhiteList、import maps、CLR catalog、Jolt、RazorVue 和冒烟验证。",
+        "回答贡献者首次接触 Jazor 或 Wiki 时反复出现的问题，包括选择 Jolt 或 RazorVue、分析器与编译器边界、运行时 helper 模块和 Wiki 工作流。",
+        "提供路由回退故障、缺失 System 模块、编译器诊断和损坏的本地验证循环的快速恢复步骤。",
+        "解释为什么 H 函数是生产编写表面，布局 helper 如何保持显式，以及哪些规则保持 UI 组合可维护。",
+        "概述编译器的目的、SemanticWalker 到 AstConverter 管线，以及围绕元组、接口、导入和显式失败的硬性契约。",
+        "详述支持边界、行为优先顺序、稳定的语义路由，以及为什么不受支持的运行时敏感行为会显式失败。",
+        "解释为什么路由注册、目录锚点、相关链接和页面顺序必须全部保留在一个路由契约中，而不是分散到多个文件。",
+        "展示 WhiteList、Alias、Inline、Import 和 Compile 如何划分宿主职责，以及如何为映射选择正确的接缝。",
+        "描述导入发现、模块头组装、输出分层，以及 emit 如何从编译器载体物化稳定的浏览器文件。",
+        "解释 CLR 运行时目录存在的原因，helper 如何变为 System 模块，以及哪些护栏保持浏览器运行时导入可安全发布。",
+        "描述 Jolt 作为功能完备的 `.jazor` 开发宿主，具有 Jazor、Roslyn 和 Volar 通道，支持预览、HMR、构建和调试。",
+        "描述 RazorVue 作为构建时库模式，在共享语义、分析器宿主逻辑和库组件绑定之间划分所有权。",
+        "解释 `ECMAScript.VueRoute` 作为独立的 Vue Router 绑定项目、其当前 API 切片，以及保持其独立于编译器套件增长的测试和打包边界。",
+        "定义代码优先文档页面的所有权、源边界、生成资产审查和安全变更流程。",
+        "描述本地构建输出、路由回退、运维检查和 Wiki 外壳的静态托管契约。",
+        "解释验证层、聚焦命令、覆盖率期望，以及为什么冒烟验证是最低发布门槛。"
     ];
 
+    // 页面标签集 / Page tag sets
     internal static readonly string[][] PageTagSets =
     [
         ["docs-shell", "routes", "overview"],
@@ -342,6 +355,7 @@ public static partial class WikiHomeModule
         ["smoke", "tests", "verification"]
     ];
 
+    // 页面正文分发函数 / Page body dispatch functions
     internal static readonly Func<IVNode>[] PageBodies =
     [
         OverviewBody,
@@ -379,13 +393,14 @@ public static partial class WikiHomeModule
         "registered-pages"
     ];
 
+    // 概览页章节标题 / Overview page section titles
     private static readonly string[] OverviewSectionTitles =
     [
-        "What ships now",
-        "Why this exists",
-        "MVP boundary",
-        "Site structure",
-        "Registered pages"
+        "当前发布内容",
+        "为什么存在",
+        "MVP 边界",
+        "站点结构",
+        "已注册页面"
     ];
 
     private static readonly string[] SearchSectionIds =
@@ -396,12 +411,13 @@ public static partial class WikiHomeModule
         "query-sharing"
     ];
 
+    // 搜索页章节标题 / Search page section titles
     private static readonly string[] SearchSectionTitles =
     [
-        "Full-text search",
-        "Section matches",
-        "Topic entry points",
-        "Shareable queries"
+        "全文搜索",
+        "章节匹配",
+        "主题入口",
+        "可分享的查询"
     ];
 
     private static readonly string[] GettingStartedSectionIds =
@@ -412,12 +428,13 @@ public static partial class WikiHomeModule
         "verify-the-result"
     ];
 
+    // 快速开始页章节标题 / Getting started page section titles
     private static readonly string[] GettingStartedSectionTitles =
     [
-        "Boot the site",
-        "Route model",
-        "Add a page",
-        "Verify the result"
+        "启动站点",
+        "路由模型",
+        "添加页面",
+        "验证结果"
     ];
 
     private static readonly string[] ProjectLinesSectionIds =
@@ -428,12 +445,13 @@ public static partial class WikiHomeModule
         "where-to-read-next"
     ];
 
+    // 项目线路页章节标题 / Project lines page section titles
     private static readonly string[] ProjectLinesSectionTitles =
     [
-        "Two active lines",
-        "Choose the right path",
-        "Shared core",
-        "Where to read next"
+        "两条活跃线路",
+        "选择正确的路径",
+        "共享核心",
+        "下一步阅读"
     ];
 
     private static readonly string[] ContentModelSectionIds =
@@ -443,11 +461,12 @@ public static partial class WikiHomeModule
         "editing-rules"
     ];
 
+    // 内容模型页章节标题 / Content model page section titles
     private static readonly string[] ContentModelSectionTitles =
     [
-        "Page contract",
-        "Navigation contract",
-        "Editing rules"
+        "页面契约",
+        "导航契约",
+        "编辑规则"
     ];
 
     private static readonly string[] HFunctionAuthoringSectionIds =
@@ -457,11 +476,12 @@ public static partial class WikiHomeModule
         "why-this-works"
     ];
 
+    // H 函数编写页章节标题 / H-function authoring page section titles
     private static readonly string[] HFunctionAuthoringSectionTitles =
     [
-        "Layout composition",
-        "Production rules",
-        "Why this works"
+        "布局组合",
+        "生产规则",
+        "为什么这样可行"
     ];
 
     private static readonly string[] NavigationDiscoverySectionIds =
@@ -473,13 +493,14 @@ public static partial class WikiHomeModule
         "authoring-implications"
     ];
 
+    // 导航与发现页章节标题 / Navigation and discovery page section titles
     private static readonly string[] NavigationDiscoverySectionTitles =
     [
-        "Left rail discovery",
-        "Right rail navigation",
-        "Related pages and reading flow",
-        "Not-found recovery",
-        "Authoring implications"
+        "左侧导航发现",
+        "右侧导航",
+        "相关页面与阅读流",
+        "404 恢复",
+        "编写含义"
     ];
 
     private static readonly string[] InformationArchitectureSectionIds =
@@ -491,13 +512,14 @@ public static partial class WikiHomeModule
         "growth-without-drift"
     ];
 
+    // 信息架构页章节标题 / Information architecture page section titles
     private static readonly string[] InformationArchitectureSectionTitles =
     [
-        "Concern groups",
-        "Route shape",
-        "Naming rules",
-        "Ordering and reading flow",
-        "Growth without drift"
+        "关注组",
+        "路由形态",
+        "命名规则",
+        "排序与阅读流",
+        "无漂移增长"
     ];
 
     private static readonly string[] TopicIndexSectionIds =
@@ -507,11 +529,12 @@ public static partial class WikiHomeModule
         "operating-and-writing"
     ];
 
+    // 主题索引页章节标题 / Topic index page section titles
     private static readonly string[] TopicIndexSectionTitles =
     [
-        "Topic clusters",
-        "Core runtime and architecture",
-        "Operating and writing"
+        "主题集群",
+        "核心运行时与架构",
+        "运维与编写"
     ];
 
     private static readonly string[] GlossarySectionIds =
@@ -521,11 +544,12 @@ public static partial class WikiHomeModule
         "host-terms"
     ];
 
+    // 术语表页章节标题 / Glossary page section titles
     private static readonly string[] GlossarySectionTitles =
     [
-        "Compiler terms",
-        "Runtime terms",
-        "Host and workflow terms"
+        "编译器术语",
+        "运行时术语",
+        "宿主与工作流术语"
     ];
 
     private static readonly string[] FaqSectionIds =
@@ -536,12 +560,13 @@ public static partial class WikiHomeModule
         "wiki-workflow"
     ];
 
+    // 常见问题页章节标题 / FAQ page section titles
     private static readonly string[] FaqSectionTitles =
     [
-        "Using Jazor",
-        "Compiler boundaries",
-        "Runtime and host behavior",
-        "Wiki workflow"
+        "使用 Jazor",
+        "编译器边界",
+        "运行时与宿主行为",
+        "Wiki 工作流"
     ];
 
     private static readonly string[] TroubleshootingSectionIds =
@@ -552,12 +577,13 @@ public static partial class WikiHomeModule
         "workflow-fixes"
     ];
 
+    // 故障排除页章节标题 / Troubleshooting page section titles
     private static readonly string[] TroubleshootingSectionTitles =
     [
-        "Route and host issues",
-        "Runtime import failures",
-        "Compiler and analyzer diagnostics",
-        "Workflow fixes"
+        "路由与宿主问题",
+        "运行时导入故障",
+        "编译器与分析器诊断",
+        "工作流修复"
     ];
 
     private static readonly string[] CompilerOverviewSectionIds =
@@ -568,12 +594,13 @@ public static partial class WikiHomeModule
         "read-this-next"
     ];
 
+    // 编译器概览页章节标题 / Compiler overview page section titles
     private static readonly string[] CompilerOverviewSectionTitles =
     [
-        "What it is",
-        "Core pipeline",
-        "Hard contracts",
-        "Read this next"
+        "它是什么",
+        "核心管线",
+        "硬性契约",
+        "下一步阅读"
     ];
 
     private static readonly string[] CompilerBoundarySectionIds =
@@ -585,13 +612,14 @@ public static partial class WikiHomeModule
         "practical-reading"
     ];
 
+    // 编译器支持边界页章节标题 / Compiler support boundary page section titles
     private static readonly string[] CompilerBoundarySectionTitles =
     [
-        "Controlled input domain",
-        "Behavior priority",
-        "Support boundary",
-        "Stabilized semantic routes",
-        "Practical reading order"
+        "受控输入域",
+        "行为优先级",
+        "支持边界",
+        "稳定的语义路由",
+        "实用阅读顺序"
     ];
 
     private static readonly string[] RouteCatalogContractSectionIds =
@@ -603,13 +631,14 @@ public static partial class WikiHomeModule
         "verification-contract"
     ];
 
+    // 路由目录契约页章节标题 / Route catalog contract page section titles
     private static readonly string[] RouteCatalogContractSectionTitles =
     [
-        "Single source of truth",
-        "What the catalog owns",
-        "Safe change flow",
-        "Failure modes to avoid",
-        "Verification contract"
+        "单一事实来源",
+        "目录拥有什么",
+        "安全变更流程",
+        "应避免的失败模式",
+        "验证契约"
     ];
 
     private static readonly string[] HostSemanticSeamsSectionIds =
@@ -621,13 +650,14 @@ public static partial class WikiHomeModule
         "verification-surface"
     ];
 
+    // 宿主语义接缝页章节标题 / Host semantic seams page section titles
     private static readonly string[] HostSemanticSeamsSectionTitles =
     [
-        "Why seams exist",
-        "Choose the right seam",
-        "WhiteList contract",
-        "Inline versus Compile",
-        "Verification surface"
+        "为什么存在接缝",
+        "选择正确的接缝",
+        "WhiteList 契约",
+        "Inline 与 Compile 对比",
+        "验证表面"
     ];
 
     private static readonly string[] ImportEmitContractSectionIds =
@@ -639,13 +669,14 @@ public static partial class WikiHomeModule
         "verification-signals"
     ];
 
+    // 导入与发射契约页章节标题 / Import and emit contract page section titles
     private static readonly string[] ImportEmitContractSectionTitles =
     [
-        "Boundary split",
-        "Import mainline",
-        "Layered output contract",
-        "Host materialization",
-        "Verification signals"
+        "边界划分",
+        "导入主线",
+        "分层输出契约",
+        "宿主物化",
+        "验证信号"
     ];
 
     private static readonly string[] DeploymentSectionIds =
@@ -655,11 +686,12 @@ public static partial class WikiHomeModule
         "operational-checks"
     ];
 
+    // 部署页章节标题 / Deployment page section titles
     private static readonly string[] DeploymentSectionTitles =
     [
-        "Build output",
-        "Route fallback",
-        "Operational checks"
+        "构建输出",
+        "路由回退",
+        "运维检查"
     ];
 
     private static readonly string[] ContentGovernanceSectionIds =
@@ -671,13 +703,14 @@ public static partial class WikiHomeModule
         "release-discipline"
     ];
 
+    // 内容治理页章节标题 / Content governance page section titles
     private static readonly string[] ContentGovernanceSectionTitles =
     [
-        "Ownership model",
-        "Source boundaries",
-        "Generated assets",
-        "Safe change flow",
-        "Release discipline"
+        "所有权模型",
+        "源边界",
+        "生成资产",
+        "安全变更流程",
+        "发布纪律"
     ];
 
     private static readonly string[] TestingVerificationSectionIds =
@@ -688,12 +721,13 @@ public static partial class WikiHomeModule
         "wiki-release-gate"
     ];
 
+    // 测试与验证页章节标题 / Testing and verification page section titles
     private static readonly string[] TestingVerificationSectionTitles =
     [
-        "Verification layers",
-        "Focused commands",
-        "Coverage and determinism",
-        "Wiki release gate"
+        "验证层",
+        "聚焦命令",
+        "覆盖率与确定性",
+        "Wiki 发布门槛"
     ];
 
     private static readonly string[] RuntimeCatalogSectionIds =
@@ -704,12 +738,13 @@ public static partial class WikiHomeModule
         "operational-guardrails"
     ];
 
+    // CLR 运行时目录页章节标题 / CLR runtime catalog page section titles
     private static readonly string[] RuntimeCatalogSectionTitles =
     [
-        "Why the catalog exists",
-        "Generation pipeline",
-        "Runtime contract",
-        "Operational guardrails"
+        "目录存在的原因",
+        "生成管线",
+        "运行时契约",
+        "运维护栏"
     ];
 
     private static readonly string[] JoltHostSectionIds =
@@ -720,12 +755,13 @@ public static partial class WikiHomeModule
         "when-to-choose-jolt"
     ];
 
+    // Jolt 宿主页章节标题 / Jolt host page section titles
     private static readonly string[] JoltHostSectionTitles =
     [
-        "Why Jolt exists",
-        "Subsystems",
-        "Run modes",
-        "When to choose Jolt"
+        "为什么存在 Jolt",
+        "子系统",
+        "运行模式",
+        "何时选择 Jolt"
     ];
 
     private static readonly string[] RazorVueLibraryModeSectionIds =
@@ -736,12 +772,13 @@ public static partial class WikiHomeModule
         "when-to-choose-library-mode"
     ];
 
+    // RazorVue 库模式页章节标题 / RazorVue library mode page section titles
     private static readonly string[] RazorVueLibraryModeSectionTitles =
     [
-        "Why RazorVue exists",
-        "Physical split",
-        "Build-time flow",
-        "When to choose library mode"
+        "为什么存在 RazorVue",
+        "物理拆分",
+        "构建时流程",
+        "何时选择库模式"
     ];
 
     private static readonly string[] VueRouteBindingsSectionIds =
@@ -753,15 +790,17 @@ public static partial class WikiHomeModule
         "where-to-extend-next"
     ];
 
+    // VueRoute 绑定页章节标题 / VueRoute bindings page section titles
     private static readonly string[] VueRouteBindingsSectionTitles =
     [
-        "Why VueRoute bindings exist",
-        "Current surface",
-        "Authoring boundary",
-        "Verification path",
-        "Where to extend next"
+        "为什么存在 VueRoute 绑定",
+        "当前表面",
+        "编写边界",
+        "验证路径",
+        "下一步扩展方向"
     ];
 
+    // 页面章节 ID 集合 / Page section ID sets
     internal static readonly string[][] PageSectionIdSets =
     [
         OverviewSectionIds,
@@ -790,6 +829,7 @@ public static partial class WikiHomeModule
         TestingVerificationSectionIds
     ];
 
+    // 页面章节标题集合 / Page section title sets
     internal static readonly string[][] PageSectionTitleSets =
     [
         OverviewSectionTitles,
@@ -818,6 +858,7 @@ public static partial class WikiHomeModule
         TestingVerificationSectionTitles
     ];
 
+    // 页面相关路径集合 / Page related path sets
     internal static readonly string[][] PageRelatedPathSets =
     [
         [SearchPath, GettingStartedPath, ProjectLinesPath],
@@ -846,6 +887,7 @@ public static partial class WikiHomeModule
         [DeploymentPath, ContentGovernancePath, TroubleshootingPath]
     ];
 
+    // 辅助方法：页面查询与索引 / Helper methods: page lookup and indexing
     private static int TotalPageCount => PagePaths.Length;
 
     private static bool IsKnownPage(string currentPath)
@@ -870,6 +912,7 @@ public static partial class WikiHomeModule
         return "";
     }
 
+    // 页面过滤与搜索 / Page filtering and search
     private static bool MatchesPageFilter(string currentPath, string filterText)
     {
         if (filterText.Length == 0)
@@ -899,6 +942,7 @@ public static partial class WikiHomeModule
         return false;
     }
 
+    // 单字段 getter / Single-field getters
     private static string GetPageGroup(string currentPath)
     {
         var pageIndex = GetPageIndex(currentPath);
@@ -998,6 +1042,7 @@ public static partial class WikiHomeModule
         return [];
     }
 
+    // 前后页面导航 / Previous/next page navigation
     private static string GetPreviousPath(string currentPath)
     {
         var pageIndex = GetPageIndex(currentPath);
@@ -1028,6 +1073,7 @@ public static partial class WikiHomeModule
         return "";
     }
 
+    // 页面章节与正文获取 / Page section and body retrieval
     private static string[] GetPageSectionIds(int pageIndex)
     {
         if (pageIndex >= 0 && pageIndex < PageSectionIdSets.Length)
@@ -1060,6 +1106,7 @@ public static partial class WikiHomeModule
         return [];
     }
 
+    // 建议路径与 404 恢复 / Suggested paths and 404 recovery
     private static string[] GetSuggestedPaths(string currentPath)
     {
         var fragment = GetRouteFragment(currentPath);
@@ -1125,6 +1172,7 @@ public static partial class WikiHomeModule
         return normalizedPath;
     }
 
+    // 目录侧边栏渲染 / TOC rail rendering
     private static IVNode TocRail(string currentPath, string currentHash)
     {
         var pageIndex = GetPageIndex(currentPath);
@@ -1137,6 +1185,6 @@ public static partial class WikiHomeModule
         for (var sectionIndex = 0; sectionIndex < sectionIds.Length && sectionIndex < sectionTitles.Length; sectionIndex++)
             links.Add(TocLink(currentPath, sectionIds[sectionIndex], sectionTitles[sectionIndex], currentHash));
 
-        return TocRail("On this page", links.ToArray());
+        return TocRail("本页目录", links.ToArray());
     }
 }

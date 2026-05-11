@@ -1,3 +1,7 @@
+// WikiCatalogGuard.cs - 路由目录验证守卫 / Route catalog validation guard
+// 启动前验证所有页面元数据数组的长度一致性、路径唯一性和数据完整性
+// Validates page metadata array length consistency, path uniqueness, and data integrity before startup
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,6 +10,7 @@ namespace Wiki;
 
 internal static class WikiCatalogGuard
 {
+    // 主验证入口：检查所有元数据数组 / Main validation entry: check all metadata arrays
     internal static void ValidateOrThrow()
     {
         EnsureCatalogLength(nameof(WikiHomeModule.PageGroups), WikiHomeModule.PageGroups.Length);
@@ -25,6 +30,7 @@ internal static class WikiCatalogGuard
         EnsureCatalogLength(nameof(WikiHomeModule.PageRelatedPathSets), WikiHomeModule.PageRelatedPathSets.Length);
 
         var knownPaths = new HashSet<string>(StringComparer.Ordinal);
+        // 逐页验证元数据完整性 / Per-page metadata integrity validation
         for (var pageIndex = 0; pageIndex < WikiHomeModule.PagePaths.Length; pageIndex++)
         {
             var path = WikiHomeModule.PagePaths[pageIndex];
@@ -134,6 +140,7 @@ internal static class WikiCatalogGuard
             }
         }
 
+        // 验证相关页面引用的有效性 / Validate related page references
         for (var pageIndex = 0; pageIndex < WikiHomeModule.PageRelatedPathSets.Length; pageIndex++)
         {
             var currentPath = WikiHomeModule.PagePaths[pageIndex];
@@ -165,6 +172,7 @@ internal static class WikiCatalogGuard
         }
     }
 
+    // 检查数组长度与 PagePaths 一致 / Check array length matches PagePaths
     private static void EnsureCatalogLength(string catalogName, int catalogLength)
     {
         if (catalogLength != WikiHomeModule.PagePaths.Length)
@@ -175,6 +183,7 @@ internal static class WikiCatalogGuard
         }
     }
 
+    // 检查字符串值非空 / Check string value is non-empty
     private static void EnsureCatalogValue(string catalogName, string value, int pageIndex)
     {
         if (!string.IsNullOrWhiteSpace(value))
