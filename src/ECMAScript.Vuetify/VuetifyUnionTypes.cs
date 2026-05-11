@@ -3,9 +3,9 @@ using System.ComponentModel;
 namespace ECMAScript.Vuetify;
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDisplayBreakpoint
+public readonly struct VuetifyDisplayBreakpoint : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -28,6 +28,13 @@ public readonly struct VuetifyDisplayBreakpoint
     public string? AsString => _kind == 1 ? _string : default;
 
     public Number? AsNumber => _kind == 2 ? _number : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDisplayBreakpoint From(string value);

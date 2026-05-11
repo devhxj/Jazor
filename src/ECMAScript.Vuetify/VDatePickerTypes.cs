@@ -45,10 +45,10 @@ public enum VuetifyCalendarWeekday
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyCalendarWeekdaysCollectionBuilder), nameof(VuetifyCalendarWeekdaysCollectionBuilder.Create))]
-public readonly struct VuetifyCalendarWeekdays : IEnumerable<VuetifyCalendarWeekday>
+public readonly struct VuetifyCalendarWeekdays : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyCalendarWeekday>
 {
     private readonly VuetifyCalendarWeekday[]? _weekdays;
 
@@ -58,6 +58,8 @@ public readonly struct VuetifyCalendarWeekdays : IEnumerable<VuetifyCalendarWeek
     }
 
     public VuetifyCalendarWeekday[]? AsArray => _weekdays;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCalendarWeekdays From(VuetifyCalendarWeekday[] weekdays);
@@ -80,9 +82,9 @@ public static class VuetifyCalendarWeekdaysCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDatePickerMultipleValue
+public readonly struct VuetifyDatePickerMultipleValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -133,6 +135,15 @@ public readonly struct VuetifyDatePickerMultipleValue
     public VuetifyDatePickerMultipleMode? AsMode => _kind == 3 ? _mode : default;
 
     public string? AsCustomMode => _kind == 4 ? _customMode : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsNumber,
+        3 => AsMode,
+        4 => AsCustomMode,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDatePickerMultipleValue From(bool value);
@@ -187,10 +198,10 @@ public readonly struct VuetifyDatePickerMultipleValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDatePickerModelValuesCollectionBuilder), nameof(VuetifyDatePickerModelValuesCollectionBuilder.Create))]
-public readonly struct VuetifyDatePickerModelValues : IEnumerable<VueValue>
+public readonly struct VuetifyDatePickerModelValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
 {
     private readonly VueValue[]? _values;
 
@@ -200,6 +211,8 @@ public readonly struct VuetifyDatePickerModelValues : IEnumerable<VueValue>
     }
 
     public VueValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDatePickerModelValues From(VueValue[] values);
@@ -234,9 +247,9 @@ public static class VuetifyDatePickerModelValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDatePickerModelValue
+public readonly struct VuetifyDatePickerModelValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly Date? _date;
@@ -287,6 +300,15 @@ public readonly struct VuetifyDatePickerModelValue
     public Number? AsNumber => _kind == 3 ? _number : default;
 
     public VuetifyDatePickerModelValues? AsValues => _kind == 4 ? _values : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsDate,
+        2 => AsString,
+        3 => AsNumber,
+        4 => AsValues,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDatePickerModelValue From(Date value);
@@ -358,10 +380,10 @@ public readonly struct VuetifyDatePickerModelValue
 public delegate bool VuetifyDatePickerAllowedDateResolver(VueValue? date);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDatePickerAllowedDatesCollectionBuilder), nameof(VuetifyDatePickerAllowedDatesCollectionBuilder.Create))]
-public readonly struct VuetifyDatePickerAllowedDates : IEnumerable<VueValue>
+public readonly struct VuetifyDatePickerAllowedDates : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
 {
     private readonly VueValue[]? _values;
 
@@ -371,6 +393,8 @@ public readonly struct VuetifyDatePickerAllowedDates : IEnumerable<VueValue>
     }
 
     public VueValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDatePickerAllowedDates From(VueValue[] values);
@@ -405,9 +429,9 @@ public static class VuetifyDatePickerAllowedDatesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDatePickerAllowedDatesValue
+public readonly struct VuetifyDatePickerAllowedDatesValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyDatePickerAllowedDates? _dates;
@@ -430,6 +454,13 @@ public readonly struct VuetifyDatePickerAllowedDatesValue
     public VuetifyDatePickerAllowedDates? AsDates => _kind == 1 ? _dates : default;
 
     public VuetifyDatePickerAllowedDateResolver? AsResolver => _kind == 2 ? _resolver : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsDates,
+        2 => AsResolver,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDatePickerAllowedDatesValue From(VuetifyDatePickerAllowedDates dates);
@@ -460,9 +491,9 @@ public readonly struct VuetifyDatePickerAllowedDatesValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDatePickerActiveValue
+public readonly struct VuetifyDatePickerActiveValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _active;
@@ -485,6 +516,13 @@ public readonly struct VuetifyDatePickerActiveValue
     public string? AsString => _kind == 1 ? _active : default;
 
     public string[]? AsStrings => _kind == 2 ? _activeValues : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsStrings,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDatePickerActiveValue From(string value);

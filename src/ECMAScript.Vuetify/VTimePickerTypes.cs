@@ -37,9 +37,9 @@ public enum VuetifyTimePickerPeriod
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTimePickerModelValue
+public readonly struct VuetifyTimePickerModelValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -63,6 +63,13 @@ public readonly struct VuetifyTimePickerModelValue
 
     public Date? AsDate => _kind == 2 ? _date : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsDate,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTimePickerModelValue From(string value);
 
@@ -79,10 +86,10 @@ public readonly struct VuetifyTimePickerModelValue
 public delegate bool VuetifyTimePickerAllowedUnitResolver(Number value);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyTimePickerAllowedUnitsCollectionBuilder), nameof(VuetifyTimePickerAllowedUnitsCollectionBuilder.Create))]
-public readonly struct VuetifyTimePickerAllowedUnits : IEnumerable<Number>
+public readonly struct VuetifyTimePickerAllowedUnits : System.Runtime.CompilerServices.IUnion, IEnumerable<Number>
 {
     private readonly Number[]? _values;
 
@@ -92,6 +99,8 @@ public readonly struct VuetifyTimePickerAllowedUnits : IEnumerable<Number>
     }
 
     public Number[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTimePickerAllowedUnits From(Number[] values);
@@ -120,9 +129,9 @@ public static class VuetifyTimePickerAllowedUnitsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTimePickerAllowedUnitValue
+public readonly struct VuetifyTimePickerAllowedUnitValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyTimePickerAllowedUnits? _units;
@@ -145,6 +154,13 @@ public readonly struct VuetifyTimePickerAllowedUnitValue
     public VuetifyTimePickerAllowedUnits? AsUnits => _kind == 1 ? _units : default;
 
     public VuetifyTimePickerAllowedUnitResolver? AsResolver => _kind == 2 ? _resolver : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsUnits,
+        2 => AsResolver,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTimePickerAllowedUnitValue From(VuetifyTimePickerAllowedUnits units);

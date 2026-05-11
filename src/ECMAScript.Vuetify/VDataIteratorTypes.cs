@@ -22,10 +22,10 @@ public sealed class VuetifyDataIteratorItem : IEnumerable
 /// Collection accepted by VDataIterator's items prop.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataIteratorItemsCollectionBuilder), nameof(VuetifyDataIteratorItemsCollectionBuilder.Create))]
-public readonly struct VuetifyDataIteratorItems : IEnumerable<VuetifyDataIteratorItem>
+public readonly struct VuetifyDataIteratorItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyDataIteratorItem>
 {
     private readonly VuetifyDataIteratorItem[]? _items;
 
@@ -35,6 +35,8 @@ public readonly struct VuetifyDataIteratorItems : IEnumerable<VuetifyDataIterato
     }
 
     public VuetifyDataIteratorItem[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataIteratorItems From(VuetifyDataIteratorItem[] items);
@@ -60,10 +62,10 @@ public static class VuetifyDataIteratorItemsCollectionBuilder
 /// Selected-value collection used by VDataIterator's modelValue prop.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataIteratorSelectedValuesCollectionBuilder), nameof(VuetifyDataIteratorSelectedValuesCollectionBuilder.Create))]
-public readonly struct VuetifyDataIteratorSelectedValues : IEnumerable<VueValue>
+public readonly struct VuetifyDataIteratorSelectedValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
 {
     private readonly VueValue[]? _values;
 
@@ -73,6 +75,8 @@ public readonly struct VuetifyDataIteratorSelectedValues : IEnumerable<VueValue>
     }
 
     public VueValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataIteratorSelectedValues From(VueValue[] values);
@@ -167,9 +171,9 @@ public sealed record VuetifyDataIteratorGroup
 /// Union-like grouped item value used by VDataIterator slot contexts.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDataIteratorGroupedItem
+public readonly struct VuetifyDataIteratorGroupedItem : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyDataIteratorInternalItem? _item;
@@ -192,6 +196,13 @@ public readonly struct VuetifyDataIteratorGroupedItem
     public VuetifyDataIteratorInternalItem? AsItem => _kind == 1 ? _item : default;
 
     public VuetifyDataIteratorGroup? AsGroup => _kind == 2 ? _group : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsItem,
+        2 => AsGroup,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataIteratorGroupedItem From(VuetifyDataIteratorInternalItem value);

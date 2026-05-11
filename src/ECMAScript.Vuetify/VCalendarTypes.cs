@@ -27,9 +27,9 @@ public enum VuetifyCalendarWeeksInMonth
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCalendarDateValue
+public readonly struct VuetifyCalendarDateValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly Date? _date;
@@ -65,6 +65,14 @@ public readonly struct VuetifyCalendarDateValue
     public string? AsString => _kind == 2 ? _string : default;
 
     public Number? AsNumber => _kind == 3 ? _number : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsDate,
+        2 => AsString,
+        3 => AsNumber,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCalendarDateValue From(Date value);
@@ -113,10 +121,10 @@ public readonly struct VuetifyCalendarDateValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyCalendarDateValuesCollectionBuilder), nameof(VuetifyCalendarDateValuesCollectionBuilder.Create))]
-public readonly struct VuetifyCalendarDateValues : IEnumerable<VuetifyCalendarDateValue>
+public readonly struct VuetifyCalendarDateValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyCalendarDateValue>
 {
     private readonly VuetifyCalendarDateValue[]? _values;
 
@@ -126,6 +134,8 @@ public readonly struct VuetifyCalendarDateValues : IEnumerable<VuetifyCalendarDa
     }
 
     public VuetifyCalendarDateValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCalendarDateValues From(VuetifyCalendarDateValue[] values);
@@ -165,9 +175,9 @@ public static class VuetifyCalendarDateValuesCollectionBuilder
 public delegate bool VuetifyCalendarAllowedDateResolver(VuetifyCalendarDateValue date);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCalendarAllowedDatesValue
+public readonly struct VuetifyCalendarAllowedDatesValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyCalendarDateValues? _dates;
@@ -190,6 +200,13 @@ public readonly struct VuetifyCalendarAllowedDatesValue
     public VuetifyCalendarDateValues? AsDates => _kind == 1 ? _dates : default;
 
     public VuetifyCalendarAllowedDateResolver? AsResolver => _kind == 2 ? _resolver : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsDates,
+        2 => AsResolver,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCalendarAllowedDatesValue From(VuetifyCalendarDateValues dates);
@@ -243,10 +260,10 @@ public sealed record VuetifyCalendarEventItem : VueProps
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyCalendarEventsCollectionBuilder), nameof(VuetifyCalendarEventsCollectionBuilder.Create))]
-public readonly struct VuetifyCalendarEvents : IEnumerable<VuetifyCalendarEventItem>
+public readonly struct VuetifyCalendarEvents : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyCalendarEventItem>
 {
     private readonly VuetifyCalendarEventItem[]? _events;
 
@@ -256,6 +273,8 @@ public readonly struct VuetifyCalendarEvents : IEnumerable<VuetifyCalendarEventI
     }
 
     public VuetifyCalendarEventItem[]? AsArray => _events;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCalendarEvents From(VuetifyCalendarEventItem[] events);
@@ -332,9 +351,9 @@ public sealed record VuetifyCalendarInterval : VueProps
 public delegate string VuetifyCalendarIntervalFormatter(VuetifyCalendarInterval interval);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCalendarIntervalFormatValue
+public readonly struct VuetifyCalendarIntervalFormatValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _format;
@@ -357,6 +376,13 @@ public readonly struct VuetifyCalendarIntervalFormatValue
     public string? AsFormat => _kind == 1 ? _format : default;
 
     public VuetifyCalendarIntervalFormatter? AsFormatter => _kind == 2 ? _formatter : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsFormat,
+        2 => AsFormatter,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCalendarIntervalFormatValue From(string value);

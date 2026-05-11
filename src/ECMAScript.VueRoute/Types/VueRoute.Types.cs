@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using ECMAScript.Contract;
 
 namespace ECMAScript;
@@ -2767,9 +2768,9 @@ public readonly union ScrollPositionTarget(string, Element)
 /// Union type for the return value of router scroll behavior, supporting multiple scroll position representations.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[Union]
 [Description("@#")]
-public readonly struct RouterScrollResult
+public readonly struct RouterScrollResult : IUnion
 {
 	private readonly byte _kind;
 	private readonly bool? _bool;
@@ -2838,6 +2839,19 @@ public readonly struct RouterScrollResult
 	public ScrollPositionNormalized? AsNormalized => _kind == 4 ? _normalized : default;
 
 	/// <summary>
+	/// 获取擦除后的 JavaScript 值。
+	/// Gets the erased JavaScript value.
+	/// </summary>
+	public object? Value => _kind switch
+	{
+		1 => _bool,
+		2 => _coordinates,
+		3 => _element,
+		4 => _normalized,
+		_ => default
+	};
+
+	/// <summary>
 	/// 从布尔值隐式转换为滚动结果。
 	/// Implicit conversion from a boolean to a scroll result.
 	/// </summary>
@@ -2875,9 +2889,9 @@ public readonly struct RouterScrollResult
 /// Union type for the router scroll behavior handler, supporting both sync and async callbacks.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[Union]
 [Description("@#")]
-public readonly struct RouterScrollHandler
+public readonly struct RouterScrollHandler : IUnion
 {
 	private readonly byte _kind;
 	private readonly RouterScrollBehavior? _sync;
@@ -2908,6 +2922,17 @@ public readonly struct RouterScrollHandler
 	/// Gets the handler as an asynchronous scroll behavior callback.
 	/// </summary>
 	public AsyncRouterScrollBehavior? AsAsync => _kind == 2 ? _async : default;
+
+	/// <summary>
+	/// 获取擦除后的 JavaScript 值。
+	/// Gets the erased JavaScript value.
+	/// </summary>
+	public object? Value => _kind switch
+	{
+		1 => _sync,
+		2 => _async,
+		_ => default
+	};
 
 	/// <summary>
 	/// 从同步滚动行为回调隐式转换为滚动处理器。

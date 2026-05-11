@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 namespace ECMAScript.Vuetify;
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyStepperItemsCollectionBuilder), nameof(VuetifyStepperItemsCollectionBuilder.Create))]
-public readonly struct VuetifyStepperItems : IEnumerable<VuetifyStepperItemValue>
+public readonly struct VuetifyStepperItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyStepperItemValue>
 {
     private readonly VuetifyStepperItemValue[]? _items;
 
@@ -17,6 +17,8 @@ public readonly struct VuetifyStepperItems : IEnumerable<VuetifyStepperItemValue
     }
 
     public VuetifyStepperItemValue[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyStepperItems From(VuetifyStepperItemValue[] items);
@@ -45,9 +47,9 @@ public static class VuetifyStepperItemsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyStepperItemValue
+public readonly struct VuetifyStepperItemValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -70,6 +72,13 @@ public readonly struct VuetifyStepperItemValue
     public string? AsString => _kind == 1 ? _string : default;
 
     public VuetifyStepperItem? AsItem => _kind == 2 ? _item : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsItem,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyStepperItemValue From(string value);

@@ -41,7 +41,7 @@
   - `defineComponent` -> `DefineComponent`
   - `watchEffect` -> `WatchEffect`
   - `onMounted` -> `OnMounted`
-- 命名 `[ECMAScriptUnion]` 类型用于真实 union 桥接；方法边界优先 overload 体验。
+- 命名 native `union` 类型用于真实 union 桥接；方法边界优先 overload 体验。只有 native union 无法保留精确 tagged projection 语义时，才使用 `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback。
 - authoring 默认规则是“能直接赋值就直接赋值”：
   - 如果调用点已经持有强类型委托变量、类实例变量、typed record、或可直接命中的 union 分支值，应直接赋给目标宿主成员或参数；
   - 只有在 C# 语言本身无法把作者想写的字面量 / lambda / interface-typed source 形式直接绑定到目标 contract 时，才补显式 helper、命名 union bridge 或 collection-initializer `Add(...)` 入口；

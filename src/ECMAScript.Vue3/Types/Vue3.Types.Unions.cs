@@ -11,65 +11,20 @@ public static partial class Vue3
 	/// </summary>
 	/// <typeparam name="TValue">计算属性值的类型。The computed property value type.</typeparam>
 	[ECMAScript]
-	[ECMAScriptUnion]
 	[Description("@#")]
-	public readonly struct VueComputedValue<TValue>
+	public readonly union VueComputedValue<TValue>(Func<TValue>, VueWritableComputedOptions<TValue>)
 	{
-		private readonly byte _kind;
-		private readonly Func<TValue>? _getter;
-		private readonly VueWritableComputedOptions<TValue>? _options;
-
-		/// <summary>
-		/// 从 getter 回调构造。
-		/// Constructs from a getter callback.
-		/// </summary>
-		/// <param name="getter">用于计算属性值的 getter 函数。The getter function for the computed value.</param>
-		private VueComputedValue(Func<TValue> getter)
-		{
-			_kind = 1;
-			_getter = getter;
-			_options = default;
-		}
-
-		/// <summary>
-		/// 从可写计算属性选项构造。
-		/// Constructs from writable computed options.
-		/// </summary>
-		/// <param name="options">包含 get 和 set 的可写计算属性选项。Writable computed options with get and set.</param>
-		private VueComputedValue(VueWritableComputedOptions<TValue> options)
-		{
-			_kind = 2;
-			_getter = default;
-			_options = options;
-		}
-
 		/// <summary>
 		/// 当值为 getter 回调时返回该回调；否则返回 null。
 		/// Returns the getter callback when the value was created from a getter; otherwise null.
 		/// </summary>
-		public Func<TValue>? AsGetter => _kind == 1 ? _getter : default;
+		public Func<TValue>? AsGetter => Value as Func<TValue>;
 
 		/// <summary>
 		/// 当值为可写计算属性选项时返回该选项；否则返回 null。
 		/// Returns the writable computed options when the value was created from options; otherwise null.
 		/// </summary>
-		public VueWritableComputedOptions<TValue>? AsOptions => _kind == 2 ? _options : default;
-
-		/// <summary>
-		/// 从 getter 回调隐式转换为计算属性值。
-		/// Implicitly converts a getter callback to a computed value declaration.
-		/// </summary>
-		/// <param name="getter">用于计算属性值的 getter 函数。The getter function for the computed value.</param>
-		public static implicit operator VueComputedValue<TValue>(Func<TValue> getter)
-			=> new(getter);
-
-		/// <summary>
-		/// 从可写计算属性选项隐式转换为计算属性值。
-		/// Implicitly converts writable computed options to a computed value declaration.
-		/// </summary>
-		/// <param name="options">包含 get 和 set 的可写计算属性选项。Writable computed options with get and set.</param>
-		public static implicit operator VueComputedValue<TValue>(VueWritableComputedOptions<TValue> options)
-			=> new(options);
+		public VueWritableComputedOptions<TValue>? AsOptions => Value as VueWritableComputedOptions<TValue>;
 	}
 
 	/// <summary>
@@ -80,235 +35,57 @@ public static partial class Vue3
 	/// </summary>
 	/// <typeparam name="TValue">被侦听值的类型。The watched value type.</typeparam>
 	[ECMAScript]
-	[ECMAScriptUnion]
 	[Description("@#")]
-	public readonly struct VueWatchDeclaration<TValue>
+	public readonly union VueWatchDeclaration<TValue>(
+		string,
+		Action<TValue, TValue>,
+		VueWatchCleanupCallback<TValue>,
+		VueWatchHandlerOptions<TValue>,
+		VueWatchCleanupHandlerOptions<TValue>,
+		VueWatchNamedHandlerOptions,
+		VueWatchEntries<TValue>)
 	{
-		private readonly byte _kind;
-		private readonly string? _methodName;
-		private readonly Action<TValue, TValue>? _handler;
-		private readonly VueWatchCleanupCallback<TValue>? _cleanupHandler;
-		private readonly VueWatchHandlerOptions<TValue>? _handlerOptions;
-		private readonly VueWatchCleanupHandlerOptions<TValue>? _cleanupHandlerOptions;
-		private readonly VueWatchNamedHandlerOptions? _namedHandlerOptions;
-		private readonly VueWatchEntries<TValue>? _entries;
-
-		/// <summary>
-		/// 从方法名字符串构造。
-		/// Constructs from a method name string.
-		/// </summary>
-		/// <param name="methodName">从组件 methods 中解析的方法名。The method name to resolve from component methods.</param>
-		private VueWatchDeclaration(string methodName)
-		{
-			_kind = 1;
-			_methodName = methodName;
-			_handler = default;
-			_cleanupHandler = default;
-			_handlerOptions = default;
-			_cleanupHandlerOptions = default;
-			_namedHandlerOptions = default;
-			_entries = default;
-		}
-
-		/// <summary>
-		/// 从回调处理器构造。
-		/// Constructs from a callback handler.
-		/// </summary>
-		/// <param name="handler">接收当前值和旧值的回调。Callback receiving current and previous values.</param>
-		private VueWatchDeclaration(Action<TValue, TValue> handler)
-		{
-			_kind = 2;
-			_methodName = default;
-			_handler = handler;
-			_cleanupHandler = default;
-			_handlerOptions = default;
-			_cleanupHandlerOptions = default;
-			_namedHandlerOptions = default;
-			_entries = default;
-		}
-
-		/// <summary>
-		/// 从带清理注册的回调处理器构造。
-		/// Constructs from a cleanup-aware callback handler.
-		/// </summary>
-		/// <param name="cleanupHandler">带清理注册的回调。Cleanup-aware callback.</param>
-		private VueWatchDeclaration(VueWatchCleanupCallback<TValue> cleanupHandler)
-		{
-			_kind = 3;
-			_methodName = default;
-			_handler = default;
-			_cleanupHandler = cleanupHandler;
-			_handlerOptions = default;
-			_cleanupHandlerOptions = default;
-			_namedHandlerOptions = default;
-			_entries = default;
-		}
-
-		/// <summary>
-		/// 从处理器选项构造。
-		/// Constructs from handler options.
-		/// </summary>
-		/// <param name="handlerOptions">包含处理器和 watch 选项的对象。Object containing handler and watch options.</param>
-		private VueWatchDeclaration(VueWatchHandlerOptions<TValue> handlerOptions)
-		{
-			_kind = 4;
-			_methodName = default;
-			_handler = default;
-			_cleanupHandler = default;
-			_handlerOptions = handlerOptions;
-			_cleanupHandlerOptions = default;
-			_namedHandlerOptions = default;
-			_entries = default;
-		}
-
-		/// <summary>
-		/// 从带清理注册的处理器选项构造。
-		/// Constructs from cleanup-aware handler options.
-		/// </summary>
-		/// <param name="cleanupHandlerOptions">包含带清理的处理器和 watch 选项的对象。Object containing cleanup-aware handler and watch options.</param>
-		private VueWatchDeclaration(VueWatchCleanupHandlerOptions<TValue> cleanupHandlerOptions)
-		{
-			_kind = 5;
-			_methodName = default;
-			_handler = default;
-			_cleanupHandler = default;
-			_handlerOptions = default;
-			_cleanupHandlerOptions = cleanupHandlerOptions;
-			_namedHandlerOptions = default;
-			_entries = default;
-		}
-
-		/// <summary>
-		/// 从具名处理器选项构造。
-		/// Constructs from named handler options.
-		/// </summary>
-		/// <param name="namedHandlerOptions">包含方法名和 watch 选项的对象。Object containing method name and watch options.</param>
-		private VueWatchDeclaration(VueWatchNamedHandlerOptions namedHandlerOptions)
-		{
-			_kind = 6;
-			_methodName = default;
-			_handler = default;
-			_cleanupHandler = default;
-			_handlerOptions = default;
-			_cleanupHandlerOptions = default;
-			_namedHandlerOptions = namedHandlerOptions;
-			_entries = default;
-		}
-
-		/// <summary>
-		/// 从 watch 条目数组构造。
-		/// Constructs from an array of watch entries.
-		/// </summary>
-		/// <param name="entries">多个 watch 声明条目的数组。Array of multiple watch declaration entries.</param>
-		private VueWatchDeclaration(VueWatchEntries<TValue> entries)
-		{
-			_kind = 7;
-			_methodName = default;
-			_handler = default;
-			_cleanupHandler = default;
-			_handlerOptions = default;
-			_cleanupHandlerOptions = default;
-			_namedHandlerOptions = default;
-			_entries = entries;
-		}
-
 		/// <summary>
 		/// 当值为方法名时返回该名称；否则返回 null。
 		/// Returns the method name when the value was created from a string; otherwise null.
 		/// </summary>
-		public string? AsMethodName => _kind == 1 ? _methodName : default;
+		public string? AsMethodName => Value as string;
 
 		/// <summary>
 		/// 当值为回调处理器时返回该处理器；否则返回 null。
 		/// Returns the handler callback when the value was created from a handler; otherwise null.
 		/// </summary>
-		public Action<TValue, TValue>? AsHandler => _kind == 2 ? _handler : default;
+		public Action<TValue, TValue>? AsHandler => Value as Action<TValue, TValue>;
 
 		/// <summary>
 		/// 当值为带清理的回调处理器时返回该处理器；否则返回 null。
 		/// Returns the cleanup-aware handler when the value was created from a cleanup handler; otherwise null.
 		/// </summary>
-		public VueWatchCleanupCallback<TValue>? AsCleanupHandler => _kind == 3 ? _cleanupHandler : default;
+		public VueWatchCleanupCallback<TValue>? AsCleanupHandler => Value as VueWatchCleanupCallback<TValue>;
 
 		/// <summary>
 		/// 当值为处理器选项时返回该选项；否则返回 null。
 		/// Returns the handler options when the value was created from options; otherwise null.
 		/// </summary>
-		public VueWatchHandlerOptions<TValue>? AsHandlerOptions => _kind == 4 ? _handlerOptions : default;
+		public VueWatchHandlerOptions<TValue>? AsHandlerOptions => Value as VueWatchHandlerOptions<TValue>;
 
 		/// <summary>
 		/// 当值为带清理的处理器选项时返回该选项；否则返回 null。
 		/// Returns the cleanup handler options when the value was created from cleanup options; otherwise null.
 		/// </summary>
-		public VueWatchCleanupHandlerOptions<TValue>? AsCleanupHandlerOptions => _kind == 5 ? _cleanupHandlerOptions : default;
+		public VueWatchCleanupHandlerOptions<TValue>? AsCleanupHandlerOptions => Value as VueWatchCleanupHandlerOptions<TValue>;
 
 		/// <summary>
 		/// 当值为具名处理器选项时返回该选项；否则返回 null。
 		/// Returns the named handler options when the value was created from named options; otherwise null.
 		/// </summary>
-		public VueWatchNamedHandlerOptions? AsNamedHandlerOptions => _kind == 6 ? _namedHandlerOptions : default;
+		public VueWatchNamedHandlerOptions? AsNamedHandlerOptions => Value as VueWatchNamedHandlerOptions;
 
 		/// <summary>
 		/// 当值为 watch 条目数组时返回该数组；否则返回 null。
 		/// Returns the watch entries when the value was created from entries; otherwise null.
 		/// </summary>
-		public VueWatchEntries<TValue>? AsEntries => _kind == 7 ? _entries : default;
-
-		/// <summary>
-		/// 从方法名字符串隐式转换为 watch 声明。
-		/// Implicitly converts a method name string to a watch declaration.
-		/// </summary>
-		/// <param name="methodName">从组件 methods 中解析的方法名。The method name to resolve from component methods.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(string methodName)
-			=> new(methodName);
-
-		/// <summary>
-		/// 从回调处理器隐式转换为 watch 声明。
-		/// Implicitly converts a callback handler to a watch declaration.
-		/// </summary>
-		/// <param name="handler">接收当前值和旧值的回调。Callback receiving current and previous values.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(Action<TValue, TValue> handler)
-			=> new(handler);
-
-		/// <summary>
-		/// 从带清理注册的回调处理器隐式转换为 watch 声明。
-		/// Implicitly converts a cleanup-aware callback handler to a watch declaration.
-		/// </summary>
-		/// <param name="cleanupHandler">带清理注册的回调。Cleanup-aware callback.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(VueWatchCleanupCallback<TValue> cleanupHandler)
-			=> new(cleanupHandler);
-
-		/// <summary>
-		/// 从处理器选项隐式转换为 watch 声明。
-		/// Implicitly converts handler options to a watch declaration.
-		/// </summary>
-		/// <param name="handlerOptions">包含处理器和 watch 选项的对象。Object containing handler and watch options.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(VueWatchHandlerOptions<TValue> handlerOptions)
-			=> new(handlerOptions);
-
-		/// <summary>
-		/// 从带清理的处理器选项隐式转换为 watch 声明。
-		/// Implicitly converts cleanup handler options to a watch declaration.
-		/// </summary>
-		/// <param name="cleanupHandlerOptions">包含带清理的处理器和 watch 选项的对象。Object containing cleanup-aware handler and watch options.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(VueWatchCleanupHandlerOptions<TValue> cleanupHandlerOptions)
-			=> new(cleanupHandlerOptions);
-
-		/// <summary>
-		/// 从具名处理器选项隐式转换为 watch 声明。
-		/// Implicitly converts named handler options to a watch declaration.
-		/// </summary>
-		/// <param name="namedHandlerOptions">包含方法名和 watch 选项的对象。Object containing method name and watch options.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(VueWatchNamedHandlerOptions namedHandlerOptions)
-			=> new(namedHandlerOptions);
-
-		/// <summary>
-		/// 从 watch 条目数组隐式转换为 watch 声明。
-		/// Implicitly converts an array of watch entries to a watch declaration.
-		/// </summary>
-		/// <param name="entries">多个 watch 声明条目的数组。Array of multiple watch declaration entries.</param>
-		public static implicit operator VueWatchDeclaration<TValue>(VueWatchEntries<TValue> entries)
-			=> new(entries);
+		public VueWatchEntries<TValue>? AsEntries => Value as VueWatchEntries<TValue>;
 	}
 
 	/// <summary>

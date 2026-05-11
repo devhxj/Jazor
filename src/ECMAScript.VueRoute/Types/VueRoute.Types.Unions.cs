@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using ECMAScript.Contract;
 using static ECMAScript.Vue3;
 
@@ -113,253 +114,71 @@ public readonly union RouteLocationRaw(string, RouteLocationAsPath, RouteLocatio
 /// Route location raw (possibly reactive ref) union accepting value, Ref, or ReadonlyRef.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteLocationRawMaybeRef
+public readonly union RouteLocationRawMaybeRef(
+    RouteLocationRaw,
+    Vue3.IVueRef<RouteLocationRaw>,
+    Vue3.VueReadonlyRef<RouteLocationRaw>,
+    Vue3.IVueRef<string>,
+    Vue3.IVueRef<RouteLocationAsPath>,
+    Vue3.IVueRef<RouteLocationAsRelative>,
+    Vue3.VueReadonlyRef<string>,
+    Vue3.VueReadonlyRef<RouteLocationAsPath>,
+    Vue3.VueReadonlyRef<RouteLocationAsRelative>)
 {
-    private readonly byte _kind;
-    private readonly RouteLocationRaw? _value;
-    private readonly Vue3.IVueRef<RouteLocationRaw>? _ref;
-    private readonly Vue3.VueReadonlyRef<RouteLocationRaw>? _readonlyRef;
-    private readonly Vue3.IVueRef<string>? _stringRef;
-    private readonly Vue3.IVueRef<RouteLocationAsPath>? _pathRef;
-    private readonly Vue3.IVueRef<RouteLocationAsRelative>? _relativeRef;
-    private readonly Vue3.VueReadonlyRef<string>? _readonlyStringRef;
-    private readonly Vue3.VueReadonlyRef<RouteLocationAsPath>? _readonlyPathRef;
-    private readonly Vue3.VueReadonlyRef<RouteLocationAsRelative>? _readonlyRelativeRef;
-
-    /// <summary>
-    /// 从 RouteLocationRaw 值初始化。
-    /// Initializes from a RouteLocationRaw value.
-    /// </summary>
-    /// <param name="value">路由位置原始值。The raw route location value.</param>
-    private RouteLocationRawMaybeRef(RouteLocationRaw value)
-    {
-        _kind = 1;
-        _value = value;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationRaw 的 Vue Ref 初始化。
-    /// Initializes from a Vue Ref of RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">RouteLocationRaw 的响应式引用。The reactive ref of RouteLocationRaw.</param>
-    private RouteLocationRawMaybeRef(Vue3.IVueRef<RouteLocationRaw> value)
-    {
-        _kind = 2;
-        _value = default;
-        _ref = value;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationRaw 的 Vue ReadonlyRef 初始化。
-    /// Initializes from a Vue ReadonlyRef of RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">RouteLocationRaw 的只读响应式引用。The readonly ref of RouteLocationRaw.</param>
-    private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationRaw> value)
-    {
-        _kind = 3;
-        _value = default;
-        _ref = default;
-        _readonlyRef = value;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从字符串的 Vue Ref 初始化。
-    /// Initializes from a Vue Ref of string.
-    /// </summary>
-    /// <param name="value">字符串的响应式引用。The reactive ref of string.</param>
-    private RouteLocationRawMaybeRef(Vue3.IVueRef<string> value)
-    {
-        _kind = 4;
-        _value = default;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = value;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationAsPath 的 Vue Ref 初始化。
-    /// Initializes from a Vue Ref of RouteLocationAsPath.
-    /// </summary>
-    /// <param name="value">路径式路由位置的响应式引用。The reactive ref of path-based route location.</param>
-    private RouteLocationRawMaybeRef(Vue3.IVueRef<RouteLocationAsPath> value)
-    {
-        _kind = 5;
-        _value = default;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = value;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationAsRelative 的 Vue Ref 初始化。
-    /// Initializes from a Vue Ref of RouteLocationAsRelative.
-    /// </summary>
-    /// <param name="value">相对式路由位置的响应式引用。The reactive ref of relative route location.</param>
-    private RouteLocationRawMaybeRef(Vue3.IVueRef<RouteLocationAsRelative> value)
-    {
-        _kind = 6;
-        _value = default;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = value;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从字符串的 Vue ReadonlyRef 初始化。
-    /// Initializes from a Vue ReadonlyRef of string.
-    /// </summary>
-    /// <param name="value">字符串的只读响应式引用。The readonly ref of string.</param>
-    private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<string> value)
-    {
-        _kind = 7;
-        _value = default;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = value;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationAsPath 的 Vue ReadonlyRef 初始化。
-    /// Initializes from a Vue ReadonlyRef of RouteLocationAsPath.
-    /// </summary>
-    /// <param name="value">路径式路由位置的只读响应式引用。The readonly ref of path-based route location.</param>
-    private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsPath> value)
-    {
-        _kind = 8;
-        _value = default;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = value;
-        _readonlyRelativeRef = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationAsRelative 的 Vue ReadonlyRef 初始化。
-    /// Initializes from a Vue ReadonlyRef of RouteLocationAsRelative.
-    /// </summary>
-    /// <param name="value">相对式路由位置的只读响应式引用。The readonly ref of relative route location.</param>
-    private RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsRelative> value)
-    {
-        _kind = 9;
-        _value = default;
-        _ref = default;
-        _readonlyRef = default;
-        _stringRef = default;
-        _pathRef = default;
-        _relativeRef = default;
-        _readonlyStringRef = default;
-        _readonlyPathRef = default;
-        _readonlyRelativeRef = value;
-    }
-
     /// <summary>
     /// 以 RouteLocationRaw 值返回，如果不是值变体则返回 default。
     /// Returns as RouteLocationRaw value, or default if not a value variant.
     /// </summary>
-    public RouteLocationRaw? AsValue => _kind == 1 ? _value : default;
+    public RouteLocationRaw? AsValue => Value is RouteLocationRaw value ? value : default(RouteLocationRaw?);
 
     /// <summary>
     /// 以 Vue Ref 返回，如果不是 Ref 变体则返回 default。
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
-    public Vue3.IVueRef<RouteLocationRaw>? AsRef => _kind == 2 ? _ref : default;
+    public Vue3.IVueRef<RouteLocationRaw>? AsRef => Value as Vue3.IVueRef<RouteLocationRaw>;
 
     /// <summary>
     /// 以 Vue ReadonlyRef 返回，如果不是 ReadonlyRef 变体则返回 default。
     /// Returns as Vue ReadonlyRef, or default if not a ReadonlyRef variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<RouteLocationRaw>? AsReadonlyRef => _kind == 3 ? _readonlyRef : default;
+    public Vue3.VueReadonlyRef<RouteLocationRaw>? AsReadonlyRef => Value as Vue3.VueReadonlyRef<RouteLocationRaw>;
 
     /// <summary>
     /// 以字符串 Vue Ref 返回，如果不是字符串 Ref 变体则返回 default。
     /// Returns as string Vue Ref, or default if not a string Ref variant.
     /// </summary>
-    public Vue3.IVueRef<string>? AsStringRef => _kind == 4 ? _stringRef : default;
+    public Vue3.IVueRef<string>? AsStringRef => Value as Vue3.IVueRef<string>;
 
     /// <summary>
     /// 以路径式路由位置 Vue Ref 返回，如果不是路径 Ref 变体则返回 default。
     /// Returns as path-based route location Vue Ref, or default if not a path Ref variant.
     /// </summary>
-    public Vue3.IVueRef<RouteLocationAsPath>? AsPathRef => _kind == 5 ? _pathRef : default;
+    public Vue3.IVueRef<RouteLocationAsPath>? AsPathRef => Value as Vue3.IVueRef<RouteLocationAsPath>;
 
     /// <summary>
     /// 以相对式路由位置 Vue Ref 返回，如果不是相对 Ref 变体则返回 default。
     /// Returns as relative route location Vue Ref, or default if not a relative Ref variant.
     /// </summary>
-    public Vue3.IVueRef<RouteLocationAsRelative>? AsRelativeRef => _kind == 6 ? _relativeRef : default;
+    public Vue3.IVueRef<RouteLocationAsRelative>? AsRelativeRef => Value as Vue3.IVueRef<RouteLocationAsRelative>;
 
     /// <summary>
     /// 以字符串 Vue ReadonlyRef 返回，如果不是字符串只读引用变体则返回 default。
     /// Returns as string Vue ReadonlyRef, or default if not a string readonly ref variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<string>? AsReadonlyStringRef => _kind == 7 ? _readonlyStringRef : default;
+    public Vue3.VueReadonlyRef<string>? AsReadonlyStringRef => Value as Vue3.VueReadonlyRef<string>;
 
     /// <summary>
     /// 以路径式路由位置 Vue ReadonlyRef 返回，如果不是路径只读引用变体则返回 default。
     /// Returns as path-based route location Vue ReadonlyRef, or default if not a path readonly ref variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<RouteLocationAsPath>? AsReadonlyPathRef => _kind == 8 ? _readonlyPathRef : default;
+    public Vue3.VueReadonlyRef<RouteLocationAsPath>? AsReadonlyPathRef => Value as Vue3.VueReadonlyRef<RouteLocationAsPath>;
 
     /// <summary>
     /// 以相对式路由位置 Vue ReadonlyRef 返回，如果不是相对只读引用变体则返回 default。
     /// Returns as relative route location Vue ReadonlyRef, or default if not a relative readonly ref variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<RouteLocationAsRelative>? AsReadonlyRelativeRef => _kind == 9 ? _readonlyRelativeRef : default;
-
-    /// <summary>
-    /// 从 RouteLocationRaw 隐式转换。
-    /// Implicitly converts from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要转换的路由位置原始值。The raw route location to convert.</param>
-    public static implicit operator RouteLocationRawMaybeRef(RouteLocationRaw value)
-        => new(value);
+    public Vue3.VueReadonlyRef<RouteLocationAsRelative>? AsReadonlyRelativeRef => Value as Vue3.VueReadonlyRef<RouteLocationAsRelative>;
 
     /// <summary>
     /// 从字符串隐式转换。
@@ -367,7 +186,7 @@ public readonly struct RouteLocationRawMaybeRef
     /// </summary>
     /// <param name="value">要转换的路径字符串。The path string to convert.</param>
     public static implicit operator RouteLocationRawMaybeRef(string value)
-        => new(value);
+        => new((RouteLocationRaw)value);
 
     /// <summary>
     /// 从路径式路由位置隐式转换。
@@ -375,7 +194,7 @@ public readonly struct RouteLocationRawMaybeRef
     /// </summary>
     /// <param name="value">要转换的路径式路由位置。The path-based route location to convert.</param>
     public static implicit operator RouteLocationRawMaybeRef(RouteLocationAsPath value)
-        => new(value);
+        => new((RouteLocationRaw)value);
 
     /// <summary>
     /// 从相对式路由位置隐式转换。
@@ -383,39 +202,7 @@ public readonly struct RouteLocationRawMaybeRef
     /// </summary>
     /// <param name="value">要转换的相对式路由位置。The relative route location to convert.</param>
     public static implicit operator RouteLocationRawMaybeRef(RouteLocationAsRelative value)
-        => new(value);
-
-    /// <summary>
-    ///从 RouteLocationRaw 的 Vue ReadonlyRef 隐式转换。
-    /// Implicitly converts from a Vue ReadonlyRef of RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要转换的只读响应式引用。The readonly ref to convert.</param>
-    public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationRaw> value)
-        => new(value);
-
-    /// <summary>
-    /// 从字符串的 Vue ReadonlyRef 隐式转换。
-    /// Implicitly converts from a Vue ReadonlyRef of string.
-    /// </summary>
-    /// <param name="value">要转换的字符串只读响应式引用。The string readonly ref to convert.</param>
-    public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<string> value)
-        => new(value);
-
-    /// <summary>
-    /// 从路径式路由位置的 Vue ReadonlyRef 隐式转换。
-    /// Implicitly converts from a Vue ReadonlyRef of RouteLocationAsPath.
-    /// </summary>
-    /// <param name="value">要转换的路径式只读响应式引用。The path-based readonly ref to convert.</param>
-    public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsPath> value)
-        => new(value);
-
-    /// <summary>
-    /// 从相对式路由位置的 Vue ReadonlyRef 隐式转换。
-    /// Implicitly converts from a Vue ReadonlyRef of RouteLocationAsRelative.
-    /// </summary>
-    /// <param name="value">要转换的相对式只读响应式引用。The relative readonly ref to convert.</param>
-    public static implicit operator RouteLocationRawMaybeRef(Vue3.VueReadonlyRef<RouteLocationAsRelative> value)
-        => new(value);
+        => new((RouteLocationRaw)value);
 
     /// <summary>
     /// 从 RouteLocationRaw 的 Vue Ref 创建联合值。
@@ -495,87 +282,26 @@ public readonly struct RouteLocationRawMaybeRef
 /// Route boolean (possibly reactive ref) union accepting bool, Ref, or ReadonlyRef.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteBooleanMaybeRef
+public readonly union RouteBooleanMaybeRef(bool, Vue3.IVueRef<bool>, Vue3.VueReadonlyRef<bool>)
 {
-    private readonly byte _kind;
-    private readonly bool? _value;
-    private readonly Vue3.IVueRef<bool>? _ref;
-    private readonly Vue3.VueReadonlyRef<bool>? _readonlyRef;
-
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a boolean value.
-    /// </summary>
-    /// <param name="value">布尔值。The boolean value.</param>
-    private RouteBooleanMaybeRef(bool value)
-    {
-        _kind = 1;
-        _value = value;
-        _ref = default;
-        _readonlyRef = default;
-    }
-
-    /// <summary>
-    /// 从布尔值的 Vue Ref 初始化。
-    /// Initializes from a Vue Ref of bool.
-    /// </summary>
-    /// <param name="value">布尔值的响应式引用。The reactive ref of bool.</param>
-    private RouteBooleanMaybeRef(Vue3.IVueRef<bool> value)
-    {
-        _kind = 2;
-        _value = default;
-        _ref = value;
-        _readonlyRef = default;
-    }
-
-    /// <summary>
-    /// 从布尔值的 Vue ReadonlyRef 初始化。
-    /// Initializes from a Vue ReadonlyRef of bool.
-    /// </summary>
-    /// <param name="value">布尔值的只读响应式引用。The readonly ref of bool.</param>
-    private RouteBooleanMaybeRef(Vue3.VueReadonlyRef<bool> value)
-    {
-        _kind = 3;
-        _value = default;
-        _ref = default;
-        _readonlyRef = value;
-    }
-
     /// <summary>
     /// 以布尔值返回，如果不是值变体则返回 default。
     /// Returns as bool, or default if not a value variant.
     /// </summary>
-    public bool? AsValue => _kind == 1 ? _value : default;
+    public bool? AsValue => Value is bool value ? value : default(bool?);
 
     /// <summary>
     /// 以 Vue Ref 返回，如果不是 Ref 变体则返回 default。
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
-    public Vue3.IVueRef<bool>? AsRef => _kind == 2 ? _ref : default;
+    public Vue3.IVueRef<bool>? AsRef => Value as Vue3.IVueRef<bool>;
 
     /// <summary>
     /// 以 Vue ReadonlyRef 返回，如果不是 ReadonlyRef 变体则返回 default。
     /// Returns as Vue ReadonlyRef, or default if not a ReadonlyRef variant.
     /// </summary>
-    public Vue3.VueReadonlyRef<bool>? AsReadonlyRef => _kind == 3 ? _readonlyRef : default;
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator RouteBooleanMaybeRef(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从布尔值的 Vue ReadonlyRef 隐式转换。
-    /// Implicitly converts from a Vue ReadonlyRef of bool.
-    /// </summary>
-    /// <param name="value">要转换的只读响应式引用。The readonly ref to convert.</param>
-    public static implicit operator RouteBooleanMaybeRef(Vue3.VueReadonlyRef<bool> value)
-        => new(value);
+    public Vue3.VueReadonlyRef<bool>? AsReadonlyRef => Value as Vue3.VueReadonlyRef<bool>;
 
     /// <summary>
     /// 从布尔值的 Vue Ref 创建联合值。
@@ -601,9 +327,9 @@ public readonly struct RouteBooleanMaybeRef
 /// RouterView depth value union accepting Number or Vue Ref of Number.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[Union]
 [Description("@#")]
-public readonly struct RouterViewDepthValue
+public readonly struct RouterViewDepthValue : IUnion
 {
     private readonly byte _kind;
     private readonly Number? _number;
@@ -644,6 +370,17 @@ public readonly struct RouterViewDepthValue
     /// Returns as Vue Ref, or default if not a Ref variant.
     /// </summary>
     public Vue3.IVueRef<Number>? AsRef => _kind == 2 ? _ref : default;
+
+    /// <summary>
+    /// 获取擦除后的 JavaScript 值。
+    /// Gets the erased JavaScript value.
+    /// </summary>
+    public object? Value => _kind switch
+    {
+        1 => _number,
+        2 => _ref,
+        _ => default
+    };
 
     /// <summary>
     /// 从 Number 隐式转换。
@@ -924,9 +661,9 @@ public readonly union HistoryStateValue(string, Number, bool, HistoryState, Arra
 /// Router error value union accepting Error, string, Number, bool, BigInt, Symbol, IObject, or array.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[Union]
 [Description("@#")]
-public readonly struct RouterErrorValue
+public readonly struct RouterErrorValue : IUnion
 {
     private readonly byte _kind;
     private readonly Error? _error;
@@ -1131,6 +868,23 @@ public readonly struct RouterErrorValue
     public Array<RouterErrorValue?>? AsArray => _kind == 8 ? _array : default;
 
     /// <summary>
+    /// 获取擦除后的 JavaScript 值。
+    /// Gets the erased JavaScript value.
+    /// </summary>
+    public object? Value => _kind switch
+    {
+        1 => _error,
+        2 => _string,
+        3 => _number,
+        4 => _bool,
+        5 => _bigInt,
+        6 => _symbol,
+        7 => _object,
+        8 => _array,
+        _ => default
+    };
+
+    /// <summary>
     /// 从 Error 隐式转换。
     /// Implicitly converts from an Error.
     /// </summary>
@@ -1209,49 +963,21 @@ public readonly struct RouterErrorValue
 /// Raw route component union accepting IVueComponent or RouteComponentLoader.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RawRouteComponent
+public readonly union RawRouteComponent(IVueComponent, RouteComponentLoader)
 {
-    private readonly byte _kind;
-    private readonly IVueComponent? _component;
-    private readonly RouteComponentLoader? _loader;
-
-    /// <summary>
-    /// 从 IVueComponent 初始化。
-    /// Initializes from an IVueComponent.
-    /// </summary>
-    /// <param name="value">Vue 组件。The Vue component.</param>
-    private RawRouteComponent(IVueComponent value)
-    {
-        _kind = 1;
-        _component = value;
-        _loader = default;
-    }
-
-    /// <summary>
-    /// 从 RouteComponentLoader 初始化。
-    /// Initializes from a RouteComponentLoader.
-    /// </summary>
-    /// <param name="value">组件加载器。The component loader.</param>
-    private RawRouteComponent(RouteComponentLoader value)
-    {
-        _kind = 2;
-        _component = default;
-        _loader = value;
-    }
 
     /// <summary>
     /// 以 IVueComponent 返回，如果不是组件变体则返回 default。
     /// Returns as IVueComponent, or default if not a component variant.
     /// </summary>
-    public IVueComponent? AsComponent => _kind == 1 ? _component : default;
+    public IVueComponent? AsComponent => Value as IVueComponent;
 
     /// <summary>
     /// 以 RouteComponentLoader 返回，如果不是加载器变体则返回 default。
     /// Returns as RouteComponentLoader, or default if not a loader variant.
     /// </summary>
-    public RouteComponentLoader? AsLoader => _kind == 2 ? _loader : default;
+    public RouteComponentLoader? AsLoader => Value as RouteComponentLoader;
 
     /// <summary>
     /// 从 IVueComponent 创建联合值。
@@ -1272,14 +998,6 @@ public readonly struct RawRouteComponent
     public extern static RawRouteComponent From(RouteComponentLoader value);
 
     /// <summary>
-    /// 从 RouteComponentLoader 隐式转换。
-    /// Implicitly converts from a RouteComponentLoader.
-    /// </summary>
-    /// <param name="value">要转换的组件加载器。The component loader to convert.</param>
-    public static implicit operator RawRouteComponent(RouteComponentLoader value)
-        => new(value);
-
-    /// <summary>
     /// 从 RouteComponent 隐式转换，优先使用加载器变体。
     /// Implicitly converts from a RouteComponent, preferring the loader variant.
     /// </summary>
@@ -1293,49 +1011,20 @@ public readonly struct RawRouteComponent
 /// Route component union accepting IVueComponent or RouteComponentLoader.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteComponent
+public readonly union RouteComponent(IVueComponent, RouteComponentLoader)
 {
-    private readonly byte _kind;
-    private readonly IVueComponent? _component;
-    private readonly RouteComponentLoader? _loader;
-
-    /// <summary>
-    /// 从 IVueComponent 初始化。
-    /// Initializes from an IVueComponent.
-    /// </summary>
-    /// <param name="value">Vue 组件。The Vue component.</param>
-    private RouteComponent(IVueComponent value)
-    {
-        _kind = 1;
-        _component = value;
-        _loader = default;
-    }
-
-    /// <summary>
-    /// 从 RouteComponentLoader 初始化。
-    /// Initializes from a RouteComponentLoader.
-    /// </summary>
-    /// <param name="value">组件加载器。The component loader.</param>
-    private RouteComponent(RouteComponentLoader value)
-    {
-        _kind = 2;
-        _component = default;
-        _loader = value;
-    }
-
     /// <summary>
     /// 以 IVueComponent 返回，如果不是组件变体则返回 default。
     /// Returns as IVueComponent, or default if not a component variant.
     /// </summary>
-    public IVueComponent? AsComponent => _kind == 1 ? _component : default;
+    public IVueComponent? AsComponent => Value as IVueComponent;
 
     /// <summary>
     /// 以 RouteComponentLoader 返回，如果不是加载器变体则返回 default。
     /// Returns as RouteComponentLoader, or default if not a loader variant.
     /// </summary>
-    public RouteComponentLoader? AsLoader => _kind == 2 ? _loader : default;
+    public RouteComponentLoader? AsLoader => Value as RouteComponentLoader;
 
     /// <summary>
     /// 从 IVueComponent 创建联合值。
@@ -1355,13 +1044,6 @@ public readonly struct RouteComponent
     [ECMAScriptInline("__arg1")]
     public extern static RouteComponent From(RouteComponentLoader value);
 
-    /// <summary>
-    /// 从 RouteComponentLoader 隐式转换。
-    /// Implicitly converts from a RouteComponentLoader.
-    /// </summary>
-    /// <param name="value">要转换的组件加载器。The component loader to convert.</param>
-    public static implicit operator RouteComponent(RouteComponentLoader value)
-        => new(value);
 }
 
 /// <summary>
@@ -1369,95 +1051,26 @@ public readonly struct RouteComponent
 /// Route record props union accepting bool, VueProps, or RouteRecordPropsResolver.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordProps
+public readonly union RouteRecordProps(bool, Vue3.VueProps, RouteRecordPropsResolver)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly Vue3.VueProps? _props;
-    private readonly RouteRecordPropsResolver? _resolver;
-
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a bool value.
-    /// </summary>
-    /// <param name="value">是否将路由参数作为 props 传递。Whether to pass route params as props.</param>
-    private RouteRecordProps(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _props = default;
-        _resolver = default;
-    }
-
-    /// <summary>
-    /// 从 VueProps 初始化。
-    /// Initializes from VueProps.
-    /// </summary>
-    /// <param name="value">Props 对象。The props object.</param>
-    private RouteRecordProps(Vue3.VueProps value)
-    {
-        _kind = 2;
-        _bool = default;
-        _props = value;
-        _resolver = default;
-    }
-
-    /// <summary>
-    /// 从 RouteRecordPropsResolver 初始化。
-    /// Initializes from a RouteRecordPropsResolver.
-    /// </summary>
-    /// <param name="value">Props 解析函数。The props resolver function.</param>
-    private RouteRecordProps(RouteRecordPropsResolver value)
-    {
-        _kind = 3;
-        _bool = default;
-        _props = default;
-        _resolver = value;
-    }
-
     /// <summary>
     /// 以布尔值返回，如果不是布尔变体则返回 default。
     /// Returns as bool, or default if not a bool variant.
     /// </summary>
-    public bool? AsBool => _kind == 1 ? _bool : default;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
     /// <summary>
     /// 以 VueProps 返回，如果不是 Props 变体则返回 default。
     /// Returns as VueProps, or default if not a Props variant.
     /// </summary>
-    public Vue3.VueProps? AsProps => _kind == 2 ? _props : default;
+    public Vue3.VueProps? AsProps => Value as Vue3.VueProps;
 
     /// <summary>
     /// 以 RouteRecordPropsResolver 返回，如果不是解析器变体则返回 default。
     /// Returns as RouteRecordPropsResolver, or default if not a resolver variant.
     /// </summary>
-    public RouteRecordPropsResolver? AsResolver => _kind == 3 ? _resolver : default;
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator RouteRecordProps(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从 VueProps 隐式转换。
-    /// Implicitly converts from VueProps.
-    /// </summary>
-    /// <param name="value">要转换的 Props 对象。The VueProps to convert.</param>
-    public static implicit operator RouteRecordProps(Vue3.VueProps value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouteRecordPropsResolver 隐式转换。
-    /// Implicitly converts from a RouteRecordPropsResolver.
-    /// </summary>
-    /// <param name="value">要转换的 Props 解析函数。The props resolver to convert.</param>
-    public static implicit operator RouteRecordProps(RouteRecordPropsResolver value)
-        => new(value);
+    public RouteRecordPropsResolver? AsResolver => Value as RouteRecordPropsResolver;
 
     /// <summary>
     /// 从布尔值创建联合值。
@@ -1492,65 +1105,20 @@ public readonly struct RouteRecordProps
 /// Route record named view props union accepting bool or RouteNamedProps.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordNamedViewProps
+public readonly union RouteRecordNamedViewProps(bool, RouteNamedProps)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly RouteNamedProps? _namedProps;
-
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a bool value.
-    /// </summary>
-    /// <param name="value">是否将路由参数作为 props 传递。Whether to pass route params as props.</param>
-    private RouteRecordNamedViewProps(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _namedProps = default;
-    }
-
-    /// <summary>
-    /// 从 RouteNamedProps 初始化。
-    /// Initializes from RouteNamedProps.
-    /// </summary>
-    /// <param name="value">命名视图 Props 映射。The named view props mapping.</param>
-    private RouteRecordNamedViewProps(RouteNamedProps value)
-    {
-        _kind = 2;
-        _bool = default;
-        _namedProps = value;
-    }
-
     /// <summary>
     /// 以布尔值返回，如果不是布尔变体则返回 default。
     /// Returns as bool, or default if not a bool variant.
     /// </summary>
-    public bool? AsBool => _kind == 1 ? _bool : default;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
     /// <summary>
     /// 以 RouteNamedProps 返回，如果不是命名 Props 变体则返回 default。
     /// Returns as RouteNamedProps, or default if not a named props variant.
     /// </summary>
-    public RouteNamedProps? AsNamedProps => _kind == 2 ? _namedProps : default;
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator RouteRecordNamedViewProps(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouteNamedProps 隐式转换。
-    /// Implicitly converts from RouteNamedProps.
-    /// </summary>
-    /// <param name="value">要转换的命名 Props。The named props to convert.</param>
-    public static implicit operator RouteRecordNamedViewProps(RouteNamedProps value)
-        => new(value);
+    public RouteNamedProps? AsNamedProps => Value as RouteNamedProps;
 
     /// <summary>
     /// 从布尔值创建联合值。
@@ -1576,111 +1144,32 @@ public readonly struct RouteRecordNamedViewProps
 /// Navigation guard next argument union accepting bool, RouteLocationRaw, NavigationGuardNextCallback, or Error.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct NavigationGuardNextArgument
+public readonly union NavigationGuardNextArgument(bool, RouteLocationRaw, NavigationGuardNextCallback, Error)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly RouteLocationRaw? _location;
-    private readonly NavigationGuardNextCallback? _callback;
-    private readonly Error? _error;
-
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a bool value.
-    /// </summary>
-    /// <param name="value">是否允许导航。Whether to allow navigation.</param>
-    private NavigationGuardNextArgument(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _location = default;
-        _callback = default;
-        _error = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationRaw 初始化。
-    /// Initializes from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要重定向到的路由位置。The route location to redirect to.</param>
-    private NavigationGuardNextArgument(RouteLocationRaw value)
-    {
-        _kind = 2;
-        _bool = default;
-        _location = value;
-        _callback = default;
-        _error = default;
-    }
-
-    /// <summary>
-    /// 从 NavigationGuardNextCallback 初始化。
-    /// Initializes from a NavigationGuardNextCallback.
-    /// </summary>
-    /// <param name="value">导航守卫回调。The navigation guard callback.</param>
-    private NavigationGuardNextArgument(NavigationGuardNextCallback value)
-    {
-        _kind = 3;
-        _bool = default;
-        _location = default;
-        _callback = value;
-        _error = default;
-    }
-
-    /// <summary>
-    /// 从 Error 初始化。
-    /// Initializes from an Error.
-    /// </summary>
-    /// <param name="value">要中止导航的错误。The error to abort navigation with.</param>
-    private NavigationGuardNextArgument(Error value)
-    {
-        _kind = 4;
-        _bool = default;
-        _location = default;
-        _callback = default;
-        _error = value;
-    }
-
     /// <summary>
     /// 以布尔值返回，如果不是布尔变体则返回 default。
     /// Returns as bool, or default if not a bool variant.
     /// </summary>
-    public bool? AsBool => _kind == 1 ? _bool : default;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
     /// <summary>
     /// 以 RouteLocationRaw 返回，如果不是位置变体则返回 default。
     /// Returns as RouteLocationRaw, or default if not a location variant.
     /// </summary>
-    public RouteLocationRaw? AsLocation => _kind == 2 ? _location : default;
+    public RouteLocationRaw? AsLocation => Value is RouteLocationRaw value ? value : default(RouteLocationRaw?);
 
     /// <summary>
     /// 以 NavigationGuardNextCallback 返回，如果不是回调变体则返回 default。
     /// Returns as NavigationGuardNextCallback, or default if not a callback variant.
     /// </summary>
-    public NavigationGuardNextCallback? AsCallback => _kind == 3 ? _callback : default;
+    public NavigationGuardNextCallback? AsCallback => Value as NavigationGuardNextCallback;
 
     /// <summary>
     /// 以 Error 返回，如果不是错误变体则返回 default。
     /// Returns as Error, or default if not an error variant.
     /// </summary>
-    public Error? AsError => _kind == 4 ? _error : default;
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator NavigationGuardNextArgument(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouteLocationRaw 隐式转换。
-    /// Implicitly converts from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要转换的路由位置。The route location to convert.</param>
-    public static implicit operator NavigationGuardNextArgument(RouteLocationRaw value)
-        => new(value);
+    public Error? AsError => Value as Error;
 
     /// <summary>
     /// 从字符串隐式转换，包装为路由位置。
@@ -1711,17 +1200,6 @@ public readonly struct NavigationGuardNextArgument
     /// Implicitly converts from a NavigationGuardNextCallback.
     /// </summary>
     /// <param name="value">要转换的回调。The callback to convert.</param>
-    public static implicit operator NavigationGuardNextArgument(NavigationGuardNextCallback value)
-        => new(value);
-
-    /// <summary>
-    /// 从 Error 隐式转换。
-    /// Implicitly converts from an Error.
-    /// </summary>
-    /// <param name="value">要转换的错误。The error to convert.</param>
-    public static implicit operator NavigationGuardNextArgument(Error value)
-        => new(value);
-
     /// <summary>
     /// 从 NavigationGuardNextCallback 创建联合值。
     /// Creates a union value from a NavigationGuardNextCallback.
@@ -1738,87 +1216,26 @@ public readonly struct NavigationGuardNextArgument
 /// Navigation guard return value union accepting bool, RouteLocationRaw, or Error.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct NavigationGuardReturn
+public readonly union NavigationGuardReturn(bool, RouteLocationRaw, Error)
 {
-    private readonly byte _kind;
-    private readonly bool? _bool;
-    private readonly RouteLocationRaw? _location;
-    private readonly Error? _error;
-
-    /// <summary>
-    /// 从布尔值初始化。
-    /// Initializes from a bool value.
-    /// </summary>
-    /// <param name="value">是否允许导航。Whether to allow navigation.</param>
-    private NavigationGuardReturn(bool value)
-    {
-        _kind = 1;
-        _bool = value;
-        _location = default;
-        _error = default;
-    }
-
-    /// <summary>
-    /// 从 RouteLocationRaw 初始化。
-    /// Initializes from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要重定向到的路由位置。The route location to redirect to.</param>
-    private NavigationGuardReturn(RouteLocationRaw value)
-    {
-        _kind = 2;
-        _bool = default;
-        _location = value;
-        _error = default;
-    }
-
-    /// <summary>
-    /// 从 Error 初始化。
-    /// Initializes from an Error.
-    /// </summary>
-    /// <param name="value">要中止导航的错误。The error to abort navigation with.</param>
-    private NavigationGuardReturn(Error value)
-    {
-        _kind = 3;
-        _bool = default;
-        _location = default;
-        _error = value;
-    }
-
     /// <summary>
     /// 以布尔值返回，如果不是布尔变体则返回 default。
     /// Returns as bool, or default if not a bool variant.
     /// </summary>
-    public bool? AsBool => _kind == 1 ? _bool : default;
+    public bool? AsBool => Value is bool value ? value : default(bool?);
 
     /// <summary>
     /// 以 RouteLocationRaw 返回，如果不是位置变体则返回 default。
     /// Returns as RouteLocationRaw, or default if not a location variant.
     /// </summary>
-    public RouteLocationRaw? AsLocation => _kind == 2 ? _location : default;
+    public RouteLocationRaw? AsLocation => Value is RouteLocationRaw value ? value : default(RouteLocationRaw?);
 
     /// <summary>
     /// 以 Error 返回，如果不是错误变体则返回 default。
     /// Returns as Error, or default if not an error variant.
     /// </summary>
-    public Error? AsError => _kind == 3 ? _error : default;
-
-    /// <summary>
-    /// 从布尔值隐式转换。
-    /// Implicitly converts from a bool.
-    /// </summary>
-    /// <param name="value">要转换的布尔值。The bool value to convert.</param>
-    public static implicit operator NavigationGuardReturn(bool value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouteLocationRaw 隐式转换。
-    /// Implicitly converts from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要转换的路由位置。The route location to convert.</param>
-    public static implicit operator NavigationGuardReturn(RouteLocationRaw value)
-        => new(value);
+    public Error? AsError => Value as Error;
 
     /// <summary>
     /// 从字符串隐式转换，包装为路由位置。
@@ -1844,13 +1261,6 @@ public readonly struct NavigationGuardReturn
     public static implicit operator NavigationGuardReturn(RouteLocationAsRelative value)
         => new(value);
 
-    /// <summary>
-    /// 从 Error 隐式转换。
-    /// Implicitly converts from an Error.
-    /// </summary>
-    /// <param name="value">要转换的错误。The error to convert.</param>
-    public static implicit operator NavigationGuardReturn(Error value)
-        => new(value);
 }
 
 /// <summary>
@@ -1858,37 +1268,14 @@ public readonly struct NavigationGuardReturn
 /// Route navigation result union accepting NavigationFailure.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteNavigationResult
+public readonly union RouteNavigationResult(NavigationFailure)
 {
-    private readonly byte _kind;
-    private readonly NavigationFailure? _failure;
-
-    /// <summary>
-    /// 从 NavigationFailure 初始化。
-    /// Initializes from a NavigationFailure.
-    /// </summary>
-    /// <param name="value">导航失败信息。The navigation failure.</param>
-    private RouteNavigationResult(NavigationFailure value)
-    {
-        _kind = 1;
-        _failure = value;
-    }
-
     /// <summary>
     /// 以 NavigationFailure 返回，如果不是失败变体则返回 default。
     /// Returns as NavigationFailure, or default if not a failure variant.
     /// </summary>
-    public NavigationFailure? AsFailure => _kind == 1 ? _failure : default;
-
-    /// <summary>
-    /// 从 NavigationFailure 隐式转换。
-    /// Implicitly converts from a NavigationFailure.
-    /// </summary>
-    /// <param name="value">要转换的导航失败。The navigation failure to convert.</param>
-    public static implicit operator RouteNavigationResult(NavigationFailure value)
-        => new(value);
+    public NavigationFailure? AsFailure => Value as NavigationFailure;
 }
 
 /// <summary>
@@ -1896,127 +1283,36 @@ public readonly struct RouteNavigationResult
 /// Navigation guard handler union accepting sync guard, async guard, legacy sync guard, or legacy async guard.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct NavigationGuardHandler
+public readonly union NavigationGuardHandler(
+    RouteNavigationGuard,
+    AsyncRouteNavigationGuard,
+    LegacyRouteNavigationGuard,
+    LegacyAsyncRouteNavigationGuard)
 {
-    private readonly byte _kind;
-    private readonly RouteNavigationGuard? _sync;
-    private readonly AsyncRouteNavigationGuard? _async;
-    private readonly LegacyRouteNavigationGuard? _legacySync;
-    private readonly LegacyAsyncRouteNavigationGuard? _legacyAsync;
-
-    /// <summary>
-    /// 从同步导航守卫初始化。
-    /// Initializes from a synchronous navigation guard.
-    /// </summary>
-    /// <param name="value">同步导航守卫。The synchronous navigation guard.</param>
-    private NavigationGuardHandler(RouteNavigationGuard value)
-    {
-        _kind = 1;
-        _sync = value;
-        _async = default;
-        _legacySync = default;
-        _legacyAsync = default;
-    }
-
-    /// <summary>
-    /// 从异步导航守卫初始化。
-    /// Initializes from an asynchronous navigation guard.
-    /// </summary>
-    /// <param name="value">异步导航守卫。The asynchronous navigation guard.</param>
-    private NavigationGuardHandler(AsyncRouteNavigationGuard value)
-    {
-        _kind = 2;
-        _sync = default;
-        _async = value;
-        _legacySync = default;
-        _legacyAsync = default;
-    }
-
-    /// <summary>
-    /// 从遗留同步导航守卫初始化。
-    /// Initializes from a legacy synchronous navigation guard.
-    /// </summary>
-    /// <param name="value">遗留同步导航守卫。The legacy synchronous navigation guard.</param>
-    private NavigationGuardHandler(LegacyRouteNavigationGuard value)
-    {
-        _kind = 3;
-        _sync = default;
-        _async = default;
-        _legacySync = value;
-        _legacyAsync = default;
-    }
-
-    /// <summary>
-    /// 从遗留异步导航守卫初始化。
-    /// Initializes from a legacy asynchronous navigation guard.
-    /// </summary>
-    /// <param name="value">遗留异步导航守卫。The legacy asynchronous navigation guard.</param>
-    private NavigationGuardHandler(LegacyAsyncRouteNavigationGuard value)
-    {
-        _kind = 4;
-        _sync = default;
-        _async = default;
-        _legacySync = default;
-        _legacyAsync = value;
-    }
-
     /// <summary>
     /// 以同步守卫返回，如果不是同步变体则返回 default。
     /// Returns as synchronous guard, or default if not a sync variant.
     /// </summary>
-    public RouteNavigationGuard? AsSync => _kind == 1 ? _sync : default;
+    public RouteNavigationGuard? AsSync => Value as RouteNavigationGuard;
 
     /// <summary>
     /// 以异步守卫返回，如果不是异步变体则返回 default。
     /// Returns as asynchronous guard, or default if not an async variant.
     /// </summary>
-    public AsyncRouteNavigationGuard? AsAsync => _kind == 2 ? _async : default;
+    public AsyncRouteNavigationGuard? AsAsync => Value as AsyncRouteNavigationGuard;
 
     /// <summary>
     /// 以遗留同步守卫返回，如果不是遗留同步变体则返回 default。
     /// Returns as legacy synchronous guard, or default if not a legacy sync variant.
     /// </summary>
-    public LegacyRouteNavigationGuard? AsLegacySync => _kind == 3 ? _legacySync : default;
+    public LegacyRouteNavigationGuard? AsLegacySync => Value as LegacyRouteNavigationGuard;
 
     /// <summary>
     /// 以遗留异步守卫返回，如果不是遗留异步变体则返回 default。
     /// Returns as legacy asynchronous guard, or default if not a legacy async variant.
     /// </summary>
-    public LegacyAsyncRouteNavigationGuard? AsLegacyAsync => _kind == 4 ? _legacyAsync : default;
-
-    /// <summary>
-    /// 从同步导航守卫隐式转换。
-    /// Implicitly converts from a synchronous navigation guard.
-    /// </summary>
-    /// <param name="value">要转换的同步守卫。The sync guard to convert.</param>
-    public static implicit operator NavigationGuardHandler(RouteNavigationGuard value)
-        => new(value);
-
-    /// <summary>
-    /// 从异步导航守卫隐式转换。
-    /// Implicitly converts from an asynchronous navigation guard.
-    /// </summary>
-    /// <param name="value">要转换的异步守卫。The async guard to convert.</param>
-    public static implicit operator NavigationGuardHandler(AsyncRouteNavigationGuard value)
-        => new(value);
-
-    /// <summary>
-    /// 从遗留同步导航守卫隐式转换。
-    /// Implicitly converts from a legacy synchronous navigation guard.
-    /// </summary>
-    /// <param name="value">要转换的遗留同步守卫。The legacy sync guard to convert.</param>
-    public static implicit operator NavigationGuardHandler(LegacyRouteNavigationGuard value)
-        => new(value);
-
-    /// <summary>
-    /// 从遗留异步导航守卫隐式转换。
-    /// Implicitly converts from a legacy asynchronous navigation guard.
-    /// </summary>
-    /// <param name="value">要转换的遗留异步守卫。The legacy async guard to convert.</param>
-    public static implicit operator NavigationGuardHandler(LegacyAsyncRouteNavigationGuard value)
-        => new(value);
+    public LegacyAsyncRouteNavigationGuard? AsLegacyAsync => Value as LegacyAsyncRouteNavigationGuard;
 
     /// <summary>
     /// 从同步导航守卫创建联合值。
@@ -2060,65 +1356,20 @@ public readonly struct NavigationGuardHandler
 /// Route record beforeEnter guard union accepting a single guard or an array of guards.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordBeforeEnter
+public readonly union RouteRecordBeforeEnter(NavigationGuardHandler, NavigationGuardHandler[])
 {
-    private readonly byte _kind;
-    private readonly NavigationGuardHandler? _guard;
-    private readonly NavigationGuardHandler[]? _guards;
-
-    /// <summary>
-    /// 从单个导航守卫初始化。
-    /// Initializes from a single navigation guard.
-    /// </summary>
-    /// <param name="value">导航守卫处理器。The navigation guard handler.</param>
-    private RouteRecordBeforeEnter(NavigationGuardHandler value)
-    {
-        _kind = 1;
-        _guard = value;
-        _guards = default;
-    }
-
-    /// <summary>
-    /// 从导航守卫数组初始化。
-    /// Initializes from an array of navigation guards.
-    /// </summary>
-    /// <param name="value">导航守卫处理器数组。The array of navigation guard handlers.</param>
-    private RouteRecordBeforeEnter(NavigationGuardHandler[] value)
-    {
-        _kind = 2;
-        _guard = default;
-        _guards = value;
-    }
-
     /// <summary>
     /// 以单个守卫返回，如果不是单守卫变体则返回 default。
     /// Returns as a single guard, or default if not a single guard variant.
     /// </summary>
-    public NavigationGuardHandler? AsGuard => _kind == 1 ? _guard : default;
+    public NavigationGuardHandler? AsGuard => Value is NavigationGuardHandler value ? value : default(NavigationGuardHandler?);
 
     /// <summary>
     /// 以守卫数组返回，如果不是数组变体则返回 default。
     /// Returns as an array of guards, or default if not an array variant.
     /// </summary>
-    public NavigationGuardHandler[]? AsGuards => _kind == 2 ? _guards : default;
-
-    /// <summary>
-    /// 从单个导航守卫隐式转换。
-    /// Implicitly converts from a single navigation guard.
-    /// </summary>
-    /// <param name="value">要转换的守卫。The guard to convert.</param>
-    public static implicit operator RouteRecordBeforeEnter(NavigationGuardHandler value)
-        => new(value);
-
-    /// <summary>
-    /// 从导航守卫数组隐式转换。
-    /// Implicitly converts from an array of navigation guards.
-    /// </summary>
-    /// <param name="value">要转换的守卫数组。The guard array to convert.</param>
-    public static implicit operator RouteRecordBeforeEnter(NavigationGuardHandler[] value)
-        => new(value);
+    public NavigationGuardHandler[]? AsGuards => Value as NavigationGuardHandler[];
 
     /// <summary>
     /// 从 NavigationGuardHandler 创建联合值。
@@ -2216,57 +1467,20 @@ public readonly struct RouteRecordBeforeEnter
 /// Route redirect option union accepting RouteLocationRaw or RouteRedirectCallback.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRedirectOption
+public readonly union RouteRedirectOption(RouteLocationRaw, RouteRedirectCallback)
 {
-    private readonly byte _kind;
-    private readonly RouteLocationRaw? _location;
-    private readonly RouteRedirectCallback? _callback;
-
-    /// <summary>
-    /// 从 RouteLocationRaw 初始化。
-    /// Initializes from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">重定向目标位置。The redirect target location.</param>
-    private RouteRedirectOption(RouteLocationRaw value)
-    {
-        _kind = 1;
-        _location = value;
-        _callback = default;
-    }
-
-    /// <summary>
-    /// 从 RouteRedirectCallback 初始化。
-    /// Initializes from a RouteRedirectCallback.
-    /// </summary>
-    /// <param name="value">重定向回调函数。The redirect callback function.</param>
-    private RouteRedirectOption(RouteRedirectCallback value)
-    {
-        _kind = 2;
-        _location = default;
-        _callback = value;
-    }
-
     /// <summary>
     /// 以 RouteLocationRaw 返回，如果不是位置变体则返回 default。
     /// Returns as RouteLocationRaw, or default if not a location variant.
     /// </summary>
-    public RouteLocationRaw? AsLocation => _kind == 1 ? _location : default;
+    public RouteLocationRaw? AsLocation => Value is RouteLocationRaw value ? value : default(RouteLocationRaw?);
 
     /// <summary>
     /// 以 RouteRedirectCallback 返回，如果不是回调变体则返回 default。
     /// Returns as RouteRedirectCallback, or default if not a callback variant.
     /// </summary>
-    public RouteRedirectCallback? AsCallback => _kind == 2 ? _callback : default;
-
-    /// <summary>
-    /// 从 RouteLocationRaw 隐式转换。
-    /// Implicitly converts from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要转换的路由位置。The route location to convert.</param>
-    public static implicit operator RouteRedirectOption(RouteLocationRaw value)
-        => new(value);
+    public RouteRedirectCallback? AsCallback => Value as RouteRedirectCallback;
 
     /// <summary>
     /// 从字符串隐式转换，包装为路由位置。
@@ -2307,14 +1521,6 @@ public readonly struct RouteRedirectOption
     /// <param name="value">要转换的命名式原始路由位置。The named raw route location to convert.</param>
     public static implicit operator RouteRedirectOption(RouteLocationNamedRaw value)
         => new((RouteLocationRaw)value);
-
-    /// <summary>
-    /// 从 RouteRedirectCallback 隐式转换。
-    /// Implicitly converts from a RouteRedirectCallback.
-    /// </summary>
-    /// <param name="value">要转换的重定向回调。The redirect callback to convert.</param>
-    public static implicit operator RouteRedirectOption(RouteRedirectCallback value)
-        => new(value);
 
     /// <summary>
     /// 从 RouteRecordRedirectOption 隐式转换，提取位置或回调。
@@ -2366,57 +1572,20 @@ public readonly struct RouteRedirectOption
 /// Route record redirect option union accepting RouteLocationRaw or RouteRedirectCallback.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
 [Description("@#")]
-public readonly struct RouteRecordRedirectOption
+public readonly union RouteRecordRedirectOption(RouteLocationRaw, RouteRedirectCallback)
 {
-    private readonly byte _kind;
-    private readonly RouteLocationRaw? _location;
-    private readonly RouteRedirectCallback? _callback;
-
-    /// <summary>
-    /// 从 RouteLocationRaw 初始化。
-    /// Initializes from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">重定向目标位置。The redirect target location.</param>
-    private RouteRecordRedirectOption(RouteLocationRaw value)
-    {
-        _kind = 1;
-        _location = value;
-        _callback = default;
-    }
-
-    /// <summary>
-    /// 从 RouteRedirectCallback 初始化。
-    /// Initializes from a RouteRedirectCallback.
-    /// </summary>
-    /// <param name="value">重定向回调函数。The redirect callback function.</param>
-    private RouteRecordRedirectOption(RouteRedirectCallback value)
-    {
-        _kind = 2;
-        _location = default;
-        _callback = value;
-    }
-
     /// <summary>
     /// 以 RouteLocationRaw 返回，如果不是位置变体则返回 default。
     /// Returns as RouteLocationRaw, or default if not a location variant.
     /// </summary>
-    public RouteLocationRaw? AsLocation => _kind == 1 ? _location : default;
+    public RouteLocationRaw? AsLocation => Value is RouteLocationRaw value ? value : default(RouteLocationRaw?);
 
     /// <summary>
     /// 以 RouteRedirectCallback 返回，如果不是回调变体则返回 default。
     /// Returns as RouteRedirectCallback, or default if not a callback variant.
     /// </summary>
-    public RouteRedirectCallback? AsCallback => _kind == 2 ? _callback : default;
-
-    /// <summary>
-    /// 从 RouteLocationRaw 隐式转换。
-    /// Implicitly converts from a RouteLocationRaw.
-    /// </summary>
-    /// <param name="value">要转换的路由位置。The route location to convert.</param>
-    public static implicit operator RouteRecordRedirectOption(RouteLocationRaw value)
-        => new(value);
+    public RouteRedirectCallback? AsCallback => Value as RouteRedirectCallback;
 
     /// <summary>
     /// 从字符串隐式转换，包装为路由位置。
@@ -2456,14 +1625,6 @@ public readonly struct RouteRecordRedirectOption
     /// </summary>
     /// <param name="value">要转换的命名式原始路由位置。The named raw route location to convert.</param>
     public static implicit operator RouteRecordRedirectOption(RouteLocationNamedRaw value)
-        => new(value);
-
-    /// <summary>
-    /// 从 RouteRedirectCallback 隐式转换。
-    /// Implicitly converts from a RouteRedirectCallback.
-    /// </summary>
-    /// <param name="value">要转换的重定向回调。The redirect callback to convert.</param>
-    public static implicit operator RouteRecordRedirectOption(RouteRedirectCallback value)
         => new(value);
 
     /// <summary>

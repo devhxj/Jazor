@@ -900,7 +900,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
-    public void VueRoute_RouteComponentAuthoring_RejectsDirectInterfaceAssignment_AndRequiresExplicitFactories()
+    public void VueRoute_RouteComponentAuthoring_AllowsDirectNativeUnionBranchAssignment()
     {
         var code = """
             using ECMAScript;
@@ -938,8 +938,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
 
-        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "CS0029"),
-            string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+        Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
     }
 
     [TestMethod]
@@ -1357,6 +1356,12 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
                 public static object? ReadScrollPositionTarget(ScrollPositionTarget value)
                     => value.Value;
 
+                public static object? ReadRouterScrollResult(RouterScrollResult value)
+                    => value.Value;
+
+                public static object? ReadRouterScrollHandler(RouterScrollHandler value)
+                    => value.Value;
+
                 public static object? ReadRouteRecordRaw(RouteRecordRaw value)
                     => value.Value;
             }
@@ -1380,8 +1385,10 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "export function readLocationQueryValue(value)");
         StringAssert.Contains(script, "export function readLocationQueryValueRaw(value)");
         StringAssert.Contains(script, "export function readScrollPositionTarget(value)");
+        StringAssert.Contains(script, "export function readRouterScrollResult(value)");
+        StringAssert.Contains(script, "export function readRouterScrollHandler(value)");
         StringAssert.Contains(script, "export function readRouteRecordRaw(value)");
-        Assert.AreEqual(6, CountOccurrences(script, "return value;"));
+        Assert.AreEqual(8, CountOccurrences(script, "return value;"));
     }
 
     [TestMethod]
@@ -2205,7 +2212,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
     }
 
     [TestMethod]
-    public void VueRoute_UseLinkMaybeRefContracts_RejectDirectWritableRefAssignments_AndRequireExplicitFactories()
+    public async Task VueRoute_UseLinkMaybeRefContracts_Compile_WithDirectWritableRefAssignments()
     {
         var code = """
             using ECMAScript;
@@ -2233,22 +2240,25 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
             }
             """;
 
-        var compilation = CSharpCompilation.Create(
-            "ECMAScript.VueRoute.Test.Assembly.DirectWritableMaybeRefAssignment",
-            BuildSyntaxTrees(code),
-            BuildCompilationReferences(new[]
-            {
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location)
-            }),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var diagnostics = compilation.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
+        var (classSymbol, semanticModel) = CompileAndGetSymbol(
+            code,
+            "TestClass",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.VueRoute).Assembly.Location));
+        var converter = new AstConverter(classSymbol, semanticModel);
 
-        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "CS0029"),
-            string.Join(Environment.NewLine, diagnostics.Select(static diagnostic => diagnostic.ToString())));
+        var module = await converter.Convert(CancellationToken.None);
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "let toRef = ref({ name: \"users\" });");
+        StringAssert.Contains(script, "let replaceRef = ref(true);");
+        StringAssert.Contains(script, "let link = useLink({");
+        StringAssert.Contains(script, "to: toRef,");
+        StringAssert.Contains(script, "replace: replaceRef,");
+        StringAssert.Contains(script, "viewTransition: true");
+        StringAssert.Contains(script, "return link.navigate();");
     }
 
     [TestMethod]

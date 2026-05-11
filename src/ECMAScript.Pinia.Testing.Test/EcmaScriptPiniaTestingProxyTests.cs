@@ -36,7 +36,12 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		foreach (var type in runtimeTypes)
 		{
 			foreach (var property in type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+			{
+				if (IsUnionValueProperty(property))
+					continue;
+
 				AssertNotObject(property.PropertyType, $"{type.Name}.{property.Name}");
+			}
 
 			foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
 						 .Where(static method => !method.IsSpecialName)
@@ -202,11 +207,12 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		var fromBoolean = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(bool) });
 		var fromNames = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string[]) });
 		var fromPredicate = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(PiniaTestingStubActionPredicate) });
-		var implicitOperators = stubActionsType
-			.GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(static method => method.Name == "op_Implicit")
-			.ToArray();
 
+		AssertNet11UnionContract(
+			stubActionsType,
+			typeof(bool),
+			typeof(string[]),
+			typeof(PiniaTestingStubActionPredicate));
 		Assert.IsNotNull(asBoolean);
 		Assert.IsNotNull(asNames);
 		Assert.IsNotNull(asPredicate);
@@ -222,9 +228,6 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.AreEqual("__arg1", fromBoolean.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 		Assert.AreEqual("__arg1", fromNames.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 		Assert.AreEqual("__arg1", fromPredicate.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(bool)));
-		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(string[])));
-		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(PiniaTestingStubActionPredicate)));
 	}
 
 	[TestMethod]
@@ -237,11 +240,12 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		var fromBoolean = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(bool) });
 		var fromNames = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string[]) });
 		var fromPredicate = stubActionsType.GetMethod(nameof(PiniaTesting.TestingStubActions<Pinia.StoreGeneric>.From), BindingFlags.Public | BindingFlags.Static, new[] { typeof(PiniaTestingStubActionPredicate<Pinia.StoreGeneric>) });
-		var implicitOperators = stubActionsType
-			.GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(static method => method.Name == "op_Implicit")
-			.ToArray();
 
+		AssertNet11UnionContract(
+			stubActionsType,
+			typeof(bool),
+			typeof(string[]),
+			typeof(PiniaTestingStubActionPredicate<Pinia.StoreGeneric>));
 		Assert.IsNotNull(asBoolean);
 		Assert.IsNotNull(asNames);
 		Assert.IsNotNull(asPredicate);
@@ -257,9 +261,6 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.AreEqual("__arg1", fromBoolean.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 		Assert.AreEqual("__arg1", fromNames.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
 		Assert.AreEqual("__arg1", fromPredicate.GetCustomAttribute<ECMAScriptInlineAttribute>()?.RawFuncCode);
-		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(bool)));
-		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(string[])));
-		Assert.IsTrue(implicitOperators.Any(static method => method.GetParameters()[0].ParameterType == typeof(PiniaTestingStubActionPredicate<Pinia.StoreGeneric>)));
 	}
 
 	[TestMethod]
@@ -306,6 +307,29 @@ public sealed class EcmaScriptPiniaTestingProxyTests
 		Assert.IsNull(module, type.FullName);
 		Assert.IsNull(runtime!.Import, type.FullName);
 	}
+
+	private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)
+	{
+		Assert.IsNotNull(unionType.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>(), unionType.FullName);
+		Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(unionType), unionType.FullName);
+
+		var value = unionType.GetProperty(nameof(System.Runtime.CompilerServices.IUnion.Value), BindingFlags.Public | BindingFlags.Instance);
+		Assert.IsNotNull(value, unionType.FullName);
+		Assert.AreEqual(typeof(object), value!.PropertyType);
+
+		CollectionAssert.AreEquivalent(
+			constructorBranchTypes,
+			unionType
+				.GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+				.Select(static constructor => constructor.GetParameters().SingleOrDefault()?.ParameterType)
+				.Where(static type => type is not null)
+				.ToArray(),
+			unionType.FullName);
+	}
+
+	private static bool IsUnionValueProperty(PropertyInfo property)
+		=> property.Name == nameof(System.Runtime.CompilerServices.IUnion.Value) &&
+		   typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(property.DeclaringType);
 }
 
 #pragma warning restore CA1416

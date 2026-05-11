@@ -18,9 +18,9 @@ public sealed record VuetifyIntersectionObserverOptions : VueProps
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyIntersectionObserverRoot
+public readonly struct VuetifyIntersectionObserverRoot : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly Element? _element;
@@ -44,6 +44,13 @@ public readonly struct VuetifyIntersectionObserverRoot
 
     public Document? AsDocument => _kind == 2 ? _document : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsElement,
+        2 => AsDocument,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyIntersectionObserverRoot From(Element value);
 
@@ -58,10 +65,10 @@ public readonly struct VuetifyIntersectionObserverRoot
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyIntersectionObserverThresholdCollectionBuilder), nameof(VuetifyIntersectionObserverThresholdCollectionBuilder.Create))]
-public readonly struct VuetifyIntersectionObserverThreshold : IEnumerable<Number>
+public readonly struct VuetifyIntersectionObserverThreshold : System.Runtime.CompilerServices.IUnion, IEnumerable<Number>
 {
     private readonly byte _kind;
     private readonly Number? _number;
@@ -84,6 +91,13 @@ public readonly struct VuetifyIntersectionObserverThreshold : IEnumerable<Number
     public Number? AsNumber => _kind == 1 ? _number : default;
 
     public Number[]? AsNumbers => _kind == 2 ? _numbers : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsNumber,
+        2 => AsNumbers,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyIntersectionObserverThreshold From(Number value);

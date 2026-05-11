@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 namespace ECMAScript.Vuetify;
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyOverlayOffsetValuesCollectionBuilder), nameof(VuetifyOverlayOffsetValuesCollectionBuilder.Create))]
-public readonly struct VuetifyOverlayOffsetValues : IEnumerable<Number>
+public readonly struct VuetifyOverlayOffsetValues : System.Runtime.CompilerServices.IUnion, IEnumerable<Number>
 {
     private readonly Number[]? _values;
 
@@ -17,6 +17,8 @@ public readonly struct VuetifyOverlayOffsetValues : IEnumerable<Number>
     }
 
     public Number[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyOverlayOffsetValues From(Number[] values);
@@ -45,9 +47,9 @@ public static class VuetifyOverlayOffsetValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyOverlayOffsetValue
+public readonly struct VuetifyOverlayOffsetValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -83,6 +85,14 @@ public readonly struct VuetifyOverlayOffsetValue
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public VuetifyOverlayOffsetValues? AsValues => _kind == 3 ? _values : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        3 => AsValues,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyOverlayOffsetValue From(string value);
@@ -141,9 +151,9 @@ public enum VuetifyOriginMode
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyOriginValue
+public readonly struct VuetifyOriginValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyLocation? _location;
@@ -179,6 +189,14 @@ public readonly struct VuetifyOriginValue
     public VuetifyOriginMode? AsMode => _kind == 2 ? _mode : default;
 
     public string? AsCustom => _kind == 3 ? _custom : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsLocation,
+        2 => AsMode,
+        3 => AsCustom,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyOriginValue From(VuetifyLocation value);

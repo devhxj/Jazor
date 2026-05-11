@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 namespace ECMAScript.Vuetify;
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySnackbarQueueMessagesCollectionBuilder), nameof(VuetifySnackbarQueueMessagesCollectionBuilder.Create))]
-public readonly struct VuetifySnackbarQueueMessages : IEnumerable<VuetifySnackbarQueueMessage>
+public readonly struct VuetifySnackbarQueueMessages : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySnackbarQueueMessage>
 {
     private readonly VuetifySnackbarQueueMessage[]? _items;
 
@@ -17,6 +17,8 @@ public readonly struct VuetifySnackbarQueueMessages : IEnumerable<VuetifySnackba
     }
 
     public VuetifySnackbarQueueMessage[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySnackbarQueueMessages From(VuetifySnackbarQueueMessage[] items);
@@ -45,9 +47,9 @@ public static class VuetifySnackbarQueueMessagesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySnackbarQueueMessage
+public readonly struct VuetifySnackbarQueueMessage : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _text;
@@ -70,6 +72,13 @@ public readonly struct VuetifySnackbarQueueMessage
     public string? AsText => _kind == 1 ? _text : default;
 
     public VuetifySnackbarQueueMessageOptions? AsOptions => _kind == 2 ? _options : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsText,
+        2 => AsOptions,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySnackbarQueueMessage From(string value);

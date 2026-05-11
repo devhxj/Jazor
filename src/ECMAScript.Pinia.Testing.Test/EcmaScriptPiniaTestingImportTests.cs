@@ -11,7 +11,10 @@ public sealed class EcmaScriptPiniaTestingImportTests
 {
 	private static async Task<string?> ConvertModuleAsync(string code, string className)
 	{
-		var syntaxTree = CSharpSyntaxTree.ParseText(code, path: "/src/TestModule.cs");
+		var syntaxTree = CSharpSyntaxTree.ParseText(
+			code,
+			CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview),
+			path: "/src/TestModule.cs");
 		var compilation = CSharpCompilation.Create(
 			"TestAssembly",
 			[syntaxTree],

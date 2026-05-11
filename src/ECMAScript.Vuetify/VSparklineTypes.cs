@@ -30,10 +30,10 @@ public enum VuetifySparklineGradientDirection
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySparklineItemsCollectionBuilder), nameof(VuetifySparklineItemsCollectionBuilder.Create))]
-public readonly struct VuetifySparklineItems : IEnumerable<VuetifySparklineItem>
+public readonly struct VuetifySparklineItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySparklineItem>
 {
     private readonly VuetifySparklineItem[]? _items;
 
@@ -43,6 +43,8 @@ public readonly struct VuetifySparklineItems : IEnumerable<VuetifySparklineItem>
     }
 
     public VuetifySparklineItem[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySparklineItems From(VuetifySparklineItem[] items);
@@ -80,9 +82,9 @@ public static class VuetifySparklineItemsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySparklineItem
+public readonly struct VuetifySparklineItem : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -118,6 +120,14 @@ public readonly struct VuetifySparklineItem
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public VuetifySparklineValueItem? AsValueItem => _kind == 3 ? _valueItem : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        3 => AsValueItem,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySparklineItem From(string value);
@@ -174,9 +184,9 @@ public sealed record VuetifySparklineValueItem : VueProps
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySparklineSmoothValue
+public readonly struct VuetifySparklineSmoothValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -212,6 +222,14 @@ public readonly struct VuetifySparklineSmoothValue
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public string? AsString => _kind == 3 ? _string : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsNumber,
+        3 => AsString,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySparklineSmoothValue From(bool value);

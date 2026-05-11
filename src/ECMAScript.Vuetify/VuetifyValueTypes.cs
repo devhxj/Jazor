@@ -196,10 +196,10 @@ public enum VuetifyLocationStrategy
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyStyleValuesCollectionBuilder), nameof(VuetifyStyleValuesCollectionBuilder.Create))]
-public readonly struct VuetifyStyleValues : IEnumerable<VuetifyStyleValue>
+public readonly struct VuetifyStyleValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyStyleValue>
 {
     private readonly VuetifyStyleValue[]? _values;
 
@@ -209,6 +209,8 @@ public readonly struct VuetifyStyleValues : IEnumerable<VuetifyStyleValue>
     }
 
     public VuetifyStyleValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyStyleValues From(VuetifyStyleValue[] values);
@@ -240,9 +242,9 @@ public static class VuetifyStyleValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyStyleValue
+public readonly struct VuetifyStyleValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -279,6 +281,14 @@ public readonly struct VuetifyStyleValue
 
     public VuetifyStyleValues? AsValues => _kind == 3 ? _values : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsProps,
+        3 => AsValues,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyStyleValue From(string value);
 
@@ -314,9 +324,9 @@ public readonly struct VuetifyStyleValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyAttachTarget
+public readonly struct VuetifyAttachTarget : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -352,6 +362,14 @@ public readonly struct VuetifyAttachTarget
     public string? AsSelector => _kind == 2 ? _selector : default;
 
     public Element? AsElement => _kind == 3 ? _element : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsSelector,
+        3 => AsElement,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyAttachTarget From(bool value);
@@ -478,9 +496,9 @@ public enum VuetifyListLineMode
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyListLines
+public readonly struct VuetifyListLines : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -504,6 +522,13 @@ public readonly struct VuetifyListLines
 
     public VuetifyListLineMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyListLines From(bool value);
 
@@ -518,9 +543,9 @@ public readonly struct VuetifyListLines
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyRippleValue
+public readonly struct VuetifyRippleValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -543,6 +568,13 @@ public readonly struct VuetifyRippleValue
     public bool? AsBool => _kind == 1 ? _bool : default;
 
     public VueProps? AsOptions => _kind == 2 ? _options : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsOptions,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyRippleValue From(bool value);
@@ -580,9 +612,9 @@ public enum VuetifyNavigationDrawerLocation
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyScrimValue
+public readonly struct VuetifyScrimValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -606,6 +638,13 @@ public readonly struct VuetifyScrimValue
 
     public string? AsString => _kind == 2 ? _string : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsString,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyScrimValue From(bool value);
 
@@ -620,9 +659,9 @@ public readonly struct VuetifyScrimValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTransitionValue
+public readonly struct VuetifyTransitionValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -659,6 +698,14 @@ public readonly struct VuetifyTransitionValue
 
     public VueTransitionProps? AsProps => _kind == 3 ? _props : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsString,
+        3 => AsProps,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTransitionValue From(bool value);
 
@@ -686,9 +733,9 @@ public enum VuetifyHideDetailsMode
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyHideDetailsValue
+public readonly struct VuetifyHideDetailsValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -712,6 +759,13 @@ public readonly struct VuetifyHideDetailsValue
 
     public VuetifyHideDetailsMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyHideDetailsValue From(bool value);
 
@@ -726,9 +780,9 @@ public readonly struct VuetifyHideDetailsValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyMessagesValue
+public readonly struct VuetifyMessagesValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -752,6 +806,13 @@ public readonly struct VuetifyMessagesValue
 
     public string[]? AsStrings => _kind == 2 ? _strings : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsStrings,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyMessagesValue From(string value);
 
@@ -766,9 +827,9 @@ public readonly struct VuetifyMessagesValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyAutoSelectFirstValue
+public readonly struct VuetifyAutoSelectFirstValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -792,6 +853,13 @@ public readonly struct VuetifyAutoSelectFirstValue
 
     public VuetifyAutoSelectFirstMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyAutoSelectFirstValue From(bool value);
 
@@ -806,9 +874,9 @@ public readonly struct VuetifyAutoSelectFirstValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyFileShowSizeValue
+public readonly struct VuetifyFileShowSizeValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -832,6 +900,13 @@ public readonly struct VuetifyFileShowSizeValue
 
     public VuetifyFileSizeBase? AsBase => _kind == 2 ? _base : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsBase,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyFileShowSizeValue From(bool value);
 
@@ -846,9 +921,9 @@ public readonly struct VuetifyFileShowSizeValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyBooleanAlwaysValue
+public readonly struct VuetifyBooleanAlwaysValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -872,6 +947,13 @@ public readonly struct VuetifyBooleanAlwaysValue
 
     public VuetifyAlwaysMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyBooleanAlwaysValue From(bool value);
 
@@ -886,9 +968,9 @@ public readonly struct VuetifyBooleanAlwaysValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyBooleanStringValue
+public readonly struct VuetifyBooleanStringValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -912,6 +994,13 @@ public readonly struct VuetifyBooleanStringValue
 
     public string? AsString => _kind == 2 ? _string : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsString,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyBooleanStringValue From(bool value);
 
@@ -926,9 +1015,9 @@ public readonly struct VuetifyBooleanStringValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCounterValue
+public readonly struct VuetifyCounterValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -964,6 +1053,14 @@ public readonly struct VuetifyCounterValue
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public string? AsString => _kind == 3 ? _string : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsNumber,
+        3 => AsString,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCounterValue From(bool value);
@@ -1012,9 +1109,9 @@ public readonly struct VuetifyCounterValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTextValue
+public readonly struct VuetifyTextValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -1050,6 +1147,14 @@ public readonly struct VuetifyTextValue
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public bool? AsBool => _kind == 3 ? _bool : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        3 => AsBool,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTextValue From(string value);
@@ -1098,9 +1203,9 @@ public readonly struct VuetifyTextValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyRoundedValue
+public readonly struct VuetifyRoundedValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1136,6 +1241,14 @@ public readonly struct VuetifyRoundedValue
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public string? AsString => _kind == 3 ? _string : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsNumber,
+        3 => AsString,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyRoundedValue From(bool value);
@@ -1191,9 +1304,9 @@ public enum VuetifyProgressCircularIndeterminateMode
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyProgressCircularIndeterminateValue
+public readonly struct VuetifyProgressCircularIndeterminateValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1217,6 +1330,13 @@ public readonly struct VuetifyProgressCircularIndeterminateValue
 
     public VuetifyProgressCircularIndeterminateMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyProgressCircularIndeterminateValue From(bool value);
 
@@ -1231,9 +1351,9 @@ public readonly struct VuetifyProgressCircularIndeterminateValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyFileModelValue
+public readonly struct VuetifyFileModelValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly File? _file;
@@ -1257,6 +1377,13 @@ public readonly struct VuetifyFileModelValue
 
     public File[]? AsFiles => _kind == 2 ? _files : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsFile,
+        2 => AsFiles,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyFileModelValue From(File value);
 
@@ -1271,9 +1398,9 @@ public readonly struct VuetifyFileModelValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyRangeSliderModelValue
+public readonly struct VuetifyRangeSliderModelValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly Number[]? _values;
 
@@ -1283,6 +1410,8 @@ public readonly struct VuetifyRangeSliderModelValue
     }
 
     public Number[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyRangeSliderModelValue From(Number[] values);
@@ -1381,9 +1510,9 @@ public enum VuetifyInputDirection
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyNullableBoolean
+public readonly struct VuetifyNullableBoolean : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1396,6 +1525,12 @@ public readonly struct VuetifyNullableBoolean
 
     public bool? AsBool => _kind == 1 ? _bool : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyNullableBoolean From(bool value);
 
@@ -1407,9 +1542,9 @@ public readonly struct VuetifyNullableBoolean
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyIconColorValue
+public readonly struct VuetifyIconColorValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1433,6 +1568,13 @@ public readonly struct VuetifyIconColorValue
 
     public string? AsString => _kind == 2 ? _string : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsString,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyIconColorValue From(bool value);
 
@@ -1447,9 +1589,9 @@ public readonly struct VuetifyIconColorValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyValidationResult
+public readonly struct VuetifyValidationResult : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1473,6 +1615,13 @@ public readonly struct VuetifyValidationResult
 
     public string? AsString => _kind == 2 ? _string : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsString,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyValidationResult From(bool value);
 
@@ -1491,9 +1640,9 @@ public delegate VuetifyValidationResult VuetifyValidationRuleResolver(VueValue? 
 public delegate IPromise<VuetifyValidationResult> VuetifyAsyncValidationRuleResolver(VueValue? value);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyValidationRule
+public readonly struct VuetifyValidationRule : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyValidationResult? _result;
@@ -1545,6 +1694,15 @@ public readonly struct VuetifyValidationRule
 
     public VuetifyAsyncValidationRuleResolver? AsAsyncResolver => _kind == 4 ? _asyncResolver : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsResult,
+        2 => AsResolver,
+        3 => AsPromise,
+        4 => AsAsyncResolver,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyValidationRule From(VuetifyValidationResult value);
 
@@ -1593,9 +1751,9 @@ public enum VuetifyPosition
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyMobileValue
+public readonly struct VuetifyMobileValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly bool? _value;
 
@@ -1605,6 +1763,8 @@ public readonly struct VuetifyMobileValue
     }
 
     public bool? AsBool => _value;
+
+    public object? Value => AsBool;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyMobileValue From(bool value);
@@ -1617,9 +1777,9 @@ public readonly struct VuetifyMobileValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyBorderValue
+public readonly struct VuetifyBorderValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1655,6 +1815,14 @@ public readonly struct VuetifyBorderValue
     public Number? AsNumber => _kind == 2 ? _number : default;
 
     public string? AsString => _kind == 3 ? _string : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsNumber,
+        3 => AsString,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyBorderValue From(bool value);
@@ -1703,9 +1871,9 @@ public readonly struct VuetifyBorderValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyIconValue
+public readonly struct VuetifyIconValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -1757,6 +1925,15 @@ public readonly struct VuetifyIconValue
 
     public VueProps? AsComponent => _kind == 4 ? _component : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsString,
+        3 => AsSymbol,
+        4 => AsComponent,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyIconValue From(bool value);
 
@@ -1788,9 +1965,9 @@ public readonly struct VuetifyIconValue
 public delegate Number VuetifyCounterValueResolver(string? value);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCounterValueSource
+public readonly struct VuetifyCounterValueSource : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly Number? _number;
@@ -1813,6 +1990,13 @@ public readonly struct VuetifyCounterValueSource
     public Number? AsNumber => _kind == 1 ? _number : default;
 
     public VuetifyCounterValueResolver? AsResolver => _kind == 2 ? _resolver : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsNumber,
+        2 => AsResolver,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCounterValueSource From(Number value);

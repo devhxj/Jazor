@@ -26,10 +26,10 @@ public enum VuetifyColorPickerMode
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyColorPickerModesCollectionBuilder), nameof(VuetifyColorPickerModesCollectionBuilder.Create))]
-public readonly struct VuetifyColorPickerModes : IEnumerable<VuetifyColorPickerMode>
+public readonly struct VuetifyColorPickerModes : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyColorPickerMode>
 {
     private readonly VuetifyColorPickerMode[]? _modes;
 
@@ -39,6 +39,8 @@ public readonly struct VuetifyColorPickerModes : IEnumerable<VuetifyColorPickerM
     }
 
     public VuetifyColorPickerMode[]? AsArray => _modes;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyColorPickerModes From(VuetifyColorPickerMode[] modes);
@@ -112,9 +114,9 @@ public sealed record VuetifyHslColor : VueProps
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyColorValue
+public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -183,6 +185,16 @@ public readonly struct VuetifyColorValue
 
     public VuetifyHslColor? AsHsl => _kind == 5 ? _hsl : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        3 => AsRgb,
+        4 => AsHsv,
+        5 => AsHsl,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyColorValue From(string value);
 
@@ -242,10 +254,10 @@ public readonly struct VuetifyColorValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyColorPickerSwatchCollectionBuilder), nameof(VuetifyColorPickerSwatchCollectionBuilder.Create))]
-public readonly struct VuetifyColorPickerSwatch : IEnumerable<VuetifyColorValue>
+public readonly struct VuetifyColorPickerSwatch : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyColorValue>
 {
     private readonly VuetifyColorValue[]? _colors;
 
@@ -255,6 +267,8 @@ public readonly struct VuetifyColorPickerSwatch : IEnumerable<VuetifyColorValue>
     }
 
     public VuetifyColorValue[]? AsArray => _colors;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyColorPickerSwatch From(VuetifyColorValue[] colors);
@@ -298,10 +312,10 @@ public static class VuetifyColorPickerSwatchCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyColorPickerSwatchesCollectionBuilder), nameof(VuetifyColorPickerSwatchesCollectionBuilder.Create))]
-public readonly struct VuetifyColorPickerSwatches : IEnumerable<VuetifyColorPickerSwatch>
+public readonly struct VuetifyColorPickerSwatches : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyColorPickerSwatch>
 {
     private readonly VuetifyColorPickerSwatch[]? _swatches;
 
@@ -311,6 +325,8 @@ public readonly struct VuetifyColorPickerSwatches : IEnumerable<VuetifyColorPick
     }
 
     public VuetifyColorPickerSwatch[]? AsArray => _swatches;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyColorPickerSwatches From(VuetifyColorPickerSwatch[] swatches);

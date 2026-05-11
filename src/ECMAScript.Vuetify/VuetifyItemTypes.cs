@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 namespace ECMAScript.Vuetify;
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySelectItemsCollectionBuilder), nameof(VuetifySelectItemsCollectionBuilder.Create))]
-public readonly struct VuetifySelectItems : IEnumerable<VuetifySelectItemValue>
+public readonly struct VuetifySelectItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySelectItemValue>
 {
     private readonly VuetifySelectItemValue[]? _items;
 
@@ -17,6 +17,8 @@ public readonly struct VuetifySelectItems : IEnumerable<VuetifySelectItemValue>
     }
 
     public VuetifySelectItemValue[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItems From(VuetifySelectItemValue[] items);
@@ -42,10 +44,10 @@ public static class VuetifySelectItemsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifySelectModelValuesCollectionBuilder), nameof(VuetifySelectModelValuesCollectionBuilder.Create))]
-public readonly struct VuetifySelectModelValues : IEnumerable<VuetifySelectModelValue>
+public readonly struct VuetifySelectModelValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifySelectModelValue>
 {
     private readonly VuetifySelectModelValue[]? _values;
 
@@ -55,6 +57,8 @@ public readonly struct VuetifySelectModelValues : IEnumerable<VuetifySelectModel
     }
 
     public VuetifySelectModelValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectModelValues From(VuetifySelectModelValue[] values);
@@ -101,9 +105,9 @@ public static class VuetifySelectModelValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySelectModelValue
+public readonly struct VuetifySelectModelValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -190,6 +194,17 @@ public readonly struct VuetifySelectModelValue
     public VueProps? AsObject => _kind == 5 ? _object : default;
 
     public VuetifySelectModelValues? AsValues => _kind == 6 ? _values : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        3 => AsBool,
+        4 => AsSymbol,
+        5 => AsObject,
+        6 => AsValues,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectModelValue From(string value);
@@ -280,9 +295,9 @@ public readonly struct VuetifySelectModelValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySelectItemValue
+public readonly struct VuetifySelectItemValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -350,6 +365,16 @@ public readonly struct VuetifySelectItemValue
     public bool? AsBool => _kind == 4 ? _boolean : default;
 
     public VueProps? AsObject => _kind == 5 ? _object : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsItem,
+        3 => AsNumber,
+        4 => AsBool,
+        5 => AsObject,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItemValue From(string value);
@@ -433,9 +458,9 @@ public sealed class VuetifySelectItem
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySelectItemKey
+public readonly struct VuetifySelectItemKey : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -487,6 +512,15 @@ public readonly struct VuetifySelectItemKey
 
     public bool? AsBool => _kind == 4 ? _boolean : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsPath,
+        3 => AsSelector,
+        4 => AsBool,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItemKey From(string value);
 
@@ -515,9 +549,9 @@ public readonly struct VuetifySelectItemKey
 public delegate VueValue? VuetifySelectItemKeySelector(VueValue item, string fallback);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySelectItemPropsSelector
+public readonly struct VuetifySelectItemPropsSelector : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -568,6 +602,15 @@ public readonly struct VuetifySelectItemPropsSelector
     public VuetifySelectItemPropsCallback? AsCallback => _kind == 3 ? _callback : default;
 
     public bool? AsBool => _kind == 4 ? _boolean : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsPath,
+        3 => AsCallback,
+        4 => AsBool,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItemPropsSelector From(string value);
@@ -621,9 +664,9 @@ public enum VuetifyFilterMode
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyFilterKeys
+public readonly struct VuetifyFilterKeys : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -647,6 +690,13 @@ public readonly struct VuetifyFilterKeys
 
     public string[]? AsStrings => _kind == 2 ? _strings : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsStrings,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyFilterKeys From(string value);
 
@@ -661,9 +711,9 @@ public readonly struct VuetifyFilterKeys
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyFilterMatch
+public readonly struct VuetifyFilterMatch : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _boolean;
@@ -714,6 +764,15 @@ public readonly struct VuetifyFilterMatch
     public Number[]? AsRange => _kind == 3 ? _range : default;
 
     public Number[][]? AsRanges => _kind == 4 ? _ranges : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsNumber,
+        3 => AsRange,
+        4 => AsRanges,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyFilterMatch From(bool value);
@@ -791,9 +850,9 @@ public sealed record VuetifyListItem
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifySelectItemPropsValue
+public readonly struct VuetifySelectItemPropsValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyItemProps? _props;
@@ -816,6 +875,13 @@ public readonly struct VuetifySelectItemPropsValue
     public VuetifyItemProps? AsProps => _kind == 1 ? _props : default;
 
     public bool? AsBool => _kind == 2 ? _boolean : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsProps,
+        2 => AsBool,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItemPropsValue From(VuetifyItemProps value);
@@ -843,10 +909,10 @@ public sealed class VuetifyItemProps : IEnumerable
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyBreadcrumbItemsCollectionBuilder), nameof(VuetifyBreadcrumbItemsCollectionBuilder.Create))]
-public readonly struct VuetifyBreadcrumbItems : IEnumerable<VuetifyBreadcrumbItemValue>
+public readonly struct VuetifyBreadcrumbItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyBreadcrumbItemValue>
 {
     private readonly VuetifyBreadcrumbItemValue[]? _items;
 
@@ -856,6 +922,8 @@ public readonly struct VuetifyBreadcrumbItems : IEnumerable<VuetifyBreadcrumbIte
     }
 
     public VuetifyBreadcrumbItemValue[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyBreadcrumbItems From(VuetifyBreadcrumbItemValue[] items);
@@ -881,9 +949,9 @@ public static class VuetifyBreadcrumbItemsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyBreadcrumbItemValue
+public readonly struct VuetifyBreadcrumbItemValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -919,6 +987,14 @@ public readonly struct VuetifyBreadcrumbItemValue
     public VuetifyBreadcrumbItem? AsItem => _kind == 2 ? _item : default;
 
     public Number? AsNumber => _kind == 3 ? _number : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsItem,
+        3 => AsNumber,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyBreadcrumbItemValue From(string value);
@@ -990,10 +1066,10 @@ public sealed class VuetifyBreadcrumbItem
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataTableHeadersCollectionBuilder), nameof(VuetifyDataTableHeadersCollectionBuilder.Create))]
-public readonly struct VuetifyDataTableHeaders : IEnumerable<VuetifyDataTableHeader>
+public readonly struct VuetifyDataTableHeaders : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyDataTableHeader>
 {
     private readonly VuetifyDataTableHeader[]? _headers;
 
@@ -1003,6 +1079,8 @@ public readonly struct VuetifyDataTableHeaders : IEnumerable<VuetifyDataTableHea
     }
 
     public VuetifyDataTableHeader[]? AsArray => _headers;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableHeaders From(VuetifyDataTableHeader[] headers);
@@ -1099,10 +1177,10 @@ public enum VuetifyDataTableSelectStrategy
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataTableItemsCollectionBuilder), nameof(VuetifyDataTableItemsCollectionBuilder.Create))]
-public readonly struct VuetifyDataTableItems : IEnumerable<VuetifyDataTableItem>
+public readonly struct VuetifyDataTableItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyDataTableItem>
 {
     private readonly VuetifyDataTableItem[]? _items;
 
@@ -1112,6 +1190,8 @@ public readonly struct VuetifyDataTableItems : IEnumerable<VuetifyDataTableItem>
     }
 
     public VuetifyDataTableItem[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableItems From(VuetifyDataTableItem[] items);
@@ -1146,10 +1226,10 @@ public sealed class VuetifyDataTableItem : IEnumerable
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataTableSelectedValuesCollectionBuilder), nameof(VuetifyDataTableSelectedValuesCollectionBuilder.Create))]
-public readonly struct VuetifyDataTableSelectedValues : IEnumerable<VueValue>
+public readonly struct VuetifyDataTableSelectedValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
 {
     private readonly VueValue[]? _values;
 
@@ -1159,6 +1239,8 @@ public readonly struct VuetifyDataTableSelectedValues : IEnumerable<VueValue>
     }
 
     public VueValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableSelectedValues From(VueValue[] values);
@@ -1193,10 +1275,10 @@ public static class VuetifyDataTableSelectedValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataTableSortItemsCollectionBuilder), nameof(VuetifyDataTableSortItemsCollectionBuilder.Create))]
-public readonly struct VuetifyDataTableSortItems : IEnumerable<VuetifyDataTableSortItem>
+public readonly struct VuetifyDataTableSortItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyDataTableSortItem>
 {
     private readonly VuetifyDataTableSortItem[]? _items;
 
@@ -1206,6 +1288,8 @@ public readonly struct VuetifyDataTableSortItems : IEnumerable<VuetifyDataTableS
     }
 
     public VuetifyDataTableSortItem[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableSortItems From(VuetifyDataTableSortItem[] items);
@@ -1259,10 +1343,10 @@ public sealed class VuetifyDataTableOptions
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyDataTableItemsPerPageOptionsCollectionBuilder), nameof(VuetifyDataTableItemsPerPageOptionsCollectionBuilder.Create))]
-public readonly struct VuetifyDataTableItemsPerPageOptions : IEnumerable<VuetifyDataTableItemsPerPageOption>
+public readonly struct VuetifyDataTableItemsPerPageOptions : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyDataTableItemsPerPageOption>
 {
     private readonly VuetifyDataTableItemsPerPageOption[]? _options;
 
@@ -1272,6 +1356,8 @@ public readonly struct VuetifyDataTableItemsPerPageOptions : IEnumerable<Vuetify
     }
 
     public VuetifyDataTableItemsPerPageOption[]? AsArray => _options;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableItemsPerPageOptions From(VuetifyDataTableItemsPerPageOption[] options);
@@ -1300,9 +1386,9 @@ public static class VuetifyDataTableItemsPerPageOptionsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDataTableItemsPerPageOption
+public readonly struct VuetifyDataTableItemsPerPageOption : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly Number? _number;
@@ -1325,6 +1411,13 @@ public readonly struct VuetifyDataTableItemsPerPageOption
     public Number? AsNumber => _kind == 1 ? _number : default;
 
     public VuetifyDataTableItemsPerPageOptionItem? AsItem => _kind == 2 ? _item : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsNumber,
+        2 => AsItem,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableItemsPerPageOption From(Number value);
@@ -1378,9 +1471,9 @@ public sealed class VuetifyDataTableItemsPerPageOptionItem
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDataTableRowProps
+public readonly struct VuetifyDataTableRowProps : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VueProps? _props;
@@ -1404,6 +1497,13 @@ public readonly struct VuetifyDataTableRowProps
 
     public VuetifyDataTableRowPropsCallback? AsCallback => _kind == 2 ? _callback : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsProps,
+        2 => AsCallback,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableRowProps From(VueProps value);
 
@@ -1423,9 +1523,9 @@ public readonly struct VuetifyDataTableRowProps
 public delegate VueProps? VuetifyDataTableRowPropsCallback(VuetifyDataTableRowPropsContext context);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyDataTableCellProps
+public readonly struct VuetifyDataTableCellProps : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VueProps? _props;
@@ -1448,6 +1548,13 @@ public readonly struct VuetifyDataTableCellProps
     public VueProps? AsProps => _kind == 1 ? _props : default;
 
     public VuetifyDataTableCellPropsCallback? AsCallback => _kind == 2 ? _callback : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsProps,
+        2 => AsCallback,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyDataTableCellProps From(VueProps value);

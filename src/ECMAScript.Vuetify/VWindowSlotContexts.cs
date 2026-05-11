@@ -14,9 +14,9 @@ public enum VuetifyWindowShowArrowsMode
 /// Vuetify VWindow show-arrows value, matching <c>boolean | "hover"</c>.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyWindowShowArrowsValue
+public readonly struct VuetifyWindowShowArrowsValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -39,6 +39,13 @@ public readonly struct VuetifyWindowShowArrowsValue
     public bool? AsBool => _kind == 1 ? _bool : default;
 
     public VuetifyWindowShowArrowsMode? AsMode => _kind == 2 ? _mode : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyWindowShowArrowsValue From(bool value);
@@ -133,9 +140,9 @@ public sealed record VuetifyTouchHandlers : VueProps
 /// Vuetify VWindow touch prop value, matching <c>boolean | TouchHandlers</c>.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTouchValue
+public readonly struct VuetifyTouchValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -158,6 +165,13 @@ public readonly struct VuetifyTouchValue
     public bool? AsBool => _kind == 1 ? _bool : default;
 
     public VuetifyTouchHandlers? AsHandlers => _kind == 2 ? _handlers : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsHandlers,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTouchValue From(bool value);

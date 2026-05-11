@@ -36,9 +36,9 @@ public enum VuetifyShowArrowsMode
 public delegate bool VuetifyValueComparator(VueValue? first, VueValue? second);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyMandatoryValue
+public readonly struct VuetifyMandatoryValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -62,6 +62,13 @@ public readonly struct VuetifyMandatoryValue
 
     public VuetifyMandatoryMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyMandatoryValue From(bool value);
 
@@ -76,9 +83,9 @@ public readonly struct VuetifyMandatoryValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyShowArrowsValue
+public readonly struct VuetifyShowArrowsValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -102,6 +109,13 @@ public readonly struct VuetifyShowArrowsValue
 
     public VuetifyShowArrowsMode? AsMode => _kind == 2 ? _mode : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsMode,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyShowArrowsValue From(bool value);
 
@@ -116,10 +130,10 @@ public readonly struct VuetifyShowArrowsValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyGroupModelValuesCollectionBuilder), nameof(VuetifyGroupModelValuesCollectionBuilder.Create))]
-public readonly struct VuetifyGroupModelValues : IEnumerable<VuetifyGroupModelValue>
+public readonly struct VuetifyGroupModelValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyGroupModelValue>
 {
     private readonly VuetifyGroupModelValue[]? _values;
 
@@ -129,6 +143,8 @@ public readonly struct VuetifyGroupModelValues : IEnumerable<VuetifyGroupModelVa
     }
 
     public VuetifyGroupModelValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyGroupModelValues From(VuetifyGroupModelValue[] values);
@@ -166,9 +182,9 @@ public static class VuetifyGroupModelValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyGroupModelValue
+public readonly struct VuetifyGroupModelValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -255,6 +271,17 @@ public readonly struct VuetifyGroupModelValue
     public VueProps? AsObject => _kind == 5 ? _object : default;
 
     public VuetifyGroupModelValues? AsValues => _kind == 6 ? _values : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsNumber,
+        3 => AsBool,
+        4 => AsSymbol,
+        5 => AsObject,
+        6 => AsValues,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyGroupModelValue From(string value);

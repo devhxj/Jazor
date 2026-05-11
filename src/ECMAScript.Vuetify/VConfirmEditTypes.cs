@@ -14,10 +14,10 @@ public enum VuetifyConfirmEditAction
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyConfirmEditActionsCollectionBuilder), nameof(VuetifyConfirmEditActionsCollectionBuilder.Create))]
-public readonly struct VuetifyConfirmEditActions : IEnumerable<VuetifyConfirmEditAction>
+public readonly struct VuetifyConfirmEditActions : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyConfirmEditAction>
 {
     private readonly VuetifyConfirmEditAction[]? _actions;
 
@@ -27,6 +27,8 @@ public readonly struct VuetifyConfirmEditActions : IEnumerable<VuetifyConfirmEdi
     }
 
     public VuetifyConfirmEditAction[]? AsArray => _actions;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyConfirmEditActions From(VuetifyConfirmEditAction[] actions);
@@ -49,9 +51,9 @@ public static class VuetifyConfirmEditActionsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyConfirmEditDisabled
+public readonly struct VuetifyConfirmEditDisabled : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -74,6 +76,13 @@ public readonly struct VuetifyConfirmEditDisabled
     public bool? AsBool => _kind == 1 ? _bool : default;
 
     public VuetifyConfirmEditActions? AsActions => _kind == 2 ? _actions : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsActions,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyConfirmEditDisabled From(bool value);

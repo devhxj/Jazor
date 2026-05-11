@@ -14,9 +14,9 @@ public enum VuetifyCarouselVerticalDelimiterPosition
 /// Vuetify carousel vertical-delimiters value, matching <c>boolean | "left" | "right"</c>.
 /// </summary>
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyCarouselVerticalDelimiters
+public readonly struct VuetifyCarouselVerticalDelimiters : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly bool? _bool;
@@ -39,6 +39,13 @@ public readonly struct VuetifyCarouselVerticalDelimiters
     public bool? AsBool => _kind == 1 ? _bool : default;
 
     public VuetifyCarouselVerticalDelimiterPosition? AsPosition => _kind == 2 ? _position : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsBool,
+        2 => AsPosition,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyCarouselVerticalDelimiters From(bool value);

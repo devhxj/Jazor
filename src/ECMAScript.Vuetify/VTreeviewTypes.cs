@@ -55,128 +55,10 @@ public enum VuetifyTreeviewSelectionState
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
-[Description("@#")]
-[CollectionBuilder(typeof(VuetifyStyleValuesCollectionBuilder), nameof(VuetifyStyleValuesCollectionBuilder.Create))]
-public readonly struct VuetifyStyleValues : IEnumerable<VuetifyStyleValue>
-{
-    private readonly VuetifyStyleValue[]? _values;
-
-    private VuetifyStyleValues(VuetifyStyleValue[] values)
-    {
-        _values = values;
-    }
-
-    public VuetifyStyleValue[]? AsArray => _values;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStyleValues From(VuetifyStyleValue[] values);
-
-    public static implicit operator VuetifyStyleValues(VuetifyStyleValue[] values)
-        => new(values);
-
-    public static implicit operator VuetifyStyleValues(string[] values)
-        => new(Array.ConvertAll(values, static value => (VuetifyStyleValue)value));
-
-    public static implicit operator VuetifyStyleValues(VueProps[] values)
-        => new(Array.ConvertAll(values, static value => (VuetifyStyleValue)value));
-
-    public static implicit operator VuetifyStyleValues(VueDictionary[] values)
-        => new(Array.ConvertAll(values, static value => (VuetifyStyleValue)value));
-
-    IEnumerator<VuetifyStyleValue> IEnumerable<VuetifyStyleValue>.GetEnumerator()
-        => ((IEnumerable<VuetifyStyleValue>)(_values ?? [])).GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator()
-        => ((IEnumerable<VuetifyStyleValue>)this).GetEnumerator();
-}
-
-[EditorBrowsable(EditorBrowsableState.Never)]
-public static class VuetifyStyleValuesCollectionBuilder
-{
-    public static VuetifyStyleValues Create(ReadOnlySpan<VuetifyStyleValue> values)
-        => values.ToArray();
-}
-
-[ECMAScript]
-[ECMAScriptUnion]
-[Description("@#")]
-public readonly struct VuetifyStyleValue
-{
-    private readonly byte _kind;
-    private readonly string? _string;
-    private readonly VueProps? _props;
-    private readonly VuetifyStyleValues? _values;
-
-    private VuetifyStyleValue(string value)
-    {
-        _kind = 1;
-        _string = value;
-        _props = default;
-        _values = default;
-    }
-
-    private VuetifyStyleValue(VueProps value)
-    {
-        _kind = 2;
-        _string = default;
-        _props = value;
-        _values = default;
-    }
-
-    private VuetifyStyleValue(VuetifyStyleValues value)
-    {
-        _kind = 3;
-        _string = default;
-        _props = default;
-        _values = value;
-    }
-
-    public string? AsString => _kind == 1 ? _string : default;
-
-    public VueProps? AsProps => _kind == 2 ? _props : default;
-
-    public VuetifyStyleValues? AsValues => _kind == 3 ? _values : default;
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStyleValue From(string value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStyleValue From(VueProps value);
-
-    [ECMAScriptInline("__arg1")]
-    public extern static VuetifyStyleValue From(VuetifyStyleValues value);
-
-    public static implicit operator VuetifyStyleValue(string value)
-        => new(value);
-
-    public static implicit operator VuetifyStyleValue(VueProps value)
-        => new(value);
-
-    public static implicit operator VuetifyStyleValue(VueDictionary value)
-        => new(value);
-
-    public static implicit operator VuetifyStyleValue(VuetifyStyleValues value)
-        => new(value);
-
-    public static implicit operator VuetifyStyleValue(VuetifyStyleValue[] value)
-        => new((VuetifyStyleValues)value);
-
-    public static implicit operator VuetifyStyleValue(string[] value)
-        => new((VuetifyStyleValues)value);
-
-    public static implicit operator VuetifyStyleValue(VueProps[] value)
-        => new((VuetifyStyleValues)value);
-
-    public static implicit operator VuetifyStyleValue(VueDictionary[] value)
-        => new((VuetifyStyleValues)value);
-}
-
-[ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyTreeviewValuesCollectionBuilder), nameof(VuetifyTreeviewValuesCollectionBuilder.Create))]
-public readonly struct VuetifyTreeviewValues : IEnumerable<VueValue>
+public readonly struct VuetifyTreeviewValues : System.Runtime.CompilerServices.IUnion, IEnumerable<VueValue>
 {
     private readonly VueValue[]? _values;
 
@@ -186,6 +68,8 @@ public readonly struct VuetifyTreeviewValues : IEnumerable<VueValue>
     }
 
     public VueValue[]? AsArray => _values;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTreeviewValues From(VueValue[] values);
@@ -229,10 +113,10 @@ public static class VuetifyTreeviewValuesCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
 [CollectionBuilder(typeof(VuetifyTreeviewItemsCollectionBuilder), nameof(VuetifyTreeviewItemsCollectionBuilder.Create))]
-public readonly struct VuetifyTreeviewItems : IEnumerable<VuetifyTreeviewItemValue>
+public readonly struct VuetifyTreeviewItems : System.Runtime.CompilerServices.IUnion, IEnumerable<VuetifyTreeviewItemValue>
 {
     private readonly VuetifyTreeviewItemValue[]? _items;
 
@@ -242,6 +126,8 @@ public readonly struct VuetifyTreeviewItems : IEnumerable<VuetifyTreeviewItemVal
     }
 
     public VuetifyTreeviewItemValue[]? AsArray => _items;
+
+    public object? Value => AsArray;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTreeviewItems From(VuetifyTreeviewItemValue[] items);
@@ -270,9 +156,9 @@ public static class VuetifyTreeviewItemsCollectionBuilder
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTreeviewItemValue
+public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly string? _string;
@@ -340,6 +226,16 @@ public readonly struct VuetifyTreeviewItemValue
     public bool? AsBool => _kind == 4 ? _boolean : default;
 
     public VueProps? AsObject => _kind == 5 ? _object : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsString,
+        2 => AsItem,
+        3 => AsNumber,
+        4 => AsBool,
+        5 => AsObject,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTreeviewItemValue From(string value);
@@ -429,9 +325,9 @@ public delegate VuetifyTreeviewActiveStrategyDefinition VuetifyTreeviewActiveStr
 public delegate VuetifyTreeviewSelectStrategyDefinition VuetifyTreeviewSelectStrategyFactory(bool mandatory);
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTreeviewActiveStrategyValue
+public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyTreeviewActiveStrategy? _name;
@@ -468,6 +364,14 @@ public readonly struct VuetifyTreeviewActiveStrategyValue
 
     public VuetifyTreeviewActiveStrategyFactory? AsFactory => _kind == 3 ? _factory : default;
 
+    public object? Value => _kind switch
+    {
+        1 => AsName,
+        2 => AsDefinition,
+        3 => AsFactory,
+        _ => default
+    };
+
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTreeviewActiveStrategyValue From(VuetifyTreeviewActiveStrategy value);
 
@@ -488,9 +392,9 @@ public readonly struct VuetifyTreeviewActiveStrategyValue
 }
 
 [ECMAScript]
-[ECMAScriptUnion]
+[System.Runtime.CompilerServices.Union]
 [Description("@#")]
-public readonly struct VuetifyTreeviewSelectStrategyValue
+public readonly struct VuetifyTreeviewSelectStrategyValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
     private readonly VuetifyTreeviewSelectStrategy? _name;
@@ -526,6 +430,14 @@ public readonly struct VuetifyTreeviewSelectStrategyValue
     public VuetifyTreeviewSelectStrategyDefinition? AsDefinition => _kind == 2 ? _definition : default;
 
     public VuetifyTreeviewSelectStrategyFactory? AsFactory => _kind == 3 ? _factory : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsName,
+        2 => AsDefinition,
+        3 => AsFactory,
+        _ => default
+    };
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifyTreeviewSelectStrategyValue From(VuetifyTreeviewSelectStrategy value);

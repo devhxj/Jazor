@@ -562,6 +562,11 @@ public sealed class EcmaScriptPiniaProxyTests
 	public void Pinia_SubscriptionMutationEvents_UsesNet11UnionContract()
 	{
 		AssertNet11UnionContract(
+			typeof(Pinia.PiniaStateMapValue<Pinia.StoreGeneric>),
+			typeof(string),
+			typeof(PiniaMapStateSelector<Pinia.StoreGeneric>));
+
+		AssertNet11UnionContract(
 			typeof(Pinia.SubscriptionMutationEvents),
 			typeof(Vue3.VueDebuggerEvent),
 			typeof(Vue3.VueDebuggerEvent[]));
@@ -673,7 +678,6 @@ public sealed class EcmaScriptPiniaProxyTests
 
 	private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)
 	{
-		Assert.IsNull(unionType.GetCustomAttribute<ECMAScriptUnionAttribute>(), unionType.FullName);
 		Assert.IsNotNull(unionType.GetCustomAttribute<System.Runtime.CompilerServices.UnionAttribute>(), unionType.FullName);
 		Assert.IsTrue(typeof(System.Runtime.CompilerServices.IUnion).IsAssignableFrom(unionType), unionType.FullName);
 
@@ -703,7 +707,7 @@ public sealed class EcmaScriptPiniaProxyTests
 
 			Assert.IsFalse(
 				left.IsAssignableFrom(right),
-				$"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged ECMAScriptUnion wrapper to preserve exact AsX projections.");
+				$"{unionType.FullName} cannot use native union because branch {right.FullName} is assignable to {left.FullName}; keep a tagged [Union] + IUnion wrapper to preserve exact AsX projections.");
 		}
 	}
 
