@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/labs/components", "VTimePicker")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ViewModeChanged), VueEmitKind.ModelUpdate, Name = "update:viewMode")]
 [VueLibraryEmit(nameof(PeriodChanged), VueEmitKind.ModelUpdate, Name = "update:period")]
 [VueLibraryEmit(nameof(HourChanged), VueEmitKind.ModelUpdate, Name = "update:hour")]

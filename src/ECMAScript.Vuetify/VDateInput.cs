@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/labs/components", "VDateInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
 [VueLibraryEmit(nameof(Save), VueEmitKind.LibrarySpecific, Name = "save")]
 [VueLibraryEmit(nameof(Cancel), VueEmitKind.LibrarySpecific, Name = "cancel")]

@@ -10571,7 +10571,7 @@ public sealed class ESGeneratorTests
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
-                        builder.OpenComponent<VIcon>(0);
+                        builder.OpenComponent<VDivider>(0);
                         builder.AddContent(1, "warn");
                         builder.CloseComponent();
                     }
@@ -10590,7 +10590,7 @@ public sealed class ESGeneratorTests
             .ToArray();
 
         Assert.AreEqual(1, diagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "VIcon");
+        StringAssert.Contains(diagnostics[0].GetMessage(), "VDivider");
         StringAssert.Contains(diagnostics[0].GetMessage(), "ChildContent");
         Assert.AreEqual(18, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
     }
@@ -10742,7 +10742,7 @@ public sealed class ESGeneratorTests
                     {
                         builder.OpenComponent<VDialog>(0);
                         builder.AddAttribute(1, nameof(VDialog.ChildContent), ChildContent);
-                        builder.AddContent(2, ChildContent);
+                        builder.AddAttribute(2, nameof(VDialog.ChildContent), ChildContent);
                         builder.CloseComponent();
                     }
                 }

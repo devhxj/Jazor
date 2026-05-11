@@ -5,6 +5,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VRadio")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VRadio : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

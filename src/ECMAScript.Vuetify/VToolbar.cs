@@ -6,6 +6,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VToolbar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

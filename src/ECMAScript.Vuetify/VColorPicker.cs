@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VColorPicker")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ModeChanged), VueEmitKind.ModelUpdate, Name = "update:mode")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 [VueLibrarySlot(nameof(Header), Name = "header")]

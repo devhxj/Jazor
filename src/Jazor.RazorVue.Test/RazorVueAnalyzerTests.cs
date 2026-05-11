@@ -704,7 +704,7 @@ public sealed class RazorVueAnalyzerTests
 
                 protected override void BuildRenderTree(RenderTreeBuilder builder)
                 {
-                    builder.OpenComponent<VIcon>(0);
+                    builder.OpenComponent<VDivider>(0);
                     builder.AddContent(1, ChildContent);
                     builder.CloseComponent();
                 }

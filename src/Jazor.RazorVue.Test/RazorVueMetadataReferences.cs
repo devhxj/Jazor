@@ -54,9 +54,11 @@ internal static class RazorVueMetadataReferences
         // 最新 authoring 模型直接使用 ComponentBase + IVueComponent/IVueLibraryComponent，
         // 测试只补全命名空间导入，不再注入 VueComponent/JazorComponent 兼容基类。
         => [
-            CSharpSyntaxTree.ParseText(AuthoringGlobalUsings, path: "RazorVueTestGlobalUsings.g.cs"),
-            CSharpSyntaxTree.ParseText(source)
+            CSharpSyntaxTree.ParseText(AuthoringGlobalUsings, options: PreviewParseOptions, path: "RazorVueTestGlobalUsings.g.cs"),
+            CSharpSyntaxTree.ParseText(source, options: PreviewParseOptions)
         ];
+
+    private static readonly CSharpParseOptions PreviewParseOptions = new(LanguageVersion.Preview);
 
     private static void AddAssemblyReference(
         List<MetadataReference> references,

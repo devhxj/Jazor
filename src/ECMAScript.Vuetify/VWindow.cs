@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VWindow")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 [VueLibrarySlot(nameof(Additional), Name = "additional")]
 [VueLibrarySlot(nameof(Prev), Name = "prev")]

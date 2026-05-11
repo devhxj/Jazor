@@ -7,6 +7,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VCardActions")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCardActions : ComponentBase, IVueLibraryComponent
 {
     [Parameter(CaptureUnmatchedValues = true)]

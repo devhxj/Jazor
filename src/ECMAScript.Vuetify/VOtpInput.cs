@@ -5,6 +5,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VOtpInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VOtpInput : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

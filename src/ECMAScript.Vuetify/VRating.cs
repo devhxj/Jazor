@@ -8,6 +8,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VRating")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(ItemContent), Name = "item")]
 [VueLibrarySlot(nameof(ItemLabel), Name = "item-label")]
 public sealed class VRating : ComponentBase, IVueLibraryComponent

@@ -5,6 +5,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VFileInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VFileInput : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

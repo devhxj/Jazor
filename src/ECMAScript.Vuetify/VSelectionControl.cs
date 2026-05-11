@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSelectionControl")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 [VueLibrarySlot(nameof(LabelContent), Name = "label")]
 [VueLibrarySlot(nameof(Input), Name = "input")]

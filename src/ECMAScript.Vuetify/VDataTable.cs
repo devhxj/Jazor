@@ -10,6 +10,12 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VDataTable")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+[VueLibraryEmit(nameof(PageChanged), VueEmitKind.ModelUpdate, Name = "update:page")]
+[VueLibraryEmit(nameof(ItemsPerPageChanged), VueEmitKind.ModelUpdate, Name = "update:itemsPerPage")]
+[VueLibraryEmit(nameof(SortByChanged), VueEmitKind.ModelUpdate, Name = "update:sortBy")]
+[VueLibraryEmit(nameof(GroupByChanged), VueEmitKind.ModelUpdate, Name = "update:groupBy")]
+[VueLibraryEmit(nameof(ExpandedChanged), VueEmitKind.ModelUpdate, Name = "update:expanded")]
 [VueLibraryEmit(nameof(OptionsChanged), VueEmitKind.ModelUpdate, Name = "update:options")]
 [VueLibraryEmit(nameof(CurrentItemsChanged), VueEmitKind.ModelUpdate, Name = "update:currentItems")]
 [VueLibrarySlot(nameof(Top), Name = "top")]
@@ -30,6 +36,7 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(FooterPrepend), Name = "footer.prepend")]
 [VueLibrarySlot(nameof(LoadingContent), Name = "loading")]
 [VueLibrarySlot(nameof(NoData), Name = "no-data")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VDataTable : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

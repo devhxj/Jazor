@@ -7,6 +7,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBtnGroup")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBtnGroup : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

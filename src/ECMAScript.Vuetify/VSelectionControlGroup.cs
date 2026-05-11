@@ -8,6 +8,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSelectionControlGroup")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VSelectionControlGroup : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

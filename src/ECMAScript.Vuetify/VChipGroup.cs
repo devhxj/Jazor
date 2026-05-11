@@ -5,6 +5,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VChipGroup")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VChipGroup : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

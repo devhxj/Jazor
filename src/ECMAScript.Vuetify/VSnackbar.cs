@@ -6,6 +6,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VSnackbar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

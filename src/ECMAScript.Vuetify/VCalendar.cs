@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/labs/components", "VCalendar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(Next), VueEmitKind.LibrarySpecific, Name = "next")]
 [VueLibraryEmit(nameof(Prev), VueEmitKind.LibrarySpecific, Name = "prev")]
 [VueLibrarySlot(nameof(Header), Name = "header")]

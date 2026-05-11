@@ -6,11 +6,13 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VOverlay")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(AfterEnter), VueEmitKind.LibrarySpecific, Name = "afterEnter")]
 [VueLibraryEmit(nameof(AfterLeave), VueEmitKind.LibrarySpecific, Name = "afterLeave")]
 [VueLibraryEmit(nameof(ClickOutside), VueEmitKind.LibrarySpecific, Name = "click:outside")]
 [VueLibraryProp(nameof(ZIndex), Name = "zIndex")]
 [VueLibrarySlot(nameof(Activator), Name = "activator")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VOverlay : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

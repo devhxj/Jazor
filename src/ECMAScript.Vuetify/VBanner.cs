@@ -11,6 +11,7 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Prepend), Name = "prepend")]
 [VueLibrarySlot(nameof(TextContent), Name = "text")]
 [VueLibrarySlot(nameof(Actions), Name = "actions")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBanner : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

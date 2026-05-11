@@ -10,6 +10,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibrarySlot(nameof(TitleContent), Name = "title")]
 [VueLibrarySlot(nameof(TextContent), Name = "text")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VExpansionPanel : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

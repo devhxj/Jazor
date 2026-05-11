@@ -5,6 +5,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VAlert")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VAlert : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

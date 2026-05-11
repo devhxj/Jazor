@@ -7,6 +7,9 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBottomNavigation")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+[VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:selected")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

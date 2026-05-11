@@ -5,6 +5,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSlider")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 public sealed class VSlider : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

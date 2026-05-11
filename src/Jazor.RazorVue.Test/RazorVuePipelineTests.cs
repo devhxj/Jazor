@@ -7211,7 +7211,7 @@ public sealed class RazorVuePipelineTests
                 {
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
-                        builder.OpenComponent<VIcon>(0);
+                        builder.OpenComponent<VDivider>(0);
                         builder.AddContent(1, "warn");
                         builder.CloseComponent();
                     }
@@ -7223,7 +7223,7 @@ public sealed class RazorVuePipelineTests
         Assert.IsNotNull(exception);
         Assert.AreEqual(RazorVueIssueCode.UnknownSlot, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ChildContent");
-        StringAssert.Contains(exception.Issue.Message, "VIcon");
+        StringAssert.Contains(exception.Issue.Message, "VDivider");
     }
 
     [TestMethod]
@@ -7311,7 +7311,7 @@ public sealed class RazorVuePipelineTests
                     {
                         builder.OpenComponent<VDialog>(0);
                         builder.AddAttribute(1, nameof(VDialog.ChildContent), ChildContent);
-                        builder.AddContent(2, ChildContent);
+                        builder.AddAttribute(2, nameof(VDialog.ChildContent), ChildContent);
                         builder.CloseComponent();
                     }
                 }

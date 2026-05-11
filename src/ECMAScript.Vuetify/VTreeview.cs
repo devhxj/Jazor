@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ActivatedChanged), VueEmitKind.ModelUpdate, Name = "update:activated")]
 [VueLibraryEmit(nameof(SelectedChanged), VueEmitKind.ModelUpdate, Name = "update:selected")]
 [VueLibraryEmit(nameof(OpenedChanged), VueEmitKind.ModelUpdate, Name = "update:opened")]

@@ -6,6 +6,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTabs")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VTabs : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

@@ -11,6 +11,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VTextField")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
 [VueLibrarySlot(nameof(Prepend), Name = "prepend")]
 [VueLibrarySlot(nameof(Append), Name = "append")]

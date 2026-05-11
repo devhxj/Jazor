@@ -14,6 +14,7 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Prepend), Name = "prepend")]
 [VueLibrarySlot(nameof(Append), Name = "append")]
 [VueLibrarySlot(nameof(Loader), Name = "loader")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VBtn : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

@@ -13,6 +13,11 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(TitleContent), Name = "title")]
 [VueLibrarySlot(nameof(SubtitleContent), Name = "subtitle")]
 [VueLibrarySlot(nameof(ImageContent), Name = "image")]
+[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
+[VueLibrarySlot(nameof(Append), Name = "append")]
+[VueLibrarySlot(nameof(Actions), Name = "actions")]
+[VueLibrarySlot(nameof(Item), Name = "item")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VCard : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
