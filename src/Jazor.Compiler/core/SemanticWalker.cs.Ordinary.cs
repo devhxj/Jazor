@@ -192,7 +192,7 @@ public partial class SemanticWalker
 			BranchKind.Break => new BreakStatement(null),
 			BranchKind.Continue => new ContinueStatement(null),
 			BranchKind.GoTo => HandleTransformationFailure<Node>(operation, "Goto statements are not supported in JavaScript."),
-			_ => null
+			_ => HandleTransformationFailure<Node>(operation, $"Unsupported branch kind: {operation.BranchKind}.")
 		};
 	}
 
@@ -219,6 +219,15 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitReturn(IReturnOperation operation, SenseArgument argument)
 	{
+		if (operation.Kind == OperationKind.YieldReturn)
+		{
+			var value = Translate<Expression>(operation.ReturnedValue!, argument);
+			return WithOrigin(new NonSpecialExpressionStatement(new YieldExpression(value, @delegate: false)), operation);
+		}
+
+		if (operation.Kind == OperationKind.YieldBreak)
+			return WithOrigin(new ReturnStatement(null), operation);
+
 		if (operation.ReturnedValue is null)
 			return WithOrigin(new ReturnStatement(null), operation);
 
@@ -2254,6 +2263,8 @@ public partial class SemanticWalker
 							method: false
 						));
 					}
+					else
+						return HandleTransformationFailure<Node>(operation, "With initializer has unrecognized left-hand side expression.");
 				}
 				else
 					return HandleTransformationFailure<Node>(operation, "With initializer could not be translated to JavaScript.");

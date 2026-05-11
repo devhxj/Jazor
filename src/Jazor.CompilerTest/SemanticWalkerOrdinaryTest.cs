@@ -4891,4 +4891,92 @@ public sealed class SemanticWalkerOrdinaryTest
   }
 
   #endregion
+
+  #region Nullable<T> 成员访问
+
+  [TestMethod]
+  public void Visit_Nullable_HasValue()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int? value)
+                {
+                    var hasValue = value.HasValue;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "value !== null && value !== undefined");
+  }
+
+  [TestMethod]
+  public void Visit_Nullable_Value()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int? value)
+                {
+                    var v = value.Value;
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "let v = value;");
+  }
+
+  [TestMethod]
+  public void Visit_Nullable_GetValueOrDefault()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int? value)
+                {
+                    var d = value.GetValueOrDefault();
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "value ?? null");
+  }
+
+  [TestMethod]
+  public void Visit_Nullable_GetValueOrDefault_WithArg()
+  {
+    var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod(int? value)
+                {
+                    var d = value.GetValueOrDefault(42);
+                }
+            }
+            ");
+
+    var walker = new SemanticWalker(true);
+    var node = walker.Visit(block, new());
+    var script = node?.ToKnRECMAScript();
+
+    Assert.IsNotNull(script);
+    StringAssert.Contains(script, "value ?? 42");
+  }
+
+  #endregion
 }

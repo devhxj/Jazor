@@ -1945,4 +1945,171 @@ public sealed class SemanticWalkerDeclarationTest
     }
 
     #endregion
+
+    #region Generator / yield return
+
+    [TestMethod]
+    public void Visit_LocalFunction_YieldReturn()
+    {
+        var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IEnumerable<int> GetNumbers()
+                    {
+                        yield return 1;
+                        yield return 2;
+                        yield return 3;
+                    }
+                    var nums = GetNumbers();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"{
+  function* GetNumbers() {
+    yield 1;
+    yield 2;
+    yield 3;
+    return;
+  }
+  let nums = GetNumbers();
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_LocalFunction_YieldReturn_WithExpression()
+    {
+        var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IEnumerable<string> GetNames(string prefix)
+                    {
+                        yield return prefix + ""Alice"";
+                        yield return prefix + ""Bob"";
+                    }
+                    var names = GetNames(""Dr. "");
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+@"{
+  function* GetNames(prefix) {
+    yield prefix + ""Alice"";
+    yield prefix + ""Bob"";
+    return;
+  }
+  let names = GetNames(""Dr. "");
+}", script);
+    }
+
+    [TestMethod]
+    public void Visit_LocalFunction_YieldBreak()
+    {
+        var block = GetBlockOperation(@"
+            using System.Collections.Generic;
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    IEnumerable<int> GetUntilNegative(int[] items)
+                    {
+                        foreach (var item in items)
+                        {
+                            if (item < 0)
+                                yield break;
+                            yield return item;
+                        }
+                    }
+                    var result = GetUntilNegative(new[] { 1, 2, -1, 3 });
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "function*");
+        StringAssert.Contains(script, "yield");
+        StringAssert.Contains(script, "return;");
+    }
+
+    #endregion
+
+    #region Async local function
+
+    [TestMethod]
+    public void Visit_LocalFunction_Async()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    async System.Threading.Tasks.Task<int> GetValueAsync()
+                    {
+                        await System.Threading.Tasks.Task.Delay(10);
+                        return 42;
+                    }
+                    var task = GetValueAsync();
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "async function GetValueAsync()");
+        StringAssert.Contains(script, "await");
+        StringAssert.Contains(script, "return 42;");
+    }
+
+    [TestMethod]
+    public void Visit_LocalFunction_Async_WithParams()
+    {
+        var block = GetBlockOperation(@"
+            class TestClass
+            {
+                void TestMethod()
+                {
+                    async System.Threading.Tasks.Task<string> FetchAsync(string url, int timeout)
+                    {
+                        await System.Threading.Tasks.Task.Delay(timeout);
+                        return url;
+                    }
+                    var result = FetchAsync(""https://example.com"", 1000);
+                }
+            }
+            ");
+
+        var walker = new SemanticWalker(true);
+        var node = walker.Visit(block, new());
+        var script = node?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script);
+        StringAssert.Contains(script, "async function FetchAsync(url, timeout)");
+        StringAssert.Contains(script, "await");
+        StringAssert.Contains(script, "return url;");
+    }
+
+    #endregion
 }

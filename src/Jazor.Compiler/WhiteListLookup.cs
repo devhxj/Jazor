@@ -403,6 +403,13 @@ internal static class WhiteListLookup
 		const string virtualPrefix = "virtual ";
 		const string overridePrefix = "override ";
 		const string abstractPrefix = "abstract ";
+		const string readonlyPrefix = "readonly ";
+
+		if (displayString.StartsWith(readonlyPrefix, StringComparison.Ordinal))
+		{
+			yield return displayString.Substring(readonlyPrefix.Length);
+			yield break;
+		}
 
 		if (displayString.StartsWith(virtualPrefix, StringComparison.Ordinal))
 		{

@@ -604,4 +604,87 @@ public sealed class SemanticWalkerNotSupportTest
             "IPlaceholderOperation" or
             nameof(ISymbolInitializerOperation));
     }
+
+    private static IBlockOperation GetBlockOperationUnsafe(string code, string methodName = "TestMethod")
+    {
+        var usings = @"
+          global using System;
+          global using System.Collections.Generic;
+          global using System.Linq;
+          global using System.Numerics;
+          global using ECMAScript;
+          global using static ECMAScript.Global;";
+
+        var references = TestMetadataReferences.Net11
+            .Add(MetadataReference.CreateFromFile(typeof(Global).Assembly.Location));
+        var compilation = CSharpCompilation.Create(
+            assemblyName: "TestAssembly",
+            syntaxTrees: [
+                CSharpSyntaxTree.ParseText(usings),
+                CSharpSyntaxTree.ParseText(code)
+            ],
+            references: references,
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
+
+        var diagnostics = compilation.GetDiagnostics();
+        var errors = diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (errors.Count > 0)
+        {
+            var errorMessages = string.Join("\n", errors.Select(e => $"{e.Id}: {e.GetMessage()}"));
+            throw new InvalidOperationException(errorMessages);
+        }
+
+        var syntaxTree = compilation.SyntaxTrees.Last();
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var root = syntaxTree.GetRoot();
+        var methodDeclaration = root.DescendantNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(method => method.Identifier.ValueText == methodName && method.Body is not null)
+            ?? root.DescendantNodes().OfType<MethodDeclarationSyntax>().FirstOrDefault(static method => method.Body is not null);
+        if (methodDeclaration?.Body is not null &&
+            semanticModel.GetOperation(methodDeclaration.Body) is IBlockOperation operation)
+            return operation;
+
+        throw new InvalidOperationException("未找到可分析的操作");
+    }
+
+    [TestMethod]
+    public void VisitAddressOf_UnsafePointer_NotSupported()
+    {
+        const string code = """
+            class TestClass
+            {
+                unsafe void TestMethod()
+                {
+                    int x = 42;
+                    int* ptr = &x;
+                }
+            }
+            """;
+
+        var block = GetBlockOperationUnsafe(code);
+        var walker = new SemanticWalker(true);
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+        StringAssert.Contains(exception.Message ?? string.Empty, "not supported");
+    }
+
+    [TestMethod]
+    public void VisitFunctionPointerInvocation_NotSupported()
+    {
+        const string code = """
+            class TestClass
+            {
+                unsafe void TestMethod()
+                {
+                    delegate*<int, int> fptr = null;
+                    int result = fptr(42);
+                }
+            }
+            """;
+
+        var block = GetBlockOperationUnsafe(code);
+        var walker = new SemanticWalker(true);
+        var exception = Assert.Throws<OperationTransformationException>(() => walker.Visit(block, new()));
+        StringAssert.Contains(exception.Message ?? string.Empty, "not supported");
+    }
 }
