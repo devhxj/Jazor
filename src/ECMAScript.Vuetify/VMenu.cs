@@ -66,7 +66,7 @@ public sealed class VMenu : ComponentBase, IVueLibraryComponent
     public VueStringNumberValue? Width { get; set; }
 
     [Parameter]
-    public string? Transition { get; set; }
+    public VuetifyTransitionValue? Transition { get; set; }
 
     [Parameter]
     public VueProps? ActivatorProps { get; set; }

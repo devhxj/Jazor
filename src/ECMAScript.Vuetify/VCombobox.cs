@@ -9,53 +9,17 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-public sealed class VCombobox : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
+[VueLibraryEmit(nameof(MenuChanged), VueEmitKind.ModelUpdate, Name = "update:menu")]
+[VueLibraryEmit(nameof(SearchChanged), VueEmitKind.ModelUpdate, Name = "update:search")]
+[VueLibrarySlot(nameof(Item), Name = "item")]
+[VueLibrarySlot(nameof(Chip), Name = "chip")]
+[VueLibrarySlot(nameof(Selection), Name = "selection")]
+[VueLibrarySlot(nameof(PrependItem), Name = "prepend-item")]
+[VueLibrarySlot(nameof(AppendItem), Name = "append-item")]
+[VueLibrarySlot(nameof(NoData), Name = "no-data")]
+public sealed class VCombobox : VSelectLikeComponentBase, IVueLibraryComponent
 {
-    [Parameter]
-    public string? Label { get; set; }
-
-    [Parameter]
-    public VuetifySelectItems? Items { get; set; }
-
-    [Parameter]
-    public VuetifySelectItemKey? ItemTitle { get; set; }
-
-    [Parameter]
-    public VuetifySelectItemKey? ItemValue { get; set; }
-
-    [Parameter]
-    public VuetifySelectItemPropsSelector? ItemProps { get; set; }
-
-    [Parameter]
-    public bool Disabled { get; set; }
-
-    [Parameter]
-    public bool Multiple { get; set; }
-
-    [Parameter]
-    public bool Chips { get; set; }
-
-    [Parameter]
-    public bool ReturnObject { get; set; }
-
-    [Parameter]
-    public bool Clearable { get; set; }
-
-    [Parameter]
-    public bool Readonly { get; set; }
-
-    [Parameter]
-    public VueDictionary? MenuProps { get; set; }
-
-    [Parameter]
-    public VuetifyDensity? Density { get; set; }
-
-    [Parameter]
-    public VuetifyFieldVariant? Variant { get; set; }
-
-    [Parameter]
-    public string? NoDataText { get; set; }
-
     [Parameter]
     public VuetifyAutoSelectFirstValue? AutoSelectFirst { get; set; }
 
@@ -66,19 +30,25 @@ public sealed class VCombobox : ComponentBase, IVueLibraryComponent
     public string[]? Delimiters { get; set; }
 
     [Parameter]
-    public string? Placeholder { get; set; }
+    public string? Search { get; set; }
 
     [Parameter]
-    public string? Hint { get; set; }
+    public EventCallback<string?> SearchChanged { get; set; }
 
     [Parameter]
-    public bool PersistentHint { get; set; }
+    public VuetifyFilterFunction? CustomFilter { get; set; }
 
     [Parameter]
-    public VuetifyHideDetailsValue? HideDetails { get; set; }
+    public VuetifyFilterKeyFunctions? CustomKeyFilter { get; set; }
 
     [Parameter]
-    public VuetifyMessagesValue? Messages { get; set; }
+    public VuetifyFilterKeys? FilterKeys { get; set; }
+
+    [Parameter]
+    public VuetifyFilterMode? FilterMode { get; set; }
+
+    [Parameter]
+    public bool NoFilter { get; set; }
 
     [Parameter]
     public string? ModelValue { get; set; }

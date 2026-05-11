@@ -1,44 +1,26 @@
 using ECMAScript.VueContract;
+using ECMAScript.VueContract.Descriptor;
 using Microsoft.AspNetCore.Components;
 using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
 /// <summary>
-/// Boolean model-binding wrapper that mirrors the existing VTextField pattern.
+/// Vuetify checkbox authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCheckbox")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
-public sealed class VCheckbox : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueLibrarySlot(nameof(Prepend), Name = "prepend")]
+[VueLibrarySlot(nameof(Append), Name = "append")]
+[VueLibrarySlot(nameof(Details), Name = "details")]
+[VueLibrarySlot(nameof(Message), Name = "message")]
+[VueLibrarySlot(nameof(LabelContent), Name = "label")]
+[VueLibrarySlot(nameof(Input), Name = "input")]
+public sealed class VCheckbox : VSelectionControlComponentBase, IVueLibraryComponent
 {
-    [Parameter]
-    public string? Label { get; set; }
-
-    [Parameter]
-    public string? Color { get; set; }
-
-    [Parameter]
-    public VuetifyDensity? Density { get; set; }
-
-    [Parameter]
-    public bool Readonly { get; set; }
-
-    [Parameter]
-    public VuetifyHideDetailsValue? HideDetails { get; set; }
-
-    [Parameter]
-    public VuetifyMessagesValue? Messages { get; set; }
-
-    [Parameter]
-    public bool Disabled { get; set; }
-
-    [Parameter]
-    public bool ModelValue { get; set; }
-
-    [Parameter]
-    public EventCallback<bool> ModelValueChanged { get; set; }
-
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

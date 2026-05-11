@@ -33,7 +33,7 @@ public sealed class VDialog : ComponentBase, IVueLibraryComponent
     public VuetifyLocation? Location { get; set; }
 
     [Parameter]
-    public string? Transition { get; set; }
+    public VuetifyTransitionValue? Transition { get; set; }
 
     [Parameter]
     public RenderFragment<VDialogActivatorContext>? Activator { get; set; }

@@ -1,0 +1,200 @@
+using System.Collections;
+using System.Runtime.CompilerServices;
+
+namespace ECMAScript.Vuetify;
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[CollectionBuilder(typeof(VuetifyOverlayOffsetValuesCollectionBuilder), nameof(VuetifyOverlayOffsetValuesCollectionBuilder.Create))]
+public readonly struct VuetifyOverlayOffsetValues : IEnumerable<Number>
+{
+    private readonly Number[]? _values;
+
+    private VuetifyOverlayOffsetValues(Number[] values)
+    {
+        _values = values;
+    }
+
+    public Number[]? AsArray => _values;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayOffsetValues From(Number[] values);
+
+    public static implicit operator VuetifyOverlayOffsetValues(Number[] values)
+        => new(values);
+
+    public static implicit operator VuetifyOverlayOffsetValues(int[] values)
+        => new(Array.ConvertAll(values, static value => (Number)value));
+
+    public static implicit operator VuetifyOverlayOffsetValues(double[] values)
+        => new(Array.ConvertAll(values, static value => (Number)value));
+
+    IEnumerator<Number> IEnumerable<Number>.GetEnumerator()
+        => ((IEnumerable<Number>)(_values ?? [])).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<Number>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifyOverlayOffsetValuesCollectionBuilder
+{
+    public static VuetifyOverlayOffsetValues Create(ReadOnlySpan<Number> values)
+        => values.ToArray();
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyOverlayOffsetValue
+{
+    private readonly byte _kind;
+    private readonly string? _string;
+    private readonly Number? _number;
+    private readonly VuetifyOverlayOffsetValues? _values;
+
+    private VuetifyOverlayOffsetValue(string value)
+    {
+        _kind = 1;
+        _string = value;
+        _number = default;
+        _values = default;
+    }
+
+    private VuetifyOverlayOffsetValue(Number value)
+    {
+        _kind = 2;
+        _string = default;
+        _number = value;
+        _values = default;
+    }
+
+    private VuetifyOverlayOffsetValue(VuetifyOverlayOffsetValues value)
+    {
+        _kind = 3;
+        _string = default;
+        _number = default;
+        _values = value;
+    }
+
+    public string? AsString => _kind == 1 ? _string : default;
+
+    public Number? AsNumber => _kind == 2 ? _number : default;
+
+    public VuetifyOverlayOffsetValues? AsValues => _kind == 3 ? _values : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayOffsetValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayOffsetValue From(Number value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayOffsetValue From(VuetifyOverlayOffsetValues value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(Number value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(VuetifyOverlayOffsetValues value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(byte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(sbyte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(short value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(ushort value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(int value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(uint value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(float value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(double value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyOverlayOffsetValue(decimal value)
+        => new((Number)value);
+}
+
+[String]
+public enum VuetifyOriginMode
+{
+    [Description("@#auto")]
+    Auto,
+
+    [Description("@#overlap")]
+    Overlap
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyOriginValue
+{
+    private readonly byte _kind;
+    private readonly VuetifyLocation? _location;
+    private readonly VuetifyOriginMode? _mode;
+    private readonly string? _custom;
+
+    private VuetifyOriginValue(VuetifyLocation value)
+    {
+        _kind = 1;
+        _location = value;
+        _mode = default;
+        _custom = default;
+    }
+
+    private VuetifyOriginValue(VuetifyOriginMode value)
+    {
+        _kind = 2;
+        _location = default;
+        _mode = value;
+        _custom = default;
+    }
+
+    private VuetifyOriginValue(string value)
+    {
+        _kind = 3;
+        _location = default;
+        _mode = default;
+        _custom = value;
+    }
+
+    public VuetifyLocation? AsLocation => _kind == 1 ? _location : default;
+
+    public VuetifyOriginMode? AsMode => _kind == 2 ? _mode : default;
+
+    public string? AsCustom => _kind == 3 ? _custom : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOriginValue From(VuetifyLocation value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOriginValue From(VuetifyOriginMode value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOriginValue From(string value);
+
+    public static implicit operator VuetifyOriginValue(VuetifyLocation value)
+        => new(value);
+
+    public static implicit operator VuetifyOriginValue(VuetifyOriginMode value)
+        => new(value);
+
+    public static implicit operator VuetifyOriginValue(string value)
+        => new(value);
+}

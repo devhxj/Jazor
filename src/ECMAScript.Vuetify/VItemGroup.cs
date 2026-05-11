@@ -1,0 +1,39 @@
+using Microsoft.AspNetCore.Components;
+
+namespace ECMAScript.Vuetify;
+
+[VueLibraryComponent("vuetify/components", "VItemGroup")]
+[VueLibraryStyle("vuetify/styles")]
+[VueLibraryPluginRequirement("vuetify")]
+public sealed class VItemGroup : ComponentBase, IVueLibraryComponent
+{
+    [Parameter]
+    public VuetifyGroupModelValue? ModelValue { get; set; }
+
+    [Parameter]
+    public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
+
+    [Parameter]
+    public VuetifyMandatoryValue? Mandatory { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Max { get; set; }
+
+    [Parameter]
+    public bool Multiple { get; set; }
+
+    [Parameter]
+    public string? SelectedClass { get; set; }
+
+    [Parameter]
+    public string? Tag { get; set; }
+
+    [Parameter]
+    public VuetifyValueComparator? ValueComparator { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+
+    [Parameter]
+    public RenderFragment<VItemGroupDefaultSlotContext>? ChildContent { get; set; }
+}

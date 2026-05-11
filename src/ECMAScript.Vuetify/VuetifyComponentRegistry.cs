@@ -43,9 +43,6 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
     [Description("@#VBtnToggle")]
     public IVuetifyComponent? VBtnToggle { get; init; }
 
-    [Description("@#VCalendar")]
-    public IVuetifyComponent? VCalendar { get; init; }
-
     [Description("@#VCard")]
     public IVuetifyComponent? VCard { get; init; }
 
@@ -135,9 +132,6 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
 
     [Description("@#VForm")]
     public IVuetifyComponent? VForm { get; init; }
-
-    [Description("@#VHotkey")]
-    public IVuetifyComponent? VHotkey { get; init; }
 
     [Description("@#VHover")]
     public IVuetifyComponent? VHover { get; init; }
@@ -304,9 +298,6 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
     [Description("@#VTimeline")]
     public IVuetifyComponent? VTimeline { get; init; }
 
-    [Description("@#VTimePicker")]
-    public IVuetifyComponent? VTimePicker { get; init; }
-
     [Description("@#VToolbar")]
     public IVuetifyComponent? VToolbar { get; init; }
 
@@ -319,9 +310,6 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
     [Description("@#VTooltip")]
     public IVuetifyComponent? VTooltip { get; init; }
 
-    [Description("@#VTreeview")]
-    public IVuetifyComponent? VTreeview { get; init; }
-
     [Description("@#VValidation")]
     public IVuetifyComponent? VValidation { get; init; }
 
@@ -330,5 +318,19 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
 
     [Description("@#VWindow")]
     public IVuetifyComponent? VWindow { get; init; }
+}
+
+[ECMAScript]
+[Description("@#VuetifyLabsComponentRegistry")]
+public sealed record VuetifyLabsComponentRegistry : VueComponentRegistry
+{
+    [Description("@#VCalendar")]
+    public IVuetifyComponent? VCalendar { get; init; }
+
+    [Description("@#VTimePicker")]
+    public IVuetifyComponent? VTimePicker { get; init; }
+
+    [Description("@#VTreeview")]
+    public IVuetifyComponent? VTreeview { get; init; }
 }
 

@@ -289,6 +289,7 @@ public readonly struct VuetifySelectItemValue
     private readonly VuetifySelectItem? _item;
     private readonly Number? _number;
     private readonly bool? _boolean;
+    private readonly VueProps? _object;
 
     private VuetifySelectItemValue(string value)
     {
@@ -297,6 +298,7 @@ public readonly struct VuetifySelectItemValue
         _item = default;
         _number = default;
         _boolean = default;
+        _object = default;
     }
 
     private VuetifySelectItemValue(VuetifySelectItem value)
@@ -306,6 +308,7 @@ public readonly struct VuetifySelectItemValue
         _item = value;
         _number = default;
         _boolean = default;
+        _object = default;
     }
 
     private VuetifySelectItemValue(Number value)
@@ -315,6 +318,7 @@ public readonly struct VuetifySelectItemValue
         _item = default;
         _number = value;
         _boolean = default;
+        _object = default;
     }
 
     private VuetifySelectItemValue(bool value)
@@ -324,6 +328,17 @@ public readonly struct VuetifySelectItemValue
         _item = default;
         _number = default;
         _boolean = value;
+        _object = default;
+    }
+
+    private VuetifySelectItemValue(VueProps value)
+    {
+        _kind = 5;
+        _string = default;
+        _item = default;
+        _number = default;
+        _boolean = default;
+        _object = value;
     }
 
     public string? AsString => _kind == 1 ? _string : default;
@@ -333,6 +348,8 @@ public readonly struct VuetifySelectItemValue
     public Number? AsNumber => _kind == 3 ? _number : default;
 
     public bool? AsBool => _kind == 4 ? _boolean : default;
+
+    public VueProps? AsObject => _kind == 5 ? _object : default;
 
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItemValue From(string value);
@@ -346,6 +363,9 @@ public readonly struct VuetifySelectItemValue
     [ECMAScriptInline("__arg1")]
     public extern static VuetifySelectItemValue From(bool value);
 
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifySelectItemValue From(VueProps value);
+
     public static implicit operator VuetifySelectItemValue(string value)
         => new(value);
 
@@ -356,6 +376,12 @@ public readonly struct VuetifySelectItemValue
         => new(value);
 
     public static implicit operator VuetifySelectItemValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifySelectItemValue(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifySelectItemValue(VueDictionary value)
         => new(value);
 
     public static implicit operator VuetifySelectItemValue(byte value)
@@ -401,6 +427,9 @@ public sealed class VuetifySelectItem
 
     [Description("@#children")]
     public VuetifySelectItemValue[]? Children { get; init; }
+
+    [Description("@#raw")]
+    public VueValue? Raw { get; init; }
 }
 
 [ECMAScript]
@@ -566,6 +595,200 @@ public readonly struct VuetifySelectItemPropsSelector
 }
 
 public delegate VuetifyItemProps? VuetifySelectItemPropsCallback(VueValue item);
+
+public delegate bool VuetifySelectValueComparator(VueValue? first, VueValue? second);
+
+public delegate VuetifyFilterMatch VuetifyFilterFunction(string? value, string? query, VuetifyListItem? item = default);
+
+[ECMAScript]
+[Description("@#")]
+public sealed record VuetifyFilterKeyFunctions : VueDictionary<VuetifyFilterFunction>;
+
+[String]
+public enum VuetifyFilterMode
+{
+    [Description("@#some")]
+    Some,
+
+    [Description("@#every")]
+    Every,
+
+    [Description("@#union")]
+    Union,
+
+    [Description("@#intersection")]
+    Intersection
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyFilterKeys
+{
+    private readonly byte _kind;
+    private readonly string? _string;
+    private readonly string[]? _strings;
+
+    private VuetifyFilterKeys(string value)
+    {
+        _kind = 1;
+        _string = value;
+        _strings = default;
+    }
+
+    private VuetifyFilterKeys(string[] value)
+    {
+        _kind = 2;
+        _string = default;
+        _strings = value;
+    }
+
+    public string? AsString => _kind == 1 ? _string : default;
+
+    public string[]? AsStrings => _kind == 2 ? _strings : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyFilterKeys From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyFilterKeys From(string[] value);
+
+    public static implicit operator VuetifyFilterKeys(string value)
+        => new(value);
+
+    public static implicit operator VuetifyFilterKeys(string[] value)
+        => new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyFilterMatch
+{
+    private readonly byte _kind;
+    private readonly bool? _boolean;
+    private readonly Number? _number;
+    private readonly Number[]? _range;
+    private readonly Number[][]? _ranges;
+
+    private VuetifyFilterMatch(bool value)
+    {
+        _kind = 1;
+        _boolean = value;
+        _number = default;
+        _range = default;
+        _ranges = default;
+    }
+
+    private VuetifyFilterMatch(Number value)
+    {
+        _kind = 2;
+        _boolean = default;
+        _number = value;
+        _range = default;
+        _ranges = default;
+    }
+
+    private VuetifyFilterMatch(Number[] value)
+    {
+        _kind = 3;
+        _boolean = default;
+        _number = default;
+        _range = value;
+        _ranges = default;
+    }
+
+    private VuetifyFilterMatch(Number[][] value)
+    {
+        _kind = 4;
+        _boolean = default;
+        _number = default;
+        _range = default;
+        _ranges = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _boolean : default;
+
+    public Number? AsNumber => _kind == 2 ? _number : default;
+
+    public Number[]? AsRange => _kind == 3 ? _range : default;
+
+    public Number[][]? AsRanges => _kind == 4 ? _ranges : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyFilterMatch From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyFilterMatch From(Number value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyFilterMatch From(Number[] value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyFilterMatch From(Number[][] value);
+
+    [ECMAScriptInline("[__arg1, __arg2]")]
+    public extern static VuetifyFilterMatch Range(Number start, Number end);
+
+    public static implicit operator VuetifyFilterMatch(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyFilterMatch(Number value)
+        => new(value);
+
+    public static implicit operator VuetifyFilterMatch(Number[] value)
+        => new(value);
+
+    public static implicit operator VuetifyFilterMatch(Number[][] value)
+        => new(value);
+
+    public static implicit operator VuetifyFilterMatch(byte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(sbyte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(short value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(ushort value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(int value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(uint value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(float value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(double value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyFilterMatch(decimal value)
+        => new((Number)value);
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed record VuetifyListItem
+{
+    [Description("@#title")]
+    public string? Title { get; init; }
+
+    [Description("@#value")]
+    public VueValue? Value { get; init; }
+
+    [Description("@#props")]
+    public VueProps? Props { get; init; }
+
+    [Description("@#children")]
+    public VuetifyListItem[]? Children { get; init; }
+
+    [Description("@#raw")]
+    public VueValue? Raw { get; init; }
+}
 
 [ECMAScript]
 [ECMAScriptUnion]

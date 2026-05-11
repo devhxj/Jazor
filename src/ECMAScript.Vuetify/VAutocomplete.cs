@@ -9,53 +9,17 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryProp(nameof(SelectedValue), VuePropKind.Model, Name = "modelValue", AcceptsBinding = true)]
 [VueLibraryEmit(nameof(SelectedValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
-public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
+[VueLibraryEmit(nameof(FocusedChanged), VueEmitKind.ModelUpdate, Name = "update:focused")]
+[VueLibraryEmit(nameof(MenuChanged), VueEmitKind.ModelUpdate, Name = "update:menu")]
+[VueLibraryEmit(nameof(SearchChanged), VueEmitKind.ModelUpdate, Name = "update:search")]
+[VueLibrarySlot(nameof(Item), Name = "item")]
+[VueLibrarySlot(nameof(Chip), Name = "chip")]
+[VueLibrarySlot(nameof(Selection), Name = "selection")]
+[VueLibrarySlot(nameof(PrependItem), Name = "prepend-item")]
+[VueLibrarySlot(nameof(AppendItem), Name = "append-item")]
+[VueLibrarySlot(nameof(NoData), Name = "no-data")]
+public sealed class VAutocomplete : VSelectLikeComponentBase, IVueLibraryComponent
 {
-    [Parameter]
-    public string? Label { get; set; }
-
-    [Parameter]
-    public VuetifySelectItems? Items { get; set; }
-
-    [Parameter]
-    public VuetifySelectItemKey? ItemTitle { get; set; }
-
-    [Parameter]
-    public VuetifySelectItemKey? ItemValue { get; set; }
-
-    [Parameter]
-    public VuetifySelectItemPropsSelector? ItemProps { get; set; }
-
-    [Parameter]
-    public bool Disabled { get; set; }
-
-    [Parameter]
-    public bool Multiple { get; set; }
-
-    [Parameter]
-    public bool Chips { get; set; }
-
-    [Parameter]
-    public bool ReturnObject { get; set; }
-
-    [Parameter]
-    public bool Clearable { get; set; }
-
-    [Parameter]
-    public bool Readonly { get; set; }
-
-    [Parameter]
-    public VueDictionary? MenuProps { get; set; }
-
-    [Parameter]
-    public VuetifyDensity? Density { get; set; }
-
-    [Parameter]
-    public VuetifyFieldVariant? Variant { get; set; }
-
-    [Parameter]
-    public string? NoDataText { get; set; }
-
     [Parameter]
     public string? ModelValue { get; set; }
 
@@ -67,6 +31,33 @@ public sealed class VAutocomplete : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public EventCallback<VuetifySelectModelValue?> SelectedValueChanged { get; set; }
+
+    [Parameter]
+    public string? Search { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SearchChanged { get; set; }
+
+    [Parameter]
+    public VuetifyAutoSelectFirstValue? AutoSelectFirst { get; set; }
+
+    [Parameter]
+    public bool ClearOnSelect { get; set; }
+
+    [Parameter]
+    public VuetifyFilterFunction? CustomFilter { get; set; }
+
+    [Parameter]
+    public VuetifyFilterKeyFunctions? CustomKeyFilter { get; set; }
+
+    [Parameter]
+    public VuetifyFilterKeys? FilterKeys { get; set; }
+
+    [Parameter]
+    public VuetifyFilterMode? FilterMode { get; set; }
+
+    [Parameter]
+    public bool NoFilter { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

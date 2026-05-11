@@ -1,4 +1,6 @@
+using System.Collections;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
@@ -181,6 +183,193 @@ public enum VuetifyScrollStrategy
 
     [Description("@#reposition")]
     Reposition
+}
+
+[String]
+public enum VuetifyLocationStrategy
+{
+    [Description("@#static")]
+    Static,
+
+    [Description("@#connected")]
+    Connected
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+[CollectionBuilder(typeof(VuetifyStyleValuesCollectionBuilder), nameof(VuetifyStyleValuesCollectionBuilder.Create))]
+public readonly struct VuetifyStyleValues : IEnumerable<VuetifyStyleValue>
+{
+    private readonly VuetifyStyleValue[]? _values;
+
+    private VuetifyStyleValues(VuetifyStyleValue[] values)
+    {
+        _values = values;
+    }
+
+    public VuetifyStyleValue[]? AsArray => _values;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyStyleValues From(VuetifyStyleValue[] values);
+
+    public static implicit operator VuetifyStyleValues(VuetifyStyleValue[] values)
+        => new(values);
+
+    public static implicit operator VuetifyStyleValues(string[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifyStyleValue)value));
+
+    public static implicit operator VuetifyStyleValues(VueProps[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifyStyleValue)value));
+
+    public static implicit operator VuetifyStyleValues(VueDictionary[] values)
+        => new(Array.ConvertAll(values, static value => (VuetifyStyleValue)value));
+
+    IEnumerator<VuetifyStyleValue> IEnumerable<VuetifyStyleValue>.GetEnumerator()
+        => ((IEnumerable<VuetifyStyleValue>)(_values ?? [])).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator()
+        => ((IEnumerable<VuetifyStyleValue>)this).GetEnumerator();
+}
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class VuetifyStyleValuesCollectionBuilder
+{
+    public static VuetifyStyleValues Create(ReadOnlySpan<VuetifyStyleValue> values)
+        => values.ToArray();
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyStyleValue
+{
+    private readonly byte _kind;
+    private readonly string? _string;
+    private readonly VueProps? _props;
+    private readonly VuetifyStyleValues? _values;
+
+    private VuetifyStyleValue(string value)
+    {
+        _kind = 1;
+        _string = value;
+        _props = default;
+        _values = default;
+    }
+
+    private VuetifyStyleValue(VueProps value)
+    {
+        _kind = 2;
+        _string = default;
+        _props = value;
+        _values = default;
+    }
+
+    private VuetifyStyleValue(VuetifyStyleValues value)
+    {
+        _kind = 3;
+        _string = default;
+        _props = default;
+        _values = value;
+    }
+
+    public string? AsString => _kind == 1 ? _string : default;
+
+    public VueProps? AsProps => _kind == 2 ? _props : default;
+
+    public VuetifyStyleValues? AsValues => _kind == 3 ? _values : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyStyleValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyStyleValue From(VueProps value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyStyleValue From(VuetifyStyleValues value);
+
+    public static implicit operator VuetifyStyleValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifyStyleValue(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifyStyleValue(VueDictionary value)
+        => new(value);
+
+    public static implicit operator VuetifyStyleValue(VuetifyStyleValues value)
+        => new(value);
+
+    public static implicit operator VuetifyStyleValue(VuetifyStyleValue[] value)
+        => new((VuetifyStyleValues)value);
+
+    public static implicit operator VuetifyStyleValue(string[] value)
+        => new((VuetifyStyleValues)value);
+
+    public static implicit operator VuetifyStyleValue(VueProps[] value)
+        => new((VuetifyStyleValues)value);
+
+    public static implicit operator VuetifyStyleValue(VueDictionary[] value)
+        => new((VuetifyStyleValues)value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyAttachTarget
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly string? _selector;
+    private readonly Element? _element;
+
+    private VuetifyAttachTarget(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _selector = default;
+        _element = default;
+    }
+
+    private VuetifyAttachTarget(string value)
+    {
+        _kind = 2;
+        _bool = default;
+        _selector = value;
+        _element = default;
+    }
+
+    private VuetifyAttachTarget(Element value)
+    {
+        _kind = 3;
+        _bool = default;
+        _selector = default;
+        _element = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public string? AsSelector => _kind == 2 ? _selector : default;
+
+    public Element? AsElement => _kind == 3 ? _element : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAttachTarget From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAttachTarget From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyAttachTarget From(Element value);
+
+    public static implicit operator VuetifyAttachTarget(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyAttachTarget(string value)
+        => new(value);
+
+    public static implicit operator VuetifyAttachTarget(Element value)
+        => new(value);
 }
 
 [String]
@@ -427,6 +616,65 @@ public readonly struct VuetifyScrimValue
         => new(value);
 
     public static implicit operator VuetifyScrimValue(string value)
+        => new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyTransitionValue
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly string? _string;
+    private readonly VueTransitionProps? _props;
+
+    private VuetifyTransitionValue(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _string = default;
+        _props = default;
+    }
+
+    private VuetifyTransitionValue(string value)
+    {
+        _kind = 2;
+        _bool = default;
+        _string = value;
+        _props = default;
+    }
+
+    private VuetifyTransitionValue(VueTransitionProps value)
+    {
+        _kind = 3;
+        _bool = default;
+        _string = default;
+        _props = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public string? AsString => _kind == 2 ? _string : default;
+
+    public VueTransitionProps? AsProps => _kind == 3 ? _props : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyTransitionValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyTransitionValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyTransitionValue From(VueTransitionProps value);
+
+    public static implicit operator VuetifyTransitionValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyTransitionValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifyTransitionValue(VueTransitionProps value)
         => new(value);
 }
 
@@ -1120,4 +1368,502 @@ public enum VuetifyValidateOn
 
     [Description("@#eager invalid-input")]
     EagerInvalidInput
+}
+
+[String]
+public enum VuetifyInputDirection
+{
+    [Description("@#horizontal")]
+    Horizontal,
+
+    [Description("@#vertical")]
+    Vertical
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyNullableBoolean
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+
+    private VuetifyNullableBoolean(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyNullableBoolean From(bool value);
+
+    [ECMAScriptInline("null")]
+    public extern static VuetifyNullableBoolean Null();
+
+    public static implicit operator VuetifyNullableBoolean(bool value)
+        => new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyIconColorValue
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly string? _string;
+
+    private VuetifyIconColorValue(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _string = default;
+    }
+
+    private VuetifyIconColorValue(string value)
+    {
+        _kind = 2;
+        _bool = default;
+        _string = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public string? AsString => _kind == 2 ? _string : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyIconColorValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyIconColorValue From(string value);
+
+    public static implicit operator VuetifyIconColorValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyIconColorValue(string value)
+        => new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyValidationResult
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly string? _string;
+
+    private VuetifyValidationResult(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _string = default;
+    }
+
+    private VuetifyValidationResult(string value)
+    {
+        _kind = 2;
+        _bool = default;
+        _string = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public string? AsString => _kind == 2 ? _string : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyValidationResult From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyValidationResult From(string value);
+
+    public static implicit operator VuetifyValidationResult(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyValidationResult(string value)
+        => new(value);
+}
+
+public delegate VuetifyValidationResult VuetifyValidationRuleResolver(VueValue? value);
+
+public delegate IPromise<VuetifyValidationResult> VuetifyAsyncValidationRuleResolver(VueValue? value);
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyValidationRule
+{
+    private readonly byte _kind;
+    private readonly VuetifyValidationResult? _result;
+    private readonly VuetifyValidationRuleResolver? _resolver;
+    private readonly IPromise<VuetifyValidationResult>? _promise;
+    private readonly VuetifyAsyncValidationRuleResolver? _asyncResolver;
+
+    private VuetifyValidationRule(VuetifyValidationResult value)
+    {
+        _kind = 1;
+        _result = value;
+        _resolver = default;
+        _promise = default;
+        _asyncResolver = default;
+    }
+
+    private VuetifyValidationRule(VuetifyValidationRuleResolver value)
+    {
+        _kind = 2;
+        _result = default;
+        _resolver = value;
+        _promise = default;
+        _asyncResolver = default;
+    }
+
+    private VuetifyValidationRule(IPromise<VuetifyValidationResult> value)
+    {
+        _kind = 3;
+        _result = default;
+        _resolver = default;
+        _promise = value;
+        _asyncResolver = default;
+    }
+
+    private VuetifyValidationRule(VuetifyAsyncValidationRuleResolver value)
+    {
+        _kind = 4;
+        _result = default;
+        _resolver = default;
+        _promise = default;
+        _asyncResolver = value;
+    }
+
+    public VuetifyValidationResult? AsResult => _kind == 1 ? _result : default;
+
+    public VuetifyValidationRuleResolver? AsResolver => _kind == 2 ? _resolver : default;
+
+    public IPromise<VuetifyValidationResult>? AsPromise => _kind == 3 ? _promise : default;
+
+    public VuetifyAsyncValidationRuleResolver? AsAsyncResolver => _kind == 4 ? _asyncResolver : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyValidationRule From(VuetifyValidationResult value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyValidationRule From(VuetifyValidationRuleResolver value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyValidationRule From(IPromise<VuetifyValidationResult> value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyValidationRule From(VuetifyAsyncValidationRuleResolver value);
+
+    public static implicit operator VuetifyValidationRule(VuetifyValidationResult value)
+        => new(value);
+
+    public static implicit operator VuetifyValidationRule(bool value)
+        => new((VuetifyValidationResult)value);
+
+    public static implicit operator VuetifyValidationRule(string value)
+        => new((VuetifyValidationResult)value);
+
+    public static implicit operator VuetifyValidationRule(VuetifyValidationRuleResolver value)
+        => new(value);
+
+    public static implicit operator VuetifyValidationRule(VuetifyAsyncValidationRuleResolver value)
+        => new(value);
+}
+
+[String]
+public enum VuetifyPosition
+{
+    [Description("@#static")]
+    Static,
+
+    [Description("@#relative")]
+    Relative,
+
+    [Description("@#fixed")]
+    Fixed,
+
+    [Description("@#absolute")]
+    Absolute,
+
+    [Description("@#sticky")]
+    Sticky
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyMobileValue
+{
+    private readonly bool? _value;
+
+    private VuetifyMobileValue(bool value)
+    {
+        _value = value;
+    }
+
+    public bool? AsBool => _value;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyMobileValue From(bool value);
+
+    [ECMAScriptInline("null")]
+    public extern static VuetifyMobileValue Auto();
+
+    public static implicit operator VuetifyMobileValue(bool value)
+        => new(value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyBorderValue
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly Number? _number;
+    private readonly string? _string;
+
+    private VuetifyBorderValue(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _number = default;
+        _string = default;
+    }
+
+    private VuetifyBorderValue(Number value)
+    {
+        _kind = 2;
+        _bool = default;
+        _number = value;
+        _string = default;
+    }
+
+    private VuetifyBorderValue(string value)
+    {
+        _kind = 3;
+        _bool = default;
+        _number = default;
+        _string = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public Number? AsNumber => _kind == 2 ? _number : default;
+
+    public string? AsString => _kind == 3 ? _string : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyBorderValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyBorderValue From(Number value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyBorderValue From(string value);
+
+    public static implicit operator VuetifyBorderValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyBorderValue(Number value)
+        => new(value);
+
+    public static implicit operator VuetifyBorderValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifyBorderValue(byte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(sbyte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(short value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(ushort value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(int value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(uint value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(float value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(double value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyBorderValue(decimal value)
+        => new((Number)value);
+}
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyIconValue
+{
+    private readonly byte _kind;
+    private readonly bool? _bool;
+    private readonly string? _string;
+    private readonly Symbol? _symbol;
+    private readonly VueProps? _component;
+
+    private VuetifyIconValue(bool value)
+    {
+        _kind = 1;
+        _bool = value;
+        _string = default;
+        _symbol = default;
+        _component = default;
+    }
+
+    private VuetifyIconValue(string value)
+    {
+        _kind = 2;
+        _bool = default;
+        _string = value;
+        _symbol = default;
+        _component = default;
+    }
+
+    private VuetifyIconValue(Symbol value)
+    {
+        _kind = 3;
+        _bool = default;
+        _string = default;
+        _symbol = value;
+        _component = default;
+    }
+
+    private VuetifyIconValue(VueProps value)
+    {
+        _kind = 4;
+        _bool = default;
+        _string = default;
+        _symbol = default;
+        _component = value;
+    }
+
+    public bool? AsBool => _kind == 1 ? _bool : default;
+
+    public string? AsString => _kind == 2 ? _string : default;
+
+    public Symbol? AsSymbol => _kind == 3 ? _symbol : default;
+
+    public VueProps? AsComponent => _kind == 4 ? _component : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyIconValue From(bool value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyIconValue From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyIconValue From(Symbol value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyIconValue From(VueProps value);
+
+    public static implicit operator VuetifyIconValue(bool value)
+        => new(value);
+
+    public static implicit operator VuetifyIconValue(string value)
+        => new(value);
+
+    public static implicit operator VuetifyIconValue(Symbol value)
+        => new(value);
+
+    public static implicit operator VuetifyIconValue(VueProps value)
+        => new(value);
+
+    public static implicit operator VuetifyIconValue(VueDictionary value)
+        => new(value);
+}
+
+public delegate Number VuetifyCounterValueResolver(string? value);
+
+[ECMAScript]
+[ECMAScriptUnion]
+[Description("@#")]
+public readonly struct VuetifyCounterValueSource
+{
+    private readonly byte _kind;
+    private readonly Number? _number;
+    private readonly VuetifyCounterValueResolver? _resolver;
+
+    private VuetifyCounterValueSource(Number value)
+    {
+        _kind = 1;
+        _number = value;
+        _resolver = default;
+    }
+
+    private VuetifyCounterValueSource(VuetifyCounterValueResolver value)
+    {
+        _kind = 2;
+        _number = default;
+        _resolver = value;
+    }
+
+    public Number? AsNumber => _kind == 1 ? _number : default;
+
+    public VuetifyCounterValueResolver? AsResolver => _kind == 2 ? _resolver : default;
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyCounterValueSource From(Number value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyCounterValueSource From(VuetifyCounterValueResolver value);
+
+    public static implicit operator VuetifyCounterValueSource(Number value)
+        => new(value);
+
+    public static implicit operator VuetifyCounterValueSource(VuetifyCounterValueResolver value)
+        => new(value);
+
+    public static implicit operator VuetifyCounterValueSource(byte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(sbyte value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(short value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(ushort value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(int value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(uint value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(float value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(double value)
+        => new((Number)value);
+
+    public static implicit operator VuetifyCounterValueSource(decimal value)
+        => new((Number)value);
+}
+
+[ECMAScript]
+[Description("@#")]
+public sealed record VuetifyTextModelModifiers : VueProps
+{
+    [Description("@#trim")]
+    public bool? Trim { get; init; }
+
+    [Description("@#number")]
+    public bool? Number { get; init; }
+
+    [Description("@#lazy")]
+    public bool? Lazy { get; init; }
 }

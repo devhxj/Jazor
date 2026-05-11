@@ -42,9 +42,6 @@ public static class VuetifyComponents
     [ECMAScriptName("VBtnToggle")]
     public extern static IVuetifyComponent VBtnToggle { get; }
 
-    [ECMAScriptName("VCalendar")]
-    public extern static IVuetifyComponent VCalendar { get; }
-
     [ECMAScriptName("VCard")]
     public extern static IVuetifyComponent VCard { get; }
 
@@ -134,9 +131,6 @@ public static class VuetifyComponents
 
     [ECMAScriptName("VForm")]
     public extern static IVuetifyComponent VForm { get; }
-
-    [ECMAScriptName("VHotkey")]
-    public extern static IVuetifyComponent VHotkey { get; }
 
     [ECMAScriptName("VHover")]
     public extern static IVuetifyComponent VHover { get; }
@@ -303,9 +297,6 @@ public static class VuetifyComponents
     [ECMAScriptName("VTimeline")]
     public extern static IVuetifyComponent VTimeline { get; }
 
-    [ECMAScriptName("VTimePicker")]
-    public extern static IVuetifyComponent VTimePicker { get; }
-
     [ECMAScriptName("VToolbar")]
     public extern static IVuetifyComponent VToolbar { get; }
 
@@ -318,9 +309,6 @@ public static class VuetifyComponents
     [ECMAScriptName("VTooltip")]
     public extern static IVuetifyComponent VTooltip { get; }
 
-    [ECMAScriptName("VTreeview")]
-    public extern static IVuetifyComponent VTreeview { get; }
-
     [ECMAScriptName("VValidation")]
     public extern static IVuetifyComponent VValidation { get; }
 
@@ -329,5 +317,18 @@ public static class VuetifyComponents
 
     [ECMAScriptName("VWindow")]
     public extern static IVuetifyComponent VWindow { get; }
+}
+
+[ECMAScript("vuetify/labs/components")]
+public static class VuetifyLabsComponents
+{
+    [ECMAScriptName("VCalendar")]
+    public extern static IVuetifyComponent VCalendar { get; }
+
+    [ECMAScriptName("VTimePicker")]
+    public extern static IVuetifyComponent VTimePicker { get; }
+
+    [ECMAScriptName("VTreeview")]
+    public extern static IVuetifyComponent VTreeview { get; }
 }
 
