@@ -13,33 +13,73 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VItemGroup : ComponentBase, IVueLibraryComponent
 {
+    /// <summary>
+    /// 条目组的绑定值。
+    /// Bound value of the item group.
+    /// </summary>
     [Parameter]
     public VuetifyGroupModelValue? ModelValue { get; set; }
 
+    /// <summary>
+    /// 绑定值变化时的回调。
+    /// Callback when the bound value changes.
+    /// </summary>
     [Parameter]
     public EventCallback<VuetifyGroupModelValue?> ModelValueChanged { get; set; }
 
+    /// <summary>
+    /// 是否强制至少选中一个条目。
+    /// Whether at least one item must be selected.
+    /// </summary>
     [Parameter]
     public VuetifyMandatoryValue? Mandatory { get; set; }
 
+    /// <summary>
+    /// 可选中的最大条目数。
+    /// Maximum number of selectable items.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? Max { get; set; }
 
+    /// <summary>
+    /// 是否允许多选。
+    /// Whether multiple selection is allowed.
+    /// </summary>
     [Parameter]
     public bool Multiple { get; set; }
 
+    /// <summary>
+    /// 选中条目时应用的 CSS 类名。
+    /// CSS class applied to selected items.
+    /// </summary>
     [Parameter]
     public string? SelectedClass { get; set; }
 
+    /// <summary>
+    /// 渲染的 HTML 标签名。
+    /// HTML tag name to render.
+    /// </summary>
     [Parameter]
     public string? Tag { get; set; }
 
+    /// <summary>
+    /// 用于比较条目值的函数。
+    /// Value comparator for item selection.
+    /// </summary>
     [Parameter]
     public VuetifyValueComparator? ValueComparator { get; set; }
 
+    /// <summary>
+    /// 附加到根元素上的额外 HTML 属性。
+    /// Additional HTML attributes applied to the root element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// 条目组的默认插槽内容。
+    /// Default slot content for the item group.
+    /// </summary>
     [Parameter]
     public RenderFragment<VItemGroupDefaultSlotContext>? ChildContent { get; set; }
 }

@@ -13,21 +13,45 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
 {
+    /// <summary>
+    /// 主题颜色。
+    /// Theme color.
+    /// </summary>
     [Parameter]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// 变体。
+    /// Variant.
+    /// </summary>
     [Parameter]
     public VuetifyVariant? Variant { get; set; }
 
+    /// <summary>
+    /// CSS类。
+    /// CSS class.
+    /// </summary>
     [Parameter]
     public VueClassValue? Class { get; set; }
 
+    /// <summary>
+    /// 行内样式。
+    /// Inline style.
+    /// </summary>
     [Parameter]
     public VuetifyStyleValue? Style { get; set; }
 
+    /// <summary>
+    /// 额外属性。
+    /// Additional attributes.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// 默认插槽。
+    /// Default slot.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 }

@@ -23,6 +23,10 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Input), Name = "input")]
 public sealed class VCheckbox : VSelectionControlComponentBase, IVueLibraryComponent
 {
+    /// <summary>
+    /// 附加到组件根元素的额外属性。
+    /// Additional attributes applied to the component root element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 }

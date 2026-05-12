@@ -15,21 +15,45 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Sources), Name = "sources")]
 public sealed class VParallax : ComponentBase, IVueLibraryComponent
 {
+    /// <summary>
+    /// 视差滚动缩放比例。
+    /// The parallax scroll scale factor.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? Scale { get; set; }
 
+    /// <summary>
+    /// 附加到根元素上的额外属性。
+    /// Additional attributes applied to the root element.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// 默认插槽内容。
+    /// The default slot content.
+    /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// 图片加载前显示的占位内容。
+    /// Content displayed while the image is loading.
+    /// </summary>
     [Parameter]
     public RenderFragment? Placeholder { get; set; }
 
+    /// <summary>
+    /// 图片加载失败时显示的错误内容。
+    /// Content displayed when the image fails to load.
+    /// </summary>
     [Parameter]
     public RenderFragment? Error { get; set; }
 
+    /// <summary>
+    /// 用于自定义图片来源的插槽。
+    /// Slot for customizing image sources.
+    /// </summary>
     [Parameter]
     public RenderFragment? Sources { get; set; }
 }

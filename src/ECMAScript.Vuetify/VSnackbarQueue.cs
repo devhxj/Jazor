@@ -17,141 +17,325 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Actions), Name = "actions")]
 public sealed class VSnackbarQueue : ComponentBase, IVueLibraryComponent
 {
+    /// <summary>
+    /// 消息队列中待显示的通知列表。
+    /// List of pending notifications in the queue.
+    /// </summary>
     [Parameter]
     public VuetifySnackbarQueueMessages? ModelValue { get; set; }
 
+    /// <summary>
+    /// 通知列表变化时触发的回调。
+    /// Callback invoked when the notification list changes.
+    /// </summary>
     [Parameter]
     public EventCallback<VuetifySnackbarQueueMessages?> ModelValueChanged { get; set; }
 
+    /// <summary>
+    /// 消息条的视觉变体。
+    /// Visual variant of the snackbar queue.
+    /// </summary>
     [Parameter]
     public VuetifyVariant? Variant { get; set; }
 
+    /// <summary>
+    /// 消息条相对于锚点的偏移量。
+    /// Offset of the snackbar relative to its anchor.
+    /// </summary>
     [Parameter]
     public VuetifyOverlayOffsetValue? Offset { get; set; }
 
+    /// <summary>
+    /// 是否使用绝对定位。
+    /// Whether to use absolute positioning.
+    /// </summary>
     [Parameter]
     public bool Absolute { get; set; }
 
+    /// <summary>
+    /// 消息条出现的位置。
+    /// Position where the snackbar appears.
+    /// </summary>
     [Parameter]
     public VuetifyLocation? Location { get; set; }
 
+    /// <summary>
+    /// 消息条动画的变换原点。
+    /// Transform origin of the snackbar animation.
+    /// </summary>
     [Parameter]
     public VuetifyOriginValue? Origin { get; set; }
 
+    /// <summary>
+    /// 消息条的高度。
+    /// Height of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? Height { get; set; }
 
+    /// <summary>
+    /// 消息条的宽度。
+    /// Width of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? Width { get; set; }
 
+    /// <summary>
+    /// 消息条的背景颜色。
+    /// Background color of the snackbar.
+    /// </summary>
     [Parameter]
     public string? Color { get; set; }
 
+    /// <summary>
+    /// 消息条的最大高度。
+    /// Maximum height of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? MaxHeight { get; set; }
 
+    /// <summary>
+    /// 消息条的最大宽度。
+    /// Maximum width of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? MaxWidth { get; set; }
 
+    /// <summary>
+    /// 消息条的最小高度。
+    /// Minimum height of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? MinHeight { get; set; }
 
+    /// <summary>
+    /// 消息条的最小宽度。
+    /// Minimum width of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? MinWidth { get; set; }
 
+    /// <summary>
+    /// 消息条遮罩层的不透明度。
+    /// Opacity of the snackbar overlay.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? Opacity { get; set; }
 
+    /// <summary>
+    /// 消息条的定位方式。
+    /// Positioning strategy of the snackbar.
+    /// </summary>
     [Parameter]
     public VuetifyPosition? Position { get; set; }
 
+    /// <summary>
+    /// 消息条的过渡动画。
+    /// Transition animation of the snackbar.
+    /// </summary>
     [Parameter]
     public VuetifyTransitionValue? Transition { get; set; }
 
+    /// <summary>
+    /// 消息条的 z-index 层级。
+    /// Z-index level of the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? ZIndex { get; set; }
 
+    /// <summary>
+    /// 消息条的文本内容。
+    /// Text content of the snackbar.
+    /// </summary>
     [Parameter]
     public string? Text { get; set; }
 
+    /// <summary>
+    /// 是否在首次渲染时强制加载内容。
+    /// Whether to eagerly mount the content on first render.
+    /// </summary>
     [Parameter]
     public bool Eager { get; set; }
 
+    /// <summary>
+    /// 是否禁用消息条。
+    /// Whether the snackbar is disabled.
+    /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>
+    /// 消息条自动关闭的延迟毫秒数。
+    /// Duration in milliseconds before the snackbar auto-closes.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? Timeout { get; set; }
 
+    /// <summary>
+    /// 组件使用的主题名称。
+    /// Theme name used by the component.
+    /// </summary>
     [Parameter]
     public string? Theme { get; set; }
 
+    /// <summary>
+    /// 是否使用垂直布局。
+    /// Whether to use a vertical layout.
+    /// </summary>
     [Parameter]
     public bool Vertical { get; set; }
 
+    /// <summary>
+    /// 是否显示自动关闭的倒计时指示器。
+    /// Whether to show the auto-close countdown timer.
+    /// </summary>
     [Parameter]
     public VuetifyBooleanStringValue? Timer { get; set; }
 
+    /// <summary>
+    /// 消息条的位置策略。
+    /// Location strategy used by the snackbar.
+    /// </summary>
     [Parameter]
     public VuetifyLocationStrategy? LocationStrategy { get; set; }
 
+    /// <summary>
+    /// 消息条的圆角大小。
+    /// Border radius of the snackbar.
+    /// </summary>
     [Parameter]
     public VuetifyRoundedValue? Rounded { get; set; }
 
+    /// <summary>
+    /// 是否移除圆角。
+    /// Whether to remove border radius.
+    /// </summary>
     [Parameter]
     public bool Tile { get; set; }
 
+    /// <summary>
+    /// 关闭消息条的延迟毫秒数。
+    /// Delay in milliseconds before closing the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? CloseDelay { get; set; }
 
+    /// <summary>
+    /// 打开消息条的延迟毫秒数。
+    /// Delay in milliseconds before opening the snackbar.
+    /// </summary>
     [Parameter]
     public VueStringNumberValue? OpenDelay { get; set; }
 
+    /// <summary>
+    /// 应用于激活器的属性。
+    /// Props applied to the activator element.
+    /// </summary>
     [Parameter]
     public VueProps? ActivatorProps { get; set; }
 
+    /// <summary>
+    /// 是否在点击时打开消息条。
+    /// Whether to open the snackbar on click.
+    /// </summary>
     [Parameter]
     public bool OpenOnClick { get; set; }
 
+    /// <summary>
+    /// 是否在悬停时打开消息条。
+    /// Whether to open the snackbar on hover.
+    /// </summary>
     [Parameter]
     public bool OpenOnHover { get; set; }
 
+    /// <summary>
+    /// 是否在聚焦时打开消息条。
+    /// Whether to open the snackbar on focus.
+    /// </summary>
     [Parameter]
     public bool OpenOnFocus { get; set; }
 
+    /// <summary>
+    /// 是否在点击内容时关闭消息条。
+    /// Whether to close the snackbar when content is clicked.
+    /// </summary>
     [Parameter]
     public bool CloseOnContentClick { get; set; }
 
+    /// <summary>
+    /// 是否在浏览器后退时关闭消息条。
+    /// Whether to close the snackbar on browser back navigation.
+    /// </summary>
     [Parameter]
     public bool CloseOnBack { get; set; }
 
+    /// <summary>
+    /// 是否将消息条限制在父容器内。
+    /// Whether to contain the snackbar within its parent.
+    /// </summary>
     [Parameter]
     public bool Contained { get; set; }
 
+    /// <summary>
+    /// 应用于内容区域的属性。
+    /// Props applied to the content area.
+    /// </summary>
     [Parameter]
     public VueProps? ContentProps { get; set; }
 
+    /// <summary>
+    /// 消息条挂载的容器目标。
+    /// Container target where the snackbar is attached.
+    /// </summary>
     [Parameter]
     public VuetifyAttachTarget? Attach { get; set; }
 
+    /// <summary>
+    /// 是否允许多行文本。
+    /// Whether to allow multi-line text.
+    /// </summary>
     [Parameter]
     public bool MultiLine { get; set; }
 
+    /// <summary>
+    /// 是否显示关闭按钮。
+    /// Whether to show the close button.
+    /// </summary>
     [Parameter]
     public VuetifyBooleanStringValue? Closable { get; set; }
 
+    /// <summary>
+    /// 关闭按钮的文本标签。
+    /// Text label for the close button.
+    /// </summary>
     [Parameter]
     public string? CloseText { get; set; }
 
+    /// <summary>
+    /// 捕获未匹配的额外属性。
+    /// Captures unmatched additional attributes.
+    /// </summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// 默认插槽，消息条队列的主体内容。
+    /// Default slot for the snackbar queue body content.
+    /// </summary>
     [Parameter]
     public RenderFragment<VSnackbarQueueSlotContext>? ChildContent { get; set; }
 
+    /// <summary>
+    /// 文本插槽，消息条的文本区域。
+    /// Text slot for the snackbar text area.
+    /// </summary>
     [Parameter]
     public RenderFragment<VSnackbarQueueSlotContext>? TextContent { get; set; }
 
+    /// <summary>
+    /// 操作插槽，消息条的操作按钮区域。
+    /// Actions slot for the snackbar action buttons area.
+    /// </summary>
     [Parameter]
     public RenderFragment<VSnackbarQueueActionsSlotContext>? Actions { get; set; }
 }
