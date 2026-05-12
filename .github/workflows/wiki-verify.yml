@@ -55,7 +55,7 @@ jobs:
       - name: Wiki smoke verification
         shell: pwsh
         run: |
-          .\src\Wiki\verify-smoke.ps1 -Build -StartupTimeoutSeconds 60
+          dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build --startup-timeout-seconds 60
 
   browser:
     runs-on: windows-latest
@@ -76,7 +76,7 @@ jobs:
       - name: Wiki browser verification
         shell: pwsh
         run: |
-          .\src\Wiki\verify-browser.ps1 -Build -StartupTimeoutSeconds 60 -BrowserStartupTimeoutSeconds 20
+          dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build --startup-timeout-seconds 60 --browser-startup-timeout-seconds 20
 
   publish-smoke:
     runs-on: windows-latest
@@ -92,7 +92,7 @@ jobs:
       - name: Wiki publish smoke verification
         shell: pwsh
         run: |
-          .\src\Wiki\verify-smoke.ps1 -Publish -StartupTimeoutSeconds 60
+          dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish --startup-timeout-seconds 60
 
   publish-browser:
     runs-on: windows-latest
@@ -113,4 +113,4 @@ jobs:
       - name: Wiki publish browser verification
         shell: pwsh
         run: |
-          .\src\Wiki\verify-browser.ps1 -Publish -StartupTimeoutSeconds 60 -BrowserStartupTimeoutSeconds 20
+          dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish --startup-timeout-seconds 60 --browser-startup-timeout-seconds 20

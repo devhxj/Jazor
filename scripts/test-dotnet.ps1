@@ -24,8 +24,8 @@ $vueRouteTestProject = Join-Path $repoRoot "src\ECMAScript.VueRoute.Test\ECMAScr
 $razorVueTestProject = Join-Path $repoRoot "src\Jazor.RazorVue.Test\Jazor.RazorVue.Test.csproj"
 $joltTestProject = Join-Path $repoRoot "src\Jolt.Test\Jolt.Test.csproj"
 $emitTestProject = Join-Path $repoRoot "src\Jazor.EmitTest\Jazor.EmitTest.csproj"
-$wikiSmokeScript = Join-Path $repoRoot "src\Wiki\verify-smoke.ps1"
-$wikiBrowserScript = Join-Path $repoRoot "src\Wiki\verify-browser.ps1"
+$wikiSmokeScript = Join-Path $repoRoot "scripts\csharp\wiki-verify-smoke.cs"
+$wikiBrowserScript = Join-Path $repoRoot "scripts\csharp\wiki-verify-browser.cs"
 
 function Invoke-WikiVerification {
     param(
@@ -43,23 +43,23 @@ function Invoke-WikiVerification {
         $effectiveWikiConfiguration = "Release"
     }
 
-    $scriptArgs = @{
-        Configuration = $effectiveWikiConfiguration
-    }
+    $scriptArgs = @("run", "--file", $ScriptPath, "--", "--configuration", $effectiveWikiConfiguration)
     if ($baseOutputPathWasExplicit) {
-        $scriptArgs.BaseOutputPath = $BaseOutputPath
+        $scriptArgs += "--base-output-path"
+        $scriptArgs += $BaseOutputPath
     }
     if ($baseIntermediateOutputPathWasExplicit) {
-        $scriptArgs.BaseIntermediateOutputPath = $BaseIntermediateOutputPath
+        $scriptArgs += "--base-intermediate-output-path"
+        $scriptArgs += $BaseIntermediateOutputPath
     }
     if ($Publish) {
-        $scriptArgs.Publish = $true
+        $scriptArgs += "--publish"
     }
     else {
-        $scriptArgs.Build = $true
+        $scriptArgs += "--build"
     }
 
-    & $ScriptPath @scriptArgs
+    dotnet @scriptArgs
     if ($LASTEXITCODE -ne 0) {
         throw "$FailureName failed for '$Project' with exit code $LASTEXITCODE."
     }

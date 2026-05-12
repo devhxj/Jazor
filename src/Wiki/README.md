@@ -38,10 +38,11 @@ Current product boundary:
 - `WikiHomeModule.cs`, `WikiHomeModule.RouteContract.cs`, `WikiHomeModule.Elements.cs`, `WikiCatalogGuard.cs`, and the per-page files `WikiHomeModule.Overview.cs`, `WikiHomeModule.Search.cs`, `WikiHomeModule.GettingStarted.cs`, `WikiHomeModule.ProjectLines.cs`, `WikiHomeModule.ContentModel.cs`, `WikiHomeModule.NavigationDiscovery.cs`, `WikiHomeModule.InformationArchitecture.cs`, `WikiHomeModule.TopicIndex.cs`, `WikiHomeModule.Glossary.cs`, `WikiHomeModule.Faq.cs`, `WikiHomeModule.Troubleshooting.cs`, `WikiHomeModule.HFunctionAuthoring.cs`, `WikiHomeModule.CompilerOverview.cs`, `WikiHomeModule.CompilerBoundary.cs`, `WikiHomeModule.RouteCatalogContract.cs`, `WikiHomeModule.HostSemanticSeams.cs`, `WikiHomeModule.ImportEmitContract.cs`, `WikiHomeModule.RuntimeCatalog.cs`, `WikiHomeModule.JoltHost.cs`, `WikiHomeModule.RazorVueLibraryMode.cs`, `WikiHomeModule.VueRouteBindings.cs`, `WikiHomeModule.ContentGovernance.cs`, `WikiHomeModule.Deployment.cs`, `WikiHomeModule.TestingVerification.cs`: the route shell, centralized route contract, startup guard, page bodies, and reusable leaf render helpers for the named-export Vue component.
 - `AppModule.cs`: Jazor C# module source for runtime bootstrap.
 - `Program.cs`: ASP.NET Core host with `/health`, route fallback, and an explicit `/jazor` mount for the local emit directory when present.
-- `build-local.ps1`: local build entry that verifies emitted Wiki artifacts exist after build.
-- `serve.ps1`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
-- `verify-smoke.ps1`: focused smoke verification for build output, `/health`, route-specific HTML metadata, robots/sitemap discovery docs, response headers, all registered docs routes, and unknown-route fallback.
-- `verify-browser.ps1` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
+- `scripts/csharp/wiki-build-local.cs`: local build entry that verifies emitted Wiki artifacts exist after build.
+- `scripts/csharp/wiki-serve.cs`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
+- `scripts/csharp/wiki-verify-smoke.cs`: focused smoke verification for build output, `/health`, route-specific HTML metadata, robots/sitemap discovery docs, response headers, all registered docs routes, and unknown-route fallback.
+- `scripts/csharp/wiki-verify-browser.cs` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
+- `src/Wiki/*.ps1`: compatibility wrappers that forward to the single-file C# scripts.
 - `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
 - `wwwroot/`: static entry (`index.html`, `site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
 
@@ -62,7 +63,7 @@ Generated artifacts:
 ## Local Build Script
 
 ```powershell
-.\src\Wiki\build-local.ps1
+dotnet run --file .\scripts\csharp\wiki-build-local.cs
 ```
 
 The script builds the host against repository project references, runs local `Jazor.Emit` through MSBuild, and verifies that the emitted entry modules exist.
@@ -72,13 +73,13 @@ The script builds the host against repository project references, runs local `Ja
 One-command preview:
 
 ```powershell
-.\src\Wiki\serve.ps1 -Build
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build
 ```
 
 Production-shape preview:
 
 ```powershell
-.\src\Wiki\serve.ps1 -Publish
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --publish
 ```
 
 Then open:
@@ -112,7 +113,7 @@ Then open:
 If you want to call the local build script first:
 
 ```powershell
-.\src\Wiki\serve.ps1 -BuildLocal
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build-local
 ```
 
 The page mounts the emitted Vue component via Vue runtime and serves the docs shell from real route paths.
@@ -122,8 +123,8 @@ The page mounts the emitted Vue component via Vue runtime and serves the docs sh
 Dry-run only:
 
 ```powershell
-.\src\Wiki\serve.ps1 -Build -DryRun
-.\src\Wiki\serve.ps1 -Publish -DryRun
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build --dry-run
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --publish --dry-run
 ```
 
 This verifies the selected preview artifacts and prints the preview URL without starting the host.
@@ -133,13 +134,13 @@ This verifies the selected preview artifacts and prints the preview URL without 
 From repository root:
 
 ```powershell
-.\src\Wiki\verify-smoke.ps1 -Build
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build
 ```
 
 Production-shape publish verification:
 
 ```powershell
-.\src\Wiki\verify-smoke.ps1 -Publish
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish
 ```
 
 `-Publish` defaults to `Release` unless you pass `-Configuration` explicitly.
@@ -184,13 +185,13 @@ The smoke check verifies:
 From repository root:
 
 ```powershell
-.\src\Wiki\verify-browser.ps1 -BuildLocal
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local
 ```
 
 Production-shape browser verification:
 
 ```powershell
-.\src\Wiki\verify-browser.ps1 -Publish
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish
 ```
 
 Repository-root shortcuts:
@@ -200,7 +201,7 @@ pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser
 pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser-publish
 ```
 
-`verify-browser.ps1` starts the Wiki host, launches headless Microsoft Edge with CDP enabled, and runs the project-owned `verify-browser.mjs` assertions through Node.js. The local path exercises `src/Wiki/jazor`, while `-Publish` exercises published assets from `wwwroot/jazor`.
+`wiki-verify-browser.cs` starts the Wiki host, launches headless Microsoft Edge with CDP enabled, and runs the project-owned `verify-browser.mjs` assertions through Node.js. The local path exercises `src/Wiki/jazor`, while `--publish` exercises published assets from `wwwroot/jazor`.
 
 The browser check verifies:
 
@@ -238,9 +239,9 @@ The host renders browser entry and static asset URLs per request, so direct refr
 Subpath preview and verification:
 
 ```powershell
-.\src\Wiki\serve.ps1 -Build -PathBase /docs
-.\src\Wiki\verify-smoke.ps1 -Build -PathBase /docs
-.\src\Wiki\verify-browser.ps1 -Build -PathBase /docs
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build --path-base /docs
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build --path-base /docs
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build --path-base /docs
 ```
 
 The host reads `Wiki__PathBase` / `Wiki:PathBase` and applies `UsePathBase(...)` before static hosting, HTML shell fallback, and discovery documents.
