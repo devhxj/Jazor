@@ -131,4 +131,9 @@ jobs:
             $notes = "Release $version"
           }
 
-          gh release create $tag --repo "${{ github.repository }}" --title $tag --notes $notes
+          gh release view $tag --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $tag --repo "${{ github.repository }}" --title $tag --notes $notes --latest
+          } else {
+            gh release create $tag --repo "${{ github.repository }}" --title $tag --notes $notes --latest
+          }
