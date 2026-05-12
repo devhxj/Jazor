@@ -23,5 +23,5 @@ dotnet test src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.cspr
 共享入口：
 
 ```powershell
-pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia-testing
 ```

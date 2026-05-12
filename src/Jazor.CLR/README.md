@@ -126,7 +126,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj
 
 # 仓库级快捷入口（CLR 切片）
-pwsh ./scripts/test-dotnet.ps1 -Project clr
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project clr
 ```
 
 ## 参考文档

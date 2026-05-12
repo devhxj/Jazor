@@ -1783,12 +1783,13 @@ public sealed class SdkIntegrationTests
             ["JAZOR_DENO_EXE"] = package.DenoExePath
         };
 
-        var pipeline = await RunPowerShellAsync(
+        var pipeline = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
             [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "run",
+                "--file",
+                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
+                "--",
                 "task",
                 "test"
             ],
@@ -1845,15 +1846,19 @@ public sealed class SdkIntegrationTests
             ["JAZOR_SAMPLE_RESTORE_PACKAGES_ROOT"] = Path.Combine(workspace.RootPath, "sample-restore-packages")
         };
 
-        var buildLocal = await RunPowerShellAsync(
+        var buildLocal = await RunDotNetWithEnvironmentAsync(
             package.RepoRoot,
             [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", Path.Combine(sampleRoot, "build-local.ps1"),
-                "-Configuration", "Debug",
-                "-BaseOutputPath", Path.Combine(workspace.RootPath, "sample-out"),
-                "-BaseIntermediateOutputPath", Path.Combine(workspace.RootPath, "sample-obj")
+                "run",
+                "--file",
+                Path.Combine(sampleRoot, "build-local.cs"),
+                "--",
+                "--configuration",
+                "Debug",
+                "--base-output-path",
+                Path.Combine(workspace.RootPath, "sample-out"),
+                "--base-intermediate-output-path",
+                Path.Combine(workspace.RootPath, "sample-obj")
             ],
             sampleBuildEnvironment);
 
@@ -1898,12 +1903,13 @@ public sealed class SdkIntegrationTests
             ["JAZOR_DENO_EXE"] = package.DenoExePath
         };
 
-        var ssrSmoke = await RunPowerShellAsync(
+        var ssrSmoke = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
             [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "run",
+                "--file",
+                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
+                "--",
                 "task",
                 "smoke:ssr"
             ],
@@ -1911,12 +1917,13 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, ssrSmoke.ExitCode, ssrSmoke.ToString());
         StringAssert.Contains(ssrSmoke.StandardOutput + ssrSmoke.StandardError, "RazorVue TodoList Deno SSR smoke passed.");
 
-        var bundleApiSmoke = await RunPowerShellAsync(
+        var bundleApiSmoke = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
             [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "run",
+                "--file",
+                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
+                "--",
                 "task",
                 "smoke:bundle-api"
             ],
@@ -1924,12 +1931,13 @@ public sealed class SdkIntegrationTests
         Assert.AreEqual(0, bundleApiSmoke.ExitCode, bundleApiSmoke.ToString());
         StringAssert.Contains(bundleApiSmoke.StandardOutput + bundleApiSmoke.StandardError, "RazorVue Deno.bundle() smoke passed");
 
-        var browserBuild = await RunPowerShellAsync(
+        var browserBuild = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
             [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "run",
+                "--file",
+                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
+                "--",
                 "task",
                 "build"
             ],
@@ -1941,12 +1949,13 @@ public sealed class SdkIntegrationTests
         {
             ["RAZORVUE_BROWSER_SKIP_BUILD"] = "1"
         };
-        var browserSmoke = await RunPowerShellAsync(
+        var browserSmoke = await RunDotNetWithEnvironmentAsync(
             consumerRoot,
             [
-                "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-File", Path.Combine(consumerRoot, "scripts", "run-deno.ps1"),
+                "run",
+                "--file",
+                Path.Combine(consumerRoot, "scripts", "run-deno.cs"),
+                "--",
                 "task",
                 "smoke:browser"
             ],
@@ -2177,12 +2186,12 @@ public sealed class SdkIntegrationTests
         return result ?? throw new InvalidOperationException("dotnet process did not produce a result.");
     }
 
-    private static async Task<ProcessResult> RunPowerShellAsync(
+    private static async Task<ProcessResult> RunDotNetWithEnvironmentAsync(
         string workingDirectory,
         IReadOnlyList<string> arguments,
         IReadOnlyDictionary<string, string>? environmentVariables = null)
     {
-        var startInfo = new ProcessStartInfo("pwsh")
+        var startInfo = new ProcessStartInfo("dotnet")
         {
             WorkingDirectory = workingDirectory,
             RedirectStandardOutput = true,
@@ -2198,6 +2207,11 @@ public sealed class SdkIntegrationTests
             foreach (var pair in environmentVariables)
                 startInfo.Environment[pair.Key] = pair.Value;
         }
+
+        startInfo.Environment["DOTNET_CLI_HOME"] = Path.Combine(FindRepoRoot(), ".dotnet");
+        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+        startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+        startInfo.Environment["UseSharedCompilation"] = "false";
 
         using var process = new Process { StartInfo = startInfo };
         process.Start();

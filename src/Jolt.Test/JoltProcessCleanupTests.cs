@@ -15,22 +15,24 @@ public sealed class JoltProcessCleanupTests
         try
         {
             var pidFilePath = Path.Combine(tempDirectory, "analysis-worker.pid");
-            var scriptPath = Path.Combine(tempDirectory, "sleeping-analysis-worker.ps1");
+            var scriptPath = Path.Combine(tempDirectory, "sleeping-analysis-worker.cs");
             await File.WriteAllTextAsync(
                 scriptPath,
                 """
-                param(
-                    [string]$PidPath
-                )
+                using System;
+                using System.IO;
+                using System.Threading;
 
-                Set-Content -LiteralPath $PidPath -Value $PID -Encoding utf8
-                Start-Sleep -Seconds 30
-                '{"id":"analysis-cancelled","success":true,"payloadJson":null}'
+                var pidPath = args[0];
+                File.WriteAllText(pidPath, Environment.ProcessId.ToString());
+                Thread.Sleep(TimeSpan.FromSeconds(30));
+                Console.WriteLine("{\"id\":\"analysis-cancelled\",\"success\":true,\"payloadJson\":null}");
                 """);
+            ConfigureDotNetChildScriptEnvironment();
 
             var transport = new ProcessAnalysisRpcTransport(
-                ResolvePowerShellPath(),
-                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" \"{pidFilePath}\"");
+                "dotnet",
+                BuildDotNetFileArguments(scriptPath, pidFilePath));
             using var cancellationSource = new CancellationTokenSource();
             var sendTask = transport.SendAsync(
                 new RpcRequestEnvelope("analysis-cancelled", "analysis/test", payloadJson: "{}"),
@@ -61,20 +63,23 @@ public sealed class JoltProcessCleanupTests
         var tempDirectory = CreateTemporaryDirectory();
         try
         {
-            var scriptPath = Path.Combine(tempDirectory, "chatty-analysis-worker.ps1");
+            var scriptPath = Path.Combine(tempDirectory, "chatty-analysis-worker.cs");
             await File.WriteAllTextAsync(
                 scriptPath,
                 """
-                for ($i = 0; $i -lt 5000; $i++) {
-                    [Console]::Error.WriteLine(("stderr-" + $i.ToString("D4") + " " + ("x" * 120)))
+                using System;
+
+                for (var i = 0; i < 5000; i++) {
+                    Console.Error.WriteLine($"stderr-{i:D4} {new string('x', 120)}");
                 }
 
-                '{"id":"analysis-stdio","success":true,"payloadJson":"{\"value\":42}","error":null}'
+                Console.WriteLine("{\"id\":\"analysis-stdio\",\"success\":true,\"payloadJson\":\"{\\\"value\\\":42}\",\"error\":null}");
                 """);
+            ConfigureDotNetChildScriptEnvironment();
 
             var transport = new ProcessAnalysisRpcTransport(
-                ResolvePowerShellPath(),
-                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"");
+                "dotnet",
+                BuildDotNetFileArguments(scriptPath));
             using var cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
 
             var response = await transport.SendAsync(
@@ -97,20 +102,23 @@ public sealed class JoltProcessCleanupTests
         var tempDirectory = CreateTemporaryDirectory();
         try
         {
-            var scriptPath = Path.Combine(tempDirectory, "noisy-stdout-analysis-worker.ps1");
+            var scriptPath = Path.Combine(tempDirectory, "noisy-stdout-analysis-worker.cs");
             await File.WriteAllTextAsync(
                 scriptPath,
                 """
-                for ($i = 0; $i -lt 1005; $i++) {
-                    "noise-$i"
+                using System;
+
+                for (var i = 0; i < 1005; i++) {
+                    Console.WriteLine($"noise-{i}");
                 }
 
-                '{"id":"analysis-noise","success":true,"payloadJson":null,"error":null}'
+                Console.WriteLine("{\"id\":\"analysis-noise\",\"success\":true,\"payloadJson\":null,\"error\":null}");
                 """);
+            ConfigureDotNetChildScriptEnvironment();
 
             var transport = new ProcessAnalysisRpcTransport(
-                ResolvePowerShellPath(),
-                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\"");
+                "dotnet",
+                BuildDotNetFileArguments(scriptPath));
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await transport.SendAsync(
@@ -125,21 +133,38 @@ public sealed class JoltProcessCleanupTests
         }
     }
 
-    private static string ResolvePowerShellPath()
+    private static string BuildDotNetFileArguments(string scriptPath, params string[] scriptArguments)
     {
-        var systemPowerShell = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.System),
-            "WindowsPowerShell",
-            "v1.0",
-            "powershell.exe");
-        return File.Exists(systemPowerShell)
-            ? systemPowerShell
-            : "powershell.exe";
+        var arguments = new List<string>
+        {
+            "run",
+            "--file",
+            QuoteArgument(scriptPath)
+        };
+
+        if (scriptArguments.Length > 0)
+        {
+            arguments.Add("--");
+            arguments.AddRange(scriptArguments.Select(QuoteArgument));
+        }
+
+        return string.Join(" ", arguments);
+    }
+
+    private static void ConfigureDotNetChildScriptEnvironment()
+    {
+        Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
+        Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "1");
+    }
+
+    private static string QuoteArgument(string value)
+    {
+        return "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
 
     private static async Task<int> WaitForProcessIdAsync(string pidFilePath, Task? operationTask = null)
     {
-        for (var attempt = 0; attempt < 100; attempt++)
+        for (var attempt = 0; attempt < 300; attempt++)
         {
             if (File.Exists(pidFilePath))
             {

@@ -78,13 +78,13 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 	public void PiniaTesting_StandardTestScript_IncludesDedicatedTargetAndDefaultLane()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var scriptPath = Path.Combine(repoRoot, "scripts", "test-dotnet.ps1");
+		var scriptPath = Path.Combine(repoRoot, "scripts", "csharp", "test-dotnet.cs");
 		var source = System.IO.File.ReadAllText(scriptPath);
 
 		StringAssert.Contains(source, "\"pinia-testing\"");
-		StringAssert.Contains(source, "src\\ECMAScript.Pinia.Testing.Test\\ECMAScript.Pinia.Testing.Test.csproj");
-		StringAssert.Contains(source, "\"pinia-testing\" { $piniaTestingTestProject }");
-		StringAssert.Contains(source, "default { $compilerTestProject, $clrTestProject, $piniaTestProject, $piniaTestingTestProject, $vueRouteTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }");
+		StringAssert.Contains(source, "var piniaTestingTestProject = Path.Combine(repoRoot, \"src\", \"ECMAScript.Pinia.Testing.Test\", \"ECMAScript.Pinia.Testing.Test.csproj\");");
+		StringAssert.Contains(source, "\"pinia-testing\" => new[] { piniaTestingTestProject }");
+		StringAssert.Contains(source, "piniaTestingTestProject,");
 	}
 
 	[TestMethod]
@@ -118,7 +118,7 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		var coverlet = System.IO.File.ReadAllText(coverletPath);
 
 		StringAssert.Contains(readme, "# ECMAScript.Pinia.Testing.Test");
-		StringAssert.Contains(readme, "pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing");
+		StringAssert.Contains(readme, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia-testing");
 		StringAssert.Contains(coverlet, "<LineMinimum>85</LineMinimum>");
 		StringAssert.Contains(coverlet, "<BranchMinimum>80</BranchMinimum>");
 	}
@@ -135,8 +135,8 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		StringAssert.Contains(sampleSmoke, "@pinia/testing");
 		StringAssert.Contains(sampleSmoke, "generated testing module");
 		StringAssert.Contains(sampleSmoke, "createTestingPinia({");
-		StringAssert.Contains(workflow, "./scripts/test-dotnet.ps1 `");
-		StringAssert.Contains(workflow, "-Project pinia-testing `");
+		StringAssert.Contains(workflow, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- `");
+		StringAssert.Contains(workflow, "--project pinia-testing `");
 		StringAssert.Contains(workflow, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs --");
 		Assert.IsFalse(workflow.Contains("verify-smoke.ps1", StringComparison.Ordinal), "Pinia verification workflow should not reference the retired PowerShell smoke entrypoint.");
 	}
@@ -145,15 +145,15 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 	public void PiniaTesting_WikiVerificationScripts_AlsoSupportIsolatedBuildOutputs()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var wikiSmoke = System.IO.File.ReadAllText(Path.Combine(repoRoot, "src", "Wiki", "verify-smoke.ps1"));
-		var wikiBrowser = System.IO.File.ReadAllText(Path.Combine(repoRoot, "src", "Wiki", "verify-browser.ps1"));
+		var wikiSmoke = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "csharp", "wiki-verify-smoke.cs"));
+		var wikiBrowser = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "csharp", "wiki-verify-browser.cs"));
 
 		foreach (var source in new[] { wikiSmoke, wikiBrowser })
 		{
-			StringAssert.Contains(source, "[string]$BaseOutputPath = \"\"");
-			StringAssert.Contains(source, "[string]$BaseIntermediateOutputPath = \"\"");
-			StringAssert.Contains(source, "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath");
-			StringAssert.Contains(source, "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath");
+			StringAssert.Contains(source, "BaseOutputPath");
+			StringAssert.Contains(source, "BaseIntermediateOutputPath");
+			StringAssert.Contains(source, "JazorIsolatedBaseOutputRoot");
+			StringAssert.Contains(source, "JazorIsolatedBaseIntermediateOutputRoot");
 			StringAssert.Contains(source, "/nr:false");
 			StringAssert.Contains(source, "-p:UseSharedCompilation=false");
 		}

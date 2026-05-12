@@ -82,23 +82,23 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	public void Pinia_PublishScript_UsesFullArtifactPreparationAndGuardsNoBuildInputs()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var scriptPath = Path.Combine(repoRoot, "scripts", "publish-nuget.ps1");
+		var scriptPath = Path.Combine(repoRoot, "scripts", "csharp", "publish-nuget.cs");
 		var source = System.IO.File.ReadAllText(scriptPath);
 
-		StringAssert.Contains(source, "function Assert-NoBuildPackInputsExist");
-		StringAssert.Contains(source, "function Get-NoBuildPackInputRoots");
-		StringAssert.Contains(source, "Run publish-nuget.ps1 once without -NoBuild to prepare the full package artifacts.");
-		StringAssert.Contains(source, "if ($NoBuild) {");
-		StringAssert.Contains(source, "$packArgs += \"--no-build\"");
-		StringAssert.Contains(source, "$packArgs += \"-p:JazorPreparePackageArtifacts=false\"");
-		StringAssert.Contains(source, "\"restore\",");
-		StringAssert.Contains(source, "Get-IsolatedBuildRoot -Path $BaseOutputPath");
-		StringAssert.Contains(source, "[System.IO.Path]::Combine($packageBuildOutputRoot, \"Jazor.Emit\", \"bin\", $Configuration, \"net11.0\", \"publish\")");
+		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
+		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
+		StringAssert.Contains(source, "Run publish-nuget.cs once without --no-build to prepare the full package artifacts.");
+		StringAssert.Contains(source, "if (options.NoBuild)");
+		StringAssert.Contains(source, "packArguments.Add(\"--no-build\")");
+		StringAssert.Contains(source, "packArguments.Add(\"-p:JazorPreparePackageArtifacts=false\")");
+		StringAssert.Contains(source, "\"restore\"");
+		StringAssert.Contains(source, "ResolveBuildRoot(repoRoot, baseOutputPath)");
+		StringAssert.Contains(source, "Path.Combine(packageBuildOutputRoot, \"Jazor.Emit\", \"bin\", configuration, \"net11.0\", \"publish\")");
 		Assert.IsFalse(
 			source.Contains("-p:JazorPreparePackageArtifacts=false", StringComparison.Ordinal)
-			&& source.Contains("$packArgs = @(", StringComparison.Ordinal)
-			&& source.IndexOf("-p:JazorPreparePackageArtifacts=false", StringComparison.Ordinal) < source.IndexOf("if ($NoBuild) {", StringComparison.Ordinal),
-			"publish-nuget.ps1 should only disable JazorPreparePackageArtifacts inside the explicit -NoBuild fast path.");
+			&& source.Contains("var packArguments = new List<string>", StringComparison.Ordinal)
+			&& source.IndexOf("-p:JazorPreparePackageArtifacts=false", StringComparison.Ordinal) < source.IndexOf("if (options.NoBuild)", StringComparison.Ordinal),
+			"publish-nuget.cs should only disable JazorPreparePackageArtifacts inside the explicit --no-build fast path.");
 	}
 
 	[TestMethod]
@@ -109,7 +109,6 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		var denoConfigPath = Path.Combine(consumerRoot, "deno.json");
 		var nugetConfigPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "NuGet.Config");
 		var scriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.cs");
-		var legacyScriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1");
 		var packageJsonPath = Path.Combine(consumerRoot, "package.json");
 		var viteConfigPath = Path.Combine(consumerRoot, "vite.config.js");
 		var denoConfig = System.IO.File.ReadAllText(denoConfigPath);
@@ -130,7 +129,6 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		Assert.IsFalse(nugetConfig.Contains(".tmp\\nupkg-sample", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should not depend on a transient local package output path.");
 		Assert.IsFalse(nugetConfig.Contains("JazorLocal", StringComparison.OrdinalIgnoreCase), "Sample NuGet.Config should keep only stable baseline sources.");
 		Assert.IsFalse(source.Contains("vite", StringComparison.OrdinalIgnoreCase), "Smoke verification script should not depend on Vite anymore.");
-		Assert.IsFalse(System.IO.File.Exists(legacyScriptPath), $"Legacy PowerShell smoke entrypoint should not remain: {legacyScriptPath}");
 		Assert.IsFalse(System.IO.File.Exists(packageJsonPath), $"Vite package manifest should not remain in the Deno consumer: {packageJsonPath}");
 		Assert.IsFalse(System.IO.File.Exists(viteConfigPath), $"Vite config should not remain in the Deno consumer: {viteConfigPath}");
 	}
@@ -143,22 +141,22 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		var source = System.IO.File.ReadAllText(workflowPath);
 
 		StringAssert.Contains(source, "name: Pinia Verify");
-		StringAssert.Contains(source, "./scripts/test-dotnet.ps1 `");
-		StringAssert.Contains(source, "-Project pinia `");
-		StringAssert.Contains(source, "-Project pinia-testing `");
+		StringAssert.Contains(source, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- `");
+		StringAssert.Contains(source, "--project pinia `");
+		StringAssert.Contains(source, "--project pinia-testing `");
 		StringAssert.Contains(source, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs");
-		StringAssert.Contains(source, "./scripts/publish-nuget.ps1 `");
-		StringAssert.Contains(source, "-OutputDirectory artifacts/packages `");
-		StringAssert.Contains(source, "-OutputDirectory artifacts/packages-nobuild `");
-		StringAssert.Contains(source, "-NoBuild `");
-		StringAssert.Contains(source, "-BaseOutputPath 'artifacts/out/pinia/'");
-		StringAssert.Contains(source, "-BaseIntermediateOutputPath 'artifacts/obj/pinia/'");
-		StringAssert.Contains(source, "-BaseOutputPath 'artifacts/out/pinia-testing/'");
-		StringAssert.Contains(source, "-BaseIntermediateOutputPath 'artifacts/obj/pinia-testing/'");
+		StringAssert.Contains(source, "dotnet run --file ./scripts/csharp/publish-nuget.cs -- `");
+		StringAssert.Contains(source, "--output-directory artifacts/packages `");
+		StringAssert.Contains(source, "--output-directory artifacts/packages-nobuild `");
+		StringAssert.Contains(source, "--no-build `");
+		StringAssert.Contains(source, "--base-output-path 'artifacts/out/pinia/'");
+		StringAssert.Contains(source, "--base-intermediate-output-path 'artifacts/obj/pinia/'");
+		StringAssert.Contains(source, "--base-output-path 'artifacts/out/pinia-testing/'");
+		StringAssert.Contains(source, "--base-intermediate-output-path 'artifacts/obj/pinia-testing/'");
 		StringAssert.Contains(source, "-BaseOutputPath 'artifacts/out/pinia-sample/'");
 		StringAssert.Contains(source, "-BaseIntermediateOutputPath 'artifacts/obj/pinia-sample/'");
-		StringAssert.Contains(source, "-BaseOutputPath 'artifacts/out/pinia-pack/'");
-		StringAssert.Contains(source, "-BaseIntermediateOutputPath 'artifacts/obj/pinia-pack/'");
+		StringAssert.Contains(source, "--base-output-path 'artifacts/out/pinia-pack/'");
+		StringAssert.Contains(source, "--base-intermediate-output-path 'artifacts/obj/pinia-pack/'");
 	}
 
 	[TestMethod]
@@ -188,9 +186,9 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	{
 		var repoRoot = ResolveRepositoryRoot();
 		var directoryBuildProps = System.IO.File.ReadAllText(Path.Combine(repoRoot, "Directory.Build.props"));
-		var testScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "test-dotnet.ps1"));
-		var publishScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "publish-nuget.ps1"));
-		var sampleBuildScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "build-local.ps1"));
+		var testScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "csharp", "test-dotnet.cs"));
+		var publishScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "csharp", "publish-nuget.cs"));
+		var sampleBuildScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "build-local.cs"));
 		var sampleVerifyScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.cs"));
 
 		StringAssert.Contains(directoryBuildProps, "<PropertyGroup Condition=\"'$(JazorIsolatedBaseOutputRoot)' != ''\">");
@@ -199,31 +197,28 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(directoryBuildProps, "<BaseIntermediateOutputPath>$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseIntermediateOutputRoot)'))$(MSBuildProjectName)\\obj\\</BaseIntermediateOutputPath>");
 		StringAssert.Contains(directoryBuildProps, "<MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>");
 
-		StringAssert.Contains(testScript, "[string]$BaseOutputPath = \"\"");
-		StringAssert.Contains(testScript, "[string]$BaseIntermediateOutputPath = \"\"");
-		StringAssert.Contains(testScript, "function Get-SharedBuildPathArguments");
-		StringAssert.Contains(testScript, "-p:JazorIsolatedBaseOutputRoot=$isolatedOutputRoot");
-		StringAssert.Contains(testScript, "-p:JazorIsolatedBaseIntermediateOutputRoot=$isolatedIntermediateRoot");
+		StringAssert.Contains(testScript, "BaseOutputPath");
+		StringAssert.Contains(testScript, "BaseIntermediateOutputPath");
+		StringAssert.Contains(testScript, "GetSharedBuildPathArguments");
+		StringAssert.Contains(testScript, "JazorIsolatedBaseOutputRoot=");
+		StringAssert.Contains(testScript, "JazorIsolatedBaseIntermediateOutputRoot=");
 		StringAssert.Contains(testScript, "/nr:false");
 		StringAssert.Contains(testScript, "-p:UseSharedCompilation=false");
 
-		StringAssert.Contains(publishScript, "[string]$BaseOutputPath = \"\"");
-		StringAssert.Contains(publishScript, "[string]$BaseIntermediateOutputPath = \"\"");
-		StringAssert.Contains(publishScript, "-p:JazorIsolatedBaseOutputRoot=$(Get-IsolatedBuildRoot -Path $BaseOutputPath)");
-		StringAssert.Contains(publishScript, "-p:JazorIsolatedBaseIntermediateOutputRoot=$isolatedIntermediateRoot");
+		StringAssert.Contains(publishScript, "BaseOutputPath");
+		StringAssert.Contains(publishScript, "BaseIntermediateOutputPath");
+		StringAssert.Contains(publishScript, "JazorIsolatedBaseOutputRoot=");
+		StringAssert.Contains(publishScript, "JazorIsolatedBaseIntermediateOutputRoot=");
 		StringAssert.Contains(publishScript, "$(JazorPackageBuildOutputRoot)");
 
-		StringAssert.Contains(sampleBuildScript, "[string]$BaseOutputPath = \"\"");
-		StringAssert.Contains(sampleBuildScript, "[string]$BaseIntermediateOutputPath = \"\"");
-		StringAssert.Contains(sampleBuildScript, "$publishArgs = @{");
-		StringAssert.Contains(sampleBuildScript, "Configuration = $Configuration");
-		StringAssert.Contains(sampleBuildScript, "OutputDirectory = $packageOutput");
-		StringAssert.Contains(sampleBuildScript, "SkipPush = $true");
-		StringAssert.Contains(sampleBuildScript, "$publishArgs[\"BaseOutputPath\"] = $BaseOutputPath");
-		StringAssert.Contains(sampleBuildScript, "$publishArgs[\"BaseIntermediateOutputPath\"] = $BaseIntermediateOutputPath");
-		StringAssert.Contains(sampleBuildScript, "-p:RestoreAdditionalProjectSources=$packageOutput");
-		StringAssert.Contains(sampleBuildScript, "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath");
-		StringAssert.Contains(sampleBuildScript, "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath");
+		StringAssert.Contains(sampleBuildScript, "BaseOutputPath");
+		StringAssert.Contains(sampleBuildScript, "BaseIntermediateOutputPath");
+		StringAssert.Contains(sampleBuildScript, "var packArguments = new List<string>");
+		StringAssert.Contains(sampleBuildScript, "packageProject");
+		StringAssert.Contains(sampleBuildScript, "packageOutput");
+		StringAssert.Contains(sampleBuildScript, "RestoreAdditionalProjectSources={packageOutput}");
+		StringAssert.Contains(sampleBuildScript, "JazorIsolatedBaseOutputRoot=");
+		StringAssert.Contains(sampleBuildScript, "JazorIsolatedBaseIntermediateOutputRoot=");
 		StringAssert.Contains(sampleBuildScript, "/nr:false");
 		StringAssert.Contains(sampleBuildScript, "-p:UseSharedCompilation=false");
 

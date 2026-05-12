@@ -7,13 +7,13 @@ public sealed class RazorVueSampleBuildIsolationTests
     public void TodoListBuildScript_ExposesIsolatedBuildOutputParameters()
     {
         var root = FindRepositoryRoot();
-        var scriptPath = Path.Combine(root, "samples", "RazorVue.TodoList", "build-local.ps1");
+        var scriptPath = Path.Combine(root, "samples", "RazorVue.TodoList", "build-local.cs");
         var script = File.ReadAllText(scriptPath);
 
-        StringAssert.Contains(script, "[string]$BaseOutputPath = \"\"");
-        StringAssert.Contains(script, "[string]$BaseIntermediateOutputPath = \"\"");
-        StringAssert.Contains(script, "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath");
-        StringAssert.Contains(script, "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath");
+        StringAssert.Contains(script, "BaseOutputPath");
+        StringAssert.Contains(script, "BaseIntermediateOutputPath");
+        StringAssert.Contains(script, "JazorIsolatedBaseOutputRoot");
+        StringAssert.Contains(script, "JazorIsolatedBaseIntermediateOutputRoot");
         StringAssert.Contains(script, "/nr:false");
         StringAssert.Contains(script, "-p:UseSharedCompilation=false");
     }

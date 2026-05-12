@@ -77,13 +77,13 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
     public void VueRoute_StandardTestScript_IncludesDedicatedTargetAndDefaultLane()
     {
         var repoRoot = ResolveRepositoryRoot();
-        var scriptPath = System.IO.Path.Combine(repoRoot, "scripts", "test-dotnet.ps1");
+        var scriptPath = System.IO.Path.Combine(repoRoot, "scripts", "csharp", "test-dotnet.cs");
         var source = System.IO.File.ReadAllText(scriptPath);
 
         StringAssert.Contains(source, "\"vueroute\"");
-        StringAssert.Contains(source, "src\\ECMAScript.VueRoute.Test\\ECMAScript.VueRoute.Test.csproj");
-        StringAssert.Contains(source, "\"vueroute\" { $vueRouteTestProject }");
-        StringAssert.Contains(source, "default { $compilerTestProject, $clrTestProject, $piniaTestProject, $piniaTestingTestProject, $vueRouteTestProject, $razorVueTestProject, $joltTestProject, $emitTestProject }");
+        StringAssert.Contains(source, "var vueRouteTestProject = Path.Combine(repoRoot, \"src\", \"ECMAScript.VueRoute.Test\", \"ECMAScript.VueRoute.Test.csproj\");");
+        StringAssert.Contains(source, "\"vueroute\" => new[] { vueRouteTestProject }");
+        StringAssert.Contains(source, "vueRouteTestProject,");
     }
 
     [TestMethod]
@@ -114,7 +114,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var coverlet = System.IO.File.ReadAllText(coverletPath);
 
         StringAssert.Contains(readme, "# ECMAScript.VueRoute.Test");
-        StringAssert.Contains(readme, "pwsh ./scripts/test-dotnet.ps1 -Project vueroute");
+        StringAssert.Contains(readme, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute");
         StringAssert.Contains(coverlet, "<LineMinimum>85</LineMinimum>");
         StringAssert.Contains(coverlet, "<BranchMinimum>80</BranchMinimum>");
     }

@@ -41,7 +41,7 @@ dotnet test src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj --setti
 Or use the shared repo entry point:
 
 ```powershell
-pwsh ./scripts/test-dotnet.ps1 -Project vueroute
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
 ```
 
 ## Notes

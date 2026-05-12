@@ -21,22 +21,28 @@ public sealed class JoltRuntimeRobustnessTests
         try
         {
             var pidFilePath = Path.Combine(tempDirectory, "analysis-worker.pid");
-            var scriptPath = Path.Combine(tempDirectory, "chatty-analysis-worker.ps1");
+            var scriptPath = Path.Combine(tempDirectory, "chatty-analysis-worker.cs");
             await File.WriteAllTextAsync(
                 scriptPath,
                 """
-                param(
-                    [string]$PidPath
-                )
+                using System;
+                using System.IO;
+                using System.Threading;
 
-                Set-Content -LiteralPath $PidPath -Value $PID -Encoding utf8
-                1..1100 | ForEach-Object { "noise-$($_)" }
-                Start-Sleep -Seconds 30
+                var pidPath = args[0];
+                File.WriteAllText(pidPath, Environment.ProcessId.ToString());
+
+                for (var i = 1; i <= 1100; i++) {
+                    Console.WriteLine($"noise-{i}");
+                }
+
+                Thread.Sleep(TimeSpan.FromSeconds(30));
                 """);
+            ConfigureDotNetChildScriptEnvironment();
 
             var transport = new ProcessAnalysisRpcTransport(
-                ResolvePowerShellPath(),
-                $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptPath}\" \"{pidFilePath}\"");
+                "dotnet",
+                BuildDotNetFileArguments(scriptPath, pidFilePath));
             var sendTask = transport.SendAsync(
                 new RpcRequestEnvelope("analysis-noise", "analysis/test", payloadJson: "{}"),
                 CancellationToken.None).AsTask();
@@ -120,21 +126,38 @@ public sealed class JoltRuntimeRobustnessTests
         return host;
     }
 
-    private static string ResolvePowerShellPath()
+    private static string BuildDotNetFileArguments(string scriptPath, params string[] scriptArguments)
     {
-        var systemPowerShell = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.System),
-            "WindowsPowerShell",
-            "v1.0",
-            "powershell.exe");
-        return File.Exists(systemPowerShell)
-            ? systemPowerShell
-            : "powershell.exe";
+        var arguments = new List<string>
+        {
+            "run",
+            "--file",
+            QuoteArgument(scriptPath)
+        };
+
+        if (scriptArguments.Length > 0)
+        {
+            arguments.Add("--");
+            arguments.AddRange(scriptArguments.Select(QuoteArgument));
+        }
+
+        return string.Join(" ", arguments);
+    }
+
+    private static void ConfigureDotNetChildScriptEnvironment()
+    {
+        Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
+        Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "1");
+    }
+
+    private static string QuoteArgument(string value)
+    {
+        return "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
 
     private static async Task<int> WaitForProcessIdAsync(string pidFilePath, Task? operationTask = null)
     {
-        for (var attempt = 0; attempt < 100; attempt++)
+        for (var attempt = 0; attempt < 300; attempt++)
         {
             if (File.Exists(pidFilePath))
             {

@@ -24,7 +24,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 Or run the shared repo test entry point:
 
 ```powershell
-pwsh ./scripts/test-dotnet.ps1 -Project emit
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project emit
 ```
 
 ## Notes

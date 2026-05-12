@@ -117,7 +117,7 @@ dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --settings src/Jazo
 仓库级快捷入口：
 
 ```powershell
-pwsh ./scripts/test-dotnet.ps1
+dotnet run --file ./scripts/csharp/test-dotnet.cs
 ```
 
 ## 编写测试时的约束
