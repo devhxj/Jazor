@@ -49,6 +49,7 @@ This validates the production-oriented consumer path:
 
 - pack `Jazor` from the current repository state
 - rebuild `Pinia.Counter.Host` against the freshly packed local NuGet
+- keep `NuGet.Config` on stable sources only while `build-local.ps1` / `verify-smoke.cs` inject the transient local package source explicitly, so `dotnet run --file` can restore before the sample creates `.tmp/nupkg-sample`
 - emit generated modules into an isolated `.tmp/sample-smoke/.../jazor/` directory by default so the smoke run does not dirty tracked sample artifacts
 - assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
 - run the Deno bundle build

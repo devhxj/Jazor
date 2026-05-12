@@ -127,7 +127,7 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 	public void PiniaTesting_SampleSmokeAndWorkflow_KeepTestingLaneInProductionVerification()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var sampleSmokePath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1");
+		var sampleSmokePath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.cs");
 		var workflowPath = Path.Combine(repoRoot, ".github", "workflows", "pinia-verify.yml");
 		var sampleSmoke = System.IO.File.ReadAllText(sampleSmokePath);
 		var workflow = System.IO.File.ReadAllText(workflowPath);
@@ -137,7 +137,8 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		StringAssert.Contains(sampleSmoke, "createTestingPinia({");
 		StringAssert.Contains(workflow, "./scripts/test-dotnet.ps1 `");
 		StringAssert.Contains(workflow, "-Project pinia-testing `");
-		StringAssert.Contains(workflow, "./samples/ECMAScript.Pinia.Counter/verify-smoke.ps1 `");
+		StringAssert.Contains(workflow, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs --");
+		Assert.IsFalse(workflow.Contains("verify-smoke.ps1", StringComparison.Ordinal), "Pinia verification workflow should not reference the retired PowerShell smoke entrypoint.");
 	}
 
 	[TestMethod]

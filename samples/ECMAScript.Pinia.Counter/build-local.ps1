@@ -89,7 +89,7 @@ $buildArgs = @(
     "-t:Rebuild",
     "/m:1",
     "/p:BuildInParallel=false",
-    "-p:RestoreSources=$packageOutput",
+    "-p:RestoreAdditionalProjectSources=$packageOutput",
     "-p:RestorePackagesPath=$restorePackagesPath",
     "-p:RestoreForce=true",
     "-p:JazorPackageVersion=$packageVersion"

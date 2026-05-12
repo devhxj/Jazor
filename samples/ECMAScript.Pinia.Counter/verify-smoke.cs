@@ -9,6 +9,8 @@ var hostRoot = Path.Combine(sampleRoot, "Pinia.Counter.Host");
 var packageProject = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
 var hostProject = Path.Combine(hostRoot, "Pinia.Counter.Host.csproj");
 var packageOutput = Path.Combine(repoRoot, ".tmp", "nupkg-sample");
+PackageInfo? resolvedPackageInfo = null;
+string? restorePackagesPath = null;
 var generatedOutputRoot = string.IsNullOrWhiteSpace(options.GeneratedOutputRoot)
     ? Path.Combine(repoRoot, ".tmp", "sample-smoke", "ECMAScript.Pinia.Counter", options.Configuration, "jazor")
     : ResolvePath(options.GeneratedOutputRoot, repoRoot);
@@ -31,7 +33,8 @@ if (!options.FrontendOnly || options.BuildLocal)
     packArguments.AddRange(GetIsolationArguments(options));
     RunDotNet(repoRoot, packArguments);
 
-    var packageInfo = ResolveLatestPackage(packageOutput);
+    resolvedPackageInfo = ResolveLatestPackage(packageOutput);
+    restorePackagesPath = Path.Combine(repoRoot, ".tmp", "nuget-sample-packages", $"{resolvedPackageInfo.Value.Version}-{resolvedPackageInfo.Value.Stamp}");
     var buildArguments = new List<string>
     {
         "build",
@@ -40,10 +43,10 @@ if (!options.FrontendOnly || options.BuildLocal)
         "-t:Rebuild",
         "/m:1",
         "/p:BuildInParallel=false",
-        $"-p:RestoreSources={packageOutput}",
-        $"-p:RestorePackagesPath={Path.Combine(repoRoot, ".tmp", "nuget-sample-packages", $"{packageInfo.Version}-{packageInfo.Stamp}")}",
+        $"-p:RestoreAdditionalProjectSources={packageOutput}",
+        $"-p:RestorePackagesPath={restorePackagesPath}",
         "-p:RestoreForce=true",
-        $"-p:JazorPackageVersion={packageInfo.Version}",
+        $"-p:JazorPackageVersion={resolvedPackageInfo.Value.Version}",
         $"-p:JazorOutDir={generatedOutputRoot}"
     };
     buildArguments.AddRange(GetIsolationArguments(options));
@@ -58,7 +61,7 @@ if (!options.FrontendOnly || options.BuildLocal)
 AssertPathExists(ResolveHostAssemblyPath(hostRoot, options), "sample host assembly for requested configuration");
 AssertGeneratedHostArtifacts(generatedOutputRoot);
 
-var denoExePath = ResolveDenoExecutable(repoRoot);
+var denoExePath = ResolveDenoExecutable(repoRoot, options, restorePackagesPath, resolvedPackageInfo);
 var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 {
     ["JAZOR_GENERATED_ROOT"] = generatedOutputRoot
@@ -159,7 +162,7 @@ static string ResolveHostAssemblyPath(string hostRoot, SmokeOptions options)
     return Path.Combine(isolatedOutputRoot, "Pinia.Counter.Host", "bin", options.Configuration, "net11.0", "Pinia.Counter.Host.dll");
 }
 
-static string ResolveDenoExecutable(string repoRoot)
+static string ResolveDenoExecutable(string repoRoot, SmokeOptions options, string? restorePackagesPath, PackageInfo? packageInfo)
 {
     var explicitDenoExePath = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE");
     if (!string.IsNullOrWhiteSpace(explicitDenoExePath))
@@ -173,22 +176,68 @@ static string ResolveDenoExecutable(string repoRoot)
         return fullPath;
     }
 
-    var candidatePaths = new[]
+    var candidatePaths = new List<string>();
+    if (!string.IsNullOrWhiteSpace(options.BaseOutputPath))
     {
-        Path.Combine(repoRoot, "src", "Jolt", "bin", "Debug", "net11.0", "runtimes", "win-x64", "native", "deno.exe"),
-        Path.Combine(repoRoot, "src", "Jolt", "bin", "Release", "net11.0", "runtimes", "win-x64", "native", "deno.exe"),
-        Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0", "runtimes", "win-x64", "native", "deno.exe"),
-        Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Release", "net11.0", "runtimes", "win-x64", "native", "deno.exe"),
-        Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "denohost.runtime.win-x64", "2.7.14", "runtimes", "win-x64", "native", "deno.exe")
-    };
+        var isolatedOutputRoot = GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null);
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(isolatedOutputRoot, "Jazor.Emit", "bin", options.Configuration, "net11.0"));
+    }
+
+    AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jolt", "bin", "Debug", "net11.0"));
+    AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jolt", "bin", "Release", "net11.0"));
+    AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Debug", "net11.0"));
+    AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, "src", "Jazor.Emit", "bin", "Release", "net11.0"));
+
+    if (packageInfo is not null)
+    {
+        AddDenoRuntimeCandidates(candidatePaths, Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "jazor", packageInfo.Value.Version, "tools", "net11.0"));
+    }
+
+    if (!string.IsNullOrWhiteSpace(restorePackagesPath))
+    {
+        if (packageInfo is not null)
+        {
+            AddDenoRuntimeCandidates(candidatePaths, Path.Combine(restorePackagesPath, "jazor", packageInfo.Value.Version, "tools", "net11.0"));
+        }
+
+        if (Directory.Exists(restorePackagesPath))
+        {
+            var restoredPackageDeno = Directory
+                .EnumerateFiles(restorePackagesPath, "deno.exe", SearchOption.AllDirectories)
+                .FirstOrDefault();
+            if (restoredPackageDeno is not null)
+            {
+                candidatePaths.Add(restoredPackageDeno);
+            }
+        }
+    }
+
+    var denoHostPackageRoot = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages", "denohost.runtime.win-x64");
+    if (Directory.Exists(denoHostPackageRoot))
+    {
+        var cachedDenoRuntime = Directory
+            .EnumerateFiles(denoHostPackageRoot, "deno.exe", SearchOption.AllDirectories)
+            .OrderByDescending(static path => path, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+        if (cachedDenoRuntime is not null)
+        {
+            candidatePaths.Add(cachedDenoRuntime);
+        }
+    }
 
     var denoExePath = candidatePaths.FirstOrDefault(File.Exists);
     if (denoExePath is null)
     {
-        throw new FileNotFoundException("Bundled Deno runtime was not found. Build Jolt or Jazor.Emit first so DenoHost runtime assets exist.");
+        throw new FileNotFoundException("Bundled Deno runtime was not found. Build Jolt or Jazor.Emit first so DenoHost runtime assets exist, or rerun the smoke path after the local Jazor package restore completes.");
     }
 
     return denoExePath;
+}
+
+static void AddDenoRuntimeCandidates(ICollection<string> candidates, string baseDirectory)
+{
+    candidates.Add(Path.Combine(baseDirectory, "runtimes", "win-x64", "native", "deno.exe"));
+    candidates.Add(Path.Combine(baseDirectory, "publish", "runtimes", "win-x64", "native", "deno.exe"));
 }
 
 static void AssertGeneratedHostArtifacts(string generatedOutputRoot)
@@ -274,7 +323,9 @@ static void RunProcess(string fileName, IEnumerable<string> arguments, string wo
     {
         FileName = fileName,
         WorkingDirectory = workingDirectory,
-        UseShellExecute = false
+        UseShellExecute = false,
+        RedirectStandardError = true,
+        RedirectStandardOutput = true
     };
 
     foreach (var argument in arguments)
@@ -290,13 +341,63 @@ static void RunProcess(string fileName, IEnumerable<string> arguments, string wo
         }
     }
 
+    var outputLines = new List<string>();
+    var outputLock = new object();
+
     using var process = new Process { StartInfo = startInfo };
+    process.OutputDataReceived += (_, eventArgs) =>
+    {
+        if (eventArgs.Data is null)
+        {
+            return;
+        }
+
+        Console.WriteLine(eventArgs.Data);
+        lock (outputLock)
+        {
+            AppendOutputLine(outputLines, eventArgs.Data);
+        }
+    };
+    process.ErrorDataReceived += (_, eventArgs) =>
+    {
+        if (eventArgs.Data is null)
+        {
+            return;
+        }
+
+        Console.Error.WriteLine(eventArgs.Data);
+        lock (outputLock)
+        {
+            AppendOutputLine(outputLines, eventArgs.Data);
+        }
+    };
+
     process.Start();
+    process.BeginOutputReadLine();
+    process.BeginErrorReadLine();
     process.WaitForExit();
 
     if (process.ExitCode != 0)
     {
-        throw new InvalidOperationException($"{Path.GetFileName(fileName)} {string.Join(" ", arguments)} failed with exit code {process.ExitCode}.");
+        string[] failureTail;
+        lock (outputLock)
+        {
+            failureTail = outputLines.TakeLast(40).ToArray();
+        }
+
+        var tailText = failureTail.Length == 0
+            ? string.Empty
+            : $"{Environment.NewLine}Last output:{Environment.NewLine}{string.Join(Environment.NewLine, failureTail)}";
+        throw new InvalidOperationException($"{Path.GetFileName(fileName)} {string.Join(" ", arguments)} failed with exit code {process.ExitCode}.{tailText}");
+    }
+}
+
+static void AppendOutputLine(List<string> outputLines, string line)
+{
+    outputLines.Add(line);
+    if (outputLines.Count > 200)
+    {
+        outputLines.RemoveAt(0);
     }
 }
 
