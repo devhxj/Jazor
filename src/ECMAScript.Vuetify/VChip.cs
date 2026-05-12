@@ -1,4 +1,4 @@
-using ECMAScript.VueContract;
+ using ECMAScript.VueContract;
 using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
