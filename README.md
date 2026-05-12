@@ -246,16 +246,16 @@ dotnet restore
 dotnet build
 
 # Run all tests
-pwsh ./scripts/test-dotnet.ps1
+dotnet run --file ./scripts/csharp/test-dotnet.cs
 
 # Run compiler tests only
-pwsh ./scripts/test-dotnet.ps1 -Project compiler
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project compiler
 
 # Run Pinia binding tests only
-pwsh ./scripts/test-dotnet.ps1 -Project pinia
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia
 
 # Run Vue Router binding tests only
-pwsh ./scripts/test-dotnet.ps1 -Project vueroute
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
 
 # Run a single test class
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"

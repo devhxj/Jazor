@@ -42,10 +42,10 @@ jobs:
       - name: Pack Jazor
         shell: pwsh
         run: |
-          pwsh './scripts/publish-nuget.ps1' `
-            -Configuration Release `
-            -OutputDirectory 'artifacts/packages' `
-            -SkipPush
+          dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
+            --configuration Release `
+            --output-directory 'artifacts/packages' `
+            --skip-push
 
       - name: Discover package version
         id: package
@@ -114,9 +114,9 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path 'artifacts' -Force | Out-Null
           $notesPath = Join-Path (Resolve-Path 'artifacts') 'release-notes.md'
-          pwsh './scripts/release-notes.ps1' `
-            -Tag '${{ github.ref_name }}' `
-            -Repository '${{ github.repository }}' |
+          dotnet run --file ./scripts/csharp/release-notes.cs -- `
+            --tag '${{ github.ref_name }}' `
+            --repository '${{ github.repository }}' |
             Set-Content -LiteralPath $notesPath -Encoding UTF8
           "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
 

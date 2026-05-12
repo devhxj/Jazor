@@ -247,16 +247,16 @@ dotnet restore
 dotnet build
 
 # 运行所有测试
-pwsh ./scripts/test-dotnet.ps1
+dotnet run --file ./scripts/csharp/test-dotnet.cs
 
 # 仅运行编译器测试
-pwsh ./scripts/test-dotnet.ps1 -Project compiler
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project compiler
 
 # 仅运行 Pinia 绑定测试
-pwsh ./scripts/test-dotnet.ps1 -Project pinia
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia
 
 # 仅运行 Vue Router 绑定测试
-pwsh ./scripts/test-dotnet.ps1 -Project vueroute
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
 
 # 运行单个测试类
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"

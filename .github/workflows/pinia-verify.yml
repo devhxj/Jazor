@@ -19,8 +19,8 @@ on:
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.RazorVue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
-      - 'scripts/publish-nuget.ps1'
-      - 'scripts/test-dotnet.ps1'
+      - 'scripts/csharp/publish-nuget.cs'
+      - 'scripts/csharp/test-dotnet.cs'
       - 'Jazor.slnx'
       - 'global.json'
   pull_request:
@@ -40,8 +40,8 @@ on:
       - 'src/Jazor.Emit/**'
       - 'src/Jazor.RazorVue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
-      - 'scripts/publish-nuget.ps1'
-      - 'scripts/test-dotnet.ps1'
+      - 'scripts/csharp/publish-nuget.cs'
+      - 'scripts/csharp/test-dotnet.cs'
       - 'Jazor.slnx'
       - 'global.json'
   workflow_dispatch:
@@ -64,20 +64,20 @@ jobs:
       - name: Verify ECMAScript.Pinia
         shell: pwsh
         run: |
-          ./scripts/test-dotnet.ps1 `
-            -Project pinia `
-            -Configuration Release `
-            -BaseOutputPath 'artifacts/out/pinia/' `
-            -BaseIntermediateOutputPath 'artifacts/obj/pinia/'
+          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
+            --project pinia `
+            --configuration Release `
+            --base-output-path 'artifacts/out/pinia/' `
+            --base-intermediate-output-path 'artifacts/obj/pinia/'
 
       - name: Verify ECMAScript.Pinia.Testing
         shell: pwsh
         run: |
-          ./scripts/test-dotnet.ps1 `
-            -Project pinia-testing `
-            -Configuration Release `
-            -BaseOutputPath 'artifacts/out/pinia-testing/' `
-            -BaseIntermediateOutputPath 'artifacts/obj/pinia-testing/'
+          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
+            --project pinia-testing `
+            --configuration Release `
+            --base-output-path 'artifacts/out/pinia-testing/' `
+            --base-intermediate-output-path 'artifacts/obj/pinia-testing/'
 
   sample-smoke:
     runs-on: windows-latest
@@ -112,23 +112,23 @@ jobs:
       - name: Pack Jazor
         shell: pwsh
         run: |
-          ./scripts/publish-nuget.ps1 `
-            -Configuration Release `
-            -OutputDirectory artifacts/packages `
-            -SkipPush `
-            -BaseOutputPath 'artifacts/out/pinia-pack/' `
-            -BaseIntermediateOutputPath 'artifacts/obj/pinia-pack/'
+          dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
+            --configuration Release `
+            --output-directory artifacts/packages `
+            --skip-push `
+            --base-output-path 'artifacts/out/pinia-pack/' `
+            --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
 
       - name: Pack Jazor (NoBuild fast path)
         shell: pwsh
         run: |
-          ./scripts/publish-nuget.ps1 `
-            -Configuration Release `
-            -OutputDirectory artifacts/packages-nobuild `
-            -SkipPush `
-            -NoBuild `
-            -BaseOutputPath 'artifacts/out/pinia-pack/' `
-            -BaseIntermediateOutputPath 'artifacts/obj/pinia-pack/'
+          dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
+            --configuration Release `
+            --output-directory artifacts/packages-nobuild `
+            --skip-push `
+            --no-build `
+            --base-output-path 'artifacts/out/pinia-pack/' `
+            --base-intermediate-output-path 'artifacts/obj/pinia-pack/'
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
