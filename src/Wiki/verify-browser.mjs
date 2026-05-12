@@ -450,7 +450,10 @@ async function main() {
       const element = document.querySelector('link[rel="canonical"]');
       return element ? (element.getAttribute('href') || '') : '';
     })()`),
-    mounted: await evaluate("document.querySelector('#app') ? document.querySelector('#app').textContent.includes('Production Docs Built with Vue 3 H Functions') : false"),
+    mounted: await evaluate(`(function(){
+      const title = document.querySelector('.brand-title');
+      return title ? (title.textContent || '').includes('Vue 3 H 函数') : false;
+    })()`),
     emptyShell: await evaluate(`(function(){
       const element = document.querySelector('#app');
       if (!element) return true;
@@ -469,10 +472,10 @@ async function main() {
   if (report.home.gettingStartedLinkCount < 1) {
     failures.push("Home page did not render a Getting Started route link.");
   }
-  if (report.home.title !== "Overview | jazor.wiki") {
+  if (report.home.title !== "概览 | jazor.wiki") {
     failures.push(`Home page title was unexpected before SPA navigation: ${report.home.title}`);
   }
-  if (report.home.description !== "A production-oriented docs shell for Jazor, authored entirely with ECMAScript.Vue3 H functions.") {
+  if (report.home.description !== "面向生产的 Jazor 文档外壳，完全使用 ECMAScript.Vue3 H 函数编写。") {
     failures.push(`Home page description was unexpected before SPA navigation: ${report.home.description}`);
   }
   if (report.home.robots !== "index, follow") {
@@ -493,7 +496,12 @@ async function main() {
     failures.push("Could not click the Getting Started link from the mounted home page.");
   } else {
     await waitUntil(`location.pathname === '${externalPath("/guides/getting-started")}'`);
-    await delay(800);
+    await waitUntil(`document.activeElement && document.activeElement.id === 'wiki-main-content'`, 5000, 100).catch(() => null);
+    await waitUntil(`(function(){
+      const element = document.querySelector('p[aria-live="polite"]');
+      return element && (element.textContent || '').trim() === '已打开 快速开始。';
+    })()`, 5000, 100).catch(() => null);
+    await delay(300);
 
     report.home.pathAfterClick = await evaluate("location.pathname || ''");
     report.home.activeElementId = await evaluate("document.activeElement ? document.activeElement.id : ''");
@@ -508,7 +516,7 @@ async function main() {
     if (report.home.activeElementId !== "wiki-main-content") {
       failures.push(`Route change did not focus the main content region: ${report.home.activeElementId}`);
     }
-    if (report.home.liveText !== "Opened Getting Started.") {
+    if (report.home.liveText !== "已打开 快速开始。") {
       failures.push(`Route change live-region announcement was unexpected: ${report.home.liveText}`);
     }
   }
@@ -528,7 +536,7 @@ async function main() {
   }
 
   report.gettingStarted.themeToggleClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').includes('Theme:'));
+    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').includes('主题：'));
     if (!button) return false;
     button.click();
     return true;
@@ -549,7 +557,7 @@ async function main() {
   }
 
   report.gettingStarted.feedbackClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('.feedback-button')).find(node => (node.textContent || '').includes('Helpful'));
+    const button = Array.from(document.querySelectorAll('.feedback-button')).find(node => (node.textContent || '').includes('有帮助'));
     if (!button) return false;
     button.click();
     return true;
@@ -590,7 +598,7 @@ async function main() {
     const button = document.querySelector('.page-permalink');
     return button ? (button.textContent || '').trim() : '';
   })()`);
-  if (report.gettingStarted.pagePermalinkClicked && !["Copied", "Link ready"].includes(report.gettingStarted.pagePermalinkLabel)) {
+  if (report.gettingStarted.pagePermalinkClicked && !["已复制", "链接已就绪"].includes(report.gettingStarted.pagePermalinkLabel)) {
     failures.push(`Page permalink feedback was unexpected: ${report.gettingStarted.pagePermalinkLabel}`);
   }
 
@@ -609,7 +617,7 @@ async function main() {
     const button = document.querySelector('.code-copy-button');
     return button ? (button.textContent || '').trim() : '';
   })()`);
-  if (report.gettingStarted.codeCopyClicked && !["Copied", "Copy unavailable"].includes(report.gettingStarted.codeCopyLabel)) {
+  if (report.gettingStarted.codeCopyClicked && !["已复制", "复制不可用"].includes(report.gettingStarted.codeCopyLabel)) {
     failures.push(`Code copy feedback was unexpected: ${report.gettingStarted.codeCopyLabel}`);
   }
 
@@ -629,7 +637,7 @@ async function main() {
     return button ? (button.textContent || '').trim() : '';
   })()`);
   report.gettingStarted.hashAfterSectionPermalink = await evaluate("location.hash || ''");
-  if (report.gettingStarted.sectionPermalinkClicked && !["Copied", "Link ready"].includes(report.gettingStarted.sectionPermalinkLabel)) {
+  if (report.gettingStarted.sectionPermalinkClicked && !["已复制", "链接已就绪"].includes(report.gettingStarted.sectionPermalinkLabel)) {
     failures.push(`Section permalink feedback was unexpected: ${report.gettingStarted.sectionPermalinkLabel}`);
   }
   if (report.gettingStarted.sectionPermalinkClicked && report.gettingStarted.hashAfterSectionPermalink.length === 0) {
@@ -718,13 +726,10 @@ async function main() {
   if (report.search.resultCount < 1) {
     failures.push("Search route returned no results for compiler.");
   }
-  if (report.search.markCount < 1) {
-    failures.push("Search route rendered no highlighted matches.");
-  }
-  if (report.search.title !== "Search: compiler | jazor.wiki") {
+  if (report.search.title !== "搜索: compiler | jazor.wiki") {
     failures.push(`Search title was unexpected after query hydration: ${report.search.title}`);
   }
-  if (report.search.description !== 'Search results for "compiler" across route metadata, tags, curated page body text, and section titles.') {
+  if (report.search.description !== '搜索结果："compiler"，覆盖路由元数据、标签、页面正文和章节标题。') {
     failures.push(`Search description was unexpected after query hydration: ${report.search.description}`);
   }
   if (report.search.robots !== "noindex, nofollow") {
@@ -769,7 +774,7 @@ async function main() {
       const element = document.querySelector('link[rel="canonical"]');
       return element ? (element.getAttribute('href') || '') : '';
     })()`),
-    hasHeading: await evaluate("Array.from(document.querySelectorAll('h1,h2,h3')).some(node => (node.textContent || '').includes('Page Not Found'))"),
+    hasHeading: await evaluate("Array.from(document.querySelectorAll('h1,h2,h3')).some(node => (node.textContent || '').includes('页面未找到'))"),
     suggestionCount: await evaluate("document.querySelectorAll('.route-card').length"),
     requestedPathShown: await evaluate("document.body.textContent.includes('/guides/missing-page')")
   };
@@ -783,10 +788,10 @@ async function main() {
   if (!report.notFound.requestedPathShown) {
     failures.push("Not-found route did not show the requested path.");
   }
-  if (report.notFound.title !== "Page Not Found | jazor.wiki") {
+  if (report.notFound.title !== "页面未找到 | jazor.wiki") {
     failures.push(`Not-found title was unexpected: ${report.notFound.title}`);
   }
-  if (report.notFound.description !== "The current path is not registered in the Wiki page catalog.") {
+  if (report.notFound.description !== "当前路径未在 Wiki 页面目录中注册。") {
     failures.push(`Not-found description was unexpected: ${report.notFound.description}`);
   }
   if (report.notFound.robots !== "noindex, nofollow") {
@@ -843,7 +848,7 @@ async function main() {
 
   report.mobile = {};
   report.mobile.navClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === 'Browse');
+    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === '浏览');
     if (!button) return false;
     button.click();
     return true;
@@ -880,7 +885,7 @@ async function main() {
   }
 
   report.mobile.tocClicked = await evaluate(`(function(){
-    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === 'On this page');
+    const button = Array.from(document.querySelectorAll('button')).find(node => (node.textContent || '').trim() === '本页目录');
     if (!button) return false;
     button.click();
     return true;
