@@ -25,7 +25,7 @@ Generated modules are written to:
 Use the helper script to build the pack inputs, pack the local `Jazor` package, and rebuild the host against that package:
 
 ```powershell
-.\build-local.ps1
+dotnet run --file .\samples\Jazor.MultiProject\build-local.cs
 ```
 
 The script:
@@ -47,7 +47,7 @@ Generated output includes modules from all referenced projects that declare `[EC
 Use the same script with `-Bundle`:
 
 ```powershell
-.\build-local.ps1 -Bundle
+dotnet run --file .\samples\Jazor.MultiProject\build-local.cs -- --bundle
 ```
 
 This writes:

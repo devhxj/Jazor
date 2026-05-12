@@ -1,0 +1,339 @@
+#!/usr/bin/env dotnet run
+
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
+var options = SampleBuildOptions.Parse(args);
+var scriptPath = ScriptHelpers.GetScriptPath();
+var sampleRoot = Path.GetDirectoryName(scriptPath)
+    ?? throw new InvalidOperationException("Cannot resolve RazorVue.TodoList sample root from script path.");
+var repoRootOverride = Environment.GetEnvironmentVariable("JAZOR_SAMPLE_REPO_ROOT");
+var repoRoot = !string.IsNullOrWhiteSpace(repoRootOverride)
+    ? Path.GetFullPath(repoRootOverride)
+    : ScriptHelpers.FindRepositoryRoot(sampleRoot);
+var sampleWorkspaceRoot = Directory.GetParent(sampleRoot)?.FullName ?? sampleRoot;
+var hostProject = Path.Combine(sampleRoot, "Todo.Host", "Todo.Host.csproj");
+var vuetifyProject = Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj");
+var packageProject = Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj");
+var packageOutput = ResolveOptionalOverridePath(Environment.GetEnvironmentVariable("JAZOR_SAMPLE_PACKAGE_OUTPUT"), Path.Combine(repoRoot, ".tmp", "nupkg-sample"));
+var restorePackagesRoot = ResolveOptionalOverridePath(Environment.GetEnvironmentVariable("JAZOR_SAMPLE_RESTORE_PACKAGES_ROOT"), Path.Combine(repoRoot, ".tmp", "nuget-sample-packages"));
+var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
+
+var effectiveBaseOutputPath = !string.IsNullOrWhiteSpace(options.BaseOutputPath)
+    ? options.BaseOutputPath
+    : Path.Combine(repoRoot, ".tmp", "razorvue-todolist-out");
+var effectiveBaseIntermediateOutputPath = !string.IsNullOrWhiteSpace(options.BaseIntermediateOutputPath)
+    ? options.BaseIntermediateOutputPath
+    : Path.Combine(repoRoot, ".tmp", "razorvue-todolist-obj");
+
+ScriptHelpers.SetCommonEnvironment(dotnetCliHome);
+ScriptHelpers.CleanDirectoryWithinRoots(packageOutput, repoRoot, sampleWorkspaceRoot);
+
+if (!string.IsNullOrWhiteSpace(options.JazorOutDir))
+{
+    ScriptHelpers.CleanDirectoryWithinRoots(
+        ScriptHelpers.ResolvePath(sampleRoot, options.JazorOutDir),
+        repoRoot,
+        sampleWorkspaceRoot,
+        sampleRoot);
+}
+
+var isolationArguments = new[]
+{
+    "-p:JazorIsolatedBaseOutputRoot=" + ScriptHelpers.ResolveBuildRoot(repoRoot, effectiveBaseOutputPath),
+    "-p:JazorIsolatedBaseIntermediateOutputRoot=" + ScriptHelpers.ResolveBuildRoot(repoRoot, effectiveBaseIntermediateOutputPath)
+};
+
+await ScriptHelpers.RunDotNetAsync(
+    [
+        "pack",
+        packageProject,
+        "-c",
+        options.Configuration,
+        "-o",
+        packageOutput,
+        "-v",
+        "minimal",
+        .. isolationArguments,
+        "/nr:false",
+        "-p:UseSharedCompilation=false"
+    ],
+    repoRoot,
+    dotnetCliHome);
+
+await ScriptHelpers.RunDotNetAsync(
+    [
+        "pack",
+        vuetifyProject,
+        "-c",
+        options.Configuration,
+        "--no-build",
+        "-o",
+        packageOutput,
+        .. isolationArguments,
+        "/nr:false",
+        "-p:UseSharedCompilation=false"
+    ],
+    repoRoot,
+    dotnetCliHome);
+
+var packageInfo = ScriptHelpers.ResolveLatestPackage(packageOutput);
+var restorePackagesPath = Path.Combine(restorePackagesRoot, $"{packageInfo.Version}-{packageInfo.Stamp}");
+
+var buildArguments = new List<string>
+{
+    "build",
+    hostProject,
+    "-t:Rebuild",
+    "/m:1",
+    "/p:BuildInParallel=false",
+    $"-p:RestoreSources={packageOutput}",
+    $"-p:RestorePackagesPath={restorePackagesPath}",
+    "-p:RestoreForce=true",
+    $"-p:JazorPackageVersion={packageInfo.Version}",
+    "/nr:false",
+    "-p:UseSharedCompilation=false"
+};
+buildArguments.AddRange(isolationArguments);
+
+if (!string.IsNullOrWhiteSpace(options.JazorOutDir))
+{
+    buildArguments.Add("-p:JazorOutDir=" + ScriptHelpers.ResolvePath(repoRoot, options.JazorOutDir));
+}
+
+if (options.Bundle)
+{
+    buildArguments.Add("-p:JazorBundle=true");
+}
+
+await ScriptHelpers.RunDotNetAsync(buildArguments, repoRoot, dotnetCliHome);
+
+static string ResolveOptionalOverridePath(string? value, string fallback)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return fallback;
+    }
+
+    return Path.GetFullPath(value);
+}
+
+internal sealed record SampleBuildOptions(
+    string Configuration,
+    string? BaseOutputPath,
+    string? BaseIntermediateOutputPath,
+    string? JazorOutDir,
+    bool Bundle)
+{
+    public static SampleBuildOptions Parse(IReadOnlyList<string> arguments)
+    {
+        var configuration = "Debug";
+        string? baseOutputPath = null;
+        string? baseIntermediateOutputPath = null;
+        string? jazorOutDir = null;
+        var bundle = false;
+
+        for (var index = 0; index < arguments.Count; index++)
+        {
+            var argument = arguments[index];
+            switch (argument)
+            {
+                case "--configuration":
+                case "-Configuration":
+                case "-c":
+                    configuration = RequireValue(arguments, ref index, argument);
+                    break;
+                case "--base-output-path":
+                case "-BaseOutputPath":
+                    baseOutputPath = RequireValue(arguments, ref index, argument);
+                    break;
+                case "--base-intermediate-output-path":
+                case "-BaseIntermediateOutputPath":
+                    baseIntermediateOutputPath = RequireValue(arguments, ref index, argument);
+                    break;
+                case "--jazor-out-dir":
+                case "-JazorOutDir":
+                    jazorOutDir = RequireValue(arguments, ref index, argument);
+                    break;
+                case "--bundle":
+                case "-Bundle":
+                    bundle = true;
+                    break;
+                case "--help":
+                case "-h":
+                    WriteUsage();
+                    Environment.Exit(0);
+                    break;
+                default:
+                    throw new InvalidOperationException("Unsupported argument: " + argument);
+            }
+        }
+
+        return new SampleBuildOptions(configuration, baseOutputPath, baseIntermediateOutputPath, jazorOutDir, bundle);
+    }
+
+    static string RequireValue(IReadOnlyList<string> arguments, ref int index, string option)
+    {
+        var nextIndex = index + 1;
+        if (nextIndex >= arguments.Count)
+        {
+            throw new InvalidOperationException("Missing value for " + option + ".");
+        }
+
+        index = nextIndex;
+        return arguments[index];
+    }
+
+    static void WriteUsage()
+    {
+        Console.WriteLine("Usage: dotnet run --file samples/RazorVue.TodoList/build-local.cs -- [options]");
+        Console.WriteLine("Options:");
+        Console.WriteLine("  --configuration <Debug|Release>");
+        Console.WriteLine("  --base-output-path <path>");
+        Console.WriteLine("  --base-intermediate-output-path <path>");
+        Console.WriteLine("  --jazor-out-dir <path>");
+        Console.WriteLine("  --bundle");
+    }
+}
+
+internal sealed record PackageInfo(string Version, string Stamp);
+
+internal static class ScriptHelpers
+{
+    public static string GetScriptPath([CallerFilePath] string path = "")
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new InvalidOperationException("Cannot resolve script path.");
+        }
+
+        return Path.GetFullPath(path);
+    }
+
+    public static string FindRepositoryRoot(string startDirectory)
+    {
+        var current = new DirectoryInfo(Path.GetFullPath(startDirectory));
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "Jazor.slnx")))
+            {
+                return current.FullName;
+            }
+
+            current = current.Parent;
+        }
+
+        throw new InvalidOperationException("Cannot locate repository root (Jazor.slnx).");
+    }
+
+    public static void SetCommonEnvironment(string dotnetCliHome)
+    {
+        Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", dotnetCliHome);
+        Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
+        Environment.SetEnvironmentVariable("MSBUILDDISABLENODEREUSE", "1");
+        Environment.SetEnvironmentVariable("UseSharedCompilation", "false");
+    }
+
+    public static string ResolvePath(string repoRoot, string path)
+    {
+        return Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(repoRoot, path));
+    }
+
+    public static string ResolveBuildRoot(string repoRoot, string path)
+    {
+        var resolved = ResolvePath(repoRoot, path);
+        return resolved.EndsWith(Path.DirectorySeparatorChar)
+            ? resolved
+            : resolved + Path.DirectorySeparatorChar;
+    }
+
+    public static PackageInfo ResolveLatestPackage(string packageOutput)
+    {
+        var packageFile = new DirectoryInfo(packageOutput)
+            .EnumerateFiles("Jazor.*.nupkg", SearchOption.TopDirectoryOnly)
+            .Where(static file => !file.Name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static file => file.LastWriteTimeUtc)
+            .FirstOrDefault();
+
+        if (packageFile is null)
+        {
+            throw new InvalidOperationException($"Packed Jazor package not found under '{packageOutput}'.");
+        }
+
+        var version = Path.GetFileNameWithoutExtension(packageFile.Name).Replace("Jazor.", string.Empty, StringComparison.Ordinal);
+        var stamp = packageFile.LastWriteTimeUtc.ToString("yyyyMMddHHmmssffff", CultureInfo.InvariantCulture);
+        return new PackageInfo(version, stamp);
+    }
+
+    public static void CleanDirectoryWithinRoots(string path, params string[] allowedRoots)
+    {
+        var fullPath = Path.GetFullPath(path);
+        var normalizedRoots = allowedRoots
+            .Where(static root => !string.IsNullOrWhiteSpace(root))
+            .Select(Path.GetFullPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (!normalizedRoots.Any(root => IsWithinRoot(fullPath, root)))
+        {
+            throw new InvalidOperationException(
+                "Refusing to delete a path outside the allowed roots: "
+                + fullPath
+                + " | roots="
+                + string.Join(", ", normalizedRoots));
+        }
+
+        if (Directory.Exists(fullPath))
+        {
+            Directory.Delete(fullPath, recursive: true);
+        }
+    }
+
+    public static async Task RunDotNetAsync(
+        IReadOnlyList<string> arguments,
+        string workdir,
+        string dotnetCliHome,
+        CancellationToken cancellationToken = default)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            WorkingDirectory = workdir,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        foreach (var argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        startInfo.Environment["DOTNET_CLI_HOME"] = dotnetCliHome;
+        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+        startInfo.Environment["MSBUILDDISABLENODEREUSE"] = "1";
+        startInfo.Environment["UseSharedCompilation"] = "false";
+
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start process: dotnet");
+
+        await process.WaitForExitAsync(cancellationToken);
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Process failed with exit code {process.ExitCode}: dotnet {string.Join(' ', arguments)}");
+        }
+    }
+
+    static bool IsWithinRoot(string path, string root)
+    {
+        if (string.Equals(path, root, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var normalizedRoot = root.EndsWith(Path.DirectorySeparatorChar)
+            ? root
+            : root + Path.DirectorySeparatorChar;
+        return path.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase);
+    }
+}

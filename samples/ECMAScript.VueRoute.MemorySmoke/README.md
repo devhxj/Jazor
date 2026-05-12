@@ -16,7 +16,7 @@ The sample is split into:
 Use the helper script to build the local package inputs, pack `Jazor`, and rebuild the host:
 
 ```powershell
-.\build-local.ps1
+dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\build-local.cs
 ```
 
 By default, generated output is written to an isolated smoke directory:
@@ -28,7 +28,7 @@ By default, generated output is written to an isolated smoke directory:
 Run the end-to-end smoke verification from the repository root or sample directory:
 
 ```powershell
-.\verify-smoke.ps1 -Configuration Release
+dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.cs -- -Configuration Release
 ```
 
 This validates the production-oriented consumer path:
@@ -41,7 +41,7 @@ This validates the production-oriented consumer path:
 
 ## Run the frontend consumer
 
-After `.\build-local.ps1` succeeds:
+After `build-local.cs` succeeds:
 
 ```powershell
 cd .\vueroute-consumer
@@ -60,4 +60,4 @@ The consumer imports:
 - the generated host bootstrap from `host/app.mjs`
 - the generated internal `components/*`, `router/*`, `tests/*`, and `System/*` modules through Vite aliases
 
-`verify-smoke.ps1` sets `JAZOR_GENERATED_ROOT` so the consumer resolves the isolated generated output instead of relying on a fixed `wwwroot/jazor` path. The Vite config also aliases `npm:vue@3` and `npm:vue-router@4` to the local npm packages so the generated Jazor modules can run inside a standard Vite toolchain.
+`verify-smoke.cs` sets `JAZOR_GENERATED_ROOT` so the consumer resolves the isolated generated output instead of relying on a fixed `wwwroot/jazor` path. The Vite config also aliases `npm:vue@3` and `npm:vue-router@4` to the local npm packages so the generated Jazor modules can run inside a standard Vite toolchain.

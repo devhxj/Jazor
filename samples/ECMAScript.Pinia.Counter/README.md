@@ -16,7 +16,7 @@ The sample is split into:
 Use the helper script to build the local package inputs, pack `Jazor`, and rebuild the host:
 
 ```powershell
-.\build-local.ps1
+dotnet run --file .\samples\ECMAScript.Pinia.Counter\build-local.cs
 ```
 
 Generated output is written to:
@@ -49,7 +49,7 @@ This validates the production-oriented consumer path:
 
 - pack `Jazor` from the current repository state
 - rebuild `Pinia.Counter.Host` against the freshly packed local NuGet
-- keep `NuGet.Config` on stable sources only while `build-local.ps1` / `verify-smoke.cs` inject the transient local package source explicitly, so `dotnet run --file` can restore before the sample creates `.tmp/nupkg-sample`
+- keep `NuGet.Config` on stable sources only while `build-local.cs` / `verify-smoke.cs` inject the transient local package source explicitly, so `dotnet run --file` can restore before the sample creates `.tmp/nupkg-sample`
 - emit generated modules into an isolated `.tmp/sample-smoke/.../jazor/` directory by default so the smoke run does not dirty tracked sample artifacts
 - assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
 - run the Deno bundle build
@@ -57,7 +57,7 @@ This validates the production-oriented consumer path:
 
 ## Run the frontend consumer
 
-After `.\build-local.ps1` succeeds:
+After `build-local.cs` succeeds:
 
 ```powershell
 cd .\pinia-consumer
