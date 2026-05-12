@@ -12,7 +12,7 @@ import {
 export async function runBuild(): Promise<void> {
   const workspace = await prepareWorkspace(true);
   await emptyDirectory(workspace.distRoot);
-  await Deno.mkdir(workspace.assetsDirectory, { recursive: true });
+  await Deno.mkdir(workspace.browserBundleDirectory, { recursive: true });
 
   const output = await new Deno.Command(Deno.execPath(), {
     cwd: workspace.consumerRoot,
@@ -25,7 +25,7 @@ export async function runBuild(): Promise<void> {
       "--packages=bundle",
       "--sourcemap=linked",
       "--outdir",
-      workspace.assetsDirectory,
+      workspace.browserBundleDirectory,
       workspace.clientEntryPath
     ],
     stdin: "null",
@@ -37,12 +37,12 @@ export async function runBuild(): Promise<void> {
     throw new Error(new TextDecoder().decode(output.stderr).trim() || "Playground deno bundle failed.");
   }
 
-  const entryFilePath = join(workspace.assetsDirectory, "client-entry.js");
+  const entryFilePath = join(workspace.browserBundleDirectory, "client-entry.js");
   if (!(await fileExists(entryFilePath))) {
     throw new Error(`Playground bundle did not produce '${entryFilePath}'.`);
   }
 
-  const cssFiles = (await collectFiles(workspace.assetsDirectory))
+  const cssFiles = (await collectFiles(workspace.browserBundleDirectory))
     .filter((file) => file.endsWith(".css"))
     .map((file) => `./${relative(workspace.distRoot, file).replaceAll("\\", "/")}`)
     .sort((left, right) => left.localeCompare(right, "en"));
@@ -57,10 +57,34 @@ export async function runBuild(): Promise<void> {
     );
 
   await writeText(join(workspace.distRoot, "index.html"), outputHtml);
-  await copyDirectory(workspace.assetsDirectory, workspace.hostAssetsDirectory);
-  console.log(`Playground Deno build emitted ${basename(entryFilePath)} and ${cssFiles.length} CSS asset(s).`);
+  await copyDirectory(workspace.browserBundleDirectory, workspace.hostBrowserBundleDirectory);
+  await removeLegacyHostAssets(workspace.legacyHostAssetsDirectory);
+  console.log(`Playground Deno build emitted /jazor/${basename(entryFilePath)} and ${cssFiles.length} CSS asset(s).`);
 }
 
 if (import.meta.main) {
   await runBuild();
+}
+
+async function removeLegacyHostAssets(directory: string): Promise<void> {
+  const generatedNames = [
+    "client-entry.js",
+    "client-entry.js.map",
+    "client-entry.css",
+    "client-entry.css.map"
+  ];
+
+  for (const name of generatedNames) {
+    await Deno.remove(join(directory, name)).catch((error: unknown) => {
+      if (!(error instanceof Deno.errors.NotFound)) {
+        throw error;
+      }
+    });
+  }
+
+  await Deno.remove(directory).catch((error: unknown) => {
+    if (!(error instanceof Deno.errors.NotFound) && !(error instanceof Deno.errors.NotEmpty)) {
+      throw error;
+    }
+  });
 }

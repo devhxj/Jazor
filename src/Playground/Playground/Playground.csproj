@@ -10,17 +10,24 @@
     <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
     <JazorEmit>true</JazorEmit>
     <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
+    <JazorPublishOutDir>$(JazorOutDir)</JazorPublishOutDir>
     <JazorBundle>false</JazorBundle>
     <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\..\Jazor.Emit\bin\$(Configuration)\net11.0\Jazor.Emit.dll</JazorEmitToolPath>
+    <PlaygroundDenoBuild Condition="'$(PlaygroundDenoBuild)' == ''">true</PlaygroundDenoBuild>
+    <PlaygroundConsumerRunDenoScript>$(MSBuildProjectDirectory)\..\playground-consumer\scripts\run-deno.cs</PlaygroundConsumerRunDenoScript>
   </PropertyGroup>
 
   <Import Project="..\..\Jazor\buildTransitive\Jazor.props" />
 
   <ItemGroup>
     <Compile Remove="jazor\**" />
+    <Compile Remove="wwwroot\jazor\**" />
     <Content Remove="jazor\**" />
+    <Content Remove="wwwroot\jazor\**" />
     <EmbeddedResource Remove="jazor\**" />
+    <EmbeddedResource Remove="wwwroot\jazor\**" />
     <None Remove="jazor\**" />
+    <None Remove="wwwroot\jazor\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,20 +58,33 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="BuildPlaygroundDenoAssets"
+          AfterTargets="JazorEmit"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(PlaygroundDenoBuild)' == 'true' and Exists('$(JazorOutDir)jazor-manifest-razorvue.json')">
+    <Error Text="Playground Deno runner was not found: $(PlaygroundConsumerRunDenoScript)"
+           Condition="!Exists('$(PlaygroundConsumerRunDenoScript)')" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          Command="dotnet run --file &quot;$(PlaygroundConsumerRunDenoScript)&quot; -- task build" />
+  </Target>
+
   <Target Name="PublishPlaygroundJazorArtifacts" AfterTargets="Publish" Condition="'$(JazorEmit)' == 'true' and Exists('$(JazorOutDir)')">
     <PropertyGroup>
       <_PlaygroundPublishedJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_PlaygroundPublishedJazorRoot>
       <_PlaygroundPublishedLocalJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_PlaygroundPublishedLocalJazorRoot>
+      <_PlaygroundPublishedLegacyAssetsRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'assets'))</_PlaygroundPublishedLegacyAssetsRoot>
     </PropertyGroup>
 
     <ItemGroup>
       <_PlaygroundJazorArtifact Include="$(JazorOutDir)**\*" />
+      <_PlaygroundBrowserBundleArtifact Include="$(MSBuildProjectDirectory)\wwwroot\jazor\client-entry.*" />
     </ItemGroup>
 
     <RemoveDir Directories="$(_PlaygroundPublishedJazorRoot)" />
     <MakeDir Directories="$(_PlaygroundPublishedJazorRoot)" />
     <Copy SourceFiles="@(_PlaygroundJazorArtifact)" DestinationFiles="@(_PlaygroundJazorArtifact->'$(_PlaygroundPublishedJazorRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_PlaygroundBrowserBundleArtifact)" DestinationFiles="@(_PlaygroundBrowserBundleArtifact->'$(_PlaygroundPublishedJazorRoot)\%(Filename)%(Extension)')" Condition="'@(_PlaygroundBrowserBundleArtifact)' != ''" />
     <RemoveDir Directories="$(_PlaygroundPublishedLocalJazorRoot)" Condition="Exists('$(_PlaygroundPublishedLocalJazorRoot)')" />
+    <RemoveDir Directories="$(_PlaygroundPublishedLegacyAssetsRoot)" Condition="Exists('$(_PlaygroundPublishedLegacyAssetsRoot)')" />
   </Target>
 
   <Import Project="..\..\Jazor\buildTransitive\Jazor.targets" />

@@ -428,6 +428,9 @@ CLAUDE.md
 .verify*/
 src/Wiki/jazor/
 src/Wiki/wwwroot/jazor/
+src/Playground/Playground/jazor/
+src/Playground/Playground/wwwroot/jazor/
+src/Playground/playground-consumer/dist/
 src/Wiki/.devtools-*
 .github/
 !.github/

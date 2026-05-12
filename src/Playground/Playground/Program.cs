@@ -1,12 +1,14 @@
 using Jazor.AspNetCore;
+using Microsoft.Extensions.FileProviders;
 using Playground;
 
 var contentRoot = ResolveContentRoot();
+var webRoot = Path.Combine(contentRoot, "wwwroot");
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
     ContentRootPath = contentRoot,
-    WebRootPath = Path.Combine(contentRoot, "wwwroot")
+    WebRootPath = webRoot
 });
 builder.Services.AddSingleton<PlaygroundExampleRepository>();
 
@@ -24,6 +26,17 @@ app.Use(async (context, next) =>
     await next();
 });
 
+var publishedJazorRoot = Path.Combine(webRoot, "jazor");
+if (Directory.Exists(publishedJazorRoot))
+{
+    app.UseJazorStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(publishedJazorRoot),
+        RequestPath = "/jazor",
+        OnPrepareResponse = PlaygroundHostPage.ApplyStaticAssetHeaders
+    });
+}
+
 app.UseJazorDevelopmentAssets(options =>
 {
     options.EntryModuleRelativePath = "jazor-manifest-razorvue.json";
@@ -33,11 +46,16 @@ app.UseJazorDevelopmentAssets(options =>
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
+    FileProvider = new PhysicalFileProvider(webRoot),
     OnPrepareResponse = PlaygroundHostPage.ApplyStaticAssetHeaders
 });
-app.UseJazorStaticFiles(new StaticFileOptions
+
+app.Use(async (context, next) =>
 {
-    OnPrepareResponse = PlaygroundHostPage.ApplyStaticAssetHeaders
+    if (await PlaygroundHostPage.TryHandleHtmlRequestAsync(context, context.RequestAborted))
+        return;
+
+    await next();
 });
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "playground-host" }));
@@ -53,21 +71,17 @@ app.MapGet("/api/playground/examples/{id}", (string id, PlaygroundExampleReposit
     return detail is null ? Results.NotFound() : Results.Ok(detail);
 });
 
-app.MapMethods("/{**path}", ["GET", "HEAD"], async context =>
-{
-    if (!PlaygroundHostPage.IsHtmlShellPath(context.Request.Path))
-    {
-        context.Response.StatusCode = StatusCodes.Status404NotFound;
-        return;
-    }
-
-    await PlaygroundHostPage.WriteHtmlAsync(context);
-});
-
 app.Run();
 
 static string ResolveContentRoot([System.Runtime.CompilerServices.CallerFilePath] string programFilePath = "")
 {
+    var appBaseDirectory = Path.GetFullPath(AppContext.BaseDirectory);
+    var publishedWebRoot = Path.Combine(appBaseDirectory, "wwwroot");
+    if (Directory.Exists(publishedWebRoot))
+    {
+        return appBaseDirectory;
+    }
+
     return Path.GetDirectoryName(programFilePath)
         ?? throw new InvalidOperationException("Cannot determine Playground content root.");
 }

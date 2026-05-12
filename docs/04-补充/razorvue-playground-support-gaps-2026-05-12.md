@@ -28,9 +28,10 @@ RazorVue 产出的 `.vue` SFC 默认是 `default export` 组件，而当前 Jazo
 
 `Playground` 采用：
 
-- ASP.NET Core 项目输出 `wwwroot/jazor/*.vue`
+- ASP.NET Core 项目开发/测试阶段输出根 `jazor/*.vue`
+- 发布阶段将根 `jazor` 物化到 `wwwroot/jazor`
 - `playground-consumer` 读取 manifest 和 `.vue`
-- Deno pipeline 编译并打包到 `wwwroot/assets`
+- Deno pipeline 编译并打包到 `wwwroot/jazor/client-entry.*`
 
 ### 后续提升方向
 
@@ -136,6 +137,7 @@ class='@("playground-category-chip")'
 
 - 单 .NET 项目
 - 同仓库内 colocated consumer
+- MSBuild target 自动调用 Deno consumer 构建浏览器资产
 
 而不是“完全不需要任何前端 consumer”。
 
@@ -144,7 +146,78 @@ class='@("playground-category-chip")'
 - 若希望进一步降低接缝，未来可以考虑把 consumer pipeline 标准化为官方 build target / sdk 能力
 - 或让 ASP.NET Core + RazorVue library mode 提供更完整的一体化 build 封装
 
-## 5. 当前处理结论
+## 5. ASP.NET Core fallback 不能使用 catch-all endpoint 抢占静态文件
+
+### 现象
+
+早期宿主验证时，`/assets/client-entry.js` 文件存在于 `wwwroot/assets`，但返回 404。后续按 Playground 的 `/jazor/*` 统一资源边界改为 `wwwroot/jazor/client-entry.*`，但该中间件顺序问题仍然成立。
+
+根因是 endpoint routing 中的：
+
+```csharp
+app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
+```
+
+会先为 `/assets/*` 选择 catch-all endpoint，导致 `StaticFileMiddleware` 因已有 endpoint 而不处理请求，最终落入 fallback 逻辑。
+
+### 当前落地方式
+
+`Playground` 改为和 `Wiki` 一样使用普通 middleware 处理 HTML shell fallback：
+
+- 先挂载 `UseJazorDevelopmentAssets()`
+- 再挂载 `UseStaticFiles()`
+- 再用普通 `app.Use(...)` 判断非文件 HTML 路由
+- fallback 显式排除 `/api`、`/assets`、`/health`、`/jazor`
+
+### 后续提升方向
+
+- 将该约束写入 ASP.NET Core 集成样例或模板
+- 对 SPA fallback 提供官方 helper，避免用户误用 endpoint catch-all 破坏静态文件服务
+
+## 6. 发布内容根不能固定到源码路径
+
+### 现象
+
+为了让 `dotnet run --project ...` 从仓库根启动时找到源码 `wwwroot`，一开始使用 `CallerFilePath` 固定 `ContentRootPath`。
+
+该方式在发布包中有风险：发布后如果仍在同一台机器运行，宿主可能继续指向源码目录，而不是发布目录。
+
+### 当前落地方式
+
+`Playground` 的内容根解析改为：
+
+- 若 `AppContext.BaseDirectory/wwwroot` 存在，优先使用发布/输出目录
+- 否则回退到 `Program.cs` 所在源码目录
+
+同时普通静态文件使用显式 `PhysicalFileProvider`，避免工作目录差异影响 `wwwroot/jazor`。
+
+### 后续提升方向
+
+- 在 `Jazor.AspNetCore` 或模板层提供标准的源码/发布双形态内容根策略
+- 对 `dotnet run --project` 从仓库根启动的场景增加官方示例验证
+
+## 7. 浏览器 bundle 与 RazorVue emit 复用 `/jazor/*` 需要明确合并语义
+
+### 现象
+
+`Playground` 需要让最终浏览器 bundle 也直接落在 `wwwroot/jazor`，而不是单独使用 `wwwroot/assets`。这会让发布目录中同一个 `/jazor/*` 路径同时包含：
+
+- 根 `jazor` emit 复制出的 manifest、SFC 和 CLR runtime modules
+- Deno consumer 生成的 `client-entry.js`、`client-entry.css` 与 sourcemap
+
+### 当前落地方式
+
+- 本地 build 阶段：根 `jazor` 仍是 RazorVue emit 源，`wwwroot/jazor` 只承载浏览器 bundle。
+- 本地宿主阶段：先挂载 `wwwroot/jazor`，再挂载根 `jazor` 的 development assets，确保 `/jazor/client-entry.*` 和 `/jazor/jazor-manifest-razorvue.json` 都可访问。
+- publish 阶段：先清空发布 `wwwroot/jazor`，复制根 `jazor` emit，再复制 `wwwroot/jazor/client-entry.*`，最终发布包只从 `wwwroot/jazor` 服务 `/jazor/*`。
+- consumer 中间 build root 默认按进程隔离为 `.deno-build/pid-*`，避免 `smoke:ssr`、`smoke:browser` 或 CI 并行任务互相清理同一目录。
+
+### 后续提升方向
+
+- RazorVue / ASP.NET Core 集成层可以提供官方合并 target，避免真实项目手写“emit + consumer bundle”合并逻辑。
+- `UseJazorDevelopmentAssets()` 可以考虑支持多个物理源的同一 request path 合并，减少中间件顺序敏感性。
+
+## 8. 当前处理结论
 
 这些问题没有阻断 `Playground` 落地，但都属于真实生产标准下必须正视的能力边界。
 
@@ -154,3 +227,5 @@ class='@("playground-category-chip")'
 2. Razor IR 对静态 attribute 的稳定接受
 3. fallthrough attribute authoring 体验修复
 4. library-mode 单项目 consumer pipeline 的官方化
+5. ASP.NET Core fallback/static-file 官方化模板
+6. `/jazor/*` 多来源合并能力官方化

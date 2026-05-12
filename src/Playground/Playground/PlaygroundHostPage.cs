@@ -16,17 +16,25 @@ internal static class PlaygroundHostPage
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jazor Playground</title>
   <meta name="description" content="Production-style RazorVue + Vuetify + Pinia + VueRoute + ASP.NET Core playground." />
-  <link rel="stylesheet" href="/assets/client-entry.css" />
+  <link rel="stylesheet" href="/jazor/client-entry.css" />
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="/assets/client-entry.js"></script>
+  <script type="module" src="/jazor/client-entry.js"></script>
 </body>
 </html>
 """;
 
     public static bool IsHtmlShellPath(PathString path)
     {
+        if (path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWithSegments("/jazor", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         if (path == "/" || path == string.Empty)
         {
             return true;
@@ -53,11 +61,36 @@ internal static class PlaygroundHostPage
         context.Context.Response.Headers.CacheControl = MutableAssetCacheControl;
     }
 
+    public static async Task<bool> TryHandleHtmlRequestAsync(HttpContext context, CancellationToken cancellationToken = default)
+    {
+        if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
+        {
+            return false;
+        }
+
+        if (!IsHtmlShellPath(context.Request.Path))
+        {
+            return false;
+        }
+
+        await WriteHtmlAsync(context, cancellationToken);
+        return true;
+    }
+
     public static Task WriteHtmlAsync(HttpContext context)
+        => WriteHtmlAsync(context, CancellationToken.None);
+
+    public static async Task WriteHtmlAsync(HttpContext context, CancellationToken cancellationToken)
     {
         context.Response.StatusCode = StatusCodes.Status200OK;
         context.Response.ContentType = "text/html; charset=utf-8";
         context.Response.Headers.CacheControl = HtmlCacheControl;
-        return context.Response.WriteAsync(HtmlShell, Encoding.UTF8);
+
+        if (HttpMethods.IsHead(context.Request.Method))
+        {
+            return;
+        }
+
+        await context.Response.WriteAsync(HtmlShell, Encoding.UTF8, cancellationToken);
     }
 }

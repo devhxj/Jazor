@@ -24,8 +24,9 @@ type PreparedWorkspace = {
   browserGeneratedRoot: string;
   ssrGeneratedRoot: string;
   distRoot: string;
-  assetsDirectory: string;
-  hostAssetsDirectory: string;
+  browserBundleDirectory: string;
+  hostBrowserBundleDirectory: string;
+  legacyHostAssetsDirectory: string;
   clientEntryPath: string;
   ssrEntryPath: string;
   vueFeatureFlagsPath: string;
@@ -50,12 +51,16 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     "RAZORVUE_HOST_WWWROOT_ROOT",
     resolve(consumerRoot, "..", "Playground", "wwwroot")
   );
-  const buildRoot = resolvePathFromEnvironment("RAZORVUE_BUILD_ROOT", resolve(consumerRoot, ".deno-build"));
+  const buildRoot = resolvePathFromEnvironment(
+    "RAZORVUE_BUILD_ROOT",
+    resolve(consumerRoot, ".deno-build", `pid-${Deno.pid}`)
+  );
   const browserGeneratedRoot = resolve(buildRoot, "generated-browser");
   const ssrGeneratedRoot = resolve(buildRoot, "generated-ssr");
   const distRoot = resolvePathFromEnvironment("RAZORVUE_DIST_ROOT", resolve(consumerRoot, "dist"));
-  const assetsDirectory = resolve(distRoot, "assets");
-  const hostAssetsDirectory = resolve(hostWwwrootRoot, "assets");
+  const browserBundleDirectory = resolve(distRoot, "jazor");
+  const hostBrowserBundleDirectory = resolve(hostWwwrootRoot, "jazor");
+  const legacyHostAssetsDirectory = resolve(hostWwwrootRoot, "assets");
   const rootComponentId = readConfiguredText("RAZORVUE_ROOT_COMPONENT_ID") ?? defaultRootComponentId;
   const rootComponentName = readConfiguredText("RAZORVUE_ROOT_COMPONENT_NAME") ?? defaultRootComponentName;
   const manifestPath = resolve(hostJazorRoot, "jazor-manifest-razorvue.json");
@@ -161,8 +166,9 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
     browserGeneratedRoot,
     ssrGeneratedRoot,
     distRoot,
-    assetsDirectory,
-    hostAssetsDirectory,
+    browserBundleDirectory,
+    hostBrowserBundleDirectory,
+    legacyHostAssetsDirectory,
     clientEntryPath,
     ssrEntryPath,
     vueFeatureFlagsPath,
