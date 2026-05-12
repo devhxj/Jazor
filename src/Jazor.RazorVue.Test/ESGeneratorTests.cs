@@ -10428,6 +10428,68 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
+    public void GenerateCatalog_WithLibraryPropAndSlotSharingVueName_DoesNotReportJAZORVGA007()
+    {
+        var compilation = CreateCompilation(
+            "RazorVue.LibraryPropAndSlotSharingVueName.Generated",
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/dialog-host")]
+                public class DialogHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VDialogActivatorContext>? Activator { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VDialog>(0);
+                        builder.AddAttribute(1, nameof(VDialog.ActivatorTarget), VuetifyDialogActivatorTarget.Parent());
+                        builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """,
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ECMAScript.Vue3.IVueComponent).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(VDialog).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(global::Microsoft.AspNetCore.Components.ComponentBase).Assembly.Location));
+
+        var (_, runResult) = RunAllGeneratorsWithResult(compilation);
+        var diagnostics = runResult.Results
+            .SelectMany(static result => result.Diagnostics)
+            .Where(static diagnostic => diagnostic.Id is "JAZORVGA007" or "JAZORVGA010" or "JAZORVGA011")
+            .ToArray();
+        var hints = runResult.Results
+            .SelectMany(static result => result.GeneratedSources)
+            .Select(static source => source.HintName)
+            .ToArray();
+
+        Assert.AreEqual(
+            0,
+            diagnostics.Length,
+            string.Join("\n", runResult.Results.SelectMany(static result => result.Diagnostics).Select(static x => x.ToString())));
+        CollectionAssert.Contains(hints, "Jazor.Generated.RazorVueCatalog.g.cs");
+    }
+
+    [TestMethod]
     public void GenerateCatalog_WithInvalidLibraryBindTarget_ReportsJAZORVGA008()
     {
         var compilation = CreateCompilation(
@@ -10596,7 +10658,7 @@ public sealed class ESGeneratorTests
     }
 
     [TestMethod]
-    public void GenerateCatalog_WithImplicitTypedLibraryDefaultSlot_ReportsJAZORVGA010()
+    public void GenerateCatalog_WithImplicitTypedLibraryDefaultSlot_DoesNotReportJAZORVGA010()
     {
         var compilation = CreateCompilation(
             "RazorVue.TypedLibraryDefaultSlotContext.Generated",
@@ -10650,10 +10712,7 @@ public sealed class ESGeneratorTests
             .Where(static diagnostic => diagnostic.Id == "JAZORVGA010")
             .ToArray();
 
-        Assert.AreEqual(1, diagnostics.Length);
-        StringAssert.Contains(diagnostics[0].GetMessage(), "TypedContentPanel");
-        StringAssert.Contains(diagnostics[0].GetMessage(), "ChildContent");
-        Assert.AreEqual(28, diagnostics[0].Location.GetLineSpan().StartLinePosition.Line + 1);
+        Assert.AreEqual(0, diagnostics.Length);
     }
 
     [TestMethod]

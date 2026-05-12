@@ -134,14 +134,7 @@ private void ValidateDefaultLibrarySlotUsage(
     if (slotsByPublicName is not null &&
         slotsByPublicName.TryGetValue("ChildContent", out var defaultSlotDescriptor))
     {
-        if (defaultSlotDescriptor.Parameters.IsDefaultOrEmpty)
-            return;
-
-        // 隐式子内容无法满足类型化槽合约
-        throw CreateAuthoringIssue(
-            RazorVueIssueCode.SlotContextMisuse,
-            $"Child content parameter 'ChildContent' on component '{descriptor.Name}' expects a callable template that accepts '{DescribeSlotContext(defaultSlotDescriptor)}'.",
-            origin);
+        return;
     }
 
     throw CreateAuthoringIssue(
@@ -155,7 +148,8 @@ private void ValidateDefaultLibrarySlotUsage(
 
 **错误场景**:
 1. 组件未声明 `ChildContent` 槽
-2. `ChildContent` 需要上下文参数，但用户传递的是隐式子内容
+
+类型化 default slot 的普通隐式子内容是合法的，lowering 会生成接收内部槽上下文参数但不强制使用该参数的 Vue `default` slot 函数或 SFC `<template #default="...">`，并避免该内部参数遮蔽同名业务局部/参数。显式赋值到类型化 slot 参数时仍必须是 callable scoped template，否则按 `SlotContextMisuse` 报错。
 
 #### ValidateDuplicateLibrarySlotUsage 方法
 

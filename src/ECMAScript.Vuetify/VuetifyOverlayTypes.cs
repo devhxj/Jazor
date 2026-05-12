@@ -49,6 +49,76 @@ public static class VuetifyOverlayOffsetValuesCollectionBuilder
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
+public readonly struct VuetifyOverlayActivatorTarget : System.Runtime.CompilerServices.IUnion
+{
+    private readonly byte _kind;
+    private readonly Element? _element;
+    private readonly VueComponentPublicInstance? _component;
+    private readonly string? _string;
+
+    private VuetifyOverlayActivatorTarget(Element value)
+    {
+        _kind = 1;
+        _element = value;
+        _component = default;
+        _string = default;
+    }
+
+    private VuetifyOverlayActivatorTarget(VueComponentPublicInstance value)
+    {
+        _kind = 2;
+        _element = default;
+        _component = value;
+        _string = default;
+    }
+
+    private VuetifyOverlayActivatorTarget(string value)
+    {
+        _kind = 3;
+        _element = default;
+        _component = default;
+        _string = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _element : default;
+
+    public VueComponentPublicInstance? AsComponent => _kind == 2 ? _component : default;
+
+    public string? AsString => _kind == 3 ? _string : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsElement,
+        2 => AsComponent,
+        3 => AsString,
+        _ => default
+    };
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayActivatorTarget From(Element value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayActivatorTarget From(VueComponentPublicInstance value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayActivatorTarget From(string value);
+
+    [ECMAScriptInline("'parent'")]
+    public extern static VuetifyOverlayActivatorTarget Parent();
+
+    public static implicit operator VuetifyOverlayActivatorTarget(Element value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayActivatorTarget(VueComponentPublicInstance value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayActivatorTarget(string value)
+        => new(value);
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
 public readonly struct VuetifyOverlayOffsetValue : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
@@ -247,6 +317,101 @@ public readonly struct VuetifyOverlayCoordinateTarget : System.Runtime.CompilerS
 
     public static implicit operator VuetifyOverlayCoordinateTarget(double[] values)
         => new(Array.ConvertAll(values, static value => (Number)value));
+}
+
+[ECMAScript]
+[System.Runtime.CompilerServices.Union]
+[Description("@#")]
+public readonly struct VuetifyOverlayTarget : System.Runtime.CompilerServices.IUnion
+{
+    private readonly byte _kind;
+    private readonly Element? _element;
+    private readonly VueComponentPublicInstance? _component;
+    private readonly string? _string;
+    private readonly VuetifyOverlayCoordinateTarget? _coordinates;
+
+    private VuetifyOverlayTarget(Element value)
+    {
+        _kind = 1;
+        _element = value;
+        _component = default;
+        _string = default;
+        _coordinates = default;
+    }
+
+    private VuetifyOverlayTarget(VueComponentPublicInstance value)
+    {
+        _kind = 2;
+        _element = default;
+        _component = value;
+        _string = default;
+        _coordinates = default;
+    }
+
+    private VuetifyOverlayTarget(string value)
+    {
+        _kind = 3;
+        _element = default;
+        _component = default;
+        _string = value;
+        _coordinates = default;
+    }
+
+    private VuetifyOverlayTarget(VuetifyOverlayCoordinateTarget value)
+    {
+        _kind = 4;
+        _element = default;
+        _component = default;
+        _string = default;
+        _coordinates = value;
+    }
+
+    public Element? AsElement => _kind == 1 ? _element : default;
+
+    public VueComponentPublicInstance? AsComponent => _kind == 2 ? _component : default;
+
+    public string? AsString => _kind == 3 ? _string : default;
+
+    public VuetifyOverlayCoordinateTarget? AsCoordinates => _kind == 4 ? _coordinates : default;
+
+    public object? Value => _kind switch
+    {
+        1 => AsElement,
+        2 => AsComponent,
+        3 => AsString,
+        4 => AsCoordinates,
+        _ => default
+    };
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayTarget From(Element value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayTarget From(VueComponentPublicInstance value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayTarget From(string value);
+
+    [ECMAScriptInline("__arg1")]
+    public extern static VuetifyOverlayTarget From(VuetifyOverlayCoordinateTarget value);
+
+    [ECMAScriptInline("'cursor'")]
+    public extern static VuetifyOverlayTarget Cursor();
+
+    [ECMAScriptInline("'parent'")]
+    public extern static VuetifyOverlayTarget Parent();
+
+    public static implicit operator VuetifyOverlayTarget(Element value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayTarget(VueComponentPublicInstance value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayTarget(string value)
+        => new(value);
+
+    public static implicit operator VuetifyOverlayTarget(VuetifyOverlayCoordinateTarget value)
+        => new(value);
 }
 
 [ECMAScript]

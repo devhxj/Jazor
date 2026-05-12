@@ -9,6 +9,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbarItems")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
@@ -16,6 +17,12 @@ public sealed class VToolbarItems : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public VuetifyVariant? Variant { get; set; }
+
+    [Parameter]
+    public VueClassValue? Class { get; set; }
+
+    [Parameter]
+    public VuetifyStyleValue? Style { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

@@ -7,6 +7,7 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
+[VueLibraryEmit(nameof(Submit), VueEmitKind.LibrarySpecific, Name = "submit")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VForm : ComponentBase, IVueLibraryComponent
 {
@@ -28,9 +29,18 @@ public sealed class VForm : ComponentBase, IVueLibraryComponent
     [Parameter]
     public EventCallback<bool?> ModelValueChanged { get; set; }
 
+    [Parameter]
+    public VueClassValue? Class { get; set; }
+
+    [Parameter]
+    public VuetifyStyleValue? Style { get; set; }
+
+    [Parameter]
+    public EventCallback<VFormSubmitEvent> Submit { get; set; }
+
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
 
     [Parameter]
-    public RenderFragment? ChildContent { get; set; }
+    public RenderFragment<VFormDefaultSlotContext>? ChildContent { get; set; }
 }

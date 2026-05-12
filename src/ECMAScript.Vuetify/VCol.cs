@@ -10,13 +10,70 @@ namespace ECMAScript.Vuetify;
 public sealed class VCol : ComponentBase, IVueLibraryComponent
 {
     [Parameter]
-    public int? Cols { get; set; }
+    public string? Tag { get; set; }
 
     [Parameter]
-    public int? Md { get; set; }
+    public VueClassValue? Class { get; set; }
 
     [Parameter]
-    public int? Lg { get; set; }
+    public VuetifyStyleValue? Style { get; set; }
+
+    [Parameter]
+    public string? AlignSelf { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OrderSm { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OrderMd { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OrderLg { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OrderXl { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OrderXxl { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Order { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OffsetSm { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OffsetMd { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OffsetLg { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OffsetXl { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? OffsetXxl { get; set; }
+
+    [Parameter]
+    public VueStringNumberValue? Offset { get; set; }
+
+    [Parameter]
+    public VuetifyGridSpanValue? Sm { get; set; }
+
+    [Parameter]
+    public VuetifyGridSpanValue? Md { get; set; }
+
+    [Parameter]
+    public VuetifyGridSpanValue? Lg { get; set; }
+
+    [Parameter]
+    public VuetifyGridSpanValue? Xl { get; set; }
+
+    [Parameter]
+    public VuetifyGridSpanValue? Xxl { get; set; }
+
+    [Parameter]
+    public VuetifyGridSpanValue? Cols { get; set; }
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }

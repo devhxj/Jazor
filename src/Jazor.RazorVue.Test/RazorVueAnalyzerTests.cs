@@ -864,13 +864,14 @@ public sealed class RazorVueAnalyzerTests
                 protected override void BuildRenderTree(RenderTreeBuilder builder)
                 {
                     builder.OpenComponent<VDialog>(0);
-                    builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
+                    builder.AddAttribute(1, nameof(VDialog.ActivatorTarget), VuetifyDialogActivatorTarget.Parent());
+                    builder.AddAttribute(2, nameof(VDialog.Activator), Activator);
                     builder.CloseComponent();
                 }
             }
             """);
 
-        AssertNoDiagnostic(diagnostics, "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE015");
+        AssertNoDiagnostic(diagnostics, "JAZORVUE007", "JAZORVUE009", "JAZORVUE010", "JAZORVUE011", "JAZORVUE015");
     }
 
     [TestMethod]

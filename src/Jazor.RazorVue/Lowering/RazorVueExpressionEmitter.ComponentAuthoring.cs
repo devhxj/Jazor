@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Collections.Generic;
 using System.Linq;
+using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.RenderTree;
@@ -54,18 +55,17 @@ internal sealed partial class RazorVueExpressionEmitter
     {
         _resolvedComponents.TryGetValue(component.ComponentName, out var descriptor);
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
-        _componentPropsByPublicName.TryGetValue(component.ComponentName, out var propsByPublicName);
         _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
 
         // Library components only accept default child content when the stub
         // explicitly exposes ChildContent as part of the authoring contract.
-        ValidateComponentAuthoringAttributes(component, propsByPublicName, slotsByPublicName, emitDescriptorsByAlias);
+        ValidateComponentAuthoringAttributes(component, descriptor, slotsByPublicName, emitDescriptorsByAlias);
         ValidateDefaultLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
         ValidateDuplicateLibrarySlotUsage(component, descriptor, descriptor?.Slots ?? ImmutableArray<VueSlotDescriptor>.Empty);
 
         var slotEntries = new List<string>();
         if (!component.Children.Children.IsDefaultOrEmpty)
-            slotEntries.Add("default: () => " + EmitFragment(component.Children, allowedLocalSymbols, allowedParameterSymbols));
+            slotEntries.Add(EmitImplicitDefaultSlotEntry(component, descriptor, allowedLocalSymbols, allowedParameterSymbols));
         AppendExplicitSlotTemplates(component, descriptor, slotsByPublicName, slotEntries, allowedLocalSymbols, allowedParameterSymbols);
 
         var attributes = EmitAttributesArgument(component.Attributes, component, slotEntries, allowedLocalSymbols, allowedParameterSymbols);
@@ -97,21 +97,33 @@ internal sealed partial class RazorVueExpressionEmitter
 
         if (VueSlotResolver.TryResolve(slots, "ChildContent", out var defaultSlot))
         {
-            if (defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty)
-                return;
-
-            // Implicit child content cannot satisfy a typed slot contract because
-            // the template has no callable surface to receive the slot context.
-            throw CreateAuthoringIssue(
-                RazorVueIssueCode.SlotContextMisuse,
-                $"Child content parameter 'ChildContent' on component '{descriptor.Name}' expects a callable template that accepts '{DescribeSlotContext(defaultSlot.Descriptor)}'.",
-                origin);
+            return;
         }
 
         throw CreateAuthoringIssue(
             RazorVueIssueCode.UnknownSlot,
             $"Component '{descriptor.Name}' does not declare a child content parameter named 'ChildContent'.",
             origin);
+    }
+
+    private string EmitImplicitDefaultSlotEntry(
+        RazorVueComponentNode component,
+        VueComponentDescriptor? descriptor,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+    {
+        var prefix = "default: () => ";
+        if (descriptor is not null &&
+            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var defaultSlot) &&
+            !defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty)
+        {
+            var slotParameterName = RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
+                allowedLocalSymbols,
+                allowedParameterSymbols);
+            prefix = "default: (" + slotParameterName + ") => ";
+        }
+
+        return prefix + EmitFragment(component.Children, allowedLocalSymbols, allowedParameterSymbols);
     }
 
     private void ValidateDuplicateLibrarySlotUsage(
@@ -130,9 +142,9 @@ internal sealed partial class RazorVueExpressionEmitter
         // slot input would otherwise collapse into duplicate Vue slot keys.
         var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
         if (!component.Children.Children.IsDefaultOrEmpty &&
-            VueSlotResolver.TryResolve(slots, "ChildContent", out _))
+            VueSlotResolver.TryResolve(slots, "ChildContent", out var childContentSlot))
         {
-            assignedSlots.Add("ChildContent");
+            assignedSlots.Add(childContentSlot.SlotName);
         }
 
         foreach (var slotTemplate in component.SlotTemplates)
@@ -268,7 +280,6 @@ internal sealed partial class RazorVueExpressionEmitter
 
         _componentEmitsByRazorAlias.TryGetValue(component.ComponentName, out var emitsByAlias);
         _componentEmitDescriptorsByRazorAlias.TryGetValue(component.ComponentName, out var emitDescriptorsByAlias);
-        _componentPropsByPublicName.TryGetValue(component.ComponentName, out var propsByPublicName);
         _componentSlotsByPublicName.TryGetValue(component.ComponentName, out var slotsByPublicName);
         _resolvedComponents.TryGetValue(component.ComponentName, out var resolvedDescriptor);
 
@@ -281,7 +292,7 @@ internal sealed partial class RazorVueExpressionEmitter
             {
                 containsSpread = true;
                 FlushObjectEntries(segments, objectEntries);
-                ValidateComponentSpreadTarget(component, resolvedDescriptor, propsByPublicName, spread);
+                ValidateComponentSpreadTarget(component, resolvedDescriptor, spread);
                 segments.Add(EmitScopedExpression(spread.Expression, allowedLocalSymbols, allowedParameterSymbols));
                 continue;
             }
@@ -328,8 +339,9 @@ internal sealed partial class RazorVueExpressionEmitter
             var name = attribute.Name;
             if (emitsByAlias is not null && emitsByAlias.TryGetValue(name, out var vueEventName))
                 name = vueEventName;
-            else if (propsByPublicName is not null && propsByPublicName.TryGetValue(name, out var propDescriptor))
-                name = propDescriptor.Name;
+            else if (resolvedDescriptor is not null &&
+                     VuePropResolver.TryResolve(resolvedDescriptor.Props, name, out var prop))
+                name = prop.PropName;
 
             objectEntries.Add(ToJavaScriptString(name) + ": " + (attribute.Value is null ? "true" : EmitScopedExpression(attribute.Value!, allowedLocalSymbols, allowedParameterSymbols)));
         }
@@ -360,12 +372,11 @@ internal sealed partial class RazorVueExpressionEmitter
 
     private void ValidateComponentAuthoringAttributes(
         RazorVueComponentNode component,
-        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
+        VueComponentDescriptor? resolvedDescriptor,
         ImmutableDictionary<string, VueSlotDescriptor>? slotsByPublicName,
         ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias)
     {
-        if (!_resolvedComponents.TryGetValue(component.ComponentName, out var descriptor) ||
-            descriptor.SourceKind != VueComponentSourceKind.LibraryComponent)
+        if (resolvedDescriptor is not { SourceKind: VueComponentSourceKind.LibraryComponent } descriptor)
         {
             return;
         }
@@ -376,14 +387,14 @@ internal sealed partial class RazorVueExpressionEmitter
             .ToImmutableHashSet(StringComparer.Ordinal);
         var slots = descriptor.Slots;
 
-        ValidateInvalidBindTargets(component, descriptor, propsByPublicName, emitsByAlias, attributeNames);
-        ValidateDuplicateMappedComponentAttributes(component, descriptor, propsByPublicName, emitsByAlias);
+        ValidateInvalidBindTargets(component, descriptor, emitsByAlias, attributeNames);
+        ValidateDuplicateMappedComponentAttributes(component, descriptor, emitsByAlias);
 
         foreach (var attributeEntry in component.Attributes)
         {
             if (attributeEntry is RazorVueAttributeSpreadNode spread)
             {
-                ValidateComponentSpreadTarget(component, descriptor, propsByPublicName, spread);
+                ValidateComponentSpreadTarget(component, descriptor, spread);
                 continue;
             }
 
@@ -404,7 +415,7 @@ internal sealed partial class RazorVueExpressionEmitter
                 continue;
             }
 
-            if (propsByPublicName is not null && propsByPublicName.ContainsKey(attribute.Name))
+            if (VuePropResolver.TryResolve(descriptor.Props, attribute.Name, out _))
                 continue;
 
             if (emitsByAlias is not null && emitsByAlias.ContainsKey(attribute.Name))
@@ -418,7 +429,7 @@ internal sealed partial class RazorVueExpressionEmitter
                     attribute);
             }
 
-            if (HasCaptureUnmatchedValuesProp(propsByPublicName) &&
+            if (HasCaptureUnmatchedValuesProp(descriptor) &&
                 RazorVueCaptureUnmatchedAttributePolicy.CanCaptureExplicitAttribute(attribute.Name))
             {
                 continue;
@@ -461,13 +472,12 @@ internal sealed partial class RazorVueExpressionEmitter
         }
     }
 
-    private static bool HasCaptureUnmatchedValuesProp(ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName)
-        => propsByPublicName?.Values.Any(static prop => prop.CaptureUnmatchedValues) == true;
+    private static bool HasCaptureUnmatchedValuesProp(VueComponentDescriptor? descriptor)
+        => descriptor?.Props.Any(static prop => prop.CaptureUnmatchedValues) == true;
 
     private void ValidateDuplicateMappedComponentAttributes(
         RazorVueComponentNode component,
         VueComponentDescriptor descriptor,
-        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
         ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias)
     {
         var mappedAttributes = new Dictionary<string, RazorVueAttributeNode>(StringComparer.Ordinal);
@@ -476,15 +486,14 @@ internal sealed partial class RazorVueExpressionEmitter
             if (attributeEntry is not RazorVueAttributeNode attribute)
                 continue;
 
-            if (propsByPublicName is not null &&
-                propsByPublicName.TryGetValue(attribute.Name, out var propDescriptor))
+            if (VuePropResolver.TryResolve(descriptor.Props, attribute.Name, out var prop))
             {
                 ValidateUniqueMappedAttribute(
                     descriptor,
                     mappedAttributes,
-                    "prop:" + propDescriptor.Name,
+                    "prop:" + prop.PropName,
                     "Vue prop",
-                    propDescriptor.Name,
+                    prop.PropName,
                     attribute);
                 continue;
             }
@@ -527,7 +536,6 @@ internal sealed partial class RazorVueExpressionEmitter
     private void ValidateInvalidBindTargets(
         RazorVueComponentNode component,
         VueComponentDescriptor descriptor,
-        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
         ImmutableDictionary<string, VueEmitDescriptor>? emitsByAlias,
         ImmutableHashSet<string> attributeNames)
     {
@@ -542,9 +550,8 @@ internal sealed partial class RazorVueExpressionEmitter
                 continue;
             }
 
-            var hasBindableProp = propsByPublicName is not null &&
-                                  propsByPublicName.TryGetValue(parameterName, out var propDescriptor) &&
-                                  propDescriptor.AcceptsBinding;
+            var hasBindableProp = VuePropResolver.TryResolve(descriptor.Props, parameterName, out var prop) &&
+                                  prop.Descriptor.AcceptsBinding;
             var hasModelUpdateEmit = emitsByAlias is not null &&
                                      emitsByAlias.TryGetValue(attribute.Name, out var emitDescriptor) &&
                                      emitDescriptor.Kind == VueEmitKind.ModelUpdate;
@@ -584,10 +591,9 @@ internal sealed partial class RazorVueExpressionEmitter
     private void ValidateComponentSpreadTarget(
         RazorVueComponentNode component,
         VueComponentDescriptor? descriptor,
-        ImmutableDictionary<string, VuePropDescriptor>? propsByPublicName,
         RazorVueAttributeSpreadNode spread)
     {
-        var captureUnmatchedValueProps = propsByPublicName?.Values
+        var captureUnmatchedValueProps = descriptor?.Props
             .Where(static prop => prop.CaptureUnmatchedValues)
             .Distinct()
             .Take(2)

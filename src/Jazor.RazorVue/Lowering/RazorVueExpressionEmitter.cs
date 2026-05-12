@@ -31,7 +31,6 @@ internal sealed partial class RazorVueExpressionEmitter
     private readonly Dictionary<string, VueSlotDescriptor> _slotsByPublicName;
     private readonly Dictionary<string, VueEmitDescriptor> _emitsByRazorAlias;
     private readonly ImmutableDictionary<string, VueComponentDescriptor> _resolvedComponents;
-    private readonly ImmutableDictionary<string, ImmutableDictionary<string, VuePropDescriptor>> _componentPropsByPublicName;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, VueSlotDescriptor>> _componentSlotsByPublicName;
     private readonly ImmutableDictionary<string, ImmutableDictionary<string, VueEmitDescriptor>> _componentEmitDescriptorsByRazorAlias;
     private readonly ImmutableDictionary<string, string> _componentReferences;
@@ -70,7 +69,6 @@ internal sealed partial class RazorVueExpressionEmitter
                 StringComparer.Ordinal);
         _resolvedComponents = resolvedComponents ?? ImmutableDictionary<string, VueComponentDescriptor>.Empty;
         _componentReferences = componentReferences ?? ImmutableDictionary<string, string>.Empty;
-        _componentPropsByPublicName = BuildComponentPropsByPublicName(_resolvedComponents);
         _componentSlotsByPublicName = BuildComponentSlotsByPublicName(_resolvedComponents);
         _componentEmitDescriptorsByRazorAlias = BuildComponentEmitDescriptorsByRazorAlias(_resolvedComponents);
         _componentEmitsByRazorAlias = componentEmitsByRazorAlias ?? ImmutableDictionary<string, ImmutableDictionary<string, string>>.Empty;

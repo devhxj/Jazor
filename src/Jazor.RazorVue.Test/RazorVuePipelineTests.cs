@@ -1,3 +1,4 @@
+using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
@@ -25,6 +26,38 @@ public sealed class RazorVuePipelineTests
 
     private static RazorVuePipeline CreateDocumentAwarePipeline(IRazorVueTemplateFrontend templateFrontend)
         => new(RazorVueRazorDocumentSemanticFrontend.Instance, templateFrontend);
+
+    [TestMethod]
+    public void RazorVueSlotParameterNames_CreateImplicitDefaultSlotParameterName_AvoidsAllowedParameterNames()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+            """
+            internal sealed class Demo
+            {
+                private void Render(string __jazorSlotContext, string __jazorSlotContext1)
+                {
+                }
+            }
+            """);
+        var compilation = CSharpCompilation.Create(
+            "RazorVue.SlotParameterNameCollision",
+            [syntaxTree],
+            [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)]);
+        var methodSyntax = syntaxTree.GetRoot()
+            .DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
+            .Single();
+        var methodSymbol = compilation.GetSemanticModel(syntaxTree).GetDeclaredSymbol(methodSyntax)!;
+        var allowedParameters = ImmutableHashSet<IParameterSymbol>.Empty
+            .WithComparer(SymbolEqualityComparer.Default)
+            .Union(methodSymbol.Parameters);
+
+        var name = RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(
+            ImmutableHashSet<ILocalSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default),
+            allowedParameters);
+
+        Assert.AreEqual("__jazorSlotContext2", name);
+    }
 
     [TestMethod]
     public void RazorVue_Pipeline_ProducesFallbackRenderFunctionWhenNoRenderTreeExists()
@@ -1695,6 +1728,9 @@ public sealed class RazorVuePipelineTests
                     public EventCallback<bool?> IsValidChanged { get; set; }
 
                     [Parameter]
+                    public EventCallback<VFormSubmitEvent> FormSubmitted { get; set; }
+
+                    [Parameter]
                     public bool DialogOpen { get; set; }
 
                     [Parameter]
@@ -1755,6 +1791,12 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(4, nameof(VForm.ValidateOn), VuetifyValidateOn.BlurLazy);
                         builder.AddAttribute(5, nameof(VForm.ModelValue), IsValid);
                         builder.AddAttribute(6, nameof(VForm.ModelValueChanged), IsValidChanged);
+                        builder.AddAttribute(117, nameof(VForm.Class), "advanced-form");
+                        builder.AddAttribute(118, nameof(VForm.Style), new VueDictionary
+                        {
+                            ["--form-gap"] = "16px"
+                        });
+                        builder.AddAttribute(119, nameof(VForm.Submit), FormSubmitted);
                         builder.AddMultipleAttributes(7, AdditionalAttributes);
 
                         builder.OpenComponent<VSelect>(8);
@@ -1932,6 +1974,9 @@ public sealed class RazorVuePipelineTests
             "import { VAutocomplete as VAutocompleteComponent, VDialog as VDialogComponent, VForm as VFormComponent, VRadioGroup as VRadioGroupComponent, VSelect as VSelectComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "function __jazorVueMergeAttributes(...sources) {");
         StringAssert.Contains(artifact.ModuleCode, "\"validateOn\": \"blur lazy\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"advanced-form\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--form-gap\": \"16px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"onSubmit\": (__value) => emit(\"formSubmitted\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"items\": [\"Admin\", {");
         StringAssert.Contains(artifact.ModuleCode, "title: \"User\"");
         StringAssert.Contains(artifact.ModuleCode, "value: \"user\"");
@@ -4533,6 +4578,164 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyImgProductionSurface()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+            using ECMAScript.Vuetify;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/vuetify-img-panel")]
+                public class VuetifyImgPanel : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public EventCallback<string?> ImageLoadStart { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ImageLoad { get; set; }
+
+                    [Parameter]
+                    public EventCallback<string?> ImageError { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ImageDefault { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ImagePlaceholder { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ImageErrorContent { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ImageSources { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VImg>(0);
+                        builder.AddAttribute(1, nameof(VImg.Src), new VImgSourceObject
+                        {
+                            Src = "/hero.jpg",
+                            Srcset = "/hero@2x.jpg 2x",
+                            LazySrc = "/hero-blur.jpg",
+                            Aspect = 1.777
+                        });
+                        builder.AddAttribute(2, nameof(VImg.Alt), "Product hero");
+                        builder.AddAttribute(3, nameof(VImg.LazySrc), "/lazy.jpg");
+                        builder.AddAttribute(4, nameof(VImg.Srcset), "/product-small.jpg 480w, /product-large.jpg 1280w");
+                        builder.AddAttribute(5, nameof(VImg.Sizes), "(max-width: 960px) 100vw, 960px");
+                        builder.AddAttribute(6, nameof(VImg.Height), 360);
+                        builder.AddAttribute(7, nameof(VImg.Width), "100%");
+                        builder.AddAttribute(8, nameof(VImg.MaxHeight), "80vh");
+                        builder.AddAttribute(9, nameof(VImg.MaxWidth), 960);
+                        builder.AddAttribute(10, nameof(VImg.MinHeight), 180);
+                        builder.AddAttribute(11, nameof(VImg.MinWidth), "16rem");
+                        builder.AddAttribute(12, nameof(VImg.AspectRatio), "16/9");
+                        builder.AddAttribute(13, nameof(VImg.Transition), "fade-transition");
+                        builder.AddAttribute(14, nameof(VImg.Cover), true);
+                        builder.AddAttribute(15, nameof(VImg.Eager), true);
+                        builder.AddAttribute(16, nameof(VImg.Tile), true);
+                        builder.AddAttribute(17, nameof(VImg.Inline), true);
+                        builder.AddAttribute(18, nameof(VImg.Absolute), true);
+                        builder.AddAttribute(19, nameof(VImg.Rounded), "xl");
+                        builder.AddAttribute(20, nameof(VImg.Class), "hero-img");
+                        builder.AddAttribute(21, nameof(VImg.Style), new VueDictionary
+                        {
+                            ["--media-radius"] = "24px"
+                        });
+                        builder.AddAttribute(22, nameof(VImg.ContentClass), new VueDictionary
+                        {
+                            ["media-content"] = true
+                        });
+                        builder.AddAttribute(23, nameof(VImg.Color), "surface-variant");
+                        builder.AddAttribute(24, nameof(VImg.Gradient), "to bottom, rgba(0,0,0,.2), rgba(0,0,0,.7)");
+                        builder.AddAttribute(25, nameof(VImg.Options), new VuetifyIntersectionObserverOptions
+                        {
+                            RootMargin = "128px",
+                            Threshold = new[] { 0.1, 0.9 }
+                        });
+                        builder.AddAttribute(26, nameof(VImg.Position), "center top");
+                        builder.AddAttribute(27, nameof(VImg.Draggable), VImgDraggable.False);
+                        builder.AddAttribute(28, nameof(VImg.CrossOrigin), VImgCrossOrigin.Anonymous);
+                        builder.AddAttribute(29, nameof(VImg.ReferrerPolicy), VImgReferrerPolicy.StrictOriginWhenCrossOrigin);
+                        builder.AddAttribute(30, nameof(VImg.LoadStart), ImageLoadStart);
+                        builder.AddAttribute(31, nameof(VImg.Load), ImageLoad);
+                        builder.AddAttribute(32, nameof(VImg.LoadError), ImageError);
+                        builder.AddAttribute(33, nameof(VImg.ChildContent), ImageDefault);
+                        builder.AddAttribute(34, nameof(VImg.Placeholder), ImagePlaceholder);
+                        builder.AddAttribute(35, nameof(VImg.ErrorContent), ImageErrorContent);
+                        builder.AddAttribute(36, nameof(VImg.Sources), ImageSources);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(
+            artifact.ModuleCode,
+            "import { VImg as VImgComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "\"src\": {");
+        StringAssert.Contains(artifact.ModuleCode, "src: \"/hero.jpg\"");
+        StringAssert.Contains(artifact.ModuleCode, "srcset: \"/hero@2x.jpg 2x\"");
+        StringAssert.Contains(artifact.ModuleCode, "lazySrc: \"/hero-blur.jpg\"");
+        StringAssert.Contains(artifact.ModuleCode, "aspect: 1.777");
+        StringAssert.Contains(artifact.ModuleCode, "\"alt\": \"Product hero\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"lazySrc\": \"/lazy.jpg\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"srcset\": \"/product-small.jpg 480w, /product-large.jpg 1280w\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"sizes\": \"(max-width: 960px) 100vw, 960px\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 360");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"100%\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxHeight\": \"80vh\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 960");
+        StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": 180");
+        StringAssert.Contains(artifact.ModuleCode, "\"minWidth\": \"16rem\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"aspectRatio\": \"16/9\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"fade-transition\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"cover\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"eager\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"inline\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"absolute\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"xl\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"hero-img\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--media-radius\": \"24px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"contentClass\": { \"media-content\": true }");
+        StringAssert.Contains(artifact.ModuleCode, "\"color\": \"surface-variant\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"gradient\": \"to bottom, rgba(0,0,0,.2), rgba(0,0,0,.7)\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"options\": { rootMargin: \"128px\", threshold: [0.1, 0.9] }");
+        StringAssert.Contains(artifact.ModuleCode, "\"position\": \"center top\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"draggable\": \"false\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"crossorigin\": \"anonymous\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"referrerpolicy\": \"strict-origin-when-cross-origin\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"onLoadstart\": (__value) => emit(\"imageLoadStart\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onLoad\": (__value) => emit(\"imageLoad\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onError\": (__value) => emit(\"imageError\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "default: () => props.imageDefault");
+        StringAssert.Contains(artifact.ModuleCode, "placeholder: () => props.imagePlaceholder");
+        StringAssert.Contains(artifact.ModuleCode, "error: () => props.imageErrorContent");
+        StringAssert.Contains(artifact.ModuleCode, "sources: () => props.imageSources");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
+    }
+
+    [TestMethod]
     public void RazorVue_Pipeline_LowersVuetifyCodeWithStrongProps()
     {
         var context = CreateContext(
@@ -5125,17 +5328,19 @@ public sealed class RazorVuePipelineTests
                     {
                         builder.OpenComponent<VDialog>(0);
                         builder.AddAttribute(1, nameof(VDialog.Activator), Activator);
-                        builder.AddContent(2, ChildContent);
+                        builder.AddAttribute(2, nameof(VDialog.ActivatorTarget), VuetifyDialogActivatorTarget.Parent());
+                        builder.AddContent(3, ChildContent);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VDialog>(3);
-                        builder.AddAttribute(4, nameof(VDialog.Activator), (RenderFragment<VDialogActivatorContext>)((context) => (slotBuilder) =>
+                        builder.OpenComponent<VDialog>(4);
+                        builder.AddAttribute(5, "activator", VuetifyDialogActivatorTarget.Parent());
+                        builder.AddAttribute(6, nameof(VDialog.Activator), (RenderFragment<VDialogActivatorContext>)((context) => (slotBuilder) =>
                         {
-                            slotBuilder.OpenElement(5, "button");
-                            slotBuilder.AddAttribute(6, "data-active", context.IsActive);
-                            slotBuilder.AddAttribute(7, "data-props", context.Props);
-                            slotBuilder.AddAttribute(8, "data-target", context.TargetRef);
-                            slotBuilder.AddContent(9, "Open");
+                            slotBuilder.OpenElement(7, "button");
+                            slotBuilder.AddAttribute(8, "data-active", context.IsActive);
+                            slotBuilder.AddAttribute(9, "data-props", context.Props);
+                            slotBuilder.AddAttribute(10, "data-target", context.TargetRef);
+                            slotBuilder.AddContent(11, "Open");
                             slotBuilder.CloseElement();
                         }));
                         builder.CloseComponent();
@@ -5148,6 +5353,7 @@ public sealed class RazorVuePipelineTests
 
         StringAssert.Contains(artifact.ModuleCode, "import { VDialog as VDialogComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.activator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "\"activator\": 'parent'");
         StringAssert.Contains(artifact.ModuleCode, "\"data-active\": context.IsActive");
         StringAssert.Contains(artifact.ModuleCode, "\"data-props\": context.Props");
         StringAssert.Contains(artifact.ModuleCode, "\"data-target\": context.TargetRef");
@@ -5187,21 +5393,62 @@ public sealed class RazorVuePipelineTests
                     {
                         builder.OpenComponent<VContainer>(0);
                         builder.AddAttribute(1, nameof(VContainer.Fluid), true);
-                        builder.OpenComponent<VRow>(2);
-                        builder.AddAttribute(3, nameof(VRow.Align), "center");
-                        builder.OpenComponent<VCol>(4);
-                        builder.AddAttribute(5, nameof(VCol.Cols), 12);
-                        builder.AddAttribute(6, nameof(VCol.Md), 6);
-                        builder.OpenComponent<VCard>(7);
-                        builder.OpenComponent<VCardTitle>(8);
-                        builder.AddAttribute(9, nameof(VCardTitle.ChildContent), (RenderFragment)((titleBuilder) =>
+                        builder.AddAttribute(2, nameof(VContainer.Tag), "main");
+                        builder.AddAttribute(3, nameof(VContainer.Height), "100%");
+                        builder.AddAttribute(4, nameof(VContainer.MaxWidth), 1280);
+                        builder.AddAttribute(5, nameof(VContainer.MinHeight), 720);
+                        builder.AddAttribute(6, nameof(VContainer.Width), "min(100%, 1280px)");
+                        builder.AddAttribute(7, nameof(VContainer.Class), new[] { "dashboard-container", "dashboard-container--wide" });
+                        builder.AddAttribute(8, nameof(VContainer.Style), new VueDictionary
                         {
-                            titleBuilder.AddContent(10, "Dashboard");
+                            ["--container-padding"] = "24px"
+                        });
+                        builder.OpenComponent<VRow>(9);
+                        builder.AddAttribute(10, nameof(VRow.Tag), "section");
+                        builder.AddAttribute(11, nameof(VRow.Class), "dashboard-row");
+                        builder.AddAttribute(12, nameof(VRow.Style), new VueDictionary
+                        {
+                            ["--row-gap"] = "16px"
+                        });
+                        builder.AddAttribute(13, nameof(VRow.Align), "center");
+                        builder.AddAttribute(14, nameof(VRow.AlignSm), "start");
+                        builder.AddAttribute(15, nameof(VRow.AlignMd), "center");
+                        builder.AddAttribute(16, nameof(VRow.AlignLg), "stretch");
+                        builder.AddAttribute(17, nameof(VRow.AlignContent), "space-between");
+                        builder.AddAttribute(18, nameof(VRow.AlignContentSm), "center");
+                        builder.AddAttribute(19, nameof(VRow.Justify), "space-evenly");
+                        builder.AddAttribute(20, nameof(VRow.JustifyMd), "space-between");
+                        builder.AddAttribute(21, nameof(VRow.Dense), true);
+                        builder.AddAttribute(22, nameof(VRow.NoGutters), true);
+                        builder.OpenComponent<VCol>(23);
+                        builder.AddAttribute(24, nameof(VCol.Tag), "article");
+                        builder.AddAttribute(25, nameof(VCol.Class), new[] { "dashboard-col", "dashboard-col--summary" });
+                        builder.AddAttribute(26, nameof(VCol.Style), "min-inline-size: 0");
+                        builder.AddAttribute(27, nameof(VCol.AlignSelf), "center");
+                        builder.AddAttribute(28, nameof(VCol.Cols), 12);
+                        builder.AddAttribute(29, nameof(VCol.Sm), true);
+                        builder.AddAttribute(30, nameof(VCol.Md), 6);
+                        builder.AddAttribute(31, nameof(VCol.Lg), "4");
+                        builder.AddAttribute(32, nameof(VCol.Xl), 3);
+                        builder.AddAttribute(33, nameof(VCol.Offset), 0);
+                        builder.AddAttribute(34, nameof(VCol.OffsetMd), 1);
+                        builder.AddAttribute(35, nameof(VCol.Order), "first");
+                        builder.AddAttribute(36, nameof(VCol.OrderLg), 2);
+                        builder.OpenComponent<VCard>(37);
+                        builder.OpenComponent<VCardTitle>(38);
+                        builder.AddAttribute(39, nameof(VCardTitle.ChildContent), (RenderFragment)((titleBuilder) =>
+                        {
+                            titleBuilder.AddContent(40, "Dashboard");
                         }));
                         builder.CloseComponent();
-                        builder.OpenComponent<VCardText>(10);
-                        builder.AddContent(11, "Ready");
+                        builder.OpenComponent<VCardText>(41);
+                        builder.AddContent(42, "Ready");
                         builder.CloseComponent();
+                        builder.CloseComponent();
+                        builder.OpenComponent<VSpacer>(43);
+                        builder.AddAttribute(44, nameof(VSpacer.Tag), "aside");
+                        builder.AddAttribute(45, nameof(VSpacer.Class), "dashboard-spacer");
+                        builder.AddAttribute(46, nameof(VSpacer.Style), "flex-basis: 2rem");
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
@@ -5213,12 +5460,38 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "import { VCard as VCardComponent, VCardText as VCardTextComponent, VCardTitle as VCardTitleComponent, VCol as VColComponent, VContainer as VContainerComponent, VRow as VRowComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "import { VCard as VCardComponent, VCardText as VCardTextComponent, VCardTitle as VCardTitleComponent, VCol as VColComponent, VContainer as VContainerComponent, VRow as VRowComponent, VSpacer as VSpacerComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"fluid\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"main\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": \"100%\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 1280");
+        StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": 720");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"min(100%, 1280px)\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": [\"dashboard-container\", \"dashboard-container--wide\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--container-padding\": \"24px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"section\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"dashboard-row\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--row-gap\": \"16px\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"align\": \"center\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"alignSm\": \"start\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"alignLg\": \"stretch\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"alignContent\": \"space-between\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"justify\": \"space-evenly\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"justifyMd\": \"space-between\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"dense\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"noGutters\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"article\"");
         StringAssert.Contains(artifact.ModuleCode, "\"cols\": 12");
+        StringAssert.Contains(artifact.ModuleCode, "\"sm\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"md\": 6");
+        StringAssert.Contains(artifact.ModuleCode, "\"lg\": \"4\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"xl\": 3");
+        StringAssert.Contains(artifact.ModuleCode, "\"offset\": 0");
+        StringAssert.Contains(artifact.ModuleCode, "\"offsetMd\": 1");
+        StringAssert.Contains(artifact.ModuleCode, "\"order\": \"first\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"orderLg\": 2");
         StringAssert.Contains(artifact.ModuleCode, "h(VCardTitleComponent, null, { default: () => \"Dashboard\" })");
+        StringAssert.Contains(artifact.ModuleCode, "h(VSpacerComponent, { \"tag\": \"aside\", \"class\": \"dashboard-spacer\", \"style\": \"flex-basis: 2rem\" })");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -5342,6 +5615,24 @@ public sealed class RazorVuePipelineTests
                     [Parameter]
                     public EventCallback<bool> EnabledChanged { get; set; }
 
+                    [Parameter]
+                    public RenderFragment? ToolbarImage { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ToolbarPrepend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ToolbarAppend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ToolbarTitle { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ToolbarExtension { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ToolbarTitleText { get; set; }
+
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VSheet>(0);
@@ -5351,31 +5642,88 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(4, nameof(VSheet.Height), 320);
                         builder.AddAttribute(5, nameof(VSheet.Width), "100%");
                         builder.AddAttribute(6, nameof(VSheet.MaxWidth), 960);
-                        builder.OpenComponent<VToolbar>(7);
-                        builder.AddAttribute(8, nameof(VToolbar.Color), "primary");
-                        builder.AddAttribute(9, nameof(VToolbar.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(10, nameof(VToolbar.Flat), true);
-                        builder.AddMultipleAttributes(11, new Dictionary<string, object>
+                        builder.AddAttribute(7, nameof(VSheet.Theme), "dark");
+                        builder.AddAttribute(8, nameof(VSheet.Tag), "section");
+                        builder.AddAttribute(9, nameof(VSheet.Tile), true);
+                        builder.AddAttribute(10, nameof(VSheet.Position), VuetifyPosition.Relative);
+                        builder.AddAttribute(11, nameof(VSheet.Location), VuetifyLocation.TopStart);
+                        builder.AddAttribute(12, nameof(VSheet.Class), new[] { "preferences", "preferences--sheet" });
+                        builder.AddAttribute(13, nameof(VSheet.Style), new VueDictionary
+                        {
+                            ["--sheet-gap"] = "1rem"
+                        });
+                        builder.AddAttribute(14, nameof(VSheet.Border), "sm");
+                        builder.OpenComponent<VIcon>(15);
+                        builder.AddAttribute(16, nameof(VIcon.Icon), "$settings");
+                        builder.AddAttribute(17, nameof(VIcon.Color), "secondary");
+                        builder.AddAttribute(18, nameof(VIcon.Size), 24);
+                        builder.AddAttribute(19, nameof(VIcon.Opacity), "0.84");
+                        builder.AddAttribute(20, nameof(VIcon.Theme), "dark");
+                        builder.AddAttribute(21, nameof(VIcon.Tag), "span");
+                        builder.AddAttribute(22, nameof(VIcon.Start), true);
+                        builder.AddAttribute(23, nameof(VIcon.End), true);
+                        builder.AddAttribute(24, nameof(VIcon.Disabled), false);
+                        builder.AddAttribute(25, nameof(VIcon.Class), new[] { "sheet-icon", "sheet-icon--settings" });
+                        builder.AddAttribute(26, nameof(VIcon.Style), "margin-inline-end: 0.5rem");
+                        builder.CloseComponent();
+                        builder.OpenComponent<VToolbar>(27);
+                        builder.AddAttribute(28, nameof(VToolbar.Color), "primary");
+                        builder.AddAttribute(29, nameof(VToolbar.Density), VuetifyToolbarDensity.Prominent);
+                        builder.AddAttribute(30, nameof(VToolbar.Flat), true);
+                        builder.AddAttribute(31, nameof(VToolbar.Theme), "dark");
+                        builder.AddAttribute(32, nameof(VToolbar.Tag), "header");
+                        builder.AddAttribute(33, nameof(VToolbar.Rounded), "0");
+                        builder.AddAttribute(34, nameof(VToolbar.Tile), true);
+                        builder.AddAttribute(35, nameof(VToolbar.Elevation), 4);
+                        builder.AddAttribute(36, nameof(VToolbar.Class), "preferences-toolbar");
+                        builder.AddAttribute(37, nameof(VToolbar.Style), new VueDictionary
+                        {
+                            ["--toolbar-offset"] = "2px"
+                        });
+                        builder.AddAttribute(38, nameof(VToolbar.Border), true);
+                        builder.AddAttribute(39, nameof(VToolbar.Absolute), true);
+                        builder.AddAttribute(40, nameof(VToolbar.Collapse), false);
+                        builder.AddAttribute(41, nameof(VToolbar.Extended), true);
+                        builder.AddAttribute(42, nameof(VToolbar.ExtensionHeight), "72");
+                        builder.AddAttribute(43, nameof(VToolbar.Floating), true);
+                        builder.AddAttribute(44, nameof(VToolbar.Height), 96);
+                        builder.AddAttribute(45, nameof(VToolbar.Image), "/hero-toolbar.png");
+                        builder.AddAttribute(46, nameof(VToolbar.Title), "Preferences");
+                        builder.AddAttribute(47, nameof(VToolbar.ImageContent), ToolbarImage);
+                        builder.AddAttribute(48, nameof(VToolbar.Prepend), ToolbarPrepend);
+                        builder.AddAttribute(49, nameof(VToolbar.Append), ToolbarAppend);
+                        builder.AddAttribute(50, nameof(VToolbar.TitleContent), ToolbarTitle);
+                        builder.AddAttribute(51, nameof(VToolbar.Extension), ToolbarExtension);
+                        builder.AddMultipleAttributes(52, new Dictionary<string, object>
                         {
                             ["data-surface"] = "toolbar"
                         });
-                        builder.OpenComponent<VToolbarTitle>(12);
-                        builder.AddAttribute(13, nameof(VToolbarTitle.Text), "Preferences");
+                        builder.OpenComponent<VToolbarTitle>(53);
+                        builder.AddAttribute(54, nameof(VToolbarTitle.Text), "Preferences");
+                        builder.AddAttribute(55, nameof(VToolbarTitle.Tag), "h2");
+                        builder.AddAttribute(56, nameof(VToolbarTitle.Class), new[] { "toolbar-title", "toolbar-title--main" });
+                        builder.AddAttribute(57, nameof(VToolbarTitle.Style), "letter-spacing: 0.02em");
+                        builder.AddAttribute(58, nameof(VToolbarTitle.TextContent), ToolbarTitleText);
                         builder.CloseComponent();
-                        builder.OpenComponent<VToolbarItems>(14);
-                        builder.AddAttribute(15, nameof(VToolbarItems.Color), "secondary");
-                        builder.AddAttribute(16, nameof(VToolbarItems.Variant), VuetifyVariant.Text);
-                        builder.OpenComponent<VSpacer>(17);
+                        builder.OpenComponent<VToolbarItems>(59);
+                        builder.AddAttribute(60, nameof(VToolbarItems.Color), "secondary");
+                        builder.AddAttribute(61, nameof(VToolbarItems.Variant), VuetifyVariant.Text);
+                        builder.AddAttribute(62, nameof(VToolbarItems.Class), "toolbar-actions");
+                        builder.AddAttribute(63, nameof(VToolbarItems.Style), new VueDictionary
+                        {
+                            ["gap"] = "0.25rem"
+                        });
+                        builder.OpenComponent<VSpacer>(64);
                         builder.CloseComponent();
                         builder.CloseComponent();
-                        builder.OpenComponent<VDivider>(18);
-                        builder.AddAttribute(19, nameof(VDivider.Vertical), true);
-                        builder.AddAttribute(20, nameof(VDivider.Inset), true);
+                        builder.OpenComponent<VDivider>(65);
+                        builder.AddAttribute(66, nameof(VDivider.Vertical), true);
+                        builder.AddAttribute(67, nameof(VDivider.Inset), true);
                         builder.CloseComponent();
-                        builder.OpenComponent<VCheckbox>(21);
-                        builder.AddAttribute(22, nameof(VCheckbox.Label), "Enabled");
-                        builder.AddAttribute(23, nameof(VCheckbox.ModelValue), Enabled);
-                        builder.AddAttribute(24, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
+                        builder.OpenComponent<VCheckbox>(68);
+                        builder.AddAttribute(69, nameof(VCheckbox.Label), "Enabled");
+                        builder.AddAttribute(70, nameof(VCheckbox.ModelValue), Enabled);
+                        builder.AddAttribute(71, nameof(VCheckbox.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
@@ -5386,19 +5734,58 @@ public sealed class RazorVuePipelineTests
 
         var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
 
-        StringAssert.Contains(artifact.ModuleCode, "import { VCheckbox as VCheckboxComponent, VDivider as VDividerComponent, VSheet as VSheetComponent, VSpacer as VSpacerComponent, VToolbar as VToolbarComponent, VToolbarItems as VToolbarItemsComponent, VToolbarTitle as VToolbarTitleComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "import { VCheckbox as VCheckboxComponent, VDivider as VDividerComponent, VIcon as VIconComponent, VSheet as VSheetComponent, VSpacer as VSpacerComponent, VToolbar as VToolbarComponent, VToolbarItems as VToolbarItemsComponent, VToolbarTitle as VToolbarTitleComponent } from \"vuetify/components\";");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"surface\"");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"lg\"");
         StringAssert.Contains(artifact.ModuleCode, "\"elevation\": \"2\"");
         StringAssert.Contains(artifact.ModuleCode, "\"height\": 320");
         StringAssert.Contains(artifact.ModuleCode, "\"width\": \"100%\"");
         StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 960");
-        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"comfortable\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"dark\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"section\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"position\": \"relative\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"top start\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": [\"preferences\", \"preferences--sheet\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--sheet-gap\": \"1rem\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"border\": \"sm\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"icon\": \"$settings\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"size\": 24");
+        StringAssert.Contains(artifact.ModuleCode, "\"opacity\": \"0.84\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"start\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"end\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": [\"sheet-icon\", \"sheet-icon--settings\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": \"margin-inline-end: 0.5rem\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"prominent\"");
         StringAssert.Contains(artifact.ModuleCode, "\"flat\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"header\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"elevation\": 4");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"preferences-toolbar\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--toolbar-offset\": \"2px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"border\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"absolute\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"collapse\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"extended\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"extensionHeight\": \"72\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"floating\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 96");
+        StringAssert.Contains(artifact.ModuleCode, "\"image\": \"/hero-toolbar.png\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"title\": \"Preferences\"");
+        StringAssert.Contains(artifact.ModuleCode, "image: () => props.toolbarImage");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: () => props.toolbarPrepend");
+        StringAssert.Contains(artifact.ModuleCode, "append: () => props.toolbarAppend");
+        StringAssert.Contains(artifact.ModuleCode, "title: () => props.toolbarTitle");
+        StringAssert.Contains(artifact.ModuleCode, "extension: () => props.toolbarExtension");
         StringAssert.Contains(artifact.ModuleCode, "new Map([[\"data-surface\", \"toolbar\"]])");
         StringAssert.Contains(artifact.ModuleCode, "\"text\": \"Preferences\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"h2\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": [\"toolbar-title\", \"toolbar-title--main\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": \"letter-spacing: 0.02em\"");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => props.toolbarTitleText");
         StringAssert.Contains(artifact.ModuleCode, "\"color\": \"secondary\"");
         StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"text\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"toolbar-actions\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { gap: \"0.25rem\" }");
         StringAssert.Contains(artifact.ModuleCode, "\"vertical\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"inset\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
@@ -5459,6 +5846,18 @@ public sealed class RazorVuePipelineTests
                     public EventCallback OnPin { get; set; }
 
                     [Parameter]
+                    public bool ChipVisible { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> ChipVisibleChanged { get; set; }
+
+                    [Parameter]
+                    public EventCallback<MouseEvent> ChipClosed { get; set; }
+
+                    [Parameter]
+                    public EventCallback<VuetifyGroupSelectedEvent> ChipSelected { get; set; }
+
+                    [Parameter]
                     public RenderFragment? AlertPrepend { get; set; }
 
                     [Parameter]
@@ -5475,6 +5874,24 @@ public sealed class RazorVuePipelineTests
 
                     [Parameter]
                     public RenderFragment<VListItemSlotContext>? ListItemAppend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VChipDefaultSlotContext>? ChipDefault { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChipLabel { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChipPrepend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChipAppend { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChipClose { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? ChipFilter { get; set; }
 
                     [Parameter(CaptureUnmatchedValues = true)]
                     public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
@@ -5567,27 +5984,71 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(66, nameof(VListItem.Append), ListItemAppend);
 
                         builder.OpenComponent<VChip>(67);
-                        builder.AddAttribute(68, nameof(VChip.Color), "success");
-                        builder.AddAttribute(69, nameof(VChip.Text), true);
-                        builder.AddAttribute(70, nameof(VChip.OnClick), OnPin);
-                        builder.AddAttribute(71, nameof(VChip.PrependIcon), "$pin");
-                        builder.AddAttribute(72, nameof(VChip.Size), "small");
-                        builder.AddAttribute(73, nameof(VChip.Rounded), "pill");
+                        builder.AddAttribute(68, nameof(VChip.ModelValue), ChipVisible);
+                        builder.AddAttribute(69, nameof(VChip.ModelValueChanged), ChipVisibleChanged);
+                        builder.AddAttribute(70, nameof(VChip.ClickClose), ChipClosed);
+                        builder.AddAttribute(71, nameof(VChip.GroupSelected), ChipSelected);
+                        builder.AddAttribute(72, nameof(VChip.Color), "success");
+                        builder.AddAttribute(73, nameof(VChip.Variant), VuetifyVariant.Tonal);
+                        builder.AddAttribute(74, nameof(VChip.Theme), "dark");
+                        builder.AddAttribute(75, nameof(VChip.Tag), "button");
+                        builder.AddAttribute(76, nameof(VChip.Size), "small");
+                        builder.AddAttribute(77, nameof(VChip.Href), "/pin");
+                        builder.AddAttribute(78, nameof(VChip.Replace), true);
+                        builder.AddAttribute(79, nameof(VChip.To), "/pin-route");
+                        builder.AddAttribute(80, nameof(VChip.Exact), true);
+                        builder.AddAttribute(81, nameof(VChip.Rounded), "pill");
+                        builder.AddAttribute(82, nameof(VChip.Tile), true);
+                        builder.AddAttribute(83, nameof(VChip.Value), "pin");
+                        builder.AddAttribute(84, nameof(VChip.Disabled), false);
+                        builder.AddAttribute(85, nameof(VChip.SelectedClass), "chip-selected");
+                        builder.AddAttribute(86, nameof(VChip.Elevation), 1);
+                        builder.AddAttribute(87, nameof(VChip.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(88, nameof(VChip.Class), "pin-chip");
+                        builder.AddAttribute(89, nameof(VChip.Style), new VueDictionary
+                        {
+                            ["--chip-gap"] = "4px"
+                        });
+                        builder.AddAttribute(90, nameof(VChip.Border), true);
+                        builder.AddAttribute(91, nameof(VChip.ActiveClass), "chip-active");
+                        builder.AddAttribute(92, nameof(VChip.AppendAvatar), "/avatar-end.png");
+                        builder.AddAttribute(93, nameof(VChip.AppendIcon), "$chevronRight");
+                        builder.AddAttribute(94, nameof(VChip.BaseColor), "surface");
+                        builder.AddAttribute(95, nameof(VChip.Closable), true);
+                        builder.AddAttribute(96, nameof(VChip.CloseIcon), "$close");
+                        builder.AddAttribute(97, nameof(VChip.CloseLabel), "Remove pin");
+                        builder.AddAttribute(98, nameof(VChip.Draggable), true);
+                        builder.AddAttribute(99, nameof(VChip.Filter), true);
+                        builder.AddAttribute(100, nameof(VChip.FilterIcon), "$complete");
+                        builder.AddAttribute(101, nameof(VChip.Label), true);
+                        builder.AddAttribute(102, nameof(VChip.Link), true);
+                        builder.AddAttribute(103, nameof(VChip.Pill), true);
+                        builder.AddAttribute(104, nameof(VChip.PrependAvatar), "/avatar-start.png");
+                        builder.AddAttribute(105, nameof(VChip.PrependIcon), "$pin");
+                        builder.AddAttribute(106, nameof(VChip.Ripple), false);
+                        builder.AddAttribute(107, nameof(VChip.Text), true);
+                        builder.AddAttribute(108, nameof(VChip.OnClick), OnPin);
+                        builder.AddAttribute(109, nameof(VChip.DefaultContent), ChipDefault);
+                        builder.AddAttribute(110, nameof(VChip.LabelContent), ChipLabel);
+                        builder.AddAttribute(111, nameof(VChip.Prepend), ChipPrepend);
+                        builder.AddAttribute(112, nameof(VChip.Append), ChipAppend);
+                        builder.AddAttribute(113, nameof(VChip.Close), ChipClose);
+                        builder.AddAttribute(114, nameof(VChip.FilterContent), ChipFilter);
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VSwitch>(74);
-                        builder.AddAttribute(75, nameof(VSwitch.Label), "Notifications");
-                        builder.AddAttribute(76, nameof(VSwitch.ModelValue), Enabled);
-                        builder.AddAttribute(77, nameof(VSwitch.ModelValueChanged), EnabledChanged);
+                        builder.OpenComponent<VSwitch>(115);
+                        builder.AddAttribute(116, nameof(VSwitch.Label), "Notifications");
+                        builder.AddAttribute(117, nameof(VSwitch.ModelValue), Enabled);
+                        builder.AddAttribute(118, nameof(VSwitch.ModelValueChanged), EnabledChanged);
                         builder.CloseComponent();
 
-                        builder.OpenComponent<VTextarea>(78);
-                        builder.AddAttribute(79, nameof(VTextarea.Label), "Notes");
-                        builder.AddAttribute(80, nameof(VTextarea.Rows), 4);
-                        builder.AddAttribute(81, nameof(VTextarea.ModelValue), Notes);
-                        builder.AddAttribute(82, nameof(VTextarea.ModelValueChanged), NotesChanged);
+                        builder.OpenComponent<VTextarea>(119);
+                        builder.AddAttribute(120, nameof(VTextarea.Label), "Notes");
+                        builder.AddAttribute(121, nameof(VTextarea.Rows), 4);
+                        builder.AddAttribute(122, nameof(VTextarea.ModelValue), Notes);
+                        builder.AddAttribute(123, nameof(VTextarea.ModelValueChanged), NotesChanged);
                         builder.CloseComponent();
                     }
                 }
@@ -5655,10 +6116,46 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"href\": \"/settings\"");
         StringAssert.Contains(artifact.ModuleCode, "append: (context) => props.listItemAppend(context)");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.chipVisible");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:chipVisible\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick:close\": (__value) => emit(\"chipClosed\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onGroup:selected\": (__value) => emit(\"chipSelected\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"tonal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"button\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"replace\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"to\": \"/pin-route\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"exact\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"value\": \"pin\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"selectedClass\": \"chip-selected\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"elevation\": 1");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"pin-chip\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--chip-gap\": \"4px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"border\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"activeClass\": \"chip-active\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"appendAvatar\": \"/avatar-end.png\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"baseColor\": \"surface\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeIcon\": \"$close\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeLabel\": \"Remove pin\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"draggable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"filter\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"filterIcon\": \"$complete\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"label\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"link\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"pill\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"prependAvatar\": \"/avatar-start.png\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"ripple\": false");
         StringAssert.Contains(artifact.ModuleCode, "\"text\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"prependIcon\": \"$pin\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"appendIcon\": \"$chevronRight\"");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"pill\"");
         StringAssert.Contains(artifact.ModuleCode, "\"onClick\": () => emit(\"pin\")");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.chipDefault(context)");
+        StringAssert.Contains(artifact.ModuleCode, "label: () => props.chipLabel");
+        StringAssert.Contains(artifact.ModuleCode, "prepend: () => props.chipPrepend");
+        StringAssert.Contains(artifact.ModuleCode, "append: () => props.chipAppend");
+        StringAssert.Contains(artifact.ModuleCode, "close: () => props.chipClose");
+        StringAssert.Contains(artifact.ModuleCode, "filter: () => props.chipFilter");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.enabled");
         StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:enabled\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"rows\": 4");
@@ -6469,6 +6966,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
+            using ECMAScript;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -6502,7 +7000,28 @@ public sealed class RazorVuePipelineTests
                     public EventCallback<bool> MenuOpenChanged { get; set; }
 
                     [Parameter]
+                    public bool BadgeVisible { get; set; }
+
+                    [Parameter]
+                    public EventCallback<bool> BadgeVisibleChanged { get; set; }
+
+                    [Parameter]
                     public RenderFragment<VOverlayActivatorContext>? MenuActivator { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? BadgeContent { get; set; }
+
+                    [Parameter]
+                    public VueStringNumberValue? ProgressValue { get; set; }
+
+                    [Parameter]
+                    public EventCallback<Number> ProgressValueChanged { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VProgressLinearDefaultSlotContext>? LinearProgressContent { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VProgressCircularDefaultSlotContext>? CircularProgressContent { get; set; }
 
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
@@ -6544,31 +7063,99 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(23, nameof(VBadge.Color), "error");
                         builder.AddAttribute(24, nameof(VBadge.Max), "9");
                         builder.AddAttribute(25, nameof(VBadge.OffsetX), 4);
-                        builder.OpenComponent<VAvatar>(26);
-                        builder.AddAttribute(27, nameof(VAvatar.Color), "primary");
-                        builder.AddAttribute(28, nameof(VAvatar.Size), 48);
-                        builder.AddAttribute(29, nameof(VAvatar.Rounded), true);
-                        builder.AddAttribute(30, nameof(VAvatar.Icon), "$account");
+                        builder.AddAttribute(52, nameof(VBadge.Transition), "fade-transition");
+                        builder.AddAttribute(53, nameof(VBadge.Theme), "dark");
+                        builder.AddAttribute(54, nameof(VBadge.Tag), "span");
+                        builder.AddAttribute(55, nameof(VBadge.Rounded), "lg");
+                        builder.AddAttribute(56, nameof(VBadge.Tile), true);
+                        builder.AddAttribute(57, nameof(VBadge.Location), VuetifyLocation.TopEnd);
+                        builder.AddAttribute(58, nameof(VBadge.Class), "status-badge");
+                        builder.AddAttribute(59, nameof(VBadge.Style), new VueDictionary
+                        {
+                            ["--badge-gap"] = "2px"
+                        });
+                        builder.AddAttribute(60, nameof(VBadge.Bordered), true);
+                        builder.AddAttribute(61, nameof(VBadge.Dot), false);
+                        builder.AddAttribute(62, nameof(VBadge.Floating), true);
+                        builder.AddAttribute(63, nameof(VBadge.Icon), "$bell");
+                        builder.AddAttribute(64, nameof(VBadge.Inline), true);
+                        builder.AddAttribute(65, nameof(VBadge.Label), "Unread notifications");
+                        builder.AddAttribute(66, nameof(VBadge.ModelValue), BadgeVisible);
+                        builder.AddAttribute(67, nameof(VBadge.ModelValueChanged), BadgeVisibleChanged);
+                        builder.AddAttribute(68, nameof(VBadge.OffsetY), 6);
+                        builder.AddAttribute(69, nameof(VBadge.TextColor), "white");
+                        builder.AddAttribute(70, nameof(VBadge.BadgeContent), BadgeContent);
+                        builder.OpenComponent<VAvatar>(71);
+                        builder.AddAttribute(72, nameof(VAvatar.Color), "primary");
+                        builder.AddAttribute(73, nameof(VAvatar.Size), 48);
+                        builder.AddAttribute(74, nameof(VAvatar.Rounded), true);
+                        builder.AddAttribute(75, nameof(VAvatar.Icon), "$account");
+                        builder.AddAttribute(76, nameof(VAvatar.Variant), VuetifyVariant.Tonal);
+                        builder.AddAttribute(77, nameof(VAvatar.Theme), "light");
+                        builder.AddAttribute(78, nameof(VAvatar.Tag), "figure");
+                        builder.AddAttribute(79, nameof(VAvatar.Tile), true);
+                        builder.AddAttribute(80, nameof(VAvatar.Density), VuetifyDensity.Compact);
+                        builder.AddAttribute(81, nameof(VAvatar.Class), new[] { "profile-avatar", "profile-avatar--online" });
+                        builder.AddAttribute(82, nameof(VAvatar.Style), new VueDictionary
+                        {
+                            ["--avatar-ring"] = "2px"
+                        });
+                        builder.AddAttribute(83, nameof(VAvatar.Border), "sm");
+                        builder.AddAttribute(84, nameof(VAvatar.Start), true);
+                        builder.AddAttribute(85, nameof(VAvatar.End), true);
+                        builder.AddAttribute(86, nameof(VAvatar.Image), "/avatar.png");
+                        builder.AddAttribute(87, nameof(VAvatar.Text), "HX");
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
-                        builder.OpenComponent<VProgressLinear>(31);
-                        builder.AddAttribute(32, nameof(VProgressLinear.Color), "success");
-                        builder.AddAttribute(33, nameof(VProgressLinear.BgColor), "surface-variant");
-                        builder.AddAttribute(34, nameof(VProgressLinear.ModelValue), "64");
-                        builder.AddAttribute(35, nameof(VProgressLinear.BufferValue), 90);
-                        builder.AddAttribute(36, nameof(VProgressLinear.Height), 8);
-                        builder.AddAttribute(42, nameof(VProgressLinear.Max), 100);
-                        builder.AddAttribute(43, nameof(VProgressLinear.Stream), true);
-                        builder.AddAttribute(44, nameof(VProgressLinear.Rounded), "pill");
+                        builder.OpenComponent<VProgressLinear>(88);
+                        builder.AddAttribute(89, nameof(VProgressLinear.Color), "success");
+                        builder.AddAttribute(90, nameof(VProgressLinear.BgColor), "surface-variant");
+                        builder.AddAttribute(91, nameof(VProgressLinear.ModelValue), ProgressValue);
+                        builder.AddAttribute(92, nameof(VProgressLinear.BufferValue), 90);
+                        builder.AddAttribute(93, nameof(VProgressLinear.Height), 8);
+                        builder.AddAttribute(94, nameof(VProgressLinear.Max), 100);
+                        builder.AddAttribute(95, nameof(VProgressLinear.Stream), true);
+                        builder.AddAttribute(96, nameof(VProgressLinear.Rounded), "pill");
+                        builder.AddAttribute(104, nameof(VProgressLinear.ModelValueChanged), ProgressValueChanged);
+                        builder.AddAttribute(105, nameof(VProgressLinear.Theme), "light");
+                        builder.AddAttribute(106, nameof(VProgressLinear.Tag), "section");
+                        builder.AddAttribute(107, nameof(VProgressLinear.Tile), false);
+                        builder.AddAttribute(108, nameof(VProgressLinear.Location), VuetifyLocation.Bottom);
+                        builder.AddAttribute(109, nameof(VProgressLinear.Class), "profile-progress");
+                        builder.AddAttribute(110, nameof(VProgressLinear.Style), new VueDictionary
+                        {
+                            ["--progress-gap"] = "3px"
+                        });
+                        builder.AddAttribute(111, nameof(VProgressLinear.Absolute), true);
+                        builder.AddAttribute(112, nameof(VProgressLinear.Active), false);
+                        builder.AddAttribute(113, nameof(VProgressLinear.BgOpacity), 0.2);
+                        builder.AddAttribute(114, nameof(VProgressLinear.BufferColor), "warning");
+                        builder.AddAttribute(115, nameof(VProgressLinear.BufferOpacity), "0.45");
+                        builder.AddAttribute(116, nameof(VProgressLinear.Clickable), true);
+                        builder.AddAttribute(117, nameof(VProgressLinear.Indeterminate), true);
+                        builder.AddAttribute(118, nameof(VProgressLinear.Opacity), 0.8);
+                        builder.AddAttribute(119, nameof(VProgressLinear.Reverse), true);
+                        builder.AddAttribute(120, nameof(VProgressLinear.Striped), true);
+                        builder.AddAttribute(121, nameof(VProgressLinear.RoundedBar), true);
+                        builder.AddAttribute(122, nameof(VProgressLinear.ChildContent), LinearProgressContent);
                         builder.CloseComponent();
-                        builder.OpenComponent<VProgressCircular>(45);
-                        builder.AddAttribute(46, nameof(VProgressCircular.Color), "primary");
-                        builder.AddAttribute(47, nameof(VProgressCircular.BgColor), "surface-variant");
-                        builder.AddAttribute(48, nameof(VProgressCircular.Indeterminate), VuetifyProgressCircularIndeterminateMode.DisableShrink);
-                        builder.AddAttribute(49, nameof(VProgressCircular.ModelValue), 42);
-                        builder.AddAttribute(50, nameof(VProgressCircular.Size), "64");
-                        builder.AddAttribute(51, nameof(VProgressCircular.Width), 6);
+                        builder.OpenComponent<VProgressCircular>(123);
+                        builder.AddAttribute(124, nameof(VProgressCircular.Color), "primary");
+                        builder.AddAttribute(125, nameof(VProgressCircular.BgColor), "surface-variant");
+                        builder.AddAttribute(126, nameof(VProgressCircular.Indeterminate), VuetifyProgressCircularIndeterminateMode.DisableShrink);
+                        builder.AddAttribute(127, nameof(VProgressCircular.ModelValue), 42);
+                        builder.AddAttribute(128, nameof(VProgressCircular.Size), "64");
+                        builder.AddAttribute(129, nameof(VProgressCircular.Width), 6);
+                        builder.AddAttribute(130, nameof(VProgressCircular.Theme), "dark");
+                        builder.AddAttribute(131, nameof(VProgressCircular.Tag), "span");
+                        builder.AddAttribute(132, nameof(VProgressCircular.Class), "profile-progress-circular");
+                        builder.AddAttribute(133, nameof(VProgressCircular.Style), new VueDictionary
+                        {
+                            ["--progress-circular-gap"] = "1px"
+                        });
+                        builder.AddAttribute(134, nameof(VProgressCircular.Rotate), 90);
+                        builder.AddAttribute(135, nameof(VProgressCircular.ChildContent), CircularProgressContent);
                         builder.CloseComponent();
                         builder.CloseComponent();
                     }
@@ -6600,20 +7187,76 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { class: \"profile-menu\" }");
         StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.menuActivator(context)");
         StringAssert.Contains(artifact.ModuleCode, "\"content\": 3");
+        StringAssert.Contains(artifact.ModuleCode, "\"color\": \"error\"");
         StringAssert.Contains(artifact.ModuleCode, "\"max\": \"9\"");
         StringAssert.Contains(artifact.ModuleCode, "\"offsetX\": 4");
+        StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"fade-transition\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"dark\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"span\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"lg\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"top end\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"status-badge\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--badge-gap\": \"2px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"bordered\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"dot\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"floating\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"icon\": \"$bell\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"inline\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"label\": \"Unread notifications\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.badgeVisible");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:badgeVisible\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"offsetY\": 6");
+        StringAssert.Contains(artifact.ModuleCode, "\"textColor\": \"white\"");
+        StringAssert.Contains(artifact.ModuleCode, "badge: () => props.badgeContent");
         StringAssert.Contains(artifact.ModuleCode, "\"size\": 48");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"icon\": \"$account\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"tonal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"light\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"figure\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"density\": \"compact\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": [\"profile-avatar\", \"profile-avatar--online\"]");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--avatar-ring\": \"2px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"border\": \"sm\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"start\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"end\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"image\": \"/avatar.png\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": \"HX\"");
         StringAssert.Contains(artifact.ModuleCode, "\"bgColor\": \"surface-variant\"");
-        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": \"64\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": props.progressValue");
+        StringAssert.Contains(artifact.ModuleCode, "\"onUpdate:modelValue\": (__value) => emit(\"update:progressValue\", __value)");
         StringAssert.Contains(artifact.ModuleCode, "\"bufferValue\": 90");
         StringAssert.Contains(artifact.ModuleCode, "\"height\": 8");
+        StringAssert.Contains(artifact.ModuleCode, "\"max\": 100");
         StringAssert.Contains(artifact.ModuleCode, "\"stream\": true");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": \"pill\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"light\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"section\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"location\": \"bottom\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"profile-progress\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--progress-gap\": \"3px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"absolute\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"active\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"bgOpacity\": 0.2");
+        StringAssert.Contains(artifact.ModuleCode, "\"bufferColor\": \"warning\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"bufferOpacity\": \"0.45\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"clickable\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"indeterminate\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"opacity\": 0.8");
+        StringAssert.Contains(artifact.ModuleCode, "\"reverse\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"striped\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"roundedBar\": true");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.linearProgressContent(context)");
         StringAssert.Contains(artifact.ModuleCode, "\"indeterminate\": \"disable-shrink\"");
         StringAssert.Contains(artifact.ModuleCode, "\"modelValue\": 42");
         StringAssert.Contains(artifact.ModuleCode, "\"width\": 6");
+        StringAssert.Contains(artifact.ModuleCode, "\"tag\": \"span\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"profile-progress-circular\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--progress-circular-gap\": \"1px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"rotate\": 90");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.circularProgressContent(context)");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -6623,6 +7266,7 @@ public sealed class RazorVuePipelineTests
         var context = CreateContext(
             """
             using System;
+            using ECMAScript;
             using ECMAScript.Vuetify;
             using ECMAScript.VueContract;
             using Microsoft.AspNetCore.Components;
@@ -6667,6 +7311,27 @@ public sealed class RazorVuePipelineTests
                     [Parameter]
                     public EventCallback<bool> SnackbarOpenChanged { get; set; }
 
+                    [Parameter]
+                    public EventCallback SnackbarAfterEnter { get; set; }
+
+                    [Parameter]
+                    public EventCallback SnackbarAfterLeave { get; set; }
+
+                    [Parameter]
+                    public EventCallback<MouseEvent> SnackbarClickOutside { get; set; }
+
+                    [Parameter]
+                    public EventCallback<KeyboardEvent> SnackbarKeydown { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VOverlayActivatorContext>? SnackbarActivator { get; set; }
+
+                    [Parameter]
+                    public RenderFragment? SnackbarText { get; set; }
+
+                    [Parameter]
+                    public RenderFragment<VSnackbarActionsSlotContext>? SnackbarActions { get; set; }
+
                     protected override void BuildRenderTree(RenderTreeBuilder builder)
                     {
                         builder.OpenComponent<VTabs>(0);
@@ -6707,6 +7372,59 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(27, nameof(VSnackbar.Timer), "info");
                         builder.AddAttribute(28, nameof(VSnackbar.Location), VuetifyLocation.BottomEnd);
                         builder.AddAttribute(29, nameof(VSnackbar.Rounded), true);
+                        builder.AddAttribute(30, nameof(VSnackbar.Variant), VuetifyVariant.Tonal);
+                        builder.AddAttribute(31, nameof(VSnackbar.Offset), VuetifyOverlayOffsetValue.From(new Number[] { 12, 24 }));
+                        builder.AddAttribute(32, nameof(VSnackbar.Absolute), true);
+                        builder.AddAttribute(33, nameof(VSnackbar.Origin), VuetifyOriginMode.Overlap);
+                        builder.AddAttribute(34, nameof(VSnackbar.Height), 64);
+                        builder.AddAttribute(35, nameof(VSnackbar.Width), "min(480px, 100%)");
+                        builder.AddAttribute(36, nameof(VSnackbar.MaxHeight), "80vh");
+                        builder.AddAttribute(37, nameof(VSnackbar.MaxWidth), 520);
+                        builder.AddAttribute(38, nameof(VSnackbar.MinHeight), 48);
+                        builder.AddAttribute(39, nameof(VSnackbar.MinWidth), 280);
+                        builder.AddAttribute(40, nameof(VSnackbar.Opacity), 0.92);
+                        builder.AddAttribute(41, nameof(VSnackbar.Position), VuetifyPosition.Fixed);
+                        builder.AddAttribute(42, nameof(VSnackbar.Transition), "slide-y-reverse-transition");
+                        builder.AddAttribute(43, nameof(VSnackbar.ZIndex), 2600);
+                        builder.AddAttribute(44, nameof(VSnackbar.Class), "save-snackbar");
+                        builder.AddAttribute(45, nameof(VSnackbar.Style), new VueDictionary
+                        {
+                            ["--snackbar-gap"] = "8px"
+                        });
+                        builder.AddAttribute(46, nameof(VSnackbar.Eager), true);
+                        builder.AddAttribute(47, nameof(VSnackbar.Disabled), false);
+                        builder.AddAttribute(48, nameof(VSnackbar.Theme), "dark");
+                        builder.AddAttribute(49, nameof(VSnackbar.Vertical), true);
+                        builder.AddAttribute(50, nameof(VSnackbar.Target), VuetifyOverlayTarget.Cursor());
+                        builder.AddAttribute(51, nameof(VSnackbar.LocationStrategy), VuetifyLocationStrategy.Static);
+                        builder.AddAttribute(52, nameof(VSnackbar.Tile), true);
+                        builder.AddAttribute(53, nameof(VSnackbar.CloseDelay), 60);
+                        builder.AddAttribute(54, nameof(VSnackbar.OpenDelay), 30);
+                        builder.AddAttribute(55, nameof(VSnackbar.ActivatorTarget), VuetifyOverlayActivatorTarget.Parent());
+                        builder.AddAttribute(56, nameof(VSnackbar.ActivatorProps), new VueDictionary
+                        {
+                            ["aria-label"] = "Open save snackbar"
+                        });
+                        builder.AddAttribute(57, nameof(VSnackbar.OpenOnClick), true);
+                        builder.AddAttribute(58, nameof(VSnackbar.OpenOnHover), true);
+                        builder.AddAttribute(59, nameof(VSnackbar.OpenOnFocus), false);
+                        builder.AddAttribute(60, nameof(VSnackbar.CloseOnContentClick), true);
+                        builder.AddAttribute(61, nameof(VSnackbar.CloseOnBack), false);
+                        builder.AddAttribute(62, nameof(VSnackbar.Contained), true);
+                        builder.AddAttribute(63, nameof(VSnackbar.ContentClass), "save-snackbar-content");
+                        builder.AddAttribute(64, nameof(VSnackbar.ContentProps), new VueDictionary
+                        {
+                            ["data-role"] = "snackbar"
+                        });
+                        builder.AddAttribute(65, nameof(VSnackbar.Attach), "#app");
+                        builder.AddAttribute(66, nameof(VSnackbar.MultiLine), true);
+                        builder.AddAttribute(67, nameof(VSnackbar.AfterEnter), SnackbarAfterEnter);
+                        builder.AddAttribute(68, nameof(VSnackbar.AfterLeave), SnackbarAfterLeave);
+                        builder.AddAttribute(69, nameof(VSnackbar.ClickOutside), SnackbarClickOutside);
+                        builder.AddAttribute(70, nameof(VSnackbar.Keydown), SnackbarKeydown);
+                        builder.AddAttribute(71, nameof(VSnackbar.Activator), SnackbarActivator);
+                        builder.AddAttribute(72, nameof(VSnackbar.TextContent), SnackbarText);
+                        builder.AddAttribute(73, nameof(VSnackbar.Actions), SnackbarActions);
                         builder.CloseComponent();
                     }
                 }
@@ -6734,6 +7452,50 @@ public sealed class RazorVuePipelineTests
         StringAssert.Contains(artifact.ModuleCode, "\"timer\": \"info\"");
         StringAssert.Contains(artifact.ModuleCode, "\"location\": \"bottom end\"");
         StringAssert.Contains(artifact.ModuleCode, "\"rounded\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"variant\": \"tonal\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"offset\": [12, 24]");
+        StringAssert.Contains(artifact.ModuleCode, "\"absolute\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"origin\": \"overlap\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"height\": 64");
+        StringAssert.Contains(artifact.ModuleCode, "\"width\": \"min(480px, 100%)\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxHeight\": \"80vh\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"maxWidth\": 520");
+        StringAssert.Contains(artifact.ModuleCode, "\"minHeight\": 48");
+        StringAssert.Contains(artifact.ModuleCode, "\"minWidth\": 280");
+        StringAssert.Contains(artifact.ModuleCode, "\"opacity\": 0.92");
+        StringAssert.Contains(artifact.ModuleCode, "\"position\": \"fixed\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"transition\": \"slide-y-reverse-transition\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"zIndex\": 2600");
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"save-snackbar\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": { \"--snackbar-gap\": \"8px\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"eager\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"disabled\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"theme\": \"dark\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"vertical\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"target\": 'cursor'");
+        StringAssert.Contains(artifact.ModuleCode, "\"locationStrategy\": \"static\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"tile\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeDelay\": 60");
+        StringAssert.Contains(artifact.ModuleCode, "\"openDelay\": 30");
+        StringAssert.Contains(artifact.ModuleCode, "\"activator\": 'parent'");
+        StringAssert.Contains(artifact.ModuleCode, "\"activatorProps\": { \"aria-label\": \"Open save snackbar\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnClick\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnHover\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"openOnFocus\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeOnContentClick\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"closeOnBack\": false");
+        StringAssert.Contains(artifact.ModuleCode, "\"contained\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"contentClass\": \"save-snackbar-content\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"contentProps\": { \"data-role\": \"snackbar\" }");
+        StringAssert.Contains(artifact.ModuleCode, "\"attach\": \"#app\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"multiLine\": true");
+        StringAssert.Contains(artifact.ModuleCode, "\"onAfterEnter\": () => emit(\"snackbarAfterEnter\")");
+        StringAssert.Contains(artifact.ModuleCode, "\"onAfterLeave\": () => emit(\"snackbarAfterLeave\")");
+        StringAssert.Contains(artifact.ModuleCode, "\"onClick:outside\": (__value) => emit(\"snackbarClickOutside\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "\"onKeydown\": (__value) => emit(\"snackbarKeydown\", __value)");
+        StringAssert.Contains(artifact.ModuleCode, "activator: (context) => props.snackbarActivator(context)");
+        StringAssert.Contains(artifact.ModuleCode, "text: () => props.snackbarText");
+        StringAssert.Contains(artifact.ModuleCode, "actions: (context) => props.snackbarActions(context)");
         CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
@@ -7428,7 +8190,7 @@ public sealed class RazorVuePipelineTests
     }
 
     [TestMethod]
-    public void RazorVue_Pipeline_WithImplicitTypedLibraryDefaultSlot_ReportsSlotContextMisuse()
+    public void RazorVue_Pipeline_WithImplicitTypedLibraryDefaultSlot_LowersParameterizedDefaultSlot()
     {
         var context = CreateContext(
             """
@@ -7472,11 +8234,56 @@ public sealed class RazorVuePipelineTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
-        Assert.IsNotNull(exception);
-        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "ChildContent");
-        StringAssert.Contains(exception.Issue.Message, "TypedContentPanel");
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "default: (__jazorSlotContext) => \"warn\"");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_LowersVuetifyFormExplicitDefaultScopedSlot()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/form-slot-host")]
+                public class FormSlotHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VFormDefaultSlotContext>? FormDefault { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VForm>(0);
+                        builder.AddAttribute(1, nameof(VForm.ChildContent), FormDefault);
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var artifact = CreateBuildRenderTreePipeline().Execute(context).Artifacts.Single();
+
+        StringAssert.Contains(artifact.ModuleCode, "import { VForm as VFormComponent } from \"vuetify/components\";");
+        StringAssert.Contains(artifact.ModuleCode, "default: (context) => props.formDefault(context)");
+        CollectionAssert.Contains(artifact.Styles.ToArray(), "vuetify/styles");
+        CollectionAssert.AreEqual(new[] { "vuetify" }, artifact.PluginRequirements.ToArray());
     }
 
     [TestMethod]
@@ -7524,6 +8331,53 @@ public sealed class RazorVuePipelineTests
         Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "ChildContent");
         StringAssert.Contains(exception.Issue.Message, "VDialog");
+    }
+
+    [TestMethod]
+    public void RazorVue_Pipeline_WithImplicitAndExplicitLibraryDefaultSlotAssignment_ReportsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/chip-host")]
+                public class ChipHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VChipDefaultSlotContext>? ChipDefault { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VChip>(0);
+                        builder.AddAttribute(1, nameof(VChip.DefaultContent), ChipDefault);
+                        builder.AddContent(2, "Pin");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() => CreateBuildRenderTreePipeline().Execute(context));
+        Assert.IsNotNull(exception);
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "DefaultContent");
+        StringAssert.Contains(exception.Issue.Message, "VChip");
     }
 
     [TestMethod]

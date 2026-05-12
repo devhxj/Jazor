@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq;
+using Jazor.RazorVue;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
@@ -266,10 +267,14 @@ internal sealed class RazorVueCanonicalHModelFactory
             allowedParameterSymbols));
         if (!component.Children.Children.IsDefaultOrEmpty)
         {
+            var defaultSlotParameterName = TryGetDefaultSlotParameterName(
+                resolvedDescriptor,
+                allowedLocalSymbols,
+                allowedParameterSymbols);
             slotBindings = slotBindings.Add(new RazorVueCanonicalSlotBinding(
                 SlotName: "default",
                 IsDefault: true,
-                ParameterName: null,
+                ParameterName: defaultSlotParameterName,
                 ValueKind: RazorVueCanonicalSlotValueKind.None,
                 ValueExpressionText: null,
                 ForwardedSlotName: null,
@@ -323,19 +328,20 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         if (VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var defaultSlot))
         {
-            if (defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty)
-                return;
-
-            throw CreateSlotContextMisuseException(
-                snapshot,
-                descriptor,
-                defaultSlot.Descriptor,
-                "ChildContent",
-                origin);
+            return;
         }
 
         throw CreateUnknownSlotException(snapshot, descriptor, "ChildContent", origin);
     }
+
+    private static string? TryGetDefaultSlotParameterName(
+        VueComponentDescriptor descriptor,
+        ImmutableHashSet<ILocalSymbol> allowedLocalSymbols,
+        ImmutableHashSet<IParameterSymbol> allowedParameterSymbols)
+        => VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var defaultSlot) &&
+           !defaultSlot.Descriptor.Parameters.IsDefaultOrEmpty
+            ? RazorVueSlotParameterNames.CreateImplicitDefaultSlotParameterName(allowedLocalSymbols, allowedParameterSymbols)
+            : null;
 
     private static void ValidateDuplicateLibrarySlotUsage(
         RazorVueSemanticSnapshot snapshot,
@@ -350,9 +356,9 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         var assignedSlots = new HashSet<string>(StringComparer.Ordinal);
         if (!component.Children.Children.IsDefaultOrEmpty &&
-            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out _))
+            VueSlotResolver.TryResolve(descriptor.Slots, "ChildContent", out var childContentSlot))
         {
-            assignedSlots.Add("ChildContent");
+            assignedSlots.Add(childContentSlot.SlotName);
         }
 
         foreach (var slotTemplate in component.SlotTemplates)
@@ -468,11 +474,10 @@ internal sealed class RazorVueCanonicalHModelFactory
         if (component.Attributes.IsDefaultOrEmpty)
             return ImmutableArray<RazorVueCanonicalAttributeEntry>.Empty;
 
-        var propsByName = BuildPropsByName(descriptor);
         var emitsByAlias = BuildEmitsByAlias(descriptor);
         var unmatchedValuesProp = GetCaptureUnmatchedValuesProp(snapshot, descriptor, component);
-        ValidateInvalidBindTargets(snapshot, descriptor, component, propsByName, emitsByAlias);
-        ValidateDuplicateMappedComponentAttributes(snapshot, descriptor, component, propsByName, emitsByAlias);
+        ValidateInvalidBindTargets(snapshot, descriptor, component, emitsByAlias);
+        ValidateDuplicateMappedComponentAttributes(snapshot, descriptor, component, emitsByAlias);
         var builder = ImmutableArray.CreateBuilder<RazorVueCanonicalAttributeEntry>();
 
         foreach (var attributeEntry in component.Attributes)
@@ -516,10 +521,10 @@ internal sealed class RazorVueCanonicalHModelFactory
                 continue;
             }
 
-            if (propsByName.TryGetValue(attribute.Name, out var propDescriptor))
+            if (VuePropResolver.TryResolve(descriptor.Props, attribute.Name, out var prop))
             {
                 builder.Add(new RazorVueCanonicalAttributeBinding(
-                    Name: propDescriptor.Name,
+                    Name: prop.PropName,
                     ExpressionText: attribute.Value is null
                         ? null
                         : EmitTemplateExpression(snapshot, expressionEmitter, attribute.Value, allowedLocalSymbols, allowedParameterSymbols),
@@ -557,7 +562,6 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         VueComponentDescriptor descriptor,
         RazorVueComponentNode component,
-        ImmutableDictionary<string, VuePropDescriptor> propsByName,
         ImmutableDictionary<string, VueEmitDescriptor> emitsByAlias)
     {
         var attributeNames = component.Attributes
@@ -576,8 +580,8 @@ internal sealed class RazorVueCanonicalHModelFactory
                 continue;
             }
 
-            var hasBindableProp = propsByName.TryGetValue(parameterName, out var propDescriptor) &&
-                                  propDescriptor.AcceptsBinding;
+            var hasBindableProp = VuePropResolver.TryResolve(descriptor.Props, parameterName, out var prop) &&
+                                  prop.Descriptor.AcceptsBinding;
             var hasModelUpdateEmit = emitsByAlias.TryGetValue(attribute.Name, out var emitDescriptor) &&
                                      emitDescriptor.Kind == VueEmitKind.ModelUpdate;
 
@@ -592,7 +596,6 @@ internal sealed class RazorVueCanonicalHModelFactory
         RazorVueSemanticSnapshot snapshot,
         VueComponentDescriptor descriptor,
         RazorVueComponentNode component,
-        ImmutableDictionary<string, VuePropDescriptor> propsByName,
         ImmutableDictionary<string, VueEmitDescriptor> emitsByAlias)
     {
         var mappedAttributes = new Dictionary<string, RazorVueAttributeNode>(StringComparer.Ordinal);
@@ -601,15 +604,15 @@ internal sealed class RazorVueCanonicalHModelFactory
             if (attributeEntry is not RazorVueAttributeNode attribute)
                 continue;
 
-            if (propsByName.TryGetValue(attribute.Name, out var propDescriptor))
+            if (VuePropResolver.TryResolve(descriptor.Props, attribute.Name, out var prop))
             {
                 ValidateUniqueMappedAttribute(
                     snapshot,
                     descriptor,
                     mappedAttributes,
-                    "prop:" + propDescriptor.Name,
+                    "prop:" + prop.PropName,
                     "Vue prop",
-                    propDescriptor.Name,
+                    prop.PropName,
                     attribute);
                 continue;
             }
@@ -1208,20 +1211,6 @@ internal sealed class RazorVueCanonicalHModelFactory
 
         parameterName = attributeName.Substring(0, attributeName.Length - "Changed".Length);
         return !string.IsNullOrWhiteSpace(parameterName);
-    }
-
-    private static ImmutableDictionary<string, VuePropDescriptor> BuildPropsByName(VueComponentDescriptor descriptor)
-    {
-        var builder = ImmutableDictionary.CreateBuilder<string, VuePropDescriptor>(StringComparer.OrdinalIgnoreCase);
-        foreach (var prop in descriptor.Props)
-        {
-            if (!string.IsNullOrWhiteSpace(prop.PublicName))
-                builder[prop.PublicName] = prop;
-            if (!string.IsNullOrWhiteSpace(prop.Name))
-                builder[prop.Name] = prop;
-        }
-
-        return builder.ToImmutable();
     }
 
     private static VuePropDescriptor? GetCaptureUnmatchedValuesProp(

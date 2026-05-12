@@ -1449,7 +1449,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
     }
 
     [TestMethod]
-    public void RazorVue_SfcArtifactFactory_WithImplicitTypedLibraryDefaultSlot_ThrowsSlotContextMisuse()
+    public void RazorVue_SfcArtifactFactory_WithImplicitTypedLibraryDefaultSlot_EmitsParameterizedDefaultTemplate()
     {
         var context = CreateContext(
             """
@@ -1494,12 +1494,11 @@ public sealed class RazorVueSfcArtifactFactoryTests
             """);
 
         var snapshot = context.CreateSemanticSnapshots().Single(static item => item.Descriptor.Name == "TypedContentHost");
-        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
-            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        Assert.AreEqual(RazorVueIssueCode.SlotContextMisuse, exception.Issue.Code);
-        StringAssert.Contains(exception.Issue.Message, "TypedContentPanel");
-        StringAssert.Contains(exception.Issue.Message, "ChildContent");
+        StringAssert.Contains(artifact.TemplateText, "<template #default=\"__jazorSlotContext\">");
+        StringAssert.Contains(artifact.TemplateText, "warn");
+        StringAssert.Contains(artifact.TemplateText, "</template>");
     }
 
     [TestMethod]
@@ -1549,6 +1548,55 @@ public sealed class RazorVueSfcArtifactFactoryTests
         Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
         StringAssert.Contains(exception.Issue.Message, "VDialog");
         StringAssert.Contains(exception.Issue.Message, "ChildContent");
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_WithImplicitAndExplicitLibraryDefaultSlotAssignment_ThrowsDuplicateSlotValue()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.Vuetify;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/chip-host")]
+                public class ChipHost : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public RenderFragment<VChipDefaultSlotContext>? ChipDefault { get; set; }
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VChip>(0);
+                        builder.AddAttribute(1, nameof(VChip.DefaultContent), ChipDefault);
+                        builder.AddContent(2, "Pin");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var exception = Assert.ThrowsExactly<RazorVueCompilationIssueException>(() =>
+            CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot));
+
+        Assert.AreEqual(RazorVueIssueCode.DuplicateSlotValue, exception.Issue.Code);
+        StringAssert.Contains(exception.Issue.Message, "VChip");
+        StringAssert.Contains(exception.Issue.Message, "DefaultContent");
     }
 
     [TestMethod]

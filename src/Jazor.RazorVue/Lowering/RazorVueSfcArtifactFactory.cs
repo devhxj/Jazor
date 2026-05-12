@@ -449,16 +449,28 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         var indent = new string(' ', depth * 2);
         if (!slot.Children.Children.IsDefaultOrEmpty)
         {
+            var wrapParameterizedDefault = !string.IsNullOrWhiteSpace(slot.ParameterName);
+            if (wrapParameterizedDefault)
+            {
+                builder.Append(indent)
+                    .Append("<template #default=\"")
+                    .Append(slot.ParameterName)
+                    .AppendLine("\">");
+            }
+
             for (var index = 0; index < slot.Children.Children.Length; index++)
             {
                 AppendTemplateNode(
                     builder,
                     slot.Children.Children[index],
-                    depth,
+                    wrapParameterizedDefault ? depth + 1 : depth,
                     bindingSiteMap,
                     path + "/child[" + index + "]",
-                    string.IsNullOrWhiteSpace(slot.ParameterName) ? templateScopeDepth : templateScopeDepth + 1);
+                    wrapParameterizedDefault ? templateScopeDepth + 1 : templateScopeDepth);
             }
+
+            if (wrapParameterizedDefault)
+                builder.Append(indent).AppendLine("</template>");
 
             return;
         }

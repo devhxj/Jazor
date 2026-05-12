@@ -141,30 +141,6 @@ internal sealed partial class RazorVueExpressionEmitter
         builder.Append('>');
     }
 
-    private static ImmutableDictionary<string, ImmutableDictionary<string, VuePropDescriptor>> BuildComponentPropsByPublicName(
-        ImmutableDictionary<string, VueComponentDescriptor>? resolvedComponents)
-    {
-        if (resolvedComponents is null || resolvedComponents.IsEmpty)
-            return ImmutableDictionary<string, ImmutableDictionary<string, VuePropDescriptor>>.Empty;
-
-        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableDictionary<string, VuePropDescriptor>>(StringComparer.Ordinal);
-        foreach (var item in resolvedComponents)
-        {
-            var propsBuilder = ImmutableDictionary.CreateBuilder<string, VuePropDescriptor>(StringComparer.OrdinalIgnoreCase);
-            foreach (var prop in item.Value.Props)
-            {
-                if (!string.IsNullOrEmpty(prop.PublicName))
-                    propsBuilder[prop.PublicName] = prop;
-                if (!string.IsNullOrEmpty(prop.Name))
-                    propsBuilder[prop.Name] = prop;
-            }
-
-            builder[item.Key] = propsBuilder.ToImmutable();
-        }
-
-        return builder.ToImmutable();
-    }
-
     private static ImmutableDictionary<string, ImmutableDictionary<string, VueSlotDescriptor>> BuildComponentSlotsByPublicName(
         ImmutableDictionary<string, VueComponentDescriptor>? resolvedComponents)
     {

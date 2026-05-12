@@ -6,8 +6,19 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbarTitle")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+[VueLibrarySlot(nameof(TextContent), Name = "text")]
 public sealed class VToolbarTitle : ComponentBase, IVueLibraryComponent
 {
+    [Parameter]
+    public string? Tag { get; set; }
+
+    [Parameter]
+    public VueClassValue? Class { get; set; }
+
+    [Parameter]
+    public VuetifyStyleValue? Style { get; set; }
+
     [Parameter]
     public string? Text { get; set; }
 
@@ -16,4 +27,7 @@ public sealed class VToolbarTitle : ComponentBase, IVueLibraryComponent
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? TextContent { get; set; }
 }
