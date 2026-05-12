@@ -1,15 +1,15 @@
 # ECMAScript.Pinia.Counter
 
-This sample demonstrates the current `ECMAScript.Pinia` consumption path with a normal Vue/Vite frontend:
+This sample demonstrates the current `ECMAScript.Pinia` consumption path with a Deno-based frontend:
 
 - author a Pinia option store in C#
 - emit raw `.mjs` modules from a Jazor host project
-- consume those generated modules from Vite with Vue + Pinia installed from npm
+- consume the generated modules from Deno with Vue + Pinia resolved through an import map
 
 The sample is split into:
 
 - `Pinia.Counter.Host`: Jazor host that emits the generated modules to `wwwroot/jazor/`
-- `pinia-consumer`: minimal Vite frontend that resolves the generated host modules through Vite aliases and includes a Vitest smoke test against the generated Pinia/testing modules
+- `pinia-consumer`: Deno consumer that resolves the generated host modules through an import map and runs build/runtime smoke tests without Vite
 
 ## Build from this repository
 
@@ -42,7 +42,7 @@ You should see:
 Run the end-to-end smoke verification from the repository root or sample directory:
 
 ```powershell
-.\verify-smoke.ps1 -Configuration Release
+dotnet run --file .\samples\ECMAScript.Pinia.Counter\verify-smoke.cs -- -Configuration Release
 ```
 
 This validates the production-oriented consumer path:
@@ -51,8 +51,8 @@ This validates the production-oriented consumer path:
 - rebuild `Pinia.Counter.Host` against the freshly packed local NuGet
 - emit generated modules into an isolated `.tmp/sample-smoke/.../jazor/` directory by default so the smoke run does not dirty tracked sample artifacts
 - assert generated Pinia / `@pinia/testing` artifacts exist and carry the expected lowering shape
-- run the Vite build
-- run the frontend Vitest runtime/DOM suites
+- run the Deno bundle build
+- run the Deno runtime/DOM suites
 
 ## Run the frontend consumer
 
@@ -60,25 +60,18 @@ After `.\build-local.ps1` succeeds:
 
 ```powershell
 cd .\pinia-consumer
-npm install
-npm run dev
-```
-
-Run the generated-module smoke tests:
-
-```powershell
-npm test
+deno task build
+deno task test
 ```
 
 The consumer imports:
 
-- the generated host bootstrap through the `host/*` Vite alias
-- the generated internal `components/*`, `stores/*`, and `tests/*` modules through Vite aliases
+- the generated host bootstrap through the `host/*` import-map alias
+- the generated internal `components/*`, `stores/*`, and `tests/*` modules through import-map aliases
+- Vue, Pinia, `@pinia/testing`, and `jsdom` through Deno/npm resolution
 
-It also aliases `npm:vue@3` to the local `vue` package so the generated Jazor modules can run inside a standard Vite toolchain.
-The Vitest setup also aliases `@pinia/testing` so the generated `tests/counter-testing.mjs` artifact can execute as a normal frontend-side testing seam.
 Set `JAZOR_GENERATED_ROOT` if you want the consumer to resolve generated modules from a non-default output directory.
-The generated root app now also installs the sample Pinia audit plugin through `createConfiguredPinia()`, so projected custom properties/state are exercised through the same runtime path the sample UI uses.
+The generated root app installs the sample Pinia audit plugin through `createConfiguredPinia()`, so projected custom properties/state are exercised through the same runtime path the sample UI uses.
 The generated root app also disposes its Pinia root on `app.unmount()`, so repeated mount/unmount flows do not retain store state or plugin side effects.
 The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate(...)` stays generated in C# while `import.meta.hot.accept(...)` remains an explicit host concern.
 
@@ -113,10 +106,10 @@ The consumer also includes a small JS-side HMR bridge module so `acceptHMRUpdate
 - testing-root combined typed `createSpy` + typed `stubActions` explicit union factory path through `TestingStubActions<TStore>.From(...)`
 - testing-root typed/projected plugin reuse through `ProjectPlugin(...)`, including projected custom-state writes on the generated testing root
 - strict testing-root coverage for named action stubs plus `stubPatch` / `stubReset`
-- frontend-side Vitest smoke coverage against generated `createTestingPinia()` + store modules
-- frontend-side Vitest DOM coverage against the generated root app, including plugin projection, multi-store rendering, subscription notifications, hydration state, and HMR cookbook state
-- frontend-side Vitest runtime coverage for store `$dispose()`, root recreation after `disposePinia()`, and repeated mount/unmount cleanup
-- frontend-side Vitest runtime/DOM coverage for explicit multi-root isolation and non-leaking plugin custom state
+- Deno-side smoke coverage against generated `createTestingPinia()` + store modules
+- Deno-side DOM coverage against the generated root app, including plugin projection, multi-store rendering, subscription notifications, hydration state, and HMR cookbook state
+- Deno-side runtime coverage for store `$dispose()`, root recreation after `disposePinia()`, and repeated mount/unmount cleanup
+- Deno-side runtime/DOM coverage for explicit multi-root isolation and non-leaking plugin custom state
 
 ## Notes
 

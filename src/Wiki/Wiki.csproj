@@ -13,6 +13,13 @@
   <Import Project="..\Jazor\buildTransitive\Jazor.props" />
 
   <ItemGroup>
+    <Compile Remove="jazor\**" />
+    <Content Remove="jazor\**" />
+    <EmbeddedResource Remove="jazor\**" />
+    <None Remove="jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
     <ProjectReference Include="..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
@@ -34,9 +41,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="PublishWikiJazorArtifacts"
-          AfterTargets="Publish"
-          Condition="'$(JazorEmit)' == 'true' and Exists('$(JazorOutDir)')">
+  <Target Name="PublishWikiJazorArtifacts" AfterTargets="Publish" Condition="'$(JazorEmit)' == 'true' and Exists('$(JazorOutDir)')">
     <PropertyGroup>
       <_WikiPublishedJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_WikiPublishedJazorRoot>
       <_WikiPublishedLocalJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_WikiPublishedLocalJazorRoot>
@@ -48,10 +53,8 @@
 
     <RemoveDir Directories="$(_WikiPublishedJazorRoot)" />
     <MakeDir Directories="$(_WikiPublishedJazorRoot)" />
-    <Copy SourceFiles="@(_WikiJazorArtifact)"
-          DestinationFiles="@(_WikiJazorArtifact->'$(_WikiPublishedJazorRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
-    <RemoveDir Directories="$(_WikiPublishedLocalJazorRoot)"
-               Condition="Exists('$(_WikiPublishedLocalJazorRoot)')" />
+    <Copy SourceFiles="@(_WikiJazorArtifact)" DestinationFiles="@(_WikiJazorArtifact->'$(_WikiPublishedJazorRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(_WikiPublishedLocalJazorRoot)" Condition="Exists('$(_WikiPublishedLocalJazorRoot)')" />
   </Target>
 
   <Import Project="..\Jazor\buildTransitive\Jazor.targets" />

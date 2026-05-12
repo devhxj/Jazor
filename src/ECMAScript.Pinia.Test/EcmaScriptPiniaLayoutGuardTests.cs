@@ -105,15 +105,28 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	public void Pinia_SampleSmokeScript_ExistsAndVerifiesPackConsumerPath()
 	{
 		var repoRoot = ResolveRepositoryRoot();
-		var scriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1");
+		var consumerRoot = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "pinia-consumer");
+		var denoConfigPath = Path.Combine(consumerRoot, "deno.json");
+		var scriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.cs");
+		var legacyScriptPath = Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1");
+		var packageJsonPath = Path.Combine(consumerRoot, "package.json");
+		var viteConfigPath = Path.Combine(consumerRoot, "vite.config.js");
+		var denoConfig = System.IO.File.ReadAllText(denoConfigPath);
 		var source = System.IO.File.ReadAllText(scriptPath);
 
-		StringAssert.Contains(source, "build-local.ps1");
+		StringAssert.Contains(denoConfig, "\"build\": \"deno run -A scripts/build.ts\"");
+		StringAssert.Contains(denoConfig, "\"test\": \"deno run -A scripts/test.ts\"");
+		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"task\", \"build\" })");
+		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"test\", \"-A\", \"--frozen\", \"--import-map\"");
 		StringAssert.Contains(source, "sample host assembly for requested configuration");
-		StringAssert.Contains(source, "Assert-GeneratedHostArtifacts");
-		StringAssert.Contains(source, "Invoke-Npm -Arguments @(\"run\", \"build\")");
-		StringAssert.Contains(source, "Invoke-Npm -Arguments @(\"run\", \"test\", \"--\", \"--run\")");
+		StringAssert.Contains(source, "AssertGeneratedHostArtifacts");
+		StringAssert.Contains(source, "ResolveDenoExecutable(repoRoot)");
+		StringAssert.Contains(source, "RunDeno(denoExePath, consumerRoot, denoEnvironment");
 		StringAssert.Contains(source, "ECMAScript.Pinia sample smoke verification passed.");
+		Assert.IsFalse(source.Contains("vite", StringComparison.OrdinalIgnoreCase), "Smoke verification script should not depend on Vite anymore.");
+		Assert.IsFalse(System.IO.File.Exists(legacyScriptPath), $"Legacy PowerShell smoke entrypoint should not remain: {legacyScriptPath}");
+		Assert.IsFalse(System.IO.File.Exists(packageJsonPath), $"Vite package manifest should not remain in the Deno consumer: {packageJsonPath}");
+		Assert.IsFalse(System.IO.File.Exists(viteConfigPath), $"Vite config should not remain in the Deno consumer: {viteConfigPath}");
 	}
 
 	[TestMethod]
@@ -127,7 +140,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "./scripts/test-dotnet.ps1 `");
 		StringAssert.Contains(source, "-Project pinia `");
 		StringAssert.Contains(source, "-Project pinia-testing `");
-		StringAssert.Contains(source, "./samples/ECMAScript.Pinia.Counter/verify-smoke.ps1 `");
+		StringAssert.Contains(source, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs");
 		StringAssert.Contains(source, "./scripts/publish-nuget.ps1 `");
 		StringAssert.Contains(source, "-OutputDirectory artifacts/packages `");
 		StringAssert.Contains(source, "-OutputDirectory artifacts/packages-nobuild `");
@@ -172,7 +185,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		var testScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "test-dotnet.ps1"));
 		var publishScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "publish-nuget.ps1"));
 		var sampleBuildScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "build-local.ps1"));
-		var sampleVerifyScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1"));
+		var sampleVerifyScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.cs"));
 
 		StringAssert.Contains(directoryBuildProps, "<PropertyGroup Condition=\"'$(JazorIsolatedBaseOutputRoot)' != ''\">");
 		StringAssert.Contains(directoryBuildProps, "<BaseOutputPath>$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))$(MSBuildProjectName)\\bin\\</BaseOutputPath>");
@@ -207,13 +220,12 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(sampleBuildScript, "/nr:false");
 		StringAssert.Contains(sampleBuildScript, "-p:UseSharedCompilation=false");
 
-		StringAssert.Contains(sampleVerifyScript, "[string]$BaseOutputPath = \"\"");
-		StringAssert.Contains(sampleVerifyScript, "[string]$BaseIntermediateOutputPath = \"\"");
-		StringAssert.Contains(sampleVerifyScript, "$buildLocalArgs = @{");
-		StringAssert.Contains(sampleVerifyScript, "Configuration = $Configuration");
-		StringAssert.Contains(sampleVerifyScript, "JazorOutDir = $jazorRoot");
-		StringAssert.Contains(sampleVerifyScript, "$buildLocalArgs[\"BaseOutputPath\"] = $BaseOutputPath");
-		StringAssert.Contains(sampleVerifyScript, "$buildLocalArgs[\"BaseIntermediateOutputPath\"] = $BaseIntermediateOutputPath");
+		StringAssert.Contains(sampleVerifyScript, "GetIsolationArguments(options)");
+		StringAssert.Contains(sampleVerifyScript, "ResolveHostAssemblyPath(hostRoot, options)");
+		StringAssert.Contains(sampleVerifyScript, "RunDeno(denoExePath, consumerRoot, denoEnvironment, new[] { \"task\", \"build\" })");
+		StringAssert.Contains(sampleVerifyScript, "Path.Combine(consumerRoot, \".deno-build\", \"import-map.generated.json\")");
+		StringAssert.Contains(sampleVerifyScript, "GetIsolatedBuildRoot(options.BaseOutputPath!, repoRoot: null)");
+		StringAssert.Contains(sampleVerifyScript, "GetIsolatedBuildRoot(options.BaseIntermediateOutputPath!, repoRoot: null)");
 	}
 
 	[TestMethod]
@@ -222,9 +234,12 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		var repoRoot = ResolveRepositoryRoot();
 		var sharedSamplesProps = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "Directory.Build.props"));
 		var multiProjectProps = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "Jazor.MultiProject", "Directory.Build.props"));
+		var piniaSampleProps = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "Directory.Build.props"));
 
 		StringAssert.Contains(sharedSamplesProps, "<LangVersion>preview</LangVersion>");
+		StringAssert.Contains(sharedSamplesProps, "<Import Project=\"..\\Directory.Build.props\"");
 		StringAssert.Contains(multiProjectProps, "<LangVersion>preview</LangVersion>");
+		StringAssert.Contains(piniaSampleProps, "<Import Project=\"..\\Directory.Build.props\" />");
 	}
 
 	[TestMethod]

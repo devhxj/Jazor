@@ -1,4 +1,6 @@
 <Project>
+  <Import Project="..\Directory.Build.props" Condition="Exists('..\Directory.Build.props')" />
+
   <PropertyGroup>
     <!-- Samples exercise native-union public APIs directly and must compile in preview mode. -->
     <LangVersion>preview</LangVersion>

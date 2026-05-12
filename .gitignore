@@ -419,6 +419,7 @@ CLAUDE.md
 .artifacts*/
 .tmp/
 .tmp*/
+.deno-build/
 .vs/
 .tmp-webidl-out/
 .test-obj/

@@ -90,17 +90,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: samples/ECMAScript.Pinia.Counter/pinia-consumer/package-lock.json
-
       - name: Verify sample smoke
         shell: pwsh
         run: |
-          ./samples/ECMAScript.Pinia.Counter/verify-smoke.ps1 `
+          dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs -- `
             -Configuration Release `
             -BaseOutputPath 'artifacts/out/pinia-sample/' `
             -BaseIntermediateOutputPath 'artifacts/obj/pinia-sample/'

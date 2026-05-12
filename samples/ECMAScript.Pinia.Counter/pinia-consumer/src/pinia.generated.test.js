@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import assert from "node:assert/strict";
 import { setActivePinia } from "pinia";
 import {
   createFactoryTestingRoot,
@@ -13,90 +13,92 @@ import {
   useHydrationStore
 } from "components/counter-hydration.mjs";
 
-describe("generated pinia sample modules", () => {
-  beforeEach(() => {
+function activateTestingRoot() {
     setActivePinia(createTestingRoot());
-  });
+}
 
-  it("seeds counter state through createTestingPinia()", () => {
+Deno.test("generated pinia sample modules seeds counter state through createTestingPinia()", () => {
+  activateTestingRoot();
     const store = useCounterStore();
 
-    expect(store.count).toBe(9);
-    expect(store.status).toBe("Seeded from createTestingPinia().");
-    expect(store.$state.persistedAt).toBe("testing:counter:typed");
-  });
+    assert.strictEqual(store.count, 9);
+    assert.strictEqual(store.status, "Seeded from createTestingPinia().");
+    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
+});
 
-  it("keeps increment live while decrement is stubbed by predicate", () => {
+Deno.test("generated pinia sample modules keeps increment live while decrement is stubbed by predicate", () => {
+  activateTestingRoot();
     const store = useCounterStore();
 
     store.increment();
-    expect(store.count).toBe(10);
-    expect(store.status).toBe("increment() updated the store.");
+    assert.strictEqual(store.count, 10);
+    assert.strictEqual(store.status, "increment() updated the store.");
 
     store.decrement();
-    expect(store.count).toBe(10);
-    expect(store.status).toBe("increment() updated the store.");
-  });
+    assert.strictEqual(store.count, 10);
+    assert.strictEqual(store.status, "increment() updated the store.");
+});
 
-  it("allows real patch/reset because the testing root disabled those stubs", () => {
+Deno.test("generated pinia sample modules allows real patch/reset because the testing root disabled those stubs", () => {
+  activateTestingRoot();
     const store = useCounterStore();
 
     store.$patch({
       count: 20,
-      status: "patched from vitest"
+      status: "patched from deno"
     });
-    expect(store.count).toBe(20);
-    expect(store.status).toBe("patched from vitest");
+    assert.strictEqual(store.count, 20);
+    assert.strictEqual(store.status, "patched from deno");
 
     store.$reset();
-    expect(store.count).toBe(2);
-    expect(store.status).toBe("Store seeded through defineStore().");
-  });
+    assert.strictEqual(store.count, 2);
+    assert.strictEqual(store.status, "Store seeded through defineStore().");
+});
 
-  it("supports combined typed testing options while keeping runtime shape unchanged", () => {
+Deno.test("generated pinia sample modules supports combined typed testing options while keeping runtime shape unchanged", () => {
     setActivePinia(createTypedTestingRoot());
 
     const store = useCounterStore();
 
-    expect(store.count).toBe(12);
-    expect(store.status).toBe("Seeded from combined typed createTestingPinia().");
-    expect(store.$state.persistedAt).toBe("testing:counter:typed");
+    assert.strictEqual(store.count, 12);
+    assert.strictEqual(store.status, "Seeded from combined typed createTestingPinia().");
+    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
 
     store.increment();
-    expect(store.count).toBe(12);
-    expect(store.status).toBe("Seeded from combined typed createTestingPinia().");
+    assert.strictEqual(store.count, 12);
+    assert.strictEqual(store.status, "Seeded from combined typed createTestingPinia().");
 
     store.decrement();
-    expect(store.count).toBe(11);
-    expect(store.status).toBe("decrement() updated the store.");
+    assert.strictEqual(store.count, 11);
+    assert.strictEqual(store.status, "decrement() updated the store.");
 
     store.$patch({
       count: 21,
       status: "typed root patch"
     });
-    expect(store.count).toBe(21);
-    expect(store.status).toBe("typed root patch");
-  });
+    assert.strictEqual(store.count, 21);
+    assert.strictEqual(store.status, "typed root patch");
+});
 
-  it("supports combined typed testing options through the explicit union factory path", () => {
+Deno.test("generated pinia sample modules supports combined typed testing options through the explicit union factory path", () => {
     setActivePinia(createFactoryTestingRoot());
 
     const store = useCounterStore();
 
-    expect(store.count).toBe(18);
-    expect(store.status).toBe("Seeded from combined typed factory createTestingPinia().");
-    expect(store.$state.persistedAt).toBe("testing:counter:typed");
+    assert.strictEqual(store.count, 18);
+    assert.strictEqual(store.status, "Seeded from combined typed factory createTestingPinia().");
+    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
 
     store.increment();
-    expect(store.count).toBe(19);
-    expect(store.status).toBe("increment() updated the store.");
+    assert.strictEqual(store.count, 19);
+    assert.strictEqual(store.status, "increment() updated the store.");
 
     store.decrement();
-    expect(store.count).toBe(19);
-    expect(store.status).toBe("increment() updated the store.");
-  });
+    assert.strictEqual(store.count, 19);
+    assert.strictEqual(store.status, "increment() updated the store.");
+});
 
-  it("can wrap the generated plugin callback with a JS spy", () => {
+Deno.test("generated pinia sample modules can wrap the generated plugin callback with a JS spy", () => {
     const pluginContext = {
       store: {
         $id: "counter",
@@ -105,57 +107,63 @@ describe("generated pinia sample modules", () => {
         }
       }
     };
-    const spy = vi.fn(installAuditPlugin);
+    let callCount = 0;
+    const spy = (context) => {
+      callCount += 1;
+      return installAuditPlugin(context);
+    };
 
     const extension = spy(pluginContext);
 
-    expect(spy).toHaveBeenCalledTimes(1);
-    expect(extension).toEqual({
+    assert.strictEqual(callCount, 1);
+    assert.deepStrictEqual(extension, {
       auditTag: "counter:audited"
     });
-    expect(pluginContext.store.$state.persistedAt).toBe("plugin:counter");
-  });
+    assert.strictEqual(pluginContext.store.$state.persistedAt, "plugin:counter");
+});
 
-  it("keeps setup-store client-only refs skipped from hydration while option-store hydrate receives seeded state", () => {
+Deno.test("generated pinia sample modules keeps setup-store client-only refs skipped from hydration while option-store hydrate receives seeded state", () => {
     setActivePinia(createConfiguredPinia());
 
     const setupStore = useHydrationStore();
     const optionStore = useHydrationOptionStore();
 
-    expect(setupStore.canHydrateClientOnlyNote()).toBe(false);
-    expect(setupStore.clientOnlyNote).toBe("client-only note seeded in setup store");
-    expect(optionStore.count).toBe(12);
-    expect(optionStore.status).toBe("serialized SSR payload -> hydrate(storeState, initialState)");
+    assert.strictEqual(setupStore.canHydrateClientOnlyNote(), false);
+    assert.strictEqual(setupStore.clientOnlyNote, "client-only note seeded in setup store");
+    assert.strictEqual(optionStore.count, 12);
+    assert.strictEqual(optionStore.status, "serialized SSR payload -> hydrate(storeState, initialState)");
 
     setupStore.refreshClientOnlyNote();
-    expect(setupStore.clientOnlyNote).toBe("client note refreshed at serialized SSR payload -> hydrate(storeState, initialState)");
-  });
+    assert.strictEqual(
+      setupStore.clientOnlyNote,
+      "client note refreshed at serialized SSR payload -> hydrate(storeState, initialState)"
+    );
+});
 
-  it("supports named stubActions plus stubbed patch/reset in a stricter testing root", () => {
+Deno.test("generated pinia sample modules supports named stubActions plus stubbed patch/reset in a stricter testing root", () => {
     setActivePinia(createStrictTestingRoot());
 
     const store = useCounterStore();
 
-    expect(store.count).toBe(15);
-    expect(store.status).toBe("Seeded from strict createTestingPinia().");
-    expect(store.$id).toBe("counter");
-    expect(store.$state.persistedAt).toBe("testing:counter:typed");
+    assert.strictEqual(store.count, 15);
+    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.$id, "counter");
+    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
 
     store.increment();
     store.decrement();
-    expect(store.count).toBe(15);
-    expect(store.status).toBe("Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.count, 15);
+    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
 
     store.$patch({
       count: 99,
       status: "should be blocked"
     });
-    expect(store.count).toBe(15);
-    expect(store.status).toBe("Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.count, 15);
+    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
 
     store.$reset();
-    expect(store.count).toBe(15);
-    expect(store.status).toBe("Seeded from strict createTestingPinia().");
-    expect(store.$state.persistedAt).toBe("testing:counter:typed");
-  });
+    assert.strictEqual(store.count, 15);
+    assert.strictEqual(store.status, "Seeded from strict createTestingPinia().");
+    assert.strictEqual(store.$state.persistedAt, "testing:counter:typed");
 });

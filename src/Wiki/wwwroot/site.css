@@ -681,20 +681,18 @@ pre {
 }
 
 .pager {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  justify-content: center;
   gap: 14px;
-}
-
-.pager-link,
-.pager-slot {
-  min-height: 104px;
 }
 
 .pager-link {
   display: grid;
   align-content: space-between;
   gap: 10px;
+  min-height: 104px;
+  flex: 1 1 0;
+  max-width: 340px;
   transition: transform 180ms ease, border-color 180ms ease;
 }
 
@@ -714,8 +712,7 @@ pre {
 }
 
 .pager-slot {
-  border-radius: var(--radius);
-  border: 1px dashed rgba(126, 194, 230, 0.12);
+  display: none;
 }
 
 .pager-link-single {
@@ -1293,9 +1290,17 @@ html[data-theme="light"] .reading-progress-track {
   .metric-grid,
   .check-grid,
   .route-grid,
-  .meta-grid,
-  .pager {
+  .meta-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pager {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pager-link {
+    max-width: 100%;
   }
 
   .section-title-row {
