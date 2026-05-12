@@ -3,11 +3,16 @@
 using System.Diagnostics;
 
 var explicitDenoExe = Environment.GetEnvironmentVariable("JAZOR_DENO_EXE");
+var consumerRoot = Path.GetDirectoryName(Path.GetDirectoryName(GetScriptPath()))
+    ?? throw new InvalidOperationException("Cannot determine Playground consumer root.");
 var denoExePath = !string.IsNullOrWhiteSpace(explicitDenoExe)
     ? ResolveExplicitDeno(explicitDenoExe)
-    : ResolveBundledDeno(FindRepositoryRoot(Directory.GetCurrentDirectory()));
+    : ResolveBundledDeno(FindRepositoryRoot(consumerRoot));
 
-await RunProcessAsync(denoExePath, args, Directory.GetCurrentDirectory());
+await RunProcessAsync(denoExePath, args, consumerRoot);
+
+static string GetScriptPath([System.Runtime.CompilerServices.CallerFilePath] string path = "")
+    => path;
 
 static string FindRepositoryRoot(string startDirectory)
 {

@@ -19,6 +19,8 @@ const expectedTexts = [
 
 export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements) {
   assertHostRequirements(hostRequirements);
+  const VApp = components.VApp;
+  const VMain = components.VMain;
 
   const pinia = createPinia();
   setActivePinia(pinia);
@@ -75,7 +77,13 @@ export async function runSsrSmoke(CatalogPage, DetailPage, hostRequirements) {
   const AppRoot = defineComponent({
     name: "PlaygroundSsrRoot",
     render() {
-      return h("div", { class: "playground-app-shell" }, [h(RouterView)]);
+      return h(VApp, { class: "playground-app-shell" }, {
+        default: () => [
+          h(VMain, { class: "playground-shell-main" }, {
+            default: () => [h(RouterView)]
+          })
+        ]
+      });
     }
   });
 

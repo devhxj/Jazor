@@ -1,0 +1,150 @@
+{
+  "AssemblyName": "Playground",
+  "GeneratedAtUtc": "2026-05-12T14:52:00.8932638Z",
+  "Modules": [
+    {
+      "AssemblyName": "Playground",
+      "ComponentId": "Playground.Shared.PlaygroundEmptyState",
+      "ModuleId": "components/playground-empty-state.vue",
+      "ComponentName": "PlaygroundEmptyState",
+      "RelativeModulePath": "components/playground-empty-state.vue",
+      "SourceMapPath": "components/playground-empty-state.vue.map",
+      "OriginMapPath": "components/playground-empty-state.vue.origins.json",
+      "Imports": [
+        "vue",
+        "vuetify/components"
+      ],
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "5EE38E6C483D9710F94D781757CCDE02A88FC6472089566F8CD9E3E4D8A0A3ED",
+      "TemplateHash": "56941A8B1590B2ACFE4E71D7F0C36CE201C8C04328DF27BAE1D836488A90A161",
+      "LogicHash": "B09EB96E1F7D8D4000212899716B6B1771176AE306449A64E12EA17C318BEE9F",
+      "ContentHash": "2DD87539465894D5F0FFA588F97724448C4C554B6093338EB9A91D8C0BB6BB3B",
+      "HmrBoundaryKind": 2,
+      "RequiresHydration": false,
+      "SupportsSsr": true,
+      "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "AssemblyName": "Playground",
+      "ComponentId": "Playground.Shared.PlaygroundExampleCard",
+      "ModuleId": "components/playground-example-card.vue",
+      "ComponentName": "PlaygroundExampleCard",
+      "RelativeModulePath": "components/playground-example-card.vue",
+      "SourceMapPath": "components/playground-example-card.vue.map",
+      "OriginMapPath": "components/playground-example-card.vue.origins.json",
+      "Imports": [
+        "vue",
+        "vuetify/components"
+      ],
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "36B648E0E9EF3160E31A36D84C22E9069ACB66259BA621E75A411E0062A1782C",
+      "TemplateHash": "8DB7EF1FC8BFC36B2FA23780A5EAC20173A6A62A9B43E7BF41BBFF3202DB2E0C",
+      "LogicHash": "AA762F8C74A842755C78FDF024FED321F1D087E0BF53C96E33484E81D169DB37",
+      "ContentHash": "E634DC64D3A2DCADB840CF503B959B4ED5C0358CB8818E0BCA36C82F30F5A486",
+      "HmrBoundaryKind": 2,
+      "RequiresHydration": false,
+      "SupportsSsr": true,
+      "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "AssemblyName": "Playground",
+      "ComponentId": "Playground.Shared.PlaygroundStatCard",
+      "ModuleId": "components/playground-stat-card.vue",
+      "ComponentName": "PlaygroundStatCard",
+      "RelativeModulePath": "components/playground-stat-card.vue",
+      "SourceMapPath": "components/playground-stat-card.vue.map",
+      "OriginMapPath": "components/playground-stat-card.vue.origins.json",
+      "Imports": [
+        "vue",
+        "vuetify/components"
+      ],
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "2456731C119089DB9E8D0EA40EB568FE15E791CA9A52C77F3CED8FBD76C72E43",
+      "TemplateHash": "B5717F096F1E0FDF46509B6A6EDBD0DCE4A9C99A4323D493D0E8C66BEDDDADCE",
+      "LogicHash": "3829787FD8AF00355740B09FD89AF2E457D7E0622C01A7A9F0740040F5B82A93",
+      "ContentHash": "20AF067FDF5F715E58ECF531DAF3EBE733B088B36899E2F49431F99CF1B5AE73",
+      "HmrBoundaryKind": 2,
+      "RequiresHydration": false,
+      "SupportsSsr": true,
+      "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "AssemblyName": "Playground",
+      "ComponentId": "Playground.Pages.PlaygroundCatalogPage",
+      "ModuleId": "pages/playground-catalog-page.vue",
+      "ComponentName": "PlaygroundCatalogPage",
+      "RelativeModulePath": "pages/playground-catalog-page.vue",
+      "SourceMapPath": "pages/playground-catalog-page.vue.map",
+      "OriginMapPath": "pages/playground-catalog-page.vue.origins.json",
+      "Imports": [
+        "vue",
+        "vuetify/components",
+        "../components/playground-stat-card.vue",
+        "../components/playground-empty-state.vue",
+        "../components/playground-example-card.vue"
+      ],
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "ACA14B088E7DB6D3C40A19DFBCD7F753B53E204764556A0D8E54B4F5FF85A678",
+      "TemplateHash": "CF21D6DF43E495A1182480FE9FA29CE1F1DF39703CA1A7A09B2C97EA05B2625F",
+      "LogicHash": "FDFED998605C2BEC06B923D2251DF1C8F1DF74E203FA4387E459DBE605B01CFE",
+      "ContentHash": "DB80BFD67377BD9A8989F67DCCC379EBEBD1853E76C059DF2F21CD84260B8AF5",
+      "HmrBoundaryKind": 2,
+      "RequiresHydration": false,
+      "SupportsSsr": true,
+      "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    },
+    {
+      "AssemblyName": "Playground",
+      "ComponentId": "Playground.Pages.PlaygroundDetailPage",
+      "ModuleId": "pages/playground-detail-page.vue",
+      "ComponentName": "PlaygroundDetailPage",
+      "RelativeModulePath": "pages/playground-detail-page.vue",
+      "SourceMapPath": "pages/playground-detail-page.vue.map",
+      "OriginMapPath": "pages/playground-detail-page.vue.origins.json",
+      "Imports": [
+        "vue",
+        "vuetify/components"
+      ],
+      "Styles": [
+        "vuetify/styles"
+      ],
+      "PluginRequirements": [
+        "vuetify"
+      ],
+      "DescriptorHash": "26A6E8F19AF9B0AF26631ECA440541D6F23ACB04FA89728BEE2F79D01F9A627E",
+      "TemplateHash": "68B561B846CB3036904F38A693230534D0E406B3B307C96E8DE5BB4787CF67B4",
+      "LogicHash": "4E33D55FD6CEF6DA63B24340373F84CF027251D2416F10A6709C9CB318718A55",
+      "ContentHash": "CFC6FFDC952BEFAD8ECEDFA5EB29CC2D73FCE3B0A301348D09E9558D0D5FE2D2",
+      "HmrBoundaryKind": 2,
+      "RequiresHydration": false,
+      "SupportsSsr": true,
+      "StyleHash": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+    }
+  ],
+  "Styles": [
+    "vuetify/styles"
+  ],
+  "PluginRequirements": [
+    "vuetify"
+  ]
+}

@@ -44,9 +44,12 @@ const detailComponentName = "PlaygroundDetailPage";
 export async function prepareWorkspace(production: boolean): Promise<PreparedWorkspace> {
   const hostJazorRoot = resolvePathFromEnvironment(
     "RAZORVUE_HOST_JAZOR_ROOT",
-    resolve(consumerRoot, "..", "Playground", "wwwroot", "jazor")
+    resolve(consumerRoot, "..", "Playground", "jazor")
   );
-  const hostWwwrootRoot = resolve(hostJazorRoot, "..");
+  const hostWwwrootRoot = resolvePathFromEnvironment(
+    "RAZORVUE_HOST_WWWROOT_ROOT",
+    resolve(consumerRoot, "..", "Playground", "wwwroot")
+  );
   const buildRoot = resolvePathFromEnvironment("RAZORVUE_BUILD_ROOT", resolve(consumerRoot, ".deno-build"));
   const browserGeneratedRoot = resolve(buildRoot, "generated-browser");
   const ssrGeneratedRoot = resolve(buildRoot, "generated-ssr");

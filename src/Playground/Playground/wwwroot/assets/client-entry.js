@@ -42574,9 +42574,9 @@ function render6(_ctx, _cache, $props, $setup, $data, $options) {
 _sfc_main5.render = render6;
 var playground_detail_page_default = _sfc_main5;
 
-// ../Playground/wwwroot/jazor/__jazor/razorvue-host.mjs
+// ../Playground/jazor/__jazor/razorvue-host.mjs
 var razorVueHostAssemblyName = "Playground";
-var razorVueHostGeneratedAtUtc = "2026-05-12T14:08:50.6834507Z";
+var razorVueHostGeneratedAtUtc = "2026-05-12T14:52:00.8932638Z";
 var razorVueStyles = Object.freeze([
   "vuetify/styles"
 ]);
@@ -51500,6 +51500,8 @@ function shouldHandleClientRoute(pathname) {
 // src/bootstrap-app.js
 function mountPlaygroundApp(CatalogPage, DetailPage, hostRequirements, selector = "#app") {
   assertHostRequirements(hostRequirements);
+  const VApp2 = VApp;
+  const VMain2 = VMain;
   const pinia = createPinia();
   const router = createRouter({
     history: createWebHistory(resolveBaseHref()),
@@ -51523,41 +51525,45 @@ function mountPlaygroundApp(CatalogPage, DetailPage, hostRequirements, selector 
         }
         return "playground-app--ready";
       });
-      return () => h("div", {
+      return () => h(VApp2, {
         class: [
           "playground-app-shell",
           appStateClass.value
         ]
-      }, [
-        h("div", {
-          class: "playground-app-shell__backdrop"
-        }),
-        h("div", {
-          class: "playground-app-shell__content"
-        }, [
-          h("header", {
-            class: "playground-shell-topbar"
+      }, {
+        default: () => [
+          h("div", {
+            class: "playground-app-shell__backdrop"
+          }),
+          h("div", {
+            class: "playground-app-shell__content"
           }, [
-            h("div", {
-              class: "playground-shell-topbar__brand"
-            }, "Playground"),
-            h("div", {
-              class: "playground-shell-topbar__meta"
+            h("header", {
+              class: "playground-shell-topbar"
             }, [
-              h("span", null, "RazorVue"),
-              h("span", null, "Vuetify"),
-              h("span", null, "Pinia"),
-              h("span", null, "Vue Router"),
-              h("span", null, "ASP.NET Core")
-            ])
-          ]),
-          h("main", {
-            class: "playground-shell-main"
-          }, [
-            h(RouterView)
+              h("div", {
+                class: "playground-shell-topbar__brand"
+              }, "Playground"),
+              h("div", {
+                class: "playground-shell-topbar__meta"
+              }, [
+                h("span", null, "RazorVue"),
+                h("span", null, "Vuetify"),
+                h("span", null, "Pinia"),
+                h("span", null, "Vue Router"),
+                h("span", null, "ASP.NET Core")
+              ])
+            ]),
+            h(VMain2, {
+              class: "playground-shell-main"
+            }, {
+              default: () => [
+                h(RouterView)
+              ]
+            })
           ])
-        ])
-      ]);
+        ]
+      });
     }
   });
   const app = createApp(AppRoot);

@@ -9,7 +9,7 @@
     <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
     <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
     <JazorEmit>true</JazorEmit>
-    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+    <JazorOutDir>$(MSBuildProjectDirectory)\jazor\</JazorOutDir>
     <JazorBundle>false</JazorBundle>
     <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\..\Jazor.Emit\bin\$(Configuration)\net11.0\Jazor.Emit.dll</JazorEmitToolPath>
   </PropertyGroup>
@@ -17,10 +17,10 @@
   <Import Project="..\..\Jazor\buildTransitive\Jazor.props" />
 
   <ItemGroup>
-    <Compile Remove="wwwroot\jazor\**" />
-    <Content Remove="wwwroot\jazor\**" />
-    <EmbeddedResource Remove="wwwroot\jazor\**" />
-    <None Remove="wwwroot\jazor\**" />
+    <Compile Remove="jazor\**" />
+    <Content Remove="jazor\**" />
+    <EmbeddedResource Remove="jazor\**" />
+    <None Remove="jazor\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +49,22 @@
       <Analyzer Include="$(MSBuildProjectDirectory)\..\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="PublishPlaygroundJazorArtifacts" AfterTargets="Publish" Condition="'$(JazorEmit)' == 'true' and Exists('$(JazorOutDir)')">
+    <PropertyGroup>
+      <_PlaygroundPublishedJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'wwwroot', 'jazor'))</_PlaygroundPublishedJazorRoot>
+      <_PlaygroundPublishedLocalJazorRoot>$([System.IO.Path]::Combine('$(PublishDir)', 'jazor'))</_PlaygroundPublishedLocalJazorRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_PlaygroundJazorArtifact Include="$(JazorOutDir)**\*" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(_PlaygroundPublishedJazorRoot)" />
+    <MakeDir Directories="$(_PlaygroundPublishedJazorRoot)" />
+    <Copy SourceFiles="@(_PlaygroundJazorArtifact)" DestinationFiles="@(_PlaygroundJazorArtifact->'$(_PlaygroundPublishedJazorRoot)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <RemoveDir Directories="$(_PlaygroundPublishedLocalJazorRoot)" Condition="Exists('$(_PlaygroundPublishedLocalJazorRoot)')" />
   </Target>
 
   <Import Project="..\..\Jazor\buildTransitive\Jazor.targets" />

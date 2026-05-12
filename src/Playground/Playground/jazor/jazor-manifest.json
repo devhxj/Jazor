@@ -1,0 +1,356 @@
+{
+  "RootAssemblyPath": "D:\\repository\\own\\jazor\\Jazor\\src\\Playground\\Playground\\bin\\Debug\\net11.0\\Playground.dll",
+  "GeneratedAtUtc": "2026-05-12T14:52:00.844027Z",
+  "Modules": [
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ArrayModule\u003CT\u003E",
+      "Id": "Jazor.CLR.ArrayModule\u003CT\u003E",
+      "RelativePath": "System/ArrayModule.js",
+      "Hash": "bb10f98907480eb260c888c8351367532cabcaf3a3daff006a8fd05633f23868"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.BooleanModule",
+      "Id": "Jazor.CLR.BooleanModule",
+      "RelativePath": "System/BooleanModule.js",
+      "Hash": "67c58f1f01bd71658cb9b40f9d15055d74b600fee31b5e492683a3d55efb8d8e"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ByteModule",
+      "Id": "Jazor.CLR.ByteModule",
+      "RelativePath": "System/ByteModule.js",
+      "Hash": "ea7ace7c0d4669d2aa082202b82a28c5d075a58e3b551df852571b6b6e86288b"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.CharModule",
+      "Id": "Jazor.CLR.CharModule",
+      "RelativePath": "System/CharModule.js",
+      "Hash": "469c416a38de50e151b0a6808ac9f1e40d65be5a1574fca98ec6edc83ddbf39d"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ComparerT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.ComparerT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/ComparerT1Module.js",
+      "Hash": "e2a9db4eb389aa75ec9c17208f91b683225b93750f69d94c4b4e9b4c4cbf0ffe"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.DictionaryT2Module\u003CTKey, TValue\u003E",
+      "Id": "Jazor.CLR.DictionaryT2Module\u003CTKey, TValue\u003E",
+      "RelativePath": "System/Collections/Generic/DictionaryT2Module.js",
+      "Hash": "b94ea6d6291f70cad63408037b6eb5584e856f47b4c962c182dd524db71739fd"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.EqualityComparerT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.EqualityComparerT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/EqualityComparerT1Module.js",
+      "Hash": "620b19cec43b4afc049178d2a72b4f0f6e52889ba839ce215fdeda30d277bb90"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.HashSetT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.HashSetT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/HashSetT1Module.js",
+      "Hash": "725ead551c51545f01e6ca2663f86073e4cc9f0ca95e850eb4ae603e54bc34f0"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ICollectionT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.ICollectionT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/ICollectionT1Module.js",
+      "Hash": "f668e6326a8a9a0c8e9a13ab7a4448843edaaeb3cf5474b64dfccd41a775329d"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IComparerT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.IComparerT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/IComparerT1Module.js",
+      "Hash": "2468e8e7d85b54328148540aa7a5a4450014d77633a7aca538c55b4d4086e608"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IDictionaryT2Module\u003CTKey, TValue\u003E",
+      "Id": "Jazor.CLR.IDictionaryT2Module\u003CTKey, TValue\u003E",
+      "RelativePath": "System/Collections/Generic/IDictionaryT2Module.js",
+      "Hash": "904f11876f07ee66e060560901257db36aa5fb107d9c13775b10a335d321081d"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IEqualityComparerT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.IEqualityComparerT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/IEqualityComparerT1Module.js",
+      "Hash": "ba40cddca137f9abe753e61ee1cf792114c32d56d8f064d8493a21f0986b3b0c"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IListT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.IListT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/IListT1Module.js",
+      "Hash": "25e5c5764ad05f39d632b047ebbd9c50f826d457e2e1587cfe38dac61b3bb212"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ISetT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.ISetT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/ISetT1Module.js",
+      "Hash": "fd94050d7e6706869d10e496e0d40f3661f1b87ec169efcc3451bd155e8ebc8d"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ListT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.ListT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/ListT1Module.js",
+      "Hash": "5e864c9960b07d7b8f897bbd2c110b4b973c08164e71c98d1ad48194821abb1f"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.QueueT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.QueueT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/QueueT1Module.js",
+      "Hash": "ae1805e6d9ed98f32c8fe20992bf65edcab79af51c993a3bb49358d77aedf597"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.StackT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.StackT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/Generic/StackT1Module.js",
+      "Hash": "67c163adcbf7acb5f9f5122e6e5e26ca4d5dd69832e2f5b3214e0544bbbf993a"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ICollectionModule",
+      "Id": "Jazor.CLR.ICollectionModule",
+      "RelativePath": "System/Collections/ICollectionModule.js",
+      "Hash": "5e9a0f8c0d29f74a5b8e74d27f76e9cdcf48b6366ccbea7cf958cb7691472a01"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IComparerModule",
+      "Id": "Jazor.CLR.IComparerModule",
+      "RelativePath": "System/Collections/IComparerModule.js",
+      "Hash": "9ec45b1a269c355fd21a13110a4cb265f3552187ba541e7162dc1261b936e56c"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IEqualityComparerModule",
+      "Id": "Jazor.CLR.IEqualityComparerModule",
+      "RelativePath": "System/Collections/IEqualityComparerModule.js",
+      "Hash": "906b47ce289cc35f231104c2f6d53be7f64573d72ede54e425dcdcbfe133ce5f"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IListModule",
+      "Id": "Jazor.CLR.IListModule",
+      "RelativePath": "System/Collections/IListModule.js",
+      "Hash": "83e9fd73bc990620807609adb2c1ae1bfbf6e514dd09385dcd96f880545de65e"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ReadOnlyCollectionT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.ReadOnlyCollectionT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/ObjectModel/ReadOnlyCollectionT1Module.js",
+      "Hash": "2b116f58e837b45eb43b18892b9f5e2faf37b0972153de040bb989ea0c473f8a"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ReadOnlyDictionaryT2Module\u003CTKey, TValue\u003E",
+      "Id": "Jazor.CLR.ReadOnlyDictionaryT2Module\u003CTKey, TValue\u003E",
+      "RelativePath": "System/Collections/ObjectModel/ReadOnlyDictionaryT2Module.js",
+      "Hash": "ac16d5e30dc4b719cf433410e06261e3c2b280902580451225ce0f967c56dbce"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ReadOnlySetT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.ReadOnlySetT1Module\u003CT\u003E",
+      "RelativePath": "System/Collections/ObjectModel/ReadOnlySetT1Module.js",
+      "Hash": "c20969291874966afdfe25c581934abe40310c6eb878ef974a9129f2e1d617ef"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.DateOnlyModule",
+      "Id": "Jazor.CLR.DateOnlyModule",
+      "RelativePath": "System/DateOnlyModule.js",
+      "Hash": "b2b4da7127ccdefc36b6449ab0bf8dff631866a5cd3a39b2c29ab200c0275b08"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.DateTimeModule",
+      "Id": "Jazor.CLR.DateTimeModule",
+      "RelativePath": "System/DateTimeModule.js",
+      "Hash": "1a3697c8548aa76121be23ee1ea11deaafb270633b5e07962144390008e6a441"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.DateTimeOffsetModule",
+      "Id": "Jazor.CLR.DateTimeOffsetModule",
+      "RelativePath": "System/DateTimeOffsetModule.js",
+      "Hash": "80170f89b1e462905e16c847d9661f8ff3f5dbed36e2055f333300aed0374014"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.DecimalModule",
+      "Id": "Jazor.CLR.DecimalModule",
+      "RelativePath": "System/DecimalModule.js",
+      "Hash": "5551b53fea3ac9699615d77737eac7647abc599d48f6dbd98145bda19b7ffbc4"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.DoubleModule",
+      "Id": "Jazor.CLR.DoubleModule",
+      "RelativePath": "System/DoubleModule.js",
+      "Hash": "7c9d0749263b2fef85c033a63e5aa4c938674b6c0fa5bb17bafdd675b5b1e715"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.CalendarModule",
+      "Id": "Jazor.CLR.CalendarModule",
+      "RelativePath": "System/Globalization/CalendarModule.js",
+      "Hash": "fa40cc2ced156602f6e0453d76e998a06e991954bfc3f9242a4f78c65719ad4f"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.CultureInfoModule",
+      "Id": "Jazor.CLR.CultureInfoModule",
+      "RelativePath": "System/Globalization/CultureInfoModule.js",
+      "Hash": "78069f653ff761583e9bd06b4c78406b30afa9f3c6846716ec1ee8024947948b"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.GregorianCalendarModule",
+      "Id": "Jazor.CLR.GregorianCalendarModule",
+      "RelativePath": "System/Globalization/GregorianCalendarModule.js",
+      "Hash": "a4c079ded19b94fdfb89385037529b5050193d2fb3308f3d4ee90437e68a18d9"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IComparableModule",
+      "Id": "Jazor.CLR.IComparableModule",
+      "RelativePath": "System/IComparableModule.js",
+      "Hash": "56aa8130d9284872024c831ded9c75d62e1d49c33aacded8ccca8a9514f0e58c"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.IComparableT1Module\u003CT\u003E",
+      "Id": "Jazor.CLR.IComparableT1Module\u003CT\u003E",
+      "RelativePath": "System/IComparableT1Module.js",
+      "Hash": "b2fe96dfecc0f585bd6e827d7c63303174d4d707d1082ba7be2a9e89a629112d"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.Int16Module",
+      "Id": "Jazor.CLR.Int16Module",
+      "RelativePath": "System/Int16Module.js",
+      "Hash": "6c400402bb8a9dfbba0f593ea1485952148493ec00bc2fc3ca0265ed9cdd2f0f"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.Int32Module",
+      "Id": "Jazor.CLR.Int32Module",
+      "RelativePath": "System/Int32Module.js",
+      "Hash": "5160b4fd3dbfb09ef136eba53ddd54f97a7ffb2a2583fe8c970b991da71e1a89"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.Int64Module",
+      "Id": "Jazor.CLR.Int64Module",
+      "RelativePath": "System/Int64Module.js",
+      "Hash": "03f8ee5f94b06f009d0bd845d35074f1a168af6ce9ffe6fe9fe363089b49034d"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.EnumerableModule\u003CTSource\u003E",
+      "Id": "Jazor.CLR.EnumerableModule\u003CTSource\u003E",
+      "RelativePath": "System/Linq/EnumerableModule.js",
+      "Hash": "28a1265b4dcb1602aa214e320bad6d141e44d140820dec66c6600f8ca0904fe6"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.MathModule",
+      "Id": "Jazor.CLR.MathModule",
+      "RelativePath": "System/MathModule.js",
+      "Hash": "95fb40fe1898ab89552ef0afa553c740293c743504892808cb3078a24f5e2787"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.BigIntegerModule",
+      "Id": "Jazor.CLR.BigIntegerModule",
+      "RelativePath": "System/Numerics/BigIntegerModule.js",
+      "Hash": "021f1955d8639cd26934829db724c09319ae9c7763a079493719a7102955b419"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.ConditionalWeakTableT2Module\u003CTKey, TValue\u003E",
+      "Id": "Jazor.CLR.ConditionalWeakTableT2Module\u003CTKey, TValue\u003E",
+      "RelativePath": "System/Runtime/CompilerServices/ConditionalWeakTableT2Module.js",
+      "Hash": "c9587b9ddc225e70085c812f75ff1bd00a16cef47a59e617b77d60a8daf51582"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.RuntimeModule",
+      "Id": "Jazor.CLR.RuntimeModule",
+      "RelativePath": "System/RuntimeModule.js",
+      "Hash": "0b42e2f4326cb2b2a054d2cb5f3ba1c5edb62fa16916f3eb78ed2c305bd72025"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.SByteModule",
+      "Id": "Jazor.CLR.SByteModule",
+      "RelativePath": "System/SByteModule.js",
+      "Hash": "2d7040276318f126f591abd02a847056d4d5c2e2a38736be5b1041e6beca39fa"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.SingleModule",
+      "Id": "Jazor.CLR.SingleModule",
+      "RelativePath": "System/SingleModule.js",
+      "Hash": "9b51265f1b4b9d75004d0e1eabaa7d79b9b018d3773e0b5bf9c6c0b73f995eb4"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.StringModule",
+      "Id": "Jazor.CLR.StringModule",
+      "RelativePath": "System/StringModule.js",
+      "Hash": "03083aca2a1266d64f37b8a2414c4c02751067650700ca2ae16b61b53aa92fb5"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.TimeOnlyModule",
+      "Id": "Jazor.CLR.TimeOnlyModule",
+      "RelativePath": "System/TimeOnlyModule.js",
+      "Hash": "be00db45eb2d01611927d97963c51b750a5e1f6407fb8a842948ff4b721aedb8"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.TimeSpanModule",
+      "Id": "Jazor.CLR.TimeSpanModule",
+      "RelativePath": "System/TimeSpanModule.js",
+      "Hash": "e713ad7bdbc7f7179f642a2fbe8d1fdf405039234206f241571560c6e7bde2c0"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.UInt16Module",
+      "Id": "Jazor.CLR.UInt16Module",
+      "RelativePath": "System/UInt16Module.js",
+      "Hash": "4d4da9f4fa9c06dbd929540c88688c52ddaaec564955e333bf43e042d25a1d59"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.UInt32Module",
+      "Id": "Jazor.CLR.UInt32Module",
+      "RelativePath": "System/UInt32Module.js",
+      "Hash": "5853c474020f0a6acb36e9bf24fa3d50d023a9de145327e831044f4e0ef19204"
+    },
+    {
+      "AssemblyName": "ECMAScript",
+      "TypeName": "Jazor.CLR.UInt64Module",
+      "Id": "Jazor.CLR.UInt64Module",
+      "RelativePath": "System/UInt64Module.js",
+      "Hash": "4ad0cc4a504590349edbbf0ae11600186edbd0630c6e1d04a9ac30a79933e2a7"
+    }
+  ]
+}

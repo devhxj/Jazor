@@ -11,6 +11,8 @@ import { assertHostRequirements, installShellNavigationInterception } from "./ru
 
 export function mountPlaygroundApp(CatalogPage, DetailPage, hostRequirements, selector = "#app") {
   assertHostRequirements(hostRequirements);
+  const VApp = components.VApp;
+  const VMain = components.VMain;
 
   const pinia = createPinia();
   const router = createRouter({
@@ -39,28 +41,30 @@ export function mountPlaygroundApp(CatalogPage, DetailPage, hostRequirements, se
       });
 
       return () => h(
-        "div",
+        VApp,
         {
           class: ["playground-app-shell", appStateClass.value]
         },
-        [
-          h("div", { class: "playground-app-shell__backdrop" }),
-          h("div", { class: "playground-app-shell__content" }, [
-            h("header", { class: "playground-shell-topbar" }, [
-              h("div", { class: "playground-shell-topbar__brand" }, "Playground"),
-              h("div", { class: "playground-shell-topbar__meta" }, [
-                h("span", null, "RazorVue"),
-                h("span", null, "Vuetify"),
-                h("span", null, "Pinia"),
-                h("span", null, "Vue Router"),
-                h("span", null, "ASP.NET Core")
-              ])
-            ]),
-            h("main", { class: "playground-shell-main" }, [
-              h(RouterView)
+        {
+          default: () => [
+            h("div", { class: "playground-app-shell__backdrop" }),
+            h("div", { class: "playground-app-shell__content" }, [
+              h("header", { class: "playground-shell-topbar" }, [
+                h("div", { class: "playground-shell-topbar__brand" }, "Playground"),
+                h("div", { class: "playground-shell-topbar__meta" }, [
+                  h("span", null, "RazorVue"),
+                  h("span", null, "Vuetify"),
+                  h("span", null, "Pinia"),
+                  h("span", null, "Vue Router"),
+                  h("span", null, "ASP.NET Core")
+                ])
+              ]),
+              h(VMain, { class: "playground-shell-main" }, {
+                default: () => [h(RouterView)]
+              })
             ])
-          ])
-        ]
+          ]
+        }
       );
     }
   });
