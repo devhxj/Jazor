@@ -12,6 +12,7 @@ internal static class PlaygroundHostPage
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jazor Playground</title>
   <meta name="description" content="Production-style RazorVue + Vuetify + Pinia + VueRoute + ASP.NET Core playground." />
+  <link rel="stylesheet" href="/assets/client-entry.css" />
 </head>
 <body>
   <div id="app"></div>

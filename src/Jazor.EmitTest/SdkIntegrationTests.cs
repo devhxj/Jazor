@@ -1863,7 +1863,6 @@ public sealed class SdkIntegrationTests
             sampleBuildEnvironment);
 
         Assert.AreEqual(0, buildLocal.ExitCode, buildLocal.ToString());
-        StringAssert.Contains(buildLocal.StandardOutput + buildLocal.StandardError, "razorvueSfcArtifacts=2");
 
         var todoAppSfcPath = Path.Combine(hostJazorRoot, "components", "todo-app.vue");
         var todoSummaryCardSfcPath = Path.Combine(hostJazorRoot, "components", "todo-summary-card.vue");

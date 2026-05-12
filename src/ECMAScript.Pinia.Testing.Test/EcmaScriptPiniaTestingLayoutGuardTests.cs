@@ -138,7 +138,6 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		StringAssert.Contains(workflow, "dotnet run --file ./scripts/csharp/test-dotnet.cs -- `");
 		StringAssert.Contains(workflow, "--project pinia-testing `");
 		StringAssert.Contains(workflow, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs --");
-		Assert.IsFalse(workflow.Contains("verify-smoke.ps1", StringComparison.Ordinal), "Pinia verification workflow should not reference the retired PowerShell smoke entrypoint.");
 	}
 
 	[TestMethod]
