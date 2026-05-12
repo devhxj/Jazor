@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -110,10 +112,13 @@ jobs:
         id: release_notes
         shell: pwsh
         run: |
-          $tag = '${{ github.ref_name }}'
-          $prevTag = git tag --sort=-creatordate | Select-String -NotMatch "^$tag$" | Select-Object -First 1
-          if ($LASTEXITCODE -ne 0 -or -not $prevTag) { $prevTag = "" }
-          "prev_tag=$prevTag" >> $env:GITHUB_OUTPUT
+          New-Item -ItemType Directory -Path 'artifacts' -Force | Out-Null
+          $notesPath = Join-Path (Resolve-Path 'artifacts') 'release-notes.md'
+          pwsh './scripts/release-notes.ps1' `
+            -Tag '${{ github.ref_name }}' `
+            -Repository '${{ github.repository }}' |
+            Set-Content -LiteralPath $notesPath -Encoding UTF8
+          "notes_path=$notesPath" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -122,18 +127,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $tag = '${{ github.ref_name }}'
-          $version = '${{ steps.package.outputs.version }}'
-          $prevTag = '${{ steps.release_notes.outputs.prev_tag }}'
-
-          if ($prevTag) {
-            $notes = gh api "repos/${{ github.repository }}/releases/generate-notes" -f tag_name="$tag" -f previous_tag="$prevTag" --jq '.body'
-          } else {
-            $notes = "Release $version"
-          }
+          $notesPath = '${{ steps.release_notes.outputs.notes_path }}'
 
           gh release view $tag --repo "${{ github.repository }}" *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release edit $tag --repo "${{ github.repository }}" --title $tag --notes $notes --latest
+            gh release edit $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
           } else {
-            gh release create $tag --repo "${{ github.repository }}" --title $tag --notes $notes --latest
+            gh release create $tag --repo "${{ github.repository }}" --title $tag --notes-file $notesPath --latest
           }
