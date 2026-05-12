@@ -17,7 +17,7 @@ Jazor is a C#-to-JavaScript compiler that translates Roslyn `IOperation` semanti
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.15" />
+  <PackageReference Include="Jazor" Version="0.1.22" />
 </ItemGroup>
 ```
 
@@ -29,7 +29,7 @@ Every project that declares `[ECMAScriptModule]` must reference `Jazor`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.15" />
+  <PackageReference Include="Jazor" Version="0.1.22" />
 </ItemGroup>
 ```
 
@@ -41,7 +41,7 @@ The final executable or web host project enables emit and optionally bundling:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="0.1.15" />
+  <PackageReference Include="Jazor" Version="0.1.22" />
 </ItemGroup>
 
 <PropertyGroup>
