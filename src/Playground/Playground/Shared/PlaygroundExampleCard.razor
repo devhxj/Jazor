@@ -1,0 +1,44 @@
+<VCard class="playground-example-card" Variant="@VuetifyVariant.Outlined">
+    <VCardText>
+        <div class="playground-example-card__topline">
+            <VChip Size='@("small")' Color="primary" Text="@Example.Category" />
+            <span class="playground-example-card__runtime">@Example.Runtime</span>
+        </div>
+
+        <div class="playground-example-card__title-row">
+            <a class="playground-example-card__title" href="@DetailHref">@Example.Title</a>
+            <div>
+                @if (Example.Featured)
+                {
+                    <VChip Size='@("x-small")' Color="warning" Text='@("Featured")' />
+                }
+                @if (Example.IsFavorite)
+                {
+                    <VChip Size='@("x-small")' Color="secondary" Text='@("Saved")' />
+                }
+            </div>
+        </div>
+
+        <p class="playground-example-card__summary">@Example.Summary</p>
+
+        <div class="playground-example-card__meta">
+            <span>@Example.Difficulty</span>
+            <span>@(Example.EstimatedMinutes + " min")</span>
+        </div>
+
+        <div class="playground-example-card__tags">
+            @foreach (var tag in Example.Tags)
+            {
+                <VChip Size='@("x-small")' Variant="@VuetifyVariant.Text" Text="@tag" />
+            }
+        </div>
+    </VCardText>
+
+    <VDivider />
+
+    <VCardActions>
+        <VBtn Variant="@VuetifyVariant.Text"
+              Text='@("Open example")'
+              Href="@DetailHref" />
+    </VCardActions>
+</VCard>

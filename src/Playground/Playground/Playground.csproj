@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RazorLangVersion>11.0</RazorLangVersion>
+    <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
+    <JazorRazorVueOutputMode>sfc</JazorRazorVueOutputMode>
+    <JazorRazorVueEnableRazorSgIntegration>true</JazorRazorVueEnableRazorSgIntegration>
+    <JazorEmit>true</JazorEmit>
+    <JazorOutDir>$(MSBuildProjectDirectory)\wwwroot\jazor\</JazorOutDir>
+    <JazorBundle>false</JazorBundle>
+    <JazorEmitToolPath>$(MSBuildProjectDirectory)\..\..\Jazor.Emit\bin\$(Configuration)\net11.0\Jazor.Emit.dll</JazorEmitToolPath>
+  </PropertyGroup>
+
+  <Import Project="..\..\Jazor\buildTransitive\Jazor.props" />
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\jazor\**" />
+    <Content Remove="wwwroot\jazor\**" />
+    <EmbeddedResource Remove="wwwroot\jazor\**" />
+    <None Remove="wwwroot\jazor\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ECMAScript\ECMAScript.csproj" />
+    <ProjectReference Include="..\..\ECMAScript.Vue3\ECMAScript.Vue3.csproj" />
+    <ProjectReference Include="..\..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
+    <ProjectReference Include="..\..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
+    <ProjectReference Include="..\..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
+    <ProjectReference Include="..\..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
+    <ProjectReference Include="..\..\Jazor.Common\Jazor.Common.csproj" />
+    <ProjectReference Include="..\..\Jazor.RazorVue\Jazor.RazorVue.csproj" />
+    <ProjectReference Include="..\..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
+    <ProjectReference Include="..\..\Jazor.CLR\Jazor.CLR.csproj" />
+    <ProjectReference Include="..\..\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\..\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="AddLocalJazorAnalyzerDependencies" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
+      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
+      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="..\..\Jazor\buildTransitive\Jazor.targets" />
+</Project>

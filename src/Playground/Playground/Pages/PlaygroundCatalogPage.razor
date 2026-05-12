@@ -1,0 +1,95 @@
+<div class="playground-page-catalog">
+    <VContainer Fluid="true">
+    <div class="playground-hero">
+    <VRow Align="center">
+        <VCol Cols="12" Lg="7">
+            <div class="playground-hero__eyebrow">Library Mode Showcase</div>
+            <h1 class="playground-hero__title">RazorVue + Vuetify + Pinia + VueRoute on ASP.NET Core</h1>
+            <p class="playground-hero__body">
+                Playground is a production-style catalog app that proves the library-mode route:
+                RazorVue authors the UI, ASP.NET Core serves APIs and static assets, and the Deno consumer wires Vue runtime concerns.
+            </p>
+        </VCol>
+        <VCol Cols="12" Lg="5">
+            <VRow>
+                <VCol Cols="12" Sm="4">
+                    <PlaygroundStatCard Eyebrow="Examples"
+                                        Value="@Model.TotalExamples.ToString()"
+                                        Caption="Real workflows, not toy snippets" />
+                </VCol>
+                <VCol Cols="12" Sm="4">
+                    <PlaygroundStatCard Eyebrow="Featured"
+                                        Value="@Model.FeaturedCount.ToString()"
+                                        Caption="Opinionated reference paths" />
+                </VCol>
+                <VCol Cols="12" Sm="4">
+                    <PlaygroundStatCard Eyebrow="Saved"
+                                        Value="@Model.FavoritesCount.ToString()"
+                                        Caption="Pinned by current operator" />
+                </VCol>
+            </VRow>
+        </VCol>
+    </VRow>
+    </div>
+
+    <div class="playground-toolbar">
+    <VRow Align="center">
+        <VCol Cols="12" Md="7">
+            <VTextField Label="Search examples"
+                        Placeholder="Search category, runtime, workflow, API..."
+                        Density="@VuetifyDensity.Comfortable"
+                        ModelValue="@Model.Query"
+                        ModelValueChanged="@QueryChanged" />
+        </VCol>
+        <VCol Cols="12" Md="5">
+            <div class="playground-category-list">
+                <VChipGroup Column="true"
+                            Color="secondary"
+                            ModelValue="@Model.ActiveCategory"
+                            ModelValueChanged="@CategorySelected">
+                    @foreach (var category in Model.Categories)
+                    {
+                        <div class="playground-category-list__chip">
+                            <VChip class='@("playground-category-chip")'
+                                   Value="@category"
+                                   Variant="@(category == Model.ActiveCategory ? VuetifyVariant.Flat : VuetifyVariant.Outlined)"
+                                   Text="@category" />
+                        </div>
+                    }
+                </VChipGroup>
+            </div>
+        </VCol>
+    </VRow>
+    </div>
+
+    <div class="playground-results-summary">
+    <VRow>
+        <VCol Cols="12">
+            <span>@(Model.VisibleCount + " result(s) matched the current view.")</span>
+        </VCol>
+    </VRow>
+    </div>
+
+    @if (Model.Examples.Count == 0)
+    {
+        <VRow>
+            <VCol Cols="12">
+                <PlaygroundEmptyState Title="@Model.EmptyStateTitle"
+                                      Body="@Model.EmptyStateBody" />
+            </VCol>
+        </VRow>
+    }
+    else
+    {
+        <VRow>
+            @foreach (var example in Model.Examples)
+            {
+                <VCol Cols="12" Md="6" Xl="4">
+                    <PlaygroundExampleCard Example="@example"
+                                           DetailHref="@("/examples/" + example.Id + DetailQuerySuffix)" />
+                </VCol>
+            }
+        </VRow>
+    }
+    </VContainer>
+</div>

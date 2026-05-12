@@ -1,0 +1,104 @@
+<div class="playground-page-detail">
+    <VContainer Fluid="true">
+    <VRow>
+        <VCol Cols="12" Xl="8">
+            <div class="playground-detail__back">
+                <a href="@Model.BackHref">@Model.BackText</a>
+            </div>
+
+            <div class="playground-detail__hero">
+                <div class="playground-detail__chips">
+                    <VChip Color="primary" Text="@Model.Example.Category" />
+                    <VChip Variant="@VuetifyVariant.Outlined" Text="@Model.Example.Runtime" />
+                    <VChip Variant="@VuetifyVariant.Outlined" Text="@Model.Example.Difficulty" />
+                </div>
+                <h1 class="playground-detail__title">@Model.Example.Title</h1>
+                <p class="playground-detail__summary">@Model.Example.Summary</p>
+                <div class="playground-detail__actions">
+                    <VBtn Color="secondary"
+                          Variant="@VuetifyVariant.Flat"
+                          Text="@Model.FavoriteText"
+                          OnClick="@ToggleFavorite" />
+                </div>
+            </div>
+
+            <VRow>
+                <VCol Cols="12" Md="6">
+                    <VCard Variant="@VuetifyVariant.Tonal">
+                        <VCardTitle>Why It Matters</VCardTitle>
+                        <VCardText>@Model.Example.WhyItMatters</VCardText>
+                    </VCard>
+                </VCol>
+                <VCol Cols="12" Md="6">
+                    <VCard Variant="@VuetifyVariant.Tonal">
+                        <VCardTitle>Highlights</VCardTitle>
+                        <VCardText>
+                            <VList Density="@VuetifyDensity.Compact">
+                                @foreach (var item in Model.Example.Highlights)
+                                {
+                                    <VListItem Title="@item" />
+                                }
+                            </VList>
+                        </VCardText>
+                    </VCard>
+                </VCol>
+            </VRow>
+
+            <VRow>
+                <VCol Cols="12" Md="7">
+                    <VCard Variant="@VuetifyVariant.Outlined">
+                        <VCardTitle>Build Steps</VCardTitle>
+                        <VCardText>
+                            <VList Density="@VuetifyDensity.Compact">
+                                @foreach (var step in Model.Example.Steps)
+                                {
+                                    <VListItem Title="@step" />
+                                }
+                            </VList>
+                        </VCardText>
+                    </VCard>
+                </VCol>
+                <VCol Cols="12" Md="5">
+                    <VCard Variant="@VuetifyVariant.Outlined">
+                        <VCardTitle>Files Involved</VCardTitle>
+                        <VCardText>
+                            <VList Density="@VuetifyDensity.Compact">
+                                @foreach (var file in Model.Example.Files)
+                                {
+                                    <VListItem Title="@file" />
+                                }
+                            </VList>
+                        </VCardText>
+                    </VCard>
+                </VCol>
+            </VRow>
+        </VCol>
+
+        <VCol Cols="12" Xl="4">
+            <VCard class="playground-detail__sidebar" Variant="@VuetifyVariant.Outlined">
+                <VCardTitle>Reference Snapshot</VCardTitle>
+                <VCardText>
+                    <div class="playground-detail__sidebar-row">
+                        <span>Estimated</span>
+                        <strong>@(Model.Example.EstimatedMinutes + " min")</strong>
+                    </div>
+                    <div class="playground-detail__sidebar-row">
+                        <span>Updated</span>
+                        <strong>@Model.Example.UpdatedAtUtc</strong>
+                    </div>
+                    <div class="playground-detail__sidebar-row">
+                        <span>Featured</span>
+                        <strong>@(Model.Example.Featured ? "Yes" : "No")</strong>
+                    </div>
+                    <div class="playground-detail__tag-list">
+                        @foreach (var tag in Model.Example.Tags)
+                        {
+                            <VChip Size='@("small")' Variant="@VuetifyVariant.Text" Text="@tag" />
+                        }
+                    </div>
+                </VCardText>
+            </VCard>
+        </VCol>
+    </VRow>
+    </VContainer>
+</div>
