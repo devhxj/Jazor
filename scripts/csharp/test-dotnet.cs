@@ -239,7 +239,9 @@ internal static class ScriptHelpers
             workdir,
             [
                 new KeyValuePair<string, string?>("DOTNET_CLI_HOME", dotnetCliHome),
-                new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1")
+                new KeyValuePair<string, string?>("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1"),
+                new KeyValuePair<string, string?>("MSBUILDDISABLENODEREUSE", "1"),
+                new KeyValuePair<string, string?>("UseSharedCompilation", "false")
             ]);
 
         await process.WaitForExitAsync(cancellationToken);
