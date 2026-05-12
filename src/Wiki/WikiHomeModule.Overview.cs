@@ -77,7 +77,7 @@ src/Wiki/
   WikiHomeModule.TestingVerification.cs
   wwwroot/index.html
   wwwroot/site.css
-  verify-smoke.ps1
+  wiki-verify-smoke.cs
 """)
             ]),
             PageSection("registered-pages", "已注册页面",

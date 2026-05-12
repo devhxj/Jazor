@@ -17,8 +17,8 @@ public static partial class WikiHomeModule
                 [
                     CheckCard("编译器回归", "`Jazor.CompilerTest` 锁定语义 Lowering、导入/头稳定性、命名和 Source Map 或目录确定性。"),
                     CheckCard("Emit 回归", "`Jazor.EmitTest` 检查 Bundle 和文件物化行为，而非仅信任编译器输出。"),
-                    CheckCard("操作冒烟", "`src/Wiki/verify-smoke.ps1` 证明发射资源、路由回退、首次响应元数据、发现文档、响应头、浏览器入口连线和静态托管仍作为真实站点行为。"),
-                    CheckCard("浏览器运行时", "`src/Wiki/verify-browser.ps1` 驱动无头 Edge 会话通过挂载、SPA 导航、搜索、未找到恢复、持久化外壳状态、Hash 路由、元数据同步和移动端抽屉行为。")
+                    CheckCard("操作冒烟", "`scripts/csharp/wiki-verify-smoke.cs` 证明发射资源、路由回退、首次响应元数据、发现文档、响应头、浏览器入口连线和静态托管仍作为真实站点行为。"),
+                    CheckCard("浏览器运行时", "`scripts/csharp/wiki-verify-browser.cs` 驱动无头 Edge 会话通过挂载、SPA 导航、搜索、未找到恢复、持久化外壳状态、Hash 路由、元数据同步和移动端抽屉行为。")
                 ])
             ]),
             PageSection("focused-commands", "聚焦命令",
@@ -28,13 +28,13 @@ public static partial class WikiHomeModule
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter SemanticWalkerReferenceTest
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
-pwsh ./scripts/test-dotnet.ps1
-pwsh ./scripts/test-dotnet.ps1 -Project wiki
-pwsh ./scripts/test-dotnet.ps1 -Project wiki-publish
-pwsh ./scripts/test-dotnet.ps1 -Project wiki-browser
-pwsh ./scripts/test-dotnet.ps1 -Project wiki-browser-publish
-.\src\Wiki\verify-smoke.ps1 -BuildLocal
-.\src\Wiki\verify-browser.ps1 -BuildLocal
+dotnet run --file ./scripts/csharp/test-dotnet.cs
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project wiki
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project wiki-publish
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project wiki-browser
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project wiki-browser-publish
+dotnet run --file ./scripts/csharp/wiki-verify-smoke.cs -- --build-local
+dotnet run --file ./scripts/csharp/wiki-verify-browser.cs -- --build-local
 """),
                 H("ul",
                 [

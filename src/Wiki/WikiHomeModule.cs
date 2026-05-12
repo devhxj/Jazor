@@ -756,7 +756,7 @@ public static partial class WikiHomeModule
                         H("li", "返回概览页面，从左侧导航重新进入。"),
                         H("li", "如果你只记得某个子系统或路由片段，使用 `/search`。"),
                         H("li", "如果此路由应该存在，请将其添加到中央页面目录和正文分支映射中。"),
-                        H("li", "注册路由后重新运行 `verify-smoke.ps1`。")
+                        H("li", "注册路由后重新运行 `wiki-verify-smoke.cs`。")
                     ]),
                     H("p",
                     [

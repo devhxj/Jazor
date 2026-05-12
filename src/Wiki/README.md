@@ -42,7 +42,6 @@ Current product boundary:
 - `scripts/csharp/wiki-serve.cs`: preview entry that can run either the local development host or a production-shape published host, and refuses to run when the required artifacts are missing.
 - `scripts/csharp/wiki-verify-smoke.cs`: focused smoke verification for build output, `/health`, route-specific HTML metadata, robots/sitemap discovery docs, response headers, all registered docs routes, and unknown-route fallback.
 - `scripts/csharp/wiki-verify-browser.cs` + `verify-browser.mjs`: real browser verification for runtime mount, SPA routing, search/not-found recovery, persisted shell state, copy affordances, hash routing, and mobile drawers.
-- `src/Wiki/*.ps1`: compatibility wrappers that forward to the single-file C# scripts.
 - `jazor/`: local emitted Jazor browser artifacts used for development and smoke verification.
 - `wwwroot/`: static entry (`index.html`, `site.css`, `favicon.svg`) plus the publish-time destination for `/jazor` assets.
 
@@ -148,11 +147,11 @@ dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish
 Repository-root shortcuts:
 
 ```powershell
-pwsh .\scripts\test-dotnet.ps1 -Project wiki
-pwsh .\scripts\test-dotnet.ps1 -Project wiki-publish
+dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki
+dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-publish
 ```
 
-`pwsh .\scripts\test-dotnet.ps1 -Project wiki-publish` also defaults to `Release` unless you pass `-Configuration` explicitly.
+`dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-publish` also defaults to `Release` unless you pass `--configuration` explicitly.
 
 The smoke check verifies:
 
@@ -197,8 +196,8 @@ dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish
 Repository-root shortcuts:
 
 ```powershell
-pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser
-pwsh .\scripts\test-dotnet.ps1 -Project wiki-browser-publish
+dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-browser
+dotnet run --file .\scripts\csharp\test-dotnet.cs -- --project wiki-browser-publish
 ```
 
 `wiki-verify-browser.cs` starts the Wiki host, launches headless Microsoft Edge with CDP enabled, and runs the project-owned `verify-browser.mjs` assertions through Node.js. The local path exercises `src/Wiki/jazor`, while `--publish` exercises published assets from `wwwroot/jazor`.
@@ -254,7 +253,7 @@ When the generated shell uses CLR-backed helper members such as `string.Contains
 
 See [DEPLOY.md](DEPLOY.md) for the full deployment guide, directory structure contract, key invariants, and rollback procedure.
 
-Summary of invariants enforced by `verify-smoke.ps1 -Publish`:
+Summary of invariants enforced by `wiki-verify-smoke.cs --publish`:
 
 - Published output serves `/jazor/*` only from `wwwroot/jazor/`, with no shadow root directory
 - `main.mjs`, `components/wiki-home.mjs`, and `jazor-manifest.json` exist under `wwwroot/jazor/`

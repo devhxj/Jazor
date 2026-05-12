@@ -36,11 +36,11 @@ src/Wiki/jazor/jazor-manifest.json
             [
                 H("p", "Wiki 的最低发布纪律是构建、路由和入口验证。这是防止站点静默漂移回仅示例质量的关键。"),
                 CodeBlock("推荐验证", """
-.\src\Wiki\verify-smoke.ps1 -BuildLocal
-.\src\Wiki\verify-browser.ps1 -BuildLocal
-.\src\Wiki\verify-smoke.ps1 -Publish
-.\src\Wiki\verify-browser.ps1 -Publish
-.\src\Wiki\serve.ps1 -Publish
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --publish
 """),
                 H("ul",
                 [

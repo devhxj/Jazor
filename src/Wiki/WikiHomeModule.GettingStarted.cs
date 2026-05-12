@@ -15,8 +15,8 @@ public static partial class WikiHomeModule
                 H("p", "本地循环刻意保持简短。从仓库根目录构建、发射并运行静态宿主。"),
                 CodeBlock("本地命令", """
 dotnet build .\src\Wiki\Wiki.csproj
-.\src\Wiki\serve.ps1 -Build
-.\src\Wiki\verify-smoke.ps1 -BuildLocal
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local
 """),
                 H("p", "冒烟脚本现在是契约的一部分。只有当构建输出和路由回退都被验证通过时，一个真实路由才被视为有效。")
             ]),

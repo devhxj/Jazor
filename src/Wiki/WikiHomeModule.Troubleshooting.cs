@@ -47,8 +47,8 @@ src/ECMAScript/Catalog.g.cs
                 H("p", "Wiki 最快的修复循环仍然保持操作导向和显式。"),
                 CodeBlock("聚焦修复循环", """
 dotnet build .\src\Wiki\Wiki.csproj -v minimal
-.\src\Wiki\verify-smoke.ps1 -Build
-.\src\Wiki\serve.ps1 -Build
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build
+dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build
 """),
                 Callout("实用规则", "如果页面渲染正常但冒烟测试失败，将宿主或发射资源契约视为已损坏。不要仅因为正文在某个标签页中看起来正确就将页面标记为完成。")
             ])

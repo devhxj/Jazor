@@ -62,7 +62,7 @@ src/ECMAScript.VueRoute.Test/
   EcmaScriptVueRouteProxyTests.cs
   EcmaScriptVueRouteCompilerBoundaryTests.cs
 
-scripts/test-dotnet.ps1 -Project vueroute
+dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project vueroute
 src/Jazor.EmitTest/SdkIntegrationTests.cs
 src/Jazor/Jazor.csproj
 """),

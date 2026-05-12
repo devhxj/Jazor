@@ -42,7 +42,7 @@ Published output must follow this layout:
 
 ## Key Invariants
 
-The following invariants are enforced by `verify-smoke.ps1 -Publish`:
+The following invariants are enforced by `wiki-verify-smoke.cs --publish`:
 
 1. `/jazor/*` must only be served from `wwwroot/jazor/`, never from a shadow `<deploy-dir>/jazor/` at the publish root
 2. `jazor-manifest.json` must exist under `wwwroot/jazor/`
@@ -61,10 +61,10 @@ The following invariants are enforced by `verify-smoke.ps1 -Publish`:
 Run before every deployment:
 
 ```powershell
-.\src\Wiki\verify-smoke.ps1 -Publish
-.\src\Wiki\verify-browser.ps1 -Publish
-.\src\Wiki\verify-smoke.ps1 -Publish -PathBase /docs
-.\src\Wiki\verify-browser.ps1 -Publish -PathBase /docs
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --publish --path-base /docs
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --publish --path-base /docs
 ```
 
 This checks structural invariants, discovery docs, route metadata and headers, all registered docs routes, the search/404 indexing contract, browser asset resolution, emitted module markers, and real browser runtime behavior.

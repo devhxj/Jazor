@@ -56,7 +56,7 @@ Review output here:
 2. Update the central route catalog if the route contract changed.
 3. Update preview URLs and smoke expectations for any new route.
 4. Build the host to regenerate emitted browser assets.
-5. Run `verify-smoke.ps1` before treating the page as ready.
+5. Run `wiki-verify-smoke.cs` before treating the page as ready.
 """),
                 H("ul",
                 [
