@@ -32,21 +32,22 @@ Jazor is a Roslyn-based C# to JavaScript compiler centered on `IOperation` to EC
 
 <table>
 <tr><th nowrap>Tier</th><th>Component</th><th>Status</th></tr>
-<tr><td nowrap><strong>Working</strong></td><td>Compiler core (SemanticWalker, AstConverter) — 1,848 tests</td><td>Stable — the most mature part</td></tr>
-<tr><td nowrap><strong>Working</strong></td><td>ECMAScript module emission (<code>[ECMAScriptModule]</code> → <code>.mjs</code>) — 84 tests</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>Compiler core (SemanticWalker, AstConverter) — 1,891 tests</td><td>Stable — the most mature part</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>ECMAScript module emission (<code>[ECMAScriptModule]</code> → <code>.mjs</code>) — 111 tests</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>ECMAScript.Vue3 bindings (h, ref, reactive, lifecycle, createApp)</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>MSBuild integration (JazorEmit, JazorBundle, JazorOutDir)</td><td>Stable</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>Jazor.Analyzer (whitelist compile-time validation)</td><td>Stable</td></tr>
+<tr><td nowrap><strong>Working</strong></td><td>ECMAScript.Vuetify bindings (117 components, typed props/slots/events) — 117 components</td><td>Stable — production-grade Vuetify 3 authoring</td></tr>
 <tr><td nowrap><strong>Working</strong></td><td>CLR runtime modules — 70 tests</td><td>Stable</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>RazorVue (SFC pipeline, canonical h() model, Vuetify production coverage) — 400+ tests</td><td>Production-grade Vuetify authoring, pipeline validation, slot/fallthrough support</td></tr>
-<tr><td nowrap><strong>In progress</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 80 tests</td><td>Initial landing, expanding API coverage</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>RazorVue (SFC pipeline, canonical h() model, Vuetify production coverage) — 772 tests</td><td>Production-grade Vuetify authoring, pipeline validation, slot/fallthrough support</td></tr>
+<tr><td nowrap><strong>In progress</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 205 tests</td><td>Expanding API coverage, Pinia Testing utilities</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>SourceMap</td><td>Narrow lane — module-level <code>.mjs.map</code>, not full coverage yet</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>Deno bundling</td><td><code>JazorBundle</code> target works for basic cases</td></tr>
 <tr><td nowrap><strong>In progress</strong></td><td>Debugging</td><td>Design and milestone code exist, not user-facing yet</td></tr>
-<tr><td nowrap><strong>Long-term</strong></td><td>Jolt (LSP, HMR, DevServer, debug, build) — 800+ tests</td><td>Phase 1–6 closing, <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
+<tr><td nowrap><strong>Long-term</strong></td><td>Jolt (LSP, HMR, DevServer, debug, build) — 778 tests</td><td>Phase 1–6 closing, <a href="docs/01-目标/jolt/README.md">Design</a></td></tr>
 </table>
 
-Users today should target the **Working** tier. 29 projects · ~130K production LoC · ~180K test LoC · ~3,500+ total tests.
+Users today should target the **Working** tier. 32 projects · ~290K production LoC · ~190K test LoC · ~3,850+ total tests.
 
 ---
 
@@ -203,7 +204,7 @@ Jazor/
 │   ├── ECMAScript.Vue3/             # Vue 3 runtime binding surface
 │   ├── ECMAScript.VueRoute/         # Vue Router runtime binding surface
 │   ├── ECMAScript.VueRoute.Test/    # Vue Router binding tests
-│   ├── ECMAScript.Vuetify/          # Vuetify bindings and component stubs
+│   ├── ECMAScript.Vuetify/          # Vuetify 3 production-grade component bindings
 │   ├── Jazor.Compiler/              # C# → JS compiler core
 │   ├── Jazor.Analyzer/              # Static analyzer (whitelist validation)
 │   ├── Jazor.CLR/                   # CLR runtime module support

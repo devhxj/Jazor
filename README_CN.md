@@ -33,21 +33,22 @@ Jazor 是一个基于 Roslyn 的 C# 到 JavaScript 编译器，核心能力是�
 
 <table>
 <tr><th nowrap>层级</th><th>组件</th><th>状态</th></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>编译器核心（SemanticWalker、AstConverter）— 1,848 测试</td><td>稳定 — 仓库中最成熟的部分</td></tr>
-<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript 模块发射（<code>[ECMAScriptModule]</code> → <code>.mjs</code>）— 84 测试</td><td>稳定</td></tr>
+<tr><td nowrap><strong>已可用</strong></td><td>编译器核心（SemanticWalker、AstConverter）— 1,891 测试</td><td>稳定 — 仓库中最成熟的部分</td></tr>
+<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript 模块发射（<code>[ECMAScriptModule]</code> → <code>.mjs</code>）— 111 测试</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>ECMAScript.Vue3 绑定（h、ref、reactive、生命周期、createApp）</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>MSBuild 集成（JazorEmit、JazorBundle、JazorOutDir）</td><td>稳定</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>Jazor.Analyzer（白名单编译时验证）</td><td>稳定</td></tr>
+<tr><td nowrap><strong>已可用</strong></td><td>ECMAScript.Vuetify 绑定（117 个组件，强类型 props/槽/事件）— 117 组件</td><td>稳定 — 生产级 Vuetify 3 authoring</td></tr>
 <tr><td nowrap><strong>已可用</strong></td><td>CLR 运行时模块 — 70 测试</td><td>稳定</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>RazorVue（SFC 管线、规范 h() 模型、Vuetify 生产级覆盖）— 400+ 测试</td><td>生产级 Vuetify authoring、管线验证、槽/fallthrough 支持</td></tr>
-<tr><td nowrap><strong>进行中</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 80 测试</td><td>初始落地，API 覆盖持续扩展</td></tr>
+<tr><td nowrap><strong>进行中</strong></td><td>RazorVue（SFC 管线、规范 h() 模型、Vuetify 生产级覆盖）— 772 测试</td><td>生产级 Vuetify authoring、管线验证、槽/fallthrough 支持</td></tr>
+<tr><td nowrap><strong>进行中</strong></td><td>ECMAScript.Pinia + ECMAScript.VueRoute — 205 测试</td><td>API 覆盖持续扩展，Pinia Testing 工具</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>SourceMap</td><td>局部可用 — 模块级 <code>.mjs.map</code>，尚未全覆盖</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>Deno 打包</td><td><code>JazorBundle</code> 目标支持基本场景</td></tr>
 <tr><td nowrap><strong>进行中</strong></td><td>调试</td><td>设计和里程碑代码已就位，尚未面向用户</td></tr>
-<tr><td nowrap><strong>远期</strong></td><td>Jolt（LSP、HMR、DevServer、调试、构建）— 800+ 测试</td><td>Phase 1–6 收口中，<a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
+<tr><td nowrap><strong>远期</strong></td><td>Jolt（LSP、HMR、DevServer、调试、构建）— 778 测试</td><td>Phase 1–6 收口中，<a href="docs/01-目标/jolt/README.md">设计文档</a></td></tr>
 </table>
 
-当前用户应基于**已可用**层进行开发。29 项目 · ~130K 生产代码 · ~180K 测试代码 · ~3,500+ 总测试。
+当前用户应基于**已可用**层进行开发。32 项目 · ~290K 生产代码 · ~190K 测试代码 · ~3,850+ 总测试。
 
 ---
 
@@ -204,7 +205,7 @@ Jazor/
 │   ├── ECMAScript.Vue3/             # Vue 3 运行时绑定面
 │   ├── ECMAScript.VueRoute/         # Vue Router 运行时绑定面
 │   ├── ECMAScript.VueRoute.Test/    # Vue Router 绑定测试
-│   ├── ECMAScript.Vuetify/          # Vuetify 绑定与组件桩
+│   ├── ECMAScript.Vuetify/          # Vuetify 3 生产级组件绑定
 │   ├── Jazor.Compiler/              # C# → JS 编译器核心
 │   ├── Jazor.Analyzer/              # 静态分析器（白名单验证）
 │   ├── Jazor.CLR/                   # CLR 运行时模块支持
