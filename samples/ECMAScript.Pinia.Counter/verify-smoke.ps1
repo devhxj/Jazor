@@ -2,6 +2,8 @@ param(
     [string]$Configuration = "Debug",
     [switch]$BuildLocal,
     [switch]$FrontendOnly,
+    [string]$BaseOutputPath = "",
+    [string]$BaseIntermediateOutputPath = "",
     [string]$GeneratedOutputRoot = ""
 )
 
@@ -29,6 +31,8 @@ $consumerNodeModulesPath = Join-Path $consumerRoot "node_modules"
 
 $env:DOTNET_CLI_HOME = Join-Path $repoRoot ".dotnet"
 $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = "1"
+$baseOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseOutputPath")
+$baseIntermediateOutputPathWasExplicit = $PSBoundParameters.ContainsKey("BaseIntermediateOutputPath")
 
 function Invoke-DotNet {
     param(
@@ -123,7 +127,20 @@ function Assert-GeneratedHostArtifacts {
 }
 
 if (-not $FrontendOnly -or $BuildLocal) {
-    & $buildLocalScript -Configuration $Configuration -JazorOutDir $jazorRoot
+    $buildLocalArgs = @{
+        Configuration = $Configuration
+        JazorOutDir = $jazorRoot
+    }
+
+    if ($baseOutputPathWasExplicit) {
+        $buildLocalArgs["BaseOutputPath"] = $BaseOutputPath
+    }
+
+    if ($baseIntermediateOutputPathWasExplicit) {
+        $buildLocalArgs["BaseIntermediateOutputPath"] = $BaseIntermediateOutputPath
+    }
+
+    & $buildLocalScript @buildLocalArgs
     if ($LASTEXITCODE -ne 0) {
         throw "build-local.ps1 failed with exit code ${LASTEXITCODE}."
     }

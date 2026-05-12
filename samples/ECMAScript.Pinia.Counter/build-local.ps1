@@ -25,9 +25,15 @@ function Invoke-DotNet {
         [string[]]$Arguments
     )
 
-    & dotnet @Arguments
+    $dotnetOutput = @()
+    & dotnet @Arguments 2>&1 | Tee-Object -Variable dotnetOutput
     if ($LASTEXITCODE -ne 0) {
-        throw "dotnet $($Arguments -join ' ') failed with exit code $LASTEXITCODE."
+        $tail = ($dotnetOutput | ForEach-Object { $_.ToString() } | Select-Object -Last 40) -join [Environment]::NewLine
+        if ([string]::IsNullOrWhiteSpace($tail)) {
+            throw "dotnet $($Arguments -join ' ') failed with exit code $LASTEXITCODE."
+        }
+
+        throw "dotnet $($Arguments -join ' ') failed with exit code $LASTEXITCODE.`nLast output:`n$tail"
     }
 }
 
@@ -48,7 +54,21 @@ if ($jazorOutDirWasExplicit -and -not [string]::IsNullOrWhiteSpace($JazorOutDir)
     }
 }
 
-& $publishScript -Configuration $Configuration -OutputDirectory $packageOutput -SkipPush
+$publishArgs = @{
+    Configuration = $Configuration
+    OutputDirectory = $packageOutput
+    SkipPush = $true
+}
+
+if ($baseOutputPathWasExplicit) {
+    $publishArgs["BaseOutputPath"] = $BaseOutputPath
+}
+
+if ($baseIntermediateOutputPathWasExplicit) {
+    $publishArgs["BaseIntermediateOutputPath"] = $BaseIntermediateOutputPath
+}
+
+& $publishScript @publishArgs
 if ($LASTEXITCODE -ne 0) {
     throw "publish-nuget.ps1 failed with exit code $LASTEXITCODE."
 }

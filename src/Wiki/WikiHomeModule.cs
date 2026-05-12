@@ -249,7 +249,7 @@ public static partial class WikiHomeModule
                 H("div", new VueObject { Class = "site-brand" },
                 [
                     H("p", new VueObject { Class = "brand-kicker" }, "jazor.wiki"),
-                    H("h1", new VueObject { Class = "brand-title" }, "基于 Vue 3 H 函数构建的生产级文档"),
+                    H("h1", new VueObject { Class = "brand-title" }, "基于 Vue 3 H 函数构建的文档"),
                     H("p", new VueObject { Class = "brand-summary" }, "Jazor 的真实文档外壳，具备路由驱动搜索、元数据丰富页面和生产级阅读流程。")
                 ]),
                 H("div", new VueObject { Class = "brand-actions-panel" },

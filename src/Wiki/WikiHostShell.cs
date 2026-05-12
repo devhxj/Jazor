@@ -67,11 +67,11 @@ internal static class WikiHostShell
         var requestPath = context.Context.Request.Path.Value ?? "";
         if (requestPath.StartsWith("/vendor/", StringComparison.OrdinalIgnoreCase))
         {
-            context.Context.Response.Headers["Cache-Control"] = ImmutableVersionedAssetCacheControl;
+			context.Context.Response.Headers["Cache-Control"] = ImmutableVersionedAssetCacheControl;
             return;
         }
 
-        context.Context.Response.Headers["Cache-Control"] = MutableAssetCacheControl;
+        context.Context.Response.Headers.CacheControl = MutableAssetCacheControl;
     }
 
     internal static async Task<bool> TryHandleHtmlRequestAsync(HttpContext context, CancellationToken cancellationToken = default)

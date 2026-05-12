@@ -107,6 +107,36 @@ function Resolve-LocalPackInputPath {
     return [System.IO.Path]::GetFullPath((Join-Path $ProjectDirectory $resolved))
 }
 
+function Get-NoBuildPackInputRoots {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PackageProjectPath,
+        [Parameter(Mandatory = $true)]
+        [string]$Configuration
+    )
+
+    $projectDirectory = Split-Path -Parent $PackageProjectPath
+    $packageBuildOutputRoot = if ($baseOutputPathWasExplicit) {
+        Get-IsolatedBuildRoot -Path $BaseOutputPath
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\"))
+    }
+
+    $emitPublishDir = if ($baseOutputPathWasExplicit) {
+        [System.IO.Path]::Combine($packageBuildOutputRoot, "Jazor.Emit", "bin", $Configuration, "net11.0", "publish")
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\Jazor.Emit\bin\$Configuration\net11.0\publish"))
+    }
+
+    return @{
+        ProjectDirectory = $projectDirectory
+        PackageBuildOutputRoot = $packageBuildOutputRoot
+        EmitPublishDir = $emitPublishDir
+    }
+}
+
 function Assert-NoBuildPackInputsExist {
     param(
         [Parameter(Mandatory = $true)]
@@ -117,9 +147,10 @@ function Assert-NoBuildPackInputsExist {
         [string]$Configuration
     )
 
-    $projectDirectory = Split-Path -Parent $PackageProjectPath
+    $roots = Get-NoBuildPackInputRoots -PackageProjectPath $PackageProjectPath -Configuration $Configuration
+    $projectDirectory = $roots.ProjectDirectory
     $missingInputs = New-Object System.Collections.Generic.List[string]
-    $packageBuildOutputRoot = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\"))
+    $packageBuildOutputRoot = $roots.PackageBuildOutputRoot
 
     foreach ($itemGroup in $Project.Project.ItemGroup) {
         foreach ($noneItem in $itemGroup.None) {
@@ -147,7 +178,7 @@ function Assert-NoBuildPackInputsExist {
         }
     }
 
-    $emitPublishDir = [System.IO.Path]::GetFullPath((Join-Path $projectDirectory "..\Jazor.Emit\bin\$Configuration\net11.0\publish"))
+    $emitPublishDir = $roots.EmitPublishDir
     if (-not (Test-Path -LiteralPath $emitPublishDir)) {
         $missingInputs.Add("$emitPublishDir (Jazor.Emit publish output directory)")
     }

@@ -86,11 +86,14 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		var source = System.IO.File.ReadAllText(scriptPath);
 
 		StringAssert.Contains(source, "function Assert-NoBuildPackInputsExist");
+		StringAssert.Contains(source, "function Get-NoBuildPackInputRoots");
 		StringAssert.Contains(source, "Run publish-nuget.ps1 once without -NoBuild to prepare the full package artifacts.");
 		StringAssert.Contains(source, "if ($NoBuild) {");
 		StringAssert.Contains(source, "$packArgs += \"--no-build\"");
 		StringAssert.Contains(source, "$packArgs += \"-p:JazorPreparePackageArtifacts=false\"");
 		StringAssert.Contains(source, "\"restore\",");
+		StringAssert.Contains(source, "Get-IsolatedBuildRoot -Path $BaseOutputPath");
+		StringAssert.Contains(source, "[System.IO.Path]::Combine($packageBuildOutputRoot, \"Jazor.Emit\", \"bin\", $Configuration, \"net11.0\", \"publish\")");
 		Assert.IsFalse(
 			source.Contains("-p:JazorPreparePackageArtifacts=false", StringComparison.Ordinal)
 			&& source.Contains("$packArgs = @(", StringComparison.Ordinal)
@@ -152,6 +155,16 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 	}
 
 	[TestMethod]
+	public void Pinia_JazorBuildTransitive_DefaultsConsumerLangVersionToPreview()
+	{
+		var repoRoot = ResolveRepositoryRoot();
+		var propsPath = Path.Combine(repoRoot, "src", "Jazor", "buildTransitive", "Jazor.props");
+		var source = System.IO.File.ReadAllText(propsPath);
+
+		StringAssert.Contains(source, "<LangVersion Condition=\"'$(LangVersion)' == ''\">preview</LangVersion>");
+	}
+
+	[TestMethod]
 	public void Pinia_TestScript_AndSupportingScripts_ExposeIsolatedBuildOutputParameters()
 	{
 		var repoRoot = ResolveRepositoryRoot();
@@ -159,6 +172,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		var testScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "test-dotnet.ps1"));
 		var publishScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "scripts", "publish-nuget.ps1"));
 		var sampleBuildScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "build-local.ps1"));
+		var sampleVerifyScript = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "ECMAScript.Pinia.Counter", "verify-smoke.ps1"));
 
 		StringAssert.Contains(directoryBuildProps, "<PropertyGroup Condition=\"'$(JazorIsolatedBaseOutputRoot)' != ''\">");
 		StringAssert.Contains(directoryBuildProps, "<BaseOutputPath>$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))$(MSBuildProjectName)\\bin\\</BaseOutputPath>");
@@ -182,10 +196,35 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 
 		StringAssert.Contains(sampleBuildScript, "[string]$BaseOutputPath = \"\"");
 		StringAssert.Contains(sampleBuildScript, "[string]$BaseIntermediateOutputPath = \"\"");
+		StringAssert.Contains(sampleBuildScript, "$publishArgs = @{");
+		StringAssert.Contains(sampleBuildScript, "Configuration = $Configuration");
+		StringAssert.Contains(sampleBuildScript, "OutputDirectory = $packageOutput");
+		StringAssert.Contains(sampleBuildScript, "SkipPush = $true");
+		StringAssert.Contains(sampleBuildScript, "$publishArgs[\"BaseOutputPath\"] = $BaseOutputPath");
+		StringAssert.Contains(sampleBuildScript, "$publishArgs[\"BaseIntermediateOutputPath\"] = $BaseIntermediateOutputPath");
 		StringAssert.Contains(sampleBuildScript, "-p:JazorIsolatedBaseOutputRoot=$BaseOutputPath");
 		StringAssert.Contains(sampleBuildScript, "-p:JazorIsolatedBaseIntermediateOutputRoot=$BaseIntermediateOutputPath");
 		StringAssert.Contains(sampleBuildScript, "/nr:false");
 		StringAssert.Contains(sampleBuildScript, "-p:UseSharedCompilation=false");
+
+		StringAssert.Contains(sampleVerifyScript, "[string]$BaseOutputPath = \"\"");
+		StringAssert.Contains(sampleVerifyScript, "[string]$BaseIntermediateOutputPath = \"\"");
+		StringAssert.Contains(sampleVerifyScript, "$buildLocalArgs = @{");
+		StringAssert.Contains(sampleVerifyScript, "Configuration = $Configuration");
+		StringAssert.Contains(sampleVerifyScript, "JazorOutDir = $jazorRoot");
+		StringAssert.Contains(sampleVerifyScript, "$buildLocalArgs[\"BaseOutputPath\"] = $BaseOutputPath");
+		StringAssert.Contains(sampleVerifyScript, "$buildLocalArgs[\"BaseIntermediateOutputPath\"] = $BaseIntermediateOutputPath");
+	}
+
+	[TestMethod]
+	public void Pinia_SampleProjects_DefaultToPreviewLangVersion()
+	{
+		var repoRoot = ResolveRepositoryRoot();
+		var sharedSamplesProps = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "Directory.Build.props"));
+		var multiProjectProps = System.IO.File.ReadAllText(Path.Combine(repoRoot, "samples", "Jazor.MultiProject", "Directory.Build.props"));
+
+		StringAssert.Contains(sharedSamplesProps, "<LangVersion>preview</LangVersion>");
+		StringAssert.Contains(multiProjectProps, "<LangVersion>preview</LangVersion>");
 	}
 
 	[TestMethod]
