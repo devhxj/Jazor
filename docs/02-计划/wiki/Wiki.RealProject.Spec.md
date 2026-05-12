@@ -36,9 +36,9 @@
 ## Commands
 
 - Build: `dotnet build .\src\Wiki\Wiki.csproj`
-- Local build with emit verification: `.\src\Wiki\build-local.ps1`
-- Local preview: `.\src\Wiki\serve.ps1 -Build`
-- Smoke verification: `.\src\Wiki\verify-smoke.ps1 -BuildLocal`
+- Local build with emit verification: `dotnet run --file .\scripts\csharp\wiki-build-local.cs`
+- Local preview: `dotnet run --file .\scripts\csharp\wiki-serve.cs -- --build`
+- Smoke verification: `dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local`
 
 ## Project Structure
 
@@ -106,7 +106,7 @@ private static IVNode PageSection(string id, string title, params IVNode[] conte
 - 用户访问如 `/guides/getting-started` 的文档路由时能正常返回并加载
 - 左侧导航、正文、右侧目录、上下页导航都已形成闭环
 - README 和计划文档已切换到真实项目视角
-- `verify-smoke.ps1` 已覆盖至少一个真实 docs route
+- `wiki-verify-smoke.cs` 已覆盖至少一个真实 docs route
 
 ## Open Questions
 

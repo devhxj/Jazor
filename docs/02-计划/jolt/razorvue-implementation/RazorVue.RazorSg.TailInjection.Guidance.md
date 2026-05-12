@@ -223,10 +223,10 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 12. `RazorSourceGeneratorBootstrapPatchTests` 覆盖真实外部构建 trace 中 `TailOutputRegisteredForCurrentContext=true` 且 `TailOutputRegistrationKind="implementation-source-output"`。
 13. `Jazor.EmitTest` RazorVue 过滤切片必须全绿，当前最新验证为 45/45 通过。
 14. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 必须同时断言当前 analyzer payload 完整、且 `.nupkg` 中不存在 Razor Compiler / Razor Utilities Shared payload。
-15. `samples/RazorVue.TodoList/build-local.ps1` 必须通过本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包完成 host rebuild，并生成 SFC artifact、manifest、host requirements module 和 sidecar。
-16. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `.\scripts\run-deno.ps1 task build`，证明生成 `.vue` 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费。
+15. `samples/RazorVue.TodoList/build-local.cs` 必须通过本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包完成 host rebuild，并生成 SFC artifact、manifest、host requirements module 和 sidecar。
+16. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `dotnet run --file .\scripts\run-deno.cs -- task build`，证明生成 `.vue` 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费。
 17. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 必须通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact。
-18. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `.\scripts\run-deno.ps1 task smoke:ssr`，证明生成 `.vue` 至少可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
+18. `samples/RazorVue.TodoList/todo-consumer` 必须通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，证明生成 `.vue` 至少可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render，不出现 Vue prop 类型 warning。
 19. SFC component prop lowering 必须保留类型语义：字符串 literal 可输出静态属性，Boolean / numeric / null / other 非字符串 literal 必须输出 Vue bound prop，避免把 library component props 统一降成字符串。
 20. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace` 与 `Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace` 必须通过，覆盖独立外部纯 Deno consumer、TodoList sample consumer、`deno bundle`、`Deno.bundle()`、SSR smoke 和真实浏览器 smoke。
 
@@ -240,12 +240,12 @@ Hook 扫描新输出节点时必须优先挂载官方 `RegisterImplementationSou
 
 当前已通过的样例与前端工具链验证：
 
-1. `pwsh ./samples/RazorVue.TodoList/build-local.ps1` 已通过，输出包含 `razorvueSfcArtifacts=2`。
+1. `dotnet run --file ./samples/RazorVue.TodoList/build-local.cs` 已通过，输出包含 `razorvueSfcArtifacts=2`。
 2. `samples/RazorVue.TodoList/Todo.Host/wwwroot/jazor/components/todo-app.vue` 已包含完整 nested Vuetify template、component import 和 DTO 属性投影，并对 `VContainer` / `VCol` 等 Boolean / numeric props 输出 `:fluid="true"`、`:cols="12"` 这类 Vue bound props。
-3. `cd samples/RazorVue.TodoList/todo-consumer && .\scripts\run-deno.ps1 task build` 已通过，`deno bundle` production build 成功产出浏览器 JS/CSS。
+3. `cd samples/RazorVue.TodoList/todo-consumer && dotnet run --file .\scripts\run-deno.cs -- task build` 已通过，`deno bundle` production build 成功产出浏览器 JS/CSS。
 4. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，覆盖独立临时 `.razor` consumer、NuGet 包消费、官方 Razor SG integration、SFC manifest/source map/origins 输出。
-5. `cd samples/RazorVue.TodoList/todo-consumer && .\scripts\run-deno.ps1 task smoke:ssr` 已通过，SSR smoke 经纯 Deno 预编译加载生成 SFC、渲染 DTO 投影文本并验证 host requirements。
-6. `cd samples/RazorVue.TodoList/todo-consumer && .\scripts\run-deno.ps1 task smoke:browser` 已通过，真实浏览器 smoke 覆盖挂载、生成 CSS/JS、Vuetify `.v-application` root、关键文本、TodoList 交互、console warning/error、runtime exception 和 network failure。
+5. `cd samples/RazorVue.TodoList/todo-consumer && dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr` 已通过，SSR smoke 经纯 Deno 预编译加载生成 SFC、渲染 DTO 投影文本并验证 host requirements。
+6. `cd samples/RazorVue.TodoList/todo-consumer && dotnet run --file .\scripts\run-deno.cs -- task smoke:browser` 已通过，真实浏览器 smoke 覆盖挂载、生成 CSS/JS、Vuetify `.v-application` root、关键文本、TodoList 交互、console warning/error、runtime exception 和 network failure。
 7. `Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace` 已通过，独立临时 `.NET + Razor SG + SFC` consumer 生成 `.vue` 后，由独立纯 Deno consumer 完成 SSR、bundle API、browser build 和 browser smoke。
 
 ## 11. 一句话结论

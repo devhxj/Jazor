@@ -22,8 +22,8 @@
 
 - [x] Task 2: 切换静态宿主到真实 docs 路由
   - Acceptance: 宿主支持 `/` 之外的文档路径直接进入
-  - Verify: `.\src\Wiki\verify-smoke.ps1 -BuildLocal`
-  - Files: `src/Wiki/Program.cs`, `src/Wiki/verify-smoke.ps1`
+  - Verify: `dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local`
+  - Files: `src/Wiki/Program.cs`, `scripts/csharp/wiki-verify-smoke.cs`
 
 - [x] Task 3: 实现多页面 H-function docs shell
   - Acceptance:
@@ -48,8 +48,8 @@
 
 - [x] Task 5: 扩充 smoke verification 到真实 route
   - Acceptance: smoke 覆盖至少一个真实文档路由，并验证 emitted 文档内容标识
-  - Verify: `.\src\Wiki\verify-smoke.ps1 -BuildLocal`
-  - Files: `src/Wiki/verify-smoke.ps1`
+  - Verify: `dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build-local`
+  - Files: `scripts/csharp/wiki-verify-smoke.cs`
 
 ### Checkpoint: MVP Ready
 

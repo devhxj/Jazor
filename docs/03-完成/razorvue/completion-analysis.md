@@ -47,14 +47,14 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 1. `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 已同步当前 analyzer payload，包含 `0Harmony.dll`、`ECMAScript.dll`、`ECMAScript.Vue3.dll` 及其 pdb。
 2. 包内容测试已加入负向守卫，禁止 `Razor.Compiler`、`Razor.Utilities.Shared`、`Microsoft.CodeAnalysis.Razor`、`Microsoft.AspNetCore.Razor.Language` 进入 `Jazor` 包 payload。
 3. 之前 `--no-restore` 下出现的 `ECMAScript.Contract` predefined type / `System.Runtime` 错误已确认是 restore/assets 状态问题；带 restore 的 focused test 可稳定通过。
-4. `samples/RazorVue.TodoList/build-local.ps1` 已用本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包重新跑通；当前样例生成 2 个 SFC artifact、manifest、host requirements module 和 sidecar。
+4. `samples/RazorVue.TodoList/build-local.cs` 已用本地 pack 的 `Jazor` / `ECMAScript.Vuetify` 包重新跑通；当前样例生成 2 个 SFC artifact、manifest、host requirements module 和 sidecar。
 5. 生成的 `todo-app.vue` 已恢复完整嵌套 Vuetify 结构，包含 `VRow` / `VCol` / `VCard` / `VTextField` / `VList` / `VListItem`，并包含 `item.Title` / `item.IsDone` / `item.Category` / `item.IsPinned` 等 DTO 属性投影。
-6. `samples/RazorVue.TodoList/todo-consumer` 已切到纯 Deno consumer 验证链；`.\scripts\run-deno.ps1 task build` 通过，底层实际调用仓库内 bundled `deno.exe`，证明当前生成的 `.vue` 可以先经 Deno 侧 SFC 预编译，再通过 `deno bundle` 产出浏览器 JS/CSS。
+6. `samples/RazorVue.TodoList/todo-consumer` 已切到纯 Deno consumer 验证链；`dotnet run --file .\scripts\run-deno.cs -- task build` 通过，底层实际调用仓库内 bundled `deno.exe`，证明当前生成的 `.vue` 可以先经 Deno 侧 SFC 预编译，再通过 `deno bundle` 产出浏览器 JS/CSS。
 7. 新增 `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts`，用独立临时 consumer 通过本地 NuGet 包消费 `Jazor` / `ECMAScript.Vuetify`，显式启用 `UseRazorSourceGenerator=true`、`JazorRazorVueEnableRazorSgIntegration=true`、`JazorRazorVueOutputMode=sfc`，并验证 `.razor` authoring 生成 `.vue`、manifest、host requirements module、source map 和 origins sidecar。
 8. SFC template lowering 已修正 component literal prop 语义：组件非字符串 literal（例如 Vuetify `bool` / `number` props）输出为 Vue bound props，如 `:fluid="true"`、`:cols="12"`；字符串 literal 仍输出静态属性，如 `title="Inbox"`。
-9. `samples/RazorVue.TodoList/todo-consumer` 已执行 `.\scripts\run-deno.ps1 task smoke:ssr`，通过纯 Deno 的 Vue server renderer + Vuetify 对生成 SFC 做 runtime render smoke，且不再出现 `fluid` Boolean prop 类型 warning。
-10. `samples/RazorVue.TodoList/todo-consumer` 已执行 `.\scripts\run-deno.ps1 task smoke:bundle-api`，证明 `Deno.bundle()` 也能消费 Deno 预编译后的 RazorVue entry，产出 JS/CSS 与 source map。
-11. `samples/RazorVue.TodoList/todo-consumer` 已移除 `package.json` / `package-lock.json` 包装层，仓库内正式 consumer 入口收口为 `deno.json` tasks + `scripts/run-deno.ps1`。
+9. `samples/RazorVue.TodoList/todo-consumer` 已执行 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，通过纯 Deno 的 Vue server renderer + Vuetify 对生成 SFC 做 runtime render smoke，且不再出现 `fluid` Boolean prop 类型 warning。
+10. `samples/RazorVue.TodoList/todo-consumer` 已执行 `dotnet run --file .\scripts\run-deno.cs -- task smoke:bundle-api`，证明 `Deno.bundle()` 也能消费 Deno 预编译后的 RazorVue entry，产出 JS/CSS 与 source map。
+11. `samples/RazorVue.TodoList/todo-consumer` 已移除 `package.json` / `package-lock.json` 包装层，仓库内正式 consumer 入口收口为 `deno.json` tasks + `scripts/run-deno.cs`。
 
 ## 2026-05-10 状态更新
 
@@ -134,7 +134,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 
 当前已把最新包与 SG tail 注入链通过仓库内 TodoList 样例重新跑完：
 
-1. `samples/RazorVue.TodoList/build-local.ps1` 从本地 pack 出来的 `Jazor` / `ECMAScript.Vuetify` 包恢复并构建成功。
+1. `samples/RazorVue.TodoList/build-local.cs` 从本地 pack 出来的 `Jazor` / `ECMAScript.Vuetify` 包恢复并构建成功。
 2. 构建产出 `.vue`、manifest、host requirements module 和 sidecar。
 3. 不依赖仓库源码引用、不依赖本机全局缓存残留、不依赖旧 legacy `.mjs` 默认假设。
 4. `todo-consumer` 纯 Deno build 能消费生成的 `.vue` 与 host requirements module。
@@ -250,35 +250,35 @@ dotnet test src/Jazor.RazorVue.Test/Jazor.RazorVue.Test.csproj --filter "FullyQu
 最新结果：31 通过，0 失败，0 跳过；新增覆盖 component literal 非字符串 props 输出为 Vue bound props。
 
 ```powershell
-pwsh ./samples/RazorVue.TodoList/build-local.ps1
+dotnet run --file ./samples/RazorVue.TodoList/build-local.cs
 ```
 
 最新结果：通过，`assemblies=15 catalogs=2 razorvueSfcCatalogs=1 modules=51 razorvueSfcArtifacts=2 written=3 skipped=51 deleted=0`。
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-.\scripts\run-deno.ps1 task build
+dotnet run --file .\scripts\run-deno.cs -- task build
 ```
 
 最新结果：通过，`deno bundle` 产出浏览器 JS/CSS。
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-.\scripts\run-deno.ps1 task smoke:ssr
+dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr
 ```
 
 最新结果：通过，`RazorVue TodoList Deno SSR smoke passed.`，无 Vue prop 类型 warning。
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-.\scripts\run-deno.ps1 task smoke:bundle-api
+dotnet run --file .\scripts\run-deno.cs -- task smoke:bundle-api
 ```
 
 最新结果：通过，`Deno.bundle()` 产出 JS/CSS 与 linked source map。
 
 ```powershell
 cd samples/RazorVue.TodoList/todo-consumer
-.\scripts\run-deno.ps1 task smoke:browser
+dotnet run --file .\scripts\run-deno.cs -- task smoke:browser
 ```
 
 最新结果：通过，`RazorVue browser smoke passed.`，覆盖真实浏览器挂载、生成 CSS/JS 加载、Vuetify `.v-application` root、关键文本可见、TodoList 交互状态更新，以及 console warning/error / runtime exception / network failure 负向守卫。

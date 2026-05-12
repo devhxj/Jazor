@@ -33,7 +33,7 @@
 - `src/ECMAScript.Pinia/` 已独立为外部库项目，API/Types 分层稳定，主测试已从 compiler 测试中拆到 `src/ECMAScript.Pinia.Test/`。
 - 已覆盖 Pinia root lifecycle、option store、setup store、`storeToRefs`、hydration、HMR、plugin projection、Options API helpers、subscription、action listener、multi-root isolation 等大量高频路径。
 - `src/ECMAScript.Pinia.Testing/` 已把 `@pinia/testing` 拆成独立绑定包，并覆盖 `createTestingPinia`、`TestingOptions`、`stubActions`、typed predicate、`createSpy`、testing plugin projection 等测试场景。
-- `samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 本轮通过，验证了本地 Jazor 包、sample host、generated Pinia/testing modules、Vite production build、Vitest runtime/DOM。
+- `samples/ECMAScript.Pinia.Counter/verify-smoke.cs` 本轮通过，验证了本地 Jazor 包、sample host、generated Pinia/testing modules、Deno bundle build、Deno runtime/DOM。
 
 ### ECMAScript.VueRoute
 
@@ -145,7 +145,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 
 ### P1：Pinia 功能链路强，现已进入跨线验证阶段
 
-`samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 本轮通过：
+`samples/ECMAScript.Pinia.Counter/verify-smoke.cs` 本轮通过：
 
 - 本地 pack `Jazor.0.1.17.nupkg` 成功。
 - `Pinia.Counter.Host` rebuild 成功，0 警告，0 错误。
@@ -159,14 +159,14 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 
 VueRoute 当前不再只有 compiler/import/proxy/layout 级验证。仓库内已经存在并通过真实 consumer smoke：
 
-- `samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.ps1`
+- `samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.cs`
 - `samples/ECMAScript.VueRoute.MemorySmoke/vueroute-consumer/`
 - `docs/03-完成/ecmascript.vueroute/status.md`
 
 本轮复核结果：
 
 ```powershell
-pwsh .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.ps1 -Configuration Debug
+dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.cs -- -Configuration Debug
 ```
 
 结果：通过。
@@ -263,13 +263,13 @@ dotnet test src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj -v mini
 结果：94 通过，0 失败，0 跳过。
 
 ```powershell
-pwsh samples/ECMAScript.Pinia.Counter/verify-smoke.ps1
+dotnet run --file .\samples\ECMAScript.Pinia.Counter\verify-smoke.cs
 ```
 
 结果：通过。本地 package pack、sample host rebuild、generated module 断言、Vite build、Vitest runtime/DOM 全部通过；Vitest 结果为 3 个 test files、23 个 tests 全绿。
 
 ```powershell
-pwsh .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.ps1 -Configuration Debug
+dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.cs -- -Configuration Debug
 ```
 
 结果：通过。本地 package pack、sample host rebuild、generated router/component/testing/host module 断言、Vite build、Vitest runtime/DOM 全部通过；Vitest 结果为 2 个 test files、6 个 tests 全绿。
@@ -297,7 +297,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 2. 把 Vue3 API surface 断言改成更聚焦的合同测试，避免“测试要旧签名、实现走新签名”的长期歧义。
 3. 把 Pinia smoke 的输出目录隔离出来，不再修改已跟踪 `wwwroot/jazor` manifest。
 4. 给三条外部库线建立统一发布门槛：独立 build、独立 test、sample smoke、package consumer smoke、文档状态更新。
-5. 全量运行 `pwsh ./scripts/test-dotnet.ps1` 或至少运行覆盖 Vue3/Pinia/Pinia Testing/VueRoute/RazorVue/emit 的发布相关切片。
+5. 全量运行 `dotnet run --file ./scripts/csharp/test-dotnet.cs` 或至少运行覆盖 Vue3/Pinia/Pinia Testing/VueRoute/RazorVue/emit 的发布相关切片。
 
 ## 上线建议
 
@@ -316,6 +316,6 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 2. `dotnet test src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj` 保持全绿。
 3. `dotnet test src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj` 全绿。
 4. `dotnet test src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj` 全绿。
-5. `samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 全绿且不留下工作区脏改。
-6. `samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.ps1` 持续全绿且不留下工作区脏改。
+5. `samples/ECMAScript.Pinia.Counter/verify-smoke.cs` 全绿且不留下工作区脏改。
+6. `samples/ECMAScript.VueRoute.MemorySmoke/verify-smoke.cs` 持续全绿且不留下工作区脏改。
 7. 三条线的 `docs/03-完成` 状态文档与真实测试结果一致。

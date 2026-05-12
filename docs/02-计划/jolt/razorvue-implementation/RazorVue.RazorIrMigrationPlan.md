@@ -181,10 +181,10 @@
   - `Jazor.RazorVue.RazorIr.Test` 96/96 通过
   - `Jazor.EmitTest` RazorVue 过滤切片 45/45 通过
   - `CreateLocalPackage_IncludesRazorVueAuthoringAssets` 已覆盖当前 analyzer payload，并加入 Razor Compiler / Razor Utilities Shared 负向包内容守卫
-  - `samples/RazorVue.TodoList/build-local.ps1` 已通过本地 pack 样例验证，当前输出 `razorvueSfcArtifacts=2`
-  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `.\scripts\run-deno.ps1 task build`，底层调用仓库内 bundled `deno.exe`，证明生成 SFC 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费
-  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `.\scripts\run-deno.ps1 task smoke:ssr`，证明生成 SFC 可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render
-  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `.\scripts\run-deno.ps1 task smoke:bundle-api`，证明同一预编译入口也可被 `Deno.bundle()` API 消费
+  - `samples/RazorVue.TodoList/build-local.cs` 已通过本地 pack 样例验证，当前输出 `razorvueSfcArtifacts=2`
+  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task build`，底层调用仓库内 bundled `deno.exe`，证明生成 SFC 可被纯 Deno SFC 预编译 + `deno bundle` production build 消费
+  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:ssr`，证明生成 SFC 可经纯 Deno 预编译、Vue server renderer 和 Vuetify plugin 做 runtime render
+  - `samples/RazorVue.TodoList/todo-consumer` 已通过 `dotnet run --file .\scripts\run-deno.cs -- task smoke:bundle-api`，证明同一预编译入口也可被 `Deno.bundle()` API 消费
   - SFC component prop lowering 已保留 literal 类型语义：字符串 literal 继续静态输出，Boolean / numeric 等非字符串 literal 输出 Vue bound prop，当前 TodoList 中 `VContainer :fluid="true"`、`VCol :cols="12"` 不再触发 Vue prop 类型 warning
   - `Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts` 已通过，证明独立临时 consumer 可只通过 NuGet 包、官方 Razor SG 和 `.razor` authoring 生成 SFC artifact
   - 最新 `dotnet pack src/Jazor/Jazor.csproj -c Release -v minimal` 仍需在 sample/consumer smoke 前复跑；包 payload 不得回退携带 Razor Compiler / Razor Utilities Shared

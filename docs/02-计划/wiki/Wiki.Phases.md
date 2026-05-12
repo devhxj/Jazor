@@ -29,7 +29,7 @@
 - `WikiCatalogGuard.cs` 启动校验全部路由目录完整性；
 - `Wiki.csproj` 已开启 `JazorEmit`，输出到 `wwwroot/jazor`；
 - `main.mjs`、`components/wiki-home.mjs` 与 manifest（48 模块）已稳定产出；
-- `serve.ps1` / `build-local.ps1` / `verify-smoke.ps1` / `verify-browser.ps1` 构建与验证闭环；
+- `wiki-serve.cs` / `wiki-build-local.cs` / `wiki-verify-smoke.cs` / `wiki-verify-browser.cs` 构建与验证闭环；
 - `Wiki:PathBase` / `Wiki__PathBase` 子路径部署支持已打通；
 - 开发时 injected client、reload websocket、静态资源 URL、discovery documents、SourceMap 服务链路都已在根路径和 `/docs` 子路径下通过验证。
 
@@ -91,7 +91,7 @@
 
 当前状态：
 
-- 已完成。Vue 3 已本地化到 `wwwroot/vendor/`，站点完全离线可用；GitHub Actions CI workflow 在 PR/push 时自动运行 smoke + publish-smoke 验证；`DEPLOY.md` 文档化了发布命令、目录结构契约、关键不变量和回滚程序；`verify-smoke.ps1` 包含漂移检测和 vendor 断言。
+- 已完成。Vue 3 已本地化到 `wwwroot/vendor/`，站点完全离线可用；GitHub Actions CI workflow 在 PR/push 时自动运行 smoke + publish-smoke 验证；`DEPLOY.md` 文档化了发布命令、目录结构契约、关键不变量和回滚程序；`wiki-verify-smoke.cs` 包含漂移检测和 vendor 断言。
 
 ### Phase 5: ASP.NET Core Hosting Hardening（已完成）
 
@@ -101,7 +101,7 @@
 
 当前状态：
 
-- 已完成。`Wiki:PathBase` / `Wiki__PathBase` 已支持反向代理子路径部署；`wwwroot/index.html` 已改为 host-rendered token shell；开发重载注入脚本和 websocket 已支持 path base；`verify-smoke.ps1` 与 `verify-browser.ps1` 已覆盖根路径和 `/docs` 子路径；浏览器验证已覆盖 `main.mjs` / `wiki-home.mjs` 的 `sourceMapURL` 与 `.mjs.map` 服务链路。
+- 已完成。`Wiki:PathBase` / `Wiki__PathBase` 已支持反向代理子路径部署；`wwwroot/index.html` 已改为 host-rendered token shell；开发重载注入脚本和 websocket 已支持 path base；`wiki-verify-smoke.cs` 与 `wiki-verify-browser.cs` 已覆盖根路径和 `/docs` 子路径；浏览器验证已覆盖 `main.mjs` / `wiki-home.mjs` 的 `sourceMapURL` 与 `.mjs.map` 服务链路。
 
 ## 4. 推荐推进路径
 
@@ -139,8 +139,8 @@ Phase 1–5 已全部完成。当前不再建议把 `Wiki` 当成“待 producti
 
 验收标准：
 
-- CI 稳定运行 `verify-smoke.ps1 -Publish -PathBase /docs`；
-- CI 稳定运行 `verify-browser.ps1 -Publish -PathBase /docs`。
+- CI 稳定运行 `wiki-verify-smoke.cs -- --publish --path-base /docs`；
+- CI 稳定运行 `wiki-verify-browser.cs -- --publish --path-base /docs`。
 
 ### Task 2: 复用 ASP.NET Core 宿主基元
 
@@ -195,8 +195,8 @@ Phase 5 的进入条件已经全部满足并完成收口：
 - `src/Wiki/WikiHomeModule.Elements.cs`（元素工具，413 行）
 - `src/Wiki/WikiCatalogGuard.cs`（启动校验）
 - `src/Wiki/wwwroot/site.css`（样式，1377 行）
-- `src/Wiki/build-local.ps1`
-- `src/Wiki/serve.ps1`
-- `src/Wiki/verify-smoke.ps1`
-- `src/Wiki/verify-browser.ps1`
+- `scripts/csharp/wiki-build-local.cs`
+- `scripts/csharp/wiki-serve.cs`
+- `scripts/csharp/wiki-verify-smoke.cs`
+- `scripts/csharp/wiki-verify-browser.cs`
 - `docs/03-完成/wiki/status.md`

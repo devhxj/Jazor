@@ -70,13 +70,13 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter 'FullyQualifiedNam
 ```
 
 ```powershell
-pwsh .\src\Wiki\verify-smoke.ps1 -Build
-pwsh .\src\Wiki\verify-browser.ps1 -BuildLocal
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local
 ```
 
 ```powershell
-pwsh .\src\Wiki\verify-smoke.ps1 -Build -PathBase /docs
-pwsh .\src\Wiki\verify-browser.ps1 -BuildLocal -PathBase /docs
+dotnet run --file .\scripts\csharp\wiki-verify-smoke.cs -- --build --path-base /docs
+dotnet run --file .\scripts\csharp\wiki-verify-browser.cs -- --build-local --path-base /docs
 ```
 
 以上验证已经覆盖：
@@ -120,8 +120,8 @@ pwsh .\src\Wiki\verify-browser.ps1 -BuildLocal -PathBase /docs
 - `src/Wiki/Program.cs`
 - `src/Wiki/WikiHostShell.cs`
 - `src/Wiki/WikiHomeModule.cs`
-- `src/Wiki/verify-smoke.ps1`
-- `src/Wiki/verify-browser.ps1`
+- `scripts/csharp/wiki-verify-smoke.cs`
+- `scripts/csharp/wiki-verify-browser.cs`
 - `src/Jazor.AspNetCore.Dev/`
 - `src/Jazor.EmitTest/JazorAspNetCoreDevelopmentReloadTests.cs`
 - `src/Jazor.EmitTest/JazorAspNetCoreHostingTests.cs`

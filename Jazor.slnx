@@ -36,6 +36,7 @@
   <Project Path="src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
   <Project Path="src/Jazor.Emit/Jazor.Emit.csproj" />
   <Project Path="src/Jazor.Common/Jazor.Common.csproj" />
+  <Project Path="src/Playground/Playground/Playground.csproj" />
   <Project Path="src/Wiki/Wiki.csproj" />
   <Project Path="src/Jazor.RazorVue/Jazor.RazorVue.csproj" />
   <Project Path="src/Jazor/Jazor.csproj" />

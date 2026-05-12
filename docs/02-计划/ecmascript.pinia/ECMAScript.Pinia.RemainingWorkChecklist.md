@@ -12,7 +12,7 @@
 - `src/ECMAScript.Pinia/` 已作为独立项目存在；
 - `Api/` / `Types/` / `Pinia.cs` 壳文件分层已建立；
 - `ECMAScript.Pinia.Test` 已独立于 `Jazor.CompilerTest`；
-- `pwsh ./scripts/test-dotnet.ps1 -Project pinia` 已成为统一入口；
+- `dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia` 已成为统一入口；
 - 核心 runtime、hydration/HMR、以及常用 Options API helper 已有回归守护。
 
 当前更准确的状态是：**基础落地已完成，后续进入增量覆盖与 authoring contract 继续收口阶段**。
@@ -122,7 +122,7 @@
 - `samples/ECMAScript.Pinia.Counter/` 小型 store authoring sample
 - Vue3 + Pinia 联动示例
 - `storeToRefs()` + `$patch()` + `$reset()` 的最小消费场景
-- `verify-smoke.ps1` 默认隔离 generated output，并通过 consumer alias 消费，不再要求 smoke 改写已跟踪 `wwwroot/jazor` 产物
+- `verify-smoke.cs` 默认隔离 generated output，并通过 consumer alias 消费，不再要求 smoke 改写已跟踪 `wwwroot/jazor` 产物
 
 后续仍可按需求追加：
 

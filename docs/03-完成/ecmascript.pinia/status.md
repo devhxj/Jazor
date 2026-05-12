@@ -12,7 +12,7 @@
 - public surface 已按 `Api/` 与 `Types/` 分层拆分；
 - `Pinia.cs` 保持模块入口壳文件职责；
 - Pinia 相关测试已从 `Jazor.CompilerTest` 拆出，独立为 `src/ECMAScript.Pinia.Test/`；
-- 统一测试入口已支持 `pwsh ./scripts/test-dotnet.ps1 -Project pinia`；
+- 统一测试入口已支持 `dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia`；
 - 已补 `samples/ECMAScript.Pinia.Counter/` 真实消费示例，覆盖 Vue 3 + Pinia + emitted modules 的联动路径；
 - `@pinia/testing` 已独立为 `src/ECMAScript.Pinia.Testing/` 与 `src/ECMAScript.Pinia.Testing.Test/`，并接入 solution / script / Jazor package build；
 - plugin / action listener 的 typed proxy 合同已补齐，覆盖 `PiniaPluginContext<TStore, TOptions>`、`PiniaPluginContext<TStore, TOptions, ...>`、`DefineStoreOptionsInPlugin`、`OnAction<TStore>(...)`、`StoreActionListenerContext.After<TResult>(...)` 的显式结果类型投影，以及 `OnAnyError(PiniaValue?)` / `OnError<TError>(...)` 的错误值建模；
@@ -72,8 +72,8 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 
 - 新测试项目：`src/ECMAScript.Pinia.Test/`
 - 新测试项目：`src/ECMAScript.Pinia.Testing.Test/`
-- 统一脚本入口：`pwsh ./scripts/test-dotnet.ps1 -Project pinia`
-- 统一脚本入口：`pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing`
+- 统一脚本入口：`dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia`
+- 统一脚本入口：`dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia-testing`
 - 覆盖率配置：`src/ECMAScript.Pinia.Test/coverlet.runsettings`
 - 覆盖率配置：`src/ECMAScript.Pinia.Testing.Test/coverlet.runsettings`
 
@@ -129,10 +129,10 @@ Pinia 测试不再继续混在 `Jazor.CompilerTest`：
 - `src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj` 可独立测试
 - `src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj` 可独立构建
 - `src/ECMAScript.Pinia.Testing.Test/ECMAScript.Pinia.Testing.Test.csproj` 可独立测试
-- `pwsh ./scripts/test-dotnet.ps1 -Project pinia` 可作为统一入口运行
-- `pwsh ./scripts/test-dotnet.ps1 -Project pinia-testing` 可作为统一入口运行
-- `samples/ECMAScript.Pinia.Counter/build-local.ps1` 可重建本地 sample host
-- `samples/ECMAScript.Pinia.Counter/verify-smoke.ps1` 现默认把 generated modules 输出到仓库内隔离 `.tmp/sample-smoke/.../jazor/` 路径，并通过 consumer 侧 Vite alias + `JAZOR_GENERATED_ROOT` 消费，避免 smoke 运行后污染已跟踪 `wwwroot/jazor` 产物
+- `dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia` 可作为统一入口运行
+- `dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia-testing` 可作为统一入口运行
+- `samples/ECMAScript.Pinia.Counter/build-local.cs` 可重建本地 sample host
+- `samples/ECMAScript.Pinia.Counter/verify-smoke.cs` 现默认把 generated modules 输出到仓库内隔离 `.tmp/sample-smoke/.../jazor/` 路径，并通过 consumer 侧 Deno consumer alias + `JAZOR_GENERATED_ROOT` 消费，避免 smoke 运行后污染已跟踪 `wwwroot/jazor` 产物
 - layout guard 已约束：
   - `Api/` + `Types/` 分层
   - `Pinia.cs` 壳文件边界

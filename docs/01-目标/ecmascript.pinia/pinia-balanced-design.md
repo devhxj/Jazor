@@ -74,7 +74,7 @@
 
 - 结构和反射合同验证放在 `ECMAScript.Pinia.Test`。
 - 编译降级验证仍可引用 `Jazor.Compiler`，但测试所有权不再属于 `Jazor.CompilerTest`。
-- 统一测试入口通过 `pwsh ./scripts/test-dotnet.ps1 -Project pinia` 暴露。
+- 统一测试入口通过 `dotnet run --file ./scripts/csharp/test-dotnet.cs -- --project pinia` 暴露。
 
 ## 设计取舍
 

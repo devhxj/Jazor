@@ -86,7 +86,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedNam
 ```
 
 ```powershell
-pwsh .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.ps1 -Configuration Debug
+dotnet run --file .\samples\ECMAScript.VueRoute.MemorySmoke\verify-smoke.cs -- -Configuration Debug
 ```
 
 sample smoke 覆盖的运行时断言包括：

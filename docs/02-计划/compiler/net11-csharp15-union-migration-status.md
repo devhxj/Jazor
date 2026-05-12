@@ -46,7 +46,7 @@
 - In-memory reference assembly consumers were moved from `Basic.Reference.Assemblies.Net100` to `Basic.Reference.Assemblies.Net110`.
 - Checked-in sample manifests for Pinia, VueRoute, MultiProject, and RazorVue TodoList were refreshed through their build pipelines so `RootAssemblyPath` points to `net11.0` output instead of stale `net10.0` output.
 - `SampleGeneratedArtifactLayoutTests` now guards checked-in sample manifest layout: standard manifests must target `net11.0`, must not contain stale `net10.0`, and every declared module/source-map path must exist under the manifest output root. RazorVue SFC manifests are also checked for declared module/source-map/origin files and safe relative SFC imports.
-- `src/Wiki/build-local.ps1` now accepts `BaseOutputPath` and `BaseIntermediateOutputPath`, forwards them as isolated build roots, and disables shared compilation/node reuse for deterministic smoke-script reuse.
+- `scripts/csharp/wiki-build-local.cs` now accepts `BaseOutputPath` and `BaseIntermediateOutputPath`, forwards them as isolated build roots, and disables shared compilation/node reuse for deterministic smoke-script reuse.
 
 ## Latest Verification
 
@@ -93,8 +93,8 @@
 - `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after centralizing analyzer operation registration.
 - `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~SampleGeneratedArtifactLayoutTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 1/1 test.
 - `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1` passed with 0 warnings and 0 errors after the analyzer object-literal Add guard and sample manifest guard updates.
-- `.\src\Wiki\build-local.ps1 -BaseOutputPath '.tmp\wiki-buildlocal-out' -BaseIntermediateOutputPath '.tmp\wiki-buildlocal-obj'` passed with 0 warnings and 0 errors, proving the Wiki build-local script can be reused by isolated smoke/browser verification lanes.
-- Sample refresh scripts passed for `samples\Jazor.MultiProject\build-local.ps1`, `samples\ECMAScript.Pinia.Counter\build-local.ps1`, `samples\ECMAScript.VueRoute.MemorySmoke\build-local.ps1`, and `samples\RazorVue.TodoList\build-local.ps1`. The first Pinia refresh exposed the object-literal `Add(key, value)` analyzer gap; the rerun passed after the analyzer fix.
+- `dotnet run --file .\scripts\csharp\wiki-build-local.cs -- --base-output-path '.tmp\wiki-buildlocal-out' --base-intermediate-output-path '.tmp\wiki-buildlocal-obj'` passed with 0 warnings and 0 errors, proving the Wiki build-local script can be reused by isolated smoke/browser verification lanes.
+- Sample refresh scripts passed for `samples\Jazor.MultiProject\build-local.cs`, `samples\ECMAScript.Pinia.Counter\build-local.cs`, `samples\ECMAScript.VueRoute.MemorySmoke\build-local.cs`, and `samples\RazorVue.TodoList\build-local.cs`. The first Pinia refresh exposed the object-literal `Add(key, value)` analyzer gap; the rerun passed after the analyzer fix.
 - `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj --filter 'FullyQualifiedName~Build_LocalPackages_RazorVueTodoListSample_PureDenoPipeline_PassesInIsolatedWorkspace|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_EmitsVueSfcArtifacts|FullyQualifiedName~Build_LocalPackages_WithExternalRazorSgSfcConsumer_PureDenoPipeline_PassesInIsolatedWorkspace' -v minimal -p:UseSharedCompilation=false -m:1` passed: 3/3 tests after Razor 11 attribute-expression fixes and non-null sample text parameters.
 - `dotnet test src\Jazor.EmitTest\Jazor.EmitTest.csproj -v minimal -p:UseSharedCompilation=false -m:1` passed: 110/110 tests after the Razor 11 attribute-expression fixes and non-null sample text-parameter cleanup.
 - Direct `dotnet build samples\RazorVue.TodoList\Todo.Library\Todo.Library.csproj` is not a valid standalone verification in this checkout without a matching local `0.1.20` package feed. It currently fails restore with `NU1102`; the isolated local-package EmitTest flow is the authoritative sample verification.
@@ -109,7 +109,7 @@
 - `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltWorkspaceResolverTests|FullyQualifiedName~JoltSharedLspProcessTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 20/20 tests.
 - `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 43/43 tests.
 - `dotnet test src\Jolt.Test\Jolt.Test.csproj --no-build --filter 'FullyQualifiedName~JoltFrontendLaneTests' -v minimal -p:UseSharedCompilation=false -m:1` passed: 45/45 tests.
-- `pwsh ./scripts/verify-nuget-package.ps1 -Configuration Debug -OutputDirectory '.verify-out\nuget-preflight-net11'` passed and verified the generated `Jazor.0.1.20-alpha.0.83.nupkg` contains the expected `lib\net11.0` and `tools\net11.0` entries.
+- `dotnet run --file ./scripts/csharp/verify-nuget-package.cs -- -Configuration Debug -OutputDirectory '.verify-out\nuget-preflight-net11'` passed and verified the generated `Jazor.0.1.20-alpha.0.83.nupkg` contains the expected `lib\net11.0` and `tools\net11.0` entries.
 - `dotnet build Jazor.slnx -v minimal -p:UseSharedCompilation=false -m:1 -p:JazorIsolatedBaseOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-out\net11-toolchain-final-v2\' -p:JazorIsolatedBaseIntermediateOutputRoot='D:\repository\own\jazor\Jazor\.dotnet-obj\net11-toolchain-final-v2\'` passed with 0 warnings and 0 errors.
 - `dotnet run --file scripts/csharp/inspect-razor-generator-result.cs` passed and resolved the Razor compiler from the SDK selected by `global.json`.
 
@@ -129,7 +129,7 @@ Resolution: `Jazor.Analyzer` now allows only non-static ordinary instance `Add(k
 
 - Do not hand-edit generated sample manifests, module paths, hashes, or timestamps. Refresh them through each sample's build pipeline.
 - The manifest `Hash`, `MapHash`, and RazorVue `ContentHash` values are generator content hashes, not a stable contract that the checked-in file bytes must equal after repository newline normalization. Guard file presence and path boundaries in layout tests; test hash semantics at the generator/writer layer where the source content string is available.
-- `src/Wiki/wwwroot/jazor` and `src/Wiki/jazor` are ignored local/publish outputs. They may show stale `net10.0` locally after previous publish checks, but they are not checked-in source-of-truth artifacts. Use `src/Wiki/build-local.ps1`, `src/Wiki/verify-smoke.ps1 -Publish`, or `src/Wiki/verify-browser.ps1 -Publish` to regenerate and validate them when working on Wiki release output.
+- `src/Wiki/wwwroot/jazor` and `src/Wiki/jazor` are ignored local/publish outputs. They may show stale `net10.0` locally after previous publish checks, but they are not checked-in source-of-truth artifacts. Use `scripts/csharp/wiki-build-local.cs`, `scripts/csharp/wiki-verify-smoke.cs -- --publish`, or `scripts/csharp/wiki-verify-browser.cs -- --publish` to regenerate and validate them when working on Wiki release output.
 
 ## Next Work
 

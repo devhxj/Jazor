@@ -463,7 +463,7 @@
 
 ```bash
 # 运行所有测试
-pwsh ./scripts/test-dotnet.ps1
+dotnet run --file ./scripts/csharp/test-dotnet.cs
 
 # 运行特定测试项目
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
