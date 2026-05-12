@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 迷你图表组件的编写代理，用于紧凑趋势和柱状可视化。
 /// Vuetify sparkline authoring proxy for compact trend and bar visualizations.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSparkline")]

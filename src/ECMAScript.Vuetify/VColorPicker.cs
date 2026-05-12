@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 颜色选择器创作代理。
 /// Vuetify color-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VColorPicker")]

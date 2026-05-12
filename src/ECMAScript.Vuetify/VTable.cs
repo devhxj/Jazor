@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 表格组件的编写代理。
+/// Vuetify table authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VTable")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 警告框类型。
+/// Vuetify alert type.
+/// </summary>
 [String]
 public enum VuetifyAlertType
 {

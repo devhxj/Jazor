@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 导航抽屉组件。
+/// Vuetify navigation drawer component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VNavigationDrawer")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

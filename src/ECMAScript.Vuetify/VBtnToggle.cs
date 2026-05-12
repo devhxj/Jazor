@@ -9,6 +9,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 按钮切换组件。
+/// Vuetify button toggle component.
+/// </summary>
 public sealed class VBtnToggle : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

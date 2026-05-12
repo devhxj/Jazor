@@ -6,6 +6,7 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 文本输入框组件的编写代理。
 /// Vuetify text-field authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTextField")]

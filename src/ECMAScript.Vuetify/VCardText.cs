@@ -7,6 +7,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 卡片文本区域组件。
+/// Vuetify card text section component.
+/// </summary>
 public sealed class VCardText : ComponentBase, IVueLibraryComponent
 {
     [Parameter(CaptureUnmatchedValues = true)]

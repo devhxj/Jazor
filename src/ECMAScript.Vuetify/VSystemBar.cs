@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 系统栏组件的编写代理。
+/// Vuetify system bar authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VSystemBar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

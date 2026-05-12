@@ -13,6 +13,10 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Append), Name = "append")]
 [VueLibrarySlot(nameof(Close), Name = "close")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 警告提示组件。
+/// Vuetify alert component.
+/// </summary>
 public sealed class VAlert : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

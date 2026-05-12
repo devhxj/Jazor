@@ -8,6 +8,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 卡片副标题组件。
+/// Vuetify card subtitle component.
+/// </summary>
 public sealed class VCardSubtitle : ComponentBase, IVueLibraryComponent
 {
     [Parameter(CaptureUnmatchedValues = true)]

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 对话框创作代理，基于遮罩层的模态内容。
 /// Vuetify dialog authoring proxy for overlay-backed modal content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDialog")]

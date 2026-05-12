@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 选择控件组件共享的编写基类。
 /// Shared Vuetify selection-control authoring surface.
 /// </summary>
 public abstract class VSelectionControlComponentBase : ComponentBase

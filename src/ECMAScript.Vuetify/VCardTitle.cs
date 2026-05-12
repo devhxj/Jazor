@@ -7,6 +7,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 卡片标题组件。
+/// Vuetify card title component.
+/// </summary>
 public sealed class VCardTitle : ComponentBase, IVueLibraryComponent
 {
     [Parameter(CaptureUnmatchedValues = true)]

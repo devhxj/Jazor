@@ -6,6 +6,7 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 复选框创作代理。
 /// Vuetify checkbox authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VCheckbox")]

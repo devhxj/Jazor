@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 列表项组件，用于列表中的单个交互条目。
+/// Vuetify list item component for a single interactive entry within a list.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VListItem")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

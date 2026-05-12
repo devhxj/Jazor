@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify Labs 日历创作代理。
 /// Vuetify labs calendar authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VCalendar")]

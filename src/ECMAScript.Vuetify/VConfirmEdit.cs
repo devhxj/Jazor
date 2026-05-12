@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 确认编辑创作代理，用于可编辑值的确认流程。
 /// Vuetify confirm-edit authoring proxy for editable value confirmation flows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VConfirmEdit")]

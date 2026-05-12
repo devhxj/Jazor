@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// 共享的 Vuetify 文本输入创作基类，提供字段和输入属性。
 /// Shared Vuetify text input authoring surface for field and input props.
 /// </summary>
 public abstract class VInputComponentBase : ComponentBase

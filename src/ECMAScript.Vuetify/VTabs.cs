@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 标签页组组件的编写代理。
+/// Vuetify tabs authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VTabs")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

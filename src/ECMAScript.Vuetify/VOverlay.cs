@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 遮罩层组件。
+/// Vuetify overlay component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VOverlay")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

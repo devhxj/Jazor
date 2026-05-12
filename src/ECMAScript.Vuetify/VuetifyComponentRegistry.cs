@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 稳定组件的注册表。
+/// Registry of stable Vuetify components.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyComponentRegistry")]
 public sealed record VuetifyComponentRegistry : VueComponentRegistry
@@ -320,6 +324,10 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
     public IVuetifyComponent? VWindow { get; init; }
 }
 
+/// <summary>
+/// Vuetify 实验室组件的注册表。
+/// Registry of Vuetify labs components.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyLabsComponentRegistry")]
 public sealed record VuetifyLabsComponentRegistry : VueComponentRegistry

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 按钮创作代理。
 /// Vuetify button authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBtn")]

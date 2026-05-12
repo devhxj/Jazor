@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify VCounter 公开的默认插槽上下文。
+/// Default slot context exposed by Vuetify VCounter.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VCounterDefaultSlotContext

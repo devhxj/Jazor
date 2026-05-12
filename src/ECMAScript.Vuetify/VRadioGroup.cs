@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 单选按钮组组件。
+/// Vuetify radio group component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VRadioGroup")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

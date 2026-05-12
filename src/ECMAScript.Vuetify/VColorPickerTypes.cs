@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 颜色选择器模式枚举。
+/// Vuetify color picker mode enum.
+/// </summary>
 [String]
 public enum VuetifyColorPickerMode
 {
@@ -25,6 +29,10 @@ public enum VuetifyColorPickerMode
     Hexa
 }
 
+/// <summary>
+/// Vuetify 颜色选择器可用模式集合。
+/// Collection of available Vuetify color picker modes.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -62,6 +70,10 @@ public static class VuetifyColorPickerModesCollectionBuilder
         => modes.ToArray();
 }
 
+/// <summary>
+/// Vuetify RGB 颜色值。
+/// Vuetify RGB color value.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyRgbColor : VueProps
@@ -79,6 +91,10 @@ public sealed record VuetifyRgbColor : VueProps
     public Number? A { get; init; }
 }
 
+/// <summary>
+/// Vuetify HSV 颜色值。
+/// Vuetify HSV color value.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyHsvColor : VueProps
@@ -96,6 +112,10 @@ public sealed record VuetifyHsvColor : VueProps
     public Number? A { get; init; }
 }
 
+/// <summary>
+/// Vuetify HSL 颜色值。
+/// Vuetify HSL color value.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyHslColor : VueProps
@@ -113,6 +133,10 @@ public sealed record VuetifyHslColor : VueProps
     public Number? A { get; init; }
 }
 
+/// <summary>
+/// Vuetify 颜色值联合类型，支持字符串、数值、RGB、HSV 和 HSL 表示。
+/// Vuetify color value union type supporting string, number, RGB, HSV, and HSL representations.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -253,6 +277,10 @@ public readonly struct VuetifyColorValue : System.Runtime.CompilerServices.IUnio
         => new((Number)value);
 }
 
+/// <summary>
+/// Vuetify 颜色选择器色板行，表示一组颜色值。
+/// Vuetify color picker swatch row, representing a group of color values.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -311,6 +339,10 @@ public static class VuetifyColorPickerSwatchCollectionBuilder
         => colors.ToArray();
 }
 
+/// <summary>
+/// Vuetify 颜色选择器色板集合。
+/// Vuetify color picker swatches collection.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

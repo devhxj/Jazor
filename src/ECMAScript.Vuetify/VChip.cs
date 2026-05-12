@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 芯片组件创作代理。
+/// Vuetify chip component authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VChip")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

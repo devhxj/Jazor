@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// 第一波 Vuetify 面包屑导航存根，用于 RazorVue 创作。
 /// First-wave Vuetify breadcrumbs stub for RazorVue authoring.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VBreadcrumbs")]

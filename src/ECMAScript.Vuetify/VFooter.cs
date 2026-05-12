@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 页脚组件。
+/// Vuetify footer component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VFooter")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

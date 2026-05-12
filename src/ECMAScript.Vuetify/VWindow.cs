@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 窗口组件的创作代理，用于分组面板导航。
 /// Vuetify window authoring proxy for grouped panel navigation.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VWindow")]

@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify VWindow show-arrows 接受的方向模式。
 /// Direction mode accepted by Vuetify VWindow show-arrows.
 /// </summary>
 [String]

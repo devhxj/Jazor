@@ -7,6 +7,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 头像组件。
+/// Vuetify avatar component.
+/// </summary>
 public sealed class VAvatar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

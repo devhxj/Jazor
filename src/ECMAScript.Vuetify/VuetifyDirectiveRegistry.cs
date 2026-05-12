@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 指令的注册表。
+/// Registry of Vuetify directives.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyDirectiveRegistry")]
 public sealed record VuetifyDirectiveRegistry : VueDirectiveRegistry

@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 消息条组件的编写代理。
+/// Vuetify snackbar authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

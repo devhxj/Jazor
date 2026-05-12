@@ -10,6 +10,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(Activator), Name = "activator")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 底部抽屉组件。
+/// Vuetify bottom sheet component.
+/// </summary>
 public sealed class VBottomSheet : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 日历视图模式（月、周、日）。
+/// Calendar view mode (month, week, day).
+/// </summary>
 [String]
 public enum VuetifyCalendarViewMode
 {
@@ -16,6 +20,10 @@ public enum VuetifyCalendarViewMode
     Day
 }
 
+/// <summary>
+/// 月份中周数的计算方式。
+/// Weeks-in-month calculation mode.
+/// </summary>
 [String]
 public enum VuetifyCalendarWeeksInMonth
 {
@@ -26,6 +34,10 @@ public enum VuetifyCalendarWeeksInMonth
     Dynamic
 }
 
+/// <summary>
+/// 日历日期值，支持 Date、string 或 Number 类型。
+/// Calendar date value supporting Date, string, or Number types.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -120,6 +132,10 @@ public readonly struct VuetifyCalendarDateValue : System.Runtime.CompilerService
         => new((Number)value);
 }
 
+/// <summary>
+/// 日历日期值集合，用于多日期选择。
+/// Calendar date value collection for multi-date selection.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -172,8 +188,16 @@ public static class VuetifyCalendarDateValuesCollectionBuilder
         => values.ToArray();
 }
 
+/// <summary>
+/// 日历允许日期解析委托，用于判断某日期是否可选。
+/// Delegate to resolve whether a calendar date is allowed for selection.
+/// </summary>
 public delegate bool VuetifyCalendarAllowedDateResolver(VuetifyCalendarDateValue date);
 
+/// <summary>
+/// 日历允许日期值，支持日期集合或自定义过滤函数。
+/// Calendar allowed dates value supporting date collections or custom filter functions.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -239,6 +263,10 @@ public readonly struct VuetifyCalendarAllowedDatesValue : System.Runtime.Compile
         => new((VuetifyCalendarDateValues)values);
 }
 
+/// <summary>
+/// 日历事件项，包含标题、起止时间和颜色等属性。
+/// Calendar event item with title, start/end time, and color properties.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyCalendarEventItem : VueProps
@@ -259,6 +287,10 @@ public sealed record VuetifyCalendarEventItem : VueProps
     public bool? AllDay { get; init; }
 }
 
+/// <summary>
+/// 日历事件集合，用于批量传递事件数据。
+/// Calendar event collection for bulk event data.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -296,6 +328,10 @@ public static class VuetifyCalendarEventsCollectionBuilder
         => events.ToArray();
 }
 
+/// <summary>
+/// 日历日对象，包含日期、格式化文本和状态标志。
+/// Calendar day object with date, formatted text, and status flags.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyCalendarDay : VueProps
@@ -331,6 +367,10 @@ public sealed record VuetifyCalendarDay : VueProps
     public bool? IsSelected { get; init; }
 }
 
+/// <summary>
+/// 日历时间间隔，包含标签、起止时间和关联事件。
+/// Calendar time interval with label, start/end time, and associated events.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyCalendarInterval : VueProps
@@ -348,8 +388,16 @@ public sealed record VuetifyCalendarInterval : VueProps
     public VuetifyCalendarEvents? Events { get; init; }
 }
 
+/// <summary>
+/// 日历时间间隔格式化委托，用于自定义间隔标签文本。
+/// Delegate to format calendar interval label text.
+/// </summary>
 public delegate string VuetifyCalendarIntervalFormatter(VuetifyCalendarInterval interval);
 
+/// <summary>
+/// 日历时间间隔格式值，支持格式字符串或自定义格式化函数。
+/// Calendar interval format value supporting format strings or custom formatter functions.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -397,6 +445,10 @@ public readonly struct VuetifyCalendarIntervalFormatValue : System.Runtime.Compi
         => new(value);
 }
 
+/// <summary>
+/// 日历头部插槽上下文，提供标题数据。
+/// Calendar header slot context providing title data.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VCalendarHeaderSlotContext
@@ -405,6 +457,10 @@ public sealed record VCalendarHeaderSlotContext
     public string? Title { get; init; }
 }
 
+/// <summary>
+/// 日历事件插槽上下文，提供日、全天标志和事件数据。
+/// Calendar event slot context providing day, all-day flag, and event data.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VCalendarEventSlotContext

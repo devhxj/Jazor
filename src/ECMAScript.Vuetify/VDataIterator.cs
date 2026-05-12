@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 数据迭代器创作代理，用于过滤、排序、分组和分页的项渲染。
 /// Vuetify data-iterator authoring proxy for filtered, sorted, grouped, paginated item rendering.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataIterator")]

@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 迷你图表的类型枚举。
+/// Sparkline visualization type enum.
+/// </summary>
 [String]
 public enum VuetifySparklineType
 {
@@ -13,6 +17,10 @@ public enum VuetifySparklineType
     Bar
 }
 
+/// <summary>
+/// 迷你图表渐变方向枚举。
+/// Sparkline gradient direction enum.
+/// </summary>
 [String]
 public enum VuetifySparklineGradientDirection
 {
@@ -29,6 +37,10 @@ public enum VuetifySparklineGradientDirection
     Right
 }
 
+/// <summary>
+/// 迷你图表数据项列表的擦除值联合类型。
+/// Erased value union for sparkline data item lists.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -81,6 +93,10 @@ public static class VuetifySparklineItemsCollectionBuilder
         => items.ToArray();
 }
 
+/// <summary>
+/// 单个迷你图表数据项的擦除值联合类型。
+/// Erased value union for a single sparkline data item.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -175,6 +191,10 @@ public readonly struct VuetifySparklineItem : System.Runtime.CompilerServices.IU
         => new((Number)value);
 }
 
+/// <summary>
+/// 带有显式值的迷你图表数据项记录。
+/// Sparkline data item record with an explicit value.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifySparklineValueItem : VueProps
@@ -183,6 +203,10 @@ public sealed record VuetifySparklineValueItem : VueProps
     public Number? Value { get; init; }
 }
 
+/// <summary>
+/// 迷你图表平滑度的擦除值联合类型。
+/// Erased value union for sparkline smooth setting.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -278,6 +302,7 @@ public readonly struct VuetifySparklineSmoothValue : System.Runtime.CompilerServ
 }
 
 /// <summary>
+/// Vuetify VSparkline 标签插槽所暴露的插槽上下文。
 /// Label slot context exposed by Vuetify VSparkline.
 /// </summary>
 [ECMAScript]

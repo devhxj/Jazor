@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 范围滑块组件。
+/// Vuetify range slider component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VRangeSlider")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 数字输入组件。
+/// Vuetify number input component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VNumberInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

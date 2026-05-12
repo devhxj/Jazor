@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 空状态创作代理，用于无数据和引导界面。
 /// Vuetify empty-state authoring proxy for no-data and onboarding surfaces.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VEmptyState")]

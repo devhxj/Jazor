@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 骨架加载器组件的编写代理，用于加载占位符和延迟内容。
 /// Vuetify skeleton-loader authoring proxy for loading placeholders and deferred content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSkeletonLoader")]

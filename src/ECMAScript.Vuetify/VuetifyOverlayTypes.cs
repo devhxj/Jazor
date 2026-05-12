@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 覆盖层偏移值集合。
+/// Vuetify overlay offset value collection.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

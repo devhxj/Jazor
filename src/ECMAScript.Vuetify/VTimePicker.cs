@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 实验室时间选择器组件的编写代理。
 /// Vuetify labs time-picker authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTimePicker")]

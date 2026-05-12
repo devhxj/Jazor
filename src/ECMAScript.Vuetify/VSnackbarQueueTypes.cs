@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 消息条队列消息列表的擦除值联合类型。
+/// Erased value union for snackbar-queue message lists.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -46,6 +50,10 @@ public static class VuetifySnackbarQueueMessagesCollectionBuilder
         => items.ToArray();
 }
 
+/// <summary>
+/// 单条消息条队列消息的擦除值联合类型。
+/// Erased value union for a single snackbar-queue message.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -93,6 +101,10 @@ public readonly struct VuetifySnackbarQueueMessage : System.Runtime.CompilerServ
         => new(value);
 }
 
+/// <summary>
+/// 消息条队列消息的选项配置记录。
+/// Options record for a snackbar-queue message.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifySnackbarQueueMessageOptions : VueProps
@@ -132,6 +144,7 @@ public sealed record VuetifySnackbarQueueMessageOptions : VueProps
 }
 
 /// <summary>
+/// Vuetify VSnackbarQueue 默认和文本插槽所暴露的作用域插槽上下文。
 /// Scoped slot context exposed by Vuetify VSnackbarQueue default and text slots.
 /// </summary>
 [ECMAScript]
@@ -143,6 +156,7 @@ public sealed record VSnackbarQueueSlotContext
 }
 
 /// <summary>
+/// Vuetify VSnackbarQueue 操作插槽所暴露的作用域插槽上下文。
 /// Scoped slot context exposed by Vuetify VSnackbarQueue actions slot.
 /// </summary>
 [ECMAScript]
@@ -156,6 +170,10 @@ public sealed record VSnackbarQueueActionsSlotContext
     public VSnackbarQueueActionProps? Props { get; init; }
 }
 
+/// <summary>
+/// 消息条队列操作按钮的属性对象。
+/// Props object for snackbar-queue action buttons.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VSnackbarQueueActionProps : VueProps

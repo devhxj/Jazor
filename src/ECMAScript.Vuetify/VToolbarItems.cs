@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 工具栏项目组件的编写代理，用于分组工具栏操作。
 /// Vuetify toolbar-items authoring proxy for grouped toolbar actions.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarItems")]

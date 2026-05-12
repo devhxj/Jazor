@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 日期选择器视图模式。
+/// Vuetify date-picker view mode.
+/// </summary>
 [String]
 public enum VuetifyDatePickerViewMode
 {
@@ -16,6 +20,10 @@ public enum VuetifyDatePickerViewMode
     Year
 }
 
+/// <summary>
+/// Vuetify 日期选择器每月周数模式。
+/// Vuetify date-picker weeks-in-month mode.
+/// </summary>
 [String]
 public enum VuetifyDatePickerWeeksInMonth
 {
@@ -26,6 +34,10 @@ public enum VuetifyDatePickerWeeksInMonth
     Dynamic
 }
 
+/// <summary>
+/// Vuetify 日期选择器多选模式。
+/// Vuetify date-picker multiple-selection mode.
+/// </summary>
 [String]
 public enum VuetifyDatePickerMultipleMode
 {
@@ -33,6 +45,10 @@ public enum VuetifyDatePickerMultipleMode
     Range
 }
 
+/// <summary>
+/// Vuetify 日历星期枚举。
+/// Vuetify calendar weekday enumeration.
+/// </summary>
 public enum VuetifyCalendarWeekday
 {
     Sunday = 0,
@@ -44,6 +60,10 @@ public enum VuetifyCalendarWeekday
     Saturday = 6
 }
 
+/// <summary>
+/// Vuetify 日历工作日集合。
+/// Vuetify calendar weekdays collection.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -81,6 +101,10 @@ public static class VuetifyCalendarWeekdaysCollectionBuilder
         => weekdays.ToArray();
 }
 
+/// <summary>
+/// Vuetify 日期选择器多选值。
+/// Vuetify date-picker multiple-selection value.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -197,6 +221,10 @@ public readonly struct VuetifyDatePickerMultipleValue : System.Runtime.CompilerS
         => new((Number)value);
 }
 
+/// <summary>
+/// Vuetify 日期选择器模型值集合。
+/// Vuetify date-picker model value collection.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -246,6 +274,10 @@ public static class VuetifyDatePickerModelValuesCollectionBuilder
         => values.ToArray();
 }
 
+/// <summary>
+/// Vuetify 日期选择器模型值。
+/// Vuetify date-picker model value.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -379,6 +411,10 @@ public readonly struct VuetifyDatePickerModelValue : System.Runtime.CompilerServ
 
 public delegate bool VuetifyDatePickerAllowedDateResolver(VueValue? date);
 
+/// <summary>
+/// Vuetify 日期选择器允许日期集合。
+/// Vuetify date-picker allowed-dates collection.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -428,6 +464,10 @@ public static class VuetifyDatePickerAllowedDatesCollectionBuilder
         => values.ToArray();
 }
 
+/// <summary>
+/// Vuetify 日期选择器允许日期值。
+/// Vuetify date-picker allowed-dates value.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -490,6 +530,10 @@ public readonly struct VuetifyDatePickerAllowedDatesValue : System.Runtime.Compi
         => new((VuetifyDatePickerAllowedDates)values);
 }
 
+/// <summary>
+/// Vuetify 日期选择器激活值。
+/// Vuetify date-picker active value.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -537,6 +581,10 @@ public readonly struct VuetifyDatePickerActiveValue : System.Runtime.CompilerSer
         => new(value);
 }
 
+/// <summary>
+/// Vuetify VDatePicker 标题插槽上下文。
+/// Vuetify VDatePicker header slot context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VDatePickerHeaderSlotContext

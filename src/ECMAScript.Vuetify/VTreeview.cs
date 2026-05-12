@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 实验室树形视图组件的创作代理。
 /// Vuetify labs treeview authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]

@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 计数器组件创作代理。
+/// Vuetify counter component authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VCounter")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

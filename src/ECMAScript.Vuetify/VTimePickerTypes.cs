@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 时间选择器格式枚举。
+/// Time picker format enum.
+/// </summary>
 [String]
 public enum VuetifyTimePickerFormat
 {
@@ -13,6 +17,10 @@ public enum VuetifyTimePickerFormat
     TwentyFourHour
 }
 
+/// <summary>
+/// 时间选择器视图模式枚举。
+/// Time picker view mode enum.
+/// </summary>
 [String]
 public enum VuetifyTimePickerViewMode
 {
@@ -26,6 +34,10 @@ public enum VuetifyTimePickerViewMode
     Second
 }
 
+/// <summary>
+/// 时间选择器上下午时段枚举。
+/// Time picker AM/PM period enum.
+/// </summary>
 [String]
 public enum VuetifyTimePickerPeriod
 {
@@ -36,6 +48,10 @@ public enum VuetifyTimePickerPeriod
     Pm
 }
 
+/// <summary>
+/// 时间选择器模型值的擦除值联合类型。
+/// Erased value union for time-picker model values.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -83,8 +99,16 @@ public readonly struct VuetifyTimePickerModelValue : System.Runtime.CompilerServ
         => new(value);
 }
 
+/// <summary>
+/// 时间选择器允许单元值的解析委托。
+/// Delegate for resolving allowed time-picker unit values.
+/// </summary>
 public delegate bool VuetifyTimePickerAllowedUnitResolver(Number value);
 
+/// <summary>
+/// 时间选择器允许单元值列表的擦除值联合类型。
+/// Erased value union for time-picker allowed unit value lists.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -128,6 +152,10 @@ public static class VuetifyTimePickerAllowedUnitsCollectionBuilder
         => values.ToArray();
 }
 
+/// <summary>
+/// 时间选择器允许单元值的擦除值联合类型，支持数组或解析函数。
+/// Erased value union for time-picker allowed unit values, supporting arrays or resolver functions.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

@@ -5,6 +5,10 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 展开面板组件。
+/// Vuetify expansion-panel component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VExpansionPanel")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

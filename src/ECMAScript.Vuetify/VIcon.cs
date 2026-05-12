@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 图标创作代理。
 /// Vuetify icon authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VIcon")]

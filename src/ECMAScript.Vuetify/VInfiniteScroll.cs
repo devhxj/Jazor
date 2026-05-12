@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 无限滚动创作代理，用于增量列表加载。
 /// Vuetify infinite-scroll authoring proxy for incremental list loading.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VInfiniteScroll")]

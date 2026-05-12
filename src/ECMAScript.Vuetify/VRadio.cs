@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 单选按钮组件。
+/// Vuetify radio button component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VRadio")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 滑动分组组件的编写代理，用于水平或垂直可滚动的分组内容。
 /// Vuetify slide-group authoring proxy for horizontally or vertically scrollable grouped content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSlideGroup")]

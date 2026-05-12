@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 间距占位组件的编写代理。
+/// Vuetify spacer authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VSpacer")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

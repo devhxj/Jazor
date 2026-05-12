@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 圆形进度指示器组件。
+/// Vuetify circular progress indicator component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VProgressCircular")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

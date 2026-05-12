@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 键盘输入样式组件。
+/// Vuetify keyboard input styling component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VKbd")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

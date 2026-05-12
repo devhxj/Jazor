@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 确认编辑操作枚举。
+/// Vuetify confirm edit action enum.
+/// </summary>
 [String]
 public enum VuetifyConfirmEditAction
 {
@@ -13,6 +17,10 @@ public enum VuetifyConfirmEditAction
     Cancel
 }
 
+/// <summary>
+/// Vuetify 确认编辑操作集合。
+/// Collection of Vuetify confirm edit actions.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -50,6 +58,10 @@ public static class VuetifyConfirmEditActionsCollectionBuilder
         => actions.ToArray();
 }
 
+/// <summary>
+/// Vuetify 确认编辑禁用状态值，支持布尔值或操作数组。
+/// Vuetify confirm edit disabled state value, supporting boolean or action array.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -103,6 +115,7 @@ public readonly struct VuetifyConfirmEditDisabled : System.Runtime.CompilerServi
 public delegate IVNode VConfirmEditActionsCallback(VueProps? props = null);
 
 /// <summary>
+/// Vuetify VConfirmEdit 公开的默认插槽上下文。
 /// Default slot context exposed by Vuetify VConfirmEdit.
 /// </summary>
 [ECMAScript]

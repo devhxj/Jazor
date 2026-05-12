@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify Labs 选择器外壳组件的编写代理。
 /// Vuetify labs picker shell authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPicker")]

@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 响应式容器组件的编写代理。
+/// Vuetify responsive container authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VResponsive")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

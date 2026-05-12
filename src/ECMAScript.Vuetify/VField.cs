@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 字段创作代理，用于组合自定义输入外观。
 /// Vuetify field authoring proxy for composing custom input chrome.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VField")]

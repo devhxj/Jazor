@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 线性进度条组件。
+/// Vuetify linear progress bar component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VProgressLinear")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

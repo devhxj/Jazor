@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 标签页窗口组件的编写代理，用于标签页面板内容。
 /// Vuetify tabs-window authoring proxy for tab panel content.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VTabsWindow")]

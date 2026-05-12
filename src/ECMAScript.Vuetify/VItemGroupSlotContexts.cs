@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify VItemGroup 默认插槽上下文。
 /// Default slot context exposed by Vuetify VItemGroup.
 /// </summary>
 [ECMAScript]

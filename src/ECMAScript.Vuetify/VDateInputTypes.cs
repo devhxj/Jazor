@@ -3,6 +3,7 @@ namespace ECMAScript.Vuetify;
 public delegate string VDateInputDisplayFormatCallback(string? value);
 
 /// <summary>
+/// Vuetify VDateInput 接受的显示格式值。
 /// Display-format value accepted by Vuetify VDateInput.
 /// </summary>
 [ECMAScript]
@@ -53,6 +54,7 @@ public readonly struct VDateInputDisplayFormatValue : System.Runtime.CompilerSer
 }
 
 /// <summary>
+/// Vuetify VDateInput 操作插槽上下文。
 /// Actions slot context exposed by Vuetify VDateInput.
 /// </summary>
 [ECMAScript]

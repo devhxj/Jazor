@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 骨架加载器预设类型。
+/// Vuetify skeleton loader preset types.
+/// </summary>
 [String]
 public enum VuetifySkeletonLoaderType
 {

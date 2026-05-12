@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify VDataIterator 接受的数据项。任意项键作为普通对象成员发射。
 /// Data item accepted by Vuetify VDataIterator. Arbitrary item keys are emitted as plain object members.
 /// </summary>
 [ECMAScript]
@@ -19,6 +20,7 @@ public sealed class VuetifyDataIteratorItem : IEnumerable
 }
 
 /// <summary>
+/// VDataIterator 的 items 属性接受的集合。
 /// Collection accepted by VDataIterator's items prop.
 /// </summary>
 [ECMAScript]
@@ -59,6 +61,7 @@ public static class VuetifyDataIteratorItemsCollectionBuilder
 }
 
 /// <summary>
+/// VDataIterator 的 modelValue 属性使用的选中值集合。
 /// Selected-value collection used by VDataIterator's modelValue prop.
 /// </summary>
 [ECMAScript]
@@ -115,6 +118,7 @@ public delegate bool VuetifyDataIteratorValueComparator(VueValue? first, VueValu
 public delegate Number? VuetifyDataIteratorCompareFunction(VueValue? first, VueValue? second);
 
 /// <summary>
+/// VDataIterator 的 customKeySort 属性接受的按键排序回调集合。
 /// Per-key sort callbacks accepted by VDataIterator's customKeySort prop.
 /// </summary>
 [ECMAScript]
@@ -122,6 +126,7 @@ public delegate Number? VuetifyDataIteratorCompareFunction(VueValue? first, VueV
 public sealed record VuetifyDataIteratorSortFunctions : VueDictionary<VuetifyDataIteratorCompareFunction>;
 
 /// <summary>
+/// 通过 VDataIterator 作用域插槽公开的内部项结构。
 /// Internal item shape exposed through VDataIterator scoped slots.
 /// </summary>
 [ECMAScript]
@@ -142,6 +147,7 @@ public sealed record VuetifyDataIteratorInternalItem
 }
 
 /// <summary>
+/// 通过 VDataIterator 的 groupedItems 插槽字段公开的分组节点结构。
 /// Group node shape exposed through VDataIterator's groupedItems slot field.
 /// </summary>
 [ECMAScript]
@@ -168,6 +174,7 @@ public sealed record VuetifyDataIteratorGroup
 }
 
 /// <summary>
+/// VDataIterator 插槽上下文使用的类联合分组项值。
 /// Union-like grouped item value used by VDataIterator slot contexts.
 /// </summary>
 [ECMAScript]
@@ -218,6 +225,7 @@ public readonly struct VuetifyDataIteratorGroupedItem : System.Runtime.CompilerS
 }
 
 /// <summary>
+/// Vuetify VDataIterator 公开的默认/页眉/页脚插槽上下文。
 /// Default/header/footer slot context exposed by Vuetify VDataIterator.
 /// </summary>
 [ECMAScript]

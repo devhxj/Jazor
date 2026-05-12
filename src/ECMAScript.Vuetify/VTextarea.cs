@@ -5,6 +5,10 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 多行文本输入框组件的编写代理。
+/// Vuetify textarea authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VTextarea")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

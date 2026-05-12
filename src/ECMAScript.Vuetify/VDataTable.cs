@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 数据表格创作代理，用于 RazorVue。
 /// Vuetify data table authoring proxy for RazorVue.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VDataTable")]

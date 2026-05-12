@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 组合框组件创作代理。
+/// Vuetify combobox component authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VCombobox")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

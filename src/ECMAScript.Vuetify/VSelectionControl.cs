@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 选择控件组件的编写代理。
 /// Vuetify selection-control authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSelectionControl")]

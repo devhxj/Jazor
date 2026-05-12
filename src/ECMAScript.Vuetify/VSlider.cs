@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 滑块组件的编写代理。
+/// Vuetify slider authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VSlider")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

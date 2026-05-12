@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 数据表格结构插槽公开的共享状态。
 /// Shared state exposed by Vuetify data table structural slots.
 /// </summary>
 [ECMAScript]
@@ -47,6 +48,10 @@ public sealed record VDataTableSlotContext
     public VDataTableIsSortedCallback? IsSorted { get; init; }
 }
 
+/// <summary>
+/// Vuetify 数据表格头部插槽上下文。
+/// Vuetify data table headers slot context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VDataTableHeadersSlotContext
@@ -76,6 +81,10 @@ public sealed record VDataTableHeadersSlotContext
     public VDataTableIsSortedCallback? IsSorted { get; init; }
 }
 
+/// <summary>
+/// Vuetify 数据表格头部单元格插槽上下文。
+/// Vuetify data table header cell slot context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VDataTableHeaderCellSlotContext
@@ -102,6 +111,10 @@ public sealed record VDataTableHeaderCellSlotContext
     public VDataTableIsSortedCallback? IsSorted { get; init; }
 }
 
+/// <summary>
+/// Vuetify 数据表格项插槽上下文。
+/// Vuetify data table item slot context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VDataTableItemSlotContext
@@ -128,6 +141,10 @@ public sealed record VDataTableItemSlotContext
     public VDataTableToggleExpandCallback? ToggleExpand { get; init; }
 }
 
+/// <summary>
+/// Vuetify 数据表格分组头部插槽上下文。
+/// Vuetify data table group header slot context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VDataTableGroupHeaderSlotContext
@@ -145,6 +162,10 @@ public sealed record VDataTableGroupHeaderSlotContext
     public VDataTableToggleGroupCallback? ToggleGroup { get; init; }
 }
 
+/// <summary>
+/// Vuetify 数据表格行属性上下文。
+/// Vuetify data table row props context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyDataTableRowPropsContext
@@ -159,6 +180,10 @@ public sealed record VuetifyDataTableRowPropsContext
     public VuetifyDataTableItem? InternalItem { get; init; }
 }
 
+/// <summary>
+/// Vuetify 数据表格单元格属性上下文。
+/// Vuetify data table cell props context.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyDataTableCellPropsContext

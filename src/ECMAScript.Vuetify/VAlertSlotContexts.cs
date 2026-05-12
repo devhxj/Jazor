@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// VAlert 关闭插槽的上下文对象。
 /// Close slot context exposed by Vuetify VAlert.
 /// </summary>
 [ECMAScript]

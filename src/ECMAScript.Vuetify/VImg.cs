@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 图片组件，支持懒加载、宽高比和响应式源。
+/// Vuetify image component with lazy loading, aspect ratio, and responsive sources.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VImg")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

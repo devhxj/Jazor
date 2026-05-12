@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 懒加载组件，基于可视区域按需渲染内容。
+/// Vuetify lazy component that renders content on demand based on viewport visibility.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VLazy")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

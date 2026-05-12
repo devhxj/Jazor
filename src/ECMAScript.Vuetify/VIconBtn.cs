@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 实验室图标按钮创作代理。
 /// Vuetify labs icon-btn authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VIconBtn")]

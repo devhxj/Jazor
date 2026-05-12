@@ -12,6 +12,10 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(Append), Name = "append")]
 [VueLibrarySlot(nameof(TitleContent), Name = "title")]
 [VueLibrarySlot(nameof(SubtitleContent), Name = "subtitle")]
+/// <summary>
+/// Vuetify 卡片项分组组件，用于组织标题、副标题和前后缀。
+/// Vuetify card item grouping component for organizing title, subtitle, and prepend/append content.
+/// </summary>
 public sealed class VCardItem : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

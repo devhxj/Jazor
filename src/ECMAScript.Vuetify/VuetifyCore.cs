@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 核心入口，提供 createVuetify 工厂方法。
+/// Vuetify core entry point providing the createVuetify factory.
+/// </summary>
 [ECMAScript("npm:vuetify")]
 [Description("@#")]
 public static class Vuetify
@@ -11,9 +15,17 @@ public static class Vuetify
     public extern static VuetifyPlugin CreateVuetify(VuetifyOptions options);
 }
 
+/// <summary>
+/// Vuetify 组件的标记接口。
+/// Marker interface for Vuetify components.
+/// </summary>
 [ECMAScript]
 public interface IVuetifyComponent : IVueComponent { }
 
+/// <summary>
+/// Vuetify 插件实例。
+/// Vuetify plugin instance.
+/// </summary>
 [ECMAScript]
 public sealed record VuetifyPlugin : VuePlugin
 {
@@ -22,6 +34,10 @@ public sealed record VuetifyPlugin : VuePlugin
     }
 }
 
+/// <summary>
+/// Vuetify 插件配置选项。
+/// Vuetify plugin configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyOptions")]
 public sealed record VuetifyOptions : VuePluginOptions
@@ -51,6 +67,10 @@ public sealed record VuetifyOptions : VuePluginOptions
     public bool? Ssr { get; init; }
 }
 
+/// <summary>
+/// Vuetify 主题配置选项。
+/// Vuetify theme configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyThemeOptions")]
 public sealed record VuetifyThemeOptions
@@ -62,6 +82,10 @@ public sealed record VuetifyThemeOptions
     public VuetifyThemeVariationOptions? Variations { get; init; }
 }
 
+/// <summary>
+/// Vuetify 主题变体配置选项。
+/// Vuetify theme variation options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyThemeVariationOptions")]
 public sealed record VuetifyThemeVariationOptions
@@ -76,6 +100,10 @@ public sealed record VuetifyThemeVariationOptions
     public int? Darken { get; init; }
 }
 
+/// <summary>
+/// Vuetify 显示配置选项。
+/// Vuetify display configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyDisplayOptions")]
 public sealed record VuetifyDisplayOptions
@@ -87,6 +115,10 @@ public sealed record VuetifyDisplayOptions
     public VuetifyDisplayThresholds? Thresholds { get; init; }
 }
 
+/// <summary>
+/// Vuetify 显示断点阈值配置。
+/// Vuetify display breakpoint thresholds.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyDisplayThresholds")]
 public sealed record VuetifyDisplayThresholds
@@ -110,6 +142,10 @@ public sealed record VuetifyDisplayThresholds
     public int? Xxl { get; init; }
 }
 
+/// <summary>
+/// Vuetify 图标配置选项。
+/// Vuetify icon configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyIconOptions")]
 public sealed record VuetifyIconOptions
@@ -118,6 +154,10 @@ public sealed record VuetifyIconOptions
     public string? DefaultSet { get; init; }
 }
 
+/// <summary>
+/// Vuetify 区域设置配置选项。
+/// Vuetify locale configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyLocaleOptions")]
 public sealed record VuetifyLocaleOptions
@@ -129,6 +169,10 @@ public sealed record VuetifyLocaleOptions
     public string? Fallback { get; init; }
 }
 
+/// <summary>
+/// Vuetify 日期配置选项。
+/// Vuetify date configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#VuetifyDateOptions")]
 public sealed record VuetifyDateOptions

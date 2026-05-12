@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 树形视图节点激活策略。
+/// Vuetify treeview node activation strategy.
+/// </summary>
 [String]
 public enum VuetifyTreeviewActiveStrategy
 {
@@ -19,6 +23,10 @@ public enum VuetifyTreeviewActiveStrategy
     SingleIndependent
 }
 
+/// <summary>
+/// Vuetify 树形视图节点选择策略。
+/// Vuetify treeview node selection strategy.
+/// </summary>
 [String]
 public enum VuetifyTreeviewSelectStrategy
 {
@@ -41,6 +49,10 @@ public enum VuetifyTreeviewSelectStrategy
     Trunk
 }
 
+/// <summary>
+/// Vuetify 树形视图节点选择状态。
+/// Vuetify treeview node selection state.
+/// </summary>
 [String]
 public enum VuetifyTreeviewSelectionState
 {
@@ -54,6 +66,10 @@ public enum VuetifyTreeviewSelectionState
     Indeterminate
 }
 
+/// <summary>
+/// Vuetify 树形视图选中值的擦除值联合类型。
+/// Erased value union for Vuetify treeview selected values.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -112,6 +128,10 @@ public static class VuetifyTreeviewValuesCollectionBuilder
         => values.ToArray();
 }
 
+/// <summary>
+/// Vuetify 树形视图项目列表的擦除值联合类型。
+/// Erased value union for Vuetify treeview item collections.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -155,6 +175,10 @@ public static class VuetifyTreeviewItemsCollectionBuilder
         => items.ToArray();
 }
 
+/// <summary>
+/// Vuetify 树形视图单个项目的擦除值联合类型。
+/// Erased value union for a single Vuetify treeview item.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -298,6 +322,10 @@ public readonly struct VuetifyTreeviewItemValue : System.Runtime.CompilerService
         => new((Number)value);
 }
 
+/// <summary>
+/// Vuetify 树形视图项目定义。
+/// Vuetify treeview item definition.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed class VuetifyTreeviewItem
@@ -324,6 +352,10 @@ public delegate VuetifyTreeviewActiveStrategyDefinition VuetifyTreeviewActiveStr
 
 public delegate VuetifyTreeviewSelectStrategyDefinition VuetifyTreeviewSelectStrategyFactory(bool mandatory);
 
+/// <summary>
+/// Vuetify 树形视图激活策略值的擦除值联合类型。
+/// Erased value union for Vuetify treeview active strategy.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -391,6 +423,10 @@ public readonly struct VuetifyTreeviewActiveStrategyValue : System.Runtime.Compi
         => new(value);
 }
 
+/// <summary>
+/// Vuetify 树形视图选择策略值的擦除值联合类型。
+/// Erased value union for Vuetify treeview select strategy.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

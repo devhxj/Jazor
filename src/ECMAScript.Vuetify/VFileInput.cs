@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 文件输入组件。
+/// Vuetify file-input component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VFileInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

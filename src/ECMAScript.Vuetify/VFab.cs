@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 浮动操作按钮创作代理。
 /// Vuetify floating action button authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VFab")]

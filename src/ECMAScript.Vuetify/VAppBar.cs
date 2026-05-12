@@ -8,6 +8,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryPluginRequirement("vuetify")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 应用栏组件。
+/// Vuetify app bar component.
+/// </summary>
 public sealed class VAppBar : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

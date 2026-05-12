@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 纸张容器组件的编写代理。
+/// Vuetify sheet container authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VSheet")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

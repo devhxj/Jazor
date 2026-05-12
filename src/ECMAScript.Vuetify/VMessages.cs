@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 消息提示组件。
+/// Vuetify messages component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VMessages")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

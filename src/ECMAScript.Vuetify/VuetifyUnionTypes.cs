@@ -2,6 +2,10 @@ using System.ComponentModel;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 显示断点值。
+/// Vuetify display breakpoint value.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

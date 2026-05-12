@@ -5,6 +5,10 @@ using System.Collections.Generic;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 评分组件。
+/// Vuetify rating component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VRating")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

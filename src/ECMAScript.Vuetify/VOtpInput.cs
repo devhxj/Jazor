@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 一次性密码输入组件。
+/// Vuetify OTP input component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VOtpInput")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

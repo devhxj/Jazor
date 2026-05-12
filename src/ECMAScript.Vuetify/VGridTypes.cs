@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 网格跨度值，支持布尔、数字或字符串表示。
+/// Grid span value supporting boolean, numeric, or string representation.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

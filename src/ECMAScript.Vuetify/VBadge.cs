@@ -9,6 +9,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(BadgeContent), Name = "badge")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 徽章组件。
+/// Vuetify badge component.
+/// </summary>
 public sealed class VBadge : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

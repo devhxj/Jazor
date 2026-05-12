@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 图标按钮尺寸名称枚举。
+/// Icon button size name enumeration.
+/// </summary>
 [String]
 public enum VIconBtnSizeName
 {
@@ -22,6 +26,10 @@ public enum VIconBtnSizeName
     XLarge
 }
 
+/// <summary>
+/// 图标按钮尺寸条目，包含名称和数值。
+/// Icon button size entry containing a name and value pair.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VIconBtnSizeEntry
@@ -33,6 +41,10 @@ public sealed record VIconBtnSizeEntry
     public Number Value { get; init; }
 }
 
+/// <summary>
+/// 图标按钮尺寸映射表，将尺寸名称映射到具体数值。
+/// Icon button size map that maps size names to numeric values.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]
@@ -70,6 +82,10 @@ public static class VIconBtnSizeMapCollectionBuilder
         => entries.ToArray();
 }
 
+/// <summary>
+/// 图标按钮文本值，支持布尔、数字或字符串类型。
+/// Icon button text value supporting boolean, numeric, or string types.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

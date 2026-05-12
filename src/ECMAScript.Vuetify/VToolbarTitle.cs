@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 工具栏标题组件的编写代理。
+/// Vuetify toolbar title authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VToolbarTitle")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

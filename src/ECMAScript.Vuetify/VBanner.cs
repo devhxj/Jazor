@@ -12,6 +12,10 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(TextContent), Name = "text")]
 [VueLibrarySlot(nameof(Actions), Name = "actions")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 横幅组件。
+/// Vuetify banner component.
+/// </summary>
 public sealed class VBanner : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

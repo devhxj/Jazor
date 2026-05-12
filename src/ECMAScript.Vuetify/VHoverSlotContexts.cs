@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify VHover 默认插槽上下文。
 /// Default slot context exposed by Vuetify VHover.
 /// </summary>
 [ECMAScript]

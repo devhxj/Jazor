@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 强制选择模式。
+/// Vuetify mandatory selection mode.
+/// </summary>
 [String]
 public enum VuetifyMandatoryMode
 {
@@ -10,6 +14,10 @@ public enum VuetifyMandatoryMode
     Force
 }
 
+/// <summary>
+/// Vuetify 项目标签位置。
+/// Vuetify item label position.
+/// </summary>
 [String]
 public enum VuetifyItemLabelPosition
 {
@@ -20,6 +28,10 @@ public enum VuetifyItemLabelPosition
     Bottom
 }
 
+/// <summary>
+/// Vuetify 箭头显示模式。
+/// Vuetify show-arrows mode.
+/// </summary>
 [String]
 public enum VuetifyShowArrowsMode
 {

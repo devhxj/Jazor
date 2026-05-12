@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify labs 文件上传创作代理。
 /// Vuetify labs file-upload authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VFileUpload")]

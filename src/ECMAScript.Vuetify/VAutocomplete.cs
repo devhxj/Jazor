@@ -18,6 +18,10 @@ namespace ECMAScript.Vuetify;
 [VueLibrarySlot(nameof(PrependItem), Name = "prepend-item")]
 [VueLibrarySlot(nameof(AppendItem), Name = "append-item")]
 [VueLibrarySlot(nameof(NoData), Name = "no-data")]
+/// <summary>
+/// Vuetify 自动补全组件。
+/// Vuetify autocomplete component.
+/// </summary>
 public sealed class VAutocomplete : VSelectLikeComponentBase, IVueLibraryComponent
 {
     [Parameter]

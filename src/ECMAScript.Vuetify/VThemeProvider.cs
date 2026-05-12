@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 主题提供者组件的编写代理。
+/// Vuetify theme provider authoring proxy.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VThemeProvider")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

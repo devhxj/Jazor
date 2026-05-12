@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 工具栏密度枚举。
+/// Toolbar density enum.
+/// </summary>
 [String]
 public enum VuetifyToolbarDensity
 {
@@ -16,6 +20,10 @@ public enum VuetifyToolbarDensity
     Compact
 }
 
+/// <summary>
+/// 工具栏密度值的擦除值联合类型。
+/// Erased value union for toolbar density values.
+/// </summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
 [Description("@#")]

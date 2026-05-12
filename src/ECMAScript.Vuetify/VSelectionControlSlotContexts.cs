@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify VSelectionControl 默认插槽所暴露的插槽上下文。
 /// Default slot context exposed by Vuetify VSelectionControl.
 /// </summary>
 [ECMAScript]
@@ -15,6 +16,7 @@ public sealed record VSelectionControlDefaultSlotContext
 }
 
 /// <summary>
+/// Vuetify 选择控件标签插槽所暴露的上下文。
 /// Context exposed by Vuetify selection-control label slots.
 /// </summary>
 [ECMAScript]
@@ -29,6 +31,7 @@ public sealed record VSelectionControlLabelSlotContext
 }
 
 /// <summary>
+/// 传递给 Vuetify VSelectionControl 输入插槽以连接自定义控件的属性对象。
 /// Props passed to Vuetify VSelectionControl input slots for wiring custom controls.
 /// </summary>
 [ECMAScript]
@@ -46,6 +49,7 @@ public sealed record VSelectionControlInputProps
 }
 
 /// <summary>
+/// Vuetify VSelectionControl 输入插槽所暴露的插槽上下文。
 /// Input slot context exposed by Vuetify VSelectionControl.
 /// </summary>
 [ECMAScript]
@@ -78,6 +82,7 @@ public sealed record VSelectionControlInputSlotContext
 }
 
 /// <summary>
+/// Vuetify VSwitch 滑块和轨道插槽所暴露的上下文。
 /// Context exposed by Vuetify VSwitch thumb and track slots.
 /// </summary>
 [ECMAScript]
@@ -95,6 +100,7 @@ public sealed record VSwitchSlotContext
 }
 
 /// <summary>
+/// 组合 Vuetify VInput 和 VSelectionControl 插槽的组件所暴露的默认插槽上下文。
 /// Default slot context exposed by components that combine Vuetify VInput and VSelectionControl slots.
 /// </summary>
 [ECMAScript]
@@ -109,6 +115,7 @@ public sealed record VSelectionControlInputDefaultSlotContext : VInputSlotContex
 }
 
 /// <summary>
+/// Vuetify 颜色组合函数在插槽作用域引用中返回的 CSS 属性集合。
 /// CSS property bag returned by Vuetify color composables in slot scoped refs.
 /// </summary>
 [ECMAScript]

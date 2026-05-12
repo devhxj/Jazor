@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 消息条队列组件的编写代理，用于顺序显示通知。
 /// Vuetify snackbar-queue authoring proxy for sequential notifications.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VSnackbarQueue")]

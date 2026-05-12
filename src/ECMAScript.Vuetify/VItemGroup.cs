@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 条目组组件，用于管理一组可选项的选中状态。
+/// Vuetify item group component for managing selection state across a group of items.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VItemGroup")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

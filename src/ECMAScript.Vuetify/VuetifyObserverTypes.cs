@@ -3,6 +3,10 @@ using System.Runtime.CompilerServices;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify IntersectionObserver 配置选项。
+/// Vuetify IntersectionObserver configuration options.
+/// </summary>
 [ECMAScript]
 [Description("@#")]
 public sealed record VuetifyIntersectionObserverOptions : VueProps

@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// 无限滚动加载方向枚举。
+/// Infinite scroll loading side enumeration.
+/// </summary>
 [String]
 public enum VuetifyInfiniteScrollSide
 {
@@ -13,6 +17,10 @@ public enum VuetifyInfiniteScrollSide
     Both
 }
 
+/// <summary>
+/// 无限滚动触发模式枚举。
+/// Infinite scroll trigger mode enumeration.
+/// </summary>
 [String]
 public enum VuetifyInfiniteScrollMode
 {
@@ -23,6 +31,10 @@ public enum VuetifyInfiniteScrollMode
     Manual
 }
 
+/// <summary>
+/// 无限滚动加载状态枚举。
+/// Infinite scroll loading status enumeration.
+/// </summary>
 [String]
 public enum VuetifyInfiniteScrollStatus
 {
@@ -42,6 +54,7 @@ public enum VuetifyInfiniteScrollStatus
 public delegate void VInfiniteScrollDoneCallback(VuetifyInfiniteScrollStatus status);
 
 /// <summary>
+/// Vuetify VInfiniteScroll 加载事件发出的载荷。
 /// Payload emitted by Vuetify VInfiniteScroll load events.
 /// </summary>
 [ECMAScript]
@@ -56,6 +69,7 @@ public sealed record VInfiniteScrollLoadOptions
 }
 
 /// <summary>
+/// VInfiniteScroll 状态插槽使用的作用域插槽上下文。
 /// Scoped slot context used by VInfiniteScroll status slots.
 /// </summary>
 [ECMAScript]

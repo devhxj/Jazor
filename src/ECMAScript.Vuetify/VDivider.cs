@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 分隔线组件。
+/// Vuetify divider component.
+/// </summary>
 [VueLibraryComponent("vuetify/components", "VDivider")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]

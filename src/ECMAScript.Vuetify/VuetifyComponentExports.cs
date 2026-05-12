@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 稳定组件的导出入口。
+/// Export surface for stable Vuetify components.
+/// </summary>
 [ECMAScript("vuetify/components")]
 public static class VuetifyComponents
 {
@@ -319,6 +323,10 @@ public static class VuetifyComponents
     public extern static IVuetifyComponent VWindow { get; }
 }
 
+/// <summary>
+/// Vuetify 实验室组件的导出入口。
+/// Export surface for Vuetify labs components.
+/// </summary>
 [ECMAScript("vuetify/labs/components")]
 public static class VuetifyLabsComponents
 {

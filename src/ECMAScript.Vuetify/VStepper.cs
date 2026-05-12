@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 步骤条组件的编写代理，用于多步骤工作流。
 /// Vuetify stepper authoring proxy for multi-step workflows.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VStepper")]

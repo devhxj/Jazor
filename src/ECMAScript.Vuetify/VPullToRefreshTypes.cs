@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// VPullToRefresh 加载回调的负载数据。
 /// Load callback payload exposed by Vuetify VPullToRefresh.
 /// </summary>
 [ECMAScript]
@@ -12,6 +13,7 @@ public sealed record VPullToRefreshLoadOptions
 }
 
 /// <summary>
+/// VPullToRefresh 下拉面板插槽的上下文数据。
 /// Pull-down panel slot context exposed by Vuetify VPullToRefresh.
 /// </summary>
 [ECMAScript]

@@ -7,6 +7,7 @@ public delegate IPromise VuetifyFormFieldResetCallback();
 public delegate IPromise<VuetifyFormValidationResult> VuetifyFormValidateCallback();
 
 /// <summary>
+/// Vuetify VForm 验证 API 返回的验证错误项。
 /// Validation error item returned by Vuetify VForm validation APIs.
 /// </summary>
 [ECMAScript]
@@ -21,6 +22,7 @@ public sealed record VuetifyFormFieldValidationResult
 }
 
 /// <summary>
+/// Vuetify VForm validate 和 submit promise 返回的验证结果。
 /// Validation result returned by Vuetify VForm validate and submit promise payloads.
 /// </summary>
 [ECMAScript]
@@ -35,6 +37,7 @@ public sealed record VuetifyFormValidationResult
 }
 
 /// <summary>
+/// 通过 Vuetify VForm 默认插槽上下文暴露的已注册字段项。
 /// Registered field item exposed through Vuetify VForm default slot context.
 /// </summary>
 [ECMAScript]
@@ -61,6 +64,8 @@ public sealed record VuetifyFormField
 }
 
 /// <summary>
+/// Vuetify VForm 发出的提交事件。Vuetify 在原生
+/// <see cref="SubmitEvent"/> 上增加了表单验证结果的 promise。
 /// Submit event emitted by Vuetify VForm. Vuetify augments the native
 /// <see cref="SubmitEvent"/> with a promise for the form validation result.
 /// </summary>
@@ -203,6 +208,7 @@ public sealed class VFormSubmitEvent(string type, EventInit eventInitDict) :
 }
 
 /// <summary>
+/// Vuetify VForm 默认插槽上下文。
 /// Default slot context exposed by Vuetify VForm.
 /// </summary>
 [ECMAScript]

@@ -10,6 +10,10 @@ namespace ECMAScript.Vuetify;
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ActiveChanged), VueEmitKind.ModelUpdate, Name = "update:active")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
+/// <summary>
+/// Vuetify 底部导航组件。
+/// Vuetify bottom navigation component.
+/// </summary>
 public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
 {
     [Parameter]

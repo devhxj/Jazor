@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify Labs 下拉刷新组件的编写代理。
 /// Vuetify labs pull-to-refresh authoring proxy.
 /// </summary>
 [VueLibraryComponent("vuetify/labs/components", "VPullToRefresh")]

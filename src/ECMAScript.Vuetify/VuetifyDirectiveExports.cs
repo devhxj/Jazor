@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 指令的导出入口。
+/// Export surface for Vuetify directives.
+/// </summary>
 [ECMAScript("vuetify/directives")]
 public static class VuetifyDirectives
 {
@@ -28,6 +32,10 @@ public static class VuetifyDirectives
     public extern static VuetifyDirective Tooltip { get; }
 }
 
+/// <summary>
+/// Vuetify 指令的基类型。
+/// Base type for Vuetify directives.
+/// </summary>
 [ECMAScript]
 public abstract record VuetifyDirective : VueDirective
 {

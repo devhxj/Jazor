@@ -1,5 +1,9 @@
 namespace ECMAScript.Vuetify;
 
+/// <summary>
+/// Vuetify 时间线对齐方式。
+/// Vuetify timeline alignment.
+/// </summary>
 [String]
 public enum VuetifyTimelineAlign
 {
@@ -10,6 +14,10 @@ public enum VuetifyTimelineAlign
     Start
 }
 
+/// <summary>
+/// Vuetify 时间线方向。
+/// Vuetify timeline direction.
+/// </summary>
 [String]
 public enum VuetifyTimelineDirection
 {
@@ -20,6 +28,10 @@ public enum VuetifyTimelineDirection
     Horizontal
 }
 
+/// <summary>
+/// Vuetify 时间线对齐策略。
+/// Vuetify timeline justify strategy.
+/// </summary>
 [String]
 public enum VuetifyTimelineJustify
 {
@@ -30,6 +42,10 @@ public enum VuetifyTimelineJustify
     Center
 }
 
+/// <summary>
+/// Vuetify 时间线侧边位置。
+/// Vuetify timeline side position.
+/// </summary>
 [String]
 public enum VuetifyTimelineSide
 {
@@ -40,6 +56,10 @@ public enum VuetifyTimelineSide
     End
 }
 
+/// <summary>
+/// Vuetify 时间线截断线位置。
+/// Vuetify timeline truncate line position.
+/// </summary>
 [String]
 public enum VuetifyTimelineTruncateLine
 {

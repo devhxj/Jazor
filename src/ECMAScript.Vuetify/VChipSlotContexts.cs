@@ -1,6 +1,7 @@
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify VChip 公开的作用域默认插槽上下文。
 /// Scoped default slot context exposed by Vuetify VChip.
 /// </summary>
 [ECMAScript]
@@ -29,6 +30,7 @@ public sealed record VChipDefaultSlotContext
 public delegate void VChipSelectCallback(bool value);
 
 /// <summary>
+/// Vuetify VChip 默认插槽 selectedClass 使用的值类型。
 /// Value shape used by Vuetify VChip default slot selectedClass.
 /// </summary>
 [ECMAScript]

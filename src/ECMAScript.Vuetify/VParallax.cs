@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 namespace ECMAScript.Vuetify;
 
 /// <summary>
+/// Vuetify 视差滚动组件的编写代理。
 /// Vuetify parallax authoring proxy for image-backed parallax sections.
 /// </summary>
 [VueLibraryComponent("vuetify/components", "VParallax")]
