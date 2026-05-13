@@ -454,6 +454,41 @@ public sealed class RazorVueRazorIrTemplateFrontendTests
     }
 
     [TestMethod]
+    public void RazorVuePipeline_WithRazorIrTemplateFrontend_CanLowerComponentCssClassPropToRuntimeClass()
+    {
+        const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";
+        const string documentText = """<VChip CssClass='@("typed-category-chip")' CssStyle='@("margin-inline: 1rem")' Text="@Title" />""";
+
+        var (context, snapshot) = RazorVueRazorIrTestContextFactory.CreateAlignedContext(
+            "RazorVue.RazorIr.TemplateFrontend.Component.CssClassProp.Pipeline.Tests",
+            documentPath,
+            documentText,
+            """
+            using ECMAScript.Vuetify;
+
+            namespace Demo.Pages
+            {
+                [ECMAScript.ECMAScriptModule("./components/todo-app")]
+                public partial class TodoApp : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+                }
+            }
+            """,
+            """
+            @using Demo.Pages
+            @using ECMAScript.Vuetify
+            """);
+
+        var artifact = new RazorVueArtifactFactory(new RazorVueRazorIrTemplateFrontend()).Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ModuleCode, "\"class\": \"typed-category-chip\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"style\": \"margin-inline: 1rem\"");
+        StringAssert.Contains(artifact.ModuleCode, "\"text\": props.title");
+    }
+
+    [TestMethod]
     public void CreateRenderTree_ForComponentNamedAndTypedChildContent_ProducesStructuredSlots()
     {
         const string documentPath = @"D:\repo\Demo\Pages\TodoApp.razor";

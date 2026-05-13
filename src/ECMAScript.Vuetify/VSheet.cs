@@ -10,6 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSheet")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VSheet : ComponentBase, IVueLibraryComponent
 {
@@ -116,14 +118,14 @@ public sealed class VSheet : ComponentBase, IVueLibraryComponent
     /// CSS class names.
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 内联样式。
     /// Inline styles.
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 边框样式。

@@ -7,6 +7,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBottomNavigation")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ActiveChanged), VueEmitKind.ModelUpdate, Name = "update:active")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
@@ -175,14 +177,14 @@ public sealed class VBottomNavigation : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 自定义行内样式。
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 渲染的根 HTML 元素标签名。

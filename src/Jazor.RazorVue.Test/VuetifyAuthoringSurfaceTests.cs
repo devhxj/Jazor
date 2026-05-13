@@ -50,6 +50,51 @@ public sealed class VuetifyAuthoringSurfaceTests
     }
 
     [TestMethod]
+    public void Vuetify_AuthoringComponents_ExposeExplicitCssPropsAsCssClassAndCssStyle()
+    {
+        foreach (var component in GetVuetifyAuthoringComponents())
+        {
+            var parameterNames = component
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                .Where(static property => property.GetCustomAttribute<ParameterAttribute>(inherit: true) is not null)
+                .Select(static property => property.Name)
+                .ToArray();
+
+            CollectionAssert.DoesNotContain(parameterNames, "Class", component.FullName);
+            CollectionAssert.DoesNotContain(parameterNames, "Style", component.FullName);
+
+            var hasCssClassMapping = false;
+            var hasCssStyleMapping = false;
+            foreach (var mapping in component.GetCustomAttributes<VueLibraryPropAttribute>(inherit: false))
+            {
+                if (mapping.Name == "class")
+                {
+                    hasCssClassMapping = true;
+                    Assert.AreEqual("CssClass", mapping.PublicName, component.FullName);
+                }
+                else if (mapping.Name == "style")
+                {
+                    hasCssStyleMapping = true;
+                    Assert.AreEqual("CssStyle", mapping.PublicName, component.FullName);
+                }
+            }
+
+            AssertCssParameterMapping(
+                component,
+                "CssClass",
+                "class",
+                typeof(ECMAScript.Vue3.VueClassValue?),
+                hasCssClassMapping);
+            AssertCssParameterMapping(
+                component,
+                "CssStyle",
+                "style",
+                typeof(VuetifyStyleValue?),
+                hasCssStyleMapping);
+        }
+    }
+
+    [TestMethod]
     public void Vuetify_PublicContracts_DoNotUseBannedChoiceWrappersOrRuntimeDispatch()
     {
         var publicTypes = GetVuetifyPublicTypes();
@@ -103,8 +148,8 @@ public sealed class VuetifyAuthoringSurfaceTests
     {
         Assert.AreEqual(typeof(VuetifyIconValue?), typeof(VAvatar).GetProperty(nameof(VAvatar.Icon))?.PropertyType);
         Assert.AreEqual(typeof(VuetifyBorderValue?), typeof(VAvatar).GetProperty(nameof(VAvatar.Border))?.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VAvatar).GetProperty(nameof(VAvatar.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VAvatar).GetProperty(nameof(VAvatar.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VAvatar).GetProperty(nameof(VAvatar.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VAvatar).GetProperty(nameof(VAvatar.CssStyle))?.PropertyType);
 
         Assert.AreEqual(typeof(VuetifyTransitionValue?), typeof(VBadge).GetProperty(nameof(VBadge.Transition))?.PropertyType);
         Assert.AreEqual(typeof(VuetifyLocation?), typeof(VBadge).GetProperty(nameof(VBadge.Location))?.PropertyType);
@@ -115,8 +160,8 @@ public sealed class VuetifyAuthoringSurfaceTests
     [TestMethod]
     public void Vuetify_Form_MatchesVuetifySourceContract()
     {
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VForm).GetProperty(nameof(VForm.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VForm).GetProperty(nameof(VForm.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VForm).GetProperty(nameof(VForm.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VForm).GetProperty(nameof(VForm.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(EventCallback<VFormSubmitEvent>), typeof(VForm).GetProperty(nameof(VForm.Submit))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment<VFormDefaultSlotContext>), typeof(VForm).GetProperty(nameof(VForm.ChildContent))?.PropertyType);
         Assert.IsTrue(typeof(ECMAScript.SubmitEvent).IsAssignableFrom(typeof(VFormSubmitEvent)));
@@ -143,8 +188,8 @@ public sealed class VuetifyAuthoringSurfaceTests
     [TestMethod]
     public void Vuetify_ProgressComponents_MatchVuetifySourceContracts()
     {
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VProgressCircular).GetProperty(nameof(VProgressCircular.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VProgressCircular).GetProperty(nameof(VProgressCircular.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VProgressCircular).GetProperty(nameof(VProgressCircular.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VProgressCircular).GetProperty(nameof(VProgressCircular.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment<VProgressCircularDefaultSlotContext>), typeof(VProgressCircular).GetProperty(nameof(VProgressCircular.ChildContent))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Number), typeof(VProgressCircularDefaultSlotContext).GetProperty(nameof(VProgressCircularDefaultSlotContext.Value))?.PropertyType);
 
@@ -163,8 +208,8 @@ public sealed class VuetifyAuthoringSurfaceTests
         Assert.AreEqual(typeof(VuetifyPosition?), typeof(VSheet).GetProperty(nameof(VSheet.Position))?.PropertyType);
         Assert.AreEqual(typeof(VuetifyLocation?), typeof(VSheet).GetProperty(nameof(VSheet.Location))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VSheet).GetProperty(nameof(VSheet.Elevation))?.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VSheet).GetProperty(nameof(VSheet.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VSheet).GetProperty(nameof(VSheet.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VSheet).GetProperty(nameof(VSheet.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VSheet).GetProperty(nameof(VSheet.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(VuetifyBorderValue?), typeof(VSheet).GetProperty(nameof(VSheet.Border))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment), typeof(VSheet).GetProperty(nameof(VSheet.ChildContent))?.PropertyType);
     }
@@ -175,8 +220,8 @@ public sealed class VuetifyAuthoringSurfaceTests
         Assert.AreEqual(typeof(VuetifyIconValue?), typeof(VIcon).GetProperty(nameof(VIcon.Icon))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VIcon).GetProperty(nameof(VIcon.Size))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VIcon).GetProperty(nameof(VIcon.Opacity))?.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VIcon).GetProperty(nameof(VIcon.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VIcon).GetProperty(nameof(VIcon.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VIcon).GetProperty(nameof(VIcon.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VIcon).GetProperty(nameof(VIcon.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment), typeof(VIcon).GetProperty(nameof(VIcon.ChildContent))?.PropertyType);
     }
 
@@ -185,8 +230,8 @@ public sealed class VuetifyAuthoringSurfaceTests
     {
         Assert.AreEqual(typeof(VuetifyRoundedValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.Rounded))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.Elevation))?.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(VuetifyBorderValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.Border))?.PropertyType);
         Assert.AreEqual(typeof(VuetifyToolbarDensityValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.Density))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VToolbar).GetProperty(nameof(VToolbar.ExtensionHeight))?.PropertyType);
@@ -201,12 +246,12 @@ public sealed class VuetifyAuthoringSurfaceTests
     [TestMethod]
     public void Vuetify_ToolbarFamily_MatchesVuetifySourceContracts()
     {
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VToolbarItems).GetProperty(nameof(VToolbarItems.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VToolbarItems).GetProperty(nameof(VToolbarItems.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VToolbarItems).GetProperty(nameof(VToolbarItems.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VToolbarItems).GetProperty(nameof(VToolbarItems.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment), typeof(VToolbarItems).GetProperty(nameof(VToolbarItems.ChildContent))?.PropertyType);
 
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VToolbarTitle).GetProperty(nameof(VToolbarTitle.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VToolbarTitle).GetProperty(nameof(VToolbarTitle.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VToolbarTitle).GetProperty(nameof(VToolbarTitle.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VToolbarTitle).GetProperty(nameof(VToolbarTitle.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment), typeof(VToolbarTitle).GetProperty(nameof(VToolbarTitle.ChildContent))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment), typeof(VToolbarTitle).GetProperty(nameof(VToolbarTitle.TextContent))?.PropertyType);
     }
@@ -215,11 +260,11 @@ public sealed class VuetifyAuthoringSurfaceTests
     public void Vuetify_GridFamily_MatchesVuetifySourceContracts()
     {
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VContainer).GetProperty(nameof(VContainer.Height))?.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VContainer).GetProperty(nameof(VContainer.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VContainer).GetProperty(nameof(VContainer.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VContainer).GetProperty(nameof(VContainer.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VContainer).GetProperty(nameof(VContainer.CssStyle))?.PropertyType);
 
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VRow).GetProperty(nameof(VRow.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VRow).GetProperty(nameof(VRow.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VRow).GetProperty(nameof(VRow.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VRow).GetProperty(nameof(VRow.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(string), typeof(VRow).GetProperty(nameof(VRow.Align))?.PropertyType);
         Assert.AreEqual(typeof(bool), typeof(VRow).GetProperty(nameof(VRow.NoGutters))?.PropertyType);
 
@@ -227,11 +272,11 @@ public sealed class VuetifyAuthoringSurfaceTests
         Assert.AreEqual(typeof(VuetifyGridSpanValue?), typeof(VCol).GetProperty(nameof(VCol.Md))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VCol).GetProperty(nameof(VCol.Order))?.PropertyType);
         Assert.AreEqual(typeof(ECMAScript.Vue3.VueStringNumberValue?), typeof(VCol).GetProperty(nameof(VCol.OffsetMd))?.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VCol).GetProperty(nameof(VCol.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VCol).GetProperty(nameof(VCol.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VCol).GetProperty(nameof(VCol.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VCol).GetProperty(nameof(VCol.CssStyle))?.PropertyType);
 
-        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VSpacer).GetProperty(nameof(VSpacer.Class))?.PropertyType);
-        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VSpacer).GetProperty(nameof(VSpacer.Style))?.PropertyType);
+        Assert.AreEqual(typeof(ECMAScript.Vue3.VueClassValue?), typeof(VSpacer).GetProperty(nameof(VSpacer.CssClass))?.PropertyType);
+        Assert.AreEqual(typeof(VuetifyStyleValue?), typeof(VSpacer).GetProperty(nameof(VSpacer.CssStyle))?.PropertyType);
         Assert.AreEqual(typeof(RenderFragment), typeof(VSpacer).GetProperty(nameof(VSpacer.ChildContent))?.PropertyType);
     }
 
@@ -288,6 +333,33 @@ public sealed class VuetifyAuthoringSurfaceTests
             .Select(static property => property.Name)
             .OrderBy(static name => name, StringComparer.Ordinal)
             .ToArray();
+
+    private static void AssertCssParameterMapping(
+        Type component,
+        string propertyName,
+        string runtimeName,
+        Type expectedPropertyType,
+        bool hasMapping)
+    {
+        var property = component.GetProperty(
+            propertyName,
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+        if (property is null && !hasMapping)
+            return;
+
+        Assert.IsNotNull(property, $"{component.FullName}.{propertyName}");
+        Assert.AreEqual(expectedPropertyType, property.PropertyType, $"{component.FullName}.{propertyName}");
+        Assert.IsNotNull(
+            property.GetCustomAttribute<ParameterAttribute>(inherit: true),
+            $"{component.FullName}.{propertyName}");
+
+        var mapping = component
+            .GetCustomAttributes<VueLibraryPropAttribute>(inherit: false)
+            .SingleOrDefault(attribute => attribute.PublicName == propertyName);
+        Assert.IsNotNull(mapping, $"{component.FullName}.{propertyName}");
+        Assert.IsTrue(hasMapping, $"{component.FullName}.{propertyName}");
+        Assert.AreEqual(runtimeName, mapping!.Name, $"{component.FullName}.{propertyName}");
+    }
 
     private static SortedSet<string> ReadVuetifyEntrypointExportNames(string entryRelativePath)
     {

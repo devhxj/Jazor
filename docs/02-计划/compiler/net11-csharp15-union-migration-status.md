@@ -1,13 +1,13 @@
 # .NET 11 / C# 15 Union Migration Status
 
 > Status: active migration snapshot, verification in progress
-> Date: 2026-05-10
+> Date: 2026-05-13
 
 ## Current Decisions
 
 - Target SDK is `11.0.100-preview.3.26207.106` via `global.json`; prerelease SDK usage is intentional.
 - Roslyn package alignment follows the SDK compiler surface: `CodeAnalysisVersion` is `5.7.0-1.26207.106`. The attempted `5.8.0-1.26257.103` line was rejected because SDK Roslyn `5.7.0.0` skipped newer analyzers with `CS9057`.
-- Preview BCL still lacks the final union runtime contract in this SDK, so `ECMAScript` carries a temporary `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` shim. Remove this only after the target SDK ships the official types.
+- The target .NET 11 preview SDK now provides the runtime union contract through `System.Runtime.CompilerServices.UnionAttribute` / `IUnion`. The repository-local `CSharpUnionPreviewShim` is retired and must not be reintroduced; generated/manual fallback wrappers should reference the SDK-provided types.
 - Official union projection is allowed only for safe erased-value host wrappers. Object, interface, delegate, nullable-boundary, or C# binding-hostile branches must keep explicit strong `From(...)` factories or overloads.
 - Sequence/array union authoring must preserve collection-expression ergonomics. Keep the official `System.Runtime.CompilerServices.CollectionBuilderAttribute` plus generated builder classes for collection unions so consumers can write `ConstrainDOMString value = ["a", "b"];`; do not introduce a custom `ArrayAttribute` because the C# compiler recognizes the official collection-builder contract, not project-local aliases.
 - In-memory Roslyn test compilation references are aligned to .NET 11 via `Basic.Reference.Assemblies.Net110`; new tests should not reintroduce `Net100.References.All`.
@@ -16,6 +16,7 @@
 ## Completed
 
 - Solution/project target migration is on the `net11.0` preview path where needed.
+- The repository-local C# union preview shim was removed after the target SDK exposed the official `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` types.
 - Compiler recognizes `[Union]` / `IUnion` as host-erased union markers without widening arbitrary object contracts.
 - WebIDL generator emits C# native `readonly union` for safe non-nullable union branches, retains official collection-builder support for sequence branches, keeps nullable branch sets on the hand-tagged fallback, and preserves explicit factories for unsafe object/interface/delegate branches.
 - Generated WebIDL output was refreshed and passed ECMAScript build validation.
@@ -135,7 +136,7 @@ Resolution: `Jazor.Analyzer` now allows only non-static ordinary instance `Add(k
 
 1. Continue migrating remaining generated/manual union wrappers only when each target branch set is proven safe for the official-preview contract.
 2. Keep object/interface/delegate/nullable-boundary union branches on explicit strong factories or overloads unless C# 15 preview semantics make normal assignment/overload binding sound.
-3. Continue monitoring SDK preview changes. Remove the temporary union shim only when the target .NET 11 SDK exposes the official runtime union contract.
+3. Continue monitoring SDK preview changes and keep the code pinned to the SDK-provided `System.Runtime.CompilerServices.UnionAttribute` / `IUnion` contract. Do not add a repository-owned shim unless a future SDK regression removes the official types and that fallback is explicitly approved.
 4. Re-check Roslyn `IOperation` shape after each SDK update; keep the reflection visitor guard green before accepting a new compiler package.
 5. Re-run the full verification lane after the next SDK/Roslyn preview update, including compiler, RazorVue, RazorIr fallback, WebIDL generator, and Emit local-package sample coverage.
 6. When checked-in generated sample/site manifests are refreshed, regenerate them through the net11 emit/build pipeline rather than hand-editing `RootAssemblyPath`, hashes, or timestamps.

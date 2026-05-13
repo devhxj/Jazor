@@ -10,6 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/labs/components", "VTreeview")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibraryEmit(nameof(ActivatedChanged), VueEmitKind.ModelUpdate, Name = "update:activated")]
 [VueLibraryEmit(nameof(SelectedChanged), VueEmitKind.ModelUpdate, Name = "update:selected")]
@@ -193,14 +195,14 @@ public sealed class VTreeview : ComponentBase, IVueLibraryComponent
     /// CSS class.
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 行内样式。
     /// Inline style.
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 自定义过滤。

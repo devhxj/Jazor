@@ -50,7 +50,7 @@
                     @foreach (var category in Model.Categories)
                     {
                         <div class="playground-category-list__chip">
-                            <VChip class='@("playground-category-chip")'
+                            <VChip class="playground-category-chip"
                                    Value="@category"
                                    Variant="@(category == Model.ActiveCategory ? VuetifyVariant.Flat : VuetifyVariant.Outlined)"
                                    Text="@category" />

@@ -121,7 +121,7 @@
 1. 为高频组件引入统一 `AdditionalAttributes`
 2. 明确透传优先级与覆盖规则
 3. 为 `AddMultipleAttributes(...)` authoring 加专项回归
-4. 决定是否需要额外提供显式 `Class` / `Style` 强类型便捷入口
+4. 对已显式建模的组件提供 `CssClass` / `CssStyle` 强类型入口，并保持 lowercase `class` / `style` 走 `AdditionalAttributes`
 
 注意：
 
@@ -190,17 +190,17 @@
 
 ## 3. 需要先设计再实现的项
 
-### 3.1 `class` / `style` 应该走透传还是显式参数
+### 3.1 `class` / `style` 与 `CssClass` / `CssStyle` 的分层规则
 
 这是 authoring 体验里的关键设计决策。
 
-备选方向：
+当前规则：
 
-- 只靠 `AdditionalAttributes`
-- 同时提供显式 `Class` / `Style`
-- 部分高频组件显式提供，其余走透传
+- Razor 组件标签上的 lowercase `class` / `style` 走 `AdditionalAttributes` fallthrough
+- 需要强类型 C# 表达式时，已显式建模组件提供 `CssClass` / `CssStyle`
+- `CssClass` / `CssStyle` 通过 `VueLibraryProp` 映射到 Vue runtime 的 `class` / `style`
 
-建议先形成统一规则，再大面积补桩，避免后续又做一轮命名和优先级迁移。
+不要在 top-level Vuetify authoring component 上提供 `[Parameter] Class` / `[Parameter] Style`。这些名称会与官方 Razor SG 对 lowercase `class` / `style` 的组件参数绑定规则冲突，导致 raw attribute 不能自然 fallthrough。
 
 ### 3.2 高级 Vuetify props 的类型策略
 

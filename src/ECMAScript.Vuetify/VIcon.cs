@@ -9,6 +9,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VIcon")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VIcon : ComponentBase, IVueLibraryComponent
 {
@@ -59,14 +61,14 @@ public sealed class VIcon : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 自定义行内样式。
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 组件尺寸。

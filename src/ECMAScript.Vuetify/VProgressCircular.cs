@@ -10,6 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VProgressCircular")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VProgressCircular : ComponentBase, IVueLibraryComponent
 {
@@ -39,14 +41,14 @@ public sealed class VProgressCircular : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the root element.
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 应用于根元素的内联样式。
     /// Inline styles applied to the root element.
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 进度指示器的颜色。

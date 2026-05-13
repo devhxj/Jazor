@@ -6,6 +6,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VAvatar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 /// <summary>
 /// Vuetify 头像组件。
@@ -74,14 +76,14 @@ public sealed class VAvatar : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 自定义行内样式。
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 边框设置。

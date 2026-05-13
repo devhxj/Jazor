@@ -10,6 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VToolbar")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 [VueLibrarySlot(nameof(ImageContent), Name = "image")]
 [VueLibrarySlot(nameof(Prepend), Name = "prepend")]
@@ -58,14 +60,14 @@ public sealed class VToolbar : ComponentBase, IVueLibraryComponent
     /// CSS class.
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 行内样式。
     /// Inline style.
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 边框。

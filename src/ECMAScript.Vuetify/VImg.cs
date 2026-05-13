@@ -9,6 +9,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VImg")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(LoadStart), VueEmitKind.LibrarySpecific, Name = "loadstart")]
 [VueLibraryEmit(nameof(Load), VueEmitKind.LibrarySpecific, Name = "load")]
 [VueLibraryEmit(nameof(LoadError), VueEmitKind.LibrarySpecific, Name = "error")]
@@ -158,14 +160,14 @@ public sealed class VImg : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the image root element.
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 应用于图片根元素的行内样式。
     /// Inline styles applied to the image root element.
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 应用于图片内容区域的 CSS 类。

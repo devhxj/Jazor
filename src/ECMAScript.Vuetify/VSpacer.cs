@@ -10,6 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VSpacer")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VSpacer : ComponentBase, IVueLibraryComponent
 {
@@ -18,14 +20,14 @@ public sealed class VSpacer : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 自定义行内样式。
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 渲染的根 HTML 元素标签名。

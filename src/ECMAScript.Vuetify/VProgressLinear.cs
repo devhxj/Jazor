@@ -10,6 +10,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VProgressLinear")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
 public sealed class VProgressLinear : ComponentBase, IVueLibraryComponent
@@ -54,14 +56,14 @@ public sealed class VProgressLinear : ComponentBase, IVueLibraryComponent
     /// CSS classes applied to the root element.
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 应用于根元素的内联样式。
     /// Inline styles applied to the root element.
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 是否使用绝对定位。

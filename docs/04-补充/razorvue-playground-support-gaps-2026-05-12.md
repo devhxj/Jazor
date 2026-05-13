@@ -81,7 +81,7 @@ class="playground-page playground-page--catalog"
 - 只有 `HtmlContent`、`HtmlAttributeValue` 和非 C# `IntermediateToken` 会参与静态拼接。
 - 一旦出现 C# expression、C# token 或未知节点，仍按 mixed attribute content 抛出显式错误。
 
-## 3. library component 上原样 authoring `class=` 仍有语法/作者体验摩擦
+## 3. library component 上原样 authoring `class=` / `style=` 已落地稳定契约
 
 ### 现象
 
@@ -96,35 +96,50 @@ class="playground-page playground-page--catalog"
 
 应当可以透传。
 
-但 `Playground` 的真实 authoring 过程中，某些直接写法仍然容易踩中 Razor 解析问题，例如在组件标签上写：
+`Playground` 的真实 authoring 过程中曾经遇到：在组件标签上写 lowercase raw attribute：
 
 ```razor
 <VChip class="playground-category-chip" ... />
 ```
 
-会出现把 `playground-category-chip` 片段错误解析成符号的情况。
+会被官方 Razor Source Generator 绑定到组件的 `Class` 参数，而不是作为 unmatched fallthrough attribute 进入 `AdditionalAttributes`。由于 `Class` 参数类型是 `VueClassValue?`，HTML-style 字符串 literal 不能按 Razor SG 规则直接绑定到该非字符串参数，最终会生成错误的 C#。
 
-### 当前影响
+### 当前落地方式
 
-实际项目中需要使用更保守的写法：
+该问题已在 authoring surface 层修复：
+
+- 组件标签上的 lowercase `class` / `style` 走 `AdditionalAttributes` fallthrough，保持 Razor SG 原生可编译。
+- 强类型 C# authoring 入口统一使用 `CssClass` / `CssStyle`，通过 `[VueLibraryProp(..., Name = "class" / "style")]` 映射到 Vue runtime prop。
+- 不再在 top-level Vuetify authoring component 上暴露 `[Parameter] Class` / `[Parameter] Style`，避免与 Razor SG 的 lowercase attribute 绑定规则冲突。
+
+因此真实项目可以恢复自然写法：
 
 ```razor
-class='@("playground-category-chip")'
+<VChip class="playground-category-chip" ... />
 ```
 
-这属于“能工作，但不自然”的 authoring friction。
+需要强类型表达式时则使用：
+
+```razor
+<VChip CssClass='@("playground-category-chip")' CssStyle='@("margin-inline: 1rem")' ... />
+```
+
+`CssClass` / `CssStyle` 仍会输出到 Vue 的 `class` / `style`，不会改变运行时语义。
 
 ### 相关参考
 
 - `src/Jazor.RazorVue/Lowering/RazorVueCaptureUnmatchedAttributePolicy.cs`
 - `src/ECMAScript.Vuetify/README.md`
+- `src/Jazor.RazorVue.RazorIr.Test/RazorVueRazorIrTemplateFrontendTests.cs`
+- `src/Jazor.RazorVue.Test/VuetifyAuthoringSurfaceTests.cs`
 - `src/Jazor.RazorVue.Test/RazorVuePipelineTests.cs`
 - `src/Jazor.RazorVue.Test/RazorVueSfcArtifactFactoryTests.cs`
 
-### 后续提升方向
+### 当前保护
 
-- 让常见的 raw `class=` / `style=` 组件 authoring 形态更加稳定
-- 将“设计上支持”和“真实 authoring 可顺滑使用”对齐
+- Razor IR frontend 覆盖 raw `class=` fallthrough 与 `CssClass` / `CssStyle` 强类型映射。
+- Vuetify authoring surface 测试禁止组件参数重新暴露 `Class` / `Style`。
+- Playground 已使用自然 raw `class="playground-category-chip"` 作为真实集成验证点。
 
 ## 4. 单项目 library-mode 实际上仍需要 consumer 构建层
 
@@ -232,8 +247,11 @@ app.MapMethods("/{**path}", ["GET", "HEAD"], ...)
 建议优先级：
 
 1. default import/export 与 SFC bridge
-2. Razor IR 对静态 attribute 的稳定接受
-3. fallthrough attribute authoring 体验修复
-4. library-mode 单项目 consumer pipeline 的官方化
-5. ASP.NET Core fallback/static-file 官方化模板
-6. `/jazor/*` 多来源合并能力官方化
+2. library-mode 单项目 consumer pipeline 的官方化
+3. ASP.NET Core fallback/static-file 官方化模板
+4. `/jazor/*` 多来源合并能力官方化
+
+已落地并由回归保护的项：
+
+- Razor IR 对纯静态多 token attribute 的稳定接受
+- library component raw `class=` / `style=` fallthrough authoring 体验修复

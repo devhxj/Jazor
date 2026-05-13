@@ -6,6 +6,8 @@ namespace ECMAScript.Vuetify;
 [VueLibraryComponent("vuetify/components", "VBadge")]
 [VueLibraryStyle("vuetify/styles")]
 [VueLibraryPluginRequirement("vuetify")]
+[VueLibraryProp(nameof(CssClass), Name = "class")]
+[VueLibraryProp(nameof(CssStyle), Name = "style")]
 [VueLibraryEmit(nameof(ModelValueChanged), VueEmitKind.ModelUpdate, Name = "update:modelValue")]
 [VueLibrarySlot(nameof(BadgeContent), Name = "badge")]
 [VueLibrarySlot(nameof(ChildContent), IsDefault = true)]
@@ -62,14 +64,14 @@ public sealed class VBadge : ComponentBase, IVueLibraryComponent
     /// Custom CSS class(es).
     /// </summary>
     [Parameter]
-    public VueClassValue? Class { get; set; }
+    public VueClassValue? CssClass { get; set; }
 
     /// <summary>
     /// 自定义行内样式。
     /// Custom inline style(s).
     /// </summary>
     [Parameter]
-    public VuetifyStyleValue? Style { get; set; }
+    public VuetifyStyleValue? CssStyle { get; set; }
 
     /// <summary>
     /// 是否显示边框。

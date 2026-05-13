@@ -1791,8 +1791,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(4, nameof(VForm.ValidateOn), VuetifyValidateOn.BlurLazy);
                         builder.AddAttribute(5, nameof(VForm.ModelValue), IsValid);
                         builder.AddAttribute(6, nameof(VForm.ModelValueChanged), IsValidChanged);
-                        builder.AddAttribute(117, nameof(VForm.Class), "advanced-form");
-                        builder.AddAttribute(118, nameof(VForm.Style), new VueDictionary
+                        builder.AddAttribute(117, nameof(VForm.CssClass), "advanced-form");
+                        builder.AddAttribute(118, nameof(VForm.CssStyle), new VueDictionary
                         {
                             ["--form-gap"] = "16px"
                         });
@@ -1946,8 +1946,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(105, nameof(VDialog.Scrim), "rgba(0,0,0,.6)");
                         builder.AddAttribute(106, nameof(VDialog.Theme), "dark");
                         builder.AddAttribute(107, nameof(VDialog.ZIndex), 2500);
-                        builder.AddAttribute(108, nameof(VDialog.Class), "dialog-root");
-                        builder.AddAttribute(109, nameof(VDialog.Style), new VueDictionary
+                        builder.AddAttribute(108, nameof(VDialog.CssClass), "dialog-root");
+                        builder.AddAttribute(109, nameof(VDialog.CssStyle), new VueDictionary
                         {
                             ["--dialog-gap"] = "12px"
                         });
@@ -3135,8 +3135,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(4, nameof(VStepperVertical.Variant), VuetifyExpansionPanelVariant.Popout);
                         builder.AddAttribute(5, nameof(VStepperVertical.Max), 3);
                         builder.AddAttribute(6, nameof(VStepperVertical.Color), "primary");
-                        builder.AddAttribute(7, nameof(VStepperVertical.Class), "workflow-stepper");
-                        builder.AddAttribute(8, nameof(VStepperVertical.Style), "min-height: 320px");
+                        builder.AddAttribute(7, nameof(VStepperVertical.CssClass), "workflow-stepper");
+                        builder.AddAttribute(8, nameof(VStepperVertical.CssStyle), "min-height: 320px");
                         builder.AddAttribute(9, nameof(VStepperVertical.Eager), true);
                         builder.AddAttribute(10, nameof(VStepperVertical.Disabled), false);
                         builder.AddAttribute(11, nameof(VStepperVertical.Multiple), false);
@@ -4653,8 +4653,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(17, nameof(VImg.Inline), true);
                         builder.AddAttribute(18, nameof(VImg.Absolute), true);
                         builder.AddAttribute(19, nameof(VImg.Rounded), "xl");
-                        builder.AddAttribute(20, nameof(VImg.Class), "hero-img");
-                        builder.AddAttribute(21, nameof(VImg.Style), new VueDictionary
+                        builder.AddAttribute(20, nameof(VImg.CssClass), "hero-img");
+                        builder.AddAttribute(21, nameof(VImg.CssStyle), new VueDictionary
                         {
                             ["--media-radius"] = "24px"
                         });
@@ -5398,15 +5398,15 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(4, nameof(VContainer.MaxWidth), 1280);
                         builder.AddAttribute(5, nameof(VContainer.MinHeight), 720);
                         builder.AddAttribute(6, nameof(VContainer.Width), "min(100%, 1280px)");
-                        builder.AddAttribute(7, nameof(VContainer.Class), new[] { "dashboard-container", "dashboard-container--wide" });
-                        builder.AddAttribute(8, nameof(VContainer.Style), new VueDictionary
+                        builder.AddAttribute(7, nameof(VContainer.CssClass), new[] { "dashboard-container", "dashboard-container--wide" });
+                        builder.AddAttribute(8, nameof(VContainer.CssStyle), new VueDictionary
                         {
                             ["--container-padding"] = "24px"
                         });
                         builder.OpenComponent<VRow>(9);
                         builder.AddAttribute(10, nameof(VRow.Tag), "section");
-                        builder.AddAttribute(11, nameof(VRow.Class), "dashboard-row");
-                        builder.AddAttribute(12, nameof(VRow.Style), new VueDictionary
+                        builder.AddAttribute(11, nameof(VRow.CssClass), "dashboard-row");
+                        builder.AddAttribute(12, nameof(VRow.CssStyle), new VueDictionary
                         {
                             ["--row-gap"] = "16px"
                         });
@@ -5422,8 +5422,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(22, nameof(VRow.NoGutters), true);
                         builder.OpenComponent<VCol>(23);
                         builder.AddAttribute(24, nameof(VCol.Tag), "article");
-                        builder.AddAttribute(25, nameof(VCol.Class), new[] { "dashboard-col", "dashboard-col--summary" });
-                        builder.AddAttribute(26, nameof(VCol.Style), "min-inline-size: 0");
+                        builder.AddAttribute(25, nameof(VCol.CssClass), new[] { "dashboard-col", "dashboard-col--summary" });
+                        builder.AddAttribute(26, nameof(VCol.CssStyle), "min-inline-size: 0");
                         builder.AddAttribute(27, nameof(VCol.AlignSelf), "center");
                         builder.AddAttribute(28, nameof(VCol.Cols), 12);
                         builder.AddAttribute(29, nameof(VCol.Sm), true);
@@ -5447,8 +5447,8 @@ public sealed class RazorVuePipelineTests
                         builder.CloseComponent();
                         builder.OpenComponent<VSpacer>(43);
                         builder.AddAttribute(44, nameof(VSpacer.Tag), "aside");
-                        builder.AddAttribute(45, nameof(VSpacer.Class), "dashboard-spacer");
-                        builder.AddAttribute(46, nameof(VSpacer.Style), "flex-basis: 2rem");
+                        builder.AddAttribute(45, nameof(VSpacer.CssClass), "dashboard-spacer");
+                        builder.AddAttribute(46, nameof(VSpacer.CssStyle), "flex-basis: 2rem");
                         builder.CloseComponent();
                         builder.CloseComponent();
                         builder.CloseComponent();
@@ -5647,8 +5647,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(9, nameof(VSheet.Tile), true);
                         builder.AddAttribute(10, nameof(VSheet.Position), VuetifyPosition.Relative);
                         builder.AddAttribute(11, nameof(VSheet.Location), VuetifyLocation.TopStart);
-                        builder.AddAttribute(12, nameof(VSheet.Class), new[] { "preferences", "preferences--sheet" });
-                        builder.AddAttribute(13, nameof(VSheet.Style), new VueDictionary
+                        builder.AddAttribute(12, nameof(VSheet.CssClass), new[] { "preferences", "preferences--sheet" });
+                        builder.AddAttribute(13, nameof(VSheet.CssStyle), new VueDictionary
                         {
                             ["--sheet-gap"] = "1rem"
                         });
@@ -5663,8 +5663,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(22, nameof(VIcon.Start), true);
                         builder.AddAttribute(23, nameof(VIcon.End), true);
                         builder.AddAttribute(24, nameof(VIcon.Disabled), false);
-                        builder.AddAttribute(25, nameof(VIcon.Class), new[] { "sheet-icon", "sheet-icon--settings" });
-                        builder.AddAttribute(26, nameof(VIcon.Style), "margin-inline-end: 0.5rem");
+                        builder.AddAttribute(25, nameof(VIcon.CssClass), new[] { "sheet-icon", "sheet-icon--settings" });
+                        builder.AddAttribute(26, nameof(VIcon.CssStyle), "margin-inline-end: 0.5rem");
                         builder.CloseComponent();
                         builder.OpenComponent<VToolbar>(27);
                         builder.AddAttribute(28, nameof(VToolbar.Color), "primary");
@@ -5675,8 +5675,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(33, nameof(VToolbar.Rounded), "0");
                         builder.AddAttribute(34, nameof(VToolbar.Tile), true);
                         builder.AddAttribute(35, nameof(VToolbar.Elevation), 4);
-                        builder.AddAttribute(36, nameof(VToolbar.Class), "preferences-toolbar");
-                        builder.AddAttribute(37, nameof(VToolbar.Style), new VueDictionary
+                        builder.AddAttribute(36, nameof(VToolbar.CssClass), "preferences-toolbar");
+                        builder.AddAttribute(37, nameof(VToolbar.CssStyle), new VueDictionary
                         {
                             ["--toolbar-offset"] = "2px"
                         });
@@ -5701,15 +5701,15 @@ public sealed class RazorVuePipelineTests
                         builder.OpenComponent<VToolbarTitle>(53);
                         builder.AddAttribute(54, nameof(VToolbarTitle.Text), "Preferences");
                         builder.AddAttribute(55, nameof(VToolbarTitle.Tag), "h2");
-                        builder.AddAttribute(56, nameof(VToolbarTitle.Class), new[] { "toolbar-title", "toolbar-title--main" });
-                        builder.AddAttribute(57, nameof(VToolbarTitle.Style), "letter-spacing: 0.02em");
+                        builder.AddAttribute(56, nameof(VToolbarTitle.CssClass), new[] { "toolbar-title", "toolbar-title--main" });
+                        builder.AddAttribute(57, nameof(VToolbarTitle.CssStyle), "letter-spacing: 0.02em");
                         builder.AddAttribute(58, nameof(VToolbarTitle.TextContent), ToolbarTitleText);
                         builder.CloseComponent();
                         builder.OpenComponent<VToolbarItems>(59);
                         builder.AddAttribute(60, nameof(VToolbarItems.Color), "secondary");
                         builder.AddAttribute(61, nameof(VToolbarItems.Variant), VuetifyVariant.Text);
-                        builder.AddAttribute(62, nameof(VToolbarItems.Class), "toolbar-actions");
-                        builder.AddAttribute(63, nameof(VToolbarItems.Style), new VueDictionary
+                        builder.AddAttribute(62, nameof(VToolbarItems.CssClass), "toolbar-actions");
+                        builder.AddAttribute(63, nameof(VToolbarItems.CssStyle), new VueDictionary
                         {
                             ["gap"] = "0.25rem"
                         });
@@ -5919,8 +5919,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(18, nameof(VAlert.MinWidth), 320);
                         builder.AddAttribute(19, nameof(VAlert.Width), "100%");
                         builder.AddAttribute(20, nameof(VAlert.Density), VuetifyDensity.Comfortable);
-                        builder.AddAttribute(21, nameof(VAlert.Class), "saved-alert");
-                        builder.AddAttribute(22, nameof(VAlert.Style), new VueDictionary
+                        builder.AddAttribute(21, nameof(VAlert.CssClass), "saved-alert");
+                        builder.AddAttribute(22, nameof(VAlert.CssStyle), new VueDictionary
                         {
                             ["--alert-gap"] = "8px"
                         });
@@ -6004,8 +6004,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(85, nameof(VChip.SelectedClass), "chip-selected");
                         builder.AddAttribute(86, nameof(VChip.Elevation), 1);
                         builder.AddAttribute(87, nameof(VChip.Density), VuetifyDensity.Compact);
-                        builder.AddAttribute(88, nameof(VChip.Class), "pin-chip");
-                        builder.AddAttribute(89, nameof(VChip.Style), new VueDictionary
+                        builder.AddAttribute(88, nameof(VChip.CssClass), "pin-chip");
+                        builder.AddAttribute(89, nameof(VChip.CssStyle), new VueDictionary
                         {
                             ["--chip-gap"] = "4px"
                         });
@@ -6506,8 +6506,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(20, nameof(VTreeview.OpenOnClick), true);
                         builder.AddAttribute(21, nameof(VTreeview.OpenAll), false);
                         builder.AddAttribute(22, nameof(VTreeview.Search), "plan");
-                        builder.AddAttribute(23, nameof(VTreeview.Class), new[] { "tree", "tree--dense" });
-                        builder.AddAttribute(24, nameof(VTreeview.Style), new VueDictionary
+                        builder.AddAttribute(23, nameof(VTreeview.CssClass), new[] { "tree", "tree--dense" });
+                        builder.AddAttribute(24, nameof(VTreeview.CssStyle), new VueDictionary
                         {
                             ["--tree-accent"] = "currentColor"
                         });
@@ -7069,8 +7069,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(55, nameof(VBadge.Rounded), "lg");
                         builder.AddAttribute(56, nameof(VBadge.Tile), true);
                         builder.AddAttribute(57, nameof(VBadge.Location), VuetifyLocation.TopEnd);
-                        builder.AddAttribute(58, nameof(VBadge.Class), "status-badge");
-                        builder.AddAttribute(59, nameof(VBadge.Style), new VueDictionary
+                        builder.AddAttribute(58, nameof(VBadge.CssClass), "status-badge");
+                        builder.AddAttribute(59, nameof(VBadge.CssStyle), new VueDictionary
                         {
                             ["--badge-gap"] = "2px"
                         });
@@ -7095,8 +7095,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(78, nameof(VAvatar.Tag), "figure");
                         builder.AddAttribute(79, nameof(VAvatar.Tile), true);
                         builder.AddAttribute(80, nameof(VAvatar.Density), VuetifyDensity.Compact);
-                        builder.AddAttribute(81, nameof(VAvatar.Class), new[] { "profile-avatar", "profile-avatar--online" });
-                        builder.AddAttribute(82, nameof(VAvatar.Style), new VueDictionary
+                        builder.AddAttribute(81, nameof(VAvatar.CssClass), new[] { "profile-avatar", "profile-avatar--online" });
+                        builder.AddAttribute(82, nameof(VAvatar.CssStyle), new VueDictionary
                         {
                             ["--avatar-ring"] = "2px"
                         });
@@ -7122,8 +7122,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(106, nameof(VProgressLinear.Tag), "section");
                         builder.AddAttribute(107, nameof(VProgressLinear.Tile), false);
                         builder.AddAttribute(108, nameof(VProgressLinear.Location), VuetifyLocation.Bottom);
-                        builder.AddAttribute(109, nameof(VProgressLinear.Class), "profile-progress");
-                        builder.AddAttribute(110, nameof(VProgressLinear.Style), new VueDictionary
+                        builder.AddAttribute(109, nameof(VProgressLinear.CssClass), "profile-progress");
+                        builder.AddAttribute(110, nameof(VProgressLinear.CssStyle), new VueDictionary
                         {
                             ["--progress-gap"] = "3px"
                         });
@@ -7149,8 +7149,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(129, nameof(VProgressCircular.Width), 6);
                         builder.AddAttribute(130, nameof(VProgressCircular.Theme), "dark");
                         builder.AddAttribute(131, nameof(VProgressCircular.Tag), "span");
-                        builder.AddAttribute(132, nameof(VProgressCircular.Class), "profile-progress-circular");
-                        builder.AddAttribute(133, nameof(VProgressCircular.Style), new VueDictionary
+                        builder.AddAttribute(132, nameof(VProgressCircular.CssClass), "profile-progress-circular");
+                        builder.AddAttribute(133, nameof(VProgressCircular.CssStyle), new VueDictionary
                         {
                             ["--progress-circular-gap"] = "1px"
                         });
@@ -7386,8 +7386,8 @@ public sealed class RazorVuePipelineTests
                         builder.AddAttribute(41, nameof(VSnackbar.Position), VuetifyPosition.Fixed);
                         builder.AddAttribute(42, nameof(VSnackbar.Transition), "slide-y-reverse-transition");
                         builder.AddAttribute(43, nameof(VSnackbar.ZIndex), 2600);
-                        builder.AddAttribute(44, nameof(VSnackbar.Class), "save-snackbar");
-                        builder.AddAttribute(45, nameof(VSnackbar.Style), new VueDictionary
+                        builder.AddAttribute(44, nameof(VSnackbar.CssClass), "save-snackbar");
+                        builder.AddAttribute(45, nameof(VSnackbar.CssStyle), new VueDictionary
                         {
                             ["--snackbar-gap"] = "8px"
                         });
