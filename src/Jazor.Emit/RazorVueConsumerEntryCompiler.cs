@@ -72,7 +72,7 @@ internal sealed class RazorVueConsumerEntryCompiler
 
         var manifestPath = ResolveRequiredPath(
             options.ManifestPath,
-            Path.Combine(options.HostJazorRoot, "jazor-manifest-razorvue.json"));
+            Path.Combine(options.HostJazorRoot, "jazor-manifest.json"));
         var hostRequirementsModulePath = ResolveRequiredPath(
             options.HostRequirementsModulePath,
             RazorVueModuleWriter.GetHostRequirementsModulePath(options.HostJazorRoot));

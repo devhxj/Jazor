@@ -4,7 +4,7 @@ internal sealed record BundleOptions(
     string InputDirectory,
     string ManifestPath,
     string OutputPath,
-    string? PreviousRazorVueManifestPath = null,
+    string? PreviousManifestPath = null,
     string? RazorVueUpdatePlanPath = null)
 {
     public static bool TryParse(string[] args, out BundleOptions? options, out string? error)
@@ -15,7 +15,7 @@ internal sealed record BundleOptions(
         var inputDirectory = string.Empty;
         var manifestPath = string.Empty;
         var outputPath = string.Empty;
-        string? previousRazorVueManifestPath = null;
+        string? previousManifestPath = null;
         string? razorVueUpdatePlanPath = null;
 
         for (var i = 0; i < args.Length; i++)
@@ -39,8 +39,8 @@ internal sealed record BundleOptions(
                 case "--out":
                     outputPath = value;
                     break;
-                case "--previous-razorvue-manifest":
-                    previousRazorVueManifestPath = value;
+                case "--previous-manifest":
+                    previousManifestPath = value;
                     break;
                 case "--write-razorvue-update-plan":
                     razorVueUpdatePlanPath = value;
@@ -73,7 +73,7 @@ internal sealed record BundleOptions(
             Path.GetFullPath(inputDirectory),
             Path.GetFullPath(manifestPath),
             Path.GetFullPath(outputPath),
-            string.IsNullOrWhiteSpace(previousRazorVueManifestPath) ? null : Path.GetFullPath(previousRazorVueManifestPath),
+            string.IsNullOrWhiteSpace(previousManifestPath) ? null : Path.GetFullPath(previousManifestPath),
             string.IsNullOrWhiteSpace(razorVueUpdatePlanPath) ? null : Path.GetFullPath(razorVueUpdatePlanPath));
         return true;
     }

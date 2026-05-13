@@ -389,13 +389,12 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.TemplateText, "<template v-if=\"__jazorVueSfcBinding0\">");
-        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"item in __jazorVueSfcBinding1\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-if=\"props.visible\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"item in props.items\">");
         StringAssert.Contains(artifact.TemplateText, "{{ item }}");
-        StringAssert.Contains(artifact.ScriptSetupText, "import { computed } from \"vue\";");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => props.visible);");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.items);");
-        Assert.AreEqual(HmrBoundaryKind.LogicSafe, artifact.Identity.HmrBoundaryKind);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("computed", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.AreEqual(HmrBoundaryKind.TemplateOnly, artifact.Identity.HmrBoundaryKind);
     }
 
     [TestMethod]
@@ -442,12 +441,11 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(__jazorVueSfcBinding0, __jazorVueSfcBinding1, &quot;&lt;&quot;, &quot;++&quot;, null)\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(0, props.count, &quot;&lt;&quot;, &quot;++&quot;, null)\">");
         StringAssert.Contains(artifact.TemplateText, "{{ i }}");
-        StringAssert.Contains(artifact.ScriptSetupText, "import { computed } from \"vue\";");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("import { computed } from \"vue\";", StringComparison.Ordinal), artifact.ScriptSetupText);
         StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueForRange = (start, limit, conditionOperator, stepOperator, stepValue) => {");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => 0);");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.count);");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
     }
 
     [TestMethod]
@@ -500,10 +498,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(__jazorVueSfcBinding0, __jazorVueSfcBinding1, &quot;&lt;=&quot;, &quot;+=&quot;, __jazorVueSfcBinding2)\">");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => props.start);");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding1 = computed(() => props.count);");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding2 = computed(() => props.step);");
+        StringAssert.Contains(artifact.TemplateText, "<template v-for=\"i in __jazorVueForRange(props.start, props.count, &quot;&lt;=&quot;, &quot;+=&quot;, props.step)\">");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
         StringAssert.Contains(artifact.ScriptSetupText, "const stepDelta = stepOperator === \"++\" ? 1");
         StringAssert.Contains(artifact.ScriptSetupText, "requires a finite non-zero effective step value");
     }
@@ -684,10 +680,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
         StringAssert.Contains(artifact.TemplateText, "<LayoutCardComponent>");
-        StringAssert.Contains(artifact.TemplateText, "<template v-if=\"__jazorVueSfcBinding0\">");
+        StringAssert.Contains(artifact.TemplateText, "<template v-if=\"props.visible\">");
         StringAssert.Contains(artifact.TemplateText, "<span>");
         StringAssert.Contains(artifact.TemplateText, "Shown");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => props.visible);");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
     }
 
     [TestMethod]
@@ -837,8 +833,8 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.ScriptSetupText, "emit(\"ready\", props.value);");
         StringAssert.Contains(artifact.ScriptSetupText, "watch(() => [props.value], () => {");
         StringAssert.Contains(artifact.ScriptSetupText, "emit(\"update:value\", props.value);");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => doubleCount());");
-        StringAssert.Contains(artifact.TemplateText, "{{ __jazorVueSfcBinding0 }}");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => doubleCount());");
+        StringAssert.Contains(artifact.TemplateText, "{{ __jazor$0 }}");
     }
 
     [TestMethod]
@@ -965,6 +961,53 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "<DemoPanel :fluid=\"true\" :columns=\"12\" title=\"Inbox\" />");
         Assert.IsFalse(artifact.TemplateText.Contains(" fluid=\"true\"", StringComparison.Ordinal), artifact.TemplateText);
         Assert.IsFalse(artifact.TemplateText.Contains(" columns=\"12\"", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("computed", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LowersLibraryStringLiteralProp_WithoutLiftedBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using ECMAScript.Vuetify;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/text-host")]
+                public class TextHost : ComponentBase, IVueComponent
+                {
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenComponent<VTextField>(0);
+                        builder.AddAttribute(1, nameof(VTextField.Density), "comfortable");
+                        builder.CloseComponent();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.TemplateText, "<VTextField density=\"comfortable\" />");
+        Assert.IsFalse(artifact.TemplateText.Contains(":density=", StringComparison.Ordinal), artifact.TemplateText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("computed", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
     }
 
     [TestMethod]
@@ -1008,8 +1051,58 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (props.title + \"!\"));");
-        StringAssert.Contains(artifact.TemplateText, "<section :title=\"__jazorVueSfcBinding0\" />");
+        StringAssert.Contains(artifact.TemplateText, "<section :title=\"(props.title + &quot;!&quot;)\" />");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+    }
+
+    [TestMethod]
+    public void RazorVue_SfcArtifactFactory_LiftsNestedPropertyProjectionFromInvocation_IntoComputedBinding()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/title-card")]
+                public class TitleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private string GetTitle()
+                        => Title ?? string.Empty;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, GetTitle().Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
+
+        StringAssert.Contains(artifact.ScriptSetupText, "function getTitle()");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => ");
+        StringAssert.Contains(artifact.TemplateText, "{{ __jazor$0 }}");
+        Assert.IsFalse(artifact.TemplateText.Contains("getTitle(", StringComparison.Ordinal), artifact.TemplateText);
     }
 
     [TestMethod]
@@ -1086,10 +1179,10 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.TemplateText, "<VTextField :modelValue=\"props.modelValue\" @update:modelValue=\"__jazorVueSfcBinding0\" />");
+        StringAssert.Contains(artifact.TemplateText, "<VTextField :modelValue=\"props.modelValue\" @update:modelValue=\"__jazor$0\" />");
         StringAssert.Contains(artifact.ScriptSetupText, "const props = defineProps<{ modelValue?: any }>();");
         StringAssert.Contains(artifact.ScriptSetupText, "const emit = defineEmits<{ (event: \"update:modelValue\", payload?: any): void }>();");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (__value) => emit(\"update:modelValue\", __value));");
+        StringAssert.Contains(artifact.ScriptSetupText, "const __jazor$0 = computed(() => (__value) => emit(\"update:modelValue\", __value));");
     }
 
     [TestMethod]
@@ -1945,9 +2038,9 @@ public sealed class RazorVueSfcArtifactFactoryTests
         var snapshot = context.CreateSemanticSnapshots().Single();
         var artifact = CreateBuildRenderTreeArtifactFactory().Lower(context, snapshot);
 
-        StringAssert.Contains(artifact.ScriptSetupText, "import { computed } from \"vue\";");
-        StringAssert.Contains(artifact.ScriptSetupText, "const __jazorVueSfcBinding0 = computed(() => (props.count + 1));");
-        StringAssert.Contains(artifact.TemplateText, "<slot name=\"header\" :value=\"__jazorVueSfcBinding0\" />");
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("import { computed } from \"vue\";", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
+        StringAssert.Contains(artifact.TemplateText, "<slot name=\"header\" :value=\"(props.count + 1)\" />");
     }
 
     [TestMethod]
@@ -2504,7 +2597,7 @@ public sealed class RazorVueSfcArtifactFactoryTests
         StringAssert.Contains(artifact.TemplateText, "{{ item }}");
         StringAssert.Contains(artifact.SfcText, "import ItemEditorComponent from \"./item-editor.vue\";");
         StringAssert.Contains(artifact.SfcText, "import ListCardComponent from \"./list-card.vue\";");
-        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazorVueSfcBinding", StringComparison.Ordinal), artifact.ScriptSetupText);
+        Assert.IsFalse(artifact.ScriptSetupText.Contains("__jazor$", StringComparison.Ordinal), artifact.ScriptSetupText);
     }
 
     [TestMethod]

@@ -69,7 +69,7 @@
 
   <Target Name="BuildPlaygroundDenoAssets"
           AfterTargets="JazorEmit"
-          Condition="'$(DesignTimeBuild)' != 'true' and '$(PlaygroundDenoBuild)' == 'true' and Exists('$(JazorOutDir)jazor-manifest-razorvue.json')">
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(PlaygroundDenoBuild)' == 'true' and Exists('$(JazorOutDir)jazor-manifest.json')">
     <Error Text="Playground Deno runner was not found: $(PlaygroundConsumerRunDenoScript)"
            Condition="!Exists('$(PlaygroundConsumerRunDenoScript)')" />
     <Exec WorkingDirectory="$(MSBuildProjectDirectory)"

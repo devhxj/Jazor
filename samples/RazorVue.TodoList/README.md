@@ -39,7 +39,7 @@ You should see:
 
 - `components/todo-app.vue`
 - `components/todo-summary-card.vue`
-- `jazor-manifest-razorvue.json`
+- `jazor-manifest.json`
 - `__jazor/razorvue-host.mjs`
 
 If you also want the regular JS bundle sidecars from `Jazor.Emit`, build with:

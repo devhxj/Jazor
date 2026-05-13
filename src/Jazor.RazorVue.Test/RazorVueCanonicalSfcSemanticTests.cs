@@ -88,6 +88,62 @@ public sealed class RazorVueCanonicalSfcSemanticTests
     }
 
     [TestMethod]
+    public void RazorVue_CanonicalModelFactory_LiftsNestedPropertyProjectionFromInvocation_WhenSingleEvaluationMustBePreserved()
+    {
+        var context = CreateContext(
+            """
+            using System;
+            using ECMAScript.VueContract;
+            using Microsoft.AspNetCore.Components;
+            using Microsoft.AspNetCore.Components.Rendering;
+
+            namespace ECMAScript
+            {
+                [AttributeUsage(AttributeTargets.Class, Inherited = false)]
+                public sealed class ECMAScriptModuleAttribute : Attribute
+                {
+                    public ECMAScriptModuleAttribute() { }
+                    public ECMAScriptModuleAttribute(string import) { }
+                }
+            }
+
+            namespace Demo.Components
+            {
+                [ECMAScript.ECMAScriptModule("./components/title-card")]
+                public class TitleCard : ComponentBase, IVueComponent
+                {
+                    [Parameter]
+                    public string? Title { get; set; }
+
+                    private string GetTitle()
+                        => Title ?? string.Empty;
+
+                    protected override void BuildRenderTree(RenderTreeBuilder builder)
+                    {
+                        builder.OpenElement(0, "section");
+                        builder.AddContent(1, GetTitle().Length);
+                        builder.CloseElement();
+                    }
+                }
+            }
+            """);
+
+        var snapshot = context.CreateSemanticSnapshots().Single();
+        var canonical = CreateBuildRenderTreeCanonicalFactory().Create(context, snapshot);
+        var root = AssertNode<RazorVueCanonicalElementNode>(canonical.Template.Children.Single());
+        var interpolation = AssertNode<RazorVueCanonicalInterpolationNode>(root.Children.Children.Single());
+        var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
+
+        StringAssert.Contains(interpolation.ExpressionText, "getTitle", StringComparison.Ordinal);
+        Assert.AreEqual(RazorVueTemplateEncodability.DirectTemplate, interpolation.TemplateEncodability);
+        Assert.AreEqual(RazorVueTemplateExpressionSafety.RequiresSetupBinding, interpolation.TemplateExpressionSafety);
+        Assert.AreEqual(RazorVueSideEffectClassification.RepeatedEvaluationRisk, interpolation.SideEffectClassification);
+        Assert.AreEqual("__jazor$0", sfc.ScriptSetupBlock.LiftedBindings.Single().Name);
+        Assert.AreEqual(interpolation.ExpressionText, sfc.ScriptSetupBlock.LiftedBindings.Single().ExpressionText);
+        Assert.AreEqual("__jazor$0", sfc.TemplateBlock.BindingSites.Single().TemplateExpressionText);
+    }
+
+    [TestMethod]
     public void RazorVue_CanonicalModelFactory_ClassifiesLoopAndConditional_AsTemplateViaSetupBinding()
     {
         var context = CreateContext(
@@ -144,15 +200,11 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, loop.TemplateEncodability);
 
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
-        Assert.AreEqual(2, sfc.ScriptSetupBlock.LiftedBindings.Length);
-        Assert.AreEqual("__jazorVueSfcBinding0", sfc.ScriptSetupBlock.LiftedBindings[0].Name);
-        Assert.AreEqual("props.visible", sfc.ScriptSetupBlock.LiftedBindings[0].ExpressionText);
-        Assert.AreEqual("__jazorVueSfcBinding1", sfc.ScriptSetupBlock.LiftedBindings[1].Name);
-        Assert.AreEqual("props.items", sfc.ScriptSetupBlock.LiftedBindings[1].ExpressionText);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.AreEqual("root/child[0]/if", sfc.TemplateBlock.BindingSites[0].SitePath);
-        Assert.AreEqual("__jazorVueSfcBinding0", sfc.TemplateBlock.BindingSites[0].BindingName);
+        Assert.AreEqual("props.visible", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
         Assert.AreEqual("root/child[0]/whenTrue/child[0]/forEach", sfc.TemplateBlock.BindingSites[1].SitePath);
-        Assert.AreEqual("__jazorVueSfcBinding1", sfc.TemplateBlock.BindingSites[1].BindingName);
+        Assert.AreEqual("props.items", sfc.TemplateBlock.BindingSites[1].TemplateExpressionText);
     }
 
     [TestMethod]
@@ -206,9 +258,11 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.IsNull(loop.StepValueExpressionText);
 
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
-        Assert.AreEqual(2, sfc.ScriptSetupBlock.LiftedBindings.Length);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.AreEqual("root/child[0]/for/init", sfc.TemplateBlock.BindingSites[0].SitePath);
+        Assert.AreEqual("0", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
         Assert.AreEqual("root/child[0]/for/limit", sfc.TemplateBlock.BindingSites[1].SitePath);
+        Assert.AreEqual("props.count", sfc.TemplateBlock.BindingSites[1].TemplateExpressionText);
     }
 
     [TestMethod]
@@ -268,10 +322,13 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.AreEqual("props.step", loop.StepValueExpressionText);
 
         var sfc = new RazorVueSfcSemanticModelFactory().Create(canonical);
-        Assert.AreEqual(3, sfc.ScriptSetupBlock.LiftedBindings.Length);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.AreEqual("root/child[0]/for/init", sfc.TemplateBlock.BindingSites[0].SitePath);
+        Assert.AreEqual("props.start", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
         Assert.AreEqual("root/child[0]/for/limit", sfc.TemplateBlock.BindingSites[1].SitePath);
+        Assert.AreEqual("props.count", sfc.TemplateBlock.BindingSites[1].TemplateExpressionText);
         Assert.AreEqual("root/child[0]/for/step", sfc.TemplateBlock.BindingSites[2].SitePath);
+        Assert.AreEqual("props.step", sfc.TemplateBlock.BindingSites[2].TemplateExpressionText);
     }
 
     [TestMethod]
@@ -308,6 +365,7 @@ public sealed class RazorVueCanonicalSfcSemanticTests
                         ExpressionText: "someUnsupportedThing()",
                         BindingKind: RazorVueExpressionBindingKind.RuntimeExpression,
                         TemplateEncodability: RazorVueTemplateEncodability.NotTemplateEncodable,
+                        TemplateExpressionSafety: RazorVueTemplateExpressionSafety.NotTemplateSafe,
                         SideEffectClassification: RazorVueSideEffectClassification.RepeatedEvaluationRisk,
                         SourceOrigins: ImmutableArray<RazorVueSourceOrigin>.Empty))),
             Setup: new RazorVueCanonicalSetupModel(
@@ -374,9 +432,9 @@ public sealed class RazorVueCanonicalSfcSemanticTests
         Assert.AreEqual("header", slotOutlet.SlotName);
         Assert.AreEqual("(props.count + 1)", slotOutlet.ArgumentExpressionText);
         Assert.AreEqual(RazorVueTemplateEncodability.TemplateViaSetupBinding, slotOutlet.TemplateEncodability);
-        Assert.AreEqual("__jazorVueSfcBinding0", sfc.ScriptSetupBlock.LiftedBindings[0].Name);
-        Assert.AreEqual("(props.count + 1)", sfc.ScriptSetupBlock.LiftedBindings[0].ExpressionText);
+        Assert.IsTrue(sfc.ScriptSetupBlock.LiftedBindings.IsDefaultOrEmpty);
         Assert.AreEqual("root/child[0]/child[0]/slotArg", sfc.TemplateBlock.BindingSites[0].SitePath);
+        Assert.AreEqual("(props.count + 1)", sfc.TemplateBlock.BindingSites[0].TemplateExpressionText);
     }
 
     [TestMethod]

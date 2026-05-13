@@ -8,7 +8,7 @@ internal sealed record RazorVueRenderFragment(
     ImmutableArray<RazorVueRenderNode> Children)
 {
     public static RazorVueRenderFragment Empty { get; } =
-        new(ImmutableArray<RazorVueRenderNode>.Empty);
+        new([]);
 }
 
 internal abstract record RazorVueRenderNode(

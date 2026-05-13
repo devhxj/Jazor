@@ -41,7 +41,7 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
   const distRoot = resolvePathFromEnvironment("RAZORVUE_DIST_ROOT", resolve(consumerRoot, "dist"));
   const rootComponentId = readConfiguredText("RAZORVUE_ROOT_COMPONENT_ID") ?? defaultRootComponentId;
   const rootComponentName = readConfiguredText("RAZORVUE_ROOT_COMPONENT_NAME") ?? defaultRootComponentName;
-  const manifestPath = resolve(hostJazorRoot, "jazor-manifest-razorvue.json");
+  const manifestPath = resolve(hostJazorRoot, "jazor-manifest.json");
   const hostRequirementsModulePath = resolve(hostJazorRoot, "__jazor", "razorvue-host.mjs");
 
   if (!(await fileExists(manifestPath))) {

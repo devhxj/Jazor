@@ -8,6 +8,7 @@ using Jazor.RazorVue.Descriptor;
 using Jazor.RazorVue.Extensibility;
 using Jazor.RazorVue.RenderTree;
 using Jazor.RazorVue.Sfc;
+
 namespace Jazor.RazorVue.Lowering;
 
 internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
@@ -46,7 +47,7 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         {
             var bindingSiteMap = semantic.TemplateBlock.BindingSites.ToDictionary(
                 static item => item.SitePath,
-                static item => item.BindingName,
+                static item => item.TemplateExpressionText,
                 StringComparer.Ordinal);
             var templateText = BuildTemplateBlockText(semantic.TemplateBlock.Template, bindingSiteMap);
             var scriptSetupText = BuildScriptSetupBlockText(
@@ -774,13 +775,10 @@ internal sealed class RazorVueSfcArtifactFactory : IRazorVueSfcArtifactLowerer
         string path,
         int templateScopeDepth)
     {
-        if (templateEncodability == RazorVueTemplateEncodability.TemplateViaSetupBinding &&
-            templateScopeDepth == 0)
+        if (templateScopeDepth == 0 &&
+            bindingSiteMap.TryGetValue(path, out var resolvedExpression))
         {
-            if (!bindingSiteMap.TryGetValue(path, out var bindingName))
-                throw new InvalidOperationException("RazorVue SFC template binding site map drifted out of sync with template emission at '" + path + "'.");
-
-            return bindingName;
+            return resolvedExpression;
         }
 
         return expressionText;

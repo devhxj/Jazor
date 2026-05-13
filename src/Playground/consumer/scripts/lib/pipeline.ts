@@ -43,7 +43,7 @@ export async function prepareWorkspace(production: boolean): Promise<PreparedWor
   const browserBundleDirectory = resolve(distRoot, "jazor");
   const hostBrowserBundleDirectory = resolve(hostWwwrootRoot, "jazor");
   const legacyHostAssetsDirectory = resolve(hostWwwrootRoot, "assets");
-  const manifestPath = resolve(hostJazorRoot, "jazor-manifest-razorvue.json");
+  const manifestPath = resolve(hostJazorRoot, "jazor-manifest.json");
   const hostRequirementsModulePath = resolve(hostJazorRoot, "__jazor", "razorvue-host.mjs");
   const clientEntryPath = resolve(buildRoot, "client-entry.mjs");
   const ssrEntryPath = resolve(buildRoot, "ssr-entry.mjs");

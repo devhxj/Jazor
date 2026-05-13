@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
 
 namespace Jazor.EmitTest;
 
@@ -18,6 +19,7 @@ public sealed class JazorAspNetCoreHostingTests
         using var workspace = new AspNetCoreHostTestWorkspace();
         var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
         Directory.CreateDirectory(jazorRoot);
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "jazor-manifest.json"), "{}");
         await File.WriteAllTextAsync(
             Path.Combine(jazorRoot, "main.mjs"),
             "export const ready = true;\n//# sourceMappingURL=main.mjs.map\n");
@@ -78,6 +80,38 @@ public sealed class JazorAspNetCoreHostingTests
 
         var rootResponse = await client.GetAsync("/");
         Assert.AreEqual(System.Net.HttpStatusCode.OK, rootResponse.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task UseJazorWebAssets_ServesWebRootAssetsBeforeDevelopmentAssets()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        var publishedJazorRoot = Path.Combine(webRoot, "jazor");
+        var developmentJazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        Directory.CreateDirectory(publishedJazorRoot);
+        Directory.CreateDirectory(developmentJazorRoot);
+        await File.WriteAllTextAsync(Path.Combine(publishedJazorRoot, "client-entry.js"), "export const browser = true;\n");
+        await File.WriteAllTextAsync(Path.Combine(developmentJazorRoot, "jazor-manifest.json"), "{}");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorWebAssets();
+            app.MapGet("/", () => "ready");
+        });
+
+        var client = host.GetTestClient();
+
+        var browserBundleResponse = await client.GetAsync("/jazor/client-entry.js");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, browserBundleResponse.StatusCode);
+        Assert.AreEqual("export const browser = true;\n", await browserBundleResponse.Content.ReadAsStringAsync());
+
+        var manifestResponse = await client.GetAsync("/jazor/jazor-manifest.json");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, manifestResponse.StatusCode);
+        Assert.AreEqual("{}", await manifestResponse.Content.ReadAsStringAsync());
+
+        var missingJazorResponse = await client.GetAsync("/jazor/missing.mjs");
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, missingJazorResponse.StatusCode);
     }
 
     [TestMethod]
@@ -164,6 +198,138 @@ public sealed class JazorAspNetCoreHostingTests
         Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
         StringAssert.Contains(await response.Content.ReadAsStringAsync(), "\"file\":\"app.mjs\"");
+    }
+
+    [TestMethod]
+    public async Task UseJazorSpaFallback_ServesHtmlShellWithoutStealingStaticFilesOrEndpoints()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+        var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
+        var assetsRoot = Path.Combine(webRoot, "assets");
+        Directory.CreateDirectory(assetsRoot);
+        await File.WriteAllTextAsync(Path.Combine(assetsRoot, "client-entry.js"), "export const boot = true;\n");
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(webRoot)
+            });
+            app.UseJazorSpaFallback(async (context, cancellationToken) =>
+            {
+                context.Response.StatusCode = StatusCodes.Status200OK;
+                context.Response.ContentType = "text/html; charset=utf-8";
+                await context.Response.WriteAsync("<!doctype html><div id=\"app\"></div>", cancellationToken);
+            });
+            app.MapGet("/server/status", () => Results.Ok(new { status = "ok" }));
+            app.MapGet("/server/not-found", () => Results.NotFound());
+        });
+
+        var client = host.GetTestClient();
+
+        var staticFileResponse = await client.GetAsync("/assets/client-entry.js");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, staticFileResponse.StatusCode);
+        Assert.AreEqual("text/javascript", staticFileResponse.Content.Headers.ContentType?.MediaType);
+        Assert.AreEqual("export const boot = true;\n", await staticFileResponse.Content.ReadAsStringAsync());
+
+        using var endpointRequest = new HttpRequestMessage(HttpMethod.Get, "/server/status");
+        endpointRequest.Headers.Accept.ParseAdd("text/html");
+        var endpointResponse = await client.SendAsync(endpointRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, endpointResponse.StatusCode);
+        Assert.AreEqual("application/json", endpointResponse.Content.Headers.ContentType?.MediaType);
+
+        using var endpointNotFoundRequest = new HttpRequestMessage(HttpMethod.Get, "/server/not-found");
+        endpointNotFoundRequest.Headers.Accept.ParseAdd("text/html");
+        var endpointNotFoundResponse = await client.SendAsync(endpointNotFoundRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, endpointNotFoundResponse.StatusCode);
+
+        var missingAssetResponse = await client.GetAsync("/assets/missing.js");
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, missingAssetResponse.StatusCode);
+
+        using var missingFileRequest = new HttpRequestMessage(HttpMethod.Get, "/missing-client-entry.js");
+        missingFileRequest.Headers.Accept.ParseAdd("text/html");
+        var missingFileResponse = await client.SendAsync(missingFileRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, missingFileResponse.StatusCode);
+
+        using var missingHtmlFileRequest = new HttpRequestMessage(HttpMethod.Get, "/missing-page.html");
+        missingHtmlFileRequest.Headers.Accept.ParseAdd("text/html");
+        var missingHtmlFileResponse = await client.SendAsync(missingHtmlFileRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, missingHtmlFileResponse.StatusCode);
+
+        using var navigationRequest = new HttpRequestMessage(HttpMethod.Get, "/examples/catalog-shell");
+        navigationRequest.Headers.Accept.ParseAdd("text/html");
+        var navigationResponse = await client.SendAsync(navigationRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, navigationResponse.StatusCode);
+        Assert.AreEqual("text/html", navigationResponse.Content.Headers.ContentType?.MediaType);
+        StringAssert.Contains(await navigationResponse.Content.ReadAsStringAsync(), "<div id=\"app\"></div>");
+    }
+
+    [TestMethod]
+    public async Task UseJazorSpaFallback_RequiresHtmlAcceptHeaderByDefault()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorSpaFallback(async (context, cancellationToken) =>
+            {
+                context.Response.ContentType = "text/html; charset=utf-8";
+                await context.Response.WriteAsync("<!doctype html><div id=\"app\"></div>", cancellationToken);
+            });
+        });
+
+        var client = host.GetTestClient();
+
+        using var jsonRequest = new HttpRequestMessage(HttpMethod.Get, "/client-side-route");
+        jsonRequest.Headers.Accept.ParseAdd("application/json");
+        var jsonResponse = await client.SendAsync(jsonRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, jsonResponse.StatusCode);
+
+        using var rejectedHtmlRequest = new HttpRequestMessage(HttpMethod.Get, "/client-side-route");
+        rejectedHtmlRequest.Headers.Accept.ParseAdd("application/json;q=1");
+        rejectedHtmlRequest.Headers.Accept.ParseAdd("text/html;q=0");
+        var rejectedHtmlResponse = await client.SendAsync(rejectedHtmlRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, rejectedHtmlResponse.StatusCode);
+
+        using var htmlRequest = new HttpRequestMessage(HttpMethod.Get, "/client-side-route");
+        htmlRequest.Headers.Accept.ParseAdd("text/html");
+        var htmlResponse = await client.SendAsync(htmlRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, htmlResponse.StatusCode);
+        Assert.AreEqual("text/html", htmlResponse.Content.Headers.ContentType?.MediaType);
+
+        var missingAcceptResponse = await client.GetAsync("/client-side-route");
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, missingAcceptResponse.StatusCode);
+        Assert.AreEqual("text/html", missingAcceptResponse.Content.Headers.ContentType?.MediaType);
+    }
+
+    [TestMethod]
+    public async Task UseJazorSpaFallback_SupportsConfiguredExcludedPrefixes()
+    {
+        using var workspace = new AspNetCoreHostTestWorkspace();
+
+        using var host = await CreateHostAsync(workspace.RootPath, app =>
+        {
+            app.UseJazorSpaFallback(
+                async (context, cancellationToken) =>
+                {
+                    context.Response.ContentType = "text/html; charset=utf-8";
+                    await context.Response.WriteAsync("<!doctype html><div id=\"app\"></div>", cancellationToken);
+                },
+                options => options.ExcludedPathPrefixes.Add("/custom-api"));
+        });
+
+        var client = host.GetTestClient();
+
+        using var excludedRequest = new HttpRequestMessage(HttpMethod.Get, "/custom-api/status");
+        excludedRequest.Headers.Accept.ParseAdd("text/html");
+        var excludedResponse = await client.SendAsync(excludedRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, excludedResponse.StatusCode);
+
+        using var navigationRequest = new HttpRequestMessage(HttpMethod.Get, "/client-side-route");
+        navigationRequest.Headers.Accept.ParseAdd("text/html");
+        var navigationResponse = await client.SendAsync(navigationRequest);
+        Assert.AreEqual(System.Net.HttpStatusCode.OK, navigationResponse.StatusCode);
+        Assert.AreEqual("text/html", navigationResponse.Content.Headers.ContentType?.MediaType);
     }
 
     [TestMethod]

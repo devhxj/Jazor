@@ -88,7 +88,7 @@ internal sealed record RazorVueSfcBridgeOptions(
             resolvedHostJazorRoot,
             Path.GetFullPath(outputDirectory),
             string.IsNullOrWhiteSpace(manifestPath)
-                ? Path.Combine(resolvedHostJazorRoot, "jazor-manifest-razorvue.json")
+                ? Path.Combine(resolvedHostJazorRoot, "jazor-manifest.json")
                 : Path.GetFullPath(manifestPath),
             mode,
             production,

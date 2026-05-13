@@ -173,7 +173,7 @@ public sealed class RazorVueSfcBridgeCompilerTests
             HostJazorRoot = Path.Combine(RootPath, "jazor");
             BrowserOutputRoot = Path.Combine(RootPath, "generated-browser");
             SsrOutputRoot = Path.Combine(RootPath, "generated-ssr");
-            ManifestPath = Path.Combine(HostJazorRoot, "jazor-manifest-razorvue.json");
+            ManifestPath = Path.Combine(HostJazorRoot, "jazor-manifest.json");
             Directory.CreateDirectory(HostJazorRoot);
 
             if (writeManifest)
@@ -192,18 +192,41 @@ public sealed class RazorVueSfcBridgeCompilerTests
 
         public void WriteManifest(params ManifestModule[] modules)
         {
-            var document = new
+            var manifest = new
             {
-                AssemblyName = "Demo.Components",
-                GeneratedAtUtc = DateTime.UtcNow,
-                Modules = modules.Select(static module => new
+                rootAssemblyPath = Path.Combine(RootPath, "Demo.Components.dll"),
+                generatedAtUtc = DateTime.UtcNow,
+                modules = modules.Select(static module => new
                 {
-                    module.ComponentId,
-                    module.ComponentName,
-                    module.RelativeModulePath
+                    assemblyName = "Demo.Components",
+                    typeName = module.ComponentName,
+                    id = module.ComponentId,
+                    relativePath = module.RelativeModulePath,
+                    hash = "content-hash",
+                    sourceMapPath = module.RelativeModulePath + ".map",
+                    kind = "vue",
+                    component = new
+                    {
+                        model = "sfc",
+                        componentId = module.ComponentId,
+                        moduleId = module.RelativeModulePath,
+                        componentName = module.ComponentName,
+                        originMapPath = module.RelativeModulePath + ".origins.json",
+                        imports = Array.Empty<string>(),
+                        styles = Array.Empty<string>(),
+                        pluginRequirements = Array.Empty<string>(),
+                        descriptorHash = "descriptor-hash",
+                        templateHash = "template-hash",
+                        logicHash = "logic-hash",
+                        contentHash = "content-hash",
+                        hmrBoundaryKind = RazorVueHmrBoundaryKind.TemplateOnly,
+                        requiresHydration = false,
+                        supportsSsr = true,
+                        styleHash = ""
+                    }
                 }).ToArray()
             };
-            WriteText(ManifestPath, JsonSerializer.Serialize(document));
+            WriteText(ManifestPath, JsonSerializer.Serialize(manifest));
         }
 
         public void WriteVue(string relativePath, string content)

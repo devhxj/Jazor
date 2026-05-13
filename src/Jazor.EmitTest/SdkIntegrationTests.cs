@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Jazor.Emit;
+using Jazor.RazorVue.Emit;
 
 namespace Jazor.EmitTest;
 
@@ -165,12 +167,9 @@ public sealed class SdkIntegrationTests
         Assert.IsTrue(File.Exists(featureModulePath), $"Feature module was not generated: {featureModulePath}");
         Assert.IsTrue(File.Exists(hostModulePath), $"Host module was not generated: {hostModulePath}");
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
-        var modulePaths = manifest.RootElement
-            .GetProperty("Modules")
-            .EnumerateArray()
-            .Select(static module => module.GetProperty("RelativePath").GetString())
-            .OfType<string>()
+        var emittedManifest = LoadManifest(manifestPath);
+        var modulePaths = emittedManifest.Modules
+            .Select(static module => module.RelativePath)
             .ToArray();
 
         CollectionAssert.IsSubsetOf(
@@ -280,11 +279,9 @@ public sealed class SdkIntegrationTests
         var modulePath = Path.Combine(outputRoot, "host", "app.mjs");
         if (!File.Exists(modulePath))
         {
-            using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
-            var relativePath = manifest.RootElement
-                .GetProperty("Modules")
-                .EnumerateArray()
-                .Select(static module => module.GetProperty("RelativePath").GetString())
+            var emittedManifest = LoadManifest(manifestPath);
+            var relativePath = emittedManifest.Modules
+                .Select(static module => module.RelativePath)
                 .FirstOrDefault(static path => !string.IsNullOrWhiteSpace(path));
 
             if (!string.IsNullOrWhiteSpace(relativePath))
@@ -325,13 +322,11 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "let culture = _b7486264ae338f27(\"en-US\");");
         StringAssert.Contains(module, "return culture + \"|\" + _559b27327f84f1af(culture);");
 
-        using var emittedManifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
-        var emittedRelativePaths = emittedManifest.RootElement
-            .GetProperty("Modules")
-            .EnumerateArray()
-            .Select(static module => module.GetProperty("RelativePath").GetString())
+        var manifestModules = LoadManifest(manifestPath).Modules;
+        var emittedRelativePaths = manifestModules
+            .Select(static module => module.RelativePath)
             .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray()!;
+            .ToArray();
         CollectionAssert.Contains(emittedRelativePaths, "System/DecimalModule.js");
         CollectionAssert.Contains(emittedRelativePaths, "System/Globalization/CultureInfoModule.js");
     }
@@ -485,7 +480,6 @@ public sealed class SdkIntegrationTests
         var devJazorRoot = Path.Combine(hostRoot, "jazor");
         var publishJazorRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
         Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "jazor-manifest-razorvue.json")));
         Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "components", "profile-form.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(devJazorRoot, "__jazor", "razorvue-host.mjs")));
         Assert.IsFalse(Directory.Exists(publishJazorRoot), $"Build should not materialize RazorVue publish assets under '{publishJazorRoot}'.");
@@ -521,7 +515,6 @@ public sealed class SdkIntegrationTests
         var devJazorRoot = Path.Combine(hostRoot, "jazor");
         var publishJazorRoot = Path.Combine(hostRoot, "wwwroot", "jazor");
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "jazor-manifest-razorvue.json")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "components", "profile-form.mjs")));
         Assert.IsTrue(File.Exists(Path.Combine(publishJazorRoot, "__jazor", "razorvue-host.mjs")));
         Assert.IsFalse(Directory.Exists(devJazorRoot), $"Publish should not fall back to the RazorVue development output root '{devJazorRoot}'.");
@@ -637,13 +630,10 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "export function currentPath()");
         StringAssert.Contains(module, "return useRouter().currentRoute.value.path;");
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
-        var emittedRelativePaths = manifest.RootElement
-            .GetProperty("Modules")
-            .EnumerateArray()
-            .Select(static moduleEntry => moduleEntry.GetProperty("RelativePath").GetString())
+        var emittedRelativePaths = LoadManifest(manifestPath).Modules
+            .Select(static moduleEntry => moduleEntry.RelativePath)
             .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray()!;
+            .ToArray();
 
         CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
     }
@@ -796,13 +786,10 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(module, "link.href.value");
         StringAssert.Contains(module, "link.route.value.href");
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
-        var emittedRelativePaths = manifest.RootElement
-            .GetProperty("Modules")
-            .EnumerateArray()
-            .Select(static moduleEntry => moduleEntry.GetProperty("RelativePath").GetString())
+        var emittedRelativePaths = LoadManifest(manifestPath).Modules
+            .Select(static moduleEntry => moduleEntry.RelativePath)
             .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray()!;
+            .ToArray();
 
         CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
     }
@@ -982,13 +969,10 @@ public sealed class SdkIntegrationTests
             || bundleSourceMap.Contains("AppModule.cs", StringComparison.Ordinal),
             "Bundle source map should preserve authored module provenance.");
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
-        var emittedRelativePaths = manifest.RootElement
-            .GetProperty("Modules")
-            .EnumerateArray()
-            .Select(static moduleEntry => moduleEntry.GetProperty("RelativePath").GetString())
+        var emittedRelativePaths = LoadManifest(manifestPath).Modules
+            .Select(static moduleEntry => moduleEntry.RelativePath)
             .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray()!;
+            .ToArray();
 
         CollectionAssert.Contains(emittedRelativePaths, "host/app.mjs");
     }
@@ -1023,7 +1007,6 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(hostRoot, "wwwroot");
         var moduleRoot = Path.Combine(outputRoot, "jazor");
         var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
-        var razorVueManifestPath = Path.Combine(moduleRoot, "jazor-manifest-razorvue.json");
         var componentModulePath = Path.Combine(moduleRoot, "components", "profile-form.mjs");
         var hostRequirementsModulePath = Path.Combine(moduleRoot, "__jazor", "razorvue-host.mjs");
         var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
@@ -1032,7 +1015,6 @@ public sealed class SdkIntegrationTests
         var updatePlanPath = Path.Combine(outputRoot, "app.bundle.razorvue.update-plan.json");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
-        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue module was not generated: {componentModulePath}");
         Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
@@ -1062,19 +1044,20 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "razorVueHostRequirements");
         Assert.AreEqual("@import \"vuetify/styles\";\n", css);
 
-        using var razorVueManifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        var razorVueManifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            GetStringArrayProperty(razorVueManifest.RootElement, "Styles"));
+            razorVueManifest.Styles.ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            GetStringArrayProperty(razorVueManifest.RootElement, "PluginRequirements"));
+            razorVueManifest.PluginRequirements.ToArray());
+        var sourceManifestModule = razorVueManifest.Modules[0];
         Assert.AreEqual(
             "components/profile-form.mjs",
-            razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("RelativeModulePath").GetString());
-        var expectedSourceHmrBoundary = razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32();
-        var expectedSourceRequiresHydration = razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean();
-        var expectedSourceSupportsSsr = razorVueManifest.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean();
+            sourceManifestModule.RelativeModulePath);
+        var expectedSourceHmrBoundary = (int)sourceManifestModule.HmrBoundaryKind;
+        var expectedSourceRequiresHydration = sourceManifestModule.RequiresHydration;
+        var expectedSourceSupportsSsr = sourceManifestModule.SupportsSsr;
 
         using var hostContract = JsonDocument.Parse(await File.ReadAllTextAsync(hostContractPath));
         CollectionAssert.AreEqual(
@@ -1309,11 +1292,11 @@ public sealed class SdkIntegrationTests
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         var modulePath = Path.Combine(outputRoot, "components", "counter-card.mjs");
-        var razorVueManifestPath = Path.Combine(outputRoot, "jazor-manifest-razorvue.json");
+        var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
         var hostRequirementsModulePath = Path.Combine(outputRoot, "__jazor", "razorvue-host.mjs");
 
         Assert.IsTrue(File.Exists(modulePath), $"RazorVue module was not generated: {modulePath}");
-        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
 
         var module = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
@@ -1333,14 +1316,14 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(hostRequirements, "\"descriptorHash\":");
         StringAssert.Contains(hostRequirements, "\"hmrBoundaryKind\":");
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        var manifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "demo/button.css" },
-            manifest.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+            manifest.Styles.ToArray());
         CollectionAssert.AreEqual(
             new[] { "demo-host" },
-            manifest.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
-        Assert.AreEqual("CounterCard", manifest.RootElement.GetProperty("Modules")[0].GetProperty("ComponentName").GetString());
+            manifest.PluginRequirements.ToArray());
+        Assert.AreEqual("CounterCard", manifest.Modules[0].ComponentName);
     }
 
     [TestMethod]
@@ -1392,14 +1375,14 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(projectRoot, "wwwroot");
         var moduleRoot = Path.Combine(outputRoot, "jazor");
         var componentModulePath = Path.Combine(moduleRoot, "components", "counter-card.mjs");
-        var razorVueManifestPath = Path.Combine(moduleRoot, "jazor-manifest-razorvue.json");
+        var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
         var hostRequirementsModulePath = Path.Combine(moduleRoot, "__jazor", "razorvue-host.mjs");
         var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
         var cssPath = Path.Combine(outputRoot, "app.bundle.razorvue.css");
         var hostContractPath = Path.Combine(outputRoot, "app.bundle.razorvue.host.json");
 
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue module was not generated: {componentModulePath}");
-        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(cssPath), $"RazorVue CSS sidecar was not generated: {cssPath}");
@@ -1429,16 +1412,16 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "razorVueHostRequirements");
         Assert.AreEqual("@import \"demo/button.css\";\n", css);
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        var manifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "demo/button.css" },
-            GetStringArrayProperty(manifest.RootElement, "Styles"));
+            manifest.Styles.ToArray());
         CollectionAssert.AreEqual(
             new[] { "demo-host" },
-            GetStringArrayProperty(manifest.RootElement, "PluginRequirements"));
-        var expectedHmrBoundary = manifest.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32();
-        var expectedRequiresHydration = manifest.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean();
-        var expectedSupportsSsr = manifest.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean();
+            manifest.PluginRequirements.ToArray());
+        var expectedHmrBoundary = (int)manifest.Modules[0].HmrBoundaryKind;
+        var expectedRequiresHydration = manifest.Modules[0].RequiresHydration;
+        var expectedSupportsSsr = manifest.Modules[0].SupportsSsr;
 
         using var hostContract = JsonDocument.Parse(await File.ReadAllTextAsync(hostContractPath));
         CollectionAssert.AreEqual(
@@ -1585,14 +1568,14 @@ public sealed class SdkIntegrationTests
         var outputRoot = Path.Combine(projectRoot, "wwwroot");
         var moduleRoot = Path.Combine(outputRoot, "jazor");
         var componentModulePath = Path.Combine(moduleRoot, "components", "profile-form.mjs");
-        var razorVueManifestPath = Path.Combine(moduleRoot, "jazor-manifest-razorvue.json");
+        var manifestPath = Path.Combine(moduleRoot, "jazor-manifest.json");
         var hostRequirementsModulePath = Path.Combine(moduleRoot, "__jazor", "razorvue-host.mjs");
         var bundlePath = Path.Combine(outputRoot, "app.bundle.js");
         var cssPath = Path.Combine(outputRoot, "app.bundle.razorvue.css");
         var hostContractPath = Path.Combine(outputRoot, "app.bundle.razorvue.host.json");
 
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue module was not generated: {componentModulePath}");
-        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
         Assert.IsTrue(File.Exists(bundlePath), $"Bundle was not generated: {bundlePath}");
         Assert.IsTrue(File.Exists(cssPath), $"RazorVue CSS sidecar was not generated: {cssPath}");
@@ -1608,16 +1591,16 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(bundle, "razorVueHostRequirements");
         Assert.AreEqual("@import \"vuetify/styles\";\n", css);
 
-        using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        var manifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            GetStringArrayProperty(manifest.RootElement, "Styles"));
+            manifest.Styles.ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            GetStringArrayProperty(manifest.RootElement, "PluginRequirements"));
-        var expectedPackagedHmrBoundary = manifest.RootElement.GetProperty("Modules")[0].GetProperty("HmrBoundaryKind").GetInt32();
-        var expectedPackagedRequiresHydration = manifest.RootElement.GetProperty("Modules")[0].GetProperty("RequiresHydration").GetBoolean();
-        var expectedPackagedSupportsSsr = manifest.RootElement.GetProperty("Modules")[0].GetProperty("SupportsSsr").GetBoolean();
+            manifest.PluginRequirements.ToArray());
+        var expectedPackagedHmrBoundary = (int)manifest.Modules[0].HmrBoundaryKind;
+        var expectedPackagedRequiresHydration = manifest.Modules[0].RequiresHydration;
+        var expectedPackagedSupportsSsr = manifest.Modules[0].SupportsSsr;
 
         using var hostContract = JsonDocument.Parse(await File.ReadAllTextAsync(hostContractPath));
         CollectionAssert.AreEqual(
@@ -1680,14 +1663,12 @@ public sealed class SdkIntegrationTests
 
         var outputRoot = Path.Combine(projectRoot, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputRoot, "jazor-manifest.json");
-        var razorVueManifestPath = Path.Combine(outputRoot, "jazor-manifest-razorvue.json");
         var sfcPath = Path.Combine(outputRoot, "components", "external-dashboard.vue");
         var legacyModulePath = Path.Combine(outputRoot, "components", "external-dashboard.mjs");
         var hostRequirementsModulePath = Path.Combine(outputRoot, "__jazor", "razorvue-host.mjs");
         var hostModulePath = Path.Combine(outputRoot, "host", "app.mjs");
 
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
-        Assert.IsTrue(File.Exists(razorVueManifestPath), $"RazorVue manifest was not generated: {razorVueManifestPath}");
         Assert.IsTrue(File.Exists(sfcPath), $"RazorVue SFC was not generated: {sfcPath}");
         Assert.IsTrue(File.Exists(sfcPath + ".map"), $"RazorVue SFC source map was not generated: {sfcPath}.map");
         Assert.IsTrue(File.Exists(Path.ChangeExtension(sfcPath, ".vue.origins.json")), $"RazorVue SFC origins were not generated for: {sfcPath}");
@@ -1715,20 +1696,20 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(hostRequirementsModule, "\"componentId\":\"ExternalRazorVueSfcConsumer.ExternalDashboard\"");
         StringAssert.Contains(hostRequirementsModule, "\"relativeModulePath\":\"components/external-dashboard.vue\"");
 
-        using var razorVueManifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
+        var razorVueManifest = LoadRazorVueManifestProjection(manifestPath);
         CollectionAssert.AreEqual(
             new[] { "vuetify/styles" },
-            GetStringArrayProperty(razorVueManifest.RootElement, "Styles"));
+            razorVueManifest.Styles.ToArray());
         CollectionAssert.AreEqual(
             new[] { "vuetify" },
-            GetStringArrayProperty(razorVueManifest.RootElement, "PluginRequirements"));
+            razorVueManifest.PluginRequirements.ToArray());
 
-        var module = razorVueManifest.RootElement.GetProperty("Modules")[0];
-        Assert.AreEqual("ExternalRazorVueSfcConsumer.ExternalDashboard", module.GetProperty("ComponentId").GetString());
-        Assert.AreEqual("ExternalDashboard", module.GetProperty("ComponentName").GetString());
-        Assert.AreEqual("components/external-dashboard.vue", module.GetProperty("RelativeModulePath").GetString());
-        Assert.AreEqual("components/external-dashboard.vue.map", module.GetProperty("SourceMapPath").GetString());
-        Assert.AreEqual("components/external-dashboard.vue.origins.json", module.GetProperty("OriginMapPath").GetString());
+        var module = razorVueManifest.Modules[0];
+        Assert.AreEqual("ExternalRazorVueSfcConsumer.ExternalDashboard", module.ComponentId);
+        Assert.AreEqual("ExternalDashboard", module.ComponentName);
+        Assert.AreEqual("components/external-dashboard.vue", module.RelativeModulePath);
+        Assert.AreEqual("components/external-dashboard.vue.map", module.SourceMapPath);
+        Assert.AreEqual("components/external-dashboard.vue.origins.json", module.OriginMapPath);
     }
 
     [TestMethod]
@@ -1866,12 +1847,12 @@ public sealed class SdkIntegrationTests
 
         var todoAppSfcPath = Path.Combine(hostJazorRoot, "components", "todo-app.vue");
         var todoSummaryCardSfcPath = Path.Combine(hostJazorRoot, "components", "todo-summary-card.vue");
-        var razorVueManifestPath = Path.Combine(hostJazorRoot, "jazor-manifest-razorvue.json");
+        var manifestPath = Path.Combine(hostJazorRoot, "jazor-manifest.json");
         var hostRequirementsModulePath = Path.Combine(hostJazorRoot, "__jazor", "razorvue-host.mjs");
 
         Assert.IsTrue(File.Exists(todoAppSfcPath), $"Expected TodoApp SFC was not generated: {todoAppSfcPath}");
         Assert.IsTrue(File.Exists(todoSummaryCardSfcPath), $"Expected TodoSummaryCard SFC was not generated: {todoSummaryCardSfcPath}");
-        Assert.IsTrue(File.Exists(razorVueManifestPath), $"Expected RazorVue manifest was not generated: {razorVueManifestPath}");
+        Assert.IsTrue(File.Exists(manifestPath), $"Expected manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(hostRequirementsModulePath), $"Expected RazorVue host requirements module was not generated: {hostRequirementsModulePath}");
 
         var todoAppSfc = (await File.ReadAllTextAsync(todoAppSfcPath)).ReplaceLineEndings("\n");
@@ -1884,15 +1865,13 @@ public sealed class SdkIntegrationTests
         StringAssert.Contains(todoAppSfc, "from \"vuetify/components\"");
         Assert.IsFalse(todoAppSfc.Contains("text=\"RazorVue Todo Workspace\"", StringComparison.Ordinal), todoAppSfc);
 
-        using (var razorVueManifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath)))
-        {
-            CollectionAssert.AreEqual(
-                new[] { "vuetify/styles" },
-                GetStringArrayProperty(razorVueManifest.RootElement, "Styles"));
-            CollectionAssert.AreEqual(
-                new[] { "vuetify" },
-                GetStringArrayProperty(razorVueManifest.RootElement, "PluginRequirements"));
-        }
+        var razorVueManifest = LoadRazorVueManifestProjection(manifestPath);
+        CollectionAssert.AreEqual(
+            new[] { "vuetify/styles" },
+            razorVueManifest.Styles.ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "vuetify" },
+            razorVueManifest.PluginRequirements.ToArray());
 
         var denoEnvironment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -3169,6 +3148,22 @@ public sealed class SdkIntegrationTests
             .Select(static item => item.GetString())
             .OfType<string>()
             .ToArray();
+
+    private static RazorVueManifestModel LoadRazorVueManifestProjection(string manifestPath)
+    {
+        var manifest = ManifestModel.TryLoad(manifestPath)
+            ?? throw new FileNotFoundException("Manifest was not found: " + manifestPath, manifestPath);
+
+        var razorVueManifest = manifest.ToRazorVueManifest();
+        if (razorVueManifest.Modules.Count == 0)
+            throw new InvalidOperationException("Manifest does not contain RazorVue component metadata: " + manifestPath);
+
+        return razorVueManifest;
+    }
+
+    private static ManifestModel LoadManifest(string manifestPath)
+        => ManifestModel.TryLoad(manifestPath)
+            ?? throw new FileNotFoundException("Manifest was not found: " + manifestPath, manifestPath);
 
     private static bool ShouldSkip(string relativePath)
     {

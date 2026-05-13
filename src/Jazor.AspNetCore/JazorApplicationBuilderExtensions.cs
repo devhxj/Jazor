@@ -4,12 +4,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
 
 namespace Jazor.AspNetCore;
 
 public static class JazorApplicationBuilderExtensions
 {
     private const string SourceMapContentType = "application/json";
+    private const string MutableAssetCacheControl = "no-cache, must-revalidate";
+    private const string XContentTypeOptionsHeaderName = "X-Content-Type-Options";
 
     public static IApplicationBuilder UseJazorStaticFiles(this IApplicationBuilder app)
     {
@@ -73,10 +76,9 @@ public static class JazorApplicationBuilderExtensions
         {
             FileProvider = new PhysicalFileProvider(mountContext.OutputRootPath),
             RequestPath = mountContext.RequestPath,
-            ContentTypeProvider = CreateContentTypeProvider()
+            ContentTypeProvider = CreateContentTypeProvider(),
+            OnPrepareResponse = CreateStaticAssetResponseHandler(mountContext.OnPrepareResponse)
         };
-        if (mountContext.OnPrepareResponse is not null)
-            staticFileOptions.OnPrepareResponse = mountContext.OnPrepareResponse;
 
         app.UseJazorStaticFiles(staticFileOptions);
 
@@ -97,6 +99,107 @@ public static class JazorApplicationBuilderExtensions
         return app;
     }
 
+    public static IApplicationBuilder UseJazorWebAssets(this IApplicationBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        return app.UseJazorWebAssets(configure: null);
+    }
+
+    public static IApplicationBuilder UseJazorWebAssets(
+        this IApplicationBuilder app,
+        Action<JazorWebAssetOptions>? configure)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+
+        var options = new JazorWebAssetOptions();
+        configure?.Invoke(options);
+
+        if (options.ServeDefaultFiles)
+            app.UseDefaultFiles();
+
+        if (options.ServeWebRootFiles)
+        {
+            var staticFileOptions = new StaticFileOptions();
+            staticFileOptions.OnPrepareResponse = CreateStaticAssetResponseHandler(options.OnPrepareResponse);
+
+            app.UseJazorStaticFiles(staticFileOptions);
+        }
+
+        if (options.ServeDevelopmentAssets)
+        {
+            app.UseJazorDevelopmentAssets(developmentOptions =>
+            {
+                developmentOptions.DevelopmentOutputProbeRelativePaths.Clear();
+                foreach (var probeRelativePath in options.DevelopmentOutputProbeRelativePaths)
+                    developmentOptions.DevelopmentOutputProbeRelativePaths.Add(probeRelativePath);
+
+                if (options.OnPrepareResponse is not null)
+                    developmentOptions.OnPrepareResponse = options.OnPrepareResponse;
+
+                options.ConfigureDevelopmentAssets?.Invoke(developmentOptions);
+            });
+        }
+
+        return app;
+    }
+
+    public static IApplicationBuilder UseJazorSpaFallback(
+        this IApplicationBuilder app,
+        Func<HttpContext, CancellationToken, Task> writeHtml)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(writeHtml);
+
+        return app.UseJazorSpaFallback(writeHtml, configure: null);
+    }
+
+    public static IApplicationBuilder UseJazorSpaFallback(
+        this IApplicationBuilder app,
+        Func<HttpContext, CancellationToken, Task> writeHtml,
+        Action<JazorSpaFallbackOptions>? configure)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(writeHtml);
+
+        var options = new JazorSpaFallbackOptions();
+        configure?.Invoke(options);
+        return app.UseJazorSpaFallback(writeHtml, options);
+    }
+
+    public static IApplicationBuilder UseJazorSpaFallback(
+        this IApplicationBuilder app,
+        Func<HttpContext, CancellationToken, Task> writeHtml,
+        JazorSpaFallbackOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(writeHtml);
+        ArgumentNullException.ThrowIfNull(options);
+
+        var fallbackContext = JazorSpaFallbackContext.Create(options);
+        app.Use(async (context, next) =>
+        {
+            if (!IsJazorSpaFallbackCandidate(context, fallbackContext))
+            {
+                await next();
+                return;
+            }
+
+            await next();
+
+            if (context.Response.HasStarted
+                || context.Response.StatusCode != StatusCodes.Status404NotFound
+                || !IsJazorSpaFallbackCandidate(context, fallbackContext))
+            {
+                return;
+            }
+
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            await writeHtml(context, context.RequestAborted);
+        });
+
+        return app;
+    }
+
     private static bool TryCreateMountContext(
         IApplicationBuilder app,
         JazorDevelopmentAssetOptions options,
@@ -107,8 +210,7 @@ public static class JazorApplicationBuilderExtensions
 
         var requestPath = NormalizeRequestPath(options.RequestPath);
         var outputRootPath = ResolveDevelopmentOutputRootPath(environment.ContentRootPath, options);
-        var entryModulePath = ResolveEntryModulePath(outputRootPath, options.EntryModuleRelativePath);
-        if (!File.Exists(entryModulePath))
+        if (!HasDevelopmentOutputProbe(outputRootPath, options.DevelopmentOutputProbeRelativePaths))
         {
             mountContext = null!;
             return false;
@@ -136,11 +238,93 @@ public static class JazorApplicationBuilderExtensions
         return requestPath;
     }
 
+    private static PathString NormalizeSpaFallbackPathPrefix(PathString pathPrefix)
+    {
+        if (!pathPrefix.HasValue || string.IsNullOrWhiteSpace(pathPrefix.Value))
+            throw new ArgumentException("Jazor SPA fallback excluded path prefixes cannot be empty.", nameof(pathPrefix));
+
+        if (!pathPrefix.Value.StartsWith('/'))
+            throw new ArgumentException("Jazor SPA fallback excluded path prefixes must start with '/'.", nameof(pathPrefix));
+
+        return pathPrefix;
+    }
+
+    private static bool IsJazorSpaFallbackCandidate(HttpContext context, JazorSpaFallbackContext fallbackContext)
+    {
+        var request = context.Request;
+        if (!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method))
+            return false;
+
+        if (context.GetEndpoint() is not null)
+            return false;
+
+        var requestPath = request.Path;
+        foreach (var excludedPathPrefix in fallbackContext.ExcludedPathPrefixes)
+        {
+            if (requestPath.StartsWithSegments(excludedPathPrefix, StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        if (Path.HasExtension(requestPath.Value))
+            return false;
+
+        if (fallbackContext.RequireHtmlAcceptHeader && !AcceptsHtmlDocument(request))
+            return false;
+
+        return true;
+    }
+
+    private static bool AcceptsHtmlDocument(HttpRequest request)
+    {
+        var acceptHeaders = request.GetTypedHeaders().Accept;
+        // Browsers may omit Accept on direct navigations; treat that as HTML navigation.
+        if (acceptHeaders is null || acceptHeaders.Count == 0)
+            return true;
+
+        foreach (var mediaType in acceptHeaders)
+        {
+            if (IsHtmlDocumentMediaType(mediaType))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsHtmlDocumentMediaType(MediaTypeHeaderValue mediaType)
+    {
+        if (mediaType.Quality is <= 0)
+            return false;
+
+        var value = mediaType.MediaType.Value;
+        return !string.IsNullOrWhiteSpace(value)
+            && (string.Equals(value, "text/html", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(value, "application/xhtml+xml", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static FileExtensionContentTypeProvider CreateContentTypeProvider()
     {
         var provider = new FileExtensionContentTypeProvider();
         provider.Mappings[".map"] = SourceMapContentType;
         return provider;
+    }
+
+    private static Action<StaticFileResponseContext> CreateStaticAssetResponseHandler(
+        Action<StaticFileResponseContext>? configure)
+    {
+        return context =>
+        {
+            ApplyDefaultStaticAssetHeaders(context);
+            configure?.Invoke(context);
+        };
+    }
+
+    private static void ApplyDefaultStaticAssetHeaders(StaticFileResponseContext context)
+    {
+        var headers = context.Context.Response.Headers;
+        headers[XContentTypeOptionsHeaderName] = "nosniff";
+
+        if (!headers.ContainsKey(HeaderNames.CacheControl))
+            headers.CacheControl = MutableAssetCacheControl;
     }
 
     private static IContentTypeProvider WrapContentTypeProvider(IContentTypeProvider? contentTypeProvider)
@@ -168,17 +352,35 @@ public static class JazorApplicationBuilderExtensions
         return Path.GetFullPath(Path.Combine(contentRootPath, options.DevelopmentOutputDirectoryName));
     }
 
-    private static string ResolveEntryModulePath(string outputRootPath, string entryModuleRelativePath)
+    private static bool HasDevelopmentOutputProbe(string outputRootPath, IEnumerable<string> probeRelativePaths)
     {
-        if (string.IsNullOrWhiteSpace(entryModuleRelativePath))
-            throw new ArgumentException("Jazor development entry module path is required.", nameof(entryModuleRelativePath));
+        var sawProbe = false;
 
-        if (Path.IsPathRooted(entryModuleRelativePath))
-            throw new ArgumentException("Jazor development entry module path must be relative.", nameof(entryModuleRelativePath));
+        foreach (var probeRelativePath in probeRelativePaths)
+        {
+            sawProbe = true;
+            var probePath = ResolveProbePath(outputRootPath, probeRelativePath);
+            if (File.Exists(probePath))
+                return true;
+        }
 
-        var candidatePath = Path.GetFullPath(Path.Combine(outputRootPath, entryModuleRelativePath));
+        if (!sawProbe)
+            throw new ArgumentException("At least one Jazor development output probe path is required.", nameof(probeRelativePaths));
+
+        return false;
+    }
+
+    private static string ResolveProbePath(string outputRootPath, string probeRelativePath)
+    {
+        if (string.IsNullOrWhiteSpace(probeRelativePath))
+            throw new ArgumentException("Jazor development output probe path cannot be empty.", nameof(probeRelativePath));
+
+        if (Path.IsPathRooted(probeRelativePath))
+            throw new ArgumentException("Jazor development output probe path must be relative.", nameof(probeRelativePath));
+
+        var candidatePath = Path.GetFullPath(Path.Combine(outputRootPath, probeRelativePath));
         if (!IsPathWithinRoot(outputRootPath, candidatePath))
-            throw new ArgumentException("Jazor development entry module path must stay within the configured output root.", nameof(entryModuleRelativePath));
+            throw new ArgumentException("Jazor development output probe path must stay within the configured output root.", nameof(probeRelativePath));
 
         return candidatePath;
     }
@@ -221,4 +423,19 @@ public static class JazorApplicationBuilderExtensions
         string OutputRootPath,
         Action<StaticFileResponseContext>? OnPrepareResponse,
         bool ReturnNotFoundWhenMountedPathMisses);
+
+    private sealed record JazorSpaFallbackContext(
+        IReadOnlyList<PathString> ExcludedPathPrefixes,
+        bool RequireHtmlAcceptHeader)
+    {
+        public static JazorSpaFallbackContext Create(JazorSpaFallbackOptions options)
+        {
+            var excludedPathPrefixes = options.ExcludedPathPrefixes
+                .Select(NormalizeSpaFallbackPathPrefix)
+                .Distinct()
+                .ToArray();
+
+            return new JazorSpaFallbackContext(excludedPathPrefixes, options.RequireHtmlAcceptHeader);
+        }
+    }
 }

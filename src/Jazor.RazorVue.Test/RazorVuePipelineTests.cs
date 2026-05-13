@@ -9582,7 +9582,7 @@ public sealed class RazorVuePipelineTests
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/item-editor.mjs");
         CollectionAssert.Contains(artifact.Imports.ToArray(), "./components/list-card.mjs");
         StringAssert.Contains(artifact.ModuleCode, "itemTemplate: (item) => ((item > props.threshold) ? h(ItemEditorComponent, { \"modelValue\": item, \"onUpdate:modelValue\": (__value) => emit(\"valueChanged\", __value) }) : h(\"span\", null, item))");
-        Assert.IsFalse(artifact.ModuleCode.Contains("__jazorVueSfcBinding", StringComparison.Ordinal), artifact.ModuleCode);
+        Assert.IsFalse(artifact.ModuleCode.Contains("__jazor$", StringComparison.Ordinal), artifact.ModuleCode);
     }
 
     [TestMethod]

@@ -1,10 +1,8 @@
 using System.Collections.Immutable;
-using System.Linq;
-using Jazor.RazorVue.Lowering;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
-using Jazor.RazorVue;
+using Jazor.RazorVue.Lowering;
 
 namespace Jazor.RazorVue.Sfc;
 
@@ -60,9 +58,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
             builder.Add(import.ImportSpecifier!);
         }
 
-        return builder
-            .Distinct(StringComparer.Ordinal)
-            .ToImmutableArray();
+        return [.. builder.Distinct(StringComparer.Ordinal)];
     }
 
     private static ImmutableArray<RazorVueSfcComponentImport> CollectComponentImports(RazorVueCanonicalHComponentModel canonicalModel, string ownerRelativeSfcPath)
@@ -164,41 +160,77 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 return;
 
             case RazorVueCanonicalInterpolationNode interpolation
-                when ShouldLiftExpression(interpolation.TemplateEncodability, templateScopeDepth):
-                EnsureLiftableBindingKind(ownerComponentFullName, interpolation.BindingKind, interpolation.SourceOrigins, interpolation.ExpressionText);
-                bindings.Add(path, interpolation.ExpressionText, interpolation.SourceOrigins);
+                when ShouldCreateBindingSite(interpolation.TemplateEncodability, interpolation.SideEffectClassification, templateScopeDepth):
+                bindings.Add(
+                    ownerComponentFullName,
+                        path,
+                        interpolation.ExpressionText,
+                        interpolation.BindingKind,
+                        interpolation.TemplateExpressionSafety,
+                        interpolation.SideEffectClassification,
+                        interpolation.SourceOrigins);
                 return;
 
             case RazorVueCanonicalConditionalNode conditional:
-                if (ShouldLiftExpression(conditional.TemplateEncodability, templateScopeDepth))
+                if (ShouldCreateBindingSite(conditional.TemplateEncodability, conditional.SideEffectClassification, templateScopeDepth))
                 {
-                    EnsureLiftableBindingKind(ownerComponentFullName, conditional.BindingKind, conditional.SourceOrigins, conditional.ConditionExpressionText);
-                    bindings.Add(path + "/if", conditional.ConditionExpressionText, conditional.SourceOrigins);
+                    bindings.Add(
+                        ownerComponentFullName,
+                        path + "/if",
+                        conditional.ConditionExpressionText,
+                        conditional.BindingKind,
+                        conditional.TemplateExpressionSafety,
+                        conditional.SideEffectClassification,
+                        conditional.SourceOrigins);
                 }
                 CollectLiftedBindings(ownerComponentFullName, conditional.WhenTrue, bindings, templateScopeDepth, path + "/whenTrue");
                 CollectLiftedBindings(ownerComponentFullName, conditional.WhenFalse, bindings, templateScopeDepth, path + "/whenFalse");
                 return;
 
             case RazorVueCanonicalForEachNode loop:
-                if (ShouldLiftExpression(loop.TemplateEncodability, templateScopeDepth))
+                if (ShouldCreateBindingSite(loop.TemplateEncodability, loop.SideEffectClassification, templateScopeDepth))
                 {
-                    EnsureLiftableBindingKind(ownerComponentFullName, loop.BindingKind, loop.SourceOrigins, loop.SourceExpressionText);
-                    bindings.Add(path + "/forEach", loop.SourceExpressionText, loop.SourceOrigins);
+                    bindings.Add(
+                        ownerComponentFullName,
+                        path + "/forEach",
+                        loop.SourceExpressionText,
+                        loop.BindingKind,
+                        loop.TemplateExpressionSafety,
+                        loop.SideEffectClassification,
+                        loop.SourceOrigins);
                 }
                 CollectLiftedBindings(ownerComponentFullName, loop.Body, bindings, templateScopeDepth + 1, path + "/body");
                 return;
 
             case RazorVueCanonicalForNode loop:
-                if (ShouldLiftExpression(loop.TemplateEncodability, templateScopeDepth))
+                if (ShouldCreateBindingSite(loop.TemplateEncodability, loop.SideEffectClassification, templateScopeDepth))
                 {
-                    EnsureLiftableBindingKind(ownerComponentFullName, loop.InitialValueBindingKind, loop.SourceOrigins, loop.InitialValueExpressionText);
-                    bindings.Add(path + "/for/init", loop.InitialValueExpressionText, loop.SourceOrigins);
-                    EnsureLiftableBindingKind(ownerComponentFullName, loop.LimitValueBindingKind, loop.SourceOrigins, loop.LimitValueExpressionText);
-                    bindings.Add(path + "/for/limit", loop.LimitValueExpressionText, loop.SourceOrigins);
+                    bindings.Add(
+                        ownerComponentFullName,
+                        path + "/for/init",
+                        loop.InitialValueExpressionText,
+                        loop.InitialValueBindingKind,
+                        loop.InitialValueTemplateExpressionSafety,
+                        loop.InitialValueSideEffectClassification,
+                        loop.SourceOrigins);
+                    bindings.Add(
+                        ownerComponentFullName,
+                        path + "/for/limit",
+                        loop.LimitValueExpressionText,
+                        loop.LimitValueBindingKind,
+                        loop.LimitValueTemplateExpressionSafety,
+                        loop.LimitValueSideEffectClassification,
+                        loop.SourceOrigins);
                     if (!string.IsNullOrWhiteSpace(loop.StepValueExpressionText))
                     {
-                        EnsureLiftableBindingKind(ownerComponentFullName, loop.StepValueBindingKind, loop.SourceOrigins, loop.StepValueExpressionText!);
-                        bindings.Add(path + "/for/step", loop.StepValueExpressionText!, loop.SourceOrigins);
+                        bindings.Add(
+                            ownerComponentFullName,
+                            path + "/for/step",
+                            loop.StepValueExpressionText!,
+                            loop.StepValueBindingKind,
+                            loop.StepValueTemplateExpressionSafety,
+                            loop.StepValueSideEffectClassification,
+                            loop.SourceOrigins);
                     }
                 }
                 CollectLiftedBindings(ownerComponentFullName, loop.Body, bindings, templateScopeDepth + 1, path + "/body");
@@ -206,9 +238,15 @@ internal sealed class RazorVueSfcSemanticModelFactory
 
             case RazorVueCanonicalSlotOutletNode slotOutlet when
                 slotOutlet.ArgumentExpressionText is not null &&
-                ShouldLiftExpression(slotOutlet.TemplateEncodability, templateScopeDepth):
-                EnsureLiftableBindingKind(ownerComponentFullName, slotOutlet.BindingKind, slotOutlet.SourceOrigins, slotOutlet.ArgumentExpressionText);
-                bindings.Add(path + "/slotArg", slotOutlet.ArgumentExpressionText, slotOutlet.SourceOrigins);
+                ShouldCreateBindingSite(slotOutlet.TemplateEncodability, slotOutlet.SideEffectClassification, templateScopeDepth):
+                bindings.Add(
+                    ownerComponentFullName,
+                    path + "/slotArg",
+                    slotOutlet.ArgumentExpressionText,
+                    slotOutlet.BindingKind,
+                    slotOutlet.TemplateExpressionSafety,
+                    slotOutlet.SideEffectClassification,
+                    slotOutlet.SourceOrigins);
                 return;
 
             default:
@@ -229,20 +267,32 @@ internal sealed class RazorVueSfcSemanticModelFactory
             {
                 case RazorVueCanonicalAttributeBinding attribute:
                     if (attribute.ExpressionText is null ||
-                        !ShouldLiftExpression(attribute.TemplateEncodability, templateScopeDepth))
+                        !ShouldCreateBindingSite(attribute.TemplateEncodability, attribute.SideEffectClassification, templateScopeDepth))
                     {
                         continue;
                     }
 
-                    EnsureLiftableBindingKind(ownerComponentFullName, attribute.BindingKind, attribute.SourceOrigins, attribute.ExpressionText);
-                    bindings.Add(pathPrefix + "/attr[" + index + "]", attribute.ExpressionText, attribute.SourceOrigins);
+                    bindings.Add(
+                        ownerComponentFullName,
+                        pathPrefix + "/attr[" + index + "]",
+                        attribute.ExpressionText,
+                        attribute.BindingKind,
+                        attribute.TemplateExpressionSafety,
+                        attribute.SideEffectClassification,
+                        attribute.SourceOrigins);
                     break;
                 case RazorVueCanonicalAttributeSpreadBinding spread:
-                    if (!ShouldLiftExpression(spread.TemplateEncodability, templateScopeDepth))
+                    if (!ShouldCreateBindingSite(spread.TemplateEncodability, spread.SideEffectClassification, templateScopeDepth))
                         continue;
 
-                    EnsureLiftableBindingKind(ownerComponentFullName, spread.BindingKind, spread.SourceOrigins, spread.ExpressionText);
-                    bindings.Add(pathPrefix + "/attr[" + index + "]/spread", spread.ExpressionText, spread.SourceOrigins);
+                    bindings.Add(
+                        ownerComponentFullName,
+                        pathPrefix + "/attr[" + index + "]/spread",
+                        spread.ExpressionText,
+                        spread.BindingKind,
+                        spread.TemplateExpressionSafety,
+                        spread.SideEffectClassification,
+                        spread.SourceOrigins);
                     break;
             }
         }
@@ -269,23 +319,43 @@ internal sealed class RazorVueSfcSemanticModelFactory
                 continue;
             }
 
-            if (!ShouldLiftExpression(slot.TemplateEncodability, effectiveScopeDepth))
+            if (!ShouldCreateBindingSite(slot.TemplateEncodability, slot.SideEffectClassification, effectiveScopeDepth))
             {
                 CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");
                 continue;
             }
 
-            EnsureLiftableBindingKind(ownerComponentFullName, slot.BindingKind, slot.SourceOrigins, slot.ValueExpressionText);
-            bindings.Add(pathPrefix + "/slot[" + index + "]", slot.ValueExpressionText, slot.SourceOrigins);
+            bindings.Add(
+                ownerComponentFullName,
+                pathPrefix + "/slot[" + index + "]",
+                slot.ValueExpressionText,
+                slot.BindingKind,
+                slot.TemplateExpressionSafety,
+                slot.SideEffectClassification,
+                slot.SourceOrigins);
             CollectLiftedBindings(ownerComponentFullName, slot.Children, bindings, effectiveScopeDepth, pathPrefix + "/slot[" + index + "]");
         }
     }
 
-    private static bool ShouldLiftExpression(
+    private static bool ShouldCreateBindingSite(
         RazorVueTemplateEncodability templateEncodability,
+        RazorVueSideEffectClassification sideEffectClassification,
         int templateScopeDepth)
-        => templateEncodability == RazorVueTemplateEncodability.TemplateViaSetupBinding &&
-           templateScopeDepth == 0;
+        => templateScopeDepth == 0 &&
+           (templateEncodability == RazorVueTemplateEncodability.TemplateViaSetupBinding ||
+            sideEffectClassification != RazorVueSideEffectClassification.None);
+
+    private static bool CanUseDirectTemplateExpression(
+        RazorVueExpressionBindingKind bindingKind,
+        RazorVueTemplateExpressionSafety templateExpressionSafety,
+        RazorVueSideEffectClassification sideEffectClassification)
+    {
+        if (bindingKind == RazorVueExpressionBindingKind.LocalReference)
+            return false;
+
+        return templateExpressionSafety == RazorVueTemplateExpressionSafety.DirectTemplateSafe &&
+               sideEffectClassification == RazorVueSideEffectClassification.None;
+    }
 
     private static void EnsureLiftableBindingKind(
         string ownerComponentFullName,
@@ -342,7 +412,7 @@ internal sealed class RazorVueSfcSemanticModelFactory
     }
 
     private static string CreateLiftedBindingName(int index)
-        => "__jazorVueSfcBinding" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        => "__jazor$" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
     private static string ChangeExtensionToVue(string relativePath)
     {
@@ -475,10 +545,21 @@ internal sealed class RazorVueSfcSemanticModelFactory
         public ImmutableArray<RazorVueSfcTemplateBindingSite>.Builder Sites { get; } = ImmutableArray.CreateBuilder<RazorVueSfcTemplateBindingSite>();
 
         public void Add(
+            string ownerComponentFullName,
             string sitePath,
             string expressionText,
+            RazorVueExpressionBindingKind bindingKind,
+            RazorVueTemplateExpressionSafety templateExpressionSafety,
+            RazorVueSideEffectClassification sideEffectClassification,
             ImmutableArray<RazorVueSourceOrigin> sourceOrigins)
         {
+            if (CanUseDirectTemplateExpression(bindingKind, templateExpressionSafety, sideEffectClassification))
+            {
+                Sites.Add(new RazorVueSfcTemplateBindingSite(sitePath, expressionText));
+                return;
+            }
+
+            EnsureLiftableBindingKind(ownerComponentFullName, bindingKind, sourceOrigins, expressionText);
             var bindingName = CreateLiftedBindingName(Bindings.Count);
             Bindings.Add(new RazorVueSfcSetupBinding(
                 Name: bindingName,

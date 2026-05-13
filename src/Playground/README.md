@@ -25,7 +25,9 @@
 `Playground` 参考 `Wiki` 的资源模型：
 
 - 本地 build 生成 `src/Playground/jazor`
-- 宿主开发时用 `UseJazorDevelopmentAssets()` 从根 `jazor` 提供 `/jazor/*`
+- 宿主使用 `JazorWebApplication.CreateBuilder()` 处理源码/发布双形态内容根
+- 宿主开发时用 `UseJazorWebAssets()` 同时提供 `wwwroot` 静态资产和根 `jazor` development assets
+- HTML shell fallback 使用 `UseJazorSpaFallback()`，只兜底无扩展名的 HTML 导航请求，不使用 endpoint catch-all
 - consumer 在 `JazorEmit` 后自动运行，生成 `wwwroot/jazor/client-entry.*`
 - publish 后只从发布目录的 `wwwroot/jazor` 提供 `/jazor/*`
 - publish 阶段会把根 `jazor` emit 与 `wwwroot/jazor/client-entry.*` 合并到发布目录的 `wwwroot/jazor`

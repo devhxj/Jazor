@@ -28,7 +28,9 @@ internal sealed class ModuleWriter
         var nextManifest = new ManifestModel(
             rootAssemblyPath,
             DateTime.UtcNow,
-            []);
+            existingManifest?.Modules
+                .Where(static module => module.Component is not null)
+                .ToList() ?? []);
 
         foreach (var module in modules)
         {
@@ -98,6 +100,9 @@ internal sealed class ModuleWriter
 
             foreach (var oldModule in existingManifest.Modules)
             {
+                if (oldModule.Component is not null)
+                    continue;
+
                 if (currentPaths.Contains(oldModule.RelativePath))
                     continue;
 

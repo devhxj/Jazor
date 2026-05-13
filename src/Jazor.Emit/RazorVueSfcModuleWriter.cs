@@ -27,7 +27,7 @@ internal sealed class RazorVueSfcModuleWriter
         Directory.CreateDirectory(outputDirectory);
 
         var normalizedOutputDirectory = EnsureDirectorySeparator(Path.GetFullPath(outputDirectory));
-        var existingManifest = RazorVueManifestSerializer.TryLoad(manifestPath);
+        var existingManifest = ManifestModel.TryLoad(manifestPath);
         var artifacts = catalogs
             .SelectMany(static catalog => catalog.Artifacts)
             .OrderBy(static artifact => artifact.RelativeSfcPath, StringComparer.OrdinalIgnoreCase)
@@ -38,7 +38,7 @@ internal sealed class RazorVueSfcModuleWriter
         var skipped = 0;
         var deleted = 0;
 
-        var nextManifest = RazorVueSfcManifestFactory.Create(rootAssemblyPath, catalogs);
+        var nextRazorVueManifest = RazorVueSfcManifestFactory.Create(rootAssemblyPath, catalogs);
         var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
 
         foreach (var artifact in artifacts)
@@ -79,13 +79,13 @@ internal sealed class RazorVueSfcModuleWriter
                 skipped++;
         }
 
-        if (nextManifest.Modules.Count > 0)
+        if (nextRazorVueManifest.Modules.Count > 0)
         {
             var hostRequirementsDirectory = Path.GetDirectoryName(hostRequirementsModulePath);
             if (!string.IsNullOrWhiteSpace(hostRequirementsDirectory))
                 Directory.CreateDirectory(hostRequirementsDirectory);
 
-            var hostRequirementsCode = BuildHostRequirementsModule(nextManifest);
+            var hostRequirementsCode = BuildHostRequirementsModule(nextRazorVueManifest);
             var hostRequirementsChanged = !File.Exists(hostRequirementsModulePath)
                 || !string.Equals(File.ReadAllText(hostRequirementsModulePath), hostRequirementsCode, StringComparison.Ordinal);
 
@@ -102,11 +102,11 @@ internal sealed class RazorVueSfcModuleWriter
 
         if (clean && existingManifest is not null)
         {
-            var currentPaths = nextManifest.Modules
+            var currentPaths = nextRazorVueManifest.Modules
                 .Select(static module => module.RelativeModulePath)
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var oldModule in existingManifest.Modules)
+            foreach (var oldModule in existingManifest.ToRazorVueManifest(ManifestComponentModel.Sfc).Modules)
             {
                 if (currentPaths.Contains(oldModule.RelativeModulePath))
                     continue;
@@ -117,10 +117,13 @@ internal sealed class RazorVueSfcModuleWriter
             }
         }
 
-        if (clean && nextManifest.Modules.Count == 0)
+        if (clean && nextRazorVueManifest.Modules.Count == 0)
             DeleteIfExists(hostRequirementsModulePath, ref deleted);
 
-        nextManifest.Save(manifestPath);
+        var nextManifest = existingManifest ?? new ManifestModel(rootAssemblyPath, DateTime.UtcNow, []);
+        nextManifest
+            .WithRazorVueManifest(nextRazorVueManifest, ManifestComponentModel.Sfc)
+            .Save(manifestPath);
         return WriteResult.Success(written, skipped, deleted);
     }
 

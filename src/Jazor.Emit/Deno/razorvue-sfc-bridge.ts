@@ -9,12 +9,29 @@ export type RazorVueSfcBridgeManifest = {
   AssemblyName?: string;
   GeneratedAtUtc?: string;
   Modules: RazorVueSfcBridgeManifestModule[];
+  modules?: RazorVueSfcBridgeUnifiedManifestModule[];
 };
 
 export type RazorVueSfcBridgeManifestModule = {
   ComponentId: string;
   ComponentName: string;
   RelativeModulePath: string;
+};
+
+export type RazorVueSfcBridgeUnifiedManifestModule = {
+  assemblyName?: string;
+  typeName?: string;
+  id?: string;
+  kind?: string;
+  relativePath: string;
+  component?: RazorVueSfcBridgeUnifiedManifestComponent | null;
+};
+
+export type RazorVueSfcBridgeUnifiedManifestComponent = {
+  model?: string;
+  componentId?: string;
+  componentName?: string;
+  moduleId?: string;
 };
 
 export type RazorVueSfcBridgeOptions = {
@@ -63,7 +80,7 @@ type TextReplacement = {
   text: string;
 };
 
-const defaultManifestFileName = "jazor-manifest-razorvue.json";
+const defaultManifestFileName = "jazor-manifest.json";
 
 export async function compileRazorVueSfcBridgeModules(
   options: RazorVueSfcBridgeOptions
@@ -71,8 +88,9 @@ export async function compileRazorVueSfcBridgeModules(
   const normalizedOptions = normalizeOptions(options);
   const manifest = normalizedOptions.manifest ?? await readJson<RazorVueSfcBridgeManifest>(normalizedOptions.manifestPath);
   validateManifest(manifest, normalizedOptions.manifestPath);
+  const manifestModules = projectManifestModules(manifest);
 
-  const sortedModules = [...manifest.Modules].sort((left, right) =>
+  const sortedModules = manifestModules.sort((left, right) =>
     normalizeRelativeModulePath(left.RelativeModulePath).localeCompare(
       normalizeRelativeModulePath(right.RelativeModulePath),
       "en"
@@ -619,9 +637,42 @@ function resolveRequiredPath(value: string, name: string): string {
 }
 
 function validateManifest(manifest: RazorVueSfcBridgeManifest, manifestPath: string): void {
-  if (!Array.isArray(manifest.Modules)) {
+  if (!Array.isArray(manifest.Modules) && !Array.isArray(manifest.modules)) {
     throw new Error(`RazorVue SFC bridge manifest '${manifestPath}' does not contain a Modules array.`);
   }
+}
+
+function projectManifestModules(manifest: RazorVueSfcBridgeManifest): RazorVueSfcBridgeManifestModule[] {
+  if (Array.isArray(manifest.modules)) {
+    return manifest.modules
+      .filter((module) => module.component !== null && module.component !== undefined)
+      .filter((module) => normalizeManifestKind(module.kind) === "vue")
+      .filter((module) => normalizeComponentModel(module.component?.model) === "sfc")
+      .map((module) => ({
+        ComponentId: readUnifiedComponentValue(module.component?.componentId, module.id ?? module.relativePath),
+        ComponentName: readUnifiedComponentValue(module.component?.componentName, module.typeName ?? module.id ?? module.relativePath),
+        RelativeModulePath: normalizeRelativeModulePath(module.relativePath)
+      }));
+  }
+
+  return [...(manifest.Modules ?? [])];
+}
+
+function normalizeManifestKind(kind: string | undefined): string {
+  return kind?.trim().toLowerCase() ?? "mjs";
+}
+
+function normalizeComponentModel(model: string | undefined): string {
+  return model?.trim().toLowerCase() ?? "h";
+}
+
+function readUnifiedComponentValue(value: string | undefined, fallbackValue: string): string {
+  const candidate = value?.trim();
+  if (candidate !== undefined && candidate.length > 0) {
+    return candidate;
+  }
+
+  return fallbackValue;
 }
 
 function normalizeLineEndings(value: string): string {

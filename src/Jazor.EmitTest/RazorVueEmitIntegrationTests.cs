@@ -32,7 +32,7 @@ public sealed class RazorVueEmitIntegrationTests
         var writer = new RazorVueModuleWriter();
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = RazorVueModuleWriter.GetManifestPath(Path.Combine(outputDirectory, "jazor-manifest.json"));
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var sourceFilePath = Path.Combine(root, "Counter.razor");
         var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
         var modulePath = Path.Combine(outputDirectory, "components", "counter-card.mjs");
@@ -121,12 +121,17 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.AreNotEqual(string.Empty, map.RootElement.GetProperty("mappings").GetString());
 
             using var manifestJson = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var manifestModule = manifestJson.RootElement.GetProperty("modules")[0];
+            Assert.AreEqual("mjs", manifestModule.GetProperty("kind").GetString());
+            Assert.AreEqual("components/counter-card.mjs", manifestModule.GetProperty("relativePath").GetString());
+            var component = manifestModule.GetProperty("component");
+            Assert.AreEqual("h", component.GetProperty("model").GetString());
             CollectionAssert.AreEqual(
                 new[] { "vuetify/styles" },
-                manifestJson.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+                component.GetProperty("styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
             CollectionAssert.AreEqual(
                 new[] { "vuetify" },
-                manifestJson.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+                component.GetProperty("pluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
 
             var manifest = RazorVueManifestSerializer.TryLoad(manifestPath);
             Assert.IsNotNull(manifest);
@@ -155,7 +160,7 @@ public sealed class RazorVueEmitIntegrationTests
         var writer = new RazorVueModuleWriter();
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = RazorVueModuleWriter.GetManifestPath(Path.Combine(outputDirectory, "jazor-manifest.json"));
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
 
         try
         {
@@ -220,12 +225,32 @@ public sealed class RazorVueEmitIntegrationTests
             CollectionAssert.AreEqual(new[] { "feature/flags.css", "vuetify/styles" }, manifest.Styles);
 
             using var manifestJson = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var manifestModules = manifestJson.RootElement.GetProperty("modules")
+                .EnumerateArray()
+                .OrderBy(static module => module.GetProperty("relativePath").GetString(), StringComparer.Ordinal)
+                .ToArray();
+            CollectionAssert.AreEqual(
+                new[] { "mjs", "mjs" },
+                manifestModules.Select(static module => module.GetProperty("kind").GetString()).ToArray());
+            CollectionAssert.AreEqual(
+                new[] { "h", "h" },
+                manifestModules.Select(static module => module.GetProperty("component").GetProperty("model").GetString()).ToArray());
             CollectionAssert.AreEqual(
                 new[] { "feature/flags.css", "vuetify/styles" },
-                manifestJson.RootElement.GetProperty("Styles").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+                manifestModules
+                    .SelectMany(static module => module.GetProperty("component").GetProperty("styles").EnumerateArray())
+                    .Select(static item => item.GetString())
+                    .OfType<string>()
+                    .OrderBy(static item => item, StringComparer.Ordinal)
+                    .ToArray());
             CollectionAssert.AreEqual(
                 new[] { "feature-flags", "vuetify" },
-                manifestJson.RootElement.GetProperty("PluginRequirements").EnumerateArray().Select(static item => item.GetString()).OfType<string>().ToArray());
+                manifestModules
+                    .SelectMany(static module => module.GetProperty("component").GetProperty("pluginRequirements").EnumerateArray())
+                    .Select(static item => item.GetString())
+                    .OfType<string>()
+                    .OrderBy(static item => item, StringComparer.Ordinal)
+                    .ToArray());
 
             var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
             var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
@@ -248,7 +273,6 @@ public sealed class RazorVueEmitIntegrationTests
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
         var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
-        var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(manifestPath);
         var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
         var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
         var razorVueSourceAssemblyPath = typeof(RazorVueEmitIntegrationTests).Assembly.Location;
@@ -275,7 +299,7 @@ public sealed class RazorVueEmitIntegrationTests
                 ]);
 
             Assert.AreEqual(0, firstRun.ExitCode, firstRun.ToString());
-            Assert.IsTrue(File.Exists(razorVueManifestPath));
+            Assert.IsTrue(File.Exists(manifestPath));
             Assert.IsTrue(File.Exists(hostRequirementsModulePath));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
             Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
@@ -302,10 +326,10 @@ public sealed class RazorVueEmitIntegrationTests
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.map")));
             Assert.IsFalse(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs.origins.json")));
             Assert.IsFalse(File.Exists(hostRequirementsModulePath));
-            Assert.IsTrue(File.Exists(razorVueManifestPath));
+            Assert.IsTrue(File.Exists(manifestPath));
 
-            using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(razorVueManifestPath));
-            Assert.IsFalse(manifest.RootElement.GetProperty("Modules").EnumerateArray().Any());
+            using var manifest = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+            Assert.IsFalse(manifest.RootElement.GetProperty("modules").EnumerateArray().Any());
         }
         finally
         {
@@ -319,16 +343,23 @@ public sealed class RazorVueEmitIntegrationTests
     {
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
-        var previousManifestPath = Path.Combine(root, "previous-razorvue.json");
-        var currentManifestPath = Path.Combine(root, "current-razorvue.json");
+        var previousManifestPath = Path.Combine(root, "previous-jazor-manifest.json");
+        var currentManifestPath = Path.Combine(root, "current-jazor-manifest.json");
         var planPath = Path.Combine(root, "razorvue-update-plan.json");
 
         try
         {
             Directory.CreateDirectory(root);
 
-            CreateManifest("template-a", "logic-a", "content-a", RazorVueHmrBoundaryKind.TemplateOnly).Save(previousManifestPath);
-            CreateManifest("template-b", "logic-a", "content-b", RazorVueHmrBoundaryKind.TemplateOnly).Save(currentManifestPath);
+            var rootAssemblyPath = Path.Combine(root, "Demo.Host.dll");
+            SaveUnifiedManifest(
+                previousManifestPath,
+                rootAssemblyPath,
+                CreateManifest("template-a", "logic-a", "content-a", RazorVueHmrBoundaryKind.TemplateOnly));
+            SaveUnifiedManifest(
+                currentManifestPath,
+                rootAssemblyPath,
+                CreateManifest("template-b", "logic-a", "content-b", RazorVueHmrBoundaryKind.TemplateOnly));
 
             var result = await RunDotNetAsync(root,
                 [
@@ -384,6 +415,14 @@ public sealed class RazorVueEmitIntegrationTests
             ],
             ["vuetify/styles"],
             ["vuetify"]);
+
+    private static void SaveUnifiedManifest(
+        string manifestPath,
+        string rootAssemblyPath,
+        RazorVueManifestModel razorVueManifest)
+        => new ManifestModel(rootAssemblyPath, DateTime.UtcNow, [])
+            .WithRazorVueManifest(razorVueManifest, ManifestComponentModel.H)
+            .Save(manifestPath);
 
     private static async Task<ProcessResult> RunDotNetAsync(string workingDirectory, IReadOnlyList<string> arguments)
     {

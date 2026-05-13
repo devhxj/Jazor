@@ -15,10 +15,9 @@
       <_JazorEmitOutDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDir>
       <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\$(JazorEmitToolTargetFramework)\Jazor.Emit.dll'))</JazorEmitToolPath>
       <JazorManifestPath Condition="'$(JazorManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest.json</JazorManifestPath>
-      <JazorRazorVueManifestPath Condition="'$(JazorRazorVueManifestPath)' == ''">$(_JazorEmitOutDir)\jazor-manifest-razorvue.json</JazorRazorVueManifestPath>
       <JazorRazorVueHostRequirementsModulePath Condition="'$(JazorRazorVueHostRequirementsModulePath)' == '' and '$(JazorRazorJoltRequirementsModulePath)' != ''">$(JazorRazorJoltRequirementsModulePath)</JazorRazorVueHostRequirementsModulePath>
       <JazorRazorVueHostRequirementsModulePath Condition="'$(JazorRazorVueHostRequirementsModulePath)' == ''">$(_JazorEmitOutDir)\__jazor\razorvue-host.mjs</JazorRazorVueHostRequirementsModulePath>
-      <JazorPreviousRazorVueManifestSnapshotPath Condition="'$(JazorPreviousRazorVueManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest-razorvue.json'))</JazorPreviousRazorVueManifestSnapshotPath>
+      <JazorPreviousManifestSnapshotPath Condition="'$(JazorPreviousManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest.json'))</JazorPreviousManifestSnapshotPath>
       <_JazorEmitManifestPath>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorEmitManifestPath>
     </PropertyGroup>
 
@@ -29,14 +28,14 @@
     </ItemGroup>
 
     <MakeDir Directories="$(_JazorEmitOutDir)" />
-    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(JazorPreviousRazorVueManifestSnapshotPath)'))"
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(JazorPreviousManifestSnapshotPath)'))"
              Condition="'$(JazorBundle)' == 'true'" />
-    <Copy SourceFiles="$(JazorRazorVueManifestPath)"
-          DestinationFiles="$(JazorPreviousRazorVueManifestSnapshotPath)"
+    <Copy SourceFiles="$(_JazorEmitManifestPath)"
+          DestinationFiles="$(JazorPreviousManifestSnapshotPath)"
           OverwriteReadOnlyFiles="true"
-          Condition="'$(JazorBundle)' == 'true' and Exists('$(JazorRazorVueManifestPath)')" />
-    <Delete Files="$(JazorPreviousRazorVueManifestSnapshotPath)"
-            Condition="'$(JazorBundle)' == 'true' and !Exists('$(JazorRazorVueManifestPath)') and Exists('$(JazorPreviousRazorVueManifestSnapshotPath)')" />
+          Condition="'$(JazorBundle)' == 'true' and Exists('$(_JazorEmitManifestPath)')" />
+    <Delete Files="$(JazorPreviousManifestSnapshotPath)"
+            Condition="'$(JazorBundle)' == 'true' and !Exists('$(_JazorEmitManifestPath)') and Exists('$(JazorPreviousManifestSnapshotPath)')" />
 
     <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorEmitOutDir)&quot; --write-manifest &quot;$(_JazorEmitManifestPath)&quot; --clean &quot;$(JazorCleanEmit)&quot; --fail-on-path-conflict &quot;$(JazorFailOnPathConflict)&quot; @(JazorEmitAssembly->'--assembly &quot;%(Identity)&quot;', ' ')" />
   </Target>
@@ -56,12 +55,12 @@
       <JazorBundleRazorVueHostContractPath Condition="'$(JazorBundleRazorVueHostContractPath)' == '' and '$(JazorBundleRazorJoltContractPath)' != ''">$(JazorBundleRazorJoltContractPath)</JazorBundleRazorVueHostContractPath>
       <JazorBundleRazorVueHostContractPath Condition="'$(JazorBundleRazorVueHostContractPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.host.json'))))</JazorBundleRazorVueHostContractPath>
       <JazorBundleRazorVueUpdatePlanPath Condition="'$(JazorBundleRazorVueUpdatePlanPath)' == ''">$([System.IO.Path]::Combine($([System.IO.Path]::GetDirectoryName('$(_JazorBundleOut)')), $([System.String]::Concat($([System.IO.Path]::GetFileNameWithoutExtension('$(_JazorBundleOut)')), '.razorvue.update-plan.json'))))</JazorBundleRazorVueUpdatePlanPath>
-      <JazorPreviousRazorVueManifestSnapshotPath Condition="'$(JazorPreviousRazorVueManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest-razorvue.json'))</JazorPreviousRazorVueManifestSnapshotPath>
+      <JazorPreviousManifestSnapshotPath Condition="'$(JazorPreviousManifestSnapshotPath)' == ''">$([System.IO.Path]::Combine('$(IntermediateOutputPath)', 'jazor', 'previous-jazor-manifest.json'))</JazorPreviousManifestSnapshotPath>
       <_JazorEmitOutDirForBundle>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(_JazorSelectedOutDir)')), '[\\/]+$', ''))</_JazorEmitOutDirForBundle>
       <_JazorManifestPathForBundle>$([System.IO.Path]::GetFullPath('$(JazorManifestPath)'))</_JazorManifestPathForBundle>
       <JazorEmitToolPath Condition="'$(JazorEmitToolPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\tools\$(JazorEmitToolTargetFramework)\Jazor.Emit.dll'))</JazorEmitToolPath>
     </PropertyGroup>
 
-    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot; --previous-razorvue-manifest &quot;$(JazorPreviousRazorVueManifestSnapshotPath)&quot; --write-razorvue-update-plan &quot;$(JazorBundleRazorVueUpdatePlanPath)&quot;" />
+    <Exec Command="dotnet &quot;$(JazorEmitToolPath)&quot; bundle --in &quot;$(_JazorEmitOutDirForBundle)&quot; --manifest &quot;$(_JazorManifestPathForBundle)&quot; --out &quot;$(_JazorBundleOut)&quot; --previous-manifest &quot;$(JazorPreviousManifestSnapshotPath)&quot; --write-razorvue-update-plan &quot;$(JazorBundleRazorVueUpdatePlanPath)&quot;" />
   </Target>
 </Project>

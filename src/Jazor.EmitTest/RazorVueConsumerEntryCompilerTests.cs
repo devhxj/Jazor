@@ -188,7 +188,7 @@ public sealed class RazorVueConsumerEntryCompilerTests
 
         Assert.IsTrue(parsed, error);
         Assert.IsNotNull(options);
-        Assert.AreEqual(Path.Combine(workspace.HostJazorRoot, "jazor-manifest-razorvue.json"), options.ManifestPath);
+        Assert.AreEqual(Path.Combine(workspace.HostJazorRoot, "jazor-manifest.json"), options.ManifestPath);
         Assert.AreEqual(Path.Combine(workspace.HostJazorRoot, "__jazor", "razorvue-host.mjs"), options.HostRequirementsModulePath);
         Assert.AreEqual(Path.Combine(workspace.BuildRoot, "generated-browser"), options.BrowserGeneratedRoot);
         Assert.AreEqual(Path.Combine(workspace.BuildRoot, "generated-ssr"), options.SsrGeneratedRoot);
@@ -240,7 +240,7 @@ public sealed class RazorVueConsumerEntryCompilerTests
             VueFeatureFlagsPath = Path.Combine(BuildRoot, "vue-feature-flags.mjs");
             ClientRuntimeModulePath = Path.Combine(ConsumerRoot, "src", "runtime-client.js");
             SsrRuntimeModulePath = Path.Combine(ConsumerRoot, "src", "runtime-ssr.js");
-            ManifestPath = Path.Combine(HostJazorRoot, "jazor-manifest-razorvue.json");
+            ManifestPath = Path.Combine(HostJazorRoot, "jazor-manifest.json");
             HostRequirementsModulePath = Path.Combine(HostJazorRoot, "__jazor", "razorvue-host.mjs");
             ResultPath = Path.Combine(BuildRoot, "razorvue-consumer-entry.json");
 
@@ -278,12 +278,18 @@ public sealed class RazorVueConsumerEntryCompilerTests
         public string ResultPath { get; }
 
         public void WriteManifest(params RazorVueManifestEntry[] modules)
-            => new RazorVueManifestModel(
-                "Demo",
-                DateTime.UtcNow,
-                modules.ToList(),
-                Styles: [],
-                PluginRequirements: [])
+            => new ManifestModel(
+                RootAssemblyPath: Path.Combine(RootPath, "Demo.dll"),
+                GeneratedAtUtc: DateTime.UtcNow,
+                Modules: [])
+                .WithRazorVueManifest(
+                    new RazorVueManifestModel(
+                        "Demo",
+                        DateTime.UtcNow,
+                        modules.ToList(),
+                        Styles: [],
+                        PluginRequirements: []),
+                    ManifestComponentModel.Sfc)
                 .Save(ManifestPath);
 
         public void WriteVue(string relativePath, string content)

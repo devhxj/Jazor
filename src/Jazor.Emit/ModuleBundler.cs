@@ -33,9 +33,10 @@ internal sealed class ModuleBundler
         if (manifest is null)
             return BundleResult.Fail(6, $"Manifest was not found: '{options.ManifestPath}'.");
 
-        var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(options.ManifestPath);
-        var razorVueManifest = RazorVueManifestSerializer.TryLoad(razorVueManifestPath);
-        var previousRazorVueManifest = TryLoadPreviousRazorVueManifest(options);
+        var razorVueManifest = manifest.ToRazorVueManifest();
+        if (razorVueManifest.Modules.Count == 0)
+            razorVueManifest = null;
+        var previousManifest = TryLoadPreviousManifest(options);
 
         var relativePaths = manifest.Modules
             .Select(static module => module.RelativePath.Replace('\\', '/'))
@@ -131,7 +132,7 @@ internal sealed class ModuleBundler
             await TryRewriteBundleSourceMapAsync(options.OutputPath, bundleWorkspace, relativePaths, tempEntryPath);
             await EnsureBundleSourceMappingUrlAsync(options.OutputPath);
             RazorVueHostAssetWriter.Sync(options.OutputPath, razorVueManifest);
-            WriteRazorVueUpdatePlanIfRequested(options, previousRazorVueManifest, razorVueManifest);
+            WriteRazorVueUpdatePlanIfRequested(options, previousManifest, razorVueManifest);
             return BundleResult.Success(options.OutputPath, relativePaths.Length);
         }
         catch (Exception ex)
@@ -213,12 +214,12 @@ internal sealed class ModuleBundler
         return new SourceMapDocument(entryFileName, sources, segments);
     }
 
-    private static RazorVueManifestModel? TryLoadPreviousRazorVueManifest(BundleOptions options)
+    private static RazorVueManifestModel? TryLoadPreviousManifest(BundleOptions options)
     {
-        if (string.IsNullOrWhiteSpace(options.PreviousRazorVueManifestPath))
+        if (string.IsNullOrWhiteSpace(options.PreviousManifestPath))
             return null;
 
-        return RazorVueManifestSerializer.TryLoad(options.PreviousRazorVueManifestPath);
+        return RazorVueManifestSerializer.TryLoad(options.PreviousManifestPath);
     }
 
     private static void WriteRazorVueUpdatePlanIfRequested(
@@ -246,8 +247,7 @@ internal sealed class ModuleBundler
         string manifestPath,
         string bundleWorkspace)
     {
-        var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(manifestPath);
-        var razorVueManifest = RazorVueManifestSerializer.TryLoad(razorVueManifestPath);
+        var razorVueManifest = ManifestModel.TryLoad(manifestPath)?.ToRazorVueManifest();
         if (razorVueManifest is null || razorVueManifest.Modules.Count == 0)
             return null;
 

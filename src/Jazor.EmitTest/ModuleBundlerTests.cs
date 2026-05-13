@@ -132,32 +132,22 @@ public sealed class ModuleBundlerTests
             ]);
         manifest.Save(workspace.ManifestPath);
 
-        var razorVueManifest = new RazorVueManifestModel(
-            "Sample.Host",
-            DateTime.UtcNow,
-            [
-                new RazorVueManifestEntry(
-                    "Sample.Host",
-                    "Sample.Host.CounterCard",
-                    "components/counter-card.mjs",
-                    "CounterCard",
-                    "components/counter-card.mjs",
-                    "components/counter-card.mjs.map",
-                    "components/counter-card.mjs.origins.json",
-                    ["vue", "vuetify/components"],
-                    ["vuetify/styles"],
-                    ["feature-flags", "vuetify"],
-                    "descriptor-hash",
-                    "template-hash",
-                    "logic-hash",
-                    "content-hash",
-                    RazorVueHmrBoundaryKind.LogicSafe,
-                    false,
-                    true)
-            ],
-            ["vuetify/styles"],
-            ["feature-flags", "vuetify"]);
-        razorVueManifest.Save(RazorVueModuleWriter.GetManifestPath(workspace.ManifestPath));
+        SaveUnifiedManifest(
+            workspace.ManifestPath,
+            manifest,
+            CreateRazorVueManifest(
+                componentId: "Sample.Host.CounterCard",
+                moduleId: "components/counter-card.mjs",
+                componentName: "CounterCard",
+                relativeModulePath: "components/counter-card.mjs",
+                imports: ["vue", "vuetify/components"],
+                styles: ["vuetify/styles"],
+                pluginRequirements: ["feature-flags", "vuetify"],
+                descriptorHash: "descriptor-hash",
+                templateHash: "template-hash",
+                logicHash: "logic-hash",
+                contentHash: "content-hash",
+                boundaryKind: RazorVueHmrBoundaryKind.LogicSafe));
         WriteModule(
             workspace.InputDirectory,
             "__jazor/razorvue-host.mjs",
@@ -328,32 +318,22 @@ public sealed class ModuleBundlerTests
             ]);
         manifest.Save(workspace.ManifestPath);
 
-        var razorVueManifest = new RazorVueManifestModel(
-            "Sample.Host",
-            DateTime.UtcNow,
-            [
-                new RazorVueManifestEntry(
-                    "Sample.Host",
-                    "Sample.Host.ProfileForm",
-                    "components/profile-form.mjs",
-                    "ProfileForm",
-                    "components/profile-form.mjs",
-                    "components/profile-form.mjs.map",
-                    "components/profile-form.mjs.origins.json",
-                    ["vue", "vuetify/components"],
-                    ["feature/flags.css", "vuetify/styles"],
-                    ["feature-flags", "vuetify"],
-                    "descriptor-hash",
-                    "template-hash",
-                    "logic-hash",
-                    "content-hash",
-                    RazorVueHmrBoundaryKind.LogicSafe,
-                    RequiresHydration: false,
-                    SupportsSsr: true)
-            ],
-            ["feature/flags.css", "vuetify/styles"],
-            ["feature-flags", "vuetify"]);
-        razorVueManifest.Save(RazorVueModuleWriter.GetManifestPath(workspace.ManifestPath));
+        SaveUnifiedManifest(
+            workspace.ManifestPath,
+            manifest,
+            CreateRazorVueManifest(
+                componentId: "Sample.Host.ProfileForm",
+                moduleId: "components/profile-form.mjs",
+                componentName: "ProfileForm",
+                relativeModulePath: "components/profile-form.mjs",
+                imports: ["vue", "vuetify/components"],
+                styles: ["feature/flags.css", "vuetify/styles"],
+                pluginRequirements: ["feature-flags", "vuetify"],
+                descriptorHash: "descriptor-hash",
+                templateHash: "template-hash",
+                logicHash: "logic-hash",
+                contentHash: "content-hash",
+                boundaryKind: RazorVueHmrBoundaryKind.LogicSafe));
 
         var bundler = new ModuleBundler();
         var result = await bundler.BundleAsync(new BundleOptions(
@@ -397,7 +377,7 @@ public sealed class ModuleBundlerTests
     }
 
     [TestMethod]
-    public async Task BundleAsync_WithPreviousRazorVueManifest_WritesUpdatePlanSidecar()
+    public async Task BundleAsync_WithPreviousManifest_WritesRazorVueUpdatePlanSidecar()
     {
         using var workspace = new TestWorkspace();
         WriteModule(workspace.InputDirectory, "host/app.mjs",
@@ -416,15 +396,27 @@ public sealed class ModuleBundlerTests
             ]);
         manifest.Save(workspace.ManifestPath);
 
-        CreateRazorVueManifest("template-a", "logic-a", "content-a").Save(workspace.PreviousRazorVueManifestPath);
-        CreateRazorVueManifest("template-b", "logic-a", "content-b").Save(RazorVueModuleWriter.GetManifestPath(workspace.ManifestPath));
+        SaveUnifiedManifest(
+            workspace.PreviousManifestPath,
+            manifest,
+            CreateRazorVueManifest(
+                "template-a",
+                "logic-a",
+                "content-a"));
+        SaveUnifiedManifest(
+            workspace.ManifestPath,
+            manifest,
+            CreateRazorVueManifest(
+                "template-b",
+                "logic-a",
+                "content-b"));
 
         var bundler = new ModuleBundler();
         var result = await bundler.BundleAsync(new BundleOptions(
             workspace.InputDirectory,
             workspace.ManifestPath,
             workspace.OutputPath,
-            workspace.PreviousRazorVueManifestPath,
+            workspace.PreviousManifestPath,
             workspace.RazorVueUpdatePlanPath));
 
         Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
@@ -438,31 +430,66 @@ public sealed class ModuleBundlerTests
     }
 
     private static RazorVueManifestModel CreateRazorVueManifest(string templateHash, string logicHash, string contentHash)
+        => CreateRazorVueManifest(
+            componentId: "Sample.Host.ProfileForm",
+            moduleId: "components/profile-form.mjs",
+            componentName: "ProfileForm",
+            relativeModulePath: "components/profile-form.mjs",
+            imports: ["vue"],
+            styles: ["vuetify/styles"],
+            pluginRequirements: ["vuetify"],
+            descriptorHash: "descriptor-hash",
+            templateHash,
+            logicHash,
+            contentHash,
+            RazorVueHmrBoundaryKind.TemplateOnly);
+
+    private static RazorVueManifestModel CreateRazorVueManifest(
+        string componentId,
+        string moduleId,
+        string componentName,
+        string relativeModulePath,
+        IReadOnlyList<string> imports,
+        IReadOnlyList<string> styles,
+        IReadOnlyList<string> pluginRequirements,
+        string descriptorHash,
+        string templateHash,
+        string logicHash,
+        string contentHash,
+        RazorVueHmrBoundaryKind boundaryKind)
         => new(
             "Sample.Host",
             new DateTime(2026, 4, 8, 0, 0, 0, DateTimeKind.Utc),
             [
                 new RazorVueManifestEntry(
                     "Sample.Host",
-                    "Sample.Host.ProfileForm",
-                    "components/profile-form.mjs",
-                    "ProfileForm",
-                    "components/profile-form.mjs",
-                    "components/profile-form.mjs.map",
-                    "components/profile-form.mjs.origins.json",
-                    ["vue"],
-                    ["vuetify/styles"],
-                    ["vuetify"],
-                    "descriptor-hash",
+                    componentId,
+                    moduleId,
+                    componentName,
+                    relativeModulePath,
+                    relativeModulePath + ".map",
+                    relativeModulePath + ".origins.json",
+                    imports.ToList(),
+                    styles.ToList(),
+                    pluginRequirements.ToList(),
+                    descriptorHash,
                     templateHash,
                     logicHash,
                     contentHash,
-                    RazorVueHmrBoundaryKind.TemplateOnly,
+                    boundaryKind,
                     false,
                     true)
             ],
-            ["vuetify/styles"],
-            ["vuetify"]);
+            RazorVueManifestFactory.NormalizeHostRequirementList(styles),
+            RazorVueManifestFactory.NormalizeHostRequirementList(pluginRequirements));
+
+    private static void SaveUnifiedManifest(
+        string manifestPath,
+        ManifestModel baseManifest,
+        RazorVueManifestModel razorVueManifest)
+        => baseManifest
+            .WithRazorVueManifest(razorVueManifest, ManifestComponentModel.H)
+            .Save(manifestPath);
 
     private static void WriteModule(string rootDirectory, string relativePath, string content)
     {
@@ -498,7 +525,7 @@ public sealed class ModuleBundlerTests
             OutputMapPath = Path.Combine(RootPath, "bundle.js.map");
             RazorVueCssPath = Path.Combine(RootPath, "bundle.razorvue.css");
             RazorVueHostContractPath = Path.Combine(RootPath, "bundle.razorvue.host.json");
-            PreviousRazorVueManifestPath = Path.Combine(RootPath, "previous-razorvue.json");
+            PreviousManifestPath = Path.Combine(RootPath, "previous-jazor-manifest.json");
             RazorVueUpdatePlanPath = Path.Combine(RootPath, "bundle.razorvue.update-plan.json");
             Directory.CreateDirectory(InputDirectory);
         }
@@ -517,7 +544,7 @@ public sealed class ModuleBundlerTests
 
         public string RazorVueHostContractPath { get; }
 
-        public string PreviousRazorVueManifestPath { get; }
+        public string PreviousManifestPath { get; }
 
         public string RazorVueUpdatePlanPath { get; }
 

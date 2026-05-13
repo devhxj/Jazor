@@ -1,11 +1,9 @@
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue.RenderTree;
 
@@ -55,41 +53,30 @@ internal sealed class RazorVueRenderTreeExtractor
         return RazorVueRenderFragment.Empty;
     }
 
-    private sealed class Parser
-    {
-        private readonly RazorVueSemanticSnapshot _snapshot;
-        private readonly Compilation _compilation;
-        private readonly RazorVueCompilationSymbols _symbols;
-        private ImmutableHashSet<IParameterSymbol> _builderParameters;
-        private readonly HashSet<ILocalSymbol> _builderAliases;
-        private readonly HashSet<IMethodSymbol> _activeRenderHelperMethods;
+    private sealed class Parser(
+		RazorVueSemanticSnapshot snapshot,
+		Compilation compilation,
+		RazorVueCompilationSymbols symbols,
+		ImmutableHashSet<IParameterSymbol> builderParameters,
+		IEnumerable<ILocalSymbol>? builderAliases = null,
+		IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null,
+		bool deferUnsupportedTemplateLocals = false)
+	{
+        private readonly RazorVueSemanticSnapshot _snapshot = snapshot;
+        private readonly Compilation _compilation = compilation;
+        private readonly RazorVueCompilationSymbols _symbols = symbols;
+        private ImmutableHashSet<IParameterSymbol> _builderParameters = builderParameters;
+        private readonly HashSet<ILocalSymbol> _builderAliases = builderAliases is null
+				? [with(SymbolEqualityComparer.Default)]
+				: new HashSet<ILocalSymbol>(builderAliases, SymbolEqualityComparer.Default);
+        private readonly HashSet<IMethodSymbol> _activeRenderHelperMethods = activeRenderHelperMethods is null
+				? [with(SymbolEqualityComparer.Default)]
+				: new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
         private readonly List<RazorVueRenderNode> _rootChildren = [];
         private readonly Stack<OpenFrame> _openFrames = new();
-        private readonly bool _deferUnsupportedTemplateLocals;
+        private readonly bool _deferUnsupportedTemplateLocals = deferUnsupportedTemplateLocals;
 
-        public Parser(
-            RazorVueSemanticSnapshot snapshot,
-            Compilation compilation,
-            RazorVueCompilationSymbols symbols,
-            ImmutableHashSet<IParameterSymbol> builderParameters,
-            IEnumerable<ILocalSymbol>? builderAliases = null,
-            IEnumerable<IMethodSymbol>? activeRenderHelperMethods = null,
-            bool deferUnsupportedTemplateLocals = false)
-        {
-            _snapshot = snapshot;
-            _compilation = compilation;
-            _symbols = symbols;
-            _builderParameters = builderParameters;
-            _builderAliases = builderAliases is null
-                ? new HashSet<ILocalSymbol>(SymbolEqualityComparer.Default)
-                : new HashSet<ILocalSymbol>(builderAliases, SymbolEqualityComparer.Default);
-            _activeRenderHelperMethods = activeRenderHelperMethods is null
-                ? new HashSet<IMethodSymbol>(SymbolEqualityComparer.Default)
-                : new HashSet<IMethodSymbol>(activeRenderHelperMethods, SymbolEqualityComparer.Default);
-            _deferUnsupportedTemplateLocals = deferUnsupportedTemplateLocals;
-        }
-
-        public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
+		public RazorVueRenderFragment Parse(IEnumerable<IOperation> operations)
         {
             foreach (var operation in operations)
                 ParseOperation(operation);
@@ -1170,7 +1157,7 @@ internal sealed class RazorVueRenderTreeExtractor
 
             if (current is IInvocationOperation invocation)
             {
-                statements = ImmutableArray.Create<IOperation>(invocation);
+                statements = [invocation];
                 return true;
             }
 
@@ -1304,7 +1291,7 @@ internal sealed class RazorVueRenderTreeExtractor
         private static ImmutableArray<RazorVueSourceOrigin> CreateOrigins(IOperation operation, RazorVueOriginKind originKind)
             => operation.Syntax is null
                 ? ImmutableArray<RazorVueSourceOrigin>.Empty
-                : ImmutableArray.Create(RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), originKind));
+                : [RazorVueSourceOrigin.FromLocation(operation.Syntax.GetLocation(), originKind)];
 
         private static string ToLowerCamelCase(string value)
         {
@@ -1327,16 +1314,11 @@ internal sealed class RazorVueRenderTreeExtractor
 
     }
 
-    private abstract class OpenFrame
-    {
-        protected OpenFrame(ImmutableArray<RazorVueSourceOrigin> origins)
-        {
-            Origins = origins;
-        }
+    private abstract class OpenFrame(ImmutableArray<RazorVueSourceOrigin> origins)
+	{
+		public ImmutableArray<RazorVueSourceOrigin> Origins { get; } = origins;
 
-        public ImmutableArray<RazorVueSourceOrigin> Origins { get; }
-
-        public abstract string Describe();
+		public abstract string Describe();
     }
 
     private abstract class OpenNodeBuilder : OpenFrame
@@ -1360,13 +1342,13 @@ internal sealed class RazorVueRenderTreeExtractor
             => _children.Add(child);
 
         protected ImmutableArray<RazorVueAttributeEntry> BuildAttributes()
-            => _attributes.ToImmutableArray();
+            => [.. _attributes];
 
         protected ImmutableArray<RazorVueComponentSlotTemplateNode> BuildSlotTemplates()
-            => _slotTemplates.ToImmutableArray();
+            => [.. _slotTemplates];
 
         protected RazorVueRenderFragment BuildChildren()
-            => new(_children.ToImmutableArray());
+            => new([.. _children]);
 
         public abstract override string Describe();
 

@@ -25,24 +25,6 @@ internal static class PlaygroundHostPage
 </html>
 """;
 
-    public static bool IsHtmlShellPath(PathString path)
-    {
-        if (path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/assets", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/jazor", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (path == "/" || path == string.Empty)
-        {
-            return true;
-        }
-
-        return !Path.HasExtension(path.Value);
-    }
-
     public static void ApplySecurityHeaders(IHeaderDictionary headers)
     {
         headers["X-Content-Type-Options"] = "nosniff";
@@ -59,22 +41,6 @@ internal static class PlaygroundHostPage
     {
         ApplySecurityHeaders(context.Context.Response.Headers);
         context.Context.Response.Headers.CacheControl = MutableAssetCacheControl;
-    }
-
-    public static async Task<bool> TryHandleHtmlRequestAsync(HttpContext context, CancellationToken cancellationToken = default)
-    {
-        if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
-        {
-            return false;
-        }
-
-        if (!IsHtmlShellPath(context.Request.Path))
-        {
-            return false;
-        }
-
-        await WriteHtmlAsync(context, cancellationToken);
-        return true;
     }
 
     public static Task WriteHtmlAsync(HttpContext context)

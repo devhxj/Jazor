@@ -60,7 +60,6 @@ static async Task<int> RunEmitAsync(string[] args)
             return writeResult.ExitCode;
         }
 
-        var razorVueManifestPath = RazorVueModuleWriter.GetManifestPath(options.ManifestPath);
         var razorVueWriteResult = WriteResult.Success(0, 0, 0);
         if (collectResult.RazorVueSfcArtifactCount > 0)
         {
@@ -68,7 +67,7 @@ static async Task<int> RunEmitAsync(string[] args)
             razorVueWriteResult = razorVueWriter.Write(
                 options.RootAssemblyPath,
                 options.OutputDirectory,
-                razorVueManifestPath,
+                options.ManifestPath,
                 collectResult.RazorVueSfcCatalogs,
                 options.Clean);
 
@@ -79,13 +78,13 @@ static async Task<int> RunEmitAsync(string[] args)
             }
         }
         else if (collectResult.RazorVueArtifactCount > 0 ||
-                 (options.Clean && File.Exists(razorVueManifestPath)))
+                 (options.Clean && ManifestModel.TryLoad(options.ManifestPath)?.ToRazorVueManifest(ManifestComponentModel.H).Modules.Count > 0))
         {
             var razorVueWriter = new RazorVueModuleWriter();
             razorVueWriteResult = razorVueWriter.Write(
                 options.RootAssemblyPath,
                 options.OutputDirectory,
-                razorVueManifestPath,
+                options.ManifestPath,
                 collectResult.RazorVueCatalogs,
                 options.Clean);
 

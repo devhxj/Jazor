@@ -20,8 +20,10 @@ string hostCommand = "run";
 var hostArguments = new List<string>
 {
     "--no-build",
+    "--no-launch-profile",
     "--project",
     projectPath,
+    "--",
     "--urls",
     rootUrl
 };
@@ -79,7 +81,8 @@ else if (options.Build)
         dotnetCliHome: dotnetCliHome);
 }
 
-var manifestPath = Path.Combine(emittedJazorRoot, "jazor-manifest-razorvue.json");
+var manifestPath = Path.Combine(emittedJazorRoot, "jazor-manifest.json");
+var legacyManifestPath = Path.Combine(emittedJazorRoot, "jazor-manifest-razorvue.json");
 var hostRequirementsPath = Path.Combine(emittedJazorRoot, "__jazor", "razorvue-host.mjs");
 var clientEntryPath = Path.Combine(publicJazorRoot, "client-entry.js");
 var clientCssPath = Path.Combine(publicJazorRoot, "client-entry.css");
@@ -87,8 +90,14 @@ var legacyAssetsRoot = Path.Combine(webRoot, "assets");
 
 PlaygroundScriptHelpers.EnsureFileExists(clientEntryPath, "browser entry bundle");
 PlaygroundScriptHelpers.EnsureFileExists(clientCssPath, "browser CSS bundle");
-PlaygroundScriptHelpers.EnsureFileExists(manifestPath, "RazorVue manifest");
+PlaygroundScriptHelpers.EnsureFileExists(manifestPath, "Jazor manifest");
 PlaygroundScriptHelpers.EnsureFileExists(hostRequirementsPath, "RazorVue host requirements module");
+if (File.Exists(legacyManifestPath))
+{
+    throw new InvalidOperationException(
+        "Unexpected legacy RazorVue manifest: " + legacyManifestPath +
+        ". Playground host/consumer contracts must use jazor-manifest.json only.");
+}
 if (Directory.Exists(legacyAssetsRoot))
 {
     throw new InvalidOperationException("Unexpected legacy Playground browser bundle directory: " + legacyAssetsRoot + ". Browser bundles must be emitted under wwwroot/jazor.");
@@ -112,7 +121,8 @@ try
     await AssertEndpointAsync(httpClient, "/examples/catalog-shell", HttpStatusCode.OK, "text/html", "/jazor/client-entry.js");
     await AssertEndpointAsync(httpClient, "/jazor/client-entry.js", HttpStatusCode.OK, "text/javascript", "mountPlaygroundApp");
     await AssertEndpointAsync(httpClient, "/jazor/client-entry.css", HttpStatusCode.OK, "text/css", ".playground-app-shell");
-    await AssertEndpointAsync(httpClient, "/jazor/jazor-manifest-razorvue.json", HttpStatusCode.OK, "application/json", "PlaygroundCatalogPage");
+    await AssertEndpointAsync(httpClient, "/jazor/jazor-manifest.json", HttpStatusCode.OK, "application/json", "PlaygroundCatalogPage");
+    await AssertStatusAsync(httpClient, "/jazor/jazor-manifest-razorvue.json", HttpStatusCode.NotFound);
     await AssertEndpointAsync(httpClient, "/jazor/__jazor/razorvue-host.mjs", HttpStatusCode.OK, "text/javascript", "razorVueHostRequirements");
 
     using var catalogDocument = JsonDocument.Parse(await httpClient.GetStringAsync("/api/playground/examples"));
@@ -220,6 +230,15 @@ static async Task<string> AssertEndpointAsync(
 
     AssertContains(body, expectedBodyMarker, path);
     return body;
+}
+
+static async Task AssertStatusAsync(HttpClient httpClient, string path, HttpStatusCode expectedStatusCode)
+{
+    using var response = await httpClient.GetAsync(path);
+    if (response.StatusCode != expectedStatusCode)
+    {
+        throw new InvalidOperationException($"Unexpected status for {path}: {(int)response.StatusCode}.");
+    }
 }
 
 static void AssertContains(string text, string expected, string description)

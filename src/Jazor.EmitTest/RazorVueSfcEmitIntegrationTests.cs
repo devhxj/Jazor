@@ -81,7 +81,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
         var writer = new RazorVueSfcModuleWriter();
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
-        var manifestPath = RazorVueModuleWriter.GetManifestPath(Path.Combine(outputDirectory, "jazor-manifest.json"));
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
         var sourceFilePath = Path.Combine(root, "Counter.razor");
         var styleSourceFilePath = Path.Combine(root, "Counter.razor.css");
         var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
@@ -146,6 +146,12 @@ public sealed class RazorVueSfcEmitIntegrationTests
             Assert.AreEqual("style-hash", manifest.Modules[0].StyleHash);
             Assert.AreEqual("components/counter-card.vue.map", manifest.Modules[0].SourceMapPath);
             Assert.AreEqual("components/counter-card.vue.origins.json", manifest.Modules[0].OriginMapPath);
+
+            using var manifestJson = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            var manifestModule = manifestJson.RootElement.GetProperty("modules")[0];
+            Assert.AreEqual("vue", manifestModule.GetProperty("kind").GetString());
+            Assert.AreEqual("components/counter-card.vue", manifestModule.GetProperty("relativePath").GetString());
+            Assert.AreEqual("sfc", manifestModule.GetProperty("component").GetProperty("model").GetString());
 
             var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
             StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.vue\"");

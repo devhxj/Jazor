@@ -553,7 +553,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("activeStrategy", treeview.Props.Single(static prop => prop.PublicName == "ActiveStrategy").Name);
         Assert.AreEqual("selectStrategy", treeview.Props.Single(static prop => prop.PublicName == "SelectStrategy").Name);
         Assert.AreEqual("loadChildren", treeview.Props.Single(static prop => prop.PublicName == "LoadChildren").Name);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", treeview.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("style", treeview.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", treeview.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("click:open", treeview.Emits.Single(static emit => emit.RazorAlias == "OpenClicked").Name);
         Assert.AreEqual("click:select", treeview.Emits.Single(static emit => emit.RazorAlias == "SelectClicked").Name);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyTreeviewClickPayload", treeview.Emits.Single(static emit => emit.RazorAlias == "OpenClicked").PayloadTypeName);
@@ -794,8 +795,10 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyBottomNavigationMode?", bottomNavigation.Props.Single(static prop => prop.PublicName == "Mode").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "Border").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("class", bottomNavigation.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("style", bottomNavigation.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", bottomNavigation.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsFalse(bottomNavigation.Props.Any(static prop => prop.PublicName == "SelectedValue"));
         Assert.IsFalse(bottomNavigation.Props.Any(static prop => prop.PublicName == "ActiveColor"));
         Assert.IsFalse(bottomNavigation.Props.Any(static prop => prop.PublicName == "Shift"));
@@ -1146,8 +1149,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyExpansionPanelVariant?", stepperVertical.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyMandatoryValue?", stepperVertical.Props.Single(static prop => prop.PublicName == "Mandatory").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyStepperItems?", stepperVertical.Props.Single(static prop => prop.PublicName == "Items").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", stepperVertical.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", stepperVertical.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", stepperVertical.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", stepperVertical.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VStepperVerticalSlotContext", stepperVertical.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VStepperVerticalActionSlotContext", stepperVertical.Slots.Single(static slot => slot.Name == "actions").Parameters[0].TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VStepperVerticalItemSlotContext", stepperVertical.Slots.Single(static slot => slot.Name == "icon").Parameters[0].TypeName);
@@ -1296,8 +1299,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("theme", dialog.Props.Single(static prop => prop.PublicName == "Theme").Name);
         Assert.AreEqual("transition", dialog.Props.Single(static prop => prop.PublicName == "Transition").Name);
         Assert.AreEqual("zIndex", dialog.Props.Single(static prop => prop.PublicName == "ZIndex").Name);
-        Assert.AreEqual("class", dialog.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", dialog.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", dialog.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", dialog.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("height", dialog.Props.Single(static prop => prop.PublicName == "Height").Name);
         Assert.AreEqual("maxHeight", dialog.Props.Single(static prop => prop.PublicName == "MaxHeight").Name);
         Assert.AreEqual("minHeight", dialog.Props.Single(static prop => prop.PublicName == "MinHeight").Name);
@@ -1323,8 +1326,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyScrimValue?", dialog.Props.Single(static prop => prop.PublicName == "Scrim").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", dialog.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", dialog.Props.Single(static prop => prop.PublicName == "ZIndex").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", dialog.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", dialog.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", dialog.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", dialog.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyDialogTarget?", dialog.Props.Single(static prop => prop.PublicName == "Target").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyDialogActivatorTarget?", dialog.Props.Single(static prop => prop.PublicName == "ActivatorTarget").TypeName);
         var activator = dialog.Slots.Single(static slot => slot.Name == "activator");
@@ -1361,34 +1364,34 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("tag", container.Props.Single(static prop => prop.PublicName == "Tag").Name);
         Assert.AreEqual("height", container.Props.Single(static prop => prop.PublicName == "Height").Name);
         Assert.AreEqual("maxWidth", container.Props.Single(static prop => prop.PublicName == "MaxWidth").Name);
-        Assert.AreEqual("class", container.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", container.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", container.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", container.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("fluid", container.Props.Single(static prop => prop.PublicName == "Fluid").Name);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", container.Props.Single(static prop => prop.PublicName == "Height").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", container.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", container.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", container.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", container.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(container.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var row = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VRow");
         Assert.AreEqual("tag", row.Props.Single(static prop => prop.PublicName == "Tag").Name);
-        Assert.AreEqual("class", row.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", row.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", row.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", row.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("alignContentSm", row.Props.Single(static prop => prop.PublicName == "AlignContentSm").Name);
         Assert.AreEqual("justifyMd", row.Props.Single(static prop => prop.PublicName == "JustifyMd").Name);
         Assert.AreEqual("alignLg", row.Props.Single(static prop => prop.PublicName == "AlignLg").Name);
         Assert.AreEqual("dense", row.Props.Single(static prop => prop.PublicName == "Dense").Name);
         Assert.AreEqual("noGutters", row.Props.Single(static prop => prop.PublicName == "NoGutters").Name);
         Assert.AreEqual("align", row.Props.Single(static prop => prop.PublicName == "Align").Name);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", row.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", row.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", row.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", row.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(row.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var column = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VCol");
         CollectionAssert.AreEqual(new[] { "vuetify" }, column.PluginRequirements.ToArray());
         CollectionAssert.AreEqual(new[] { "vuetify/styles" }, column.StyleDependencies.ToArray());
         Assert.AreEqual("tag", column.Props.Single(static prop => prop.PublicName == "Tag").Name);
-        Assert.AreEqual("class", column.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", column.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", column.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", column.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("alignSelf", column.Props.Single(static prop => prop.PublicName == "AlignSelf").Name);
         Assert.AreEqual("orderMd", column.Props.Single(static prop => prop.PublicName == "OrderMd").Name);
         Assert.AreEqual("offsetLg", column.Props.Single(static prop => prop.PublicName == "OffsetLg").Name);
@@ -1399,8 +1402,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyGridSpanValue?", column.Props.Single(static prop => prop.PublicName == "Md").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", column.Props.Single(static prop => prop.PublicName == "Order").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", column.Props.Single(static prop => prop.PublicName == "OffsetMd").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", column.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", column.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", column.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", column.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(column.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var toolbar = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VToolbar");
@@ -1411,8 +1414,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("rounded", toolbar.Props.Single(static prop => prop.PublicName == "Rounded").Name);
         Assert.AreEqual("tile", toolbar.Props.Single(static prop => prop.PublicName == "Tile").Name);
         Assert.AreEqual("elevation", toolbar.Props.Single(static prop => prop.PublicName == "Elevation").Name);
-        Assert.AreEqual("class", toolbar.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", toolbar.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", toolbar.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", toolbar.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("border", toolbar.Props.Single(static prop => prop.PublicName == "Border").Name);
         Assert.AreEqual("absolute", toolbar.Props.Single(static prop => prop.PublicName == "Absolute").Name);
         Assert.AreEqual("collapse", toolbar.Props.Single(static prop => prop.PublicName == "Collapse").Name);
@@ -1429,8 +1432,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.IsTrue(toolbar.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", toolbar.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", toolbar.Props.Single(static prop => prop.PublicName == "Elevation").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", toolbar.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", toolbar.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", toolbar.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", toolbar.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", toolbar.Props.Single(static prop => prop.PublicName == "Border").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyToolbarDensityValue?", toolbar.Props.Single(static prop => prop.PublicName == "Density").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", toolbar.Props.Single(static prop => prop.PublicName == "ExtensionHeight").TypeName);
@@ -1445,20 +1448,20 @@ public sealed class RazorVueDescriptorExtractionTests
         var toolbarItems = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VToolbarItems");
         Assert.AreEqual("color", toolbarItems.Props.Single(static prop => prop.PublicName == "Color").Name);
         Assert.AreEqual("variant", toolbarItems.Props.Single(static prop => prop.PublicName == "Variant").Name);
-        Assert.AreEqual("class", toolbarItems.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", toolbarItems.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", toolbarItems.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", toolbarItems.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyVariant?", toolbarItems.Props.Single(static prop => prop.PublicName == "Variant").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", toolbarItems.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", toolbarItems.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", toolbarItems.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", toolbarItems.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(toolbarItems.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var toolbarTitle = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VToolbarTitle");
         Assert.AreEqual("tag", toolbarTitle.Props.Single(static prop => prop.PublicName == "Tag").Name);
-        Assert.AreEqual("class", toolbarTitle.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", toolbarTitle.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", toolbarTitle.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", toolbarTitle.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("text", toolbarTitle.Props.Single(static prop => prop.PublicName == "Text").Name);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", toolbarTitle.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", toolbarTitle.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", toolbarTitle.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", toolbarTitle.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(toolbarTitle.Slots.Single(static slot => slot.IsDefault).IsDefault);
         Assert.AreEqual("text", toolbarTitle.Slots.Single(static slot => slot.PublicName == "TextContent").Name);
 
@@ -1719,8 +1722,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("minWidth", alert.Props.Single(static prop => prop.PublicName == "MinWidth").Name);
         Assert.AreEqual("width", alert.Props.Single(static prop => prop.PublicName == "Width").Name);
         Assert.AreEqual("density", alert.Props.Single(static prop => prop.PublicName == "Density").Name);
-        Assert.AreEqual("class", alert.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", alert.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", alert.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", alert.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("border", alert.Props.Single(static prop => prop.PublicName == "Border").Name);
         Assert.AreEqual("borderColor", alert.Props.Single(static prop => prop.PublicName == "BorderColor").Name);
         Assert.AreEqual("closable", alert.Props.Single(static prop => prop.PublicName == "Closable").Name);
@@ -1738,8 +1741,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyPosition?", alert.Props.Single(static prop => prop.PublicName == "Position").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", alert.Props.Single(static prop => prop.PublicName == "Location").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", alert.Props.Single(static prop => prop.PublicName == "Elevation").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", alert.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", alert.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", alert.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", alert.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyAlertBorderValue?", alert.Props.Single(static prop => prop.PublicName == "Border").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", alert.Props.Single(static prop => prop.PublicName == "CloseIcon").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyAlertIconValue?", alert.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
@@ -1768,7 +1771,7 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("prependAvatar", chip.Props.Single(static prop => prop.PublicName == "PrependAvatar").Name);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyGroupModelValue?", chip.Props.Single(static prop => prop.PublicName == "Value").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", chip.Props.Single(static prop => prop.PublicName == "CloseIcon").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", chip.Props.Single(static prop => prop.PublicName == "Class").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", chip.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
         var chipDefaultContent = chip.Slots.Single(static slot => slot.PublicName == "DefaultContent");
         Assert.AreEqual("default", chipDefaultContent.Name);
         Assert.AreEqual("ECMAScript.Vuetify.VChipDefaultSlotContext", chipDefaultContent.Parameters[0].TypeName);
@@ -1784,16 +1787,16 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("readonly", form.Props.Single(static prop => prop.PublicName == "Readonly").Name);
         Assert.AreEqual("validateOn", form.Props.Single(static prop => prop.PublicName == "ValidateOn").Name);
         Assert.AreEqual("modelValue", form.Props.Single(static prop => prop.PublicName == "ModelValue").Name);
-        Assert.AreEqual("class", form.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", form.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", form.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", form.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("update:modelValue", form.Emits.Single(static emit => emit.RazorAlias == "ModelValueChanged").Name);
         Assert.AreEqual("submit", form.Emits.Single(static emit => emit.RazorAlias == "Submit").Name);
         Assert.AreEqual("ECMAScript.Vuetify.VFormSubmitEvent", form.Emits.Single(static emit => emit.RazorAlias == "Submit").PayloadTypeName);
         Assert.AreEqual("additionalAttributes", form.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(form.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyValidateOn?", form.Props.Single(static prop => prop.PublicName == "ValidateOn").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", form.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", form.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", form.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", form.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         var formDefaultContent = form.Slots.Single(static slot => slot.PublicName == "ChildContent");
         Assert.AreEqual("default", formDefaultContent.Name);
         Assert.AreEqual("ECMAScript.Vuetify.VFormDefaultSlotContext", formDefaultContent.Parameters[0].TypeName);
@@ -1917,8 +1920,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("width", sheet.Props.Single(static prop => prop.PublicName == "Width").Name);
         Assert.AreEqual("minHeight", sheet.Props.Single(static prop => prop.PublicName == "MinHeight").Name);
         Assert.AreEqual("maxWidth", sheet.Props.Single(static prop => prop.PublicName == "MaxWidth").Name);
-        Assert.AreEqual("class", sheet.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", sheet.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", sheet.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", sheet.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("border", sheet.Props.Single(static prop => prop.PublicName == "Border").Name);
         Assert.AreEqual("color", sheet.Props.Single(static prop => prop.PublicName == "Color").Name);
         Assert.AreEqual("string?", sheet.Props.Single(static prop => prop.PublicName == "Theme").TypeName);
@@ -1927,8 +1930,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", sheet.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyPosition?", sheet.Props.Single(static prop => prop.PublicName == "Position").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", sheet.Props.Single(static prop => prop.PublicName == "Location").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", sheet.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", sheet.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", sheet.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", sheet.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", sheet.Props.Single(static prop => prop.PublicName == "Border").TypeName);
         Assert.IsTrue(sheet.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
@@ -1936,8 +1939,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("theme", icon.Props.Single(static prop => prop.PublicName == "Theme").Name);
         Assert.AreEqual("tag", icon.Props.Single(static prop => prop.PublicName == "Tag").Name);
         Assert.AreEqual("size", icon.Props.Single(static prop => prop.PublicName == "Size").Name);
-        Assert.AreEqual("class", icon.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", icon.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", icon.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", icon.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("color", icon.Props.Single(static prop => prop.PublicName == "Color").Name);
         Assert.AreEqual("disabled", icon.Props.Single(static prop => prop.PublicName == "Disabled").Name);
         Assert.AreEqual("start", icon.Props.Single(static prop => prop.PublicName == "Start").Name);
@@ -1947,8 +1950,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", icon.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", icon.Props.Single(static prop => prop.PublicName == "Size").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", icon.Props.Single(static prop => prop.PublicName == "Opacity").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", icon.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", icon.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", icon.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", icon.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(icon.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
         var pagination = descriptors.Single(static descriptor => descriptor.FullName == "ECMAScript.Vuetify.VPagination");
@@ -1974,8 +1977,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", image.Props.Single(static prop => prop.PublicName == "Width").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyTransitionValue?", image.Props.Single(static prop => prop.PublicName == "Transition").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", image.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", image.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", image.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", image.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", image.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", image.Props.Single(static prop => prop.PublicName == "ContentClass").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyIntersectionObserverOptions?", image.Props.Single(static prop => prop.PublicName == "Options").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VImgDraggableValue?", image.Props.Single(static prop => prop.PublicName == "Draggable").TypeName);
@@ -2038,16 +2041,16 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("theme", avatar.Props.Single(static prop => prop.PublicName == "Theme").Name);
         Assert.AreEqual("tag", avatar.Props.Single(static prop => prop.PublicName == "Tag").Name);
         Assert.AreEqual("tile", avatar.Props.Single(static prop => prop.PublicName == "Tile").Name);
-        Assert.AreEqual("class", avatar.Props.Single(static prop => prop.PublicName == "Class").Name);
-        Assert.AreEqual("style", avatar.Props.Single(static prop => prop.PublicName == "Style").Name);
+        Assert.AreEqual("class", avatar.Props.Single(static prop => prop.PublicName == "CssClass").Name);
+        Assert.AreEqual("style", avatar.Props.Single(static prop => prop.PublicName == "CssStyle").Name);
         Assert.AreEqual("border", avatar.Props.Single(static prop => prop.PublicName == "Border").Name);
         Assert.AreEqual("start", avatar.Props.Single(static prop => prop.PublicName == "Start").Name);
         Assert.AreEqual("end", avatar.Props.Single(static prop => prop.PublicName == "End").Name);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", avatar.Props.Single(static prop => prop.PublicName == "Size").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", avatar.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", avatar.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", avatar.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", avatar.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", avatar.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", avatar.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyBorderValue?", avatar.Props.Single(static prop => prop.PublicName == "Border").TypeName);
         Assert.IsTrue(avatar.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
@@ -2075,8 +2078,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", badge.Props.Single(static prop => prop.PublicName == "Location").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", badge.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyIconValue?", badge.Props.Single(static prop => prop.PublicName == "Icon").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", badge.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", badge.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", badge.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", badge.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("badge", badge.Slots.Single(static slot => slot.PublicName == "BadgeContent").Name);
         Assert.IsTrue(badge.Slots.Single(static slot => slot.IsDefault).IsDefault);
 
@@ -2092,8 +2095,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("width", progressCircular.Props.Single(static prop => prop.PublicName == "Width").Name);
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", progressCircular.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyProgressCircularIndeterminateValue?", progressCircular.Props.Single(static prop => prop.PublicName == "Indeterminate").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", progressCircular.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", progressCircular.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", progressCircular.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", progressCircular.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(progressCircular.Slots.Single(static slot => slot.IsDefault).IsDefault);
         Assert.AreEqual("ECMAScript.Vuetify.VProgressCircularDefaultSlotContext", progressCircular.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
 
@@ -2122,8 +2125,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("ECMAScript.Vue3.VueStringNumberValue?", progressLinear.Props.Single(static prop => prop.PublicName == "ModelValue").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyRoundedValue?", progressLinear.Props.Single(static prop => prop.PublicName == "Rounded").TypeName);
         Assert.AreEqual("ECMAScript.Vuetify.VuetifyLocation?", progressLinear.Props.Single(static prop => prop.PublicName == "Location").TypeName);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", progressLinear.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", progressLinear.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", progressLinear.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", progressLinear.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.IsTrue(progressLinear.Slots.Single(static slot => slot.IsDefault).IsDefault);
         Assert.AreEqual("ECMAScript.Vuetify.VProgressLinearDefaultSlotContext", progressLinear.Slots.Single(static slot => slot.IsDefault).Parameters[0].TypeName);
 
@@ -2242,8 +2245,8 @@ public sealed class RazorVueDescriptorExtractionTests
         Assert.AreEqual("class", spacer.Props.Single(static prop => prop.PublicName == "Class").Name);
         Assert.AreEqual("style", spacer.Props.Single(static prop => prop.PublicName == "Style").Name);
         Assert.AreEqual("tag", spacer.Props.Single(static prop => prop.PublicName == "Tag").Name);
-        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", spacer.Props.Single(static prop => prop.PublicName == "Class").TypeName);
-        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", spacer.Props.Single(static prop => prop.PublicName == "Style").TypeName);
+        Assert.AreEqual("ECMAScript.Vue3.VueClassValue?", spacer.Props.Single(static prop => prop.PublicName == "CssClass").TypeName);
+        Assert.AreEqual("ECMAScript.Vuetify.VuetifyStyleValue?", spacer.Props.Single(static prop => prop.PublicName == "CssStyle").TypeName);
         Assert.AreEqual("additionalAttributes", spacer.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").Name);
         Assert.IsTrue(spacer.Props.Single(static prop => prop.PublicName == "AdditionalAttributes").CaptureUnmatchedValues);
         Assert.AreEqual(0, spacer.Emits.Length);

@@ -163,7 +163,7 @@ internal sealed record RazorVueConsumerEntryOptions(
         options = new RazorVueConsumerEntryOptions(
             resolvedHostJazorRoot,
             resolvedOutputDirectory,
-            ResolveOptionalPath(manifestPath, resolvedHostJazorRoot, "jazor-manifest-razorvue.json"),
+            ResolveOptionalPath(manifestPath, resolvedHostJazorRoot, "jazor-manifest.json"),
             ResolveOptionalPath(hostRequirementsModulePath, resolvedHostJazorRoot, "__jazor", "razorvue-host.mjs"),
             ResolveOptionalPath(browserGeneratedRoot, resolvedOutputDirectory, "generated-browser"),
             ResolveOptionalPath(ssrGeneratedRoot, resolvedOutputDirectory, "generated-ssr"),

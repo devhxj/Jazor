@@ -18,7 +18,7 @@ internal sealed class RazorVueSfcBridgeCompiler
         ArgumentNullException.ThrowIfNull(options);
 
         var manifestPath = string.IsNullOrWhiteSpace(options.ManifestPath)
-            ? Path.Combine(options.HostJazorRoot, "jazor-manifest-razorvue.json")
+            ? Path.Combine(options.HostJazorRoot, "jazor-manifest.json")
             : options.ManifestPath;
 
         if (!Directory.Exists(options.HostJazorRoot))

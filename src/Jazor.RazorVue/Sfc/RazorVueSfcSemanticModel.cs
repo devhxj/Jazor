@@ -1,8 +1,7 @@
-using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Canonical;
 using Jazor.RazorVue.Descriptor;
-using Jazor.RazorVue;
+using System.Collections.Immutable;
 
 namespace Jazor.RazorVue.Sfc;
 
@@ -58,7 +57,7 @@ internal sealed record RazorVueSfcSetupBinding(
 
 internal sealed record RazorVueSfcTemplateBindingSite(
     string SitePath,
-    string BindingName);
+    string TemplateExpressionText);
 
 internal sealed record RazorVueSfcComponentImport(
     string ComponentKey,

@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Jazor.RazorVue.Artifacts;
 using Jazor.RazorVue.Descriptor;
 using Microsoft.CodeAnalysis;
@@ -363,7 +362,7 @@ internal static class RazorVueForLoopAnalyzer
             RazorVueIssueCode.CanonicalizationFailed,
             RazorVueIssueSeverity.Error,
             message,
-            ImmutableArray<string>.Empty);
+			[]);
         return new RazorVueCompilationIssueException(
             issue,
             ownerComponentFullName,

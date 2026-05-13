@@ -37,6 +37,7 @@ internal sealed record RazorVueCanonicalTemplateFragment(
 internal abstract record RazorVueCanonicalTemplateNode(
     RazorVueCanonicalNodeKind NodeKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
@@ -45,9 +46,10 @@ internal sealed record RazorVueCanonicalElementNode(
     ImmutableArray<RazorVueCanonicalAttributeEntry> Attributes,
     RazorVueCanonicalTemplateFragment Children,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Element, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Element, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalComponentNode(
     string ComponentName,
@@ -58,24 +60,27 @@ internal sealed record RazorVueCanonicalComponentNode(
     ImmutableArray<RazorVueCanonicalSlotBinding> Slots,
     RazorVueCanonicalTemplateFragment Children,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Component, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Component, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalTextNode(
     string Text,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Text, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Text, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalInterpolationNode(
     string ExpressionText,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Interpolation, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Interpolation, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalConditionalNode(
     string ConditionExpressionText,
@@ -83,9 +88,10 @@ internal sealed record RazorVueCanonicalConditionalNode(
     RazorVueCanonicalTemplateFragment WhenTrue,
     RazorVueCanonicalTemplateFragment WhenFalse,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Conditional, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.Conditional, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalForEachNode(
     string ItemName,
@@ -93,37 +99,48 @@ internal sealed record RazorVueCanonicalForEachNode(
     RazorVueExpressionBindingKind BindingKind,
     RazorVueCanonicalTemplateFragment Body,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.ForEach, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.ForEach, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalForNode(
     string VariableName,
     string InitialValueExpressionText,
     RazorVueExpressionBindingKind InitialValueBindingKind,
+    RazorVueTemplateExpressionSafety InitialValueTemplateExpressionSafety,
+    RazorVueSideEffectClassification InitialValueSideEffectClassification,
     RazorVueForConditionKind ConditionKind,
     string LimitValueExpressionText,
     RazorVueExpressionBindingKind LimitValueBindingKind,
+    RazorVueTemplateExpressionSafety LimitValueTemplateExpressionSafety,
+    RazorVueSideEffectClassification LimitValueSideEffectClassification,
     RazorVueForStepKind StepKind,
     string? StepValueExpressionText,
     RazorVueExpressionBindingKind StepValueBindingKind,
+    RazorVueTemplateExpressionSafety StepValueTemplateExpressionSafety,
+    RazorVueSideEffectClassification StepValueSideEffectClassification,
     RazorVueCanonicalTemplateFragment Body,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.For, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.For, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalSlotOutletNode(
     string SlotName,
     string? ArgumentExpressionText,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
     RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.SlotOutlet, TemplateEncodability, SideEffectClassification, SourceOrigins);
+    : RazorVueCanonicalTemplateNode(RazorVueCanonicalNodeKind.SlotOutlet, TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal abstract record RazorVueCanonicalAttributeEntry(
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
 internal sealed record RazorVueCanonicalAttributeBinding(
@@ -133,15 +150,19 @@ internal sealed record RazorVueCanonicalAttributeBinding(
     RazorVueCanonicalAttributeKind AttributeKind,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalAttributeEntry(TemplateEncodability, SourceOrigins);
+    : RazorVueCanonicalAttributeEntry(TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalAttributeSpreadBinding(
     string ExpressionText,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins)
-    : RazorVueCanonicalAttributeEntry(TemplateEncodability, SourceOrigins);
+    : RazorVueCanonicalAttributeEntry(TemplateEncodability, TemplateExpressionSafety, SideEffectClassification, SourceOrigins);
 
 internal sealed record RazorVueCanonicalSlotBinding(
     string SlotName,
@@ -152,6 +173,8 @@ internal sealed record RazorVueCanonicalSlotBinding(
     string? ForwardedSlotName,
     RazorVueExpressionBindingKind BindingKind,
     RazorVueTemplateEncodability TemplateEncodability,
+    RazorVueTemplateExpressionSafety TemplateExpressionSafety,
+    RazorVueSideEffectClassification SideEffectClassification,
     RazorVueCanonicalTemplateFragment Children,
     ImmutableArray<RazorVueSourceOrigin> SourceOrigins);
 
@@ -179,6 +202,13 @@ internal enum RazorVueTemplateEncodability
     DirectTemplate,
     TemplateViaSetupBinding,
     NotTemplateEncodable
+}
+
+internal enum RazorVueTemplateExpressionSafety
+{
+    DirectTemplateSafe,
+    RequiresSetupBinding,
+    NotTemplateSafe
 }
 
 internal enum RazorVueSideEffectClassification
