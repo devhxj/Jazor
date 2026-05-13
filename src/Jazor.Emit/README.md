@@ -11,6 +11,7 @@
 - 收集 ECMAScript module catalog 与 RazorVue catalog。
 - 物化 `.mjs` 或 `.vue`、manifest、RazorVue sidecar manifest 与 `.map` / origins 文件。
 - 通过 `DenoHost` 执行 bundle。
+- 将 RazorVue `.vue` SFC 编译为 Jazor authored-module 可消费的 named-export bridge modules。
 - 生成 RazorVue manifest diff / update plan。
 
 ## Boundaries
@@ -28,6 +29,7 @@
 - `RazorVueModuleWriter.cs`: 写出 legacy RazorVue 模块、manifest 和 `.map`。
 - `RazorVueSfcCatalogReader.cs`: 读取 `VueSfcArtifact` catalog。
 - `RazorVueSfcModuleWriter.cs`: 写出 RazorVue `.vue` artifact、manifest 和 sidecar metadata。
+- `RazorVueSfcBridgeCompiler.cs` / `Deno/razorvue-sfc-bridge.ts`: 编译 `.vue` SFC 并输出 named-export `.mjs` bridge modules。
 - `ModuleBundler.cs`: bundle 编排。
 - `RazorVueUpdatePlanWriter.cs`: 生成 RazorVue diff/update plan。
 
@@ -50,6 +52,15 @@ RazorVue diff：
 ```powershell
 dotnet run --project src/Jazor.Emit -- razorvue-diff --previous <old.json> --current <new.json> --out <plan.json>
 ```
+
+RazorVue SFC named-export bridge：
+
+```powershell
+dotnet run --project src/Jazor.Emit -- razorvue-sfc-bridge --host-root <jazor-dir> --manifest <jazor-manifest-razorvue.json> --out <generated-dir> --mode browser
+dotnet run --project src/Jazor.Emit -- razorvue-sfc-bridge --host-root <jazor-dir> --manifest <jazor-manifest-razorvue.json> --out <generated-dir> --mode ssr
+```
+
+该 bridge 保持 Jazor 编译器“不支持 default import/export”的边界不变：`.vue` SFC 的 default component 会在 build-time 转换为 manifest 中 `ComponentName` 对应的 named export，组件间相对 `.vue` default import 也会重写为 named `.mjs` import。
 
 ## Verification
 

@@ -10,6 +10,11 @@ if (args.Length > 0 && string.Equals(args[0], "razorvue-diff", StringComparison.
     return RunRazorVueDiff(args[1..]);
 }
 
+if (args.Length > 0 && string.Equals(args[0], "razorvue-sfc-bridge", StringComparison.OrdinalIgnoreCase))
+{
+    return await RunRazorVueSfcBridgeAsync(args[1..]);
+}
+
 return await RunEmitAsync(args);
 
 static async Task<int> RunEmitAsync(string[] args)
@@ -160,5 +165,33 @@ static int RunRazorVueDiff(string[] args)
     {
         Console.Error.WriteLine(ex);
         return 8;
+    }
+}
+
+static async Task<int> RunRazorVueSfcBridgeAsync(string[] args)
+{
+    if (!RazorVueSfcBridgeOptions.TryParse(args, out var options, out var error) || options is null)
+    {
+        Console.Error.WriteLine(error);
+        return 1;
+    }
+
+    try
+    {
+        var compiler = new RazorVueSfcBridgeCompiler();
+        var result = await compiler.CompileAsync(options);
+        if (!result.IsSuccess)
+        {
+            Console.Error.WriteLine(result.Error);
+            return result.ExitCode;
+        }
+
+        Console.WriteLine($"razorvue-sfc-bridge result={result.ResultPath}");
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine(ex);
+        return 10;
     }
 }
