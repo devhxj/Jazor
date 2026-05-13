@@ -43,8 +43,6 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
         var razorVueSfcCatalogCount = 0;
         var razorVueCatalogs = new List<RazorVueCatalogRecord>();
         var razorVueSfcCatalogs = new List<RazorVueSfcCatalogRecord>();
-        var sawLegacyRazorVueCatalog = false;
-        var sawSfcRazorVueCatalog = false;
 
         foreach (var assembly in assemblies)
         {
@@ -148,14 +146,6 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
 
             if (razorVueCatalog is not null)
             {
-                if (sawSfcRazorVueCatalog)
-                {
-                    return CollectResult.Fail(
-                        4,
-                        "Mixed legacy and SFC RazorVue catalogs are not supported in one emit run.");
-                }
-
-                sawLegacyRazorVueCatalog = true;
                 razorVueCatalogCount++;
                 var acceptedArtifacts = new List<RazorVueEmitArtifactRecord>();
 
@@ -182,6 +172,25 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                             return CollectResult.Fail(
                                 4,
                                 $"Path conflict for '{artifact.RelativeModulePath}' between a static module and RazorVue artifact '{artifact.ComponentName}'.");
+                        }
+
+                        continue;
+                    }
+
+                    if (razorVueSfcByKey.ContainsKey(key))
+                    {
+                        return CollectResult.Fail(
+                            4,
+                            $"Conflicting RazorVue artifact identity '{key}' between H and SFC catalogs.");
+                    }
+
+                    if (razorVueSfcByRelativePath.ContainsKey(artifact.RelativeModulePath))
+                    {
+                        if (failOnPathConflict)
+                        {
+                            return CollectResult.Fail(
+                                4,
+                                $"Path conflict for '{artifact.RelativeModulePath}' between RazorVue H artifact '{artifact.ComponentName}' and SFC artifact.");
                         }
 
                         continue;
@@ -221,14 +230,6 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                 continue;
             }
 
-            if (sawLegacyRazorVueCatalog)
-            {
-                return CollectResult.Fail(
-                    4,
-                    "Mixed legacy and SFC RazorVue catalogs are not supported in one emit run.");
-            }
-
-            sawSfcRazorVueCatalog = true;
             razorVueSfcCatalogCount++;
             var acceptedSfcArtifacts = new List<RazorVueEmitSfcArtifactRecord>();
 
@@ -249,22 +250,41 @@ internal sealed class ModuleCollector(EmitLoadContext loadContext)
                     continue;
                 }
 
-                if (byRelativePath.ContainsKey(artifact.RelativeSfcPath))
-                {
-                    if (failOnPathConflict)
+                    if (byRelativePath.ContainsKey(artifact.RelativeSfcPath))
                     {
-                        return CollectResult.Fail(
+                        if (failOnPathConflict)
+                        {
+                            return CollectResult.Fail(
                             4,
                             $"Path conflict for '{artifact.RelativeSfcPath}' between a static module and RazorVue SFC artifact '{artifact.ComponentName}'.");
                     }
 
-                    continue;
-                }
+                        continue;
+                    }
 
-                if (razorVueSfcByRelativePath.TryGetValue(artifact.RelativeSfcPath, out var existingSfcArtifact))
-                {
-                    if (!StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
-                        !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
+                    if (razorVueByKey.ContainsKey(key))
+                    {
+                        return CollectResult.Fail(
+                            4,
+                            $"Conflicting RazorVue artifact identity '{key}' between SFC and H catalogs.");
+                    }
+
+                    if (razorVueByRelativePath.ContainsKey(artifact.RelativeSfcPath))
+                    {
+                        if (failOnPathConflict)
+                        {
+                            return CollectResult.Fail(
+                                4,
+                                $"Path conflict for '{artifact.RelativeSfcPath}' between RazorVue SFC artifact '{artifact.ComponentName}' and H artifact.");
+                        }
+
+                        continue;
+                    }
+
+                    if (razorVueSfcByRelativePath.TryGetValue(artifact.RelativeSfcPath, out var existingSfcArtifact))
+                    {
+                        if (!StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.DescriptorHash, artifact.Identity.DescriptorHash) ||
+                            !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.TemplateHash, artifact.Identity.TemplateHash) ||
                         !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.LogicHash, artifact.Identity.LogicHash) ||
                         !StringComparer.Ordinal.Equals(existingSfcArtifact.Identity.StyleHash, artifact.Identity.StyleHash) ||
                         !StringComparer.Ordinal.Equals(existingSfcArtifact.SfcText, artifact.SfcText))

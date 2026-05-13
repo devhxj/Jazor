@@ -22,7 +22,8 @@ internal sealed class RazorVueSfcModuleWriter
         string outputDirectory,
         string manifestPath,
         IReadOnlyList<RazorVueSfcCatalogRecord> catalogs,
-        bool clean)
+        bool clean,
+        bool writeHostRequirements = true)
     {
         Directory.CreateDirectory(outputDirectory);
 
@@ -39,7 +40,6 @@ internal sealed class RazorVueSfcModuleWriter
         var deleted = 0;
 
         var nextRazorVueManifest = RazorVueSfcManifestFactory.Create(rootAssemblyPath, catalogs);
-        var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
 
         foreach (var artifact in artifacts)
         {
@@ -79,27 +79,6 @@ internal sealed class RazorVueSfcModuleWriter
                 skipped++;
         }
 
-        if (nextRazorVueManifest.Modules.Count > 0)
-        {
-            var hostRequirementsDirectory = Path.GetDirectoryName(hostRequirementsModulePath);
-            if (!string.IsNullOrWhiteSpace(hostRequirementsDirectory))
-                Directory.CreateDirectory(hostRequirementsDirectory);
-
-            var hostRequirementsCode = BuildHostRequirementsModule(nextRazorVueManifest);
-            var hostRequirementsChanged = !File.Exists(hostRequirementsModulePath)
-                || !string.Equals(File.ReadAllText(hostRequirementsModulePath), hostRequirementsCode, StringComparison.Ordinal);
-
-            if (hostRequirementsChanged)
-            {
-                File.WriteAllText(hostRequirementsModulePath, hostRequirementsCode, Utf8WithoutBom);
-                written++;
-            }
-            else
-            {
-                skipped++;
-            }
-        }
-
         if (clean && existingManifest is not null)
         {
             var currentPaths = nextRazorVueManifest.Modules
@@ -117,14 +96,20 @@ internal sealed class RazorVueSfcModuleWriter
             }
         }
 
-        if (clean && nextRazorVueManifest.Modules.Count == 0)
-            DeleteIfExists(hostRequirementsModulePath, ref deleted);
-
         var nextManifest = existingManifest ?? new ManifestModel(rootAssemblyPath, DateTime.UtcNow, []);
-        nextManifest
-            .WithRazorVueManifest(nextRazorVueManifest, ManifestComponentModel.Sfc)
-            .Save(manifestPath);
-        return WriteResult.Success(written, skipped, deleted);
+        nextManifest = nextManifest.WithRazorVueManifest(nextRazorVueManifest, ManifestComponentModel.Sfc);
+        nextManifest.Save(manifestPath);
+
+        var hostRequirementsWriteResult = writeHostRequirements
+            ? new RazorVueHostRequirementsModuleWriter().Sync(outputDirectory, nextManifest)
+            : WriteResult.Success(0, 0, 0);
+        if (!hostRequirementsWriteResult.IsSuccess)
+            return hostRequirementsWriteResult;
+
+        return WriteResult.Success(
+            written + hostRequirementsWriteResult.Written,
+            skipped + hostRequirementsWriteResult.Skipped,
+            deleted + hostRequirementsWriteResult.Deleted);
     }
 
     private static RazorVueEmitSourceOriginRecord ToLegacyOrigin(RazorVueEmitSfcSourceOriginRecord origin)
@@ -188,56 +173,6 @@ internal sealed class RazorVueSfcModuleWriter
 
     private static string EnsureDirectorySeparator(string path)
         => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
-
-    private static string BuildHostRequirementsModule(RazorVueManifestModel manifest)
-    {
-        var assemblyNameLiteral = JsonSerializer.Serialize(manifest.AssemblyName);
-        var generatedAtUtcLiteral = JsonSerializer.Serialize(manifest.GeneratedAtUtc.ToString("O"));
-        var stylesLiteral = BuildStringArrayLiteral(manifest.Styles ?? []);
-        var modulesLiteral = BuildHostModulesLiteral(manifest.Modules);
-        var pluginRequirementsLiteral = BuildStringArrayLiteral(manifest.PluginRequirements ?? []);
-
-        return $$"""
-        export const razorVueHostAssemblyName = {{assemblyNameLiteral}};
-        export const razorVueHostGeneratedAtUtc = {{generatedAtUtcLiteral}};
-        export const razorVueStyles = Object.freeze({{stylesLiteral}});
-        export const razorVuePluginRequirements = Object.freeze({{pluginRequirementsLiteral}});
-        export const razorVueHostModules = Object.freeze({{modulesLiteral}});
-        export const razorVueHostRequirements = Object.freeze({
-          assemblyName: razorVueHostAssemblyName,
-          generatedAtUtc: razorVueHostGeneratedAtUtc,
-          styles: razorVueStyles,
-          pluginRequirements: razorVuePluginRequirements,
-          modules: razorVueHostModules
-        });
-        """.ReplaceLineEndings("\n");
-    }
-
-    private static string BuildHostModulesLiteral(IReadOnlyList<RazorVueManifestEntry> modules)
-        => JsonSerializer.Serialize(
-            modules.Select(static module => new
-            {
-                assemblyName = module.AssemblyName,
-                componentId = module.ComponentId,
-                moduleId = module.ModuleId,
-                componentName = module.ComponentName,
-                relativeModulePath = module.RelativeModulePath,
-                sourceMapPath = module.SourceMapPath,
-                originMapPath = module.OriginMapPath,
-                styles = module.Styles,
-                pluginRequirements = module.PluginRequirements,
-                descriptorHash = module.DescriptorHash,
-                templateHash = module.TemplateHash,
-                logicHash = module.LogicHash,
-                contentHash = module.ContentHash,
-                styleHash = module.StyleHash,
-                hmrBoundaryKind = module.HmrBoundaryKind,
-                requiresHydration = module.RequiresHydration,
-                supportsSsr = module.SupportsSsr
-            }));
-
-    private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
-        => "[" + string.Join(", ", values.Select(static value => JsonSerializer.Serialize(value))) + "]";
 
     private static string BuildOriginMapJson(RazorVueEmitSfcArtifactRecord artifact)
         => JsonSerializer.Serialize(

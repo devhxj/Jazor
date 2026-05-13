@@ -7,7 +7,6 @@ namespace Jazor.Emit;
 
 internal sealed class RazorVueModuleWriter
 {
-    private const string HostRequirementsModuleRelativePath = "__jazor/razorvue-host.mjs";
     private static readonly UTF8Encoding Utf8WithoutBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly SourceMapBuilder ModuleMapBuilder = new();
     private static readonly SourceMapWriter ModuleMapWriter = new();
@@ -18,7 +17,8 @@ internal sealed class RazorVueModuleWriter
         string outputDirectory,
         string manifestPath,
         IReadOnlyList<RazorVueCatalogRecord> catalogs,
-        bool clean)
+        bool clean,
+        bool writeHostRequirements = true)
     {
         Directory.CreateDirectory(outputDirectory);
 
@@ -35,7 +35,6 @@ internal sealed class RazorVueModuleWriter
         var deleted = 0;
 
         var nextRazorVueManifest = RazorVueManifestFactory.Create(rootAssemblyPath, catalogs);
-        var hostRequirementsModulePath = GetHostRequirementsModulePath(normalizedOutputDirectory);
 
         foreach (var artifact in artifacts)
         {
@@ -76,27 +75,6 @@ internal sealed class RazorVueModuleWriter
                 skipped++;
         }
 
-        if (nextRazorVueManifest.Modules.Count > 0)
-        {
-            var hostRequirementsDirectory = Path.GetDirectoryName(hostRequirementsModulePath);
-            if (!string.IsNullOrWhiteSpace(hostRequirementsDirectory))
-                Directory.CreateDirectory(hostRequirementsDirectory);
-
-            var hostRequirementsCode = BuildHostRequirementsModule(nextRazorVueManifest);
-            var hostRequirementsChanged = !File.Exists(hostRequirementsModulePath)
-                || !string.Equals(File.ReadAllText(hostRequirementsModulePath), hostRequirementsCode, StringComparison.Ordinal);
-
-            if (hostRequirementsChanged)
-            {
-                File.WriteAllText(hostRequirementsModulePath, hostRequirementsCode, Utf8WithoutBom);
-                written++;
-            }
-            else
-            {
-                skipped++;
-            }
-        }
-
         if (clean && existingManifest is not null)
         {
             var currentPaths = nextRazorVueManifest.Modules
@@ -114,18 +92,24 @@ internal sealed class RazorVueModuleWriter
             }
         }
 
-        if (clean && nextRazorVueManifest.Modules.Count == 0)
-            DeleteIfExists(hostRequirementsModulePath, ref deleted);
-
         var nextManifest = existingManifest ?? new ManifestModel(rootAssemblyPath, DateTime.UtcNow, []);
-        nextManifest
-            .WithRazorVueManifest(nextRazorVueManifest, ManifestComponentModel.H)
-            .Save(manifestPath);
-        return WriteResult.Success(written, skipped, deleted);
+        nextManifest = nextManifest.WithRazorVueManifest(nextRazorVueManifest, ManifestComponentModel.H);
+        nextManifest.Save(manifestPath);
+
+        var hostRequirementsWriteResult = writeHostRequirements
+            ? new RazorVueHostRequirementsModuleWriter().Sync(outputDirectory, nextManifest)
+            : WriteResult.Success(0, 0, 0);
+        if (!hostRequirementsWriteResult.IsSuccess)
+            return hostRequirementsWriteResult;
+
+        return WriteResult.Success(
+            written + hostRequirementsWriteResult.Written,
+            skipped + hostRequirementsWriteResult.Skipped,
+            deleted + hostRequirementsWriteResult.Deleted);
     }
 
     public static string GetHostRequirementsModulePath(string outputDirectory)
-        => GetTargetPath(EnsureDirectorySeparator(Path.GetFullPath(outputDirectory)), HostRequirementsModuleRelativePath);
+        => RazorVueHostRequirementsModuleWriter.GetHostRequirementsModulePath(outputDirectory);
 
     private static string? TryReadSourceContent(string sourcePath)
     {
@@ -181,58 +165,6 @@ internal sealed class RazorVueModuleWriter
 
     private static string EnsureDirectorySeparator(string path)
         => path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
-
-    private static string BuildHostRequirementsModule(RazorVueManifestModel manifest)
-    {
-        var assemblyNameLiteral = System.Text.Json.JsonSerializer.Serialize(manifest.AssemblyName);
-        var generatedAtUtcLiteral = System.Text.Json.JsonSerializer.Serialize(manifest.GeneratedAtUtc.ToString("O"));
-        var stylesLiteral = BuildStringArrayLiteral(manifest.Styles ?? []);
-        var modulesLiteral = BuildHostModulesLiteral(manifest.Modules);
-        var pluginRequirementsLiteral = BuildStringArrayLiteral(manifest.PluginRequirements ?? []);
-
-        // Keep unbundled host metadata on the same explicit contract shape the bundle
-        // sidecars expose, so host consumers do not need separate parsing branches.
-        return $$"""
-        export const razorVueHostAssemblyName = {{assemblyNameLiteral}};
-        export const razorVueHostGeneratedAtUtc = {{generatedAtUtcLiteral}};
-        export const razorVueStyles = Object.freeze({{stylesLiteral}});
-        export const razorVuePluginRequirements = Object.freeze({{pluginRequirementsLiteral}});
-        export const razorVueHostModules = Object.freeze({{modulesLiteral}});
-        export const razorVueHostRequirements = Object.freeze({
-          assemblyName: razorVueHostAssemblyName,
-          generatedAtUtc: razorVueHostGeneratedAtUtc,
-          styles: razorVueStyles,
-          pluginRequirements: razorVuePluginRequirements,
-          modules: razorVueHostModules
-        });
-        """.ReplaceLineEndings("\n");
-    }
-
-    private static string BuildHostModulesLiteral(IReadOnlyList<RazorVueManifestEntry> modules)
-        => System.Text.Json.JsonSerializer.Serialize(
-            modules.Select(static module => new
-            {
-                assemblyName = module.AssemblyName,
-                componentId = module.ComponentId,
-                moduleId = module.ModuleId,
-                componentName = module.ComponentName,
-                relativeModulePath = module.RelativeModulePath,
-                sourceMapPath = module.SourceMapPath,
-                originMapPath = module.OriginMapPath,
-                styles = module.Styles,
-                pluginRequirements = module.PluginRequirements,
-                descriptorHash = module.DescriptorHash,
-                templateHash = module.TemplateHash,
-                logicHash = module.LogicHash,
-                contentHash = module.ContentHash,
-                styleHash = module.StyleHash,
-                hmrBoundaryKind = module.HmrBoundaryKind,
-                requiresHydration = module.RequiresHydration,
-                supportsSsr = module.SupportsSsr
-            }));
-
-    private static string BuildStringArrayLiteral(IReadOnlyList<string> values)
-        => "[" + string.Join(", ", values.Select(static value => System.Text.Json.JsonSerializer.Serialize(value))) + "]";
 
     private static string BuildOriginMapJson(RazorVueEmitArtifactRecord artifact)
         => JsonSerializer.Serialize(

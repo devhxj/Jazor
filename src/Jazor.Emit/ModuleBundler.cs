@@ -39,6 +39,7 @@ internal sealed class ModuleBundler
         var previousManifest = TryLoadPreviousManifest(options);
 
         var relativePaths = manifest.Modules
+            .Where(static module => module.Component is null)
             .Select(static module => module.RelativePath.Replace('\\', '/'))
             .Where(static relativePath => !string.IsNullOrWhiteSpace(relativePath))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -67,7 +68,8 @@ internal sealed class ModuleBundler
 
         var rootAssemblyName = GetRootAssemblyName(manifest);
         var entryRelativePaths = manifest.Modules
-            .Where(module => StringComparer.OrdinalIgnoreCase.Equals(module.AssemblyName, rootAssemblyName))
+            .Where(module => module.Component is null &&
+                             StringComparer.OrdinalIgnoreCase.Equals(module.AssemblyName, rootAssemblyName))
             .Select(static module => module.RelativePath.Replace('\\', '/'))
             .Where(static relativePath => !string.IsNullOrWhiteSpace(relativePath))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -96,8 +98,7 @@ internal sealed class ModuleBundler
             await File.WriteAllTextAsync(targetPath + ".map", await File.ReadAllTextAsync(sourceMapPath), Utf8WithoutBom);
         }
 
-        var razorVueHostRequirementsRelativePath = await TryCopyRazorVueHostRequirementsAsync(
-            options.InputDirectory,
+        var razorVueHostRequirementsRelativePath = await TryWriteRazorVueHostRequirementsAsync(
             options.ManifestPath,
             bundleWorkspace);
 
@@ -242,8 +243,7 @@ internal sealed class ModuleBundler
         RazorVueUpdatePlanWriter.Write(options.RazorVueUpdatePlanPath, previousManifest, currentManifest, diff);
     }
 
-    private static async Task<string?> TryCopyRazorVueHostRequirementsAsync(
-        string inputDirectory,
+    private static async Task<string?> TryWriteRazorVueHostRequirementsAsync(
         string manifestPath,
         string bundleWorkspace)
     {
@@ -251,18 +251,14 @@ internal sealed class ModuleBundler
         if (razorVueManifest is null || razorVueManifest.Modules.Count == 0)
             return null;
 
-        var sourcePath = RazorVueModuleWriter.GetHostRequirementsModulePath(inputDirectory);
-        if (!File.Exists(sourcePath))
-            return null;
-
-        var normalizedInputDirectory = EnsureDirectorySeparator(Path.GetFullPath(inputDirectory));
-        var relativePath = Path.GetRelativePath(normalizedInputDirectory, Path.GetFullPath(sourcePath)).Replace('\\', '/');
+        var relativePath = "__jazor/razorvue-host.mjs";
         var targetPath = Path.Combine(bundleWorkspace, relativePath.Replace('/', Path.DirectorySeparatorChar));
         var targetDirectory = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrWhiteSpace(targetDirectory))
             Directory.CreateDirectory(targetDirectory);
 
-        await File.WriteAllTextAsync(targetPath, await File.ReadAllTextAsync(sourcePath), Utf8WithoutBom);
+        var hostRequirementsCode = RazorVueHostRequirementsModuleWriter.BuildHostRequirementsModule(razorVueManifest);
+        await File.WriteAllTextAsync(targetPath, hostRequirementsCode, Utf8WithoutBom);
         return relativePath;
     }
 

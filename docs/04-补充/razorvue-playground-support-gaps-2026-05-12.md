@@ -339,6 +339,10 @@ jazor-manifest-razorvue.json
 - `RazorVueSfcModuleWriter` 写 SFC 组件时合并到统一 `jazor-manifest.json`，产物为 `kind = "vue"`、`component.model = "sfc"`。
 - `RazorVueManifestSerializer.TryLoad(...)` 需要支持从统一 manifest 中投影 `modules[].component` 到现有 `RazorVueManifestModel`，让 diff、bundle、consumer entry 在内部模型未完全替换前仍可稳定复用。
 - `ModuleBundler` 不再读取 `RazorVueModuleWriter.GetManifestPath(...)` 产生的第二 manifest，而是从统一 manifest 投影 RazorVue component metadata。
+- 已完成（2026-05-13 本轮）：`ModuleCollector` 允许同一 emit run 同时收集 RazorVue H catalog 与 SFC catalog，并保留“单程序集只能暴露一种 catalog shape”保护；跨模型 `componentId` / `relativePath` 冲突会显式失败。
+- 已完成（2026-05-13 本轮）：`Jazor.Emit` 主流程不再在 H 与 SFC 之间二选一；clean/write 会分别处理 H 与 SFC，并在最终统一 manifest 基础上收敛生成单一 `__jazor/razorvue-host.mjs`。
+- 已完成（2026-05-13 本轮）：`RazorVueModuleWriter` / `RazorVueSfcModuleWriter` 的宿主 metadata 生成逻辑收敛为共享 `RazorVueHostRequirementsModuleWriter`，避免 mixed 场景下 host requirements 被最后一个 writer 覆盖。
+- 已完成（2026-05-13 本轮）：`ModuleBundler` 仅将非 component entries 视为 bundle 输入模块，RazorVue host requirements 则直接从统一 manifest 生成，不再依赖输入目录中预先存在的 `__jazor/razorvue-host.mjs`。
 - MSBuild target 移除公开的 `JazorRazorVueManifestPath` 默认值和 `jazor-manifest-razorvue.json` 引用；previous snapshot 使用统一 manifest 的快照路径。
 - `razorvue-diff`、bundle update plan、host asset sidecar 仍可复用 RazorVue diff 模型，但输入源必须是统一 manifest 投影后的 component 集合。
 

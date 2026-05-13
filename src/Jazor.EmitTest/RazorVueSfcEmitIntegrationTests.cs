@@ -2,7 +2,9 @@ using Basic.Reference.Assemblies;
 using Jazor.Emit;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 
 namespace Jazor.EmitTest;
@@ -44,7 +46,7 @@ public sealed class RazorVueSfcEmitIntegrationTests
     }
 
     [TestMethod]
-    public void ModuleCollector_Collect_RejectsMixedLegacyAndSfcRazorVueCatalogs()
+    public void ModuleCollector_Collect_AcceptsMixedLegacyAndSfcRazorVueCatalogs()
     {
         var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
         var legacyAssemblyPath = Path.Combine(root, "RazorVue.Legacy.Reader.Tests.dll");
@@ -64,14 +66,90 @@ public sealed class RazorVueSfcEmitIntegrationTests
 
             var result = collector.Collect(failOnPathConflict: true);
 
-            Assert.IsFalse(result.IsSuccess);
-            StringAssert.Contains(result.Error, "Mixed legacy and SFC RazorVue catalogs");
+            Assert.IsTrue(result.IsSuccess, result.Error ?? string.Empty);
+            Assert.AreEqual(1, result.RazorVueCatalogCount);
+            Assert.AreEqual(1, result.RazorVueSfcCatalogCount);
+            Assert.HasCount(1, result.RazorVueArtifacts);
+            Assert.HasCount(1, result.RazorVueSfcArtifacts);
+            Assert.AreEqual("components/counter-card.mjs", result.RazorVueArtifacts[0].RelativeModulePath);
+            Assert.AreEqual("components/counter-card.vue", result.RazorVueSfcArtifacts[0].RelativeSfcPath);
         }
         finally
         {
             loadContext?.Unload();
             ForceCollectibleLoadContextCleanup();
             TryDeleteDirectory(root);
+        }
+    }
+
+    [TestMethod]
+    public async Task EmitCli_Clean_MixedLegacyAndSfcRazorVueCatalogs_MergeIntoUnifiedManifestAndHostRequirements()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var legacyAssemblyPath = Path.Combine(root, "RazorVue.Legacy.Reader.Tests.dll");
+        var sfcAssemblyPath = Path.Combine(root, "RazorVue.Sfc.Reader.Tests.dll");
+        var emitAssemblyPath = typeof(EmitOptions).Assembly.Location;
+        var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
+
+        try
+        {
+            Directory.CreateDirectory(root);
+            WriteAssembly(legacyAssemblyPath, "RazorVue.Legacy.Reader.Tests", BuildLegacyCatalogSource("RazorVue.Legacy.Reader.Tests", "components/counter-card.mjs"));
+            WriteAssembly(sfcAssemblyPath, "RazorVue.Sfc.Reader.Tests", BuildSfcCatalogSource("RazorVue.Sfc.Reader.Tests", "components/counter-card.vue"));
+
+            var result = await RunDotNetAsync(root,
+                [
+                    "exec",
+                    emitAssemblyPath,
+                    "--root",
+                    legacyAssemblyPath,
+                    "--assembly",
+                    sfcAssemblyPath,
+                    "--out",
+                    outputDirectory,
+                    "--write-manifest",
+                    manifestPath,
+                    "--clean",
+                    "true",
+                    "--fail-on-path-conflict",
+                    "true"
+                ]);
+
+            Assert.AreEqual(0, result.ExitCode, result.ToString());
+            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.mjs")));
+            Assert.IsTrue(File.Exists(Path.Combine(outputDirectory, "components", "counter-card.vue")));
+            Assert.IsTrue(File.Exists(hostRequirementsModulePath));
+
+            using var manifestJson = JsonDocument.Parse(await File.ReadAllTextAsync(manifestPath));
+            var modules = manifestJson.RootElement.GetProperty("modules")
+                .EnumerateArray()
+                .OrderBy(static module => module.GetProperty("relativePath").GetString(), StringComparer.Ordinal)
+                .ToArray();
+            Assert.HasCount(2, modules);
+            Assert.AreEqual("mjs", modules[0].GetProperty("kind").GetString());
+            Assert.AreEqual("h", modules[0].GetProperty("component").GetProperty("model").GetString());
+            Assert.AreEqual("components/counter-card.mjs", modules[0].GetProperty("relativePath").GetString());
+            Assert.AreEqual("vue", modules[1].GetProperty("kind").GetString());
+            Assert.AreEqual("sfc", modules[1].GetProperty("component").GetProperty("model").GetString());
+            Assert.AreEqual("components/counter-card.vue", modules[1].GetProperty("relativePath").GetString());
+
+            var manifest = RazorVueManifestSerializer.TryLoad(manifestPath);
+            Assert.IsNotNull(manifest);
+            Assert.HasCount(2, manifest.Modules);
+            CollectionAssert.AreEquivalent(
+                new[] { "components/counter-card.mjs", "components/counter-card.vue" },
+                manifest.Modules.Select(static module => module.RelativeModulePath).ToArray());
+
+            var hostRequirementsCode = await File.ReadAllTextAsync(hostRequirementsModulePath);
+            StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.mjs\"");
+            StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.vue\"");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
         }
     }
 
@@ -154,6 +232,110 @@ public sealed class RazorVueSfcEmitIntegrationTests
             Assert.AreEqual("sfc", manifestModule.GetProperty("component").GetProperty("model").GetString());
 
             var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
+            StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.vue\"");
+            StringAssert.Contains(hostRequirementsCode, "\"styleHash\":\"style-hash\"");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void RazorVueWriters_CanMergeLegacyAndSfcArtifacts_IntoUnifiedHostRequirements()
+    {
+        var legacyWriter = new RazorVueModuleWriter();
+        var sfcWriter = new RazorVueSfcModuleWriter();
+        var hostRequirementsWriter = new RazorVueHostRequirementsModuleWriter();
+        var root = Path.Combine(Path.GetTempPath(), "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var outputDirectory = Path.Combine(root, "wwwroot", "jazor");
+        var manifestPath = Path.Combine(outputDirectory, "jazor-manifest.json");
+        var sourceFilePath = Path.Combine(root, "Counter.razor");
+        var styleSourceFilePath = Path.Combine(root, "Counter.razor.css");
+        var hostRequirementsModulePath = RazorVueModuleWriter.GetHostRequirementsModulePath(outputDirectory);
+
+        const string sfcText =
+            """
+            <template><div>{{ value }}</div></template>
+            <script setup lang="ts">
+            const value = 1;
+            </script>
+            <style scoped>
+            .card { color: red; }
+            </style>
+            """;
+
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(sourceFilePath, "Counter component source");
+            File.WriteAllText(styleSourceFilePath, ".card { color: red; }");
+
+            var legacyResult = legacyWriter.Write(
+                rootAssemblyPath: Path.Combine(root, "Demo.Host.dll"),
+                outputDirectory,
+                manifestPath,
+                [
+                    new RazorVueCatalogRecord(
+                        "Demo.Components",
+                        [
+                            new RazorVueEmitArtifactRecord(
+                                "CounterCard",
+                                "components/counter-card.mjs",
+                                "export default { name: \"CounterCard\" };",
+                                ["vue"],
+                                ["vuetify/styles"],
+                                ["vuetify"],
+                                new RazorVueEmitArtifactIdentity(
+                                    "Demo.Components.CounterCard",
+                                    "components/counter-card.mjs",
+                                    "descriptor-hash",
+                                    "template-hash",
+                                    "logic-hash",
+                                    RazorVueHmrBoundaryKind.LogicSafe),
+                                new RazorVueEmitRuntimeHints(true, false, true, false, false, false),
+                                [
+                                    new RazorVueEmitSourceOriginRecord(
+                                        sourceFilePath,
+                                        0,
+                                        24,
+                                        "components/counter-card.mjs",
+                                        0,
+                                        38,
+                                        1,
+                                        1,
+                                        RazorVueMappingQualityRecord.MappedFromGenerated,
+                                        RazorVueOriginProvenanceRecord.GeneratedSyntaxLocation)
+                                ])
+                        ])
+                ],
+                clean: true);
+            Assert.IsTrue(legacyResult.IsSuccess, legacyResult.Error ?? string.Empty);
+
+            var sfcResult = sfcWriter.Write(
+                rootAssemblyPath: Path.Combine(root, "Demo.Host.dll"),
+                outputDirectory,
+                manifestPath,
+                [
+                    new RazorVueSfcCatalogRecord(
+                        "Demo.Components",
+                        [
+                            CreateArtifact(sourceFilePath, styleSourceFilePath, sfcText)
+                        ])
+                ],
+                clean: true);
+            Assert.IsTrue(sfcResult.IsSuccess, sfcResult.Error ?? string.Empty);
+
+            var manifest = ManifestModel.TryLoad(manifestPath);
+            Assert.IsNotNull(manifest);
+
+            var hostSyncResult = hostRequirementsWriter.Sync(outputDirectory, manifest);
+            Assert.IsTrue(hostSyncResult.IsSuccess, hostSyncResult.Error ?? string.Empty);
+            Assert.IsTrue(File.Exists(hostRequirementsModulePath));
+
+            var hostRequirementsCode = File.ReadAllText(hostRequirementsModulePath);
+            StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.mjs\"");
             StringAssert.Contains(hostRequirementsCode, "\"relativeModulePath\":\"components/counter-card.vue\"");
             StringAssert.Contains(hostRequirementsCode, "\"styleHash\":\"style-hash\"");
         }
@@ -258,6 +440,50 @@ public sealed class RazorVueSfcEmitIntegrationTests
         using var stream = File.Create(assemblyPath);
         var emitResult = compilation.Emit(stream);
         Assert.IsTrue(emitResult.Success, string.Join("\n", emitResult.Diagnostics.Select(static diagnostic => diagnostic.ToString())));
+    }
+
+    private static async Task<ProcessResult> RunDotNetAsync(string workingDirectory, IReadOnlyList<string> arguments)
+    {
+        var startInfo = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = workingDirectory,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false
+        };
+
+        foreach (var argument in arguments)
+            startInfo.ArgumentList.Add(argument);
+
+        startInfo.Environment["DOTNET_CLI_HOME"] = FindDotNetCliHome();
+        startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
+
+        using var process = new Process { StartInfo = startInfo };
+        process.Start();
+
+        var standardOutput = process.StandardOutput.ReadToEndAsync();
+        var standardError = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        return new ProcessResult(
+            process.ExitCode,
+            await standardOutput,
+            await standardError);
+    }
+
+    private static string FindDotNetCliHome()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, ".dotnet");
+            if (Directory.Exists(candidate))
+                return candidate;
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate repository .dotnet directory.");
     }
 
     private static void ForceCollectibleLoadContextCleanup()
@@ -512,4 +738,27 @@ public sealed class RazorVueSfcEmitIntegrationTests
             }
         }
         """;
+
+    private sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError)
+    {
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"ExitCode: {ExitCode}");
+
+            if (!string.IsNullOrWhiteSpace(StandardOutput))
+            {
+                builder.AppendLine("STDOUT:");
+                builder.AppendLine(StandardOutput);
+            }
+
+            if (!string.IsNullOrWhiteSpace(StandardError))
+            {
+                builder.AppendLine("STDERR:");
+                builder.AppendLine(StandardError);
+            }
+
+            return builder.ToString();
+        }
+    }
 }
